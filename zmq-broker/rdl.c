@@ -540,6 +540,7 @@ static struct resource * create_resource_ref (struct rdl *rdl, int index)
 
 struct resource * rdl_resource_get (struct rdl *rdl, const char *uri)
 {
+    struct resource *r;
     if (uri == NULL)
         uri = "default";
     rdl_dostringf (rdl, "return rdl:resource ('%s')", uri);
@@ -547,7 +548,9 @@ struct resource * rdl_resource_get (struct rdl *rdl, const char *uri)
         VERR (rdl->rl, "resource (%s): %s\n", uri, lua_tostring (rdl->L, -1));
         return (NULL);
     }
-    return (create_resource_ref (rdl, -1));
+    r = create_resource_ref (rdl, -1);
+    lua_settop (rdl->L, 0);
+    return (r);
 }
 
 static int lua_rdl_resource_push (struct resource *r)
@@ -563,10 +566,10 @@ static int lua_rdl_resource_method_push (struct resource *r, const char *name)
      *  First push rdl resource proxy object onto stack
      */
     lua_rdl_resource_push (r);
-    lua_pushstring (L, name);
-    lua_rawget (L, -2);
+    lua_getfield (L, -1, name);
 
     if (lua_type (L, -1) != LUA_TFUNCTION) {
+        lua_pop (L, 1);
         lua_pushnil (L);
         lua_pushstring (L, "not a method");
         return (-1);
@@ -632,7 +635,8 @@ static int rdl_resource_method_call1_keepstack (struct resource *r,
 {
     int rc = 0;
     lua_State *L = r->rdl->L;
-    lua_rdl_resource_method_push (r, method);
+    if (lua_rdl_resource_method_push (r, method) < 0)
+        return (-1);
     lua_pushstring (L, arg);
     /*
      *  stack: [ Method, object, arg ]
@@ -656,6 +660,14 @@ static int rdl_resource_method_call1 (struct resource *r,
 void rdl_resource_tag (struct resource *r, const char *tag)
 {
     rdl_resource_method_call1 (r, "tag", tag);
+}
+
+void rdl_resource_delete_tag (struct resource *r, const char *tag)
+{
+    if (rdl_resource_method_call1 (r, "delete_tag", tag) < 0) {
+        VERR (r->rdl->rl, "delete_tag (%s): %s\n", tag,
+              lua_tostring (r->rdl->L, -1));
+    }
 }
 
 int rdl_resource_set_int (struct resource *r, const char *tag, int64_t val)
@@ -731,6 +743,7 @@ json_object * rdl_resource_aggregate_json (struct resource *r)
 
 struct resource * rdl_resource_next_child (struct resource *r)
 {
+    struct resource *c;
     if (lua_rdl_resource_method_call (r, "next_child")) {
         VERR (r->rdl->rl, "next child: %s\n", lua_tostring (r->rdl->L, -1));
         return NULL;
@@ -739,7 +752,9 @@ struct resource * rdl_resource_next_child (struct resource *r)
         /* End of child list is indicated by nil return */
         return (NULL);
     }
-    return (create_resource_ref (r->rdl, -1));
+    c = create_resource_ref (r->rdl, -1);
+    lua_settop (r->rdl->L, 0);
+    return (c);
 }
 
 
@@ -776,6 +791,7 @@ struct rdl_accumulator * rdl_accumulator_create (struct rdl *rdl)
     a = malloc (sizeof (*a));
     a->lua_ref = luaL_ref (rdl->L, LUA_GLOBALSINDEX);
     a->rdl = rdl;
+    lua_settop (rdl->L, 0);
     return (a);
 }
 
