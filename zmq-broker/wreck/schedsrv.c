@@ -24,8 +24,12 @@
 #include "plugin.h"
 #include "rdl.h"
 #include "scheduler.h"
+#include "zmsg.h"
+#include "simulator.h"
 
 #define MAX_STR_LEN 128
+
+static const char const *module_name = "sched";
 
 /****************************************************************
  *
@@ -37,6 +41,12 @@ struct stab_struct {
     int i;
     const char *s;
 };
+
+typedef struct {
+	char *key;
+	char *val;
+	int errnum;
+} kvs_event_t;
 
 /****************************************************************
  *
@@ -52,6 +62,10 @@ static struct rdl *rdl = NULL;
 static char* resource = NULL;
 static const char* IDLETAG = "idle";
 static const char* CORETYPE = "core";
+
+static bool in_sim = false;
+static sim_state_t *sim_state = NULL;
+static zlist_t *kvs_queue = NULL;
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -113,12 +127,37 @@ static void setup_rdl_lua (void)
     rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
 }
 
+//Reply back to the sim module with the updated sim state (in JSON form)
+int send_reply_request (flux_t h, sim_state_t *sim_state)
+{
+	JSON o = sim_state_to_json (sim_state);
+	Jadd_bool (o, "event_finished", true);
+	if (flux_request_send (h, o, "%s", "sim.reply") < 0){
+		Jput (o);
+		return -1;
+	}
+   flux_log(h, LOG_DEBUG, "sent a reply request");
+   Jput (o);
+   free_simstate (sim_state);
+   return 0;
+}
+
 static int
 signal_event ( )
 {
+	flux_log (h, LOG_DEBUG, "signal_event called");
     int rc = 0;
-
-    if (flux_event_send (h, NULL, "sched.event") < 0) {
+	if (in_sim && sim_state != NULL){
+		int *timer = zhash_lookup (sim_state->timers, module_name);
+		int next_event = sim_state->sim_time + 1;
+		if (*timer > next_event || *timer < 0){
+			*timer = next_event;
+			flux_log (h, LOG_DEBUG, "next sched event set for %d", next_event);
+		}
+		//send_reply_request (h, sim_state);
+		goto ret;
+	}
+    else if (flux_event_send (h, NULL, "sched.event") < 0) {
         flux_log (h, LOG_ERR,
                  "flux_event_send: %s", strerror (errno));
         rc = -1;
@@ -355,6 +394,7 @@ issue_lwj_event (lwj_event_e e, flux_lwj_t *j)
                   "enqueuing an event failed");
         goto ret;
     }
+
     if (signal_event () == -1) {
         flux_log (h, LOG_ERR,
                   "signaling an event failed");
@@ -1032,6 +1072,44 @@ ret:
     return;
 }
 
+static void queue_kvs_cb (const char *key, const char *val, void *arg, int errnum)
+{
+	int key_len;
+	int val_len;
+	char *key_copy = NULL;
+	char *val_copy = NULL;
+	kvs_event_t *kvs_event = NULL;
+
+	if (key != NULL){
+		key_len = strlen (key) + 1;
+		key_copy = (char *) malloc (sizeof (char) * key_len);
+		strncpy (key_copy, key, key_len);
+	}
+	if (val != NULL){
+		val_len = strlen (val) + 1;
+		val_copy = (char *) malloc (sizeof (char) * val_len);
+		strncpy (val_copy, val, val_len);
+	}
+
+	kvs_event = (kvs_event_t *) malloc (sizeof (kvs_event_t));
+	kvs_event->errnum = errnum;
+	kvs_event->key = key_copy;
+	kvs_event->val = val_copy;
+	zlist_append (kvs_queue, kvs_event);
+}
+
+static void handle_kvs_queue ()
+{
+	kvs_event_t *kvs_event = NULL;
+	while (zlist_size (kvs_queue) > 0){
+		kvs_event = (kvs_event_t *) zlist_pop (kvs_queue);
+		lwjstate_cb (kvs_event->key, kvs_event->val, NULL, kvs_event->errnum);
+		free (kvs_event->key);
+		free (kvs_event->val);
+		free (kvs_event);
+	}
+}
+
 /* The val argument is for the *next* job id.  Hence, the job id of
  * the new job will be (val - 1).
  */
@@ -1070,7 +1148,8 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
                   "appending a job to pending queue failed");
         goto error;
     }
-    if (reg_lwj_state_hdlr (path, (KVSSetStringF *) lwjstate_cb) == -1) {
+
+    if (reg_lwj_state_hdlr (path, (KVSSetStringF *) queue_kvs_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register lwj state change "
                   "handling callback: %s",
@@ -1103,12 +1182,84 @@ event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
     return 0;
 }
 
+static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+{
+	JSON o;
+	char *tag;
+
+	if (cmb_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+		Jput (o);
+		return -1;
+	}
+
+	flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
+
+	sim_state = json_to_sim_state (o);
+	handle_kvs_queue();
+	event_cb (h, typemask, zmsg, arg);
+	send_reply_request (h, sim_state);
+	return 0;
+}
+
+int send_join_request(flux_t h)
+{
+	JSON o = Jnew ();
+	Jadd_str (o, "mod_name", module_name);
+	Jadd_int (o, "rank", flux_rank (h));
+	Jadd_int (o, "next_event", -1);
+	if (flux_request_send (h, o, "%s", "sim.join") < 0){
+		Jput (o);
+		return -1;
+	}
+	Jput (o);
+	return 0;
+}
+
+//Received an event that a simulation is starting
+static int start_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+{
+	flux_log(h, LOG_DEBUG, "received a start event");
+	if (send_join_request (h) < 0){
+		flux_log (h, LOG_ERR, "submit module failed to register with sim module");
+		return -1;
+	}
+
+	flux_log (h, LOG_DEBUG, "sent a join request");
+
+	//Turn off normal functionality, switch to sim_mode
+	in_sim = true;
+	if (flux_event_unsubscribe (h, "sim.start") < 0){
+		flux_log (h, LOG_ERR, "failed to unsubscribe from \"sim.start\"");
+		return -1;
+	} else {
+		flux_log (h, LOG_DEBUG, "unsubscribed from \"sim.start\"");
+	}
+	if (flux_event_unsubscribe (h, "sched.event") < 0){
+		flux_log (h, LOG_ERR, "failed to unsubscribe from \"sched.event\"");
+		return -1;
+	} else {
+		flux_log (h, LOG_DEBUG, "unsubscribed from \"sched.event\"");
+	}
+
+	//Cleanup
+	zmsg_destroy (zmsg);
+
+	return 0;
+}
 
 /****************************************************************
  *
  *        High Level Job and Resource Event Handlers
  *
  ****************************************************************/
+static msghandler_t htab[] = {
+    { FLUX_MSGTYPE_EVENT,   "sim.start",     start_cb },
+    { FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb },
+    { FLUX_MSGTYPE_EVENT,   "sched.event",   event_cb },
+};
+const int htablen = sizeof (htab) / sizeof (htab[0]);
+
 int mod_main (flux_t p, zhash_t *args)
 {
     int rc = 0;
@@ -1159,6 +1310,7 @@ int mod_main (flux_t p, zhash_t *args)
     r_queue = zlist_new ();
     c_queue = zlist_new ();
     ev_queue = zlist_new ();
+	kvs_queue = zlist_new ();
     if (!p_queue || !r_queue || !c_queue || !ev_queue) {
         flux_log (h, LOG_ERR,
                   "init for queues failed: %s",
@@ -1166,6 +1318,10 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
+	if (flux_event_subscribe (h, "sim.start") < 0){
+        flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+		return -1;
+	}
     if (flux_event_subscribe (h, "sched.event") < 0) {
         flux_log (h, LOG_ERR,
                   "subscribing to event: %s",
@@ -1173,20 +1329,21 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
-    if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.event",
-                             event_cb, NULL) < 0) {
-        flux_log (h, LOG_ERR,
-                  "register event handling callback: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
+	if (flux_msghandler_addvec (h, htab, htablen, NULL) < 0) {
+		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
+		return -1;
+	}
+
+	goto skip_for_sim;
+
     if (wait_for_lwj_init () == -1) {
         flux_log (h, LOG_ERR, "wait for lwj failed: %s",
                   strerror (errno));
         rc = -1;
         goto ret;
     }
+
+skip_for_sim:
     if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register new lwj handling "
@@ -1195,6 +1352,7 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
+
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR,
                   "flux_reactor_start: %s",

@@ -4,7 +4,7 @@ programs =          wrexecd
 plugins  =          jobsrv.o resrcsrv.o schedsrv.o wrexecsrv.o
 
 CFLAGS +=           -ggdb -Wall -Werror \
-                    -I$(topdir) -I$(topdir)/include -I$(topdir)/util
+                    -I$(topdir) -I$(topdir)/include -I$(topdir)/util -I$(topdir)/simulator
 LDFLAGS +=          -L$(topdir)/lib \
 		    -L$(topdir)/util \
 		    -L$(topdir)/zutil \

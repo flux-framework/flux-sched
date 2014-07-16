@@ -31,6 +31,17 @@ Jput (JSON o)
         json_object_put (o);
 }
 
+/* Add bool to JSON.
+ */
+static __inline__ void
+Jadd_bool (JSON o, const char *name, bool b)
+{
+    JSON n = json_object_new_boolean (b);
+    if (!n)
+        oom ();
+    json_object_object_add (o, (char *)name, n);
+}
+
 /* Add integer to JSON.
  */
 static __inline__ void
@@ -69,6 +80,17 @@ Jget_int (JSON o, const char *name, int *ip)
     JSON n = json_object_object_get (o, (char *)name);
     if (n)
         *ip = json_object_get_int (n);
+    return (n != NULL);
+}
+
+/* Get integer from JSON.
+ */
+static __inline__ bool
+Jget_int64 (JSON o, const char *name, int64_t *ip)
+{
+    JSON n = json_object_object_get (o, (char *)name);
+    if (n)
+        *ip = json_object_get_int64 (n);
     return (n != NULL);
 }
 

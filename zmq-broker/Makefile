@@ -1,10 +1,10 @@
 
 TOP =             $(shell pwd)
 LIBDIR =          $(TOP)/lib
-EXTRA_CFLAGS +=   -I$(TOP) -I$(TOP)/include -I$(TOP)/util -I$(TOP)/zutil
+EXTRA_CFLAGS +=   -I$(TOP) -I$(TOP)/include -I$(TOP)/util -I$(TOP)/zutil -I$(TOP)/simulator
 EXTRA_LDFLAGS +=  -L$(TOP)/lib $(TOP)/zutil/libzutil.a $(TOP)/util/libutil.a
 
-SUBDIRS :=        wreck dlua test util zutil
+SUBDIRS :=        wreck dlua test util zutil simulator
 
 LUA_PKG = $(shell pkg-config --exists lua && echo lua || echo lua5.1)
 LUA_CFLAGS = $(shell pkg-config --silence-errors --cflags $(LUA_PKG))
@@ -20,6 +20,7 @@ export CFLAGS LDFLAGS LUA_CFLAGS LUA_LIBS
 
 LIBUTIL = util/libutil.a
 LIBZUTIL = zutil/libzutil.a
+LIBSIM = simulator/libsim.a
 LDADD_CLI = $(EXTRA_LDFLAGS) -ljson -lzmq -lczmq -lutil -lm -lmunge
 LDADD_SRV = -pthread -rdynamic $(LDADD_CLI) -ldl
 
@@ -41,7 +42,7 @@ PLUGINS = plugins/api.so plugins/hb.so plugins/kvs.so \
 	plugins/log.so plugins/echo.so plugins/job.so \
 	plugins/resrc.so plugins/rexec.so plugins/sched.so \
 	plugins/event.so plugins/rank.so plugins/mon.so \
-	plugins/modctl.so
+	plugins/modctl.so plugins/sim.so plugins/submit.so
 
 SUBCMDS = libexec/kvs libexec/ping libexec/mecho \
 	libexec/stats libexec/barrier libexec/snoop libexec/event \
@@ -63,9 +64,15 @@ plugins/%.so: %srv.c $(LIBUTIL)
 plugins/rexec.so: wreck/wrexecsrv.c $(LIBUTIL)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL)
-plugins/sched.so: wreck/schedsrv.c $(LIBUTIL) $(LIBRDL)
+plugins/sched.so: wreck/schedsrv.c $(LIBUTIL) $(LIBRDL) $(LIBSIM)
 	mkdir -p plugins
-	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL) -L$(LIBDIR) -lrdl
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL) -L$(LIBDIR) -lrdl $(LIBSIM)
+plugins/sim.so: simulator/simsrv.c $(LIBUTIL) $(LIBSIM)
+	mkdir -p plugins
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBSIM)
+plugins/submit.so: simulator/submitsrv.c $(LIBUTIL) $(LIBSIM)
+	mkdir -p plugins
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(SUBDIRS):
 	make -C $@ all
@@ -102,6 +109,7 @@ $(LIBRDL): $(LIBRDL_OBJS)
 		-o $@ $(LIBRDL_OBJS) -llua -ljson
 	ln -sf $(shell basename $@) $(@:.0=)
 
+$(LIBSIM): simulator
 $(LIBUTIL): util
 $(LIBZUTIL): zutil
 
