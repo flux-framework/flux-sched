@@ -439,7 +439,7 @@ allocate_resources (struct resource *fr, struct rdl_accumulator *a,
 {
     char *lwjtag = NULL;
     char *uri = NULL;
-    const char *type;
+    const char *type = NULL;
     json_object *o = NULL;
     json_object *o2 = NULL;
     json_object *o3 = NULL;
@@ -497,7 +497,7 @@ update_job_cores (struct resource *jr, flux_lwj_t *job,
     bool imanode = false;
     char *key = NULL;
     char *lwjtag = NULL;
-    const char *type;
+    const char *type = NULL;
     json_object *o = NULL;
     json_object *o2 = NULL;
     json_object *o3 = NULL;
@@ -507,7 +507,7 @@ update_job_cores (struct resource *jr, flux_lwj_t *job,
     if (jr) {
         o = rdl_resource_json (jr);
         if (o) {
-            flux_log (h, LOG_DEBUG, "considering: %s",
+            flux_log (h, LOG_DEBUG, "updating: %s",
                       json_object_to_json_string (o));
         } else {
             flux_log (h, LOG_ERR, "update_job_cores invalid resource");
@@ -757,7 +757,7 @@ release_lwj_resource (struct rdl *rdl, struct resource *jr, int64_t lwj_id)
 {
     char *lwjtag = NULL;
     char *uri = NULL;
-    const char *type;
+    const char *type = NULL;
     int rc = 0;
     json_object *o = NULL;
     struct resource *c;

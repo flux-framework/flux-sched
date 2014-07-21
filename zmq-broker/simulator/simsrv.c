@@ -79,9 +79,9 @@ static int handle_next_event (ctx_t *ctx){
 
 	//Get the next occuring event time/module
 	//TODO: convert this block of code into a zhash_foreach function
-	double *min_event_time, *curr_event_time;
-	char *mod_name, *curr_name;
-	min_event_time = NULL;
+	double *min_event_time = NULL, *curr_event_time = NULL;
+	char *mod_name = NULL, *curr_name = NULL;
+
 	while (min_event_time == NULL && zlist_size (keys) > 0){
 		mod_name = zlist_pop (keys);
 		min_event_time = (double *) zhash_lookup (timers, mod_name);

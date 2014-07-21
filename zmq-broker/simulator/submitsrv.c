@@ -55,7 +55,7 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 	JSON o = Jnew();
 	double *new_mod_time;
 	JSON response;
-	int64_t new_jobid;
+	int64_t new_jobid = -1;
 	kvsdir_t dir;
 
     //Send "job.create" and wait for jobid in response
