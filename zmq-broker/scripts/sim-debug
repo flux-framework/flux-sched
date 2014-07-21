@@ -1,7 +1,7 @@
 #!/bin/bash
 
 gdb --args ./cmbd --verbose --rank=0 --size=1 --hostlist=localhost \
-    --plugins=modctl,api,barrier,kvs,log,hb,job,event,log,sim,submit,sim_sched,model_exec \
+    --plugins=modctl,api,barrier,kvs,log,hb,job,event,log,sim,submit,sim_sched,sim_exec \
     kvs:conf.hb.period-sec=1.5 \
     kvs:conf.log.reduction-timeout-msec=100 \
     kvs:conf.log.circular-buffer-entries=100000 \

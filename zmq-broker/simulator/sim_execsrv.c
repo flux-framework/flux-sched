@@ -14,7 +14,7 @@
 #include "plugin.h"
 #include "simulator.h"
 
-static const char const *module_name = "model_exec";
+static const char const *module_name = "sim_exec";
 
 typedef struct {
 	sim_state_t *sim_state;
@@ -43,7 +43,7 @@ static void freectx (ctx_t *ctx)
 
 static ctx_t *getctx (flux_t h)
 {
-    ctx_t *ctx = (ctx_t *)flux_aux_get (h, "model_exec");
+    ctx_t *ctx = (ctx_t *)flux_aux_get (h, "sim_exec");
 
     if (!ctx) {
         ctx = xzmalloc (sizeof (*ctx));
@@ -224,7 +224,7 @@ static int start_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	return 0;
 }
 
-//Handle trigger requests from the sim module ("model_exec.trigger")
+//Handle trigger requests from the sim module ("sim_exec.trigger")
 static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON o;
@@ -248,7 +248,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	handle_queued_events (ctx);
 	handle_completed_jobs (ctx);
 	next_termination = determine_next_termination (ctx);
-	set_event_timer (ctx, "model_exec", next_termination);
+	set_event_timer (ctx, "sim_exec", next_termination);
 	send_reply_request (h, ctx->sim_state);
 
 //Cleanup
@@ -275,7 +275,7 @@ static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	flux_log(h, LOG_DEBUG, "received a request (%s)", tag);
 
 //Handle Request
-	sscanf (tag, "model_exec.run.%d", jobid);
+	sscanf (tag, "sim_exec.run.%d", jobid);
 	zlist_append (ctx->queued_events, jobid);
 	flux_log(h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 
@@ -287,8 +287,8 @@ static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 static msghandler_t htab[] = {
     { FLUX_MSGTYPE_EVENT,   "sim.start",        start_cb },
-    { FLUX_MSGTYPE_REQUEST, "model_exec.trigger",   trigger_cb },
-    { FLUX_MSGTYPE_REQUEST, "model_exec.run.*",   run_cb },
+    { FLUX_MSGTYPE_REQUEST, "sim_exec.trigger",   trigger_cb },
+    { FLUX_MSGTYPE_REQUEST, "sim_exec.run.*",   run_cb },
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
@@ -318,4 +318,4 @@ int mod_main(flux_t h, zhash_t *args)
 }
 
 
-MOD_NAME("model_exec");
+MOD_NAME("sim_exec");

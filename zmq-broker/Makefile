@@ -43,7 +43,7 @@ PLUGINS = plugins/api.so plugins/hb.so plugins/kvs.so \
 	plugins/resrc.so plugins/rexec.so plugins/sched.so \
 	plugins/event.so plugins/rank.so plugins/mon.so \
 	plugins/modctl.so plugins/sim.so plugins/submit.so \
-	plugins/model_exec.so plugins/sim_sched.so
+	plugins/sim_exec.so plugins/sim_sched.so
 
 SUBCMDS = libexec/kvs libexec/ping libexec/mecho \
 	libexec/stats libexec/barrier libexec/snoop libexec/event \
@@ -77,7 +77,7 @@ plugins/sim.so: simulator/simsrv.c $(LIBUTIL) $(LIBSIM)
 plugins/submit.so: simulator/submitsrv.c $(LIBUTIL) $(LIBSIM)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $^
-plugins/model_exec.so: simulator/model_execsrv.c $(LIBUTIL) $(LIBSIM)
+plugins/sim_exec.so: simulator/sim_execsrv.c $(LIBUTIL) $(LIBSIM)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $^
 

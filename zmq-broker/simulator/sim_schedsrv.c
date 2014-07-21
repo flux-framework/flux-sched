@@ -684,11 +684,11 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
 
 static void set_exec_timer ()
 {
-	double *old_time = zhash_lookup (sim_state->timers, "model_exec");
+	double *old_time = zhash_lookup (sim_state->timers, "sim_exec");
 	double new_time = sim_state->sim_time + (DBL_MIN * 100);
 	if (*old_time > new_time || *old_time < 0){
 		*old_time = new_time;
-		flux_log (h, LOG_DEBUG, "set timer for model_exec as %f", new_time);
+		flux_log (h, LOG_DEBUG, "set timer for sim_exec as %f", new_time);
 	}
 
 	return;
@@ -707,7 +707,7 @@ request_run (flux_lwj_t *job)
     } else if (!in_sim && flux_event_send (h, NULL, "rexec.run.%ld", job->lwj_id) < 0) {
         flux_log (h, LOG_ERR, "request_run event send failed: %s",
                   strerror (errno));
-    } else if (in_sim && flux_request_send (h, NULL, "model_exec.run.%ld", job->lwj_id) < 0) {
+    } else if (in_sim && flux_request_send (h, NULL, "sim_exec.run.%ld", job->lwj_id) < 0) {
         flux_log (h, LOG_ERR, "request_run request send failed: %s",
                   strerror (errno));
     } else {
