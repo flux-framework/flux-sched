@@ -149,6 +149,83 @@ Jget_bool (JSON o, const char *name, bool *bp)
     return (n != NULL);
 }
 
+/* Create new JSON array.
+ */
+static __inline__ JSON
+Jnew_ar (void)
+{
+    JSON a = json_object_new_array ();
+    if (!a)
+        oom ();
+    return a;
+}
+
+/* Add object to JSON array (caller retains ownership of original).
+ */
+static __inline__ void
+Jadd_ar_obj (JSON o, JSON obj)
+{
+    //assert (json_object_get_type (o) == json_type_array)
+    json_object_array_add (o, Jget (obj));
+}
+
+static __inline__ void
+Jput_ar_obj (JSON o, int n, JSON obj)
+{
+    //assert (json_object_get_type (o) == json_type_array)
+    json_object_array_put_idx (o, n, Jget (obj));
+}
+
+static __inline__ void
+Jadd_ar_int (JSON o, int i)
+{
+    JSON p = json_object_new_int (i);
+    if (!p)
+        oom ();
+    json_object_array_add (o, p);
+}
+
+/* Get JSON array length.
+ */
+static __inline__ bool
+Jget_ar_len (JSON o, int *ip)
+{
+    if (json_object_get_type (o) != json_type_array)
+        return false;
+    *ip = json_object_array_length (o);
+    return true;
+}
+
+/* Get JSON object at index 'n' array.
+ */
+static __inline__ bool
+Jget_ar_obj (JSON o, int n, JSON *op)
+{
+    if (json_object_get_type (o) != json_type_array)
+        return false;
+    if (n < 0 || n > json_object_array_length (o))
+        return false;
+    *op = json_object_array_get_idx (o, n);
+    return true;
+}
+
+/* Get integer at index 'n' of array.
+ */
+static __inline__ bool
+Jget_ar_int (JSON o, int n, int *ip)
+{
+    JSON m;
+
+    if (json_object_get_type (o) != json_type_array)
+        return false;
+    if (n < 0 || n > json_object_array_length (o))
+        return false;
+    if (!(m = json_object_array_get_idx (o, n)))
+        return false;
+    *ip = json_object_get_int (m);
+    return true;
+}
+
 /* Encode JSON to string (owned by JSON, do not free)
  */
 static __inline__ const char *
@@ -181,6 +258,12 @@ Jmerge (JSON dst, JSON src)
         json_object_object_del (dst, iter.key); /* necessary? */
         json_object_object_add (dst, iter.key, Jget (iter.val));
     }
+}
+
+static __inline__ JSON
+Jdup (JSON o)
+{
+    return o ? Jfromstr (Jtostr (o)) : NULL;
 }
 
 #endif

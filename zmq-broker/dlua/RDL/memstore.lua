@@ -76,6 +76,22 @@ local function deepcompare (t1, t2, seen)
     return true
 end
 
+--
+-- Convert tags table given as
+--
+--  { "tag1", "tag2", tag3 = 100 }
+-- to
+--  { tag1 = true, tag2 = true, tag3 = 100 }
+--
+local function convert_tags_table (t)
+    local result = deepcopy_no_metatable (t)
+    for i,v in ipairs (result) do
+        result [v] = true
+        result [i] = nil
+    end
+    return result
+end
+
 function MemStore:addtype (t)
     self.__types [t.name] = deepcopy_no_metatable (t)
 end
@@ -89,6 +105,18 @@ function MemStore:store (r)
     new.tags [r.type] = 1
     self.__resources [r.uuid] = new
     return new
+end
+
+local function print_resource (r, pad)
+    local p = pad or ""
+    io.stderr:write (string.format ("%s%s\n", p, r.name))
+    for c in r:children () do
+        print_resource (c, p.." ")
+    end
+end
+
+function MemStore:print ()
+    print_resource (self:resource ("default"))
 end
 
 -- Return a reference to a single resource data table
@@ -144,15 +172,25 @@ function MemStore:unlink (arg)
     return unlink_child (self, parent, res)
 end
 
+local function resource_tag (r, tag, value)
+    r.tags [tag] = (value or true)
+    return true
+end
+
 function MemStore:tag (id, tag, value)
     local r = self:get (id)
     if not r then return r, "not found" end
-    if not value then
-        value = true
+
+    if type (tag) == "string" then
+        return resource_tag (r, tag, value)
     end
-    r.tags[tag] = value
+
+    for k,v in pairs (convert_tags_table (tag)) do
+        resource_tag (r, k, v)
+    end
     return true
 end
+
 
 function MemStore:delete_tag (id, tag)
     local r = self:get (id)
@@ -256,7 +294,7 @@ function MemStore:hierarchy_put (uri, hnode)
     --  attach the new object to the parent.
     --
     if uri.path then
-        local parent = self:hierarchy_get (tostring (uri.parent))
+        local parent = self:get_hierarchy (tostring (uri.parent))
         if not parent then
             return ret_error ("URI: %s: not found", uri)
         end
@@ -273,6 +311,45 @@ function MemStore:hierarchy_put (uri, hnode)
     local new = self:hierarchy_create ({name = uri.name}, hnode)
     self.__hierarchy [uri.name] =  new
     return new
+end
+
+local function find_nearest_parent (store, arg)
+    local  uri, err = URI.new (arg)
+    if not uri then return nil, err end
+
+
+    -- Get a reference to the hierarchy by name given by this URI
+    local t = store.__hierarchy [uri.name]
+    if not t then return nil, uri.name..": doesn't exist" end
+
+    -- If no path component, then return immediately, the top level is
+    --  the nearest parent:
+    if not uri.path then return t end
+
+    -- Now check each path element in uri until we find a child that
+    --  doesn't exist in "store".
+    --
+    local parent
+    for k in uri.path:gmatch("/([^/]+)") do
+        -- First iteration we are at top level, e.g. resource
+        --  "foo" in default:/foo, just assign parent to to
+        --  `t' which points to this resource and continue the loop.
+        --
+        if not parent then
+            parent = t
+        else
+            -- Otherwise, if the previous parent has no child with
+            --  this name, then break and return parent as the
+            --  "nearest" parent in this URI:
+            --
+            if not parent.children[k] then
+                break
+            end
+            -- Update parent to next child and continue
+            parent = parent.children[k]
+        end
+    end
+    return parent
 end
 
 function MemStore:get_hierarchy (s)
@@ -319,6 +396,21 @@ local function hierarchy_node_copy (n)
         children = {},
         parent = n.parent
     }
+end
+
+--
+--  Copy hierarchy node and children
+--
+local function hierarchy_node_copy_recursive (n)
+    local copy = hierarchy_node_copy (n)
+    copy.parent = nil
+
+    for k,v in pairs (n.children) do
+        local child = hierarchy_node_copy_recursive (v)
+        child.parent = copy
+        copy.children [k] = child
+    end
+    return copy
 end
 
 local function hierarchy_validate (t, parent)
@@ -372,13 +464,21 @@ local function hierarchy_export (self, arg)
     return t
 end
 
+local function copy_resource (source, dest, id)
+    local r = source:get (id)
+    if not r then return nil, "copy: Resource "..id.." not found" end
+    if not dest:get (id) then
+        dest.__resources [id] = deepcopy_no_metatable (r)
+    end
+    return true
+end
+
 -- Copy any missing resourcedata from source to dest objects starting with node
 local function dup_resources (source, dest, node)
-    local r = source:get (node.id)
-    if not r then return nil, "Resource "..node.id .." not found" end
-    dest.__resources [node.id] = deepcopy_no_metatable (r)
+    local rc, err = copy_resource (source, dest, node.id)
+    if not rc then return nil, err end
 
-    if not node.children then error ("node "..source:resource_name (node.id) .. " doesn't have children array") end
+    assert (node.children)
     for _,child in pairs (node.children) do
         dup_resources (source, dest, child)
     end
@@ -415,6 +515,72 @@ function MemStore:merge (uri, name)
     if not copy then return nil, err end
 
     return self:merge_exported (name, copy)
+end
+
+local function node_uri (n)
+    return n.hierarchy.name..":"..n.hierarchy.uri
+end
+
+local function printf (...)
+    io.stdout:write (string.format (...))
+end
+
+--  Copy hierarchy at uri [s] to destination [dst]
+function MemStore:copyto (s, dst)
+    local uri = URI.new (s)
+    if not uri then
+        return nil, "bad URI: "..arg
+    end
+
+    -- Get a reference to the hierarchy node at uri in this repo
+    local h = self:get_hierarchy (s)
+
+    -- Find nearest parent in dst repo to uri.
+    local dstparent = find_nearest_parent (dst, s)
+
+    --  If hierarchy doesn't even exist, dstparent is nil. In that
+    --   case we copy the entire hierarchy at uri to dst
+    if dstparent == nil then
+        local h = hierarchy_export (self, s)
+        dst:merge_exported (uri.name, h)
+        dup_resources (self, dst, h)
+        return true
+    end
+
+    -- if a resource exists already in the dst repo, then
+    --  only update the resource and return
+    if (node_uri (dstparent) == s) then
+        copy_resource (self, dst, dstparent.id)
+        return true
+    end
+
+    -- Reverse up tree until we find an existing parent in dst:
+    -- Start by copying current node recursively, then we'll add each
+    --  parent as we go up the tree...
+    local src = h
+    local new = hierarchy_node_copy_recursive (src)
+    dup_resources (self, dst, new)
+    while src.parent and (node_uri (dstparent) ~= node_uri (src.parent)) do
+        local name = self:resource_name (src.id)
+        src = src.parent
+        local t = new
+        new = hierarchy_node_copy (src)
+        new.children [name] = t
+        t.parent = new
+
+        -- copy this resource to dst
+        assert (copy_resource (self, dst, src.id))
+    end
+
+    assert (node_uri (src.parent) == node_uri (dstparent))
+
+    local name = self:resource_name (src.id)
+    dstparent.children [name] = new
+    dstparent.children [name].parent = dstparent
+
+    hierarchy_validate (dstparent)
+
+    return true
 end
 
 -- Copy hierarchy at uri given by arg into a new memstore object
@@ -503,13 +669,10 @@ function ResourceAccumulator:add (id)
     --
     for name,path in pairs (r.hierarchy) do
         local uri = name..":"..path
-        local h = hierarchy_export (self.src, uri)
-
-        local rc, err = self.dst:merge_exported (name, h)
-        if not rc then return nil, err end
-
-        local rc, err = dup_resources (self.src, self.dst, h)
-        if not rc then return nil, err end
+        local rc, err = self.src:copyto (uri, self.dst)
+        if not rc then
+            return nil, err
+        end
     end
     return true
 end

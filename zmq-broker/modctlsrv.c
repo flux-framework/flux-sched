@@ -76,10 +76,6 @@ char *hl_string (hostlist_t hl)
         if (!(s = realloc (s, len *= 2)))
             oom ();
     len = strlen (s);
-    if (s[len - 1] == ']')
-        s[len - 1] = '\0';
-    if (*s == '[')
-        memmove (s, s + 1, len);
     return s;
 }
 
@@ -99,6 +95,11 @@ done:
     return s;
 }
 
+int merge_idle (int a, int b)
+{
+    return (a < b ? a : b);
+}
+
 /* Merge b into a.
  */
 static void merge_mods (JSON a, JSON b)
@@ -107,12 +108,17 @@ static void merge_mods (JSON a, JSON b)
     JSON am;
     char *s;
     const char *anl, *bnl;
+    int ai, bi, i;
 
     json_object_object_foreachC (b, iter) {
+
+        /* module in b is new to a */
         if (!Jget_obj (a, iter.key, &am)) {
             Jadd_obj (a, iter.key, iter.val);
             continue;
         }
+
+        /* merge nodelists */
         if (!Jget_str (iter.val, "nodelist", &bnl)
                                         || !Jget_str (am, "nodelist", &anl))
             continue;
@@ -120,6 +126,13 @@ static void merge_mods (JSON a, JSON b)
         json_object_object_del (am, "nodelist");
         Jadd_str (am, "nodelist", s);
         free (s);
+
+        /* merge idle time */
+        if (!Jget_int (iter.val, "idle", &bi) || !Jget_int (am, "idle", &ai))
+            continue;
+        i = merge_idle (ai, bi);
+        json_object_object_del (am, "idle");
+        Jadd_int (am, "idle", i);
     }
 }
 
@@ -393,10 +406,35 @@ done:
     return rc;
 }
 
+static int update_request_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+{
+    ctx_t *ctx = arg;
+    JSON request = NULL;
+    int rc = 0;
+
+    if (cmb_msg_decode (*zmsg, NULL, &request) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: bad message", __FUNCTION__);
+        goto done;
+    }
+    if (ctx->master) {
+        if (seq_incr (h) < 0) {
+            flux_respond_errnum (h, zmsg, errno);
+            goto done;
+        }
+        flux_respond_errnum (h, zmsg, 0);
+    } else {
+        flux_request_sendmsg (h, zmsg);
+    }
+done:
+    Jput (request);
+    return rc;
+}
+
 static msghandler_t htab[] = {
     { FLUX_MSGTYPE_REQUEST, "modctl.push",              push_request_cb },
     { FLUX_MSGTYPE_REQUEST, "modctl.ins",               ins_request_cb },
     { FLUX_MSGTYPE_REQUEST, "modctl.rm",                rm_request_cb },
+    { FLUX_MSGTYPE_REQUEST, "modctl.update",            update_request_cb },
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 

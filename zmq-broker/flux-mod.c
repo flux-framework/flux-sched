@@ -28,12 +28,15 @@ static void mod_ls_m (flux_t h, int argc, char **argv);
 static void mod_rm_m (flux_t h, int argc, char **argv);
 static void mod_ins_m (flux_t h, int argc, char **argv);
 
+static void mod_update (flux_t h);
+
 void usage (void)
 {
     fprintf (stderr,
 "Usage: flux-mod [OPTIONS] ls\n"
 "       flux-mod [OPTIONS] rm module [module...]\n"
 "       flux-mod [OPTIONS] ins module [arg=val ...]\n"
+"       flux-mod update\n"
 "Options:\n"
 "  -u,--unmanaged      act locally, do not set/require 'm' flag\n"
 "  -r,--rank=N         act on specified rank (requires -u)\n"
@@ -92,6 +95,8 @@ int main (int argc, char *argv[])
             mod_ins (h, rank, argc - optind, argv + optind);
         else
             mod_ins_m (h, argc - optind, argv + optind);
+    } else if (!strcmp (cmd, "update")) {
+        mod_update (h);
     } else
         usage ();
 
@@ -108,19 +113,31 @@ static char *flagstr (int flags)
     return s;
 }
 
+static char *idlestr (int idle)
+{
+    char *s;
+    if (idle > 99)
+        s = xstrdup ("idle");
+    else if (asprintf (&s, "%d", idle) < 0)
+        oom ();
+    return s;
+}
+
 static void list_module (const char *key, JSON mo)
 {
     const char *name, *nodelist = NULL;
-    int flags;
-    int size;
-    char *fs;
+    int flags, idle, size;
+    char *fs, *is;
 
     if (!Jget_str (mo, "name", &name) || !Jget_int (mo, "flags", &flags)
-     || !Jget_int (mo, "size", &size) || !Jget_str (mo, "nodelist", &nodelist))
+     || !Jget_int (mo, "size", &size) || !Jget_str (mo, "nodelist", &nodelist)
+     || !Jget_int (mo, "idle", &idle))
         msg_exit ("error parsing lsmod response");
     fs = flagstr (flags);
-    printf ("%-20.20s %6d %-6s %s\n", key, size, fs, nodelist);
+    is = idlestr (idle);
+    printf ("%-20.20s %6d %-6s %4s %s\n", key, size, fs, is, nodelist);
     free (fs);
+    free (is);
 }
 
 static void mod_ls (flux_t h, int rank, int argc, char **argv)
@@ -131,7 +148,8 @@ static void mod_ls (flux_t h, int rank, int argc, char **argv)
 
     if (!(mods = flux_lsmod (h, rank)))
         err_exit ("flux_lsmod");
-    printf ("%-20s %6s %-6s %s\n", "Module", "Size", "Flags", "Nodelist");
+    printf ("%-20s %6s %-6s %4s %s\n",
+            "Module", "Size", "Flags", "Idle", "Nodelist");
     if (argc == 0) {
         json_object_object_foreachC (mods, iter) {
             list_module (iter.key, iter.val);
@@ -152,7 +170,8 @@ static void mod_ls_m (flux_t h, int argc, char **argv)
     JSON lsmod, mods;
     json_object_iter iter;
 
-    printf ("%-20s %6s %-6s %s\n", "Module", "Size", "Flags", "Nodelist");
+    printf ("%-20s %6s %-6s %4s %s\n",
+            "Module", "Size", "Flags", "Idle", "Nodelist");
     if (kvs_get (h, "conf.modctl.lsmod", &lsmod) == 0) {
         if (!Jget_obj (lsmod, "mods", &mods))
             msg_exit ("error parsing lsmod KVS object");
@@ -359,6 +378,12 @@ static void mod_ins_m (flux_t h, int argc, char **argv)
     Jput (args);
     if (trypath)
         free (trypath);
+}
+
+static void mod_update (flux_t h)
+{
+    if (flux_modctl_update (h) < 0)
+        err_exit ("flux_modctl_update");
 }
 
 /*

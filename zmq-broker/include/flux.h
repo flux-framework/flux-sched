@@ -96,7 +96,6 @@ bool flux_treeroot (flux_t h);
 /* Manipulate comms modules.
  * Use rank=-1 for local.
  */
-
 enum {
     FLUX_MOD_FLAGS_MANAGED = 1,
 };
@@ -107,6 +106,9 @@ int flux_insmod (flux_t h, int rank, const char *path, int flags,
 
 int flux_modctl_rm (flux_t h, const char *name);
 int flux_modctl_ins (flux_t h, const char *name);
+int flux_modctl_update (flux_t h);
+
+json_object *flux_lspeer (flux_t h, int rank);
 
 /* Accessor for zeromq context.
  * N.B. The zctx_t is thread-safe but zeromq sockets, and therefore
@@ -141,8 +143,19 @@ char *flux_log_decode (zmsg_t *zmsg, int *lp, char **fp, int *cp,
  * The caller must dispose of the returned string with free ().
  * The following attributes are valid:
  *    cmbd-snoop-uri   The name of the socket to be used by flux-snoop.
+ *    cmbd-parent-uri  The name of parent socket.
+ *    cmbd-request-uri The name of request socket.
  */
-char *flux_getattr (flux_t h, const char *name);
+char *flux_getattr (flux_t h, int rank, const char *name);
+
+/* Reparenting functions.
+ */
+int flux_reparent (flux_t h, int rank, const char *uri);
+int flux_failover (flux_t h, int rank);
+int flux_recover (flux_t h, int rank);
+int flux_recover_all (flux_t h);
+
+int flux_panic (flux_t h, int rank, const char *msg);
 
 /* Message manipulation utility functions
  */
@@ -166,7 +179,7 @@ char *flux_zmsg_tag (zmsg_t *zmsg);
 
 /* Get json object from a zmsg. Caller must call json_object_put().
  */
-json_object *flux_zmsg_json(zmsg_t *zmsg);
+json_object *flux_zmsg_json (zmsg_t *zmsg);
 
 void flux_assfail (flux_t h, char *ass, char *file, int line);
 #define FASSERT(h, exp) if ((exp)); \

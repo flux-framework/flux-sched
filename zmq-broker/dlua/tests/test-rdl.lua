@@ -321,6 +321,30 @@ Hierarchy "default" {
 
 end
 
+function test_find_time ()
+    local rdl = assert (RDL.eval ([[
+uses "Node"
+Hierarchy "default" {
+    Resource{
+        "foo",
+        children = { ListOf{ Node, ids="0-10",
+                             args = { name="bar",
+                                      sockets = { "0-7", "8-16"}
+                                    }
+                           }
+                   }
+    }
+}
+]]))
+    assert_not_nil (rdl)
+    assert_true (is_table (rdl))
+
+    local t0 = require 'timer'.new()
+    local r = assert (rdl:find{ type = "core" })
+    local delta = t0:get0()
+    assert_true (delta < 0.02, "rdl_find took "..delta.." seconds")
+end
+
 function test_accumulator()
     local rdl = assert (RDL.eval ([[
 Hierarchy "default" {
@@ -343,7 +367,7 @@ Hierarchy "default" {
     assert (a:add (r))
     assert (a:add (r.uuid))
 
-    local rdl2 = a:dup ()
+    local rdl2 = assert(a:dup ())
     assert_not_nil (rdl2)
 
     local y = rdl2:aggregate ("default")
@@ -354,7 +378,7 @@ Hierarchy "default" {
 
     local b = rdl2:aggregate ('default')
     local i = require 'inspect'
-    assert (equals (c, b), "Expected ".. i(a) .. " got ".. i(b))
+    assert (equals (c, b), "Expected ".. i(c) .. " got ".. i(b))
     assert (rdl2:find ("default:/foo/bar10"))
 
     local s = a:serialize()
@@ -366,6 +390,62 @@ Hierarchy "default" {
     assert (equals (c, b), "Expected ".. i(a) .. " got ".. i(b))
     assert (rdl2:find ("default:/foo/bar10"))
 
+end
+
+local function print_resource (r, pad)
+    local p = pad or ""
+    local s = string.format ("%s%s\n", (pad or ""), r.name)
+    io.stderr:write (s)
+    for c in r:children() do
+        print_resource (c, p.." ")
+    end
+end
+
+local function rdl_print (rdl)
+    local r = rdl:resource ("default")
+    io.stderr:write ("\n")
+    print_resource (r)
+end
+
+local function assert_aggregate (r, expected)
+    local result = r:aggregate ('default')
+    assert_not_nil (result)
+    local i = require 'inspect'
+    assert (equals (expected, result),
+        "Expected "..i(expected).. " got"..i(result))
+end
+
+function test_accumulator2()
+  local rdl = assert (RDL.eval ([[
+uses "Node"
+Hierarchy "default" {
+    Resource{
+        "foo",
+        children = { ListOf{ Node, ids="0-10",
+                             args = { name="bar",
+                                      sockets = { "0-7", "8-16"}
+                                    }
+                           }
+                   }
+    }
+}
+]]))
+    assert_not_nil (rdl)
+    assert_true (is_table (rdl))
+
+    local a = rdl:resource_accumulator()
+    assert_not_nil (a)
+
+    local r = rdl:resource ("default:/foo/bar1/socket0/core0")
+    assert (a:add (r))
+    assert_aggregate (a, {socket=1,core=1,node=1,foo=1})
+
+    r = rdl:resource ("default:/foo/bar1/socket0/core1")
+    assert_not_nil (r)
+    assert (r.name == "core1")
+    assert (a:add (r))
+    assert (a:resource ("default:/foo/bar1/socket0/core1"))
+    assert_aggregate (a, {socket=1,core=2,node=1,foo=1})
 end
 
 function test_aggregate()

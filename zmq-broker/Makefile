@@ -25,7 +25,8 @@ LDADD_CLI = $(EXTRA_LDFLAGS) -ljson -lzmq -lczmq -lutil -lm -lmunge
 LDADD_SRV = -pthread -rdynamic $(LDADD_CLI) -ldl
 
 COMMON_OBJS = kvscli.o barriercli.o logcli.o cmbdcli.o mrpc.o handle.o \
-	waitqueue.o security.o eventcli.o rankcli.o reduce.o modctlcli.o
+	waitqueue.o security.o eventcli.o rankcli.o reduce.o modctlcli.o \
+	livecli.o
 CMBD_OBJS = plugin.o $(COMMON_OBJS) cmbd.o
 
 FLUX_OBJS = flux.o
@@ -50,7 +51,7 @@ SUBCMDS = libexec/kvs libexec/ping libexec/mecho \
 	libexec/kvswatch libexec/kvsdir libexec/kvstorture \
 	libexec/logger libexec/log libexec/info libexec/kvscopy \
 	libexec/zio libexec/up libexec/host libexec/keygen libexec/mon \
-	libexec/rdltool libexec/mod
+	libexec/rdltool libexec/mod libexec/peer
 
 BUILD = $(LIBCMB) $(LIBPMI) $(LIBRDL) flux echo cmbd \
 	$(PLUGINS) $(SUBCMDS)
