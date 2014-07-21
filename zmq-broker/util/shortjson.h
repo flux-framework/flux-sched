@@ -53,6 +53,17 @@ Jadd_int (JSON o, const char *name, int i)
     json_object_object_add (o, (char *)name, n);
 }
 
+/* Add double to JSON.
+ */
+static __inline__ void
+Jadd_double (JSON o, const char *name, double d)
+{
+    JSON n = json_object_new_double (d);
+    if (!n)
+        oom ();
+    json_object_object_add (o, (char *)name, n);
+}
+
 /* Add string to JSON (caller retains ownership of original).
  */
 static __inline__ void
@@ -91,6 +102,17 @@ Jget_int64 (JSON o, const char *name, int64_t *ip)
     JSON n = json_object_object_get (o, (char *)name);
     if (n)
         *ip = json_object_get_int64 (n);
+    return (n != NULL);
+}
+
+/* Get double from JSON.
+ */
+static __inline__ bool
+Jget_double (JSON o, const char *name, double *dp)
+{
+    JSON n = json_object_object_get (o, (char *)name);
+    if (n)
+        *dp = json_object_get_double (n);
     return (n != NULL);
 }
 
