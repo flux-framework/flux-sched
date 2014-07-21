@@ -5,10 +5,9 @@
 #include "shortjson.h"
 
 typedef struct {
-  int sim_time;
+  double sim_time;
   zhash_t *timers;
 } sim_state_t;
-
 
 sim_state_t *new_simstate ();
 void free_simstate (sim_state_t* sim_state);

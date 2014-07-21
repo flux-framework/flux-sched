@@ -23,7 +23,7 @@ int send_join_request(flux_t h)
 	JSON o = Jnew ();
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
-	Jadd_int (o, "next_event", 100);
+	Jadd_double (o, "next_event", 100);
 	if (flux_request_send (h, o, "%s", "sim.join") < 0){
 		Jput (o);
 		return -1;
@@ -53,7 +53,7 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 {
 	zhash_t * timers = sim_state->timers;
 	JSON o = Jnew();
-	int *new_mod_time;
+	double *new_mod_time;
 	JSON response;
 	int64_t new_jobid;
 	kvsdir_t dir;
@@ -61,7 +61,7 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
     //Send "job.create" and wait for jobid in response
 	Jadd_int (o, "nnodes", 1);
 	Jadd_int (o, "ntasks", 1);
-	Jadd_int (o, "sim_time", sim_state->sim_time);
+	Jadd_double (o, "sim_time", sim_state->sim_time);
 
 	response = flux_rpc (h, o, "job.create");
 	Jget_int64 (response, "jobid", &new_jobid);
@@ -73,15 +73,13 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 	kvs_commit (h);
 
 	//Update event timers in reply (submit and sched)
-	if (false){
-	new_mod_time = (int *) zhash_lookup (timers, module_name);
-	*new_mod_time = sim_state->sim_time + 5;
-	flux_log (h, LOG_DEBUG, "'scheduled' the next job, next submit event will occur at %d", *new_mod_time);
-	}
-	new_mod_time = (int *) zhash_lookup (timers, "sched");
+	new_mod_time = (double *) zhash_lookup (timers, module_name);
+	*new_mod_time = sim_state->sim_time + 2;
+	flux_log (h, LOG_DEBUG, "'scheduled' the next job, next submit event will occur at %f", *new_mod_time);
+	new_mod_time = (double *) zhash_lookup (timers, "sched");
 	if (new_mod_time != NULL)
-		*new_mod_time = sim_state->sim_time + 1;
-	flux_log (h, LOG_DEBUG, "added a sched timer that will occur at %d", *new_mod_time);
+		*new_mod_time = sim_state->sim_time + DBL_MIN;
+	flux_log (h, LOG_DEBUG, "added a sched timer that will occur at %f", *new_mod_time);
 
 	//Cleanup
 	Jput (o);

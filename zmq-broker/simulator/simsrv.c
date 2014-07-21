@@ -27,7 +27,8 @@ typedef struct {
 
 static void freectx (ctx_t *ctx)
 {
-	free_simstate (ctx->sim_state);
+	//TODO: figure out why this causes seg faults
+	//free_simstate (ctx->sim_state);
     free (ctx);
 }
 
@@ -78,12 +79,12 @@ static int handle_next_event (ctx_t *ctx){
 
 	//Get the next occuring event time/module
 	//TODO: convert this block of code into a zhash_foreach function
-	int *min_event_time, *curr_event_time;
+	double *min_event_time, *curr_event_time;
 	char *mod_name, *curr_name;
 	min_event_time = NULL;
 	while (min_event_time == NULL && zlist_size (keys) > 0){
 		mod_name = zlist_pop (keys);
-		min_event_time = (int *) zhash_lookup (timers, mod_name);
+		min_event_time = (double *) zhash_lookup (timers, mod_name);
 		if (*min_event_time < 0){
 			min_event_time = NULL;
 			free (mod_name);
@@ -95,8 +96,10 @@ static int handle_next_event (ctx_t *ctx){
 	}
 	while (zlist_size (keys) > 0){
 		curr_name = zlist_pop (keys);
-		curr_event_time = (int *) zhash_lookup (timers, curr_name);
-		if (*curr_event_time < *min_event_time && *curr_event_time > 0){
+		curr_event_time = (double *) zhash_lookup (timers, curr_name);
+		if ( *curr_event_time > 0 &&
+			 ((*curr_event_time < *min_event_time) ||
+			  (*curr_event_time == *min_event_time && !strcmp (curr_name, "sched")))){
 			free (mod_name);
 			mod_name = curr_name;
 			min_event_time = curr_event_time;
@@ -105,14 +108,14 @@ static int handle_next_event (ctx_t *ctx){
 
 	//advance time then send the trigger to the module with the next event
 	if (*min_event_time > sim_state->sim_time){
-		flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %d to %d while triggering the next event for %s",
+		flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %f to %f while triggering the next event for %s",
 				  sim_state->sim_time, *min_event_time, mod_name);
 		sim_state->sim_time = *min_event_time;
 	}
 	else
 		flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering the next event for %s", mod_name);
 
-	sleep (2);
+	//sleep (5);
 
 	*min_event_time = -1;
 	rc = send_trigger (ctx->h, mod_name, sim_state);
@@ -129,14 +132,14 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON request = NULL;
 	const char *mod_name;
 	int mod_rank;
-	int *next_event = (int *) malloc (sizeof (int));
+	double *next_event = (double *) malloc (sizeof (double));
 	ctx_t *ctx = arg;
 	sim_state_t *sim_state = ctx->sim_state;
 
 	if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
 		|| !Jget_str (request, "mod_name", &mod_name)
 		|| !Jget_int (request, "rank", &mod_rank)
-		|| !Jget_int (request, "next_event", next_event)) {
+		|| !Jget_double (request, "next_event", next_event)) {
 		flux_log (h, LOG_ERR, "%s: bad join message", __FUNCTION__);
 		Jput(request);
 		return 0;
@@ -147,7 +150,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 		return 0;
 	}
 
-	flux_log (h, LOG_DEBUG, "join rcvd from module %s on rank %d, next event at %d", mod_name, mod_rank, *next_event);
+	flux_log (h, LOG_DEBUG, "join rcvd from module %s on rank %d, next event at %f", mod_name, mod_rank, *next_event);
 
 	zhash_t *timers = sim_state->timers;
 	if (zhash_insert (timers, mod_name, next_event) < 0){ //key already exists
@@ -157,9 +160,9 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 	//TODO: this is horribly hackish, improve the handshake to avoid this hardcoded # of modules
 	//maybe use a timeout?
-	static int num_modules = 0;
-	num_modules++;
-	if (num_modules > 1){
+	static int num_modules = 3;
+	num_modules--;
+	if (num_modules <= 0){
 		if (handle_next_event (ctx) < 0){
 			flux_log (h, LOG_ERR, "failure while handling next event");
 			return -1;
@@ -184,9 +187,9 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 {
 	ctx_t *ctx = (ctx_t *) argument;
 	sim_state_t *curr_sim_state = ctx->sim_state;
-	int sim_time = curr_sim_state->sim_time;
-	int *reply_event_time = (int *) item;
-	int *curr_event_time = (int *) zhash_lookup (curr_sim_state->timers, key);
+	double sim_time = curr_sim_state->sim_time;
+	double *reply_event_time = (double *) item;
+	double *curr_event_time = (double *) zhash_lookup (curr_sim_state->timers, key);
 
 	if (*curr_event_time < 0 && *reply_event_time < 0){
 		flux_log (ctx->h, LOG_DEBUG, "no timers found for %s, doing nothing", key);
@@ -217,7 +220,7 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 		return 0;
 	}
 	else {
-		flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time: %d\t reply_time: %d", key, *curr_event_time, *reply_event_time);
+		flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time: %f\t reply_time: %f", key, *curr_event_time, *reply_event_time);
 		return 0;
 	}
 }
