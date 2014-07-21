@@ -136,7 +136,7 @@ static int handle_completed_jobs (ctx_t *ctx)
 		} else {
 			flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
 			update_job_state (ctx, job, "complete");
-			set_event_timer (ctx, "sched", ctx->sim_state->sim_time + DBL_MIN);
+			set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + DBL_MIN);
 			freejob (job);
 		}
 		num_jobs--;

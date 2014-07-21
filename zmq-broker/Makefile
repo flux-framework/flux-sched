@@ -42,7 +42,8 @@ PLUGINS = plugins/api.so plugins/hb.so plugins/kvs.so \
 	plugins/log.so plugins/echo.so plugins/job.so \
 	plugins/resrc.so plugins/rexec.so plugins/sched.so \
 	plugins/event.so plugins/rank.so plugins/mon.so \
-	plugins/modctl.so plugins/sim.so plugins/submit.so
+	plugins/modctl.so plugins/sim.so plugins/submit.so \
+	plugins/model_exec.so plugins/sim_sched.so
 
 SUBCMDS = libexec/kvs libexec/ping libexec/mecho \
 	libexec/stats libexec/barrier libexec/snoop libexec/event \
@@ -64,13 +65,19 @@ plugins/%.so: %srv.c $(LIBUTIL)
 plugins/rexec.so: wreck/wrexecsrv.c $(LIBUTIL)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL)
-plugins/sched.so: wreck/schedsrv.c $(LIBUTIL) $(LIBRDL) $(LIBSIM)
+plugins/sched.so: wreck/schedsrv.c $(LIBUTIL) $(LIBRDL)
 	mkdir -p plugins
-	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL) -L$(LIBDIR) -lrdl $(LIBSIM)
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL) -L$(LIBDIR) -lrdl
+plugins/sim_sched.so: simulator/sim_schedsrv.c $(LIBUTIL) $(LIBRDL) $(LIBSIM)
+	mkdir -p plugins
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBUTIL) -L$(LIBDIR) -lrdl $(LIBSIM) -I./wreck/
 plugins/sim.so: simulator/simsrv.c $(LIBUTIL) $(LIBSIM)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBSIM)
 plugins/submit.so: simulator/submitsrv.c $(LIBUTIL) $(LIBSIM)
+	mkdir -p plugins
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $^
+plugins/model_exec.so: simulator/model_execsrv.c $(LIBUTIL) $(LIBSIM)
 	mkdir -p plugins
 	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ $^
 

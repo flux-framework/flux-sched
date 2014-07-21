@@ -99,7 +99,7 @@ static int handle_next_event (ctx_t *ctx){
 		curr_event_time = (double *) zhash_lookup (timers, curr_name);
 		if ( *curr_event_time > 0 &&
 			 ((*curr_event_time < *min_event_time) ||
-			  (*curr_event_time == *min_event_time && !strcmp (curr_name, "sched")))){
+			  (*curr_event_time == *min_event_time && !strcmp (curr_name, "sim_sched")))){
 			free (mod_name);
 			mod_name = curr_name;
 			min_event_time = curr_event_time;

@@ -76,10 +76,10 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 	new_mod_time = (double *) zhash_lookup (timers, module_name);
 	*new_mod_time = sim_state->sim_time + 2;
 	flux_log (h, LOG_DEBUG, "'scheduled' the next job, next submit event will occur at %f", *new_mod_time);
-	new_mod_time = (double *) zhash_lookup (timers, "sched");
+	new_mod_time = (double *) zhash_lookup (timers, "sim_sched");
 	if (new_mod_time != NULL)
 		*new_mod_time = sim_state->sim_time + DBL_MIN;
-	flux_log (h, LOG_DEBUG, "added a sched timer that will occur at %f", *new_mod_time);
+	flux_log (h, LOG_DEBUG, "added a sim_sched timer that will occur at %f", *new_mod_time);
 
 	//Cleanup
 	Jput (o);
