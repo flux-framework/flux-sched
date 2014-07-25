@@ -18,26 +18,24 @@ static const char const *module_name = "sim_exec";
 
 typedef struct {
 	sim_state_t *sim_state;
-	zlist_t *queued_events;
-	zlist_t *running_jobs;
+	zlist_t *queued_events; //holds int *
+	zlist_t *running_jobs; //holds job_t *
 	flux_t h;
+	double prev_sim_time;
 } ctx_t;
-
-typedef struct {
-	int id;
-	double start_time;
-	double curr_progress;
-	double run_time;
-	kvsdir_t kvs_dir;
-} job_t;
 
 static void freectx (ctx_t *ctx)
 {
-	//TODO: Figure out why this causes seg faults
-	//free_simstate (ctx->sim_state);
-	//TODO: write a foreach loop to pop and free all remaining elements in queued_events
+	free_simstate (ctx->sim_state);
+
+	while (zlist_size (ctx->queued_events) > 0)
+		free (zlist_pop (ctx->queued_events));
 	zlist_destroy (&ctx->queued_events);
+
+	while (zlist_size (ctx->running_jobs) > 0)
+		free_job (zlist_pop (ctx->running_jobs));
 	zlist_destroy (&ctx->running_jobs);
+
     free (ctx);
 }
 
@@ -51,55 +49,39 @@ static ctx_t *getctx (flux_t h)
 		ctx->sim_state = NULL;
 		ctx->queued_events = zlist_new ();
 		ctx->running_jobs = zlist_new ();
+		ctx->prev_sim_time = 0;
         flux_aux_set (h, "simsrv", ctx, (FluxFreeFn)freectx);
     }
 
     return ctx;
 }
 
-static void freejob (job_t *job)
+//Given the kvs dir of a job, change the state of the job and timestamp the change
+static int update_job_state (ctx_t *ctx, kvsdir_t kvs_dir, char* state)
 {
-	kvsdir_destroy (job->kvs_dir);
-	free (job);
-}
-
-static job_t *newjob (flux_t h, int id, int start_time)
-{
-	job_t *job = (job_t *) malloc (sizeof (job_t));
-	job->id = id;
-	job->start_time = start_time;
-	//TODO: make this real
-	job->run_time = 100;
-	job->curr_progress = 0;
-	kvs_get_dir (h, &job->kvs_dir, "lwj.%lu", id);
-	kvsdir_get_double (job->kvs_dir, "runtime", &job->run_time);
-	return job;
-}
-
-static int update_job_state (ctx_t *ctx, job_t *job, char* state)
-{
-	int sim_time = ctx->sim_state->sim_time;
+	double sim_time = ctx->sim_state->sim_time;
 	char *timer_key = NULL;
 
 	asprintf (&timer_key, "%s_time", state);
 
-	kvsdir_put_string (job->kvs_dir, "state", state);
-	kvsdir_put_int (job->kvs_dir, timer_key, sim_time);
+	kvsdir_put_string (kvs_dir, "state", state);
+	kvsdir_put_double (kvs_dir, timer_key, sim_time);
 	kvs_commit (ctx->h);
 
 	free (timer_key);
 	return 0;
 }
 
-static int determine_next_termination (ctx_t *ctx)
+//Calculate when the next job is going to terminate assuming no new jobs are added
+static double determine_next_termination (ctx_t *ctx)
 {
-	int next_termination = -1;
-	int curr_termination = -1;
+	double next_termination = -1;
+	double curr_termination = -1;
 	zlist_t *running_jobs = ctx->running_jobs;
 	job_t *job = zlist_first (running_jobs);
 
 	while (job != NULL){
-		curr_termination = job->start_time + job->run_time;
+		curr_termination = job->start_time + job->execution_time;
 		if (curr_termination < next_termination || next_termination < 0){
 			next_termination = curr_termination;
 		}
@@ -109,6 +91,8 @@ static int determine_next_termination (ctx_t *ctx)
 	return next_termination;
 }
 
+//Set the timer for the given module
+//TODO: move this to simulator.c and make it more universal
 static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 {
 	double *event_timer = zhash_lookup (ctx->sim_state->timers, mod_name);
@@ -119,25 +103,27 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 	return 0;
 }
 
-//Remove completed jobs from list of running jobs
+//Remove completed jobs from the list of running jobs
 //Update sched timer as necessary (to trigger an event in sched)
 //Also change the state of the job in the KVS
 static int handle_completed_jobs (ctx_t *ctx)
 {
+	int curr_progress;
 	job_t *job = NULL;
 	flux_t h = ctx->h;
 	zlist_t *running_jobs = ctx->running_jobs;
 	int num_jobs = zlist_size (running_jobs);
 	while (num_jobs > 0){
 		job = zlist_pop (running_jobs);
-		job->curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time))/job->run_time;
-		if (job->curr_progress < 1){
+		curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time))/(job->execution_time + job->io_time);
+		if (curr_progress < 1){
 			zlist_append (running_jobs, job);
 		} else {
 			flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
-			update_job_state (ctx, job, "complete");
+			update_job_state (ctx, job->kvs_dir, "complete");
 			set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + DBL_MIN);
-			freejob (job);
+			kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
+			free_job (job);
 		}
 		num_jobs--;
 	}
@@ -145,26 +131,33 @@ static int handle_completed_jobs (ctx_t *ctx)
 	return 0;
 }
 
+//Take all of the scheduled job eventst that were queued up while we weren't running
+//and add those jobs to the set of running jobs
+//This also requires switching their state in the kvs (to trigger events in the scheudler)
 static int handle_queued_events (ctx_t *ctx)
 {
 	job_t *job = NULL;
 	int *jobid = NULL;
+	kvsdir_t kvs_dir;
 	flux_t h = ctx->h;
 	zlist_t *queued_events = ctx->queued_events;
 	zlist_t *running_jobs = ctx->running_jobs;
 
 	while (zlist_size (queued_events) > 0){
 		jobid = zlist_pop (queued_events);
-		job = newjob (h, *jobid, ctx->sim_state->sim_time);
-		if (update_job_state (ctx, job, "starting") < 0){
+		if (kvs_get_dir (h, &kvs_dir, "lwj.%d", *jobid) < 0)
+			err_exit ("kvs_get_dir (id=%d)", *jobid);
+		job = pull_job_from_kvs (kvs_dir);
+		if (update_job_state (ctx, kvs_dir, "starting") < 0){
 			flux_log (h, LOG_ERR, "failed to set job %d's state to starting", *jobid);
 			return -1;
 		}
-		if (update_job_state (ctx, job, "running") < 0){
+		if (update_job_state (ctx, kvs_dir, "running") < 0){
 			flux_log (h, LOG_ERR, "failed to set job %d's state to running", *jobid);
 			return -1;
 		}
 		flux_log (h, LOG_DEBUG, "job %d's state to starting then running", *jobid);
+		job->start_time = ctx->sim_state->sim_time;
 		zlist_append (running_jobs, job);
 	}
 

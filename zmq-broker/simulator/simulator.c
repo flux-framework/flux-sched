@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -107,4 +108,93 @@ sim_state_t* json_to_sim_state(JSON o)
 	}
 
 	return sim_state;
+}
+
+void free_job (job_t *job)
+{
+	free (job->user);
+	free (job->jobname);
+	free (job->account);
+	kvsdir_destroy (job->kvs_dir);
+	free (job);
+}
+
+job_t *blank_job ()
+{
+	job_t *job = malloc (sizeof (job_t));
+	job->id = -1;
+	job->user = NULL;
+	job->jobname = NULL;
+	job->account = NULL;
+	job->submit_time = 0;
+	job->start_time = 0;
+	job->execution_time = 0;
+	job->io_time = 0;
+	job->time_limit = 0;
+	job->nnodes = 0;
+	job->ncpus = 0;
+	job->kvs_dir = NULL;
+	return job;
+}
+
+int put_job_in_kvs (job_t *job)
+{
+	if (job->kvs_dir == NULL)
+		return -1;
+
+	if (!kvsdir_exists (job->kvs_dir, "user"))
+		kvsdir_put_string (job->kvs_dir, "user", job->user);
+	if (!kvsdir_exists (job->kvs_dir, "jobname"))
+		kvsdir_put_string (job->kvs_dir, "jobname", job->jobname);
+	if (!kvsdir_exists (job->kvs_dir, "account"))
+		kvsdir_put_string (job->kvs_dir, "account", job->account);
+	if (!kvsdir_exists (job->kvs_dir, "submit_time"))
+		kvsdir_put_double (job->kvs_dir, "submit_time", job->submit_time);
+	if (!kvsdir_exists (job->kvs_dir, "execution_time"))
+		kvsdir_put_double (job->kvs_dir, "execution_time", job->execution_time);
+	if (!kvsdir_exists (job->kvs_dir, "time_limit"))
+		kvsdir_put_double (job->kvs_dir, "time_limit", job->time_limit);
+	if (!kvsdir_exists (job->kvs_dir, "nnodes"))
+		kvsdir_put_int (job->kvs_dir, "nnodes", job->nnodes);
+	if (!kvsdir_exists (job->kvs_dir, "ncpus"))
+		kvsdir_put_int (job->kvs_dir, "ncpus", job->ncpus);
+	if (!kvsdir_exists (job->kvs_dir, "io_size"))
+		kvsdir_put_double (job->kvs_dir, "io_size", job->io_size);
+	if (!kvsdir_exists (job->kvs_dir, "io_freq"))
+		kvsdir_put_double (job->kvs_dir, "io_freq", job->io_freq);
+
+	flux_t h = kvsdir_handle (job->kvs_dir);
+	kvs_commit (h);
+
+	//TODO: Check to see if this is necessary, i assume the kvsdir becomes stale after a commit
+	char *dir_key;
+	asprintf (&dir_key, kvsdir_key (job->kvs_dir));
+	kvsdir_destroy (job->kvs_dir);
+	kvs_get_dir (h, &job->kvs_dir, dir_key);
+	free (dir_key);
+
+	return 0;
+}
+
+job_t *pull_job_from_kvs (kvsdir_t kvsdir)
+{
+	job_t *job = blank_job();
+
+	job->kvs_dir = kvsdir;
+
+	kvsdir_get_int (job->kvs_dir, "id", &job->id);
+	kvsdir_get_string (job->kvs_dir, "user", &job->user);
+	kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
+	kvsdir_get_string (job->kvs_dir, "account", &job->account);
+	kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time);
+	kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
+	kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time);
+	kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
+	kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
+	kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
+	kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
+	kvsdir_get_double (job->kvs_dir, "io_size", &job->io_size);
+	kvsdir_get_double (job->kvs_dir, "io_freq", &job->io_freq);
+
+	return job;
 }

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -13,17 +14,157 @@
 #include "plugin.h"
 #include "simulator.h"
 
-
 static const char const *module_name = "submit";
-//static flux_t h = NULL;
+static zlist_t *jobs;  //TODO: remove from "global" scope
+
+//Compare two job_t's based on submit time
+//Return true if they should be swapped
+//AKA job1 was submitted after job2
+bool compare_job_t (void *item1, void *item2)
+{
+	job_t *job1 = (job_t *) item1;
+	job_t *job2 = (job_t *) item2;
+	return job1->submit_time > job2->submit_time;
+}
+
+//Figure out when the next submit time is
+//This assumes the list is sorted by submit time
+double get_next_submit_time ()
+{
+	job_t *job;
+	if (zlist_size (jobs) > 0){
+		job = zlist_head (jobs);
+		return job->submit_time;
+	}
+	return -1;
+}
+
+//Convert the string representation of time in the csv to sec
+double convert_time_to_sec (char* time)
+{
+	int hours, minutes, seconds;
+	sscanf (time, "%d:%d:%d", &hours, &minutes, &seconds);
+	return (double) ((hours * 3600) + (minutes * 60) + seconds);
+}
+
+//Populate a field in the job_t based off a value extracted from the csv
+int insert_into_job (job_t *job, char *column_name, char *value)
+{
+	if (!strcmp (column_name, "JobID")){
+		job->id = atoi (value);
+	}
+	else if (!strcmp (column_name, "User")){
+		asprintf (&job->user, "%s", value);
+	}
+	else if (!strcmp (column_name, "JobName")){
+		asprintf (&job->jobname, "%s", value);
+	}
+	else if (!strcmp (column_name, "Account")){
+		asprintf (&job->account, "%s", value);
+	}
+	else if (!strcmp (column_name, "NNodes")){
+		job->nnodes = atoi (value);
+	}
+	else if (!strcmp (column_name, "NCPUS")){
+		job->ncpus = atoi (value);
+	}
+	else if (!strcmp (column_name, "Timelimit")){
+		job->time_limit = convert_time_to_sec (value);
+	}
+	else if (!strcmp (column_name, "Submit")){
+		job->submit_time = atof (value);
+	}
+	else if (!strcmp (column_name, "Elapsed")){
+		job->execution_time = convert_time_to_sec (value);
+	}
+	else if (!strcmp (column_name, "IOFreq(min)")){
+		job->io_freq = atoi (value) * 60; //convert min to sec
+	}
+	else if (!strncmp (column_name, "IOSize(MB)", 10)){ //ignore the \n at the end using strncmp
+		job->io_size = atoi (value) * 1024 * 1024; //convert MB to bytes
+	}
+	return 0;
+}
+
+//Take the header string from the csv and tokenize it based on the ","
+//Then insert each column name into a zlist
+int populate_header (char *header_line, zlist_t *header_list)
+{
+	char *token_copy, *token;
+	token = strtok (header_line, ",");
+	while (token != NULL) {
+		asprintf (&token_copy, "%s", token);
+ 		zlist_append (header_list, token_copy);
+		token = strtok (NULL, ",");
+	}
+	return 0;
+}
+
+//Populate a list of jobs using the data contained in the csv
+//TODO: breakup this function into several smaller functions
+int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
+{
+	const int MAX_LINE_LEN = 500; //sort of arbitrary, works for my data
+	char curr_line [MAX_LINE_LEN]; //current line of the input file
+	zlist_t *header = NULL; //column names
+	char *fget_rc = NULL; //stores the return code of fgets
+	char *token = NULL; //current token from the current line
+	char *curr_column = NULL; //current column name (pulled from header)
+	job_t *curr_job = NULL; //current job object that we are populating
+
+	FILE *fp = fopen (filename, "r");
+	if (fp == NULL){
+		flux_log (h, LOG_ERR, "csv failed to open");
+		return -1;
+	}
+
+	//Populate the header list of column names
+	header = zlist_new();
+	fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
+	if (fget_rc != NULL && feof (fp) == 0) {
+		populate_header (curr_line, header);
+		fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
+		curr_column = zlist_first (header);
+	}
+
+	//Start making jobs from the actual data
+	while (fget_rc != NULL && feof (fp) == 0) {
+		curr_job = blank_job();
+		token = strtok (curr_line, ",");
+		//Walk through even column in record and insert the data into the job
+		while (token != NULL) {
+			if (curr_column == NULL){
+				flux_log (h, LOG_ERR, "column name is NULL");
+				return -1;
+			}
+			insert_into_job (curr_job, curr_column, token);
+			token = strtok (NULL, ",");
+			curr_column = zlist_next (header);
+		}
+		zlist_append (jobs, curr_job);
+		fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
+		curr_column = zlist_first (header);
+	}
+	zlist_sort (jobs, compare_job_t);
+
+	//Cleanup
+	while (zlist_size (header) > 0)
+		free (zlist_pop (header));
+	zlist_destroy (&header);
+	if (fclose (fp) != 0){
+		flux_log (h, LOG_ERR, "csv file failed to close");
+		return -1;
+	}
+	return 0;
+}
 
 //Request to join the simulation
-int send_join_request(flux_t h)
+int send_join_request (flux_t h)
 {
 	JSON o = Jnew ();
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
-	Jadd_double (o, "next_event", 100);
+	Jadd_double (o, "next_event", get_next_submit_time());
 	if (flux_request_send (h, o, "%s", "sim.join") < 0){
 		Jput (o);
 		return -1;
@@ -33,7 +174,7 @@ int send_join_request(flux_t h)
 }
 
 //Reply back to the sim module with the updated sim state (in JSON form)
-int send_reply_request(flux_t h, sim_state_t *sim_state)
+int send_reply_request (flux_t h, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
 	Jadd_bool (o, "event_finished", true);
@@ -49,7 +190,7 @@ int send_reply_request(flux_t h, sim_state_t *sim_state)
 //Based on the sim_time, schedule any jobs that need to be scheduled
 //Next, add an event timer for the scheduler to the sim_state
 //Finally, updated the submit event timer with the next submit time
-int schedule_next_job(flux_t h, sim_state_t *sim_state)
+int schedule_next_job (flux_t h, sim_state_t *sim_state)
 {
 	zhash_t * timers = sim_state->timers;
 	JSON o = Jnew();
@@ -57,11 +198,18 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 	JSON response;
 	int64_t new_jobid = -1;
 	kvsdir_t dir;
+	job_t *job;
 
-    //Send "job.create" and wait for jobid in response
-	Jadd_int (o, "nnodes", 1);
-	Jadd_int (o, "ntasks", 1);
-	Jadd_double (o, "sim_time", sim_state->sim_time);
+	//Get the next job to submit
+	//Then craft a "job.create" from the job_t and wait for jobid in response
+	job = zlist_pop (jobs);
+	if (job == NULL) {
+		flux_log (h, LOG_ERR, "no more jobs to submit");
+		Jput (o);
+		return -1;
+	}
+	Jadd_int (o, "nnodes", job->nnodes);
+	Jadd_int (o, "ntasks", job->ncpus);
 
 	response = flux_rpc (h, o, "job.create");
 	Jget_int64 (response, "jobid", &new_jobid);
@@ -70,18 +218,21 @@ int schedule_next_job(flux_t h, sim_state_t *sim_state)
 	if (kvs_get_dir (h, &dir, "lwj.%lu", new_jobid) < 0)
         err_exit ("kvs_get_dir (id=%lu)", new_jobid);
 	kvsdir_put_string (dir, "state", "submitted");
+	job->kvs_dir = dir;
+	put_job_in_kvs (job);
 	kvs_commit (h);
 
 	//Update event timers in reply (submit and sched)
-	new_mod_time = (double *) zhash_lookup (timers, module_name);
-	*new_mod_time = sim_state->sim_time + 2;
-	flux_log (h, LOG_DEBUG, "'scheduled' the next job, next submit event will occur at %f", *new_mod_time);
 	new_mod_time = (double *) zhash_lookup (timers, "sim_sched");
 	if (new_mod_time != NULL)
 		*new_mod_time = sim_state->sim_time + DBL_MIN;
 	flux_log (h, LOG_DEBUG, "added a sim_sched timer that will occur at %f", *new_mod_time);
+	new_mod_time = (double *) zhash_lookup (timers, module_name);
+	*new_mod_time = get_next_submit_time();
+	flux_log (h, LOG_DEBUG, "'scheduled' the next job (%d), next submit event will occur at %f", job->id, *new_mod_time);
 
 	//Cleanup
+	free_job (job);
 	Jput (o);
 	return 0;
 }
@@ -147,11 +298,21 @@ const int htablen = sizeof (htab) / sizeof (htab[0]);
 
 int mod_main(flux_t h, zhash_t *args)
 {
+	char *csv_filename;
 	if (flux_rank (h) != 0) {
 		flux_log (h, LOG_ERR, "submit module must only run on rank 0");
 		return -1;
 	}
 	flux_log (h, LOG_INFO, "submit comms module starting");
+
+	//Get the job data from the csv
+	if (!(csv_filename = zhash_lookup (args, "job-csv"))) {
+		flux_log (h, LOG_ERR, "job-csv argument is not set");
+        return -1;
+	}
+	jobs = zlist_new ();
+	parse_job_csv (h, csv_filename, jobs);
+	flux_log (h, LOG_INFO, "submit comms module finished parsing job data");
 
 	if (flux_event_subscribe (h, "sim.start") < 0){
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));

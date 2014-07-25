@@ -469,8 +469,7 @@ allocate_resources (struct resource *fr, struct rdl_accumulator *a,
             rdl_resource_tag (r, lwjtag);
             rdl_resource_delete_tag (r, IDLETAG);
             rdl_accumulator_add (a, r);
-            flux_log (h, LOG_DEBUG, "allocated core: %s",
-                      json_object_to_json_string (o));
+            //flux_log (h, LOG_DEBUG, "allocated core: %s", json_object_to_json_string (o));
         }
     }
     free (lwjtag);
@@ -507,8 +506,7 @@ update_job_cores (struct resource *jr, flux_lwj_t *job,
     if (jr) {
         o = rdl_resource_json (jr);
         if (o) {
-            flux_log (h, LOG_DEBUG, "updating: %s",
-                      json_object_to_json_string (o));
+            //flux_log (h, LOG_DEBUG, "updating: %s", json_object_to_json_string (o));
         } else {
             flux_log (h, LOG_ERR, "update_job_cores invalid resource");
             rc = -1;
@@ -682,6 +680,10 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
  *
  ****************************************************************/
 
+//Set the timer for sim_exec to happen relatively soon
+//It shouldn't happen immediately because the scheduler still
+//needs to transition through 3->4 states before the sim_exec
+//module can actually "exec" a job
 static void set_exec_timer ()
 {
 	double *old_time = zhash_lookup (sim_state->timers, "sim_exec");
@@ -775,8 +777,7 @@ release_lwj_resource (struct rdl *rdl, struct resource *jr, int64_t lwj_id)
             rdl_resource_tag (r, IDLETAG);
             free (lwjtag);
         }
-        flux_log (h, LOG_DEBUG, "resource released: %s",
-                  json_object_to_json_string (o));
+        //flux_log (h, LOG_DEBUG, "resource released: %s", json_object_to_json_string (o));
         json_object_put (o);
 
         while (!rc && (c = rdl_resource_next_child (jr))) {

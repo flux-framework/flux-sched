@@ -27,8 +27,7 @@ typedef struct {
 
 static void freectx (ctx_t *ctx)
 {
-	//TODO: figure out why this causes seg faults
-	//free_simstate (ctx->sim_state);
+	free_simstate (ctx->sim_state);
     free (ctx);
 }
 
@@ -115,7 +114,7 @@ static int handle_next_event (ctx_t *ctx){
 	else
 		flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering the next event for %s", mod_name);
 
-	//sleep (5);
+	//usleep (15000);
 
 	*min_event_time = -1;
 	rc = send_trigger (ctx->h, mod_name, sim_state);
