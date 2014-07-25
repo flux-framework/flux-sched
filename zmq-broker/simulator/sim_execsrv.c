@@ -115,7 +115,10 @@ static int handle_completed_jobs (ctx_t *ctx)
 	int num_jobs = zlist_size (running_jobs);
 	while (num_jobs > 0){
 		job = zlist_pop (running_jobs);
-		curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time))/(job->execution_time + job->io_time);
+		if (job->execution_time > 0)
+			curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time))/(job->execution_time + job->io_time);
+		else
+			curr_progress = 1;
 		if (curr_progress < 1){
 			zlist_append (running_jobs, job);
 		} else {

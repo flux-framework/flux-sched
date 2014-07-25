@@ -300,7 +300,7 @@ int mod_main(flux_t h, zhash_t *args)
 		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
 		return -1;
 	}
-	sleep(1);
+	sleep(2);
 	flux_log (h, LOG_DEBUG, "sim left sleep");
 	if (send_start_event (h) < 0){
 		flux_log (h, LOG_ERR, "sim failed to send start event");
