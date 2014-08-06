@@ -92,7 +92,6 @@ static double determine_next_termination (ctx_t *ctx)
 }
 
 //Set the timer for the given module
-//TODO: move this to simulator.c and make it more universal
 static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 {
 	double *event_timer = zhash_lookup (ctx->sim_state->timers, mod_name);
@@ -103,20 +102,53 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 	return 0;
 }
 
+static int print_next_completing (zlist_t *running_list, ctx_t *ctx)
+{
+	flux_t h = ctx->h;
+	job_t *max_job = zlist_first (running_list);
+	double max_progress = ((double)(ctx->sim_state->sim_time - max_job->start_time + .000001))/(max_job->execution_time + max_job->io_time);
+	job_t *curr_job = zlist_next (running_list);
+	double curr_progress;
+	while (curr_job != NULL) {
+		curr_progress = ((double)(ctx->sim_state->sim_time - curr_job->start_time + .000001))/(curr_job->execution_time + curr_job->io_time);
+		if (curr_progress > max_progress) {
+			max_job = curr_job;
+			max_progress = curr_progress;
+		}
+		curr_job = zlist_next (running_list);
+	}
+	flux_log (h, LOG_DEBUG, "Next Completing Job:");
+	flux_log (h, LOG_DEBUG, "\tID: %d", max_job->id);
+	flux_log (h, LOG_DEBUG, "\tStartTime: %f", max_job->start_time);
+	flux_log (h, LOG_DEBUG, "\tExecutionTime: %f", max_job->execution_time);
+	flux_log (h, LOG_DEBUG, "\tIOTime: %f", max_job->io_time);
+	flux_log (h, LOG_DEBUG, "\tProgress: %f", max_progress);
+	flux_log (h, LOG_DEBUG, "Other info");
+	flux_log (h, LOG_DEBUG, "\tSimTime: %f", ctx->sim_state->sim_time);
+	double completion_time = max_job->start_time + (max_job->execution_time + max_job->io_time);
+	flux_log (h, LOG_DEBUG, "\tCompletion Time: %f", completion_time);
+	flux_log (h, LOG_DEBUG, "\tSimTime == Comp Time: %s", ctx->sim_state->sim_time == completion_time ? "true" : "false");
+	flux_log (h, LOG_DEBUG, "\tmax_progress is %s 1", max_progress < 1 ? "less than" : "greater than or equal to");
+	return 0;
+}
+
 //Remove completed jobs from the list of running jobs
 //Update sched timer as necessary (to trigger an event in sched)
 //Also change the state of the job in the KVS
 static int handle_completed_jobs (ctx_t *ctx)
 {
-	int curr_progress;
-	job_t *job = NULL;
+	double curr_progress;
 	flux_t h = ctx->h;
 	zlist_t *running_jobs = ctx->running_jobs;
+	job_t *job = NULL;
 	int num_jobs = zlist_size (running_jobs);
+
+	print_next_completing (running_jobs, ctx);
+
 	while (num_jobs > 0){
 		job = zlist_pop (running_jobs);
 		if (job->execution_time > 0)
-			curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time))/(job->execution_time + job->io_time);
+			curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time + .000001))/(job->execution_time + job->io_time);
 		else
 			curr_progress = 1;
 		if (curr_progress < 1){
@@ -124,7 +156,7 @@ static int handle_completed_jobs (ctx_t *ctx)
 		} else {
 			flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
 			update_job_state (ctx, job->kvs_dir, "complete");
-			set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + DBL_MIN);
+			set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + .00001);
 			kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
 			free_job (job);
 		}
@@ -174,7 +206,7 @@ static int send_join_request(flux_t h)
 	JSON o = Jnew ();
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
-	Jadd_double (o, "next_event", 100);
+	Jadd_double (o, "next_event", -1);
 	if (flux_request_send (h, o, "%s", "sim.join") < 0){
 		Jput (o);
 		return -1;
@@ -226,7 +258,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON o;
 	const char *json_string;
 	char *tag;
-	int next_termination;
+	double next_termination;
 	ctx_t *ctx = (ctx_t *) arg;
 
 	if (cmb_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
@@ -305,6 +337,9 @@ int mod_main(flux_t h, zhash_t *args)
 		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
 		return -1;
 	}
+
+	send_alive_request (h, module_name);
+
 	if (flux_reactor_start (h) < 0) {
 		flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
 		return -1;

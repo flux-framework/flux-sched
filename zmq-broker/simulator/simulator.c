@@ -43,7 +43,7 @@ void free_simstate (sim_state_t* sim_state)
 {
 	if (sim_state != NULL){
 		if (sim_state->timers != NULL){
-			//zhash_destroy (& (sim_state->timers));
+			zhash_destroy (& (sim_state->timers));
 		}
 		free (sim_state);
 		return;
@@ -182,7 +182,7 @@ job_t *pull_job_from_kvs (kvsdir_t kvsdir)
 
 	job->kvs_dir = kvsdir;
 
-	kvsdir_get_int (job->kvs_dir, "id", &job->id);
+	sscanf (kvsdir_key (job->kvs_dir), "lwj.%d", &job->id);
 	kvsdir_get_string (job->kvs_dir, "user", &job->user);
 	kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
 	kvsdir_get_string (job->kvs_dir, "account", &job->account);
@@ -197,4 +197,17 @@ job_t *pull_job_from_kvs (kvsdir_t kvsdir)
 	kvsdir_get_double (job->kvs_dir, "io_freq", &job->io_freq);
 
 	return job;
+}
+
+int send_alive_request (flux_t h, const char* module_name)
+{
+	JSON o = Jnew ();
+	Jadd_str (o, "mod_name", module_name);
+	Jadd_int (o, "rank", flux_rank (h));
+	if (flux_request_send (h, o, "%s", "sim.alive") < 0){
+		Jput (o);
+		return -1;
+	}
+	Jput (o);
+	return 0;
 }

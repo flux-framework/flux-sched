@@ -61,6 +61,22 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 	return 0;
 }
 
+//Send out a call to all modules that the simulation is starting
+//and that they should join
+int send_start_event(flux_t h)
+{
+	JSON o = Jnew();
+	Jadd_str (o, "mod_name", "sim");
+	Jadd_int (o, "rank", flux_rank(h));
+	Jadd_int (o, "sim_time", 0);
+	if (flux_event_send (h, o, "%s", "sim.start") < 0){
+		Jput(o);
+		return -1;
+	}
+	Jput(o);
+	return 0;
+}
+
 //Looks at the current state and launches the next trigger
 static int handle_next_event (ctx_t *ctx){
 	zhash_t *timers;
@@ -213,7 +229,7 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 		flux_log (ctx->h, LOG_ERR, "incoming modified time is before sim time for %s", key);
 		return -1;
 	}
-	else if (*reply_event_time >= sim_time && *reply_event_time <= *curr_event_time){
+	else if (*reply_event_time >= sim_time && *reply_event_time < *curr_event_time){
 		*curr_event_time = *reply_event_time;
 		flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
 		return 0;
@@ -265,25 +281,35 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	return 0;
 }
 
-//Send out a call to all modules that the simulation is starting
-//and that they should join
-int send_start_event(flux_t h)
+static int alive_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
-	JSON o = Jnew();
-	Jadd_str (o, "mod_name", "sim");
-	Jadd_int (o, "rank", flux_rank(h));
-	Jadd_int (o, "sim_time", 0);
-	if (flux_event_send (h, o, "%s", "sim.start") < 0){
-		Jput(o);
+	JSON request = NULL;
+	const char *json_string;
+
+	if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL) {
+		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
+		Jput(request);
+		return 0;
+	}
+
+	json_string = Jtostr (request);
+	flux_log (h, LOG_DEBUG, "received alive request - %s", json_string);
+
+	if (send_start_event (h) < 0){
+		flux_log (h, LOG_ERR, "sim failed to send start event");
 		return -1;
 	}
-	Jput(o);
+	flux_log (h, LOG_DEBUG, "sending start event again");
+
+	Jput(request);
+	zmsg_destroy(zmsg);
 	return 0;
 }
 
 static msghandler_t htab[] = {
     { FLUX_MSGTYPE_REQUEST, "sim.join",       join_cb },
     { FLUX_MSGTYPE_REQUEST, "sim.reply",      reply_cb },
+    { FLUX_MSGTYPE_REQUEST, "sim.alive",      alive_cb },
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
@@ -300,7 +326,7 @@ int mod_main(flux_t h, zhash_t *args)
 		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
 		return -1;
 	}
-	sleep(2);
+	sleep(1);
 	flux_log (h, LOG_DEBUG, "sim left sleep");
 	if (send_start_event (h) < 0){
 		flux_log (h, LOG_ERR, "sim failed to send start event");

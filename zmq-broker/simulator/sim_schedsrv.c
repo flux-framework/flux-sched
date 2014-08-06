@@ -13,6 +13,8 @@
 #include <czmq.h>
 #include <json/json.h>
 #include <dlfcn.h>
+#include <time.h>
+#include <inttypes.h>
 
 #include "util.h"
 #include "log.h"
@@ -62,6 +64,7 @@ static const char* CORETYPE = "core";
 static bool in_sim = false;
 static sim_state_t *sim_state = NULL;
 static zlist_t *kvs_queue = NULL;
+static zlist_t *timer_queue = NULL;
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -78,6 +81,32 @@ static struct stab_struct jobstate_tab[] = {
     { j_reaped,    "reaped" },
     { -1, NULL },
 };
+
+//Set the timer for "module" to happen relatively soon
+//If the mod is sim_exec, it shouldn't happen immediately
+//because the scheduler still needs to transition through
+//3->4 states before the sim_exec module can actually "exec" a job
+static void set_next_event(const char* module)
+{
+	double next_event;
+	double *timer = zhash_lookup (sim_state->timers, module);
+	next_event = sim_state->sim_time + ( (!strcmp (module, "sim_exec")) ? .0001 : .00001);
+	if (*timer > next_event || *timer < 0){
+		*timer = next_event;
+		flux_log (h, LOG_DEBUG, "next %s event set for %f", module, next_event);
+	}
+}
+
+static void handle_timer_queue ()
+{
+	while (zlist_size (timer_queue) > 0)
+		set_next_event (zlist_pop (timer_queue));
+}
+
+static void queue_timer_change (const char* module)
+{
+	zlist_append (timer_queue, (void *) module);
+}
 
 /****************************************************************
  *
@@ -143,12 +172,7 @@ signal_event ( )
 {
     int rc = 0;
 	if (in_sim && sim_state != NULL){
-		double *timer = zhash_lookup (sim_state->timers, module_name);
-		double next_event = sim_state->sim_time + DBL_MIN;
-		if (*timer > next_event || *timer < 0){
-			*timer = next_event;
-			flux_log (h, LOG_DEBUG, "next sched event set for %f", next_event);
-		}
+		queue_timer_change (module_name);
 		//send_reply_request (h, sim_state);
 		goto ret;
 	}
@@ -261,7 +285,7 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
                   job->lwj_id, state, strerror (errno));
     } else {
         rc = 0;
-        flux_log (h, LOG_DEBUG, "updating job %ld state to %s",
+        flux_log (h, LOG_DEBUG, "updated job %ld's state in the kvs to %s",
                   job->lwj_id, state);
     }
 
@@ -457,6 +481,7 @@ allocate_resources (struct resource *fr, struct rdl_accumulator *a,
     if (job->req.nnodes && (strcmp (type, "node") == 0)) {
         job->req.nnodes--;
         job->alloc.nnodes++;
+		//flux_log (h, LOG_DEBUG, "allocated node: %s", json_object_to_json_string (o));
     } else if (job->req.ncores && (strcmp (type, CORETYPE) == 0) &&
                (job->req.ncores > job->req.nnodes)) {
         /* We put the (job->req.ncores > job->req.nnodes) requirement
@@ -575,6 +600,8 @@ update_job_resources (flux_lwj_t *job)
 
     if (jr)
         rc = update_job_cores (jr, job, &node, &cores);
+    else
+        flux_log (h, LOG_ERR, "update_job_resources passed a null resource");
 
     return rc;
 }
@@ -586,12 +613,14 @@ update_job_resources (flux_lwj_t *job)
 static int
 update_job (flux_lwj_t *job)
 {
+	flux_log (h, LOG_DEBUG, "updating job %ld", job->lwj_id);
     int rc = -1;
 
     if (update_job_state (job, j_allocated)) {
         flux_log (h, LOG_ERR, "update_job failed to update job %ld to %s",
                   job->lwj_id, stab_rlookup (jobstate_tab, j_allocated));
     } else if (update_job_resources(job)) {
+		kvs_commit (h);
         flux_log (h, LOG_ERR, "update_job %ld resrc update failed", job->lwj_id);
     } else if (kvs_commit (h) < 0) {
         flux_log (h, LOG_ERR, "kvs_commit error!");
@@ -599,6 +628,7 @@ update_job (flux_lwj_t *job)
         rc = 0;
     }
 
+	flux_log (h, LOG_DEBUG, "updated job %ld", job->lwj_id);
     return rc;
 }
 
@@ -622,6 +652,8 @@ int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "schedule_job invalid arguments");
         goto ret;
     }
+
+	flux_log (h, LOG_DEBUG, "beginning the scheduling of job %ld", job->lwj_id);
 
     util_json_object_add_string (args, "tag", IDLETAG);
     frdl = rdl_find (rdl, args);
@@ -649,9 +681,14 @@ int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
             rdl_resource_iterator_reset (fr);
             a = rdl_accumulator_create (rdl);
             if (allocate_resources (fr, a, job)) {
+				flux_log (h, LOG_DEBUG, "allocate_resources \"succeeded\"");
                 job->rdl = rdl_accumulator_copy (a);
+                job->state = j_submitted;
                 rc = update_job (job);
             }
+			else
+				flux_log (h, LOG_DEBUG, "allocate_resources \"failed\"");
+			rdl_accumulator_destroy (a);
         }
         rdl_destroy (frdl);
     }
@@ -666,10 +703,12 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
 
     job = zlist_first (jobs);
     while (!rc && job) {
-        rc = schedule_job(rdl, uri, job);
+		flux_log (h, LOG_DEBUG, "Iterating over job %ld in jobs list", job->lwj_id);
+		if (job->state == j_unsched)
+			rc = schedule_job(rdl, uri, job);
         job = zlist_next (jobs);
     }
-
+	flux_log (h, LOG_DEBUG, "Finished iterating over the jobs list");
     return rc;
 }
 
@@ -679,22 +718,6 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
  *         Actions Led by Current State + an Event
  *
  ****************************************************************/
-
-//Set the timer for sim_exec to happen relatively soon
-//It shouldn't happen immediately because the scheduler still
-//needs to transition through 3->4 states before the sim_exec
-//module can actually "exec" a job
-static void set_exec_timer ()
-{
-	double *old_time = zhash_lookup (sim_state->timers, "sim_exec");
-	double new_time = sim_state->sim_time + (DBL_MIN * 100);
-	if (*old_time > new_time || *old_time < 0){
-		*old_time = new_time;
-		flux_log (h, LOG_DEBUG, "set timer for sim_exec as %f", new_time);
-	}
-
-	return;
-}
 
 static int
 request_run (flux_lwj_t *job)
@@ -857,6 +880,7 @@ action_j_event (flux_event_t *e)
         }
         flux_log (h, LOG_DEBUG, "setting %ld to submitted state",
                   e->lwj->lwj_id);
+        e->lwj->state = j_unsched;
         schedule_jobs (rdl, resource, p_queue);
         break;
 
@@ -884,7 +908,7 @@ action_j_event (flux_event_t *e)
         }
         e->lwj->state = j_runrequest;
 		if (in_sim)
-			set_exec_timer ();
+			queue_timer_change ("sim_exec");
         break;
 
     case j_runrequest:
@@ -1199,6 +1223,8 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON o;
 	char *tag;
+	clock_t start, diff;
+	double seconds;
 
 	if (cmb_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
@@ -1209,13 +1235,28 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
 
 	sim_state = json_to_sim_state (o);
+
+	start = clock();
+
 	handle_kvs_queue();
 	event_cb (h, typemask, zmsg, arg);
+
+	diff = clock() - start;
+	seconds = ((double) diff) / CLOCKS_PER_SEC;
+	sim_state->sim_time += seconds;
+
+	//sleep (1); //for debugging, hopefully with flush print buf
+
+	handle_timer_queue();
+
 	send_reply_request (h, sim_state);
+
+	Jput (o);
+	zmsg_destroy (zmsg);
 	return 0;
 }
 
-int send_join_request(flux_t h)
+static int send_join_request(flux_t h)
 {
 	JSON o = Jnew ();
 	Jadd_str (o, "mod_name", module_name);
@@ -1271,6 +1312,7 @@ static msghandler_t htab[] = {
     { FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb },
     { FLUX_MSGTYPE_EVENT,   "sim_sched.event",   event_cb },
 };
+
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
 int mod_main (flux_t p, zhash_t *args)
@@ -1324,6 +1366,7 @@ int mod_main (flux_t p, zhash_t *args)
     c_queue = zlist_new ();
     ev_queue = zlist_new ();
 	kvs_queue = zlist_new ();
+	timer_queue = zlist_new ();
     if (!p_queue || !r_queue || !c_queue || !ev_queue) {
         flux_log (h, LOG_ERR,
                   "init for queues failed: %s",
@@ -1365,6 +1408,9 @@ skip_for_sim:
         rc = -1;
         goto ret;
     }
+
+	send_alive_request (h, module_name);
+
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR,
                   "flux_reactor_start: %s",
@@ -1377,6 +1423,8 @@ skip_for_sim:
     zlist_destroy (&r_queue);
     zlist_destroy (&c_queue);
     zlist_destroy (&ev_queue);
+    zlist_destroy (&kvs_queue);
+    zlist_destroy (&timer_queue);
 
     rdllib_close(l);
 

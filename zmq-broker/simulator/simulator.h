@@ -36,4 +36,5 @@ int put_job_in_kvs (job_t *job);
 job_t *pull_job_from_kvs (kvsdir_t kvs_dir);
 void free_job (job_t *job);
 job_t *blank_job ();
+int send_alive_request (flux_t h, const char* module_name);
 #endif /* SIMULATOR_H */

@@ -194,7 +194,8 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 {
 	zhash_t * timers = sim_state->timers;
 	JSON o = Jnew();
-	double *new_mod_time;
+	double *new_sched_mod_time;
+	double *new_submit_mod_time;
 	JSON response;
 	int64_t new_jobid = -1;
 	kvsdir_t dir;
@@ -223,13 +224,16 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 	kvs_commit (h);
 
 	//Update event timers in reply (submit and sched)
-	new_mod_time = (double *) zhash_lookup (timers, "sim_sched");
-	if (new_mod_time != NULL)
-		*new_mod_time = sim_state->sim_time + DBL_MIN;
-	flux_log (h, LOG_DEBUG, "added a sim_sched timer that will occur at %f", *new_mod_time);
-	new_mod_time = (double *) zhash_lookup (timers, module_name);
-	*new_mod_time = get_next_submit_time();
-	flux_log (h, LOG_DEBUG, "'scheduled' the next job (%d), next submit event will occur at %f", job->id, *new_mod_time);
+	new_sched_mod_time = (double *) zhash_lookup (timers, "sim_sched");
+	if (new_sched_mod_time != NULL)
+		*new_sched_mod_time = sim_state->sim_time + .00001;
+	flux_log (h, LOG_DEBUG, "added a sim_sched timer that will occur at %f", *new_sched_mod_time);
+	new_submit_mod_time = (double *) zhash_lookup (timers, module_name);
+	if (get_next_submit_time() > *new_sched_mod_time)
+		*new_submit_mod_time = get_next_submit_time();
+	else
+		*new_submit_mod_time = *new_sched_mod_time + .0001;
+	flux_log (h, LOG_DEBUG, "'scheduled' the next job (%d), next submit event will occur at %f", job->id, *new_submit_mod_time);
 
 	//Cleanup
 	free_job (job);
@@ -322,6 +326,9 @@ int mod_main(flux_t h, zhash_t *args)
 		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
 		return -1;
 	}
+
+	send_alive_request (h, module_name);
+
 	if (flux_reactor_start (h) < 0) {
 		flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
 		return -1;
