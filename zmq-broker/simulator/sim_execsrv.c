@@ -13,6 +13,7 @@
 #include "shortjson.h"
 #include "plugin.h"
 #include "simulator.h"
+#include "rdl.h"
 
 static const char const *module_name = "sim_exec";
 
@@ -57,19 +58,25 @@ static ctx_t *getctx (flux_t h)
 }
 
 //Given the kvs dir of a job, change the state of the job and timestamp the change
-static int update_job_state (ctx_t *ctx, kvsdir_t kvs_dir, char* state)
+static int update_job_state (ctx_t *ctx, kvsdir_t kvs_dir, char* state, double update_time)
 {
-	double sim_time = ctx->sim_state->sim_time;
 	char *timer_key = NULL;
 
 	asprintf (&timer_key, "%s_time", state);
 
 	kvsdir_put_string (kvs_dir, "state", state);
-	kvsdir_put_double (kvs_dir, timer_key, sim_time);
+	kvsdir_put_double (kvs_dir, timer_key, update_time);
 	kvs_commit (ctx->h);
 
 	free (timer_key);
 	return 0;
+}
+
+static double calc_curr_progress (job_t *job, double sim_time)
+{
+	double time_passed = sim_time - job->start_time + .000001;
+	double time_necessary = job->execution_time + job->io_time;
+	return time_passed / time_necessary;
 }
 
 //Calculate when the next job is going to terminate assuming no new jobs are added
@@ -81,7 +88,7 @@ static double determine_next_termination (ctx_t *ctx)
 	job_t *job = zlist_first (running_jobs);
 
 	while (job != NULL){
-		curr_termination = job->start_time + job->execution_time;
+		curr_termination = job->start_time + job->execution_time + job->io_time;
 		if (curr_termination < next_termination || next_termination < 0){
 			next_termination = curr_termination;
 		}
@@ -104,19 +111,23 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 
 static int print_next_completing (zlist_t *running_list, ctx_t *ctx)
 {
-	flux_t h = ctx->h;
 	job_t *max_job = zlist_first (running_list);
-	double max_progress = ((double)(ctx->sim_state->sim_time - max_job->start_time + .000001))/(max_job->execution_time + max_job->io_time);
+	if (max_job == NULL)
+		return -1;
+
+	flux_t h = ctx->h;
+	double max_progress = calc_curr_progress (max_job, ctx->sim_state->sim_time);
 	job_t *curr_job = zlist_next (running_list);
 	double curr_progress;
 	while (curr_job != NULL) {
-		curr_progress = ((double)(ctx->sim_state->sim_time - curr_job->start_time + .000001))/(curr_job->execution_time + curr_job->io_time);
+		curr_progress = calc_curr_progress (curr_job, ctx->sim_state->sim_time);
 		if (curr_progress > max_progress) {
 			max_job = curr_job;
 			max_progress = curr_progress;
 		}
 		curr_job = zlist_next (running_list);
 	}
+
 	flux_log (h, LOG_DEBUG, "Next Completing Job:");
 	flux_log (h, LOG_DEBUG, "\tID: %d", max_job->id);
 	flux_log (h, LOG_DEBUG, "\tStartTime: %f", max_job->start_time);
@@ -132,35 +143,115 @@ static int print_next_completing (zlist_t *running_list, ctx_t *ctx)
 	return 0;
 }
 
+//Update sched timer as necessary (to trigger an event in sched)
+//Also change the state of the job in the KVS
+static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
+{
+	flux_t h = ctx->h;
+
+	flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
+	update_job_state (ctx, job->kvs_dir, "complete", completion_time);
+	set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + .00001);
+	kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
+	kvs_commit (h);
+	free_job (job);
+
+	return 0;
+}
+
 //Remove completed jobs from the list of running jobs
 //Update sched timer as necessary (to trigger an event in sched)
 //Also change the state of the job in the KVS
 static int handle_completed_jobs (ctx_t *ctx)
 {
 	double curr_progress;
-	flux_t h = ctx->h;
 	zlist_t *running_jobs = ctx->running_jobs;
 	job_t *job = NULL;
 	int num_jobs = zlist_size (running_jobs);
+	double sim_time = ctx->sim_state->sim_time;
 
 	print_next_completing (running_jobs, ctx);
 
 	while (num_jobs > 0){
 		job = zlist_pop (running_jobs);
 		if (job->execution_time > 0)
-			curr_progress = ((double)(ctx->sim_state->sim_time - job->start_time + .000001))/(job->execution_time + job->io_time);
+			curr_progress = calc_curr_progress (job, ctx->sim_state->sim_time);
 		else
 			curr_progress = 1;
 		if (curr_progress < 1){
 			zlist_append (running_jobs, job);
 		} else {
-			flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
-			update_job_state (ctx, job->kvs_dir, "complete");
-			set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + .00001);
-			kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
-			free_job (job);
+			flux_log (ctx->h, LOG_ERR, "handle completed jobs found a completed job");
+			complete_job (ctx, job, sim_time);
 		}
 		num_jobs--;
+	}
+
+	return 0;
+}
+
+
+/*
+static double curr_io_rate (zlist_t *running_jobs)
+{
+	job_t *job = zlist_first (running_jobs);
+	double io_rate = 0;
+	while (job) {
+		io_rate += (job->io_size / job->io_freq);
+		job = zlist_next (running_jobs);
+	}
+	return io_rate;
+}
+*/
+
+//Get the resource tree of the job
+//Walk the tree and determine the most constrained resource (switch/pfs)
+//
+static double determine_io_penalty (job_t *job, struct rdl *rdl)
+{
+	//Get the needed drain rate of the job (size/freq)
+
+	//Get the bottleneck in the path between the job and the pfs
+
+	//Determine the penalty (needed rate / actual rate) - 1
+
+	return 0;
+}
+
+//Model io contention that occurred between previous event and the curr sim time
+//Remove completed jobs from the list of running jobs
+static int advance_time (ctx_t *ctx)
+{
+	//TODO: Make this not static? (pass it in?, store it in ctx?)
+	static double curr_time = 0;
+
+	job_t *job = NULL;
+	int num_jobs = -1;
+	double next_event = -1;
+	double next_termination = -1;
+	double curr_progress = -1;
+	double io_penalty = 0;
+
+	//flux_t h = ctx->h;
+	zlist_t *running_jobs = ctx->running_jobs;
+	double sim_time = ctx->sim_state->sim_time;
+
+	while (curr_time < sim_time) {
+		next_termination = determine_next_termination (ctx);
+		next_event = sim_time < next_termination ? sim_time : next_termination; //min of the two
+		num_jobs = zlist_size (running_jobs);
+		while (num_jobs > 0) {
+			job = zlist_pop (running_jobs);
+			io_penalty = determine_io_penalty (job, NULL);
+			job->io_time += (next_event - curr_time) * io_penalty;
+			curr_progress = calc_curr_progress (job, next_event);
+			if (curr_progress < 1)
+				zlist_append (running_jobs, job);
+			else
+				complete_job (ctx, job, next_event);
+			num_jobs--;
+		}
+		curr_time = next_event;
 	}
 
 	return 0;
@@ -177,17 +268,18 @@ static int handle_queued_events (ctx_t *ctx)
 	flux_t h = ctx->h;
 	zlist_t *queued_events = ctx->queued_events;
 	zlist_t *running_jobs = ctx->running_jobs;
+	double sim_time = ctx->sim_state->sim_time;
 
 	while (zlist_size (queued_events) > 0){
 		jobid = zlist_pop (queued_events);
 		if (kvs_get_dir (h, &kvs_dir, "lwj.%d", *jobid) < 0)
 			err_exit ("kvs_get_dir (id=%d)", *jobid);
 		job = pull_job_from_kvs (kvs_dir);
-		if (update_job_state (ctx, kvs_dir, "starting") < 0){
+		if (update_job_state (ctx, kvs_dir, "starting", sim_time) < 0){
 			flux_log (h, LOG_ERR, "failed to set job %d's state to starting", *jobid);
 			return -1;
 		}
-		if (update_job_state (ctx, kvs_dir, "running") < 0){
+		if (update_job_state (ctx, kvs_dir, "running", sim_time) < 0){
 			flux_log (h, LOG_ERR, "failed to set job %d's state to running", *jobid);
 			return -1;
 		}
@@ -274,6 +366,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 //Handle the trigger
 	ctx->sim_state = json_to_sim_state (o);
 	handle_queued_events (ctx);
+	advance_time (ctx);
 	handle_completed_jobs (ctx);
 	next_termination = determine_next_termination (ctx);
 	set_event_timer (ctx, "sim_exec", next_termination);

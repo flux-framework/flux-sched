@@ -17,6 +17,7 @@
 #include <inttypes.h>
 
 #include "util.h"
+#include "util/list.h"
 #include "log.h"
 #include "shortjson.h"
 #include "plugin.h"
@@ -34,7 +35,6 @@ static const char const *module_name = "sim_sched";
  *                 INTERNAL DATA STRUCTURE
  *
  ****************************************************************/
-
 struct stab_struct {
     int i;
     const char *s;
@@ -452,7 +452,6 @@ idlize_resources (struct resource *r)
     return rc;
 }
 
-
 /*
  * Walk the tree, find the required resources and tag with the lwj_id
  * to which it is allocated.
@@ -479,8 +478,18 @@ allocate_resources (struct resource *fr, struct rdl_accumulator *a,
     Jget_str (o, "type", &type);
     asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
     if (job->req.nnodes && (strcmp (type, "node") == 0)) {
-        job->req.nnodes--;
-        job->alloc.nnodes++;
+		/*
+        Jget_obj (o, "tags", &o2);
+        Jget_obj (o2, IDLETAG, &o3);
+        if (o3) {
+		*/
+			job->req.nnodes--;
+			job->alloc.nnodes++;
+			/*
+            rdl_resource_tag (r, lwjtag);
+            rdl_resource_delete_tag (r, IDLETAG);
+            rdl_accumulator_add (a, r);
+			}*/
 		//flux_log (h, LOG_DEBUG, "allocated node: %s", json_object_to_json_string (o));
     } else if (job->req.ncores && (strcmp (type, CORETYPE) == 0) &&
                (job->req.ncores > job->req.nnodes)) {
@@ -632,66 +641,105 @@ update_job (flux_lwj_t *job)
     return rc;
 }
 
+static struct rdl *get_free_subset (struct rdl *rdl, const char *type)
+{
+	JSON tags = Jnew();
+	Jadd_bool (tags, IDLETAG, true);
+	JSON args = Jnew ();
+	Jadd_obj (args, "tags", tags);
+	Jadd_str (args, "type", type);
+    struct rdl *frdl = rdl_find (rdl, args);
+	Jput (args);
+	Jput (tags);
+	return frdl;
+}
+
+static int64_t get_free_count (struct rdl *rdl, const char *uri, const char *type)
+{
+	JSON o;
+	int64_t count = -1;
+	int rc = -1;
+	struct resource *fr = NULL;
+
+	if ((fr = rdl_resource_get (rdl, uri)) == NULL) {
+		flux_log (h, LOG_ERR, "failed to get found resources: %s", uri);
+		return -1;
+	}
+
+	o = rdl_resource_aggregate_json (fr);
+	if (o) {
+		//const char *json_string = Jtostr (o);
+		//flux_log (h, LOG_DEBUG, "agg json - %s", json_string);
+		if (!Jget_int64(o, type, &count)) {
+			flux_log (h, LOG_ERR, "schedule_job failed to get %s: %d",
+					  type, rc);
+			return -1;
+		} else {
+			flux_log (h, LOG_DEBUG, "schedule_job found %ld idle %ss", count, type);
+		}
+		Jput (o);
+	}
+
+	return count;
+}
+
 /*
  * schedule_job() searches through all of the idle resources (cores
  * right now) to satisfy a job's requirements.  If enough resources
  * are found, it proceeds to allocate those resources and update the
  * kvs's lwj entry in preparation for job execution.
  */
-int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
+int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job, bool first_job)
 {
-    int64_t nodes;
-    int rc = -1;
-    json_object *args = util_json_object_new_object ();
-    json_object *o;
+    //int64_t nodes = -1;
+    int rc = 0;
     struct rdl_accumulator *a = NULL;
-    struct resource *fr = NULL;         /* found resource */
-    struct rdl *frdl = NULL;            /* found rdl */
+
+	//The "cache"
+    static int64_t cores = -1;
+    static struct rdl *frdl = NULL;            /* found rdl */
+    static struct resource *fr = NULL;         /* found resource */
+	static bool cache_valid = false;
 
     if (!job || !rdl || !uri) {
         flux_log (h, LOG_ERR, "schedule_job invalid arguments");
         goto ret;
     }
 
-	flux_log (h, LOG_DEBUG, "beginning the scheduling of job %ld", job->lwj_id);
+	//flux_log (h, LOG_DEBUG, "beginning the scheduling of job %ld", job->lwj_id);
 
-    util_json_object_add_string (args, "tag", IDLETAG);
-    frdl = rdl_find (rdl, args);
+	//Cache results between schedule loops
+	if (!cache_valid || first_job) {
+		flux_log (h, LOG_DEBUG, "refreshing cache");
+		frdl = get_free_subset (rdl, "core");
+		if (frdl) {
+			cores = get_free_count (frdl, uri, "core");
+			fr = rdl_resource_get (frdl, uri);
+		}
+		cache_valid = true;
+	}
 
-    if (frdl) {
-        if ((fr = rdl_resource_get (frdl, uri)) == NULL) {
-            flux_log (h, LOG_ERR, "failed to get found resources: %s", uri);
-            goto ret;
-        }
-
-        o = rdl_resource_aggregate_json (fr);
-        if (o) {
-            rc = util_json_object_get_int64 (o, "node", &nodes);
-            if (rc) {
-                flux_log (h, LOG_ERR, "schedule_job failed to get nodes: %d",
-                          rc);
-                goto ret;
-            } else {
-                flux_log (h, LOG_DEBUG, "schedule_job found %ld nodes", nodes);
-            }
-            json_object_put (o);
-        }
-
-        if (nodes >= job->req.nnodes) {
-            rdl_resource_iterator_reset (fr);
-            a = rdl_accumulator_create (rdl);
-            if (allocate_resources (fr, a, job)) {
+	if (frdl && fr && cores > 0) {
+		if (cores >= job->req.ncores) {
+			rdl_resource_iterator_reset (fr);
+			a = rdl_accumulator_create (rdl);
+			if (allocate_resources (fr, a, job)) {
 				flux_log (h, LOG_DEBUG, "allocate_resources \"succeeded\"");
-                job->rdl = rdl_accumulator_copy (a);
-                job->state = j_submitted;
-                rc = update_job (job);
-            }
-			else
-				flux_log (h, LOG_DEBUG, "allocate_resources \"failed\"");
+				job->rdl = rdl_accumulator_copy (a);
+				job->state = j_submitted;
+				rc = update_job (job);
+				rdl_destroy (frdl);
+
+				//Clear the "cache"
+				cache_valid = false;
+				frdl = NULL;
+				fr = NULL;
+				cores = -1;
+			}
 			rdl_accumulator_destroy (a);
-        }
-        rdl_destroy (frdl);
-    }
+		}
+	}
+
 ret:
     return rc;
 }
@@ -700,13 +748,15 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
 {
     flux_lwj_t *job = NULL;
     int rc = 0;
+	bool first_job = true;
 
     job = zlist_first (jobs);
     while (!rc && job) {
-		flux_log (h, LOG_DEBUG, "Iterating over job %ld in jobs list", job->lwj_id);
+		//flux_log (h, LOG_DEBUG, "Iterating over job %ld in jobs list", job->lwj_id);
 		if (job->state == j_unsched)
-			rc = schedule_job(rdl, uri, job);
+			rc = schedule_job(rdl, uri, job, first_job);
         job = zlist_next (jobs);
+		first_job = false;
     }
 	flux_log (h, LOG_DEBUG, "Finished iterating over the jobs list");
     return rc;
@@ -831,6 +881,7 @@ int release_resources (struct rdl *rdl, const char *uri, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "release_resources failed to get resources: %s",
                   strerror (errno));
     }
+	rdl_destroy (job->rdl);
 
     return rc;
 }
