@@ -109,6 +109,7 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 	return 0;
 }
 
+/*
 static int print_next_completing (zlist_t *running_list, ctx_t *ctx)
 {
 	job_t *max_job = zlist_first (running_list);
@@ -142,6 +143,7 @@ static int print_next_completing (zlist_t *running_list, ctx_t *ctx)
 	flux_log (h, LOG_DEBUG, "\tmax_progress is %s 1", max_progress < 1 ? "less than" : "greater than or equal to");
 	return 0;
 }
+*/
 
 //Update sched timer as necessary (to trigger an event in sched)
 //Also change the state of the job in the KVS
@@ -149,7 +151,7 @@ static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
 {
 	flux_t h = ctx->h;
 
-	flux_log (h, LOG_DEBUG, "Job %d completed", job->id);
+	flux_log (h, LOG_INFO, "Job %d completed", job->id);
 	update_job_state (ctx, job->kvs_dir, "complete", completion_time);
 	set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + .00001);
 	kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
@@ -170,7 +172,7 @@ static int handle_completed_jobs (ctx_t *ctx)
 	int num_jobs = zlist_size (running_jobs);
 	double sim_time = ctx->sim_state->sim_time;
 
-	print_next_completing (running_jobs, ctx);
+	//print_next_completing (running_jobs, ctx);
 
 	while (num_jobs > 0){
 		job = zlist_pop (running_jobs);
@@ -283,7 +285,7 @@ static int handle_queued_events (ctx_t *ctx)
 			flux_log (h, LOG_ERR, "failed to set job %d's state to running", *jobid);
 			return -1;
 		}
-		flux_log (h, LOG_DEBUG, "job %d's state to starting then running", *jobid);
+		flux_log (h, LOG_INFO, "job %d's state to starting then running", *jobid);
 		job->start_time = ctx->sim_state->sim_time;
 		zlist_append (running_jobs, job);
 	}
@@ -316,7 +318,7 @@ static int send_reply_request(flux_t h, sim_state_t *sim_state)
 		Jput (o);
 		return -1;
 	}
-   flux_log(h, LOG_DEBUG, "sent a reply request");
+	flux_log(h, LOG_DEBUG, "sent a reply request");
    Jput (o);
    return 0;
 }

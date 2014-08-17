@@ -161,7 +161,7 @@ int send_reply_request (flux_t h, sim_state_t *sim_state)
 		Jput (o);
 		return -1;
 	}
-   flux_log(h, LOG_DEBUG, "sent a reply request");
+	flux_log(h, LOG_DEBUG, "sent a reply request");
    Jput (o);
    free_simstate (sim_state);
    return 0;
@@ -490,7 +490,7 @@ allocate_resources (struct resource *fr, struct rdl_accumulator *a,
             rdl_resource_delete_tag (r, IDLETAG);
             rdl_accumulator_add (a, r);
 			}*/
-		//flux_log (h, LOG_DEBUG, "allocated node: %s", json_object_to_json_string (o));
+			//flux_log (h, LOG_DEBUG, "allocated node: %s", json_object_to_json_string (o));
     } else if (job->req.ncores && (strcmp (type, CORETYPE) == 0) &&
                (job->req.ncores > job->req.nnodes)) {
         /* We put the (job->req.ncores > job->req.nnodes) requirement
@@ -668,8 +668,8 @@ static int64_t get_free_count (struct rdl *rdl, const char *uri, const char *typ
 
 	o = rdl_resource_aggregate_json (fr);
 	if (o) {
-		//const char *json_string = Jtostr (o);
-		//flux_log (h, LOG_DEBUG, "agg json - %s", json_string);
+		const char *json_string = Jtostr (o);
+		flux_log (h, LOG_DEBUG, "agg json - %s", json_string);
 		if (!Jget_int64(o, type, &count)) {
 			flux_log (h, LOG_ERR, "schedule_job failed to get %s: %d",
 					  type, rc);
@@ -706,7 +706,7 @@ int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job, bool first_
         goto ret;
     }
 
-	//flux_log (h, LOG_DEBUG, "beginning the scheduling of job %ld", job->lwj_id);
+	flux_log (h, LOG_DEBUG, "beginning the scheduling of job %ld", job->lwj_id);
 
 	//Cache results between schedule loops
 	if (!cache_valid || first_job) {
@@ -724,7 +724,7 @@ int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job, bool first_
 			rdl_resource_iterator_reset (fr);
 			a = rdl_accumulator_create (rdl);
 			if (allocate_resources (fr, a, job)) {
-				flux_log (h, LOG_DEBUG, "allocate_resources \"succeeded\"");
+				flux_log (h, LOG_INFO, "scheduled job %ld", job->lwj_id);
 				job->rdl = rdl_accumulator_copy (a);
 				job->state = j_submitted;
 				rc = update_job (job);
@@ -752,11 +752,11 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
 
     job = zlist_first (jobs);
     while (!rc && job) {
-		//flux_log (h, LOG_DEBUG, "Iterating over job %ld in jobs list", job->lwj_id);
-		if (job->state == j_unsched)
+		if (job->state == j_unsched) {
 			rc = schedule_job(rdl, uri, job, first_job);
+			first_job = false;
+		}
         job = zlist_next (jobs);
-		first_job = false;
     }
 	flux_log (h, LOG_DEBUG, "Finished iterating over the jobs list");
     return rc;
@@ -850,7 +850,7 @@ release_lwj_resource (struct rdl *rdl, struct resource *jr, int64_t lwj_id)
             rdl_resource_tag (r, IDLETAG);
             free (lwjtag);
         }
-        //flux_log (h, LOG_DEBUG, "resource released: %s", json_object_to_json_string (o));
+        flux_log (h, LOG_DEBUG, "resource released: %s", json_object_to_json_string (o));
         json_object_put (o);
 
         while (!rc && (c = rdl_resource_next_child (jr))) {
@@ -907,10 +907,11 @@ action_j_event (flux_event_t *e)
     /* e->lwj->state is the current state
      * e->ev.je      is the new state
      */
-    flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
+    /*
+	flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
               e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
                               stab_rlookup (jobstate_tab, e->ev.je));
-
+	*/
     switch (e->lwj->state) {
     case j_null:
         if (e->ev.je != j_reserved) {
@@ -929,8 +930,6 @@ action_j_event (flux_event_t *e)
                       "job %ld read state mismatch ", e->lwj->lwj_id);
             goto bad_transition;
         }
-        flux_log (h, LOG_DEBUG, "setting %ld to submitted state",
-                  e->lwj->lwj_id);
         e->lwj->state = j_unsched;
         schedule_jobs (rdl, resource, p_queue);
         break;
@@ -1184,14 +1183,44 @@ static void queue_kvs_cb (const char *key, const char *val, void *arg, int errnu
 	kvs_event->errnum = errnum;
 	kvs_event->key = key_copy;
 	kvs_event->val = val_copy;
+	flux_log (h, LOG_DEBUG, "Event queued - key: %s, val: %s", kvs_event->key, kvs_event->val);
 	zlist_append (kvs_queue, kvs_event);
 }
+
+/*
+//Compare two kvs events based on their state
+//Return true if they should be swapped
+//AKA item1 is further along than item2
+static bool compare_kvs_events (void *item1, void *item2)
+{
+	int state1 = -1;
+	int state2 = -1;
+	int64_t id1 = -1;
+	int64_t id2 = -1;
+	kvs_event_t *event1 = (kvs_event_t *) item1;
+	kvs_event_t *event2 = (kvs_event_t *) item2;
+
+	if (event1->val != NULL)
+		state1 = stab_lookup (jobstate_tab, event1->val);
+	if (event2->val != NULL)
+		state2 = stab_lookup (jobstate_tab, event2->val);
+
+	if (state1 != state2)
+		return state1 > state2;
+
+	extract_lwjid (event1->key, &id1);
+	extract_lwjid (event2->key, &id2);
+	return id1 > id2;
+}
+*/
 
 static void handle_kvs_queue ()
 {
 	kvs_event_t *kvs_event = NULL;
+	//zlist_sort (kvs_queue, compare_kvs_events);
 	while (zlist_size (kvs_queue) > 0){
 		kvs_event = (kvs_event_t *) zlist_pop (kvs_queue);
+		//flux_log (h, LOG_DEBUG, "Event to be handled - key: %s, val: %s", kvs_event->key, kvs_event->val);
 		lwjstate_cb (kvs_event->key, kvs_event->val, NULL, kvs_event->errnum);
 		free (kvs_event->key);
 		free (kvs_event->val);
@@ -1229,6 +1258,7 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         flux_log (h, LOG_ERR, "oom");
         goto error;
     }
+	//j->lwj_id = val;
     j->lwj_id = val - 1;
     j->state = j_null;
     snprintf (path, MAX_STR_LEN, "lwj.%ld", j->lwj_id);
@@ -1248,12 +1278,46 @@ ret:
     return;
 
 error:
+	flux_log (h, LOG_ERR, "newlwj_cb failed");
     if (j)
         free (j);
 
     return;
 }
 
+static int newlwj_rpc (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+{
+	JSON o;
+	JSON o_resp;
+	const char *key;
+	char* tag;
+	int64_t id;
+	int rc = 0;
+
+	if (cmb_msg_decode (*zmsg, &tag, &o) < 0
+		    || o == NULL
+		    || !Jget_str (o, "key", &key)
+		    || !Jget_int64 (o, "val", &id)) {
+		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+		Jput (o);
+		rc = -1;
+	}
+	else {
+		id = id + 1; //mimics the original kvs cb
+		newlwj_cb (key, id, NULL, 0);
+	}
+
+	o_resp = Jnew ();
+	Jadd_int (o_resp, "rc", rc);
+	flux_respond (h, zmsg, o_resp);
+	Jput (o_resp);
+
+	if (o)
+		Jput (o);
+	zmsg_destroy (zmsg);
+
+	return 0;
+}
 
 static int
 event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
@@ -1295,8 +1359,6 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	diff = clock() - start;
 	seconds = ((double) diff) / CLOCKS_PER_SEC;
 	sim_state->sim_time += seconds;
-
-	//sleep (1); //for debugging, hopefully with flush print buf
 
 	handle_timer_queue();
 
@@ -1362,6 +1424,7 @@ static msghandler_t htab[] = {
     { FLUX_MSGTYPE_EVENT,   "sim.start",     start_cb },
     { FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb },
     { FLUX_MSGTYPE_EVENT,   "sim_sched.event",   event_cb },
+    { FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch",  newlwj_rpc },
 };
 
 const int htablen = sizeof (htab) / sizeof (htab[0]);
@@ -1450,7 +1513,6 @@ int mod_main (flux_t p, zhash_t *args)
         goto ret;
     }
 
-skip_for_sim:
     if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register new lwj handling "
@@ -1460,6 +1522,7 @@ skip_for_sim:
         goto ret;
     }
 
+skip_for_sim:
 	send_alive_request (h, module_name);
 
     if (flux_reactor_start (h) < 0) {

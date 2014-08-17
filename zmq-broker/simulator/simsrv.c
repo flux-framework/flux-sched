@@ -56,7 +56,7 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 		flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
 		return -1;
 	}
-	flux_log (h, LOG_DEBUG, "sent a trigger to %s", mod_name);
+	//flux_log (h, LOG_DEBUG, "sent a trigger to %s", mod_name);
 	Jput(o);
 	return 0;
 }
@@ -106,7 +106,7 @@ static int handle_next_event (ctx_t *ctx){
 		}
 	}
 	if (min_event_time == NULL){
-		flux_log (ctx->h, LOG_DEBUG, "No events remaining");
+		flux_log (ctx->h, LOG_INFO, "No events remaining");
 		return -1;
 	}
 	while (zlist_size (keys) > 0){
@@ -123,14 +123,14 @@ static int handle_next_event (ctx_t *ctx){
 
 	//advance time then send the trigger to the module with the next event
 	if (*min_event_time > sim_state->sim_time){
-		flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %f to %f while triggering the next event for %s",
-				  sim_state->sim_time, *min_event_time, mod_name);
+		//flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %f to %f while triggering the next event for %s",
+		//		  sim_state->sim_time, *min_event_time, mod_name);
 		sim_state->sim_time = *min_event_time;
 	}
-	else
-		flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering the next event for %s", mod_name);
-
-	//usleep (15000);
+	else {
+		//flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering the next event for %s", mod_name);
+	}
+	flux_log (ctx->h, LOG_INFO, "Triggering %s.  Curr sim time: %f", mod_name, sim_state->sim_time);
 
 	*min_event_time = -1;
 	rc = send_trigger (ctx->h, mod_name, sim_state);
@@ -207,13 +207,13 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 	double *curr_event_time = (double *) zhash_lookup (curr_sim_state->timers, key);
 
 	if (*curr_event_time < 0 && *reply_event_time < 0){
-		flux_log (ctx->h, LOG_DEBUG, "no timers found for %s, doing nothing", key);
+		//flux_log (ctx->h, LOG_DEBUG, "no timers found for %s, doing nothing", key);
 		return 0;
 	}
 	else if (*curr_event_time < 0){
 		if (*reply_event_time >= sim_time){
 			*curr_event_time = *reply_event_time;
-			flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
+			//flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
 			return 0;
 		}
 		else {
@@ -231,11 +231,11 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 	}
 	else if (*reply_event_time >= sim_time && *reply_event_time < *curr_event_time){
 		*curr_event_time = *reply_event_time;
-		flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
+		//flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
 		return 0;
 	}
 	else {
-		flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time: %f\t reply_time: %f", key, *curr_event_time, *reply_event_time);
+		//flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time: %f\t reply_time: %f", key, *curr_event_time, *reply_event_time);
 		return 0;
 	}
 }
@@ -267,7 +267,7 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 	//Logging
 	json_string = Jtostr (request);
-	flux_log (h, LOG_DEBUG, "received reply - %s", json_string);
+	//flux_log (h, LOG_DEBUG, "received reply - %s", json_string);
 
 	//De-serialize and get new info
 	reply_sim_state = json_to_sim_state (request);
