@@ -6,8 +6,8 @@ ARGS="--verbose --rank=0 --size=1 --hostlist=localhost \
 		kvs:conf.log.reduction-timeout-msec=100 \
 		kvs:conf.log.circular-buffer-entries=100000 \
 		kvs:conf.log.persist-level=debug \
-		sim_sched:rdl-conf=conf/cab.lua \
-		submit:job-csv=simulator/job_data/2014-06-01.txt"
+		sim_sched:rdl-conf=conf/hype.lua \
+		submit:job-csv=simulator/job_data/hype.csv"
 
 #	   --logdest=cmbd.log \
 

@@ -7,6 +7,6 @@
     kvs:conf.hb.period-sec=1.5 \
     kvs:conf.log.reduction-timeout-msec=100 \
     kvs:conf.log.circular-buffer-entries=100000 \
-    kvs:conf.log.persist-level=debug \
+    kvs:conf.log.persist-level=info \
 	sim_sched:rdl-conf=conf/cab.lua \
-	submit:job-csv=simulator/job_data/2014-06-01.txt
+	submit:job-csv=simulator/job_data/2014-06-01.csv
