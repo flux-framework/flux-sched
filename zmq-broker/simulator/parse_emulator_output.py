@@ -99,14 +99,16 @@ def save_results (jobs, output_name):
 
 def main ():
     parser = argparse.ArgumentParser ()
-    parser.add_argument ("infile")
+    parser.add_argument ("job_file")
+    parser.add_argument ("emulator_output")
     parser.add_argument ("outfile")
     args = parser.parse_args ()
 
-    infile = args.infile
+    job_file = args.job_file
+    emulator_output = args.emulator_output
     outfile = args.outfile
 
-    events = generate_events (infile)
+    events = generate_events (emulator_output)
     jobs_dict = parse_file (events)
     jobs = [jobs_dict[key] for key in jobs_dict]
     save_results (jobs, outfile)

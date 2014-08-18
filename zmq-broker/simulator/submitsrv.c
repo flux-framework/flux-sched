@@ -77,11 +77,8 @@ int insert_into_job (job_t *job, char *column_name, char *value)
 	else if (!strcmp (column_name, "Elapsed")){
 		job->execution_time = convert_time_to_sec (value);
 	}
-	else if (!strcmp (column_name, "IOFreq(min)")){
-		job->io_freq = atoi (value) * 60; //convert min to sec
-	}
-	else if (!strncmp (column_name, "IOSize(MB)", 10)){ //ignore the \n at the end using strncmp
-		job->io_size = atoi (value) * 1024 * 1024; //convert MB to bytes
+	else if (!strncmp (column_name, "IORate(MB)", 10)){ //ignore the \n at the end using strncmp
+		job->io_rate = atoi (value) * 1024 * 1024; //convert MB to bytes
 	}
 	return 0;
 }

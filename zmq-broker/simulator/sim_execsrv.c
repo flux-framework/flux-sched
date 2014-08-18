@@ -199,7 +199,7 @@ static double curr_io_rate (zlist_t *running_jobs)
 	job_t *job = zlist_first (running_jobs);
 	double io_rate = 0;
 	while (job) {
-		io_rate += (job->io_size / job->io_freq);
+		io_rate += job->io_rate;
 		job = zlist_next (running_jobs);
 	}
 	return io_rate;
@@ -211,7 +211,7 @@ static double curr_io_rate (zlist_t *running_jobs)
 //
 static double determine_io_penalty (job_t *job, struct rdl *rdl)
 {
-	//Get the needed drain rate of the job (size/freq)
+	//Get the needed drain rate of the job (job->io_rate)
 
 	//Get the bottleneck in the path between the job and the pfs
 
