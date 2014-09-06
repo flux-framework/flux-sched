@@ -29,7 +29,7 @@ typedef struct {	/* Struct holds all allocated data for the modules */
 	char *rankstr;
 	zhash_t *rcache;
 	zhash_t *pcache;
-	//zlist_t *cache;
+	zlist_t *cache;
 } ctx_t;
 
 	/*:: Free Context ::*/
@@ -100,8 +100,8 @@ typedef struct {
 /*vvvvvvvvvv::MODULE::vvvvvvvvvv*/
 
 	/*:: Plugin Management Functions ::*/
-static void mon_plg_ins (flux_h, const char *path)
-{					/* Plugin Insert Function */
+static void load_plg (flux_h, const char *path)
+{					/* Insert Plugin */
 	JSON plg = Jnew ();
 	char *key;
 	int fd, len;
@@ -130,12 +130,16 @@ static void mon_plg_ins (flux_h, const char *path)
 	Jput (plg);
 }
 
+static void rm_plg	(flux_t h, void *plg_t)
+{					//* Remove Plugin */
+}
+
 	/*:: Plugin Control Functions ::*/ 
-static void mon_plg_init	(flux_t h, void *plg_t)
+static void init_plg	(flux_t h, void *plg_t)
 {					//* Initialize Plugin */
 }
 
-static void mon_plg_sink (flux_t h, void *item, int batchnum, void *arg)
+static void sink_plg (flux_t h, void *item, int batchnum, void *arg)
 {
     ctx_t *ctx = arg;
     JSON o = item;
@@ -164,7 +168,7 @@ static void mon_plg_sink (flux_t h, void *item, int batchnum, void *arg)
     Jput (o);
 }
 
-static void mon_plg_reduce (flux_t h, zlist_t *items, int batchnum, void *arg)
+static void reduce_plg (flux_t h, zlist_t *items, int batchnum, void *arg)
 {
     zlist_t *tmp; 
     int e1, e2;
@@ -226,6 +230,10 @@ static void ins_request_cb(flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	*/
 
 	const char **plg_namep = dlsym (dso, "plg_name"); //const char *plgname = "name"
+	const char **plg_main = dlsym (dso, "plg_main"); //const char *plgname = "name"	
+
+	
+	
 	if (!plg_main || !plg_namep || !*plg_namep) {
 		err ("%s: mod_main or mod_name undefined", path);
 		dlclose (dso);
@@ -508,7 +516,7 @@ static int write_all (int fd, uint8_t *buf, int len)
     return count;
 }
 
-static int mon_plg_copy (ctx_t *ctx, const char *name)
+static int ins_plg (ctx_t *ctx, const char *name)
 {
     char *key = NULL;
     JSON plg = NULL, args;
@@ -559,7 +567,7 @@ done:
     return rc;
 }
 
-static void mon_plg_sink (flux_t h, void *item, int batchnum, void *arg)
+static void sink_plg (flux_t h, void *item, int batchnum, void *arg)
 {
     ctx_t *ctx = arg;
     JSON o = item;
