@@ -149,29 +149,10 @@ static void init_plg	(flux_t h, void *plg_t)
 
 /* Mon Source!
 static void mon_source (flux_t h, void *arg)
-{					//* Source data for plugin
+{					// Source data for plugin
 }
 */
 
-etwe /*    /**//**//* TES    /**//**/ 
-
-/*d /*d /*d */
-
-
-/**//*
-*/
-
-
-hello
-
-
-/*
-hello
-/*
-sup
-/* //* */
-hello
-//* */
 
 
 static void mon_sink (flux_t h, void *item, int batchnum, void *arg)
