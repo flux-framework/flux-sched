@@ -19,6 +19,64 @@ static void mon_list (flux_t h, int argc, char *argv[]);
 static void mon_add (flux_t h, int argc, char *argv[]);
 static void mon_del (flux_t h, int argc, char *argv[]);
 */
+
+static int mon_ins (ctx_t *ctx, const char *name)
+{					/* Insert Plugin */
+    char *key = NULL;
+    JSON plg = NULL, args;
+    uint8_t *buf = NULL;
+    int fd = -1, len;
+    char tmpfile[] = "/tmp/flux-mon-XXXXXX"; /* FIXME: consider TMPDIR */
+    int n, rc = -1;
+    int errnum = 0;
+
+    if (asprintf (&key, "mon.plg.%s.so", name) < 0)
+        oom ();
+    if (kvs_get (ctx->h, key, &plg) < 0 || !Jget_obj (plg, "args", &args)
+            || util_json_object_get_data (plg, "data", &buf, &len) < 0) {
+        errnum = EPROTO;
+        goto done; /* kvs/parse error */
+    }
+    if ((fd = mkstemp (tmpfile)) < 0) {
+        errnum = errno;
+        goto done;
+    }
+    if (write_all (fd, buf, len) < 0) {
+        errnum = errno;
+        goto done;
+    }
+    n = close (fd);
+    fd = -1;
+    if (n < 0) {
+        errnum = errno;
+        goto done;
+    }
+    /* Replace with ins plugin
+    if (flux_insmod (ctx->h, -1, tmpfile, FLUX_MON_FLAGS_MANAGED, args) < 0) {
+        errnum = errno;
+        goto done_unlink;
+    }
+    */
+    rc = 0;
+//done_unlink:
+    (void)unlink (tmpfile);
+done:
+    if (fd != -1)
+        (void)close (fd);
+    if (key)
+        free (key);
+    if (buf)
+        free (buf);
+    Jput (plg);
+    if (errnum != 0)
+        errno = errnum;
+    return rc;
+}
+
+static void mon_rm	(flux_t h, void *plg_t)
+{					/* Remove Plugin */
+}
+
 void usage (void)
 {
     fprintf (stderr, 
@@ -54,7 +112,16 @@ int main (int argc, char *argv[])
     if (!(h = flux_api_open ()))
         err_exit ("flux_api_open");
 
-/*
+	if (!strcmp (cmd, "ins"))
+        mon_ins (h, argc - optind, argv + optind);
+    else if (!strcmp (cmd, "rm"))
+        mon_rm (h, argc - optind, argv + optind);
+    else if (!strcmp (cmd, "echo"))
+        printf("Echo\n");
+    else
+        usage ();
+	
+	/*
     if (!strcmp (cmd, "list"))
         mon_list (h, argc - optind, argv + optind);
     else if (!strcmp (cmd, "add"))
@@ -65,13 +132,17 @@ int main (int argc, char *argv[])
         mon_ins (h, argc - optind, argv + optind);
     else if (!strcmp (cmd, "echo"))
         printf("Echo\n");
-    else*/
+    else
         usage ();
+	*/
 
     flux_api_close (h);
     log_fini ();
     return 0;
 }
+
+
+
 /*
 static char *plgname (const char *path)
 {
