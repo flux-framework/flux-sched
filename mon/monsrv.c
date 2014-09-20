@@ -11,9 +11,12 @@
 #include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
 
+const char *mod_name = "mon";
+
 
 static const char *mon_conf_dir = "conf.mon.source";
 const int red_timeout_msec = 2;
+
 /*  Write all!
 static int write_all (int fd, uint8_t *buf, int len)
 {
@@ -26,10 +29,10 @@ static int write_all (int fd, uint8_t *buf, int len)
     return count;
 }
 */
-		/*vvvvvvvvvv::CONTEXT::vvvvvvvvvv*/
+		
 
 	/*:: Context Struct ::*/
-typedef struct {	/* Struct holds all allocated data for the modules */
+typedef struct {	// Struct holds all allocated data for the modules
 	int epoch;
 	flux_t h;
 	bool master;
@@ -40,9 +43,30 @@ typedef struct {	/* Struct holds all allocated data for the modules */
 	zlist_t *cache;
 } ctx_t;
 
+static void init (flux_t h)
+{
+	const char *key = "mon.init";
+	kvsdir_t dir;
+	kvsitr_t itr;
+	JSON o = Jnew();
+
+	if (kvs_get_dir (h, &dir, "mon") == 0) {
+        if (!(itr = kvsitr_create (dir)))
+			oom();
+		kvsitr_destroy (itr);
+	}
+	
+    if (kvs_put (h,key, o) < 0)
+        err_exit ("kvs_put %s", key);
+    if (kvs_commit (h) < 0)
+        err_exit ("kvs_commit");
+	
+	Jput(o);
+}
+
 	/*:: Free Context ::*/
 static void freectx (ctx_t *ctx)
-{					/* Free's context and all of its allocations */
+{					// Free's context and all of its allocations
 	zhash_destroy (&ctx->rcache);
 	zhash_destroy (&ctx->pcache);
 	zlist_destroy (&ctx->cache);
@@ -52,7 +76,7 @@ static void freectx (ctx_t *ctx)
 
 	/*:: Get/Allocate Context ::*/
 static ctx_t *getctx (flux_t h)
-{					/* Either makes a context if one does not exist, or returns reference */
+{					// Either makes a context if one does not exist, or returns reference
 	ctx_t *ctx = (ctx_t *)flux_aux_get (h, "monsrv");
 
 	if (!ctx) {
@@ -69,14 +93,10 @@ static ctx_t *getctx (flux_t h)
 		if (!(ctx->cache = zlist_new ()))
 			oom ();
 		flux_aux_set (h, "monsrv", ctx, (FluxFreeFn)freectx);
+		init(h);
 	}
 	return ctx;
 }
-
-		/*^^^^^^^^^^::CONTEXT::^^^^^^^^^^*/
-
-
-		/*vvvvvvvvvv::PLUGIN::vvvvvvvvvv*/
 
 	/*:: Plugin Function Prototypes ::*/
 typedef void (*plg_init)	(ctx_t *ctx);
@@ -96,19 +116,14 @@ typedef struct {
 	zlist_t		*rcache;			/* Plugin reduction cache */
 	
 					/* Function pointers recieved via init function */
-	plg_source source;
-	plg_sink   sink;
-	plg_reduce reduce;
+	plg_source	source;
+	plg_sink	sink;
+	plg_reduce	reduce;
 } plg_t;
 
-		/*##########  PLUGIN  ##########*
-		 *##############################*
-		 *##########  MODULE  ##########*/
+
 
 	/*:: Plugin Management Functions ::*/
-	
-	
-
 /* Acutal Load Plugin
 static void save_plg (flux_t h, const char *name)
 {					// Load Plugin to KVS
@@ -143,11 +158,13 @@ static void save_plg (flux_t h, const char *name)
 
 
 	/*:: Plugin Control Functions ::*/ 	
+/* init_plg
 static void init_plg	(flux_t h, void *plg_t)
-{					/* Initialize Plugin */
+{					// Initialize Plugin
 }
+*/
 
-/* Mon Source!
+/* mon_source
 static void mon_source (flux_t h, void *arg)
 {					// Source data for plugin
 }
@@ -387,7 +404,8 @@ done:
     return rc;
 }
 
-		/*^^^^^^^^^^::MODULE::^^^^^^^^^^*/
+
+		
 
 static msghandler_t htab[] = {
     { FLUX_MSGTYPE_EVENT,   "hb",             hb_cb },
@@ -403,6 +421,7 @@ const int htablen = sizeof (htab) / sizeof (htab[0]);
 int mod_main (flux_t h, zhash_t *args)
 {
     ctx_t *ctx = getctx (h);
+
 	//Configure module code
     if (kvs_watch_dir (h, conf_cb, ctx, mon_conf_dir) < 0) {
         flux_log (ctx->h, LOG_ERR, "kvs_watch_dir: %s", strerror (errno));
@@ -437,11 +456,13 @@ int mod_main (flux_t h, zhash_t *args)
         flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
         return -1;
     }
+    
+
 
     return 0;
 }
 
-MOD_NAME ("mon");
+//MOD_NAME ("mon");
 
 
 
@@ -658,6 +679,8 @@ static void mon_source (flux_t h, void *item, int batchnum, void *arg)
     Jput (o);
 }
 */
+
+//
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

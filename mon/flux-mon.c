@@ -14,13 +14,35 @@ static const struct option longopts[] = {
     {"help",       no_argument,        0, 'h'},
     { 0, 0, 0, 0 },
 };
-/*
+
 static void mon_list (flux_t h, int argc, char *argv[]);
 static void mon_add (flux_t h, int argc, char *argv[]);
 static void mon_del (flux_t h, int argc, char *argv[]);
-*/
 
-static int mon_ins (ctx_t *ctx, const char *name)
+
+static int write_all (int fd, uint8_t *buf, int len)
+{
+    int n, count = 0;
+    while (count < len) {
+        if ((n = write (fd, buf + count, len - count)) < 0)
+            return n;
+        count += n;
+    }
+    return count;
+}
+
+typedef struct {	// Struct holds all allocated data for the modules
+	int epoch;
+	flux_t h;
+	bool master;
+	int rank;
+	char *rankstr;
+	zhash_t *rcache;
+	zhash_t *pcache;
+	zlist_t *cache;
+} ctx_t;
+
+void mon_ins (flux_t h, int argc, char *argv[])
 {					/* Insert Plugin */
     char *key = NULL;
     JSON plg = NULL, args;
@@ -29,7 +51,10 @@ static int mon_ins (ctx_t *ctx, const char *name)
     char tmpfile[] = "/tmp/flux-mon-XXXXXX"; /* FIXME: consider TMPDIR */
     int n, rc = -1;
     int errnum = 0;
-
+	
+	const char *name = "Placeholder plugin name";
+	ctx_t *ctx = flux_aux_get (h, "monsrv");
+	
     if (asprintf (&key, "mon.plg.%s.so", name) < 0)
         oom ();
     if (kvs_get (ctx->h, key, &plg) < 0 || !Jget_obj (plg, "args", &args)
@@ -70,11 +95,12 @@ done:
     Jput (plg);
     if (errnum != 0)
         errno = errnum;
-    return rc;
+    //return rc;
 }
 
-static void mon_rm	(flux_t h, void *plg_t)
+void mon_rm	(flux_t h, int argc, char *argv[])
 {					/* Remove Plugin */
+	//return 0;
 }
 
 void usage (void)
@@ -109,19 +135,21 @@ int main (int argc, char *argv[])
         usage ();
     cmd = argv[optind++];
 
+    /*
     if (!(h = flux_api_open ()))
         err_exit ("flux_api_open");
 
 	if (!strcmp (cmd, "ins"))
-        mon_ins (h, argc - optind, argv + optind);
+        //mon_ins (h, argc - optind, argv + optind);
+		usage();
     else if (!strcmp (cmd, "rm"))
         mon_rm (h, argc - optind, argv + optind);
     else if (!strcmp (cmd, "echo"))
         printf("Echo\n");
     else
         usage ();
+	*/
 	
-	/*
     if (!strcmp (cmd, "list"))
         mon_list (h, argc - optind, argv + optind);
     else if (!strcmp (cmd, "add"))
@@ -134,7 +162,7 @@ int main (int argc, char *argv[])
         printf("Echo\n");
     else
         usage ();
-	*/
+	
 
     flux_api_close (h);
     log_fini ();
@@ -160,7 +188,7 @@ done:
         dlclose (dso);
     return s;
 }
-
+*/
 static void mon_del (flux_t h, int argc, char *argv[])
 {
     char *key;
@@ -226,7 +254,7 @@ static void mon_list (flux_t h, int argc, char *argv[])
     kvsitr_destroy (itr);
     kvsdir_destroy (dir);
 }
-
+/*
 static JSON parse_plgargs (int argc, char **argv)
 {
     JSON args = Jnew ();
