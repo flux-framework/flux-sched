@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "util/optparse.h"
+#include "src/common/libutil/optparse.h"
 #include "rdl.h"
 
 struct prog_ctx {

@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,8 +9,8 @@
 #include <lauxlib.h>
 
 #include "rdl.h"
-#include "util/list.h"
-#include "dlua/json-lua.h"
+#include "src/common/liblsd/list.h"
+#include "src/bindings/lua/json-lua.h"
 
 #define VERR(r,args...) (*((r)->errf)) ((r)->errctx, args)
 

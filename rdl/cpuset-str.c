@@ -1,5 +1,4 @@
 
-#define _GNU_SOURCE
 #include <stdint.h> /* uint32_t   */
 #include <stdlib.h> /* strtoul   */
 #include <sched.h>  /* cpu_set_t */
