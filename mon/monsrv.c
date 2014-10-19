@@ -1,31 +1,14 @@
 /* monsrv.c - monitoring plugin */
 
-#define _GNU_SOURCE
 #include <stdio.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <getopt.h>
-#include <libgen.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/param.h>
-#include <stdbool.h>
-#include <sys/un.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <ctype.h>
-#include <zmq.h>
-#include <czmq.h>
-#include <json/json.h>
+#include <json.h>
+#include <flux/core.h>
 
-#include "zmsg.h"
-#include "util.h"
-#include "log.h"
-#include "plugin.h"
-#include "shortjson.h"
-#include "reduce.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/xzmalloc.h"
 
 static const char *mon_conf_dir = "conf.mon.source";
 const int red_timeout_msec = 2;
@@ -99,7 +82,7 @@ static int push_request_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
     int epoch;
     int rc = 0;
 
-    if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
+    if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
             || !Jget_str (request, "name", &name)
             || !Jget_int (request, "epoch", &epoch)) {
         flux_log (ctx->h, LOG_ERR, "%s: bad message", __FUNCTION__);
@@ -163,7 +146,7 @@ static int hb_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
     JSON event = NULL;
     int rc = 0;
 
-    if (cmb_msg_decode (*zmsg, NULL, &event) < 0 || event == NULL
+    if (flux_msg_decode (*zmsg, NULL, &event) < 0 || event == NULL
                 || !Jget_int  (event, "epoch", &ctx->epoch)) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         goto done;

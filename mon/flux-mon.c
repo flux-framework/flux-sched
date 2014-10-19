@@ -1,15 +1,13 @@
 /* flux-mon.c - flux mon subcommand */
 
-#define _GNU_SOURCE
 #include <getopt.h>
 #include <json/json.h>
 #include <assert.h>
 #include <libgen.h>
+#include <flux/core.h>
 
-#include "cmb.h"
-#include "util.h"
-#include "log.h"
-#include "shortjson.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
 
 #define OPTIONS "h"
 static const struct option longopts[] = {
@@ -53,8 +51,8 @@ int main (int argc, char *argv[])
         usage ();
     cmd = argv[optind++];
 
-    if (!(h = cmb_init ()))
-        err_exit ("cmb_init");
+    if (!(h = flux_api_open ()))
+        err_exit ("flux_api_open");
 
     if (!strcmp (cmd, "list"))
         mon_list (h, argc - optind, argv + optind);
@@ -65,7 +63,7 @@ int main (int argc, char *argv[])
     else
         usage ();
 
-    flux_handle_destroy (&h);
+    flux_api_close (h);
     log_fini ();
     return 0;
 }

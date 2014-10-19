@@ -32,5 +32,5 @@ RDL_LUA_PATH = $(abs_topdir)/rdl/?.lua
 #
 PATH := $(PATH):$(flux_top_builddir)/src/cmd
 FLUX = flux -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH) \
-	-M$(abs_topdir)/sched:$(abs_topdir)/echo
+	-M$(abs_topdir)/sched:$(abs_topdir)/echo:$(abs_topdir)/mon
 COMMON_CFLAGS = -Wall -Werror -fPIC -D_GNU_SOURCE=1
