@@ -1,12 +1,11 @@
 
-#include <zmq.h>
-#include <czmq.h>
-#include <json/json.h>
+#include <json.h>
+#include <flux/core.h>
 
-#include "zmsg.h"
-#include "log.h"
-#include "util.h"
-#include "plugin.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/xzmalloc.h"
+#include "src/common/libutil/log.h"
+
 
 static json_object * json_echo (const char *s, int id)
 {
@@ -23,7 +22,7 @@ static json_object * json_echo (const char *s, int id)
 static int echo_request_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
     json_object *o = NULL;
-    if (cmb_msg_decode (*zmsg, NULL, &o) >= 0) {
+    if (flux_msg_decode (*zmsg, NULL, &o) >= 0) {
         json_object *so = json_object_object_get (o, "string");
         json_object *no = json_object_object_get (o, "repeat");
         const char *s;
@@ -42,7 +41,7 @@ static int echo_request_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
                 oom ();
 
             respo = json_echo (s, flux_rank (h));
-            cmb_msg_replace_json (z, respo);
+            flux_msg_replace_json (z, respo);
             flux_response_sendmsg (h, &z);
             json_object_put (respo);
         }
@@ -57,7 +56,7 @@ out:
 
 int mod_main (flux_t h, zhash_t *args)
 {
-    if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "echo",
+    if (flux_msghandler_add (h, FLUX_MSGTYPE_REQUEST, "echo",
                              echo_request_cb, NULL) < 0) {
         flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
         return -1;

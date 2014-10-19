@@ -1,19 +1,10 @@
-#define _GNU_SOURCE
 #include <stdio.h>
-#include <stdbool.h>
-#include <sys/time.h>
-#include <json/json.h>
-#include <stdarg.h>
-#include <string.h>
-#include <time.h>
-#include <zmq.h>
-#include <czmq.h>
+#include <json.h>
+#include <flux/core.h>
 
-#include "cmb.h"
-#include "flux.h"
-#include "log.h"
-#include "util.h"
-#include "zmsg.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/monotime.h"
 
 int main (int ac, char **av)
 {
@@ -21,7 +12,7 @@ int main (int ac, char **av)
 	char *tag;
 	const char *s;
 	struct timespec ts0;
-	flux_t h = cmb_init ();
+	flux_t h = flux_api_open ();
 
 	if (!h) {
 		fprintf (stderr, "Failed to open connection to cmb!\n");
@@ -57,8 +48,8 @@ int main (int ac, char **av)
 		ms = monotime_since (ts0);
 		//zmsg_dump_compact (zmsg);
 
-		if (cmb_msg_decode (zmsg, &tag, &o) < 0) {
-			fprintf (stderr, "cmb_msg_decode failed!\n");
+		if (flux_msg_decode (zmsg, &tag, &o) < 0) {
+			fprintf (stderr, "flux_msg_decode failed!\n");
 			exit (1);
 		}
 

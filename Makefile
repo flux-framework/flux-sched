@@ -1,14 +1,6 @@
-SUBDIRS = zmq-broker pmi-test
+include Makefile.inc
 
-all: $(SUBDIRS)
+SUBDIRS = echo rdl sched
 
-$(SUBDIRS):
-	make -C $@ all
-
-clean:
-	for f in $(SUBDIRS); do make -C $$f $@; done
-
-# subdir dependencies
-pmi-test: zmq-broker
-
-.PHONY: all clean $(SUBDIRS)
+all clean install:
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
