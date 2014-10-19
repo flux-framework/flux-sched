@@ -765,7 +765,7 @@ ret:
 /****************************************************************
  *                KVS Watch Callback Functions
  ****************************************************************/
-static void
+static int
 lwjstate_cb (const char *key, const char *val, void *arg, int errnum)
 {
     int64_t lwj_id;
@@ -797,13 +797,13 @@ lwjstate_cb (const char *key, const char *val, void *arg, int errnum)
         flux_log (h, LOG_ERR, "lwjstate_cb: find_lwj %ld failed", lwj_id);
 
 ret:
-    return;
+    return 0;
 }
 
 /* The val argument is for the *next* job id.  Hence, the job id of
  * the new job will be (val - 1).
  */
-static void
+static int
 newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
 {
     char path[MAX_STR_LEN];
@@ -846,13 +846,13 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         goto error;
     }
 ret:
-    return;
+    return 0;
 
 error:
     if (j)
         free (j);
 
-    return;
+    return 0;
 }
 
 
