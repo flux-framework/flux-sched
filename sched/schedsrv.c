@@ -425,13 +425,13 @@ int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
 {
     bool reserve = false;
     int rc = -1;
-    struct rdl_accumulator *a = NULL;
+    //struct rdl_accumulator *a = NULL;
     struct resource *fr = NULL;         /* found resource */
     struct rdl *frdl = NULL;            /* found rdl */
 
     if ((frdl = (*find_resources) (h, rdl, uri, job, &reserve))) {
         if ((fr = rdl_resource_get (frdl, uri))) {
-            a = rdl_accumulator_create (rdl);
+            //a = rdl_accumulator_create (rdl);
             if (!select_resources (h, rdl, uri, fr, job, reserve)) {
                 /* Transition the job back to submitted to prevent the
                  * scheduler from trying to schedule it again */
