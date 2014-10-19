@@ -160,7 +160,7 @@ done:
 /* Detect the presence (or absence) of content in our conf KVS space.
  * We will ignore hb events to reduce overhead if there is no content.
  */
-static void conf_cb (const char *path, kvsdir_t dir, void *arg, int errnum)
+static int conf_cb (const char *path, kvsdir_t dir, void *arg, int errnum)
 {
     ctx_t *ctx = arg;
     kvsitr_t itr;
@@ -184,6 +184,7 @@ static void conf_cb (const char *path, kvsdir_t dir, void *arg, int errnum)
                       strerror (errno));
         }
     }
+    return 0;
 }
 
 static void mon_sink (flux_t h, void *item, int batchnum, void *arg)
