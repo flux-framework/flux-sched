@@ -95,6 +95,8 @@ static int rdllib_init (struct rdllib *rl)
     /* dlopen liblua.so to pickup symbols that will be referenced by
      * "require" */
     dlopen ("liblua.so", RTLD_NOW | RTLD_GLOBAL);
+    if ((error = dlerror()) != NULL)
+        dlopen ("liblua5.1.so", RTLD_NOW | RTLD_GLOBAL);
     if ((error = dlerror()) != NULL)  {
         VERR (rl, "dlopen(liblua.so) failed: %s\n", error);
         return (-1);
