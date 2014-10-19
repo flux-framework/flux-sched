@@ -1,29 +1,25 @@
-topdir  :=          $(shell cd .. && pwd)
-builddir  :=        $(shell pwd)
-programs =          wrexecd
-plugins  =          jobsrv.o resrcsrv.o schedsrv.o schedplugin1.o wrexecsrv.o
+include ../Makefile.inc
 
-CFLAGS +=           -ggdb -Wall -Werror \
-                    -I$(topdir) -I$(topdir)/include -I$(topdir)/util
-LDFLAGS +=          -L$(topdir)/lib \
-		    -L$(topdir)/util \
-		    -L$(topdir)/zutil \
-		    -Wl,-rpath=$(topdir)/lib
+CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
+LIBS = $(FLUX_LIBS) $(RDL_LIBS)
 
-LIBADD +=           $(topdir)/util/libutil.a $(topdir)/zutil/libzutil.a -lcmb -lczmq -ljson -lzmq
-CLEANFILES :=       $(programs) rexec-config.h
+CONF=../conf/hype.lua
 
-wrexecd_SOURCES :=  wrexecd.c luastack.c
+BUILD = schedsrv.so schedplugin1.so
 
-all:                rexec-config.h $(programs) $(plugins) $(tests)
+all: $(BUILD)
 
-rexec-config.h :
-	@(echo '#define REXECD_PATH "$(builddir)/wrexecd"') > $@
-	@(echo '#define REXECD_LUA_PATTERN  "$(builddir)/lua.d/*.lua"') >> $@
+schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
+	$(CC) -shared -o $@ $^ $(LIBS)
+schedplugin1.so: schedplugin1.o xzmalloc.o log.o jsonutil.o
+	$(CC) -shared -o $@ $^ $(LIBS)
 
-wrexecd : $(wrexecd_SOURCES:.c=.o)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBADD) $(topdir)/dlua/libdlua.a $(LUA_LIBS) -lm
+start:
+	$(FLUX) start -o,-Msched,-Osched:rdl-conf=$(CONF)
+load:
+	$(FLUX) module load sched rdl-conf=$(CONF)
+unload:
+	$(FLUX) module remove sched
 
 clean:
-	rm -f *.o $(CLEANFILES) tags
-
+	rm -f *.o $(BUILD)

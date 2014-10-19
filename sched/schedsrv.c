@@ -8,7 +8,6 @@
  *       May 24 2012 DHA: File created.
  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,11 +16,11 @@
 #include <czmq.h>
 #include <json/json.h>
 #include <dlfcn.h>
+#include <flux/core.h>
 
-#include "util.h"
-#include "log.h"
-#include "shortjson.h"
-#include "plugin.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/xzmalloc.h"
 #include "rdl.h"
 #include "scheduler.h"
 
@@ -80,6 +79,7 @@ static struct stab_struct jobstate_tab[] = {
  *         Resource Description Library Setup
  *
  ****************************************************************/
+#if 0
 static void f_err (flux_t h, const char *msg, ...)
 {
     va_list ap;
@@ -110,6 +110,7 @@ static void setup_rdl_lua (void)
 
     rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
 }
+#endif
 
 static int
 signal_event ( )
@@ -892,7 +893,7 @@ int mod_main (flux_t p, zhash_t *args)
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
 
-    if (!(dso = dlopen ("plugins/schedplugin1.so", RTLD_NOW | RTLD_LOCAL))) {
+    if (!(dso = dlopen ("./schedplugin1.so", RTLD_NOW | RTLD_LOCAL))) {
         flux_log (h, LOG_ERR, "failed to open sched plugin: %s",
                   dlerror ());
         rc = -1;
@@ -931,7 +932,7 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
-    setup_rdl_lua ();
+    //setup_rdl_lua ();
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
         flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
                   path, strerror (errno));
