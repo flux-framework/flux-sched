@@ -814,6 +814,11 @@ function MemStore:find (arg)
         end
     end
 
+	-- The find could have resulted in an empty list
+	if next(a.dst.__hierarchy) == nil then
+	   return nil
+	end
+
     return a.dst
 end
 

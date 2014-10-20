@@ -388,6 +388,11 @@ static struct rdl * rdl_new (struct rdllib *rl)
      */
     list_append (rl->rdl_list, rdl);
 
+    /*
+     *  Link this rdl to rdllib rdl list:
+     */
+    list_append (rl->rdl_list, rdl);
+
     /* Leave rdl instance on top of stack */
     return (rdl);
 }
