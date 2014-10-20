@@ -1,26 +1,44 @@
-TOP =             $(shell pwd)/../
-LIBDIR =          $(TOP)/lib
-EXTRA_CFLAGS +=   -I$(TOP) -I$(TOP)/include -I$(TOP)/util -I$(TOP)/zutil -I$(TOP)/simulator
-EXTRA_LDFLAGS +=  -L$(TOP)/lib $(TOP)/zutil/libzutil.a $(TOP)/util/libutil.a
-LDADD_CLI = $(EXTRA_LDFLAGS) -ljson -lzmq -lczmq -lutil -lm -lmunge
+include ../Makefile.inc
 
-CFLAGS = -Werror -Wall -g -fPIC $(EXTRA_CFLAGS) \
-	-I/usr/include/czmq \
-	-DPLUGIN_PATH=\"$(TOP)/plugins\" \
-	-DEXEC_PATH=\"$(TOP)/libexec\"
-LDFLAGS = -Wl,-rpath,$(LIBDIR)
+CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS) -I$(topdir)/sched
+LIBS = $(FLUX_LIBS) $(RDL_LIBS)
 
-LIBSIM_SOURCES := simulator.c
+CONF=../conf/hype.lua
+JOBDATA=job_data/2014-06-01.csv
 
-all: libsim.a
+COMMON_OBJS = simulator.o xzmalloc.o log.o jsonutil.o
 
-simulator.o: simulator.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -c $< $(LDADD_CLI)
+BUILD = sim.so submit.so sim_sched.so sim_exec.so
 
-libsim.a : $(LIBSIM_SOURCES:.c=.o)
-	ar rcs $@ $^
+all:  $(BUILD)
+
+sim.so: simsrv.o $(COMMON_OBJS)
+	$(CC) -shared -o $@ $^ $(LIBS)
+submit.so: submitsrv.o $(COMMON_OBJS)
+	$(CC) -shared -o $@ $^ $(LIBS)
+sim_sched.so: sim_schedsrv.o $(COMMON_OBJS)
+	$(CC) -shared -o $@ $^ $(LIBS)
+sim_exec.so: sim_execsrv.o $(COMMON_OBJS)
+	$(CC) -shared -o $@ $^ $(LIBS)
+
+# N.B. "race fix" in job module is conditionally disabled
+# turn it on there if needed until there is a proper fix for the race
+
+start:
+	$(FLUX) start
+load:
+	$(FLUX) module load ./sim.so
+	$(FLUX) module load ./submit.so job-csv=$(JOBDATA)
+	$(FLUX) module load ./sim_sched.so rdl-conf=$(CONF)
+	$(FLUX) module load ./sim_exec.so
+unload:
+	$(FLUX) module load sim_exec
+	$(FLUX) module load sim_sched
+	$(FLUX) module load submit
+	$(FLUX) module load sim
+	
 
 clean:
 	rm -f *.a *.o
 
-.PHONY: all clean
+.PHONY: all clean load unload start

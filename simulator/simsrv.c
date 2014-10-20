@@ -3,15 +3,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <czmq.h>
-#include <json/json.h>
+#include <json.h>
+#include <flux/core.h>
 
-#include "flux.h"
-#include "util.h"
-#include "log.h"
-#include "zmsg.h"
-#include "shortjson.h"
-#include "plugin.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
 //ctx is used in several other modules and I liked the idea
@@ -151,7 +149,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	ctx_t *ctx = arg;
 	sim_state_t *sim_state = ctx->sim_state;
 
-	if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
+	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
 		|| !Jget_str (request, "mod_name", &mod_name)
 		|| !Jget_int (request, "rank", &mod_rank)
 		|| !Jget_double (request, "next_event", next_event)) {
@@ -258,7 +256,7 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	sim_state_t *curr_sim_state = ctx->sim_state;
 	sim_state_t *reply_sim_state;
 
-	if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
+	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
 		|| !Jget_bool (request, "event_finished", &event_finished)) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
@@ -286,7 +284,7 @@ static int alive_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON request = NULL;
 	const char *json_string;
 
-	if (cmb_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL) {
+	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
 		return 0;

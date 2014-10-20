@@ -1,17 +1,14 @@
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <czmq.h>
-#include <json/json.h>
+#include <json.h>
+#include <flux/core.h>
 
-#include "util.h"
-#include "log.h"
-#include "zmsg.h"
-#include "shortjson.h"
-#include "plugin.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
 #include "simulator.h"
 
 static const char const *module_name = "submit";
@@ -270,7 +267,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	sim_state_t *sim_state;
 	char *tag;
 
-	if (cmb_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
 		return -1;

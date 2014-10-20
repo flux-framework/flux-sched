@@ -1,20 +1,16 @@
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <czmq.h>
-#include <json/json.h>
-//#include <json/json_object_iterator.h>
-#include <czmq.h>
+#include <json.h>
 #include <libgen.h>
 #include <dlfcn.h>
+#include <flux/core.h>
 
-#include "flux.h"
-#include "util.h"
-#include "log.h"
-#include "shortjson.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
 #include "simulator.h"
 #include "rdl.h"
 

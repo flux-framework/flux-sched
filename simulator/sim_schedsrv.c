@@ -4,7 +4,6 @@
  *-------------------------------------------------------------------------------
  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,14 +15,12 @@
 #include <time.h>
 #include <inttypes.h>
 
-#include "util.h"
-#include "util/list.h"
-#include "log.h"
-#include "shortjson.h"
-#include "plugin.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/xzmalloc.h"
 #include "rdl.h"
 #include "scheduler.h"
-#include "zmsg.h"
 #include "simulator.h"
 
 #define MAX_STR_LEN 128
@@ -113,6 +110,7 @@ static void queue_timer_change (const char* module)
  *         Resource Description Library Setup
  *
  ****************************************************************/
+#if 0
 static void f_err (flux_t h, const char *msg, ...)
 {
     va_list ap;
@@ -151,6 +149,7 @@ static void setup_rdl_lua (void)
 
     rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
 }
+#endif
 
 //Reply back to the sim module with the updated sim state (in JSON form)
 int send_reply_request (flux_t h, sim_state_t *sim_state)
@@ -1294,7 +1293,7 @@ static int newlwj_rpc (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	int64_t id;
 	int rc = 0;
 
-	if (cmb_msg_decode (*zmsg, &tag, &o) < 0
+	if (flux_msg_decode (*zmsg, &tag, &o) < 0
 		    || o == NULL
 		    || !Jget_str (o, "key", &key)
 		    || !Jget_int64 (o, "val", &id)) {
@@ -1341,7 +1340,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	clock_t start, diff;
 	double seconds;
 
-	if (cmb_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
 		return -1;
@@ -1449,7 +1448,7 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
-    setup_rdl_lua ();
+    //setup_rdl_lua ();
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
         flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
                   path, strerror (errno));

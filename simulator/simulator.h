@@ -2,7 +2,8 @@
 #define SIMULATOR_H 1
 
 #include <czmq.h>
-#include "shortjson.h"
+#include <flux/core.h>
+#include "src/common/libutil/shortjson.h"
 
 typedef struct {
   double sim_time;
