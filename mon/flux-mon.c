@@ -8,6 +8,7 @@
 
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/jsonutil.h"
 
 #define OPTIONS "h"
 static const struct option longopts[] = {
@@ -135,7 +136,6 @@ int main (int argc, char *argv[])
         usage ();
     cmd = argv[optind++];
 
-    /*
     if (!(h = flux_api_open ()))
         err_exit ("flux_api_open");
 
@@ -148,8 +148,7 @@ int main (int argc, char *argv[])
         printf("Echo\n");
     else
         usage ();
-	*/
-	
+
     if (!strcmp (cmd, "list"))
         mon_list (h, argc - optind, argv + optind);
     else if (!strcmp (cmd, "add"))
@@ -162,7 +161,6 @@ int main (int argc, char *argv[])
         printf("Echo\n");
     else
         usage ();
-	
 
     flux_api_close (h);
     log_fini ();

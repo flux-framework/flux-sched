@@ -3,7 +3,7 @@ include ../Makefile.inc
 CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS)
 LIBS = $(FLUX_LIBS)
 
-X_OBJS = log.o xzmalloc.o
+X_OBJS = log.o xzmalloc.o jsonutil.o
 
 BUILD = flux-mon monsrv.so
 
