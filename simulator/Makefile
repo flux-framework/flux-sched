@@ -1,6 +1,6 @@
 include ../Makefile.inc
 
-CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS) -I$(topdir)/sched
+CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
 LIBS = $(FLUX_LIBS) $(RDL_LIBS)
 
 CONF=../conf/hype.lua
