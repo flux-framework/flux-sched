@@ -1,18 +1,30 @@
 #!/bin/bash
+#
+#
+
+prog=`basename $0`
+
+say()  { echo "$prog: $@"; }
+warn() { echo >&2 "$prog: Warning: $@"; }
+usage() {
+    echo >&2 "Usage: $0 '[flux-core-top-builddir]'"
+    exit 1
+}
 
 if test $# -eq 1; then
-    echo Configuring for flux-core builddir of $1
+    say Configuring for flux-core builddir of $1
+    rm .build
     ln -sf $1 .build
     if ! test -d $1; then
-        echo "Warming: $1 is not a directory"
+        warn "$1 is not a directory"
     fi
 elif test $# -eq 0; then
-    echo Configuring for installed flux-core
+    say Configuring for installed flux-core
     rm -f .build
     if ! pkg-config --exists flux-core; then
-        echo "Warming: pkg-config could not find flux-core"
+        warn "pkg-config could not find flux-core"
+	usage
     fi
 else
-    echo Usage: $@ '[flux-core-top-builddir]'
-    exit 1
+    usage
 fi
