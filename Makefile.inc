@@ -1,23 +1,29 @@
 topdir := $(dir $(lastword $(MAKEFILE_LIST)))
 abs_topdir := $(abspath $(topdir))
-flux_top_builddir := $(abspath $(abs_topdir)/../flux-core)
-flux_top_srcdir := $(abspath $(abs_topdir)/../flux-core)
 
 #
-# Build against compiled flux-core source tree
+# If user ran ./config dir, then include Makefile.inc from there
+# to get FLUX_CFLAGS, FLUX_LIBS, and FLUX_SRCDIR.
+# Otherwise we're building against installed flux-core.
 #
-FLUX_CFLAGS := $(shell PKG_CONFIG_PATH=$(flux_top_builddir)/etc \
-	pkg-config --cflags flux-core-srctree)
-FLUX_LIBS := $(shell PKG_CONFIG_PATH=$(flux_top_builddir)/etc \
-	pkg-config --libs flux-core-srctree)
+FLUX_BUILDDIR=$(shell readlink -e $(abs_topdir)/.build)
+ifneq ($(FLUX_BUILDDIR),)
+include $(FLUX_BUILDDIR)/etc/Makefile.inc
+PATH := $(PATH):$(FLUX_BUILDDIR)/src/cmd
+else
+FLUX_CFLAGS := $(shell pkg-config --cflags flux-core)
+FLUX_LIBS := $(shell pkg-config --libs flux-core)
+endif
 
 #
 # Borrow some source from flux-core source tree that was not
 # intended to be exported (FIXME)
 #
-vpath %.c $(flux_top_srcdir)/src/bindings/lua
-vpath %.c $(flux_top_srcdir)/src/common/liblsd
-vpath %.c $(flux_top_srcdir)/src/common/libutil
+ifneq ($(FLUX_SRCDIR),)
+vpath %.c $(FLUX_SRCDIR)/src/bindings/lua
+vpath %.c $(FLUX_SRCDIR)/src/common/liblsd
+vpath %.c $(FLUX_SRCDIR)/src/common/libutil
+endif
 
 #
 # Build against (in-tree) librdl
@@ -30,7 +36,6 @@ RDL_LUA_PATH = $(abs_topdir)/rdl/?.lua
 #
 # When we invoke flux we need to provide additional LUA paths for RDL
 #
-PATH := $(PATH):$(flux_top_builddir)/src/cmd
 FLUX = flux -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH) \
 	-M$(abs_topdir)/sched:$(abs_topdir)/echo:$(abs_topdir)/mon
 COMMON_CFLAGS = -Wall -Werror -fPIC -D_GNU_SOURCE=1

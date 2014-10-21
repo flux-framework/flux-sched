@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if test $# -eq 1; then
+    echo Configuring for flux-core builddir of $1
+    ln -sf $1 .build
+    if ! test -d $1; then
+        echo "Warming: $1 is not a directory"
+    fi
+elif test $# -eq 0; then
+    echo Configuring for installed flux-core
+    rm -f .build
+    if ! pkg-config --exists flux-core; then
+        echo "Warming: pkg-config could not find flux-core"
+    fi
+else
+    echo Usage: $@ '[flux-core-top-builddir]'
+    exit 1
+fi
