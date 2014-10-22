@@ -13,7 +13,7 @@ usage() {
 
 if test $# -eq 1; then
     say Configuring for flux-core builddir of $1
-    rm .build
+    rm -f .build
     ln -sf $1 .build
     if ! test -d $1; then
         warn "$1 is not a directory"
