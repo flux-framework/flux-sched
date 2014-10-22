@@ -15,9 +15,9 @@ schedplugin1.so: schedplugin1.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 
 start:
-	$(FLUX) start -o,-Msched,-Osched:rdl-conf=$(CONF)
+	$(FLUX) start
 load:
-	$(FLUX) module load sched rdl-conf=$(CONF)
+	$(FLUX) module load ./schedsrv.so rdl-conf=$(CONF)
 unload:
 	$(FLUX) module remove sched
 

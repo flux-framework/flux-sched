@@ -16,9 +16,9 @@ echosrv.so: echosrv.o $(X_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
 
 start:
-	$(FLUX) start -o,-Mecho
+	$(FLUX) start
 load:
-	$(FLUX) module load echo
+	$(FLUX) module load ./echosrv.so
 unload:
 	$(FLUX) module remove echo
 

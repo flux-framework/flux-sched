@@ -16,9 +16,9 @@ monsrv.so: monsrv.o $(X_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
 
 start:
-	$(FLUX) start -o,-Mmon
+	$(FLUX) start
 load:
-	$(FLUX) module load mon
+	$(FLUX) module load ./monsrv.so
 unload:
 	$(FLUX) module remove mon 
 
