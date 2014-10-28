@@ -403,6 +403,7 @@ int release_resources (flux_t h, struct rdl *rdl, const char *uri,
     return rc;
 }
 
+MOD_NAME ("sched.plugin1");
 
 
 /*

@@ -100,7 +100,7 @@ static struct stab_struct jobstate_tab[] = {
  *         Resource Description Library Setup
  *
  ****************************************************************/
-#if 0
+
 static void f_err (flux_t h, const char *msg, ...)
 {
     va_list ap;
@@ -109,29 +109,13 @@ static void f_err (flux_t h, const char *msg, ...)
     va_end (ap);
 }
 
-/* XXX: Borrowed from flux.c and subject to change... */
 static void setup_rdl_lua (void)
 {
-    char *s;
-    char  exe_path [MAXPATHLEN];
-    char *exe_dir;
-
-    memset (exe_path, 0, MAXPATHLEN);
-    if (readlink ("/proc/self/exe", exe_path, MAXPATHLEN - 1) < 0)
-        err_exit ("readlink (/proc/self/exe)");
-    exe_dir = dirname (exe_path);
-
-    s = getenv ("LUA_CPATH");
-    setenvf ("LUA_CPATH", 1, "%s/dlua/?.so;%s", exe_dir, s ? s : ";");
-    s = getenv ("LUA_PATH");
-    setenvf ("LUA_PATH", 1, "%s/dlua/?.lua;%s", exe_dir, s ? s : ";");
-
     flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 
     rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
 }
-#endif
 
 static int
 signal_event ( )
@@ -900,8 +884,10 @@ event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
  ****************************************************************/
 int mod_main (flux_t p, zhash_t *args)
 {
-    int rc = 0;
     char *path;
+    char *schedplugin = "sched.plugin1";
+    char *searchpath = getenv ("FLUX_MODULE_PATH");
+    int rc = 0;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
     void *dso;
@@ -914,12 +900,28 @@ int mod_main (flux_t p, zhash_t *args)
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
 
-    if (!(dso = dlopen ("./schedplugin1.so", RTLD_NOW | RTLD_LOCAL))) {
-        flux_log (h, LOG_ERR, "failed to open sched plugin: %s",
-                  dlerror ());
+    if (!searchpath) {
+//        searchpath = MODULE_PATH;
+        flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
         rc = -1;
         goto ret;
     }
+
+    if (!(path = flux_modfind (searchpath, schedplugin))) {
+        flux_log (h, LOG_ERR, "%s: not found in module search path %s",
+                  schedplugin, searchpath);
+        rc = -1;
+        goto ret;
+    }
+
+    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
+        flux_log (h, LOG_ERR, "failed to open sched plugin: %s", dlerror ());
+        rc = -1;
+        goto ret;
+    } else {
+        flux_log (h, LOG_DEBUG, "loaded: %s", schedplugin);
+    }
+
     if (!(find_resources = dlsym (dso, "find_resources")) || !*find_resources) {
         flux_log (h, LOG_ERR, "failed to load find_resources symbol: %s",
                   dlerror ());
@@ -953,7 +955,7 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
-    //setup_rdl_lua ();
+    setup_rdl_lua ();
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
         flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
                   path, strerror (errno));
