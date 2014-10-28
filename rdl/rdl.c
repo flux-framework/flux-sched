@@ -412,11 +412,6 @@ static struct rdl * rdl_new (struct rdllib *rl)
      */
     list_append (rl->rdl_list, rdl);
 
-    /*
-     *  Link this rdl to rdllib rdl list:
-     */
-    list_append (rl->rdl_list, rdl);
-
     /* Leave rdl instance on top of stack */
     return (rdl);
 }
@@ -478,8 +473,6 @@ static struct rdl * loadfn (struct rdllib *rl, const char *fn, const char *s)
         return (NULL);
     }
     lua_setglobal (rdl->L, "rdl");
-    lua_settop (rdl->L, 0);
-
     lua_settop (rdl->L, 0);
     return (rdl);
 }
