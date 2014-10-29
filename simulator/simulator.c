@@ -194,7 +194,7 @@ int put_job_in_kvs (job_t *job)
 
 	//TODO: Check to see if this is necessary, i assume the kvsdir becomes stale after a commit
 	char *dir_key;
-	asprintf (&dir_key, kvsdir_key (job->kvs_dir));
+	asprintf (&dir_key, "%s", kvsdir_key (job->kvs_dir));
 	kvsdir_destroy (job->kvs_dir);
 	kvs_get_dir (h, &job->kvs_dir, dir_key);
 	free (dir_key);

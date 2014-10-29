@@ -275,7 +275,7 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON request = NULL;
 	bool event_finished;
-	const char *json_string;
+	//const char *json_string;
 	ctx_t *ctx = arg;
 	sim_state_t *curr_sim_state = ctx->sim_state;
 	sim_state_t *reply_sim_state;
@@ -288,7 +288,7 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	}
 
 	//Logging
-	json_string = Jtostr (request);
+	//json_string = Jtostr (request);
 	//flux_log (h, LOG_DEBUG, "received reply - %s", json_string);
 
 	//De-serialize and get new info
