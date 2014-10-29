@@ -486,7 +486,7 @@ request_run (flux_lwj_t *job)
                   job->lwj_id, stab_rlookup (jobstate_tab, j_runrequest));
     } else if (kvs_commit (h) < 0) {
         flux_log (h, LOG_ERR, "kvs_commit error!");
-    } else if (flux_event_send (h, NULL, "rexec.run.%ld", job->lwj_id) < 0) {
+    } else if (flux_event_send (h, NULL, "wrexec.run.%ld", job->lwj_id) < 0) {
         flux_log (h, LOG_ERR, "request_run event send failed: %s",
                   strerror (errno));
     } else {
