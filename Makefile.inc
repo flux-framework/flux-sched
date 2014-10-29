@@ -9,7 +9,7 @@ abs_topdir := $(abspath $(topdir))
 FLUX_BUILDDIR=$(shell readlink -e $(abs_topdir)/.build)
 ifneq ($(FLUX_BUILDDIR),)
 include $(FLUX_BUILDDIR)/etc/Makefile.inc
-PATH := $(PATH):$(FLUX_BUILDDIR)/src/cmd
+PATH := $(FLUX_BUILDDIR)/src/cmd:$(PATH)
 else
 FLUX_CFLAGS := $(shell pkg-config --cflags flux-core)
 FLUX_LIBS := $(shell pkg-config --libs flux-core)
