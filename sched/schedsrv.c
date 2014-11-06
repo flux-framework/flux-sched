@@ -65,7 +65,6 @@ struct stab_struct {
  ****************************************************************/
 static zlist_t *p_queue = NULL;
 static zlist_t *r_queue = NULL;
-static zlist_t *c_queue = NULL;
 static zlist_t *ev_queue = NULL;
 static flux_t h = NULL;
 static struct rdl *rdl = NULL;
@@ -538,13 +537,6 @@ move_to_r_queue (flux_lwj_t *lwj)
     return zlist_append (r_queue, lwj);
 }
 
-static int
-move_to_c_queue (flux_lwj_t *lwj)
-{
-    zlist_remove (r_queue, lwj);
-    return zlist_append (c_queue, lwj);
-}
-
 
 static int
 action_j_event (flux_event_t *e)
@@ -626,7 +618,7 @@ action_j_event (flux_event_t *e)
             goto bad_transition;
         }
         /* TODO move this to j_complete case once reaped is implemented */
-        move_to_c_queue (e->lwj);
+        zlist_remove (r_queue, e->lwj);
         issue_res_event (e->lwj);
         break;
 
@@ -639,7 +631,7 @@ action_j_event (flux_event_t *e)
         if (e->ev.je != j_reaped) {
             goto bad_transition;
         }
-//        move_to_c_queue (e->lwj);
+//        zlist_remove (r_queue, e->lwj);
         break;
 
     case j_reaped:
@@ -708,28 +700,6 @@ action (flux_event_t *e)
  *         Abstractions for KVS Callback Registeration
  *
  ****************************************************************/
-static int
-wait_for_lwj_init ()
-{
-    int rc = 0;
-    kvsdir_t dir = NULL;
-
-    if (kvs_watch_once_dir (h, &dir, "lwj") < 0) {
-        flux_log (h, LOG_ERR, "wait_for_lwj_init: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-
-    flux_log (h, LOG_DEBUG, "wait_for_lwj_init %s",
-              kvsdir_key(dir));
-
-ret:
-    if (dir)
-        kvsdir_destroy (dir);
-    return rc;
-}
-
 
 static int
 reg_newlwj_hdlr (KVSSetInt64F *func)
@@ -976,9 +946,8 @@ int mod_main (flux_t p, zhash_t *args)
 
     p_queue = zlist_new ();
     r_queue = zlist_new ();
-    c_queue = zlist_new ();
     ev_queue = zlist_new ();
-    if (!p_queue || !r_queue || !c_queue || !ev_queue) {
+    if (!p_queue || !r_queue || !ev_queue) {
         flux_log (h, LOG_ERR,
                   "init for queues failed: %s",
                   strerror (errno));
@@ -996,12 +965,6 @@ int mod_main (flux_t p, zhash_t *args)
                              event_cb, NULL) < 0) {
         flux_log (h, LOG_ERR,
                   "register event handling callback: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    if (wait_for_lwj_init () == -1) {
-        flux_log (h, LOG_ERR, "wait for lwj failed: %s",
                   strerror (errno));
         rc = -1;
         goto ret;
@@ -1024,7 +987,6 @@ int mod_main (flux_t p, zhash_t *args)
 
     zlist_destroy (&p_queue);
     zlist_destroy (&r_queue);
-    zlist_destroy (&c_queue);
     zlist_destroy (&ev_queue);
 
     rdllib_close(l);
