@@ -708,27 +708,27 @@ action (flux_event_t *e)
  *         Abstractions for KVS Callback Registeration
  *
  ****************************************************************/
-static int
-wait_for_lwj_init ()
-{
-    int rc = 0;
-    kvsdir_t dir = NULL;
+/* static int */
+/* wait_for_lwj_init () */
+/* { */
+/*     int rc = 0; */
+/*     kvsdir_t dir = NULL; */
 
-    if (kvs_watch_once_dir (h, &dir, "lwj") < 0) {
-        flux_log (h, LOG_ERR, "wait_for_lwj_init: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
+/*     if (kvs_watch_once_dir (h, &dir, "lwj") < 0) { */
+/*         flux_log (h, LOG_ERR, "wait_for_lwj_init: %s", */
+/*                   strerror (errno)); */
+/*         rc = -1; */
+/*         goto ret; */
+/*     } */
 
-    flux_log (h, LOG_DEBUG, "wait_for_lwj_init %s",
-              kvsdir_key(dir));
+/*     flux_log (h, LOG_DEBUG, "wait_for_lwj_init %s", */
+/*               kvsdir_key(dir)); */
 
-ret:
-    if (dir)
-        kvsdir_destroy (dir);
-    return rc;
-}
+/* ret: */
+/*     if (dir) */
+/*         kvsdir_destroy (dir); */
+/*     return rc; */
+/* } */
 
 
 static int
@@ -1000,12 +1000,14 @@ int mod_main (flux_t p, zhash_t *args)
         rc = -1;
         goto ret;
     }
-    if (wait_for_lwj_init () == -1) {
-        flux_log (h, LOG_ERR, "wait for lwj failed: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
+/* flux_log (h, LOG_INFO, "starting wait_for_lwj_init"); */
+/*     if (wait_for_lwj_init () == -1) { */
+/*         flux_log (h, LOG_ERR, "wait for lwj failed: %s", */
+/*                   strerror (errno)); */
+/*         rc = -1; */
+/*         goto ret; */
+/*     } */
+flux_log (h, LOG_INFO, "starting reg_newlwj_hdlr");
     if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register new lwj handling "
