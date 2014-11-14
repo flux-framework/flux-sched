@@ -39,6 +39,23 @@ test_expect_success 'flux-module load works' '
 	flux module load ${schedsrv} rdl-conf=${rdlconf}
 '
 
+test_expect_success 'flux-module remove works' '
+	flux module remove sched
+'
+
+test_expect_success 'flux-module load works after a successful unload' '
+	flux module load ${schedsrv} rdl-conf=${rdlconf} &&
+	flux module remove sched
+'
+
+test_expect_failure 'this flux-module load should fail' '
+	test_must_fail flux module load ${schedsrv} 
+'
+
+test_expect_failure 'flux-module load works after a load faiure' '
+	flux module load ${schedsrv} rdl-conf=${rdlconf}
+'
+
 test_expect_success 'flux-module list' '
 	flux module list
 '
