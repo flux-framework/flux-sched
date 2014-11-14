@@ -21,5 +21,8 @@ load:
 unload:
 	$(FLUX) module remove sched
 
+check:
+	echo "This is an empty dependency"
+
 clean:
 	rm -f *.o $(BUILD)
