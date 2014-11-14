@@ -36,5 +36,5 @@ RDL_LUA_PATH = $(abs_topdir)/rdl/?.lua
 #
 # When we invoke flux we need to provide additional LUA paths for RDL
 #
-FLUX = flux -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH)
+FLUX = flux -M$(abs_topdir)/sched -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH)
 COMMON_CFLAGS = -Wall -Werror -fPIC -D_GNU_SOURCE=1
