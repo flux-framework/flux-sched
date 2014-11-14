@@ -42,10 +42,10 @@ run_timeout() {
 #
 #  Reinvoke a test file under a flux comms instance
 #
-#  Usage: test_under_flux <size>
+#  Usage: test_under_flux <size> <flux-sched root dir>
 #
 test_under_flux() {
-    size=${1:-1}
+    size=$1
     tdir=$2
     if test -n "$TEST_UNDER_FLUX_ACTIVE" ; then
         unset TEST_UNDER_FLUX_ACTIVE
