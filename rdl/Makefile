@@ -1,5 +1,6 @@
 include ../Makefile.inc
 
+SUBDIRS = test
 CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS)
 LIBS = $(FLUX_LIBS)
 
@@ -9,6 +10,7 @@ X_OBJS_LIB = json-lua.o list.o
 BUILD = flux-rdltool librdl.so.0 cpuset.so
 
 all: $(BUILD)
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
 flux-rdltool: flux-rdltool.o $(X_OBJS_CMD) librdl.so.0
 	$(CC) -o $@ $^ $(LIBS) $(RDL_LIBS)
@@ -22,6 +24,7 @@ cpuset.so: lua-cpuset.o cpuset-str.o
 
 clean:
 	rm -f *.so *.o $(BUILD)
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
 dump:
 	$(FLUX) ./flux-rdltool -f ../conf/hype.lua  tree
