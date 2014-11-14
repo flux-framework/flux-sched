@@ -16,7 +16,7 @@ unset FLUX_CMBD_PATH
 #
 if test -z "$FLUX_BUILD_DIR"; then
     if test -z "${builddir}"; then
-        FLUX_BUILD_DIR="$(cd .. && pwd)"
+        FLUX_BUILD_DIR="$(cd ../.build && pwd)"
     else
         FLUX_BUILD_DIR="$(cd ${builddir}/.. && pwd))"
     fi
@@ -24,7 +24,7 @@ if test -z "$FLUX_BUILD_DIR"; then
 fi
 if test -z "$FLUX_SOURCE_DIR"; then
     if test -z "${srcdir}"; then
-        FLUX_SOURCE_DIR="$(cd .. && pwd)"
+        FLUX_SOURCE_DIR="$(cd ../.build && pwd)"
     else
         FLUX_SOURCE_DIR="$(cd ${srcdir}/.. && pwd)"
     fi
@@ -46,6 +46,7 @@ run_timeout() {
 #
 test_under_flux() {
     size=${1:-1}
+    tdir=$2
     if test -n "$TEST_UNDER_FLUX_ACTIVE" ; then
         unset TEST_UNDER_FLUX_ACTIVE
         return
@@ -64,7 +65,7 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux start --size=${size} ${quiet} "sh $0 ${flags}"
+      exec flux -M${tdir}/sched -C${tdir}/rdl/?.so -L${tdir}/rdl/?.lua start --size=${size} ${quiet} "sh $0 ${flags}"
 }
 
 
@@ -79,7 +80,7 @@ if test -n "$FLUX_TEST_INSTALLED_PATH"; then
     fluxbin=$FLUX_TEST_INSTALLED_PATH/flux
 else # normal case, use ${top_builddir}/src/cmd/flux
     PATH=$FLUX_BUILD_DIR/src/cmd:$PATH
-    fluxbin=$FLUX_BUILD_DIR/src/cmd/flux
+    fluxbin=$FLUX_BUILD_DIR/src/cmd/flux 
 fi
 export PATH
 

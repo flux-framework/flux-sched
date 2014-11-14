@@ -19,7 +19,7 @@ all: $(BUILD)
 
 check: $(TESTS)
 	for t in $(TESTS); do \
-	$$t --debug; done 
+	$$t; done 
 
 clean:
 	rm -rf *.o $(BUILD) test-results trash-directory*
