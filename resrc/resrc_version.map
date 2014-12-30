@@ -1,0 +1,5 @@
+{ global:
+    resrc_*;
+    local: *;
+};
+

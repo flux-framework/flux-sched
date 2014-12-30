@@ -33,8 +33,14 @@ RDL_LIBS = -Wl,-rpath,$(abs_topdir)/rdl -L$(topdir)/rdl -lrdl
 RDL_LUA_CPATH = $(abs_topdir)/rdl/?.so
 RDL_LUA_PATH = $(abs_topdir)/rdl/?.lua
 
+SCHED_MODULE_PATH = $(abs_topdir)/sched
+SUBMIT_EXEC_PATH = $(abs_topdir)/sched
+
+RESRC_CFLAGS = -I$(topdir)/resrc
+RESRC_LIBS = -Wl,-rpath,$(abs_topdir)/resrc -L$(topdir)/resrc -lresrc
+
 #
 # When we invoke flux we need to provide additional LUA paths for RDL
 #
-FLUX = flux -M$(abs_topdir)/sched -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH)
-COMMON_CFLAGS = -Wall -Werror -fPIC -D_GNU_SOURCE=1
+FLUX = flux -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH) -M$(SCHED_MODULE_PATH) -x$(SUBMIT_EXEC_PATH)
+COMMON_CFLAGS = -g -Wall -Werror -fPIC -D_GNU_SOURCE=1
