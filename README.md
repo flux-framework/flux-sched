@@ -76,45 +76,45 @@ functioning sched module in a comms session, follow these steps.
 ##### SLURM session
 
 The following instructions assume you have successfully run a SLURM
-session as described in the flux-core README.  Also if you have run
+session as described in the flux-core README.  Also, if you have run
 "make start" or "make load", exit now.
 
-To run the example below (which does not benefit from the Makefile's
-environment variable setup), you will have to manually add flux-sched
-directories to some of the path's in ~/flux-core/etc/flux/config.  The
-following example assumes that flux-core and flux-sched live under the
-home directory called "/home/user"
+To run the example below, you will have to manually add flux-sched
+directories to the flux commands.  The following example assumes that
+flux-core and flux-sched live under your home directory.  For greater
+insight into what is happening, add the -v flag to each flux command
+below.
 
+Create a comms session within SLURM across 3 nodes with one rank per
+node:
 ```
-    exec_path = /home/user/flux-core/src/cmd:/home/user/flux-sched/sched
-    lua_cpath = /home/user/flux-core/src/bindings/lua/.libs/?.so;/home/user/flux-sched/rdl/?.so
-    lua_path = /home/user/flux-core/src/bindings/lua/?.lua;/home/user/flux-sched/rdl/?.lua
-    module_path = /home/user/flux-core/src/modules:/home/user/flux-sched/rdl:/home/user/flux-sched/sched
+~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua start -s 3 -S -N 3
 ```
 
-Create a comms session within SLURM across 3 nodes with one rank per node:
+Load the sched module specifying the appropriate rdl configuration
+file:
+```
+~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua module load sched rdl-conf=../conf/hype.lua
+```
 
-    ~/flux-core/src/cmd/flux -v start -s 3 -S -N 3
-
-Load the sched module specifying the appropriate rdl conf file:
-
-    ~/flux-core/src/cmd/flux module load sched rdl-conf=../conf/hype.lua
-
-Check to see whether the module loaded
-
-    ~/flux-core/src/cmd/flux module list
+Check to see whether the sched module loaded:
+```
+~/flux-core/src/cmd/flux module list
+```
 
 Submit a job:
-
-    ~/flux-core/src/cmd/flux submit -N3 -n3 sleep 30
+```
+~/flux-core/src/cmd/flux -x ~/flux-sched/sched submit -N3 -n3 sleep 30
+```
 
 Examine the job:
-
-    ~/flux-core/src/cmd/flux kvs dir lwj.1
+```
+~/flux-core/src/cmd/flux kvs dir lwj.1
+```
 
 Exit the session:
 ```
- exit
+exit
 ```
 
 Read the cmbd.log that was created for details on what happened.

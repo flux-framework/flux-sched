@@ -43,7 +43,7 @@ typedef lwj_event_e lwj_state_e;
  */
 typedef enum {
     r_null,      /*!< the state has yet to be assigned */
-    r_added,     /*!< RDL reported some resources added */
+    r_added,     /*!< report that some resources added */
     r_released,  /*!< a lwj released some resources */
     r_attempt,   /*!< attemp to schedule again */
     r_failed,    /*!< some resource failed */
@@ -62,11 +62,11 @@ typedef enum {
 
 /**
  *  Defines resource request info block.
- *  This needs to be expanded as RDL evolves.
+ *  This needs to be expanded as Flux resources evolve.
  */
 typedef struct flux_resources {
     uint64_t nnodes; /*!< num of nodes requested by a job */
-    uint32_t ncores; /*!< num of cores requested by a job */
+    uint64_t ncores; /*!< num of cores requested by a job */
 } flux_res_t;
 
 
@@ -76,9 +76,9 @@ typedef struct flux_resources {
 typedef struct {
     int64_t lwj_id; /*!< LWJ id */
     lwj_state_e state;
-    bool reserve;
-    flux_res_t *req;   /*!< resources requested by this LWJ */
-    struct rdl *rdl;  /*!< resources allocated to this LWJ */
+    bool reserve;       /* reserve resources for job if true */
+    flux_res_t *req;    /*!< resources requested by this LWJ */
+    zlist_t *resrc_ids; /*!< resources allocated to this LWJ */
 } flux_lwj_t;
 
 
