@@ -17,7 +17,7 @@ BUILD = trdl
 all: $(BUILD)
 
 trdl: trdl.o
-	$(CC) -o $@ $^ $(LIBS) $(LDADD_CLI)
+	$(CC) -o $@ $^ $(LDADD_CLI) $(LIBS)
 
 check:
 	./trdl
