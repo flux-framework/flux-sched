@@ -41,7 +41,7 @@ typedef struct {
     int64_t items;
 } resrc_pool_t;
 
-struct resource {
+struct resrc {
     char *type;
     char *name;
     int64_t id;
@@ -61,7 +61,7 @@ struct resource {
  *  API
  ***************************************************************************/
 
-char* resrc_type (resource_t *resrc)
+char* resrc_type (resrc_t *resrc)
 {
     return resrc->type;
 }
@@ -85,10 +85,10 @@ void resrc_id_list_destroy (zlist_t *resrc_ids)
     }
 }
 
-resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
+resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid)
 {
-    resource_t *resrc = xzmalloc (sizeof (struct resource));
+    resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = strdup (type);
         resrc->name = strdup (name);
@@ -107,9 +107,9 @@ resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
     return resrc;
 }
 
-resource_t* resrc_copy_resource (resource_t* resrc)
+resrc_t* resrc_copy_resource (resrc_t* resrc)
 {
-    resource_t *new_resrc = xzmalloc (sizeof(resource_t));
+    resrc_t *new_resrc = xzmalloc (sizeof(resrc_t));
 
     if (new_resrc) {
         new_resrc->type = strdup (resrc->type);
@@ -132,7 +132,7 @@ resource_t* resrc_copy_resource (resource_t* resrc)
 void resrc_resource_destroy (void *object)
 {
     int64_t *id_ptr;
-    resource_t *resrc = (resource_t *) object;
+    resrc_t *resrc = (resrc_t *) object;
 
     if (resrc) {
         if (resrc->type)
@@ -166,7 +166,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
     const char *type = NULL;
     int64_t id;
     json_object *o = NULL;
-    resource_t *resrc;
+    resrc_t *resrc;
     struct resource *c;
     uuid_t uuid;
 
@@ -228,7 +228,7 @@ void resrc_print_resources (zhash_t *resrcs)
     char *resrc_id;
     char out[40];
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     zlist_t *resrc_ids = zhash_keys (resrcs);
 
     if (!resrcs) {
@@ -270,7 +270,7 @@ int resrc_find_resources (zhash_t *resrcs, zlist_t *found, const char *type,
 {
     char *resrc_id;
     int nfound = 0;
-    resource_t *resrc;
+    resrc_t *resrc;
     zlist_t *resrc_ids;
 
     if (!resrcs || !found || !type) {
@@ -310,7 +310,7 @@ int resrc_allocate_resources (zhash_t *resrcs, zlist_t *resrc_ids,
 {
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -336,7 +336,7 @@ int resrc_reserve_resources (zhash_t *resrcs, zlist_t *resrc_ids,
 {
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -363,7 +363,7 @@ json_object *resrc_serialize (zhash_t *resrcs, zlist_t *resrc_ids)
     char *resrc_id;
     json_object *ja;
     json_object *o = NULL;
-    resource_t *resrc;
+    resrc_t *resrc;
 
     if (!resrcs || !resrc_ids) {
         goto ret;
@@ -387,7 +387,7 @@ int resrc_release_resources (zhash_t *resrcs, zlist_t *resrc_ids,
 {
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !rel_job) {
