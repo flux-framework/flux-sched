@@ -45,7 +45,7 @@ struct resource {
     char *type;
     char *name;
     int64_t id;
-    int32_t sharing;
+    int32_t max_jobs;
     uuid_t uuid;
     resource_state_t state;
     zlist_t *graphs;
@@ -93,7 +93,7 @@ resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
         resrc->type = strdup (type);
         resrc->name = strdup (name);
         resrc->id = id;
-        resrc->sharing = 1;
+        resrc->max_jobs = 1;
         uuid_copy (resrc->uuid, uuid);
         resrc->state = RESOURCE_INVALID;
         resrc->graphs = NULL;
@@ -115,7 +115,7 @@ resource_t* resrc_copy_resource (resource_t* resrc)
         new_resrc->type = strdup (resrc->type);
         new_resrc->name = strdup (resrc->name);
         new_resrc->id = resrc->id;
-        new_resrc->sharing = resrc->sharing;
+        new_resrc->max_jobs = resrc->max_jobs;
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
         new_resrc->graphs = zlist_dup (resrc->graphs);
