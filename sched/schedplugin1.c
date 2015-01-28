@@ -127,7 +127,7 @@ zlist_t *select_resources (flux_t h, zhash_t *resrcs, zlist_t *resrc_ids,
 {
     char *resrc_id;
     char *new_id;
-    resource_t *resrc;
+    resrc_t *resrc;
     uint64_t ncores;
     uint64_t nnodes;
     zlist_t *selected_res = NULL;

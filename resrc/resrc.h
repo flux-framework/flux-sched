@@ -10,7 +10,7 @@
 #include <uuid/uuid.h>
 #include "src/common/liblsd/list.h"
 
-typedef struct resource resource_t;
+typedef struct resrc resrc_t;
 
 typedef enum {
     RESOURCE_INVALID,
@@ -26,7 +26,7 @@ typedef enum {
 /*
  * Return the type of the resouce
  */
-char* resrc_type (resource_t *resrc);
+char* resrc_type (resrc_t *resrc);
 
 /*
  * Free memory allocated to a job id
@@ -41,13 +41,13 @@ void resrc_id_list_destroy (zlist_t *resrc_ids);
 /*
  * Create a new resource object
  */
-resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
+resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid);
 
 /*
  * Create a copy of a resource object
  */
-resource_t* resrc_copy_resource (resource_t* resrc);
+resrc_t* resrc_copy_resource (resrc_t* resrc);
 
 /*
  * Destroy a resource object
