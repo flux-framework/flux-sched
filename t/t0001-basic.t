@@ -30,7 +30,7 @@ test_debug '
 '
 
 #
-# test_under_flux is under shareness.d/
+# test_under_flux is under sharness.d/
 #
 test_under_flux 1 $tdir
 

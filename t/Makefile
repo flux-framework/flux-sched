@@ -4,7 +4,7 @@ CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
 LIBS = $(FLUX_LIBS) $(RDL_LIBS)
 
 #
-# The following variables are used by shareness.d/flux-shareness.sh
+# The following variables are used by sharness.d/flux-sharness.sh
 #
 #
 export FLUX_BUILD_DIR=$(FLUX_BUILDDIR)
@@ -19,7 +19,8 @@ all: $(BUILD)
 
 check: $(TESTS)
 	for t in $(TESTS); do \
-	$$t; done 
+		./$$t; \
+	done 
 
 clean:
 	rm -rf *.o $(BUILD) test-results trash-directory*
