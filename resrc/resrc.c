@@ -44,11 +44,11 @@ typedef struct {
     int64_t items;
 } resrc_pool_t;
 
-struct resource {
+struct resrc {
     char *type;
     char *name;
     int64_t id;
-    int32_t sharing;
+    int32_t max_jobs;
     uuid_t uuid;
     resource_state_t state;
     zlist_t *graphs;
@@ -64,7 +64,7 @@ struct resource {
  *  API
  ***************************************************************************/
 
-char* resrc_type (resource_t *resrc)
+char* resrc_type (resrc_t *resrc)
 {
     return resrc->type;
 }
@@ -94,6 +94,7 @@ void resrc_id_list_destroy (resource_list_t * resrc_ids_in)
     }
 }
 
+<<<<<<< HEAD
 char* resrc_list_first(resource_list_t * rl)
 {
     return zlist_first((zlist_t*)rl);
@@ -104,15 +105,15 @@ char* resrc_list_next(resource_list_t * rl)
     return zlist_next((zlist_t*)rl);
 }
 
-resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
+resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid)
 {
-    resource_t *resrc = xzmalloc (sizeof (struct resource));
+    resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = strdup (type);
         resrc->name = strdup (name);
         resrc->id = id;
-        resrc->sharing = 1;
+        resrc->max_jobs = 1;
         uuid_copy (resrc->uuid, uuid);
         resrc->state = RESOURCE_INVALID;
         resrc->graphs = NULL;
@@ -126,15 +127,15 @@ resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
     return resrc;
 }
 
-resource_t* resrc_copy_resource (resource_t* resrc)
+resrc_t* resrc_copy_resource (resrc_t* resrc)
 {
-    resource_t *new_resrc = xzmalloc (sizeof(resource_t));
+    resrc_t *new_resrc = xzmalloc (sizeof(resrc_t));
 
     if (new_resrc) {
         new_resrc->type = strdup (resrc->type);
         new_resrc->name = strdup (resrc->name);
         new_resrc->id = resrc->id;
-        new_resrc->sharing = resrc->sharing;
+        new_resrc->max_jobs = resrc->max_jobs;
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
         new_resrc->graphs = zlist_dup (resrc->graphs);
@@ -151,7 +152,7 @@ resource_t* resrc_copy_resource (resource_t* resrc)
 void resrc_resource_destroy (void *object)
 {
     int64_t *id_ptr;
-    resource_t *resrc = (resource_t *) object;
+    resrc_t *resrc = (resrc_t *) object;
 
     if (resrc) {
         if (resrc->type)
@@ -185,7 +186,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
     const char *type = NULL;
     int64_t id;
     json_object *o = NULL;
-    resource_t *resrc;
+    resrc_t *resrc;
     struct resource *c;
     uuid_t uuid;
 
@@ -252,7 +253,7 @@ void resrc_print_resources (resources_t *resrcs)
     char *resrc_id;
     char out[40];
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     zlist_t *resrc_ids = zhash_keys ((zhash_t*)resrcs);
 
     if (!resrcs) {
@@ -296,7 +297,7 @@ int resrc_find_resources (resources_t *resrcs_in, resource_list_t * found_in, co
     zlist_t * found = (zlist_t*)found_in;
     char *resrc_id;
     int nfound = 0;
-    resource_t *resrc;
+    resrc_t *resrc;
     zlist_t *resrc_ids;
 
     if (!resrcs || !found || !type) {
@@ -338,7 +339,7 @@ int resrc_allocate_resources (resources_t *resrcs_in, resource_list_t * resrc_id
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -366,7 +367,7 @@ int resrc_reserve_resources (resources_t *resrcs_in, resource_list_t * resrc_ids
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -395,7 +396,7 @@ json_object *resrc_serialize (resources_t *resrcs_in, resource_list_t * resrc_id
     char *resrc_id;
     json_object *ja;
     json_object *o = NULL;
-    resource_t *resrc;
+    resrc_t *resrc;
 
     if (!resrcs || !resrc_ids) {
         goto ret;
@@ -421,7 +422,7 @@ int resrc_release_resources (resources_t *resrcs_in, resource_list_t * resrc_ids
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
-    resource_t *resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !rel_job) {
