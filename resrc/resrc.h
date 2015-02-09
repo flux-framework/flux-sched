@@ -11,6 +11,8 @@
 #include "src/common/liblsd/list.h"
 
 typedef struct resource resource_t;
+typedef struct resource_list resource_list_t;
+typedef struct resources resources_t;
 
 typedef enum {
     RESOURCE_INVALID,
@@ -34,9 +36,24 @@ char* resrc_type (resource_t *resrc);
 void jobid_destroy (void *object);
 
 /*
+ * Create a list of resource keys
+ */
+resource_list_t * resrc_new_id_list();
+
+/*
  * Destroy a list of resource keys
  */
-void resrc_id_list_destroy (zlist_t *resrc_ids);
+void resrc_id_list_destroy (resource_list_t * resrc_ids);
+
+/*
+ * Get the first element in the result list
+ */
+char* resrc_list_first(resource_list_t * rl);
+
+/*
+ * Get the next element in the resource id list
+ */
+char* resrc_list_next();
 
 /*
  * Create a new resource object
@@ -58,12 +75,17 @@ void resrc_resource_destroy (void *object);
  * Create a hash table of all resources described by a configuration
  * file
  */
-zhash_t *resrc_generate_resources (const char *path, char* resource);
+resources_t * resrc_generate_resources (const char *path, char* resource);
+
+/*
+ * De-allocate the resources handle
+ */
+void resrc_destroy_resources (resources_t * *resources);
 
 /*
  * Provide a listing to stdout of every resource in hash table
  */
-void resrc_print_resources (zhash_t *resrcs);
+void resrc_print_resources (resources_t * resrcs);
 
 /*
  * Find resources of the requested type
@@ -76,31 +98,31 @@ void resrc_print_resources (zhash_t *resrcs);
  *          found - any resources found are added to this list
  *
  */
-int resrc_find_resources (zhash_t *resrcs, zlist_t *found, const char *type,
+int resrc_find_resources (resources_t * resrcs, resource_list_t * found, const char *type,
                           bool available);
 
 /*
  * Allocate a set of resources to a job
  */
-int resrc_allocate_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_allocate_resources (resources_t * resrcs, resource_list_t * resrc_ids,
                               int64_t job_id);
 
 /*
  * Reserve a set of resources to a job
  */
-int resrc_reserve_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_reserve_resources (resources_t * resrcs, resource_list_t * resrc_ids,
                              int64_t job_id);
 
 /*
  * Create a json object containing the resources present in the input
  * list
  */
-json_object *resrc_serialize (zhash_t *resrcs, zlist_t *resrc_ids);
+json_object *resrc_serialize (resources_t * resrcs, resource_list_t * resrc_ids);
 
 /*
  * Remove a job allocation from a set of resources
  */
-int resrc_release_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_release_resources (resources_t * resrcs, resource_list_t * resrc_ids,
                              int64_t rel_job);
 
 
