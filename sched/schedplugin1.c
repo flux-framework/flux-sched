@@ -45,6 +45,11 @@
 #include "resrc.h"
 #include "schedsrv.h"
 
+//TODO: this plugin inherently must know the inner structure of the opaque
+//types, something we need to think about
+typedef struct zhash_t resources;
+typedef struct zlist_t resource_list;
+
 static const char* CORETYPE = "core";
 static const char* NODETYPE = "node";
 
@@ -63,18 +68,18 @@ static const char* NODETYPE = "node";
  *          preserve - value set to true if not enough resources were found
  *                     and the job wants these resources reserved
  */
-zlist_t *find_resources (flux_t h, zhash_t *resrcs, flux_lwj_t *job,
+resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
                          bool *preserve)
 {
     int64_t found = 0;
-    zlist_t *found_res = NULL;              /* found resources */
+    resource_list_t *found_res = NULL;              /* found resources */
 
     if (!resrcs || !job) {
         flux_log (h, LOG_ERR, "find_resources invalid arguments");
         goto ret;
     }
 
-    found_res = zlist_new ();
+    found_res = resrc_new_id_list ();
     if (!found_res) {
         flux_log (h, LOG_ERR, "find_resources new list failed");
         goto ret;
@@ -100,7 +105,7 @@ zlist_t *find_resources (flux_t h, zhash_t *resrcs, flux_lwj_t *job,
                   found, job->lwj_id, job->req->ncores);
     }
 
-    if (!zlist_size (found_res)) {
+    if (!resrc_list_size (found_res)) {
         resrc_id_list_destroy (found_res);
         found_res = NULL;
     }
@@ -122,9 +127,11 @@ ret:
  * Returns: a list of selected resource keys, or null if none (or not enough)
  *          are selected
  */
-zlist_t *select_resources (flux_t h, zhash_t *resrcs, zlist_t *resrc_ids,
+resource_list_t *select_resources (flux_t h, resources_t *resrcs_in, resource_list_t *resrc_ids_in,
                            flux_lwj_t *job, bool reserve)
 {
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zhash_t * resrcs = (zhash_t*)resrcs_in;
     char *resrc_id;
     char *new_id;
     resrc_t *resrc;
@@ -161,11 +168,11 @@ zlist_t *select_resources (flux_t h, zhash_t *resrcs, zlist_t *resrc_ids,
     }
 
     if ((nnodes || ncores) && !reserve) {
-        resrc_id_list_destroy (selected_res);
+        zlist_destroy (&selected_res);
         selected_res = NULL;
     }
 
-    return selected_res;
+    return (resource_list_t*)selected_res;
 }
 
 MOD_NAME ("sched.plugin1");

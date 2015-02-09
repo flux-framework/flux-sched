@@ -36,6 +36,8 @@
 #include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
 
+
+
 typedef struct zhash_t resources;
 typedef struct zlist_t resource_list;
 
@@ -104,7 +106,12 @@ char* resrc_list_next(resource_list_t * rl)
     return zlist_next((zlist_t*)rl);
 }
 
-resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
+size_t resrc_list_size(resource_list_t * rl)
+{
+    return zlist_size((zlist_t*)rl);
+}
+
+resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid)
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
