@@ -56,6 +56,11 @@ char* resrc_list_first(resource_list_t * rl);
 char* resrc_list_next();
 
 /*
+ * Get the next element in the resource id list
+ */
+size_t resrc_list_size();
+
+/*
  * Create a new resource object
  */
 resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
