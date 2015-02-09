@@ -36,6 +36,9 @@
 #include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
 
+typedef struct zhash_t resources;
+typedef struct zlist_t resource_list;
+
 typedef struct {
     char *type;
     int64_t items;
@@ -72,8 +75,14 @@ void jobid_destroy (void *object)
 	free (tmp);
 }
 
-void resrc_id_list_destroy (zlist_t *resrc_ids)
+resource_list_t * resrc_new_id_list()
 {
+    return (resource_list_t *) zlist_new();
+}
+
+void resrc_id_list_destroy (resource_list_t * resrc_ids_in)
+{
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     if (resrc_ids) {
         char *resrc_id = zlist_first (resrc_ids);
         while (resrc_id) {
@@ -85,7 +94,17 @@ void resrc_id_list_destroy (zlist_t *resrc_ids)
     }
 }
 
-resrc_t* resrc_new_resource (const char *type, const char *name, int64_t id,
+char* resrc_list_first(resource_list_t * rl)
+{
+    return zlist_first((zlist_t*)rl);
+}
+
+char* resrc_list_next(resource_list_t * rl)
+{
+    return zlist_next((zlist_t*)rl);
+}
+
+resource_t* resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid)
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
@@ -195,7 +214,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
     }
 }
 
-zhash_t *resrc_generate_resources (const char *path, char* resource)
+resources_t *resrc_generate_resources (const char *path, char* resource)
 {
     const char *name = NULL;
     json_object *o = NULL;
@@ -220,16 +239,21 @@ zhash_t *resrc_generate_resources (const char *path, char* resource)
     rdl_destroy (rdl);
     rdllib_close (l);
 ret:
-    return resrcs;
+    return (resources_t *)resrcs;
 }
 
-void resrc_print_resources (zhash_t *resrcs)
+void resrc_destroy_resources (resources_t **resources)
+{
+    zhash_destroy((zhash_t**)resources);
+}
+
+void resrc_print_resources (resources_t *resrcs)
 {
     char *resrc_id;
     char out[40];
     int64_t *id_ptr;
-    resrc_t *resrc;
-    zlist_t *resrc_ids = zhash_keys (resrcs);
+    resource_t *resrc;
+    zlist_t *resrc_ids = zhash_keys ((zhash_t*)resrcs);
 
     if (!resrcs) {
         return;
@@ -237,7 +261,7 @@ void resrc_print_resources (zhash_t *resrcs)
 
     resrc_id = zlist_first (resrc_ids);
     while (resrc_id) {
-        resrc = zhash_lookup (resrcs, resrc_id);
+        resrc = zhash_lookup ((zhash_t*)resrcs, resrc_id);
         if (resrc) {
             uuid_unparse (resrc->uuid, out);
             printf ("resrc type:%s, name:%s, id:%ld, state:%d, uuid: %s",
@@ -262,12 +286,14 @@ void resrc_print_resources (zhash_t *resrcs)
         }
         resrc_id = zlist_next (resrc_ids);
     }
-    resrc_id_list_destroy (resrc_ids);
+    zlist_destroy (&resrc_ids);
 }
 
-int resrc_find_resources (zhash_t *resrcs, zlist_t *found, const char *type,
+int resrc_find_resources (resources_t *resrcs_in, resource_list_t * found_in, const char *type,
                           bool available)
 {
+    zhash_t * resrcs = (zhash_t*)resrcs_in;
+    zlist_t * found = (zlist_t*)found_in;
     char *resrc_id;
     int nfound = 0;
     resrc_t *resrc;
@@ -299,15 +325,17 @@ int resrc_find_resources (zhash_t *resrcs, zlist_t *found, const char *type,
             resrc_id = zlist_next (resrc_ids);
         }
     }
-    resrc_id_list_destroy (resrc_ids);
+    zlist_destroy (&resrc_ids);
 
 ret:
     return nfound;
 }
 
-int resrc_allocate_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_allocate_resources (resources_t *resrcs_in, resource_list_t * resrc_ids_in,
                                      int64_t job_id)
 {
+    zhash_t * resrcs = (zhash_t *)resrcs_in;
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
     resrc_t *resrc;
@@ -331,9 +359,11 @@ ret:
     return rc;
 }
 
-int resrc_reserve_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_reserve_resources (resources_t *resrcs_in, resource_list_t * resrc_ids_in,
                                     int64_t job_id)
 {
+    zhash_t * resrcs = (zhash_t*)resrcs_in;
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
     resrc_t *resrc;
@@ -358,8 +388,10 @@ ret:
     return rc;
 }
 
-json_object *resrc_serialize (zhash_t *resrcs, zlist_t *resrc_ids)
+json_object *resrc_serialize (resources_t *resrcs_in, resource_list_t * resrc_ids_in)
 {
+    zhash_t * resrcs = (zhash_t *)resrcs_in;
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     json_object *ja;
     json_object *o = NULL;
@@ -382,9 +414,11 @@ ret:
     return o;
 }
 
-int resrc_release_resources (zhash_t *resrcs, zlist_t *resrc_ids,
+int resrc_release_resources (resources_t *resrcs_in, resource_list_t * resrc_ids_in,
                              int64_t rel_job)
 {
+    zhash_t * resrcs = (zhash_t *)resrcs_in;
+    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     int64_t *id_ptr;
     resrc_t *resrc;
