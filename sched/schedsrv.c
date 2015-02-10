@@ -224,7 +224,7 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
 int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
 {
     char *key = NULL;
-    json_object *o;
+    JSON o;
     int rc = -1;
 
     if (!(o = resrc_serialize (resrcs, resrc_ids))) {
@@ -237,7 +237,7 @@ int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
                   job->lwj_id, strerror (errno));
     } else {
         job->resrc_ids = resrc_ids;
-        json_object_put (o);
+        Jput (o);
         free (key);
         rc = 0;
     }

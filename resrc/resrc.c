@@ -191,7 +191,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
     const char *tmp = NULL;
     const char *type = NULL;
     int64_t id;
-    json_object *o = NULL;
+    JSON o = NULL;
     resrc_t *resrc;
     struct resource *c;
     uuid_t uuid;
@@ -206,7 +206,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
 
     asprintf (&fullname, "%s.%s.%ld", parent, type, id);
     resrc = resrc_new_resource (type, fullname, id, uuid);
-    json_object_put (o);
+    Jput (o);
 
     if (resrc) {
         resrc->state = RESOURCE_IDLE;
@@ -224,7 +224,7 @@ static void resrc_add_resource(zhash_t *resrcs, const char *parent,
 resources_t *resrc_generate_resources (const char *path, char* resource)
 {
     const char *name = NULL;
-    json_object *o = NULL;
+    JSON o = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
@@ -242,7 +242,7 @@ resources_t *resrc_generate_resources (const char *path, char* resource)
     o = rdl_resource_json (r);
     Jget_str (o, "name", &name);
     resrc_add_resource(resrcs, name, r);
-    json_object_put (o);
+    Jput (o);
     rdl_destroy (rdl);
     rdllib_close (l);
 ret:
@@ -395,13 +395,13 @@ ret:
     return rc;
 }
 
-json_object *resrc_serialize (resources_t *resrcs_in, resource_list_t * resrc_ids_in)
+JSON resrc_serialize (resources_t *resrcs_in, resource_list_t * resrc_ids_in)
 {
     zhash_t * resrcs = (zhash_t *)resrcs_in;
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    json_object *ja;
-    json_object *o = NULL;
+    JSON ja;
+    JSON o = NULL;
     resrc_t *resrc;
 
     if (!resrcs || !resrc_ids) {
@@ -409,14 +409,14 @@ json_object *resrc_serialize (resources_t *resrcs_in, resource_list_t * resrc_id
     }
 
     o = util_json_object_new_object ();
-    ja = json_object_new_array ();
+    ja = Jnew_ar ();
     resrc_id = zlist_first (resrc_ids);
     while (resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        json_object_array_add (ja, json_object_new_string (resrc->name));
+        Jadd_ar_str (ja, resrc->name);
         resrc_id = zlist_next (resrc_ids);
     }
-    json_object_object_add (o, "resrcs", ja);
+    Jadd_obj (o, "resrcs", ja);
 ret:
     return o;
 }
