@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <czmq.h>
 
+#include "resrc.h"
+
 
 /**
  *  Enumerates lightweight-job and resource events
@@ -78,7 +80,7 @@ typedef struct {
     lwj_state_e state;
     bool reserve;       /* reserve resources for job if true */
     flux_res_t *req;    /*!< resources requested by this LWJ */
-    zlist_t *resrc_ids; /*!< resources allocated to this LWJ */
+    resource_list_t *resrc_ids; /*!< resources allocated to this LWJ */
 } flux_lwj_t;
 
 

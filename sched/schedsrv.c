@@ -67,12 +67,12 @@ static zlist_t *p_queue = NULL;
 static zlist_t *r_queue = NULL;
 static zlist_t *ev_queue = NULL;
 static flux_t h = NULL;
-static zhash_t *resrcs = NULL;
+static resources_t *resrcs = NULL;
 
-static zlist_t *(*find_resources) (flux_t h, zhash_t *resrcs,
+static resource_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
                                         flux_lwj_t *job, bool *preserve);
-static zlist_t *(*select_resources) (flux_t h, zhash_t *resrcs,
-                                     zlist_t *resrc_ids, flux_lwj_t *job,
+static resource_list_t *(*select_resources) (flux_t h, resources_t *resrcs,
+                                     resource_list_t *resrc_ids, flux_lwj_t *job,
                                      bool reserve);
 
 static struct stab_struct jobstate_tab[] = {
@@ -128,7 +128,7 @@ find_lwj (int64_t id)
     if (j)
         return j;
 
-    j = zlist_first (r_queue);
+    j = zlist_next (r_queue);
     while (j) {
         if (j->lwj_id == id)
             break;
@@ -221,7 +221,7 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     return rc;
 }
 
-int update_job_resources (flux_lwj_t *job, zlist_t *resrc_ids)
+int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
 {
     char *key = NULL;
     json_object *o;
@@ -414,7 +414,7 @@ ret:
 /*
  * Update the job records to reflect the allocation.
  */
-static int update_job_records (flux_lwj_t *job, zlist_t *resrc_ids)
+static int update_job_records (flux_lwj_t *job, resource_list_t *resrc_ids)
 {
     int rc = -1;
 
@@ -443,8 +443,8 @@ int schedule_job (flux_lwj_t *job)
 {
     bool reserve = false;
     int rc = -1;
-    zlist_t *found_res = NULL;              /* found resources */
-    zlist_t *selected_res = NULL;           /* allocated resources */
+    resource_list_t *found_res = NULL;              /* found resources */
+    resource_list_t *selected_res = NULL;           /* allocated resources */
 
     if ((found_res = (find_resources) (h, resrcs, job, &reserve))) {
         selected_res = (*select_resources) (h, resrcs, found_res, job, reserve);
@@ -469,12 +469,12 @@ int schedule_jobs (zlist_t *jobs)
     flux_lwj_t *job = NULL;
     int rc = 0;
 
-    job = zlist_first (jobs);
+    job = (flux_lwj_t*)zlist_first (jobs);
     while (!rc && job) {
         if (job->state == j_unsched) {
             rc = schedule_job (job);
         }
-        job = zlist_next (jobs);
+        job = (flux_lwj_t*)zlist_next (jobs);
     }
 
     return rc;
@@ -979,7 +979,7 @@ ret3:
     zlist_destroy (&p_queue);
     zlist_destroy (&r_queue);
     zlist_destroy (&ev_queue);
-    zhash_destroy(&resrcs);
+    resrc_destroy_resources(&resrcs);
 ret2:
     dlclose (dso);
 ret1:
