@@ -9,7 +9,7 @@ BUILD = libresrc.so.0
 all: $(BUILD)
 	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
-libresrc.so.0: resrc.o
+libresrc.so.0: resrc.o resrc_tree.o
 	$(CC) -shared -Wl,--version-script=resrc_version.map -o $@ $^ $(LIBS)
 	ln -sf $(shell basename $@) $(@:.0=)
 
