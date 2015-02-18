@@ -43,6 +43,7 @@
 #include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
+#include "resrc_tree.h"
 #include "schedsrv.h"
 
 //TODO: this plugin inherently must know the inner structure of the opaque
@@ -71,11 +72,23 @@ static const char* NODETYPE = "node";
 resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
                          bool *preserve)
 {
+    JSON child_core = NULL;
+    JSON req_res = NULL;
     int64_t found = 0;
     resource_list_t *found_res = NULL;              /* found resources */
+    resrc_t *resrc = NULL;
+    resrc_tree_t *resrc_tree = NULL;
 
     if (!resrcs || !job) {
         flux_log (h, LOG_ERR, "find_resources invalid arguments");
+        goto ret;
+    }
+
+    resrc = zhash_lookup ((zhash_t *)resrcs, "cluster.0");
+    if (resrc) {
+        resrc_tree = resrc_phys_tree (resrc);
+    } else {
+        printf ("Failed to find cluster.0 resource\n");
         goto ret;
     }
 
@@ -85,24 +98,24 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
         goto ret;
     }
 
-    found = resrc_find_resources (resrcs, found_res, NODETYPE, true);
-    if (found >= job->req->nnodes) {
-        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld req: %ld",
-                  found, job->lwj_id, job->req->nnodes);
-    } else if (found && job->reserve) {
-        *preserve = true;
-        flux_log (h, LOG_DEBUG, "%ld nodes reserved for lwj.%ld's req %ld",
-                  found, job->lwj_id, job->req->nnodes);
-    }
+    child_core = Jnew ();
+    Jadd_str (child_core, "type", "core");
+    Jadd_int (child_core, "req_qty", job->req->ncores);
 
-    found = resrc_find_resources (resrcs, found_res, CORETYPE, true);
-    if (found >= job->req->ncores) {
-        flux_log (h, LOG_DEBUG, "%ld cores found for lwj.%ld req: %ld",
-                  found, job->lwj_id, job->req->ncores);
+    req_res = Jnew ();
+    Jadd_str (req_res, "type", "node");
+    Jadd_int (req_res, "req_qty", job->req->nnodes);
+    json_object_object_add (req_res, "req_child", child_core);
+
+    found = resrc_tree_search (resrc_tree_children (resrc_tree), found_res,
+                               req_res, true);
+    if (found >= job->req->nnodes) {
+        flux_log (h, LOG_DEBUG, "%ld composites found for lwj.%ld req: %ld",
+                  found, job->lwj_id, job->req->nnodes);
     } else if (found && job->reserve) {
         *preserve = true;
-        flux_log (h, LOG_DEBUG, "%ld cores reserved for lwj.%ld's req %ld",
-                  found, job->lwj_id, job->req->ncores);
+        flux_log (h, LOG_DEBUG, "%ld composites reserved for lwj.%ld's req %ld",
+                  found, job->lwj_id, job->req->nnodes);
     }
 
     if (!resrc_list_size (found_res)) {
@@ -127,8 +140,9 @@ ret:
  * Returns: a list of selected resource keys, or null if none (or not enough)
  *          are selected
  */
-resource_list_t *select_resources (flux_t h, resources_t *resrcs_in, resource_list_t *resrc_ids_in,
-                           flux_lwj_t *job, bool reserve)
+resource_list_t *select_resources (flux_t h, resources_t *resrcs_in,
+                                   resource_list_t *resrc_ids_in,
+                                   flux_lwj_t *job, bool reserve)
 {
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     zhash_t * resrcs = (zhash_t*)resrcs_in;
