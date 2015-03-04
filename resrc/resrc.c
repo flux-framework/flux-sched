@@ -191,7 +191,7 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
         resrc->resrv_jobs = zlist_new ();
         resrc->pools = zlist_new ();
         resrc->properties = NULL;
-        resrc->tags = NULL;
+        resrc->tags = zlist_new ();
     } else {
         oom ();
     }
@@ -226,6 +226,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
 
 void resrc_resource_destroy (void *object)
 {
+    char *tmp;
     int64_t *id_ptr;
     resrc_t *resrc = (resrc_t *) object;
 
@@ -248,8 +249,9 @@ void resrc_resource_destroy (void *object)
             resrc_pool_list_destroy (resrc->pools);
         if (resrc->properties)
             zlist_destroy (&resrc->properties);
-        if (resrc->tags)
-            zlist_destroy (&resrc->tags);
+        while ((tmp = zlist_pop (resrc->tags)))
+            free (tmp);
+        zlist_destroy (&resrc->tags);
         free (resrc);
     }
 }
@@ -263,6 +265,8 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     const char *type = NULL;
     int64_t id;
     JSON o = NULL;
+    JSON tago = NULL;
+    json_object_iter iter;
     resrc_t *child_resrc;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
@@ -273,6 +277,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     o = rdl_resource_json (r);
     Jget_str (o, "type", &type);
     Jget_str (o, "name", &name);
+    tago = Jobj_get (o, "tags");
     Jget_str (o, "uuid", &tmp);
     uuid_parse (tmp, uuid);
     if (!(Jget_int64 (o, "id", &id)))
@@ -298,7 +303,6 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         asprintf (&fullname, "%s.%ld", type, id);
     }
     resrc = resrc_new_resource (type, fullname, id, uuid);
-    Jput (o);
 
     if (resrc) {
         resrc->state = RESOURCE_IDLE;
@@ -306,6 +310,11 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         resrc->phys_tree = resrc_tree;
         zhash_insert (resrcs, fullname, resrc);
         zhash_freefn (resrcs, fullname, resrc_resource_destroy);
+        if (tago) {
+            json_object_object_foreachC (tago, iter) {
+                zlist_append (resrc->tags, strdup (iter.key));
+            }
+        }
 
         while ((c = rdl_resource_next_child (r))) {
             child_resrc = resrc_add_resource (resrcs, resrc, c);
@@ -317,6 +326,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         oom ();
     }
 ret:
+    Jput (o);
     free (fullname);
     return resrc;
 }
@@ -353,6 +363,7 @@ void resrc_destroy_resources (resources_t **resources)
 void resrc_print_resource (resrc_t *resrc)
 {
     char out[40];
+    char *tag;
     int64_t *id_ptr;
     resrc_pool_t *pool_ptr;
 
@@ -360,6 +371,14 @@ void resrc_print_resource (resrc_t *resrc)
         uuid_unparse (resrc->uuid, out);
         printf ("resrc type:%s, name:%s, id:%ld, state:%d, uuid: %s",
                 resrc->type, resrc->name, resrc->id, resrc->state, out);
+        if (zlist_size (resrc->tags)) {
+            printf (", tags");
+            tag = zlist_first (resrc->tags);
+            while (tag) {
+                printf (", %s", tag);
+                tag = zlist_next (resrc->tags);
+            }
+        }
         if (zlist_size (resrc->pools)) {
             printf (", pools");
             pool_ptr = zlist_first (resrc->pools);
