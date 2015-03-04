@@ -41,8 +41,15 @@ typedef struct zhash_t resources;
 typedef struct zlist_t resource_list;
 
 typedef struct {
-    char *type;
+    int64_t job_id;
     int64_t items;
+} pool_alloc_t;
+
+typedef struct {
+    char *type;
+    int64_t avail_items;
+    int64_t total_items;
+    zlist_t *allocs;
 } resrc_pool_t;
 
 struct resrc {
@@ -101,13 +108,11 @@ resource_list_t *resrc_new_id_list ()
 void resrc_id_list_destroy (resource_list_t *resrc_ids_in)
 {
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    char *resrc_id;
+
     if (resrc_ids) {
-        char *resrc_id = zlist_first (resrc_ids);
-        while (resrc_id) {
-            resrc_id = zlist_pop (resrc_ids);
+        while ((resrc_id = zlist_pop (resrc_ids)))
             free (resrc_id);
-            resrc_id = zlist_next (resrc_ids);
-        }
         zlist_destroy (&resrc_ids);
     }
 }
@@ -127,6 +132,47 @@ size_t resrc_list_size (resource_list_t *rl)
     return zlist_size ((zlist_t*)rl);
 }
 
+resrc_pool_t *resrc_new_pool (const char *type, int64_t items)
+{
+    resrc_pool_t *pool = xzmalloc (sizeof (resrc_pool_t));
+
+    if (pool) {
+        pool->type = strdup (type);
+        pool->total_items = items;
+        pool->avail_items = items;
+        pool->allocs = zlist_new ();
+    } else {
+        oom ();
+    }
+
+    return pool;
+}
+
+void resrc_pool_destroy (resrc_pool_t *pool)
+{
+    pool_alloc_t *alloc;
+
+    if (pool) {
+        while ((alloc = zlist_pop (pool->allocs)))
+            free (alloc);
+        zlist_destroy (&pool->allocs);
+        free (pool);
+    }
+}
+
+void resrc_pool_list_destroy (zlist_t *pools)
+{
+    resrc_pool_t *pool;
+
+    if (pools) {
+        while ((pool = zlist_pop (pools))) {
+            free (pool->type);
+            resrc_pool_destroy (pool);
+        }
+        zlist_destroy (&pools);
+    }
+}
+
 resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
                                 uuid_t uuid)
 {
@@ -143,7 +189,7 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
         resrc->graphs = NULL;
         resrc->jobs = zlist_new ();
         resrc->resrv_jobs = zlist_new ();
-        resrc->pools = NULL;
+        resrc->pools = zlist_new ();
         resrc->properties = NULL;
         resrc->tags = NULL;
     } else {
@@ -199,7 +245,7 @@ void resrc_resource_destroy (void *object)
             jobid_destroy (id_ptr);
         zlist_destroy (&resrc->resrv_jobs);
         if (resrc->pools)
-            zlist_destroy (&resrc->pools);
+            resrc_pool_list_destroy (resrc->pools);
         if (resrc->properties)
             zlist_destroy (&resrc->properties);
         if (resrc->tags)
@@ -235,6 +281,19 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     if (parent) {
         asprintf (&fullname, "%s.%s.%ld", parent->name, type, id);
         parent_tree = parent->phys_tree;
+        if (!strncmp (type, "memory", 6)) {
+            int64_t items;
+            resrc_pool_t *pool;
+
+            Jget_int64 (o, "size", &items);
+            pool = resrc_new_pool (type, items);
+            if (pool) {
+                zlist_append (parent->pools, pool);
+                goto ret;
+            } else {
+                oom ();
+            }
+        }
     } else {
         asprintf (&fullname, "%s.%ld", type, id);
     }
@@ -250,14 +309,15 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
 
         while ((c = rdl_resource_next_child (r))) {
             child_resrc = resrc_add_resource (resrcs, resrc, c);
-            resrc_tree_add_child (resrc_tree, child_resrc->phys_tree);
+            if (child_resrc)
+                resrc_tree_add_child (resrc_tree, child_resrc->phys_tree);
             rdl_resource_destroy (c);
         }
-        free (fullname);
     } else {
         oom ();
     }
-
+ret:
+    free (fullname);
     return resrc;
 }
 
@@ -294,11 +354,21 @@ void resrc_print_resource (resrc_t *resrc)
 {
     char out[40];
     int64_t *id_ptr;
+    resrc_pool_t *pool_ptr;
 
     if (resrc) {
         uuid_unparse (resrc->uuid, out);
         printf ("resrc type:%s, name:%s, id:%ld, state:%d, uuid: %s",
                 resrc->type, resrc->name, resrc->id, resrc->state, out);
+        if (zlist_size (resrc->pools)) {
+            printf (", pools");
+            pool_ptr = zlist_first (resrc->pools);
+            while (pool_ptr) {
+                printf (", %s: %ld of %ld, ", pool_ptr->type,
+                        pool_ptr->avail_items, pool_ptr->total_items);
+                pool_ptr = zlist_next (resrc->pools);
+            }
+        }
         if (zlist_size (resrc->jobs)) {
             printf (", jobs");
             id_ptr = zlist_first (resrc->jobs);
