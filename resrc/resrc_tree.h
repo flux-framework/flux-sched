@@ -11,7 +11,7 @@
 /*
  * Return the list of child resource trees for the resouce tree input
  */
-resource_list_t *resrc_tree_children (resrc_tree_t *resrc_tree);
+resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree);
 
 /*
  * Create a new resrc_tree_t object
@@ -40,16 +40,16 @@ void resrc_tree_print (resrc_tree_t *resrc_tree);
 
 /*
  * Search a list of resource trees for a specific, composite resource
- * Inputs:  resrcs    - the list of resources to search
- *          found     - running list of keys to previously found resources
- *          req_res   - requested composite resource
- *          available - when true, consider only idle resources
- *                      otherwise find all possible resources matching type
+ * Inputs:  resrc_trees - the list of resource trees to search
+ *          found       - running list of keys to previously found resources
+ *          sample_tree - the resource tree to search for
+ *          available   - when true, consider only idle resources
+ *                        otherwise find all possible resources matching type
  * Returns: the number of matching resource composites found
- *          found     - any resources found are added to this list
+ *          found       - any resources found are added to this list
  */
-int resrc_tree_search (resource_list_t *resrcs, resource_list_t *found,
-                       JSON req_res, bool available);
+int resrc_tree_search (resrc_tree_list_t *resrc_trees, resource_list_t *found,
+                       resrc_tree_t *sample_tree, bool available);
 
 
 #endif /* !FLUX_RESRC_TREE_H */
