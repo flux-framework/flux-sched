@@ -12,6 +12,7 @@ typedef struct resource_list resource_list_t;
 typedef struct resources resources_t;
 typedef struct resrc resrc_t;
 typedef struct resrc_tree resrc_tree_t;
+typedef struct resrc_tree_list resrc_tree_list_t;
 
 typedef enum {
     RESOURCE_INVALID,
@@ -107,15 +108,14 @@ void resrc_print_resource (resrc_t *resrc);
 void resrc_print_resources (resources_t *resrcs);
 
 /*
- * Determine whether a specific resource meets the input requirements
- * (basically whether the type matches right now...)
- * Inputs:  resrc     - the resource of question
- *          type      - the type to match
+ * Determine whether a specific resource has the required characteristics
+ * Inputs:  resrc     - the specific resource under evaluation
+ *          sample    - sample resource with the required characteristics
  *          available - when true, consider only idle resources
  *                      otherwise find all possible resources matching type
- * Returns: true if the resource meets the criteria
+ * Returns: true if the input resource has the required characteristics
  */
-bool resrc_find_resource (resrc_t *resrc, const char *type, bool available);
+bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available);
 
 /*
  * Search a table of resources for the requested type
@@ -155,5 +155,9 @@ json_object *resrc_serialize (resources_t *resrcs, resource_list_t *resrc_ids);
 int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
                              int64_t rel_job);
 
+/*
+ * Create a resrc_t object from a json object
+ */
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent);
 
 #endif /* !FLUX_RESRC_H */

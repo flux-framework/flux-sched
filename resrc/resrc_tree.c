@@ -33,6 +33,8 @@
 #include "resrc_tree.h"
 #include "src/common/libutil/xzmalloc.h"
 
+typedef struct zlist_t resrc_tree_list;
+
 struct resrc_tree {
     resrc_tree_t *parent;
     resrc_t *resrc;
@@ -44,10 +46,10 @@ struct resrc_tree {
  *  API
  ***************************************************************************/
 
-resource_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
+resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree)
-        return (resource_list_t *)resrc_tree->children;
+        return (resrc_tree_list_t *)resrc_tree->children;
     return NULL;
 }
 
@@ -112,47 +114,85 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
     }
 }
 
-/* returns the number of composites found */
-int resrc_tree_search (resource_list_t *resrcs_in, resource_list_t *found_in,
-                       JSON req_res, bool available)
+/*
+ * cycles through all of the resource children and returns true if all
+ * of the sample children were found
+ */
+static int all_children_found (zlist_t * r_trees, zlist_t *s_trees,
+                               bool available)
 {
-    zlist_t * resrcs = (zlist_t*)resrcs_in;
+    resrc_tree_t *resrc_tree = zlist_first (r_trees);
+    resrc_tree_t *sample_tree = zlist_first (s_trees);
+    bool found = false;
+
+    while (sample_tree && resrc_tree) {
+        found = false;
+        while (resrc_tree && !found) {
+            if (resrc_match_resource (resrc_tree->resrc, sample_tree->resrc,
+                                      available)) {
+                if (zlist_size (sample_tree->children)) {
+                    if (zlist_size (resrc_tree->children)) {
+                        found = all_children_found (resrc_tree->children,
+                                                    sample_tree->children,
+                                                    available);
+                    }
+                } else {
+                    found = true;
+                }
+            }
+            /*
+             * The following clause allows the sample tree to be sparsely
+             * defined.  E.g., it might only stipulate a node with 4 cores
+             * and omit the intervening socket.
+             */
+            if (!found)
+                if (zlist_size (resrc_tree->children))
+                    found = all_children_found (resrc_tree->children, s_trees,
+                                                available);
+            resrc_tree = zlist_next (r_trees);
+        }
+        if (!found)
+            goto ret;
+        sample_tree = zlist_next (s_trees);
+    }
+ret:
+    return found;
+}
+
+/* returns the number of composites found */
+int resrc_tree_search (resrc_tree_list_t *resrcs_in, resource_list_t *found_in,
+                       resrc_tree_t *sample_tree, bool available)
+{
+    zlist_t * resrc_trees = (zlist_t*)resrcs_in;
     zlist_t * found = (zlist_t*)found_in;
-    JSON req_child = NULL;
-    const char *type = NULL;
     int nfound = 0;
-    int req_qty = 0;
     resrc_tree_t *resrc_tree;
 
-    if (!resrcs || !found || !req_res) {
+    if (!resrc_trees || !found || !sample_tree) {
         goto ret;
     }
-    Jget_str (req_res, "type", &type);
-    Jget_int (req_res, "req_qty", &req_qty);
-    Jget_obj (req_res, "req_child", &req_child);
 
-    resrc_tree = zlist_first (resrcs);
+    resrc_tree = zlist_first (resrc_trees);
     while (resrc_tree) {
-        if (resrc_find_resource (resrc_tree->resrc, type, available)) {
-            if (req_child) {
-                if (resrc_tree_search (resrc_tree_children (resrc_tree),
-                                       found_in, req_child, available)) {
-                    zlist_append (found,
-                                  strdup (resrc_name (resrc_tree->resrc)));
+        if (resrc_match_resource (resrc_tree->resrc, sample_tree->resrc,
+                                  available)) {
+            if (zlist_size (sample_tree->children)) {
+                if (zlist_size (resrc_tree->children) &&
+                    all_children_found (resrc_tree->children,
+                                        sample_tree->children, available)) {
+                    zlist_append (found, strdup (resrc_name (
+                                                     resrc_tree->resrc)));
                     nfound++;
                 }
             } else {
                 zlist_append (found, strdup (resrc_name (resrc_tree->resrc)));
                 nfound++;
             }
-        } else if (resrc_tree->children) {
-            if (resrc_tree_search (resrc_tree_children (resrc_tree), found_in,
-                                   req_res, available)) {
-                zlist_append (found, strdup (resrc_name (resrc_tree->resrc)));
-                nfound++;
-            }
+        } else if (zlist_size (resrc_tree->children)) {
+            nfound = resrc_tree_search (resrc_tree_children (resrc_tree),
+                                        found_in, sample_tree, available);
         }
-        resrc_tree = zlist_next (resrcs);
+        resrc_tree = zlist_next (resrc_trees);
     }
 ret:
     return nfound;

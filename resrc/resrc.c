@@ -179,7 +179,8 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = strdup (type);
-        resrc->name = strdup (name);
+        if (name)
+            resrc->name = strdup (name);
         resrc->id = id;
         resrc->max_jobs = 1;
         if (uuid)
@@ -265,7 +266,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     const char *type = NULL;
     int64_t id;
     JSON o = NULL;
-    JSON tago = NULL;
+    JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
     resrc_t *child_resrc;
     resrc_t *resrc = NULL;
@@ -277,7 +278,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     o = rdl_resource_json (r);
     Jget_str (o, "type", &type);
     Jget_str (o, "name", &name);
-    tago = Jobj_get (o, "tags");
+    jtago = Jobj_get (o, "tags");
     Jget_str (o, "uuid", &tmp);
     uuid_parse (tmp, uuid);
     if (!(Jget_int64 (o, "id", &id)))
@@ -310,8 +311,8 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         resrc->phys_tree = resrc_tree;
         zhash_insert (resrcs, fullname, resrc);
         zhash_freefn (resrcs, fullname, resrc_resource_destroy);
-        if (tago) {
-            json_object_object_foreachC (tago, iter) {
+        if (jtago) {
+            json_object_object_foreachC (jtago, iter) {
                 zlist_append (resrc->tags, strdup (iter.key));
             }
         }
@@ -428,21 +429,43 @@ void resrc_print_resources (resources_t *resrcs)
     resrc_id_list_destroy ((resource_list_t *)resrc_ids);
 }
 
-bool resrc_find_resource (resrc_t *resrc, const char *type, bool available)
+bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
 {
     bool ret = false;
+    bool match = false;
+    char *rtag = NULL;
+    char *stag = NULL;
 
-    if (!strncmp (resrc->type, type, sizeof (type))) {
+    if (!strncmp (resrc->type, sample->type, sizeof (sample->type))) {
+        if (zlist_size (sample->tags)) {
+            if (!zlist_size (resrc->tags)) {
+                goto ret;
+            }
+            stag = zlist_first (sample->tags);
+            while (stag) {
+                rtag = zlist_first (resrc->tags);
+                match = false;
+                while (rtag) {
+                    if (!strcmp (rtag, stag))
+                        match = true;
+                    rtag = zlist_next (resrc->tags);
+                }
+                if (!match)
+                    goto ret;
+                stag = zlist_next (sample->tags);
+            }
+        }
         if (available) {
             if (resrc->state == RESOURCE_IDLE)
                 ret = true;
         } else
             ret = true;
     }
-
+ret:
     return ret;
 }
 
+#if 0
 int resrc_search_flat_resources (resources_t *resrcs_in,
                                  resource_list_t *found_in, JSON req_res,
                                  bool available)
@@ -467,7 +490,7 @@ int resrc_search_flat_resources (resources_t *resrcs_in,
     resrc_id = zlist_first (resrc_ids);
     while (resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        if (resrc_find_resource (resrc, type, available)) {
+        if (resrc_match_resource (resrc, type, available)) {
             zlist_append (found, strdup (resrc_id));
             nfound++;
         }
@@ -478,7 +501,7 @@ int resrc_search_flat_resources (resources_t *resrcs_in,
 ret:
     return nfound;
 }
-
+#endif
 
 int resrc_allocate_resources (resources_t *resrcs_in,
                               resource_list_t *resrc_ids_in, int64_t job_id)
@@ -558,7 +581,7 @@ JSON resrc_serialize (resources_t *resrcs_in, resource_list_t *resrc_ids_in)
         Jadd_ar_str (ja, resrc->name);
         resrc_id = zlist_next (resrc_ids);
     }
-    json_object_object_add (o, "resrcs", ja);
+    Jadd_obj (o, "resrcs", ja);
 ret:
     return o;
 }
@@ -602,6 +625,88 @@ ret:
     return rc;
 }
 
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
+{
+    const char *type = NULL;
+    int qty = 0;
+    JSON ca = NULL;     /* array of child json objects */
+    JSON co = NULL;     /* child json object */
+    JSON jtago = NULL;  /* json tag object */
+    json_object_iter iter;
+    resrc_t *child_resrc = NULL;
+    resrc_t *resrc = NULL;
+    resrc_tree_t *parent_tree = NULL;
+    resrc_tree_t *resrc_tree = NULL;
+
+    if (!Jget_str (o, "type", &type))
+        goto ret;
+
+    if (parent) {
+        parent_tree = resrc_phys_tree (parent);
+        if (!strncmp (type, "memory", 6)) {
+            int64_t items;
+            resrc_pool_t *pool;
+
+            if (Jget_int64 (o, "size", &items)) {
+                pool = resrc_new_pool (type, items);
+                if (pool) {
+                    zlist_append (parent->pools, pool);
+                    goto ret;
+                } else {
+                    oom ();
+                }
+            } else {
+                printf ("missing size for memory resource\n");
+            }
+        }
+    }
+
+    resrc = resrc_new_resource (type, NULL, -1, 0);
+    if (resrc) {
+        resrc->state = RESOURCE_INVALID;
+        resrc_tree = resrc_tree_new (parent_tree, resrc);
+        resrc->phys_tree = resrc_tree;
+
+        jtago = Jobj_get (o, "tags");
+        if (jtago) {
+            json_object_object_foreachC (jtago, iter) {
+                zlist_append (resrc->tags, strdup (iter.key));
+            }
+        }
+
+        if ((co = Jobj_get (o, "req_child"))) {
+            if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
+                while (qty--) {
+                    child_resrc = resrc_new_from_json (co, resrc);
+                    if (child_resrc) {
+                        resrc_tree_add_child (resrc_tree,
+                                              child_resrc->phys_tree);
+                    }
+                }
+            }
+        } else if ((ca = Jobj_get (o, "req_children"))) {
+            int i, nchildren = 0;
+
+            if (Jget_ar_len (ca, &nchildren)) {
+                for (i=0; i < nchildren; i++) {
+                    Jget_ar_obj (ca, i, &co);
+                    if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
+                        while (qty--) {
+                            child_resrc = resrc_new_from_json (co, resrc);
+                            if (child_resrc) {
+                                resrc_tree_add_child (resrc_tree,
+                                                      child_resrc->phys_tree);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+ret:
+    return resrc;
+}
+
 #ifdef TEST_MAIN
 #include "tap.h"
 
@@ -622,19 +727,23 @@ int main (int argc, char *argv[])
 {
     char *resrc_id = NULL;
     const char *filename = argv[1];
-    int verbose = 0;
     int found = 0;
     int rc = 0;
-    JSON child_sock = NULL;
+    int verbose = 0;
+    JSON ja = NULL;
+    /* JSON jtago = NULL;  /\* json tag object *\/ */
     JSON child_core = NULL;
+    JSON child_sock = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
-    resrc_t *resrc = NULL;
-    resrc_tree_t *resrc_tree = NULL;
-    resources_t *resrcs = NULL;
     resource_list_t *found_res = resrc_new_id_list ();
+    resources_t *resrcs = NULL;
+    resrc_t *resrc = NULL;
+    resrc_t *sample_resrc = NULL;
+    resrc_tree_t *resrc_tree = NULL;
+    zlist_t *resrc_tree_list = zlist_new ();
 
-    plan (13);
+    plan (14);
     if (filename == NULL || *filename == '\0')
         filename = getenv ("TESTRESRC_INPUT_FILE");
 
@@ -661,32 +770,58 @@ int main (int argc, char *argv[])
     if (!resrc)
         goto ret;
 
+    resrc_tree = resrc_phys_tree (resrc);
+    ok ((resrc_tree != NULL), "resource tree valid");
+    if (!resrc_tree)
+        goto ret;
+
     if (verbose) {
         printf ("Listing resource tree\n");
-        resrc_tree_print (resrc_phys_tree (resrc));
+        resrc_tree_print (resrc_tree);
         printf ("End of resource tree\n");
     }
+    zlist_append (resrc_tree_list, resrc_tree);
 
+    /*
+     *  Build a resource composite to search for
+     */
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", 6);
 
+    ja = Jnew_ar ();
+    Jadd_ar_obj(ja, child_core);
+
     child_sock = Jnew ();
     Jadd_str (child_sock, "type", "socket");
-    Jadd_int (child_sock, "req_qty", 4);
-    json_object_object_add (child_sock, "req_child", child_core);
+    Jadd_int (child_sock, "req_qty", 2);
+    Jadd_obj (child_sock, "req_children", ja);
+
+    /* jtago = Jnew (); */
+    /* Jadd_bool (jtago, "maytag", true); */
+    /* Jadd_bool (jtago, "yourtag", true); */
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
+    /* Jadd_obj (req_res, "tags", jtago); */
     Jadd_int (req_res, "req_qty", 2);
-    json_object_object_add (req_res, "req_child", child_sock);
+    Jadd_obj (req_res, "req_child", child_sock);
 
-    resrc_tree = resrc_phys_tree (resrc);
-    ok ((resrc_tree != NULL), "resource tree valid");
+    sample_resrc = resrc_new_from_json (req_res, NULL);
+    Jput (req_res);
+    ok ((sample_resrc != NULL), "sample resource composite valid");
+    if (!sample_resrc)
+        goto ret;
+
+    if (verbose) {
+        printf ("Listing sample tree\n");
+        resrc_tree_print (resrc_phys_tree (sample_resrc));
+        printf ("End of sample tree\n");
+    }
 
     init_time();
-    found = resrc_tree_search (resrc_tree_children (resrc_tree), found_res,
-                               req_res, false);
+    found = resrc_tree_search ((resrc_tree_list_t *)resrc_tree_list, found_res,
+                               resrc_phys_tree (sample_resrc), false);
 
     ok (found, "found %d composite resources in %lf", found,
         ((double)get_time())/1000000);
@@ -700,7 +835,6 @@ int main (int argc, char *argv[])
             resrc_id = resrc_list_next (found_res);
         }
     }
-    Jput (req_res);
 
     init_time();
     o = resrc_serialize (resrcs, found_res);
