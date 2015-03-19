@@ -11,6 +11,7 @@ LUA_CPATH = $(abs_topdir)/rdl/?.so;$(FLUX_SRCDIR)/src/bindings/lua/.libs/?.so;;;
 export CFLAGS TESTRESRC_INPUT_FILE LUA_PATH LUA_CPATH
 
 LDADD_CLI = $(FLUX_SRCDIR)/src/common/libutil/.libs/libutil.a \
+            $(FLUX_SRCDIR)/src/common/liblsd/.libs/liblsd.a \
             $(FLUX_SRCDIR)/src/common/libtap/.libs/libtap.a
 
 test_cppflags = \
