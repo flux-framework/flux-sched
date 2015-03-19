@@ -7,6 +7,10 @@
 
 #include "resrc.h"
 
+/*
+ * Return the resrc_t associated with this tree
+ */
+resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree);
 
 /*
  * Return the list of child resource trees for the resouce tree input
