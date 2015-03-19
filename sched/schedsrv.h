@@ -69,6 +69,7 @@ typedef enum {
 typedef struct flux_resources {
     uint64_t nnodes; /*!< num of nodes requested by a job */
     uint64_t ncores; /*!< num of cores requested by a job */
+    uint64_t corespernode; /*!< num of cores per node requested by a job */
 } flux_res_t;
 
 

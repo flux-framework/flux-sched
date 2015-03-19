@@ -46,6 +46,13 @@ struct resrc_tree {
  *  API
  ***************************************************************************/
 
+resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree)
+{
+    if (resrc_tree)
+        return (resrc_t *)resrc_tree->resrc;
+    return NULL;
+}
+
 resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree)

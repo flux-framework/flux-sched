@@ -51,8 +51,6 @@
 typedef struct zhash_t resources;
 typedef struct zlist_t resource_list;
 
-static const char* CORETYPE = "core";
-static const char* NODETYPE = "node";
 
 /*
  * find_resources() identifies the all of the resource candidates for
@@ -99,9 +97,18 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
         goto ret;
     }
 
+    /*
+     * Require at least one task per node, and
+     * Assume (for now) one task per core.
+     */
+    if (job->req->ncores < job->req->nnodes)
+        job->req->ncores = job->req->nnodes;
+    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
+        job->req->nnodes;
+
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
-    Jadd_int (child_core, "req_qty", job->req->ncores);
+    Jadd_int (child_core, "req_qty", job->req->corespernode);
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
@@ -129,6 +136,32 @@ ret:
     return found_res;
 }
 
+static uint64_t select_children (flux_t h, zlist_t *children,
+                                 zlist_t *selected_res, char *type,
+                                 uint64_t *pcount)
+{
+    char *new_id;
+    resrc_tree_t *child = NULL;
+    uint64_t selected = 0;
+
+    child = zlist_first (children);
+    while (child && *pcount) {
+        if (!strcmp (resrc_type (resrc_tree_resrc (child)), type)) {
+            new_id = xstrdup (resrc_name (resrc_tree_resrc (child)));
+            zlist_append (selected_res, new_id);
+            flux_log (h, LOG_DEBUG, "selected %s: %s", type, new_id);
+            (*pcount)--;
+            selected++;
+        } else if (zlist_size ((zlist_t*)resrc_tree_children (child))) {
+            selected += select_children (h, (zlist_t*)resrc_tree_children
+                                         (child), selected_res, type, pcount);
+        }
+        child = zlist_next (children);
+    }
+
+    return selected;
+}
+
 /*
  * select_resources() selects from the set of resource candidates the
  * best resources for the job.  If reserve is set, whatever resources
@@ -138,8 +171,9 @@ ret:
  * Inputs:  resrcs - hash table of all resources
  *          resrc_ids - list of keys to resource candidates
  *          job - the job for which we are selecting the resources
- *          reserve - if true, we reserve selected resources, thereby removing
- *                    them from being considered for other jobs
+ *          reserve - if true and if not enough resources were found,
+ *                    return what was found, to be reserved for the
+ *                    job at a subsequent step.
  * Returns: a list of selected resource keys, or null if none (or not enough)
  *          are selected
  */
@@ -149,9 +183,11 @@ resource_list_t *select_resources (flux_t h, resources_t *resrcs_in,
 {
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     zhash_t * resrcs = (zhash_t*)resrcs_in;
-    char *resrc_id;
     char *new_id;
+    char *resrc_id;
     resrc_t *resrc;
+    uint64_t cpn;       /* cores per node */
+    uint64_t ctn;       /* cores this node */
     uint64_t ncores;
     uint64_t nnodes;
     zlist_t *selected_res = NULL;
@@ -163,25 +199,27 @@ resource_list_t *select_resources (flux_t h, resources_t *resrcs_in,
 
     ncores = job->req->ncores;
     nnodes = job->req->nnodes;
+    cpn = job->req->corespernode;
     selected_res = zlist_new ();
 
     resrc_id  = zlist_first (resrc_ids);
-    while (resrc_id) {
+    while (nnodes && resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        if (nnodes && !strncmp (resrc_type(resrc), NODETYPE,
-                                sizeof (NODETYPE))) {
-            nnodes--;
+        if (!strncmp (resrc_type(resrc), "node", 5)) {
             new_id = xstrdup (resrc_id);
             zlist_append (selected_res, new_id);
             flux_log (h, LOG_DEBUG, "selected node: %s", resrc_id);
-        } else if (ncores && !strncmp (resrc_type(resrc), CORETYPE,
-                                       sizeof (CORETYPE))) {
-            ncores--;
-            new_id = xstrdup (resrc_id);
-            zlist_append (selected_res, new_id);
-            flux_log (h, LOG_DEBUG, "selected core: %s", resrc_id);
+            nnodes--;
+            ctn = MIN (ncores, cpn);
+
+            if (ctn && zlist_size ((zlist_t*)resrc_tree_children (resrc_phys_tree
+                                                                  (resrc)))) {
+                ncores -= select_children (h, (zlist_t*) resrc_tree_children
+                                           (resrc_phys_tree (resrc)),
+                                           selected_res, "core", &ctn);
+            }
+            resrc_id = zlist_next (resrc_ids);
         }
-        resrc_id = zlist_next (resrc_ids);
     }
 
     if ((nnodes || ncores) && !reserve) {

@@ -251,7 +251,7 @@ int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
         uint64_t i;
         uint64_t ncores = job->req->ncores;
         uint64_t nnodes = job->req->nnodes;
-        uint64_t corespernode = (ncores + nnodes - 1) / nnodes;
+        uint64_t corespernode = job->req->corespernode;
 
         rc = -1;
         for (i = 0; i < nnodes; i++) {
