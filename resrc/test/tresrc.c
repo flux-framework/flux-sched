@@ -89,8 +89,8 @@ int main (int argc, char *argv[])
         printf ("End of flat resources\n");
     }
 
-    resrc = zhash_lookup ((zhash_t *)resrcs, "cluster.0");
-    ok ((resrc != NULL), "cluster.0 tree head found");
+    resrc = zhash_lookup ((zhash_t *)resrcs, "head");
+    ok ((resrc != NULL), "tree head found");
     if (!resrc)
         goto ret;
 
