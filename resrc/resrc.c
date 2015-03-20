@@ -298,7 +298,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     }
 
     if (parent) {
-        asprintf (&fullname, "%s.%s.%ld", parent->name, type, id);
+        asprintf (&fullname, "%s.%s.%ld", parent->name, name, id);
         parent_tree = parent->phys_tree;
         if (!strncmp (type, "memory", 6)) {
             int64_t items;
@@ -314,7 +314,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
             }
         }
     } else {
-        asprintf (&fullname, "%s.%ld", type, id);
+        asprintf (&fullname, "%s.%ld", name, id);
     }
     resrc = resrc_new_resource (type, fullname, id, uuid);
 
@@ -349,6 +349,7 @@ ret:
 resources_t *resrc_generate_resources (const char *path, char *resource)
 {
     const char *nodelist = NULL;
+    resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
@@ -369,7 +370,11 @@ resources_t *resrc_generate_resources (const char *path, char *resource)
             slurm_job = true;
     }
 
-    resrc_add_resource (resrcs, NULL, r);
+    if (!(resrc = resrc_add_resource (resrcs, NULL, r)))
+        goto ret;
+
+    /* add the root resource to the table under a unique key */
+    zhash_insert (resrcs, "head", resrc);
 
     rdl_destroy (rdl);
     rdllib_close (l);
