@@ -36,6 +36,11 @@ char *resrc_type (resrc_t *resrc);
 char *resrc_name (resrc_t *resrc);
 
 /*
+ * Return the id of the resouce
+ */
+int64_t resrc_id (resrc_t *resrc);
+
+/*
  * Return the physical tree for the resouce
  */
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc);

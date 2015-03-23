@@ -89,6 +89,13 @@ char *resrc_name (resrc_t *resrc)
     return NULL;
 }
 
+int64_t resrc_id (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->id;
+    return -1;
+}
+
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 {
     if (resrc)
