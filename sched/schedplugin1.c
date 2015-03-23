@@ -83,11 +83,11 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
         goto ret;
     }
 
-    resrc = zhash_lookup ((zhash_t *)resrcs, "cluster.0");
+    resrc = zhash_lookup ((zhash_t *)resrcs, "head");
     if (resrc) {
         resrc_tree = resrc_phys_tree (resrc);
     } else {
-        printf ("Failed to find cluster.0 resource\n");
+        printf ("Failed to find head resource\n");
         goto ret;
     }
 
