@@ -62,11 +62,11 @@ resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
 
 int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child)
 {
-    int ret = -1;
+    int rc = -1;
     if (parent)
-        ret = zlist_append (parent->children, child);
+        rc = zlist_append (parent->children, child);
 
-    return ret;
+    return rc;
 }
 
 resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc)
@@ -181,139 +181,139 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
 
 int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
 {
-    int ret = -1;
+    int rc = -1;
 
     if (o && rt) {
-        ret = 0;
+        rc = 0;
         if (zlist_size (rt->children)) {
             JSON co = Jnew ();
             Jadd_obj (o, resrc_name (rt->resrc), co);
             resrc_tree_t *child = zlist_first (rt->children);
-            while (!ret && child) {
-                ret = resrc_tree_serialize (co, child);
+            while (!rc && child) {
+                rc = resrc_tree_serialize (co, child);
                 child = zlist_next (rt->children);
             }
         } else {
-            ret = resrc_to_json (o, rt->resrc);
+            rc = resrc_to_json (o, rt->resrc);
         }
     }
-    return ret;
+    return rc;
 }
 
 int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
 {
     resrc_tree_t *rt;
-    int ret = -1;
+    int rc = -1;
 
     if (o && rtl) {
-        ret = 0;
+        rc = 0;
         rt = resrc_tree_list_first (rtl);
-        while (!ret && rt) {
-            ret = resrc_tree_serialize (o, rt);
+        while (!rc && rt) {
+            rc = resrc_tree_serialize (o, rt);
             rt = resrc_tree_list_next (rtl);
         }
     }
 
-    return ret;
+    return rc;
 }
 
 int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id)
 {
-    int ret = -1;
+    int rc = -1;
     if (rt) {
-        ret = resrc_allocate_resource (rt->resrc, job_id);
+        rc = resrc_allocate_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
             resrc_tree_t *child = zlist_first (rt->children);
-            while (!ret && child) {
-                ret = resrc_tree_allocate (child, job_id);
+            while (!rc && child) {
+                rc = resrc_tree_allocate (child, job_id);
                 child = zlist_next (rt->children);
             }
         }
     }
-    return ret;
+    return rc;
 }
 
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id)
 {
     resrc_tree_t *rt;
-    int ret = -1;
+    int rc = -1;
 
     if (rtl) {
-        ret = 0;
+        rc = 0;
         rt = resrc_tree_list_first (rtl);
-        while (!ret && rt) {
-            ret = resrc_tree_allocate (rt, job_id);
+        while (!rc && rt) {
+            rc = resrc_tree_allocate (rt, job_id);
             rt = resrc_tree_list_next (rtl);
         }
     }
 
-    return ret;
+    return rc;
 }
 
 int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id)
 {
-    int ret = -1;
+    int rc = -1;
     if (rt) {
-        ret = resrc_reserve_resource (rt->resrc, job_id);
+        rc = resrc_reserve_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
             resrc_tree_t *child = zlist_first (rt->children);
-            while (!ret && child) {
-                ret = resrc_tree_reserve (child, job_id);
+            while (!rc && child) {
+                rc = resrc_tree_reserve (child, job_id);
                 child = zlist_next (rt->children);
             }
         }
     }
-    return ret;
+    return rc;
 }
 
 int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
 {
     resrc_tree_t *rt;
-    int ret = -1;
+    int rc = -1;
 
     if (rtl) {
-        ret = 0;
+        rc = 0;
         rt = resrc_tree_list_first (rtl);
-        while (!ret && rt) {
-            ret = resrc_tree_reserve (rt, job_id);
+        while (!rc && rt) {
+            rc = resrc_tree_reserve (rt, job_id);
             rt = resrc_tree_list_next (rtl);
         }
     }
 
-    return ret;
+    return rc;
 }
 
 int resrc_tree_release (resrc_tree_t *rt, int64_t job_id)
 {
-    int ret = -1;
+    int rc = -1;
     if (rt) {
-        ret = resrc_release_resource (rt->resrc, job_id);
+        rc = resrc_release_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
             resrc_tree_t *child = zlist_first (rt->children);
-            while (!ret && child) {
-                ret = resrc_tree_release (child, job_id);
+            while (!rc && child) {
+                rc = resrc_tree_release (child, job_id);
                 child = zlist_next (rt->children);
             }
         }
     }
-    return ret;
+    return rc;
 }
 
 int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
 {
     resrc_tree_t *rt;
-    int ret = -1;
+    int rc = -1;
 
     if (rtl) {
-        ret = 0;
+        rc = 0;
         rt = resrc_tree_list_first (rtl);
-        while (!ret && rt) {
-            ret = resrc_tree_release (rt, job_id);
+        while (!rc && rt) {
+            rc = resrc_tree_release (rt, job_id);
             rt = resrc_tree_list_next (rtl);
         }
     }
 
-    return ret;
+    return rc;
 }
 
 /*
