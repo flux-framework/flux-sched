@@ -18,14 +18,14 @@ resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree);
 resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree);
 
 /*
+ * Add a child resource tree to the input resource tree
+ */
+int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child);
+
+/*
  * Create a new resrc_tree_t object
  */
 resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc);
-
-/*
- * Add a child resource tree to the input resource tree
- */
-int resrc_tree_add_child (resrc_tree_t *tree, resrc_tree_t *child);
 
 /*
  * Return a copy of the input resource tree
@@ -33,14 +33,67 @@ int resrc_tree_add_child (resrc_tree_t *tree, resrc_tree_t *child);
 resrc_tree_t* resrc_tree_copy (resrc_tree_t *resrc_tree);
 
 /*
- * Destroy a resrc_tree_t object
+ * Free a resrc_tree_t object
+ */
+void resrc_tree_free (resrc_tree_t *resrc_tree);
+
+/*
+ * Destroy an entire tree of resrc_tree_t objects
  */
 void resrc_tree_destroy (resrc_tree_t *resrc_tree);
+
+/*
+ * Create a new list of resrc_tree_t objects
+ */
+resrc_tree_list_t *resrc_tree_new_list ();
+
+/*
+ * Get the first element in the resource tree list
+ */
+resrc_tree_t *resrc_tree_list_first (resrc_tree_list_t *rtl);
+
+/*
+ * Get the next element in the resource tree list
+ */
+resrc_tree_t *resrc_tree_list_next (resrc_tree_list_t *rtl);
+
+/*
+ * Get the number of elements in the resource tree list
+ */
+size_t resrc_tree_list_size (resrc_tree_list_t *rtl);
+
+/*
+ * Destroy a resrc_tree_list_t object
+ */
+void resrc_tree_list_destroy (resrc_tree_list_t *rtl);
 
 /*
  * Print the resources in a resrc_tree_t object
  */
 void resrc_tree_print (resrc_tree_t *resrc_tree);
+
+/*
+ * Add the input resource tree to the json object
+ */
+int resrc_tree_serialize (JSON o, resrc_tree_t *rt);
+
+/*
+ * Add the input list of resource trees to the json object
+ */
+int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl);
+
+int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id);
+
+int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id);
+
+int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id);
+
+int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id);
+
+int resrc_tree_release (resrc_tree_t *rt, int64_t job_id);
+
+int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id);
+
 
 /*
  * Search a list of resource trees for a specific, composite resource
@@ -52,8 +105,8 @@ void resrc_tree_print (resrc_tree_t *resrc_tree);
  * Returns: the number of matching resource composites found
  *          found       - any resources found are added to this list
  */
-int resrc_tree_search (resrc_tree_list_t *resrc_trees, resource_list_t *found,
-                       resrc_tree_t *sample_tree, bool available);
+int resrc_tree_search (resrc_tree_list_t *resrc_trees, resrc_tree_t *sample_tree,
+                       resrc_tree_list_t *found_trees, bool available);
 
 
 #endif /* !FLUX_RESRC_TREE_H */
