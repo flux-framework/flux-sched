@@ -245,8 +245,10 @@ void resrc_resource_destroy (void *object)
             free (resrc->type);
         if (resrc->name)
             free (resrc->name);
-        if (resrc->phys_tree)
-            resrc_tree_destroy (resrc->phys_tree);
+        if (resrc->phys_tree) {
+            resrc_tree_free (resrc->phys_tree);
+            resrc->phys_tree = NULL;
+        }
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         while ((id_ptr = zlist_pop (resrc->jobs)))
@@ -278,7 +280,6 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     JSON o = NULL;
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
-    resrc_t *child_resrc;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
@@ -338,9 +339,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         }
 
         while ((c = rdl_resource_next_child (r))) {
-            child_resrc = resrc_add_resource (resrcs, resrc, c);
-            if (child_resrc)
-                resrc_tree_add_child (resrc_tree, child_resrc->phys_tree);
+            (void) resrc_add_resource (resrcs, resrc, c);
             rdl_resource_destroy (c);
         }
     } else {
@@ -394,6 +393,16 @@ void resrc_destroy_resources (resources_t **resources)
     zhash_destroy ((zhash_t**)resources);
 }
 
+int resrc_to_json (JSON o, resrc_t *resrc)
+{
+    int rc = -1;
+    if (resrc) {
+        Jadd_str (o, resrc_name (resrc), resrc_type (resrc));
+        rc = 0;
+    }
+    return rc;
+}
+
 void resrc_print_resource (resrc_t *resrc)
 {
     char out[40];
@@ -417,7 +426,7 @@ void resrc_print_resource (resrc_t *resrc)
             printf (", pools");
             pool_ptr = zlist_first (resrc->pools);
             while (pool_ptr) {
-                printf (", %s: %ld of %ld, ", pool_ptr->type,
+                printf (", %s: %ld of %ld", pool_ptr->type,
                         pool_ptr->avail_items, pool_ptr->total_items);
                 pool_ptr = zlist_next (resrc->pools);
             }
@@ -464,7 +473,7 @@ void resrc_print_resources (resources_t *resrcs)
 
 bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
 {
-    bool ret = false;
+    bool rc = false;
     bool match = false;
     char *rtag = NULL;
     char *stag = NULL;
@@ -490,12 +499,12 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
         }
         if (available) {
             if (resrc->state == RESOURCE_IDLE)
-                ret = true;
+                rc = true;
         } else
-            ret = true;
+            rc = true;
     }
 ret:
-    return ret;
+    return rc;
 }
 
 #if 0
@@ -536,13 +545,28 @@ ret:
 }
 #endif
 
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
+{
+    int64_t *id_ptr;
+    int rc = -1;
+
+    if (resrc && job_id) {
+        id_ptr = xzmalloc (sizeof (int64_t));
+        *id_ptr = job_id;
+        zlist_append (resrc->jobs, id_ptr);
+        resrc->state = RESOURCE_ALLOCATED;
+        rc = 0;
+    }
+
+    return rc;
+}
+
 int resrc_allocate_resources (resources_t *resrcs_in,
                               resource_list_t *resrc_ids_in, int64_t job_id)
 {
     zhash_t * resrcs = (zhash_t *)resrcs_in;
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    int64_t *id_ptr;
     resrc_t *resrc;
     int rc = 0;
 
@@ -552,15 +576,29 @@ int resrc_allocate_resources (resources_t *resrcs_in,
     }
 
     resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
+    while (!rc && resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        id_ptr = xzmalloc (sizeof (int64_t));
-        *id_ptr = job_id;
-        zlist_append (resrc->jobs, id_ptr);
-        resrc->state = RESOURCE_ALLOCATED;
+        rc = resrc_allocate_resource (resrc, job_id);
         resrc_id = zlist_next (resrc_ids);
     }
 ret:
+    return rc;
+}
+
+int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
+{
+    int64_t *id_ptr;
+    int rc = -1;
+
+    if (resrc && job_id) {
+        id_ptr = xzmalloc (sizeof (int64_t));
+        *id_ptr = job_id;
+        zlist_append (resrc->resrv_jobs, id_ptr);
+        if (resrc->state != RESOURCE_ALLOCATED)
+            resrc->state = RESOURCE_RESERVED;
+        rc = 0;
+    }
+
     return rc;
 }
 
@@ -570,7 +608,6 @@ int resrc_reserve_resources (resources_t *resrcs_in,
     zhash_t * resrcs = (zhash_t*)resrcs_in;
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    int64_t *id_ptr;
     resrc_t *resrc;
     int rc = 0;
 
@@ -580,20 +617,16 @@ int resrc_reserve_resources (resources_t *resrcs_in,
     }
 
     resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
+    while (!rc && resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        id_ptr = xzmalloc (sizeof (int64_t));
-        *id_ptr = job_id;
-        zlist_append (resrc->resrv_jobs, id_ptr);
-        if (resrc->state != RESOURCE_ALLOCATED)
-            resrc->state = RESOURCE_RESERVED;
+        rc = resrc_reserve_resource (resrc, job_id);
         resrc_id = zlist_next (resrc_ids);
     }
 ret:
     return rc;
 }
 
-JSON resrc_serialize (resources_t *resrcs_in, resource_list_t *resrc_ids_in)
+JSON resrc_id_serialize (resources_t *resrcs_in, resource_list_t *resrc_ids_in)
 {
     zhash_t * resrcs = (zhash_t *)resrcs_in;
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
@@ -619,13 +652,41 @@ ret:
     return o;
 }
 
+int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
+{
+    int64_t *id_ptr;
+    int rc = 0;
+
+    if (!resrc || !rel_job) {
+        rc = -1;
+        goto ret;
+    }
+
+    id_ptr = zlist_first (resrc->jobs);
+    while (id_ptr) {
+        if (*id_ptr == rel_job) {
+            zlist_remove (resrc->jobs, id_ptr);
+            jobid_destroy (id_ptr);
+            break;
+        }
+        id_ptr = zlist_next (resrc->jobs);
+    }
+    if (!zlist_size (resrc->jobs)) {
+        if (zlist_size (resrc->resrv_jobs))
+            resrc->state = RESOURCE_RESERVED;
+        else
+            resrc->state = RESOURCE_IDLE;
+    }
+ret:
+    return rc;
+}
+
 int resrc_release_resources (resources_t *resrcs_in,
                              resource_list_t * resrc_ids_in, int64_t rel_job)
 {
     zhash_t * resrcs = (zhash_t *)resrcs_in;
     zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    int64_t *id_ptr;
     resrc_t *resrc;
     int rc = 0;
 
@@ -635,23 +696,9 @@ int resrc_release_resources (resources_t *resrcs_in,
     }
 
     resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
+    while (!rc && resrc_id) {
         resrc = zhash_lookup (resrcs, resrc_id);
-        id_ptr = zlist_first (resrc->jobs);
-        while (id_ptr) {
-            if (*id_ptr == rel_job) {
-                zlist_remove (resrc->jobs, id_ptr);
-                jobid_destroy (id_ptr);
-                break;
-            }
-            id_ptr = zlist_next (resrc->jobs);
-        }
-        if (!zlist_size (resrc->jobs)) {
-            if (zlist_size (resrc->resrv_jobs))
-                resrc->state = RESOURCE_RESERVED;
-            else
-                resrc->state = RESOURCE_IDLE;
-        }
+        rc = resrc_release_resource (resrc, rel_job);
         resrc_id = zlist_next (resrc_ids);
     }
 ret:
@@ -666,7 +713,6 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
     JSON co = NULL;     /* child json object */
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
-    resrc_t *child_resrc = NULL;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
@@ -710,11 +756,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
         if ((co = Jobj_get (o, "req_child"))) {
             if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
                 while (qty--) {
-                    child_resrc = resrc_new_from_json (co, resrc);
-                    if (child_resrc) {
-                        resrc_tree_add_child (resrc_tree,
-                                              child_resrc->phys_tree);
-                    }
+                    (void) resrc_new_from_json (co, resrc);
                 }
             }
         } else if ((ca = Jobj_get (o, "req_children"))) {
@@ -725,11 +767,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
                     Jget_ar_obj (ca, i, &co);
                     if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
                         while (qty--) {
-                            child_resrc = resrc_new_from_json (co, resrc);
-                            if (child_resrc) {
-                                resrc_tree_add_child (resrc_tree,
-                                                      child_resrc->phys_tree);
-                            }
+                            (void) resrc_new_from_json (co, resrc);
                         }
                     }
                 }

@@ -61,7 +61,7 @@ resource_list_t *resrc_new_id_list ();
 void resrc_id_list_destroy (resource_list_t *resrc_ids);
 
 /*
- * Get the first element in the result list
+ * Get the first element in the resource id list
  */
 char *resrc_list_first (resource_list_t *rl);
 
@@ -71,7 +71,7 @@ char *resrc_list_first (resource_list_t *rl);
 char *resrc_list_next ();
 
 /*
- * Get the next element in the resource id list
+ * Get the number of elements in the resource id list
  */
 size_t resrc_list_size ();
 
@@ -101,6 +101,11 @@ resources_t *resrc_generate_resources (const char *path, char*resource);
  * De-allocate the resources handle
  */
 void resrc_destroy_resources (resources_t **resources);
+
+/*
+ * Add the input resource to the json object
+ */
+int resrc_to_json (JSON o, resrc_t *resrc);
 
 /*
  * Print details of a specific resource
@@ -136,11 +141,22 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available);
 int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
                                  JSON req_res, bool available);
 
+
+/*
+ * Allocate a resource to a job
+ */
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id);
+
 /*
  * Allocate a set of resources to a job
  */
 int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
                               int64_t job_id);
+
+/*
+ * Reserve a resource for a job
+ */
+int resrc_reserve_resource (resrc_t *resrc, int64_t job_id);
 
 /*
  * Reserve a set of resources to a job
@@ -152,7 +168,12 @@ int resrc_reserve_resources (resources_t *resrcs, resource_list_t *resrc_ids,
  * Create a json object containing the resources present in the input
  * list
  */
-json_object *resrc_serialize (resources_t *resrcs, resource_list_t *resrc_ids);
+JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids);
+
+/*
+ * Remove a job allocation from a resource
+ */
+int resrc_release_resource (resrc_t *resrc, int64_t rel_job);
 
 /*
  * Remove a job allocation from a set of resources
