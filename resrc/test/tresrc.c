@@ -49,7 +49,6 @@ u_int64_t get_time() {
 
 int main (int argc, char *argv[])
 {
-    char *resrc_id = NULL;
     const char *filename = argv[1];
     int found = 0;
     int rc = 0;
@@ -60,12 +59,12 @@ int main (int argc, char *argv[])
     JSON child_sock = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
-    resource_list_t *found_res = resrc_new_id_list ();
     resources_t *resrcs = NULL;
     resrc_t *resrc = NULL;
     resrc_t *sample_resrc = NULL;
+    resrc_tree_list_t *found_trees = resrc_tree_new_list ();
+    resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
-    zlist_t *resrc_tree_list = zlist_new ();
 
     plan (14);
     if (filename == NULL || *filename == '\0')
@@ -104,7 +103,6 @@ int main (int argc, char *argv[])
         resrc_tree_print (resrc_tree);
         printf ("End of resource tree\n");
     }
-    zlist_append (resrc_tree_list, resrc_tree);
 
     /*
      *  Build a resource composite to search for
@@ -144,8 +142,9 @@ int main (int argc, char *argv[])
     }
 
     init_time();
-    found = resrc_tree_search ((resrc_tree_list_t *)resrc_tree_list, found_res,
-                               resrc_phys_tree (sample_resrc), false);
+    found = resrc_tree_search (resrc_tree_children (resrc_tree),
+                               resrc_phys_tree (sample_resrc), found_trees,
+                               false);
 
     ok (found, "found %d composite resources in %lf", found,
         ((double)get_time())/1000000);
@@ -153,16 +152,19 @@ int main (int argc, char *argv[])
         goto ret;
 
     if (verbose) {
-        resrc_id = resrc_list_first (found_res);
-        while (resrc_id) {
-            printf ("resrc_id %s\n", resrc_id);
-            resrc_id = resrc_list_next (found_res);
+        printf ("Listing found trees\n");
+        found_tree = resrc_tree_list_first (found_trees);
+        while (found_tree) {
+            resrc_tree_print (found_tree);
+            found_tree = resrc_tree_list_next (found_trees);
         }
+        printf ("End of found trees\n");
     }
 
+    o = Jnew ();
     init_time();
-    o = resrc_serialize (resrcs, found_res);
-    ok ((o != NULL), "found resource serialization took: %lf",
+    rc = resrc_tree_list_serialize (o, found_trees);
+    ok (!rc, "found resource serialization took: %lf",
         ((double)get_time())/1000000);
 
     if (verbose) {
@@ -171,13 +173,13 @@ int main (int argc, char *argv[])
     Jput (o);
 
     init_time();
-    rc = resrc_allocate_resources (resrcs, found_res, 1);
+    rc = resrc_tree_list_allocate (found_trees, 1);
     ok (!rc, "successfully allocated resources for job 1");
-    rc = resrc_allocate_resources (resrcs, found_res, 2);
+    rc = resrc_tree_list_allocate (found_trees, 2);
     ok (!rc, "successfully allocated resources for job 2");
-    rc = resrc_allocate_resources (resrcs, found_res, 3);
+    rc = resrc_tree_list_allocate (found_trees, 3);
     ok (!rc, "successfully allocated resources for job 3");
-    rc = resrc_reserve_resources (resrcs, found_res, 4);
+    rc = resrc_tree_list_reserve (found_trees, 4);
     ok (!rc, "successfully reserved resources for job 4");
 
     printf ("allocate and reserve took: %lf\n", ((double)get_time())/1000000);
@@ -188,7 +190,7 @@ int main (int argc, char *argv[])
     }
 
     init_time();
-    rc = resrc_release_resources (resrcs, found_res, 1);
+    rc = resrc_tree_list_release (found_trees, 1);
     ok (!rc, "resource release of job 1 took: %lf",
         ((double)get_time())/1000000);
 
@@ -198,7 +200,7 @@ int main (int argc, char *argv[])
     }
 
     init_time();
-    resrc_id_list_destroy (found_res);
+    resrc_tree_list_destroy (found_trees);
     resrc_destroy_resources (&resrcs);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);
 ret:
