@@ -43,6 +43,7 @@
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
+#include "resrc_tree.h"
 #include "schedsrv.h"
 
 #define MAX_STR_LEN 128
@@ -69,11 +70,11 @@ static zlist_t *ev_queue = NULL;
 static flux_t h = NULL;
 static resources_t *resrcs = NULL;
 
-static resource_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
-                                        flux_lwj_t *job, bool *preserve);
-static resource_list_t *(*select_resources) (flux_t h, resources_t *resrcs,
-                                     resource_list_t *resrc_ids, flux_lwj_t *job,
-                                     bool reserve);
+static resrc_tree_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
+                                             flux_lwj_t *job, bool *preserve);
+static resrc_tree_list_t *(*select_resources) (flux_t h,
+                                               resrc_tree_list_t *resrc_trees,
+                                               flux_lwj_t *job, bool reserve);
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -221,14 +222,15 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     return rc;
 }
 
-int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
+int update_job_resources (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
 {
     char *key = NULL;
     JSON o;
     int rc = -1;
 
-    if (!(o = resrc_serialize (resrcs, resrc_ids))) {
-        flux_log (h, LOG_ERR, "%ld resrc_serialize failed: %s",
+    o = Jnew ();
+    if ((rc = resrc_tree_list_serialize (o, resrc_trees))) {
+        flux_log (h, LOG_ERR, "failed to serialize resources for job %ld: %s",
                   job->lwj_id, strerror (errno));
     } else if (asprintf (&key, "lwj.%ld.resrcs", job->lwj_id) < 0) {
         flux_log (h, LOG_ERR, "update_job_resources key create failed");
@@ -236,15 +238,19 @@ int update_job_resources (flux_lwj_t *job, resource_list_t *resrc_ids)
         flux_log (h, LOG_ERR, "update_job_resources %ld commit failed: %s",
                   job->lwj_id, strerror (errno));
     } else {
-        job->resrc_ids = resrc_ids;
+        job->resrc_trees = resrc_trees;
         Jput (o);
         free (key);
         rc = 0;
     }
 
     /*
-     * The following is a short term solution to map the selected
-     * resources to actual nodes and cores
+     * At this point, the scheduler's work is done for this job.  It
+     * has allocated resources to the job and saved the job record.
+     * The following is an interim solution to assign tasks to each
+     * rank.  Eventually the launch facility will take on this
+     * responsibility and map the tasks to resources.  When that
+     * happens, the following clause can be removed
      */
     if (!rc) {
         uint64_t coresthisnode;
@@ -371,7 +377,7 @@ extract_lwjinfo (flux_lwj_t *j)
         j->req->ncores = reqtasks;
         flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqtasks);
         free(key);
-        j->resrc_ids = NULL;
+        j->resrc_trees = NULL;
         j->reserve = false;    /* for now */
         rc = 0;
     }
@@ -414,14 +420,14 @@ ret:
 /*
  * Update the job records to reflect the allocation.
  */
-static int update_job_records (flux_lwj_t *job, resource_list_t *resrc_ids)
+static int update_job_records (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
 {
     int rc = -1;
 
     if (update_job_state (job, j_allocated)) {
         flux_log (h, LOG_ERR, "update_job failed to update job %ld to %s",
                   job->lwj_id, stab_rlookup (jobstate_tab, j_allocated));
-    } else if (update_job_resources (job, resrc_ids)) {
+    } else if (update_job_resources (job, resrc_trees)) {
         flux_log (h, LOG_ERR, "failed to save resources for job %ld",
                   job->lwj_id);
     } else if (kvs_commit (h) < 0) {
@@ -443,22 +449,28 @@ int schedule_job (flux_lwj_t *job)
 {
     bool reserve = false;
     int rc = -1;
-    resource_list_t *found_res = NULL;              /* found resources */
-    resource_list_t *selected_res = NULL;           /* allocated resources */
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
 
-    if ((found_res = (find_resources) (h, resrcs, job, &reserve))) {
-        selected_res = (*select_resources) (h, resrcs, found_res, job, reserve);
-        if (selected_res) {
+    if ((found_trees = (find_resources) (h, resrcs, job, &reserve))) {
+        selected_trees = (*select_resources) (h, found_trees, job, reserve);
+        if (selected_trees) {
             if (reserve) {
-                resrc_reserve_resources (resrcs, selected_res, job->lwj_id);
+                resrc_tree_list_reserve (selected_trees, job->lwj_id);
             } else {
-                resrc_allocate_resources (resrcs, selected_res, job->lwj_id);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id);
                 /* Transition the job back to submitted to prevent the
                  * scheduler from trying to schedule it again */
                 job->state = j_submitted;
-                rc = update_job_records (job, selected_res);
+                rc = update_job_records (job, selected_trees);
             }
         }
+        /*
+         * selected_trees contain the same elements as found_trees, so
+         * there is no need to destroy its contents
+         */
+        /* resrc_tree_list_destroy (found_trees); */
+        /* zlist_destroy ((zlist_t **)&selected_trees); */
     }
 
     return rc;
@@ -630,7 +642,7 @@ action_j_event (flux_event_t *e)
             goto bad_transition;
         }
         /* TODO move this to j_complete case once reaped is implemented */
-        if ((rc = resrc_release_resources (resrcs, e->lwj->resrc_ids,
+        if ((rc = resrc_tree_list_release (e->lwj->resrc_trees,
                                            e->lwj->lwj_id))) {
             flux_log (h, LOG_ERR, "failed to release resources for job %ld",
                       e->lwj->lwj_id);
