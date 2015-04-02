@@ -49,7 +49,6 @@
 //TODO: this plugin inherently must know the inner structure of the opaque
 //types, something we need to think about
 typedef struct zhash_t resources;
-typedef struct zlist_t resource_list;
 
 
 /*
@@ -67,15 +66,15 @@ typedef struct zlist_t resource_list;
  *          preserve - value set to true if not enough resources were found
  *                     and the job wants these resources reserved
  */
-resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
-                         bool *preserve)
+resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
+                                   flux_lwj_t *job, bool *preserve)
 {
     JSON child_core = NULL;
     JSON req_res = NULL;
     int64_t found = 0;
-    resource_list_t *found_res = NULL;              /* found resources */
     resrc_t *resrc = NULL;
     resrc_t *sample_resrc = NULL;
+    resrc_tree_list_t *found_trees = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
     if (!resrcs || !job) {
@@ -91,9 +90,9 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
         goto ret;
     }
 
-    found_res = resrc_new_id_list ();
-    if (!found_res) {
-        flux_log (h, LOG_ERR, "find_resources new list failed");
+    found_trees = resrc_tree_new_list ();
+    if (!found_trees) {
+        flux_log (h, LOG_ERR, "find_resources new tree list failed");
         goto ret;
     }
 
@@ -116,8 +115,9 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
     Jadd_obj (req_res, "req_child", child_core);
 
     if ((sample_resrc = resrc_new_from_json (req_res, NULL)))
-        found = resrc_tree_search (resrc_tree_children (resrc_tree), found_res,
-                                   resrc_phys_tree (sample_resrc), true);
+        found = resrc_tree_search (resrc_tree_children (resrc_tree),
+                                   resrc_phys_tree (sample_resrc),
+                                   found_trees, true);
 
     if (found >= job->req->nnodes) {
         flux_log (h, LOG_DEBUG, "%ld composites found for lwj.%ld req: %ld",
@@ -128,35 +128,33 @@ resource_list_t *find_resources (flux_t h, resources_t *resrcs, flux_lwj_t *job,
                   found, job->lwj_id, job->req->nnodes);
     }
 
-    if (!resrc_list_size (found_res)) {
-        resrc_id_list_destroy (found_res);
-        found_res = NULL;
+    if (!resrc_tree_list_size (found_trees)) {
+        resrc_tree_list_destroy (found_trees);
+        found_trees = NULL;
     }
 ret:
-    return found_res;
+    return found_trees;
 }
 
-static uint64_t select_children (flux_t h, zlist_t *children,
-                                 zlist_t *selected_res, char *type,
+static uint64_t select_children (flux_t h, resrc_tree_list_t *children,
+                                 resrc_tree_list_t *selected_res, char *type,
                                  uint64_t *pcount)
 {
-    char *new_id;
     resrc_tree_t *child = NULL;
     uint64_t selected = 0;
 
-    child = zlist_first (children);
+    child = resrc_tree_list_first (children);
     while (child && *pcount) {
         if (!strcmp (resrc_type (resrc_tree_resrc (child)), type)) {
-            new_id = xstrdup (resrc_name (resrc_tree_resrc (child)));
-            zlist_append (selected_res, new_id);
-            flux_log (h, LOG_DEBUG, "selected %s: %s", type, new_id);
+            flux_log (h, LOG_DEBUG, "selected %s: %s", type,
+                      resrc_type (resrc_tree_resrc (child)));
             (*pcount)--;
             selected++;
-        } else if (zlist_size ((zlist_t*)resrc_tree_children (child))) {
-            selected += select_children (h, (zlist_t*)resrc_tree_children
-                                         (child), selected_res, type, pcount);
+        } else if (resrc_tree_list_size (resrc_tree_children (child))) {
+            selected += select_children (h, resrc_tree_children (child),
+                                         selected_res, type, pcount);
         }
-        child = zlist_next (children);
+        child = resrc_tree_list_next (children);
     }
 
     return selected;
@@ -168,29 +166,24 @@ static uint64_t select_children (flux_t h, zlist_t *children,
  * are selected will be reserved for the job and removed from
  * consideration as candidates for other jobs.
  *
- * Inputs:  resrcs - hash table of all resources
- *          resrc_ids - list of keys to resource candidates
+ * Inputs:  found_trees - list of resource tree candidates
  *          job - the job for which we are selecting the resources
  *          reserve - if true and if not enough resources were found,
  *                    return what was found, to be reserved for the
  *                    job at a subsequent step.
- * Returns: a list of selected resource keys, or null if none (or not enough)
+ * Returns: a list of selected resource trees, or null if none (or not enough)
  *          are selected
  */
-resource_list_t *select_resources (flux_t h, resources_t *resrcs_in,
-                                   resource_list_t *resrc_ids_in,
-                                   flux_lwj_t *job, bool reserve)
+resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
+                                     flux_lwj_t *job, bool reserve)
 {
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
-    zhash_t * resrcs = (zhash_t*)resrcs_in;
-    char *new_id;
-    char *resrc_id;
     resrc_t *resrc;
+    resrc_tree_t *rt;
     uint64_t cpn;       /* cores per node */
     uint64_t ctn;       /* cores this node */
     uint64_t ncores;
     uint64_t nnodes;
-    zlist_t *selected_res = NULL;
+    resrc_tree_list_t *selected_res = NULL;
 
     if (!job) {
         flux_log (h, LOG_ERR, "select_resources called with null job");
@@ -200,34 +193,33 @@ resource_list_t *select_resources (flux_t h, resources_t *resrcs_in,
     ncores = job->req->ncores;
     nnodes = job->req->nnodes;
     cpn = job->req->corespernode;
-    selected_res = zlist_new ();
+    selected_res = resrc_tree_new_list ();
 
-    resrc_id  = zlist_first (resrc_ids);
-    while (nnodes && resrc_id) {
-        resrc = zhash_lookup (resrcs, resrc_id);
-        if (!strncmp (resrc_type(resrc), "node", 5)) {
-            new_id = xstrdup (resrc_id);
-            zlist_append (selected_res, new_id);
-            flux_log (h, LOG_DEBUG, "selected node: %s", resrc_id);
-            nnodes--;
+    rt = resrc_tree_list_first (found_trees);
+    while (nnodes && rt) {
+        resrc = resrc_tree_resrc (rt);
+        if (!strncmp (resrc_type (resrc), "node", 5)) {
             ctn = MIN (ncores, cpn);
 
-            if (ctn && zlist_size ((zlist_t*)resrc_tree_children (resrc_phys_tree
+            if (ctn && resrc_tree_list_size (resrc_tree_children (resrc_phys_tree
                                                                   (resrc)))) {
-                ncores -= select_children (h, (zlist_t*) resrc_tree_children
+                ncores -= select_children (h, resrc_tree_children
                                            (resrc_phys_tree (resrc)),
                                            selected_res, "core", &ctn);
             }
-            resrc_id = zlist_next (resrc_ids);
+            zlist_append ((zlist_t *) selected_res, rt);
+            flux_log (h, LOG_DEBUG, "selected node: %s", resrc_name (resrc));
+            nnodes--;
+            rt = resrc_tree_list_next (found_trees);
         }
     }
 
     if ((nnodes || ncores) && !reserve) {
-        zlist_destroy (&selected_res);
+        zlist_destroy ((zlist_t **) &selected_res);
         selected_res = NULL;
     }
 
-    return (resource_list_t*)selected_res;
+    return (resrc_tree_list_t*)selected_res;
 }
 
 MOD_NAME ("sched.plugin1");
