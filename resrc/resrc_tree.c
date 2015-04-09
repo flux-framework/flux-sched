@@ -41,10 +41,20 @@ struct resrc_tree {
     zlist_t *children;
 };
 
+struct resrc_reqst {
+    resrc_reqst_t *parent;
+    resrc_t *resrc;
+    int64_t reqrd;
+    int64_t nfound;
+    zlist_t *children;
+};
 
-/***************************************************************************
- *  API
- ***************************************************************************/
+static bool match_children (zlist_t * r_trees, zlist_t *req_trees,
+                            resrc_tree_t *parent_tree, bool available);
+
+/***********************************************************************
+ * Resource tree
+ ***********************************************************************/
 
 resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree)
 {
@@ -125,6 +135,95 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree)
     }
 }
 
+void resrc_tree_print (resrc_tree_t *resrc_tree)
+{
+    resrc_tree_t *child;
+
+    if (resrc_tree) {
+        resrc_print_resource (resrc_tree->resrc);
+        if (zlist_size (resrc_tree->children)) {
+            child = zlist_first (resrc_tree->children);
+            while (child) {
+                resrc_tree_print (child);
+                child = zlist_next (resrc_tree->children);
+            }
+        }
+    }
+}
+
+int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
+{
+    int rc = -1;
+
+    if (o && rt) {
+        rc = 0;
+        if (zlist_size (rt->children)) {
+            JSON co = Jnew ();
+            Jadd_obj (o, resrc_name (rt->resrc), co);
+            resrc_tree_t *child = zlist_first (rt->children);
+            while (!rc && child) {
+                rc = resrc_tree_serialize (co, child);
+                child = zlist_next (rt->children);
+            }
+        } else {
+            rc = resrc_to_json (o, rt->resrc);
+        }
+    }
+    return rc;
+}
+
+int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id)
+{
+    int rc = -1;
+    if (rt) {
+        rc = resrc_allocate_resource (rt->resrc, job_id);
+        if (zlist_size (rt->children)) {
+            resrc_tree_t *child = zlist_first (rt->children);
+            while (!rc && child) {
+                rc = resrc_tree_allocate (child, job_id);
+                child = zlist_next (rt->children);
+            }
+        }
+    }
+    return rc;
+}
+
+int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id)
+{
+    int rc = -1;
+    if (rt) {
+        rc = resrc_reserve_resource (rt->resrc, job_id);
+        if (zlist_size (rt->children)) {
+            resrc_tree_t *child = zlist_first (rt->children);
+            while (!rc && child) {
+                rc = resrc_tree_reserve (child, job_id);
+                child = zlist_next (rt->children);
+            }
+        }
+    }
+    return rc;
+}
+
+int resrc_tree_release (resrc_tree_t *rt, int64_t job_id)
+{
+    int rc = -1;
+    if (rt) {
+        rc = resrc_release_resource (rt->resrc, job_id);
+        if (zlist_size (rt->children)) {
+            resrc_tree_t *child = zlist_first (rt->children);
+            while (!rc && child) {
+                rc = resrc_tree_release (child, job_id);
+                child = zlist_next (rt->children);
+            }
+        }
+    }
+    return rc;
+}
+
+/***********************************************************************
+ * Resource tree list
+ ***********************************************************************/
+
 resrc_tree_list_t *resrc_tree_new_list ()
 {
     return (resrc_tree_list_t *) zlist_new ();
@@ -163,43 +262,6 @@ void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
     }
 }
 
-void resrc_tree_print (resrc_tree_t *resrc_tree)
-{
-    resrc_tree_t *child;
-
-    if (resrc_tree) {
-        resrc_print_resource (resrc_tree->resrc);
-        if (zlist_size (resrc_tree->children)) {
-            child = zlist_first (resrc_tree->children);
-            while (child) {
-                resrc_tree_print (child);
-                child = zlist_next (resrc_tree->children);
-            }
-        }
-    }
-}
-
-int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
-{
-    int rc = -1;
-
-    if (o && rt) {
-        rc = 0;
-        if (zlist_size (rt->children)) {
-            JSON co = Jnew ();
-            Jadd_obj (o, resrc_name (rt->resrc), co);
-            resrc_tree_t *child = zlist_first (rt->children);
-            while (!rc && child) {
-                rc = resrc_tree_serialize (co, child);
-                child = zlist_next (rt->children);
-            }
-        } else {
-            rc = resrc_to_json (o, rt->resrc);
-        }
-    }
-    return rc;
-}
-
 int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
 {
     resrc_tree_t *rt;
@@ -214,22 +276,6 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
         }
     }
 
-    return rc;
-}
-
-int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id)
-{
-    int rc = -1;
-    if (rt) {
-        rc = resrc_allocate_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
-            while (!rc && child) {
-                rc = resrc_tree_allocate (child, job_id);
-                child = zlist_next (rt->children);
-            }
-        }
-    }
     return rc;
 }
 
@@ -250,22 +296,6 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id)
-{
-    int rc = -1;
-    if (rt) {
-        rc = resrc_reserve_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
-            while (!rc && child) {
-                rc = resrc_tree_reserve (child, job_id);
-                child = zlist_next (rt->children);
-            }
-        }
-    }
-    return rc;
-}
-
 int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
 {
     resrc_tree_t *rt;
@@ -280,22 +310,6 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
         }
     }
 
-    return rc;
-}
-
-int resrc_tree_release (resrc_tree_t *rt, int64_t job_id)
-{
-    int rc = -1;
-    if (rt) {
-        rc = resrc_release_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
-            while (!rc && child) {
-                rc = resrc_tree_release (child, job_id);
-                child = zlist_next (rt->children);
-            }
-        }
-    }
     return rc;
 }
 
@@ -316,87 +330,193 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
     return rc;
 }
 
-/*
- * cycles through all of the resource children and returns true if all
- * of the sample children were found
- */
-static bool match_children (zlist_t * r_trees, zlist_t *s_trees,
-                            resrc_tree_t *parent_tree, bool available)
+/***********************************************************************
+ * Resource request
+ ***********************************************************************/
+
+int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
 {
-    resrc_tree_t *resrc_tree = zlist_first (r_trees);
-    resrc_tree_t *sample_tree = zlist_first (s_trees);
+    int rc = -1;
+    if (parent) {
+        child->parent = parent;
+        rc = zlist_append (parent->children, child);
+    }
+
+    return rc;
+}
+
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty)
+{
+    resrc_reqst_t *resrc_reqst = xzmalloc (sizeof (resrc_reqst_t));
+    if (resrc_reqst) {
+        resrc_reqst->parent = NULL;
+        resrc_reqst->resrc = resrc;
+        resrc_reqst->reqrd = qty;
+        resrc_reqst->nfound = 0;
+        resrc_reqst->children = zlist_new ();
+    } else {
+        oom ();
+    }
+
+    return resrc_reqst;
+}
+
+resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
+{
+    int qty = 0;
+    JSON ca = NULL;     /* array of child json objects */
+    JSON co = NULL;     /* child json object */
+    resrc_t *resrc = NULL;
+    resrc_reqst_t *child_reqst = NULL;
+    resrc_reqst_t *resrc_reqst = NULL;
+
+    if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
+        goto ret;
+
+    resrc = resrc_new_from_json (o, parent);
+    if (resrc) {
+        resrc_reqst = resrc_reqst_new (resrc, qty);
+
+        if ((co = Jobj_get (o, "req_child"))) {
+            child_reqst = resrc_reqst_from_json (co, resrc);
+            if (child_reqst)
+                resrc_reqst_add_child (resrc_reqst, child_reqst);
+        } else if ((ca = Jobj_get (o, "req_children"))) {
+            int i, nchildren = 0;
+
+            if (Jget_ar_len (ca, &nchildren)) {
+                for (i=0; i < nchildren; i++) {
+                    Jget_ar_obj (ca, i, &co);
+                    child_reqst = resrc_reqst_from_json (co, resrc);
+                    if (child_reqst)
+                        resrc_reqst_add_child (resrc_reqst, child_reqst);
+                }
+            }
+        }
+    }
+ret:
+    return resrc_reqst;
+}
+
+void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
+{
+    resrc_reqst_t *child;
+
+    if (resrc_reqst) {
+        resrc_print_resource (resrc_reqst->resrc);
+        if (zlist_size (resrc_reqst->children)) {
+            child = zlist_first (resrc_reqst->children);
+            while (child) {
+                resrc_reqst_print (child);
+                child = zlist_next (resrc_reqst->children);
+            }
+        }
+    }
+}
+
+static bool match_child (zlist_t * r_trees, resrc_reqst_t *resrc_reqst,
+                         resrc_tree_t *parent_tree, bool available)
+{
+    resrc_tree_t *resrc_tree = NULL;
     resrc_tree_t *child_tree = NULL;
     bool found = false;
 
-    while (sample_tree && resrc_tree) {
+    resrc_tree = zlist_first (r_trees);
+    while (resrc_tree) {
         found = false;
-        while (resrc_tree && !found) {
-            if (resrc_match_resource (resrc_tree->resrc, sample_tree->resrc,
-                                      available)) {
-                if (zlist_size (sample_tree->children)) {
-                    if (zlist_size (resrc_tree->children)) {
-                        child_tree = resrc_tree_new (parent_tree,
-                                                     resrc_tree->resrc);
-                        if (match_children (resrc_tree->children,
-                                            sample_tree->children,
-                                            child_tree, available)) {
-                            found = true;
-                        }
-                    }
-                } else {
-                    (void) resrc_tree_new (parent_tree, resrc_tree->resrc);
-                    found = true;
-                }
-            }
-            /*
-             * The following clause allows the sample tree to be sparsely
-             * defined.  E.g., it might only stipulate a node with 4 cores
-             * and omit the intervening socket.
-             */
-            if (!found) {
+        if (resrc_match_resource (resrc_tree->resrc, resrc_reqst->resrc,
+                                  available)) {
+            if (zlist_size (resrc_reqst->children)) {
                 if (zlist_size (resrc_tree->children)) {
-                    child_tree = resrc_tree_new (parent_tree, resrc_tree->resrc);
-                    if (match_children (resrc_tree->children, s_trees,
-                                        child_tree, available)) {
+                    child_tree = resrc_tree_new (parent_tree,
+                                                 resrc_tree->resrc);
+                    if (match_children (resrc_tree->children,
+                                        resrc_reqst->children, child_tree,
+                                        available)) {
+                        resrc_reqst->nfound++;
                         found = true;
                     } else {
                         resrc_tree_destroy (child_tree);
                     }
                 }
+            } else {
+                (void) resrc_tree_new (parent_tree, resrc_tree->resrc);
+                resrc_reqst->nfound++;
+                found = true;
             }
-            resrc_tree = zlist_next (r_trees);
+        }
+        /*
+         * The following clause allows the resource request to be
+         * sparsely defined.  E.g., it might only stipulate a node
+         * with 4 cores and omit the intervening socket.
+         */
+        if (!found) {
+            if (zlist_size (resrc_tree->children)) {
+                child_tree = resrc_tree_new (parent_tree, resrc_tree->resrc);
+                if (match_child (resrc_tree->children, resrc_reqst, child_tree,
+                                 available)) {
+                    found = true;
+                } else {
+                    resrc_tree_destroy (child_tree);
+                }
+            }
+        }
+        resrc_tree = zlist_next (r_trees);
+    }
+
+    return found;
+}
+
+/*
+ * cycles through all of the resource children and returns true if all
+ * of the requested children were found
+ */
+static bool match_children (zlist_t * r_trees, zlist_t *req_trees,
+                            resrc_tree_t *parent_tree, bool available)
+{
+    resrc_reqst_t *resrc_reqst = zlist_first (req_trees);
+    bool found = false;
+
+    while (resrc_reqst) {
+        resrc_reqst->nfound = 0;
+        found = false;
+
+        if (match_child (r_trees, resrc_reqst, parent_tree, available)) {
+            if (resrc_reqst->nfound >= resrc_reqst->reqrd)
+                found = true;
         }
         if (!found)
-            goto ret;
-        sample_tree = zlist_next (s_trees);
+            break;
+
+        resrc_reqst = zlist_next (req_trees);
     }
-ret:
+
     return found;
 }
 
 /* returns the number of composites found */
-int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_tree_t *sample_tree,
+int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
                        resrc_tree_list_t *found_in, bool available)
 {
-    int nfound = 0;
+    int64_t nfound = 0;
     resrc_tree_t *new_tree = NULL;
     resrc_tree_t *resrc_tree;
     zlist_t *found_trees = (zlist_t*)found_in;
     zlist_t *resrc_trees = (zlist_t*)resrcs_in;
 
-    if (!resrc_trees || !found_trees || !sample_tree) {
+    if (!resrc_trees || !found_trees || !resrc_reqst) {
         goto ret;
     }
 
     resrc_tree = zlist_first (resrc_trees);
     while (resrc_tree) {
-        if (resrc_match_resource (resrc_tree->resrc, sample_tree->resrc,
+        if (resrc_match_resource (resrc_tree->resrc, resrc_reqst->resrc,
                                   available)) {
-            if (zlist_size (sample_tree->children)) {
+            if (zlist_size (resrc_reqst->children)) {
                 if (zlist_size (resrc_tree->children)) {
                     new_tree = resrc_tree_new (NULL, resrc_tree->resrc);
                     if (match_children (resrc_tree->children,
-                                        sample_tree->children, new_tree,
+                                        resrc_reqst->children, new_tree,
                                         available)) {
                         zlist_append (found_trees, new_tree);
                         nfound++;
@@ -411,7 +531,7 @@ int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_tree_t *sample_tree,
             }
         } else if (zlist_size (resrc_tree->children)) {
             nfound += resrc_tree_search (resrc_tree_children (resrc_tree),
-                                         sample_tree, found_in, available);
+                                         resrc_reqst, found_in, available);
         }
         resrc_tree = zlist_next (resrc_trees);
     }

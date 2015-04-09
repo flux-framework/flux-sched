@@ -7,6 +7,12 @@
 
 #include "resrc.h"
 
+typedef struct resrc_tree_list resrc_tree_list_t;
+typedef struct resrc_reqst resrc_reqst_t;
+
+/***********************************************************************
+ * Resource tree API
+ ***********************************************************************/
 /*
  * Return the resrc_t associated with this tree
  */
@@ -43,6 +49,34 @@ void resrc_tree_free (resrc_tree_t *resrc_tree);
 void resrc_tree_destroy (resrc_tree_t *resrc_tree);
 
 /*
+ * Print the resources in a resrc_tree_t object
+ */
+void resrc_tree_print (resrc_tree_t *resrc_tree);
+
+/*
+ * Add the input resource tree to the json object
+ */
+int resrc_tree_serialize (JSON o, resrc_tree_t *rt);
+
+/*
+ * Allocate all the resources in a resource tree
+ */
+int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id);
+
+/*
+ * Reserve all the resources in a resource tree
+ */
+int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id);
+
+/*
+ * Release all the resources in a resource tree
+ */
+int resrc_tree_release (resrc_tree_t *rt, int64_t job_id);
+
+/***********************************************************************
+ * Resource tree list
+ ***********************************************************************/
+/*
  * Create a new list of resrc_tree_t objects
  */
 resrc_tree_list_t *resrc_tree_new_list ();
@@ -68,32 +102,44 @@ size_t resrc_tree_list_size (resrc_tree_list_t *rtl);
 void resrc_tree_list_destroy (resrc_tree_list_t *rtl);
 
 /*
- * Print the resources in a resrc_tree_t object
- */
-void resrc_tree_print (resrc_tree_t *resrc_tree);
-
-/*
- * Add the input resource tree to the json object
- */
-int resrc_tree_serialize (JSON o, resrc_tree_t *rt);
-
-/*
  * Add the input list of resource trees to the json object
  */
 int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl);
 
-int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id);
-
+/*
+ * Allocate all the resources in a list of resource trees
+ */
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id);
 
-int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id);
-
+/*
+ * Reserve all the resources in a list of resource trees
+ */
 int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id);
 
-int resrc_tree_release (resrc_tree_t *rt, int64_t job_id);
-
+/*
+ * Release all the resources in a list of resource trees
+ */
 int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id);
 
+
+/***********************************************************************
+ * Composite resource request
+ ***********************************************************************/
+
+/*
+ * Create a new resrc_reqst_t object
+ */
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty);
+
+/*
+ * Create a resrc_reqst_t object from a json object
+ */
+resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent);
+
+/*
+ * Print the resources in a resrc_reqst_t object
+ */
+void resrc_reqst_print (resrc_reqst_t *resrc_reqst);
 
 /*
  * Search a list of resource trees for a specific, composite resource
@@ -105,7 +151,8 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id);
  * Returns: the number of matching resource composites found
  *          found       - any resources found are added to this list
  */
-int resrc_tree_search (resrc_tree_list_t *resrc_trees, resrc_tree_t *sample_tree,
+int resrc_tree_search (resrc_tree_list_t *resrc_trees,
+                       resrc_reqst_t *sample_tree,
                        resrc_tree_list_t *found_trees, bool available);
 
 
