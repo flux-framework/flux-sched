@@ -112,12 +112,12 @@ int main (int argc, char *argv[])
     Jadd_int (child_core, "req_qty", 6);
 
     ja = Jnew_ar ();
-    Jadd_ar_obj(ja, child_core);
+    json_object_array_add (ja, child_core);
 
     child_sock = Jnew ();
     Jadd_str (child_sock, "type", "socket");
     Jadd_int (child_sock, "req_qty", 2);
-    Jadd_obj (child_sock, "req_children", ja);
+    json_object_object_add (child_sock, "req_children", ja);
 
     /* jtago = Jnew (); */
     /* Jadd_bool (jtago, "maytag", true); */
@@ -125,9 +125,9 @@ int main (int argc, char *argv[])
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
-    /* Jadd_obj (req_res, "tags", jtago); */
+    /* json_object_object_add (req_res, "tags", jtago); */
     Jadd_int (req_res, "req_qty", 2);
-    Jadd_obj (req_res, "req_child", child_sock);
+    json_object_object_add (req_res, "req_child", child_sock);
 
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
     Jput (req_res);
@@ -199,6 +199,7 @@ int main (int argc, char *argv[])
     }
 
     init_time();
+    resrc_reqst_destroy (resrc_reqst);
     resrc_tree_list_destroy (found_trees);
     resrc_destroy_resources (&resrcs);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);

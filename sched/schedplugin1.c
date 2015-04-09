@@ -112,11 +112,14 @@ resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
     Jadd_int (req_res, "req_qty", job->req->nnodes);
-    Jadd_obj (req_res, "req_child", child_core);
+    json_object_object_add (req_res, "req_child", child_core);
 
-    if ((resrc_reqst = resrc_reqst_from_json (req_res, NULL)))
+    if ((resrc_reqst = resrc_reqst_from_json (req_res, NULL))) {
         found = resrc_tree_search (resrc_tree_children (resrc_tree),
                                    resrc_reqst, found_trees, true);
+        resrc_reqst_destroy (resrc_reqst);
+    }
+    Jput (req_res);
 
     if (found >= job->req->nnodes) {
         flux_log (h, LOG_DEBUG, "%ld composites found for lwj.%ld req: %ld",
