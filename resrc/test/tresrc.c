@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
     JSON req_res = NULL;
     resources_t *resrcs = NULL;
     resrc_t *resrc = NULL;
-    resrc_t *sample_resrc = NULL;
+    resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *found_trees = resrc_tree_new_list ();
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
@@ -129,22 +129,21 @@ int main (int argc, char *argv[])
     Jadd_int (req_res, "req_qty", 2);
     Jadd_obj (req_res, "req_child", child_sock);
 
-    sample_resrc = resrc_new_from_json (req_res, NULL);
+    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
     Jput (req_res);
-    ok ((sample_resrc != NULL), "sample resource composite valid");
-    if (!sample_resrc)
+    ok ((resrc_reqst != NULL), "resource request valid");
+    if (!resrc_reqst)
         goto ret;
 
     if (verbose) {
-        printf ("Listing sample tree\n");
-        resrc_tree_print (resrc_phys_tree (sample_resrc));
-        printf ("End of sample tree\n");
+        printf ("Listing resource request tree\n");
+        resrc_reqst_print (resrc_reqst);
+        printf ("End of resource request tree\n");
     }
 
     init_time();
-    found = resrc_tree_search (resrc_tree_children (resrc_tree),
-                               resrc_phys_tree (sample_resrc), found_trees,
-                               false);
+    found = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
+                               found_trees, false);
 
     ok (found, "found %d composite resources in %lf", found,
         ((double)get_time())/1000000);

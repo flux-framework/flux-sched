@@ -708,20 +708,14 @@ ret:
 resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
 {
     const char *type = NULL;
-    int qty = 0;
-    JSON ca = NULL;     /* array of child json objects */
-    JSON co = NULL;     /* child json object */
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
     resrc_t *resrc = NULL;
-    resrc_tree_t *parent_tree = NULL;
-    resrc_tree_t *resrc_tree = NULL;
 
     if (!Jget_str (o, "type", &type))
         goto ret;
 
     if (parent) {
-        parent_tree = resrc_phys_tree (parent);
         if (!strncmp (type, "memory", 6)) {
             int64_t items;
             resrc_pool_t *pool;
@@ -742,35 +736,10 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
 
     resrc = resrc_new_resource (type, NULL, -1, 0);
     if (resrc) {
-        resrc->state = RESOURCE_INVALID;
-        resrc_tree = resrc_tree_new (parent_tree, resrc);
-        resrc->phys_tree = resrc_tree;
-
         jtago = Jobj_get (o, "tags");
         if (jtago) {
             json_object_object_foreachC (jtago, iter) {
                 zlist_append (resrc->tags, strdup (iter.key));
-            }
-        }
-
-        if ((co = Jobj_get (o, "req_child"))) {
-            if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
-                while (qty--) {
-                    (void) resrc_new_from_json (co, resrc);
-                }
-            }
-        } else if ((ca = Jobj_get (o, "req_children"))) {
-            int i, nchildren = 0;
-
-            if (Jget_ar_len (ca, &nchildren)) {
-                for (i=0; i < nchildren; i++) {
-                    Jget_ar_obj (ca, i, &co);
-                    if (Jget_int (co, "req_qty", &qty) && (qty > 0)) {
-                        while (qty--) {
-                            (void) resrc_new_from_json (co, resrc);
-                        }
-                    }
-                }
             }
         }
     }

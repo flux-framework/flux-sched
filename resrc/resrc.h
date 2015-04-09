@@ -12,7 +12,6 @@ typedef struct resource_list resource_list_t;
 typedef struct resources resources_t;
 typedef struct resrc resrc_t;
 typedef struct resrc_tree resrc_tree_t;
-typedef struct resrc_tree_list resrc_tree_list_t;
 
 typedef enum {
     RESOURCE_INVALID,
