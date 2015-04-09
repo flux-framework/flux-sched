@@ -647,7 +647,7 @@ JSON resrc_id_serialize (resources_t *resrcs_in, resource_list_t *resrc_ids_in)
         Jadd_ar_str (ja, resrc->name);
         resrc_id = zlist_next (resrc_ids);
     }
-    Jadd_obj (o, "resrcs", ja);
+    json_object_object_add (o, "resrcs", ja);
 ret:
     return o;
 }

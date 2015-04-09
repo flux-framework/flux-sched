@@ -142,6 +142,11 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent);
 void resrc_reqst_print (resrc_reqst_t *resrc_reqst);
 
 /*
+ * Destroy a resrc_reqst_t object
+ */
+void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst);
+
+/*
  * Search a list of resource trees for a specific, composite resource
  * Inputs:  resrc_trees - the list of resource trees to search
  *          found       - running list of keys to previously found resources

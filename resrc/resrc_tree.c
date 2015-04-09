@@ -159,7 +159,7 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
         rc = 0;
         if (zlist_size (rt->children)) {
             JSON co = Jnew ();
-            Jadd_obj (o, resrc_name (rt->resrc), co);
+            json_object_object_add (o, resrc_name (rt->resrc), co);
             resrc_tree_t *child = zlist_first (rt->children);
             while (!rc && child) {
                 rc = resrc_tree_serialize (co, child);
@@ -411,6 +411,26 @@ void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
                 child = zlist_next (resrc_reqst->children);
             }
         }
+    }
+}
+
+void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
+{
+    resrc_reqst_t *child;
+
+    if (resrc_reqst) {
+        if (resrc_reqst->parent)
+            zlist_remove (resrc_reqst->parent->children, resrc_reqst);
+        if (zlist_size (resrc_reqst->children)) {
+            child = zlist_first (resrc_reqst->children);
+            while (child) {
+                resrc_reqst_destroy (child);
+                child = zlist_next (resrc_reqst->children);
+            }
+        }
+        zlist_destroy (&resrc_reqst->children);
+        resrc_resource_destroy (resrc_reqst->resrc);
+        free (resrc_reqst);
     }
 }
 
