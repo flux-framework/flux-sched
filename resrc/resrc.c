@@ -67,7 +67,7 @@ struct resrc {
     zlist_t *resrv_jobs;
     zlist_t *pools;
     zlist_t *properties;
-    zlist_t *tags;
+    zhash_t *tags;
 };
 
 
@@ -201,7 +201,7 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
         resrc->resrv_jobs = zlist_new ();
         resrc->pools = zlist_new ();
         resrc->properties = NULL;
-        resrc->tags = zlist_new ();
+        resrc->tags = zhash_new ();
     } else {
         oom ();
     }
@@ -226,7 +226,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         new_resrc->resrv_jobs = zlist_dup (resrc->resrv_jobs);
         new_resrc->pools = zlist_dup (resrc->pools);
         new_resrc->properties = zlist_dup (resrc->properties);
-        new_resrc->tags = zlist_dup (resrc->tags);
+        new_resrc->tags = zhash_dup (resrc->tags);
     } else {
         oom ();
     }
@@ -236,7 +236,6 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
 
 void resrc_resource_destroy (void *object)
 {
-    char *tmp;
     int64_t *id_ptr;
     resrc_t *resrc = (resrc_t *) object;
 
@@ -261,9 +260,7 @@ void resrc_resource_destroy (void *object)
             resrc_pool_list_destroy (resrc->pools);
         if (resrc->properties)
             zlist_destroy (&resrc->properties);
-        while ((tmp = zlist_pop (resrc->tags)))
-            free (tmp);
-        zlist_destroy (&resrc->tags);
+        zhash_destroy (&resrc->tags);
         free (resrc);
     }
 }
@@ -334,7 +331,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         zhash_freefn (resrcs, fullname, resrc_resource_destroy);
         if (jtago) {
             json_object_object_foreachC (jtago, iter) {
-                zlist_append (resrc->tags, strdup (iter.key));
+                zhash_insert (resrc->tags, iter.key, "t");
             }
         }
 
@@ -414,12 +411,12 @@ void resrc_print_resource (resrc_t *resrc)
         uuid_unparse (resrc->uuid, out);
         printf ("resrc type:%s, name:%s, id:%ld, state:%d, uuid: %s",
                 resrc->type, resrc->name, resrc->id, resrc->state, out);
-        if (zlist_size (resrc->tags)) {
+        if (zhash_size (resrc->tags)) {
             printf (", tags");
-            tag = zlist_first (resrc->tags);
+            tag = zhash_first (resrc->tags);
             while (tag) {
-                printf (", %s", tag);
-                tag = zlist_next (resrc->tags);
+                printf (", %s", (char *)zhash_cursor (resrc->tags));
+                tag = zhash_next (resrc->tags);
             }
         }
         if (zlist_size (resrc->pools)) {
@@ -474,28 +471,20 @@ void resrc_print_resources (resources_t *resrcs)
 bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
 {
     bool rc = false;
-    bool match = false;
-    char *rtag = NULL;
     char *stag = NULL;
 
     if (!strncmp (resrc->type, sample->type, sizeof (sample->type))) {
-        if (zlist_size (sample->tags)) {
-            if (!zlist_size (resrc->tags)) {
+        if (zhash_size (sample->tags)) {
+            if (!zhash_size (resrc->tags)) {
                 goto ret;
             }
-            stag = zlist_first (sample->tags);
-            while (stag) {
-                rtag = zlist_first (resrc->tags);
-                match = false;
-                while (rtag) {
-                    if (!strcmp (rtag, stag))
-                        match = true;
-                    rtag = zlist_next (resrc->tags);
-                }
-                if (!match)
+            /* be sure the resource has all the requested tags */
+            zhash_first (sample->tags);
+            do {
+                stag = (char *)zhash_cursor (sample->tags);
+                if (!zhash_lookup (resrc->tags, stag))
                     goto ret;
-                stag = zlist_next (sample->tags);
-            }
+            } while (zhash_next (sample->tags));
         }
         if (available) {
             if (resrc->state == RESOURCE_IDLE)
@@ -739,7 +728,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
         jtago = Jobj_get (o, "tags");
         if (jtago) {
             json_object_object_foreachC (jtago, iter) {
-                zlist_append (resrc->tags, strdup (iter.key));
+                zhash_insert (resrc->tags, iter.key, "t");
             }
         }
     }
