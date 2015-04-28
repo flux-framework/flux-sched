@@ -30,6 +30,18 @@ local class = require "middleclass"
 --
 local Resource = class ('Resource')
 
+Resource._defaultTags = {}
+
+-- Set a list of default tags for this class:
+function Resource:default_tags (t)
+    local tags = {}
+    for k,v in pairs (t) do
+        if type(v) == 'table' then error ("tags value cannot be a table!") end
+        tags[k] = v
+    end
+    self._defaultTags = tags
+end
+
 function Resource:initialize (args)
     self.children = {}
     if args.children then
@@ -38,6 +50,23 @@ function Resource:initialize (args)
         end
         args.children = nil
     end
+
+    if not args.tags then
+        args.tags = {}
+    end
+
+    --
+    -- Set default tags from the _defaultTags class attribute.
+    --  (This table is inherited by subclasses, so setting default
+    --   tags for the "Resource" class causes all resources to get
+    --   those tags, unless overridden in a subclass)
+    --
+    for k,v in pairs (self.class._defaultTags) do
+        if not args.tags[k] then
+            args.tags[k] = v
+        end
+    end
+
     self.resource = ResourceData (args)
 end
 
