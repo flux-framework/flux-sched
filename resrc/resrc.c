@@ -43,15 +43,9 @@ typedef struct zhash_t resources;
 typedef struct zlist_t resource_list;
 
 typedef struct {
-    int64_t job_id;
-    int64_t items;
-} pool_alloc_t;
-
-typedef struct {
-    char *type;
     int64_t avail_items;
     int64_t total_items;
-    zlist_t *allocs;
+    zhash_t *allocs;
 } resrc_pool_t;
 
 struct resrc {
@@ -65,7 +59,7 @@ struct resrc {
     zlist_t *graphs;
     zlist_t *jobs;
     zlist_t *resrv_jobs;
-    zlist_t *pools;
+    zhash_t *pools;
     zlist_t *properties;
     zhash_t *tags;
 };
@@ -141,15 +135,21 @@ size_t resrc_list_size (resource_list_t *rl)
     return zlist_size ((zlist_t*)rl);
 }
 
-resrc_pool_t *resrc_new_pool (const char *type, int64_t items)
+static void free_int64 (void** pval)
+{
+    int64_t *int64p = *pval;
+    free (int64p);
+}
+
+static resrc_pool_t *resrc_new_pool (int64_t items)
 {
     resrc_pool_t *pool = xzmalloc (sizeof (resrc_pool_t));
 
     if (pool) {
-        pool->type = strdup (type);
         pool->total_items = items;
         pool->avail_items = items;
-        pool->allocs = zlist_new ();
+        pool->allocs = zhash_new ();
+        zhash_set_destructor (pool->allocs, free_int64);
     } else {
         oom ();
     }
@@ -157,28 +157,13 @@ resrc_pool_t *resrc_new_pool (const char *type, int64_t items)
     return pool;
 }
 
-void resrc_pool_destroy (resrc_pool_t *pool)
+static void resrc_pool_hash_destroy (void** pval)
 {
-    pool_alloc_t *alloc;
+    resrc_pool_t *pool = *pval;
 
     if (pool) {
-        while ((alloc = zlist_pop (pool->allocs)))
-            free (alloc);
-        zlist_destroy (&pool->allocs);
-        free (pool);
-    }
-}
-
-void resrc_pool_list_destroy (zlist_t *pools)
-{
-    resrc_pool_t *pool;
-
-    if (pools) {
-        while ((pool = zlist_pop (pools))) {
-            free (pool->type);
-            resrc_pool_destroy (pool);
-        }
-        zlist_destroy (&pools);
+        zhash_destroy (&pool->allocs);
+	free (pool);
     }
 }
 
@@ -199,7 +184,8 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
         resrc->graphs = NULL;
         resrc->jobs = zlist_new ();
         resrc->resrv_jobs = zlist_new ();
-        resrc->pools = zlist_new ();
+        resrc->pools = zhash_new ();
+        zhash_set_destructor (resrc->pools, resrc_pool_hash_destroy);
         resrc->properties = NULL;
         resrc->tags = zhash_new ();
     } else {
@@ -224,7 +210,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         new_resrc->graphs = zlist_dup (resrc->graphs);
         new_resrc->jobs = zlist_dup (resrc->jobs);
         new_resrc->resrv_jobs = zlist_dup (resrc->resrv_jobs);
-        new_resrc->pools = zlist_dup (resrc->pools);
+        new_resrc->pools = zhash_dup (resrc->pools);
         new_resrc->properties = zlist_dup (resrc->properties);
         new_resrc->tags = zhash_dup (resrc->tags);
     } else {
@@ -256,8 +242,7 @@ void resrc_resource_destroy (void *object)
         while ((id_ptr = zlist_pop (resrc->resrv_jobs)))
             jobid_destroy (id_ptr);
         zlist_destroy (&resrc->resrv_jobs);
-        if (resrc->pools)
-            resrc_pool_list_destroy (resrc->pools);
+        zhash_destroy (&resrc->pools);
         if (resrc->properties)
             zlist_destroy (&resrc->properties);
         zhash_destroy (&resrc->tags);
@@ -310,9 +295,10 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
             resrc_pool_t *pool;
 
             Jget_int64 (o, "size", &items);
-            pool = resrc_new_pool (type, items);
+            pool = resrc_new_pool (items);
             if (pool) {
-                zlist_append (parent->pools, pool);
+                zhash_insert (parent->pools, type, pool);
+                /* we've added a memory pool and so we're done */
                 goto ret;
             } else {
                 oom ();
@@ -405,7 +391,7 @@ void resrc_print_resource (resrc_t *resrc)
     char out[40];
     char *tag;
     int64_t *id_ptr;
-    resrc_pool_t *pool_ptr;
+    resrc_pool_t *pool;
 
     if (resrc) {
         uuid_unparse (resrc->uuid, out);
@@ -419,14 +405,13 @@ void resrc_print_resource (resrc_t *resrc)
                 tag = zhash_next (resrc->tags);
             }
         }
-        if (zlist_size (resrc->pools)) {
+        if (zhash_size (resrc->pools)) {
             printf (", pools");
-            pool_ptr = zlist_first (resrc->pools);
-            while (pool_ptr) {
-                printf (", %s: %ld of %ld", pool_ptr->type,
-                        pool_ptr->avail_items, pool_ptr->total_items);
-                pool_ptr = zlist_next (resrc->pools);
-            }
+            pool = zhash_first (resrc->pools);
+            do {
+                printf (", %s: %ld of %ld", (char *)zhash_cursor (resrc->pools),
+                        pool->avail_items, pool->total_items);
+            } while ((pool = zhash_next (resrc->pools)));
         }
         if (zlist_size (resrc->jobs)) {
             printf (", jobs");
@@ -710,9 +695,9 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
             resrc_pool_t *pool;
 
             if (Jget_int64 (o, "size", &items)) {
-                pool = resrc_new_pool (type, items);
+                pool = resrc_new_pool (items);
                 if (pool) {
-                    zlist_append (parent->pools, pool);
+                    zhash_insert (parent->pools, type, pool);
                     goto ret;
                 } else {
                     oom ();
