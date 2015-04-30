@@ -18,6 +18,8 @@ TESTS = \
 all: $(BUILD)
 
 check: $(TESTS)
+	@export LUA_PATH="$$LUA_PATH;$(FLUX_BUILDDIR)/t/?.lua;$(RDL_LUA_PATH);;"; \
+	export LUA_CPATH="$$LUA_CPATH;$(RDL_LUA_CPATH);;"; \
 	for t in $(TESTS); do \
 		./$$t; \
 	done 
