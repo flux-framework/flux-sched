@@ -13,7 +13,9 @@ export FLUX_SOURCE_DIR=$(FLUX_SRCDIR)
 BUILD = 
 TESTS = \
 	t0000-sharness.t \
-	t0001-basic.t
+	t0001-basic.t \
+	lua/t0001-rdl-basic.t \
+	lua/t0002-multilevel.t
 
 all: $(BUILD)
 
