@@ -27,7 +27,6 @@
 --
 -- First, load some useful modules:
 --
-local Resource = require 'RDL.Resource'
 local hostlist = require 'hostlist'
 
 --
@@ -49,7 +48,6 @@ local function rdl_parse_environment ()
         tonumber = tonumber,
         assert = assert,
         table = table,
-        Resource = Resource,
         hostlist = hostlist
     }
     local rdl = require 'RDL.memstore'.new()
@@ -61,8 +59,9 @@ local function rdl_parse_environment ()
     -- the "uses" function is like 'require' but loads a resource definition
     --  file from the current resource types path
     --
-    function env.uses (t)
-        local filename = basepath .. "RDL/types/" .. t .. ".lua"
+    function env.uses (t, dir)
+        local dir = dir or basepath .. "RDL/types"
+        local filename = dir .. "/" .. t .. ".lua"
         if env[t] then return end
         local f = assert (loadfile (filename))
 
@@ -94,6 +93,11 @@ local function rdl_parse_environment ()
             rdl:hierarchy_put (name, resource)
         end
     end
+
+    ---
+    -- Load 'Resource' base class by default (i.e. use "Resource")
+    ---
+    env.uses ('Resource', basepath .. "RDL")
 
     ---
     -- Load extra functions defined in RDL/lib/?.lua
