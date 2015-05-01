@@ -78,6 +78,7 @@ local function rdl_parse_environment ()
             return nil, r
         end
         env [t] = r
+        return r
     end
 
     ---
@@ -112,6 +113,7 @@ local function rdl_parse_environment ()
         end
         env[name] = r
     end
+
 
     env.rdl = rdl
     return env
