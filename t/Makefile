@@ -15,7 +15,8 @@ TESTS = \
 	t0000-sharness.t \
 	t0001-basic.t \
 	lua/t0001-rdl-basic.t \
-	lua/t0002-multilevel.t
+	lua/t0002-multilevel.t \
+	lua/t0003-default-tags.t
 
 all: $(BUILD)
 
