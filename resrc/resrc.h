@@ -140,6 +140,15 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available);
 int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
                                  JSON req_res, bool available);
 
+/*
+ * Determine whether a resource contains a pool type
+ */
+bool resrc_has_pool (resrc_t *resrc, char* type);
+
+/*
+ * Select specified items from resource pool
+ */
+int resrc_select_pool_items (resrc_t *resrc, char* type, int64_t items);
 
 /*
  * Allocate a resource to a job
