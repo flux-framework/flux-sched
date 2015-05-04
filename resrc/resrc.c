@@ -44,8 +44,10 @@ typedef struct zlist_t resource_list;
 
 typedef struct {
     int64_t avail_items;
+    int64_t selctd_items;
     int64_t total_items;
     zhash_t *allocs;
+    zhash_t *reservtns;
 } resrc_pool_t;
 
 struct resrc {
@@ -148,8 +150,11 @@ static resrc_pool_t *resrc_new_pool (int64_t items)
     if (pool) {
         pool->total_items = items;
         pool->avail_items = items;
+        pool->selctd_items = 0;
         pool->allocs = zhash_new ();
         zhash_set_destructor (pool->allocs, free_int64);
+        pool->reservtns = zhash_new ();
+        zhash_set_destructor (pool->reservtns, free_int64);
     } else {
         oom ();
     }
@@ -163,6 +168,7 @@ static void resrc_pool_hash_destroy (void** pval)
 
     if (pool) {
         zhash_destroy (&pool->allocs);
+        zhash_destroy (&pool->reservtns);
 	free (pool);
     }
 }
@@ -456,7 +462,10 @@ void resrc_print_resources (resources_t *resrcs)
 bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
 {
     bool rc = false;
-    char *stag = NULL;
+    char *stag = NULL;          /* sample tag */
+    char *sptype = NULL;        /* sample pool type */
+    resrc_pool_t *r_pool;       /* resource pool */
+    resrc_pool_t *s_pool;       /* sample pool */
 
     if (!strncmp (resrc->type, sample->type, sizeof (sample->type))) {
         if (zhash_size (sample->tags)) {
@@ -470,6 +479,23 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
                 if (!zhash_lookup (resrc->tags, stag))
                     goto ret;
             } while (zhash_next (sample->tags));
+        }
+        if (zhash_size (sample->pools)) {
+            if (!zhash_size (resrc->pools)) {
+                goto ret;
+            }
+            /* Be sure the resource has enough available items from
+             * all the requested pools.  We re-purpose the sample's
+             * avail_items to convey the requested items */
+            s_pool = zhash_first (sample->pools);
+            do {
+                sptype = (char *)zhash_cursor (sample->pools);
+                if ((r_pool = zhash_lookup (resrc->pools, sptype))) {
+                    if (r_pool->avail_items < s_pool->avail_items)
+                        goto ret;
+                } else
+                    goto ret;
+            } while ((s_pool = zhash_next (sample->pools)));
         }
         if (available) {
             if (resrc->state == RESOURCE_IDLE)
@@ -519,6 +545,34 @@ ret:
 }
 #endif
 
+bool resrc_has_pool (resrc_t *resrc, char* type)
+{
+    bool rc = false;
+
+    if (zhash_lookup (resrc->pools, type))
+        rc = true;
+    return rc;
+}
+
+int resrc_select_pool_items (resrc_t *resrc, char* type, int64_t items)
+{
+    resrc_pool_t *pool;
+    int rc = -1;
+    if ((pool = zhash_lookup (resrc->pools, type))) {
+        pool->selctd_items = items;
+        rc = 0;
+    }
+    return rc;
+}
+
+/*
+ * Attach a job_id to a resource and change its state to allocated.
+ * Note that a resource's pool items can be distributed to multiple
+ * jos.  We convey the number of items of a pool to allocate in the
+ * pool's selctd_items member.  Allocating pool items to a job takes
+ * the form of a new job_id/items key value pair being added to the
+ * resource pool's allocation table.
+ */
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
 {
     int64_t *id_ptr;
@@ -529,9 +583,25 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
         *id_ptr = job_id;
         zlist_append (resrc->jobs, id_ptr);
         resrc->state = RESOURCE_ALLOCATED;
+        if (zhash_size (resrc->pools)) {
+            resrc_pool_t *pool = zhash_first (resrc->pools);
+            do {
+                if (pool->selctd_items) {
+                    int64_t *p_si;
+
+                    if (pool->selctd_items > pool->avail_items)
+                        goto ret;
+                    p_si = xzmalloc (sizeof (int64_t));
+                    *p_si = pool->selctd_items;
+                    zhash_insert (pool->allocs, id_ptr, p_si);
+                    pool->avail_items -= pool->selctd_items;
+                    pool->selctd_items = 0;
+                }
+            } while ((pool = zhash_next (resrc->pools)));
+        }
         rc = 0;
     }
-
+ret:
     return rc;
 }
 
@@ -559,6 +629,9 @@ ret:
     return rc;
 }
 
+/*
+ * Just like resrc_allocate_resource() above, but for a reservation
+ */
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
 {
     int64_t *id_ptr;
@@ -570,9 +643,25 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
         zlist_append (resrc->resrv_jobs, id_ptr);
         if (resrc->state != RESOURCE_ALLOCATED)
             resrc->state = RESOURCE_RESERVED;
+        if (zhash_size (resrc->pools)) {
+            resrc_pool_t *pool = zhash_first (resrc->pools);
+            do {
+                if (pool->selctd_items) {
+                    int64_t *p_si;
+
+                    if (pool->selctd_items > pool->avail_items)
+                        goto ret;
+                    p_si = xzmalloc (sizeof (int64_t));
+                    *p_si = pool->selctd_items;
+                    zhash_insert (pool->reservtns, id_ptr, p_si);
+                    pool->avail_items -= pool->selctd_items;
+                    pool->selctd_items = 0;
+                }
+            } while ((pool = zhash_next (resrc->pools)));
+        }
         rc = 0;
     }
-
+ret:
     return rc;
 }
 
@@ -641,6 +730,17 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
         if (*id_ptr == rel_job) {
             zlist_remove (resrc->jobs, id_ptr);
             jobid_destroy (id_ptr);
+
+            if (zhash_size (resrc->pools)) {
+                int64_t *item;
+                resrc_pool_t *pool = zhash_first (resrc->pools);
+                do {
+                    if ((item = zhash_lookup (pool->allocs, (void *)&rel_job))) {
+                        pool->avail_items += *item;
+                        zhash_delete (pool->allocs, (void *)&rel_job);
+                    }
+                } while ((pool = zhash_next (resrc->pools)));
+            }
             break;
         }
         id_ptr = zlist_next (resrc->jobs);
@@ -694,7 +794,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
             int64_t items;
             resrc_pool_t *pool;
 
-            if (Jget_int64 (o, "size", &items)) {
+            if (Jget_int64 (o, "req_qty", &items)) {
                 pool = resrc_new_pool (items);
                 if (pool) {
                     zhash_insert (parent->pools, type, pool);

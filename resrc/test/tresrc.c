@@ -46,6 +46,46 @@ u_int64_t get_time() {
         + (t.tv_usec - start_time.tv_usec);
 }
 
+static void test_select_children (resrc_tree_t *rt)
+{
+    if (rt) {
+        resrc_t *resrc = resrc_tree_resrc (rt);
+        if (resrc_has_pool (resrc, "memory")) {
+            resrc_select_pool_items (resrc, "memory", 100);
+        }
+        if (zlist_size ((zlist_t*)resrc_tree_children(rt))) {
+            resrc_tree_t *child = zlist_first ((zlist_t*)
+                                               resrc_tree_children(rt));
+            while (child) {
+                test_select_children (child);
+                child = zlist_next ((zlist_t*)resrc_tree_children(rt));
+            }
+        }
+    }
+}
+
+/*
+ * Select some resources from the found trees
+ */
+static resrc_tree_list_t * test_select_resources (resrc_tree_list_t *found_trees,
+                                                  int skip)
+{
+    resrc_tree_list_t *selected_res = resrc_tree_new_list ();
+    resrc_tree_t *rt;
+    int count = 1;
+
+    rt = resrc_tree_list_first (found_trees);
+    while (rt) {
+        if (!(count % skip)) {
+            test_select_children (rt);
+            zlist_append ((zlist_t *) selected_res, rt);
+        }
+        count++;
+        rt = resrc_tree_list_next (found_trees);
+    }
+
+    return (resrc_tree_list_t*)selected_res;
+}
 
 int main (int argc, char *argv[])
 {
@@ -57,12 +97,14 @@ int main (int argc, char *argv[])
     /* JSON jtago = NULL;  /\* json tag object *\/ */
     JSON child_core = NULL;
     JSON child_sock = NULL;
+    JSON memory = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
     resources_t *resrcs = NULL;
     resrc_t *resrc = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *found_trees = resrc_tree_new_list ();
+    resrc_tree_list_t *selected_trees;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
@@ -111,8 +153,13 @@ int main (int argc, char *argv[])
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", 6);
 
+    memory = Jnew ();
+    Jadd_str (memory, "type", "memory");
+    Jadd_int (memory, "req_qty", 100);
+
     ja = Jnew_ar ();
     json_object_array_add (ja, child_core);
+    json_object_array_add (ja, memory);
 
     child_sock = Jnew ();
     Jadd_str (child_sock, "type", "socket");
@@ -172,14 +219,26 @@ int main (int argc, char *argv[])
     Jput (o);
 
     init_time();
-    rc = resrc_tree_list_allocate (found_trees, 1);
+
+    selected_trees = test_select_resources (found_trees, 1);
+    rc = resrc_tree_list_allocate (selected_trees, 1);
     ok (!rc, "successfully allocated resources for job 1");
-    rc = resrc_tree_list_allocate (found_trees, 2);
+    zlist_destroy ((zlist_t**) &selected_trees);
+
+    selected_trees = test_select_resources (found_trees, 2);
+    rc = resrc_tree_list_allocate (selected_trees, 2);
     ok (!rc, "successfully allocated resources for job 2");
-    rc = resrc_tree_list_allocate (found_trees, 3);
+    zlist_destroy ((zlist_t**) &selected_trees);
+
+    selected_trees = test_select_resources (found_trees, 3);
+    rc = resrc_tree_list_allocate (selected_trees, 3);
     ok (!rc, "successfully allocated resources for job 3");
-    rc = resrc_tree_list_reserve (found_trees, 4);
+    zlist_destroy ((zlist_t**) &selected_trees);
+
+    selected_trees = test_select_resources (found_trees, 2);
+    rc = resrc_tree_list_reserve (selected_trees, 4);
     ok (!rc, "successfully reserved resources for job 4");
+    zlist_destroy ((zlist_t**) &selected_trees);
 
     printf ("allocate and reserve took: %lf\n", ((double)get_time())/1000000);
 
