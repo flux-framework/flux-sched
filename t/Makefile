@@ -16,7 +16,8 @@ TESTS = \
 	t0001-basic.t \
 	lua/t0001-rdl-basic.t \
 	lua/t0002-multilevel.t \
-	lua/t0003-default-tags.t
+	lua/t0003-default-tags.t \
+	lua/t0004-derived-type.t
 
 all: $(BUILD)
 
