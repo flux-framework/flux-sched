@@ -74,12 +74,15 @@ static ctx_t *getctx (flux_t h)
 static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
-	if (flux_request_send (h, o, "%s.trigger", mod_name) < 0){
+	char *topic = xasprintf ("%s.trigger", mod_name);
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, topic, o) < 0) {
 		flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
 		return -1;
 	}
 	//flux_log (h, LOG_DEBUG, "sent a trigger to %s", mod_name);
 	Jput(o);
+	free (topic);
 	return 0;
 }
 

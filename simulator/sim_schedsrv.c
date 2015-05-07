@@ -174,7 +174,8 @@ int send_reply_request (flux_t h, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
 	Jadd_bool (o, "event_finished", true);
-	if (flux_request_send (h, o, "%s", "sim.reply") < 0){
+    if (flux_json_request (h, FLUX_NODEID_ANY,
+                              FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -790,23 +791,37 @@ static int
 request_run (flux_lwj_t *job)
 {
     int rc = -1;
+    char *topic = NULL;
 
     if (update_job_state (job, j_runrequest) < 0) {
         flux_log (h, LOG_ERR, "request_run failed to update job %ld to %s",
                   job->lwj_id, stab_rlookup (jobstate_tab, j_runrequest));
-    } else if (kvs_commit (h) < 0) {
-        flux_log (h, LOG_ERR, "kvs_commit error!");
-    } else if (!in_sim && flux_event_send (h, NULL, "rexec.run.%ld", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "request_run event send failed: %s",
-                  strerror (errno));
-    } else if (in_sim && flux_request_send (h, NULL, "sim_exec.run.%ld", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "request_run request send failed: %s",
-                  strerror (errno));
-    } else {
-        flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
-        rc = 0;
+        goto done;
     }
-
+    if (kvs_commit (h) < 0) {
+        flux_log (h, LOG_ERR, "kvs_commit error!");
+        goto done;
+    }
+    if (!in_sim) {
+        if (flux_event_send (h, NULL, "rexec.run.%ld", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "request_run event send failed: %s",
+                      strerror (errno));
+            goto done;
+        }
+    } else {
+        topic = xasprintf ("sim_exec.run.%ld", job->lwj_id);
+        if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, topic, NULL) < 0) {
+            flux_log (h, LOG_ERR, "request_run request send failed: %s",
+                      strerror (errno));
+            goto done;
+        }
+    }
+    flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+    rc = 0;
+done:
+    if (topic)
+        free (topic);
     return rc;
 }
 
@@ -1392,7 +1407,8 @@ static int send_join_request(flux_t h)
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
 	Jadd_double (o, "next_event", -1);
-	if (flux_request_send (h, o, "%s", "sim.join") < 0){
+    if (flux_json_request (h, FLUX_NODEID_ANY,
+                              FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
 		Jput (o);
 		return -1;
 	}

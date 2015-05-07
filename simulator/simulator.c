@@ -229,7 +229,8 @@ int send_alive_request (flux_t h, const char* module_name)
 	JSON o = Jnew ();
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
-	if (flux_request_send (h, o, "%s", "sim.alive") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.alive", o) < 0) {
 		Jput (o);
 		return -1;
 	}

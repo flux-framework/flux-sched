@@ -323,7 +323,8 @@ static int send_join_request(flux_t h)
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
 	Jadd_double (o, "next_event", -1);
-	if (flux_request_send (h, o, "%s", "sim.join") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -336,7 +337,8 @@ static int send_reply_request(flux_t h, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
 	Jadd_bool (o, "event_finished", true);
-	if (flux_request_send (h, o, "%s", "sim.reply") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
 		Jput (o);
 		return -1;
 	}
