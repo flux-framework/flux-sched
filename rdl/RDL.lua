@@ -47,6 +47,7 @@ local function rdl_parse_environment ()
         pairs = pairs,
         tonumber = tonumber,
         assert = assert,
+        unpack = unpack,
         table = table,
         hostlist = hostlist
     }
