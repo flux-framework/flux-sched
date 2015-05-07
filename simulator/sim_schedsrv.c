@@ -1341,7 +1341,7 @@ static int newlwj_rpc (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 	o_resp = Jnew ();
 	Jadd_int (o_resp, "rc", rc);
-	flux_respond (h, zmsg, o_resp);
+    flux_json_respond (h, o_resp, zmsg);
 	Jput (o_resp);
 
 	if (o)
