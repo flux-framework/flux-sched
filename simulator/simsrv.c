@@ -176,7 +176,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	ctx_t *ctx = arg;
 	sim_state_t *sim_state = ctx->sim_state;
 
-	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
+	if (flux_json_request_decode (*zmsg, &request) < 0
 		|| !Jget_str (request, "mod_name", &mod_name)
 		|| !Jget_int (request, "rank", &mod_rank)
 		|| !Jget_double (request, "next_event", next_event)) {
@@ -283,7 +283,7 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	sim_state_t *curr_sim_state = ctx->sim_state;
 	sim_state_t *reply_sim_state;
 
-	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL
+	if (flux_json_request_decode (*zmsg, &request) < 0
 		|| !Jget_bool (request, "event_finished", &event_finished)) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
@@ -311,7 +311,7 @@ static int alive_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON request = NULL;
 	const char *json_string;
 
-	if (flux_msg_decode (*zmsg, NULL, &request) < 0 || request == NULL) {
+	if (flux_json_request_decode (*zmsg, &request) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
 		return 0;

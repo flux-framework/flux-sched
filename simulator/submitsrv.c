@@ -291,9 +291,8 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON o;
 	const char *json_string;
 	sim_state_t *sim_state;
-	char *tag;
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
 		return -1;
@@ -301,7 +300,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 //Logging
 	json_string = Jtostr (o);
-	flux_log(h, LOG_DEBUG, "received a trigger (%s): %s", tag, json_string);
+	flux_log(h, LOG_DEBUG, "received a trigger (submit.trigger): %s", json_string);
 
 //Handle the trigger
 	sim_state = json_to_sim_state (o);

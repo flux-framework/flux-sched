@@ -1322,12 +1322,10 @@ static int newlwj_rpc (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON o;
 	JSON o_resp;
 	const char *key;
-	char* tag;
 	int64_t id;
 	int rc = 0;
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0
-		    || o == NULL
+    if (flux_json_request_decode (*zmsg, &o) < 0
 		    || !Jget_str (o, "key", &key)
 		    || !Jget_int64 (o, "val", &id)) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
@@ -1368,12 +1366,11 @@ event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
-	JSON o;
-	char *tag;
+	JSON o = NULL;
 	clock_t start, diff;
 	double seconds;
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+    if (flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
 		return -1;
