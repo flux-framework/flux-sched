@@ -42,6 +42,6 @@ check:
 
 
 clean:
-	rm -f *.a *.o
+	rm -f *.a *.o *.so
 
 .PHONY: all clean load unload start
