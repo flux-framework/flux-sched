@@ -323,7 +323,8 @@ static int send_join_request(flux_t h)
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
 	Jadd_double (o, "next_event", -1);
-	if (flux_request_send (h, o, "%s", "sim.join") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -336,7 +337,8 @@ static int send_reply_request(flux_t h, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
 	Jadd_bool (o, "event_finished", true);
-	if (flux_request_send (h, o, "%s", "sim.reply") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -373,19 +375,17 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON o;
 	const char *json_string;
-	char *tag;
 	double next_termination;
 	ctx_t *ctx = (ctx_t *) arg;
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-		Jput (o);
 		return -1;
 	}
 
 //Logging
 	json_string = Jtostr (o);
-	flux_log(h, LOG_DEBUG, "received a trigger (%s): %s", tag, json_string);
+	flux_log(h, LOG_DEBUG, "received a trigger (sim_exec.trigger: %s", json_string);
 
 //Handle the trigger
 	ctx->sim_state = json_to_sim_state (o);
@@ -405,14 +405,17 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
-	JSON o;
-	char *tag;
+	JSON o = NULL;
+	char *tag = NULL;
 	ctx_t *ctx = (ctx_t *) arg;
 	int *jobid = (int *) malloc (sizeof (int));
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_msg_get_topic (*zmsg, &tag) < 0
+			|| flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
+		if (tag)
+			free (tag);
 		return -1;
 	}
 
@@ -425,6 +428,8 @@ static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	flux_log(h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 
 //Cleanup
+	if (tag)
+		free (tag);
 	Jput (o);
 	zmsg_destroy (zmsg);
 	return 0;
