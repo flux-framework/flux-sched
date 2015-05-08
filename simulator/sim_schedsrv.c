@@ -43,7 +43,7 @@
 
 #define MAX_STR_LEN 128
 
-static const char const *module_name = "sim_sched";
+static const char *module_name = "sim_sched";
 
 /****************************************************************
  *
