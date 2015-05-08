@@ -257,6 +257,10 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     return rc;
 }
 
+/* XXX: Unused function set_event() commented out to avoid compile-time
+ *      errors with -Wunused-function
+ */
+#if 0
 static inline void
 set_event (flux_event_t *e,
            event_class_e c, int ei, flux_lwj_t *j)
@@ -276,6 +280,7 @@ set_event (flux_event_t *e,
     }
     return;
 }
+#endif
 
 
 static int
