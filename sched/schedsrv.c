@@ -71,7 +71,8 @@ static flux_t h = NULL;
 static resources_t *resrcs = NULL;
 
 static resrc_tree_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
-                                             flux_lwj_t *job, bool *preserve);
+                                             resrc_reqst_t *resrc_reqst,
+                                             bool *preserve);
 static resrc_tree_list_t *(*select_resources) (flux_t h,
                                                resrc_tree_list_t *resrc_trees,
                                                flux_lwj_t *job, bool reserve);
@@ -448,17 +449,56 @@ static int update_job_records (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
  * schedule_job() searches through all of the idle resources to
  * satisfy a job's requirements.  If enough resources are found, it
  * proceeds to allocate those resources and update the kvs's lwj entry
- * in preparation for job execution.
+ * in preparation for job execution.  If less resources
+ * are found than the job requires, and if the job asks to reserve
+ * resources, then those resources will be reserved.
  */
 int schedule_job (flux_lwj_t *job)
 {
+    JSON child_core = NULL;
+    JSON req_res = NULL;
     bool reserve = false;
     int rc = -1;
+    int64_t nfound = 0;
+    resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *found_trees = NULL;
     resrc_tree_list_t *selected_trees = NULL;
 
-    if ((found_trees = (find_resources) (h, resrcs, job, &reserve))) {
-        selected_trees = (*select_resources) (h, found_trees, job, reserve);
+    /*
+     * Require at least one task per node, and
+     * Assume (for now) one task per core.
+     */
+    if (job->req->ncores < job->req->nnodes)
+        job->req->ncores = job->req->nnodes;
+    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
+        job->req->nnodes;
+
+    child_core = Jnew ();
+    Jadd_str (child_core, "type", "core");
+    Jadd_int (child_core, "req_qty", job->req->corespernode);
+
+    req_res = Jnew ();
+    Jadd_str (req_res, "type", "node");
+    Jadd_int (req_res, "req_qty", job->req->nnodes);
+    json_object_object_add (req_res, "req_child", child_core);
+
+    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
+    Jput (req_res);
+    if (!resrc_reqst)
+        goto ret;
+
+    if ((found_trees = (find_resources) (h, resrcs, resrc_reqst, &reserve))) {
+        nfound = resrc_tree_list_size (found_trees);
+        if (nfound >= job->req->nnodes) {
+            flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld req: %ld",
+                      nfound, job->lwj_id, job->req->nnodes);
+        } else if (nfound && job->reserve) {
+            reserve = true;
+            flux_log (h, LOG_DEBUG, "%ld nodes reserved for lwj.%ld's req %ld",
+                      nfound, job->lwj_id, job->req->nnodes);
+        }
+
+        selected_trees = (select_resources) (h, found_trees, job, reserve);
         if (selected_trees) {
             if (reserve) {
                 resrc_tree_list_reserve (selected_trees, job->lwj_id);
@@ -477,7 +517,8 @@ int schedule_job (flux_lwj_t *job)
         /* resrc_tree_list_destroy (found_trees); */
         /* zlist_destroy ((zlist_t **)&selected_trees); */
     }
-
+    resrc_reqst_destroy (resrc_reqst);
+ret:
     return rc;
 }
 

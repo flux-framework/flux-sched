@@ -55,29 +55,22 @@ typedef struct zhash_t resources;
  * find_resources() identifies the all of the resource candidates for
  * the job.  The set of resources returned could be more than the job
  * requires.  A later call to select_resources() will cull this list
- * down to the most appropriate set for the job.  If less resources
- * are found than the job requires, and if the job asks to reserve
- * resources, then *preserve will be set to true.
+ * down to the most appropriate set for the job.
  *
  * Inputs:  resrcs - hash table of all resources
- *          job - the job requesting the resources
- * Returns: a list of resource keys satisfying the job's request,
- *                     or NULL if none (or not enough) are found
- *          preserve - value set to true if not enough resources were found
- *                     and the job wants these resources reserved
+ *          resrc_reqst - the resources the job requests
+ * Returns: a list of resource trees satisfying the job's request,
+ *                   or NULL if none (or not enough) are found
  */
 resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
-                                   flux_lwj_t *job, bool *preserve)
+                                   resrc_reqst_t *resrc_reqst, bool *preserve)
 {
-    JSON child_core = NULL;
-    JSON req_res = NULL;
-    int64_t found = 0;
-    resrc_reqst_t *resrc_reqst = NULL;
+    int64_t nfound = 0;
     resrc_t *resrc = NULL;
     resrc_tree_list_t *found_trees = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    if (!resrcs || !job) {
+    if (!resrcs || !resrc_reqst) {
         flux_log (h, LOG_ERR, "find_resources invalid arguments");
         goto ret;
     }
@@ -96,41 +89,10 @@ resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
         goto ret;
     }
 
-    /*
-     * Require at least one task per node, and
-     * Assume (for now) one task per core.
-     */
-    if (job->req->ncores < job->req->nnodes)
-        job->req->ncores = job->req->nnodes;
-    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
-        job->req->nnodes;
+    nfound = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
+                               found_trees, true);
 
-    child_core = Jnew ();
-    Jadd_str (child_core, "type", "core");
-    Jadd_int (child_core, "req_qty", job->req->corespernode);
-
-    req_res = Jnew ();
-    Jadd_str (req_res, "type", "node");
-    Jadd_int (req_res, "req_qty", job->req->nnodes);
-    json_object_object_add (req_res, "req_child", child_core);
-
-    if ((resrc_reqst = resrc_reqst_from_json (req_res, NULL))) {
-        found = resrc_tree_search (resrc_tree_children (resrc_tree),
-                                   resrc_reqst, found_trees, true);
-        resrc_reqst_destroy (resrc_reqst);
-    }
-    Jput (req_res);
-
-    if (found >= job->req->nnodes) {
-        flux_log (h, LOG_DEBUG, "%ld composites found for lwj.%ld req: %ld",
-                  found, job->lwj_id, job->req->nnodes);
-    } else if (found && job->reserve) {
-        *preserve = true;
-        flux_log (h, LOG_DEBUG, "%ld composites reserved for lwj.%ld's req %ld",
-                  found, job->lwj_id, job->req->nnodes);
-    }
-
-    if (!resrc_tree_list_size (found_trees)) {
+    if (!nfound) {
         resrc_tree_list_destroy (found_trees);
         found_trees = NULL;
     }
