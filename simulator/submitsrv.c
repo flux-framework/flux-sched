@@ -35,7 +35,7 @@
 #include "src/common/libutil/shortjson.h"
 #include "simulator.h"
 
-static const char const *module_name = "submit";
+static const char *module_name = "submit";
 static zlist_t *jobs;  //TODO: remove from "global" scope
 
 //Compare two job_t's based on submit time

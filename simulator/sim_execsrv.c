@@ -37,7 +37,7 @@
 #include "simulator.h"
 #include "rdl.h"
 
-static const char const *module_name = "sim_exec";
+static const char *module_name = "sim_exec";
 
 typedef struct {
 	sim_state_t *sim_state;

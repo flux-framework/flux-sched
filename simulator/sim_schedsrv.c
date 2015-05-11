@@ -43,7 +43,7 @@
 
 #define MAX_STR_LEN 128
 
-static const char const *module_name = "sim_sched";
+static const char *module_name = "sim_sched";
 
 /****************************************************************
  *
@@ -313,6 +313,7 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     return rc;
 }
 
+#if 0
 static inline void
 set_event (flux_event_t *e,
            event_class_e c, int ei, flux_lwj_t *j)
@@ -332,6 +333,7 @@ set_event (flux_event_t *e,
     }
     return;
 }
+#endif
 
 
 static int
