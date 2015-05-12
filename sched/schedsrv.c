@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
-#include <json/json.h>
+#include <json.h>
 #include <dlfcn.h>
 #include <flux/core.h>
 
