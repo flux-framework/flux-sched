@@ -205,131 +205,10 @@ int select_resources (flux_t h, struct rdl *rdl, const char *uri,
 
     a = rdl_accumulator_create (rdl);
     if (select_resource (h, rdl, uri, fr, a, job, &req, &alloc, reserve)) {
+        /* NOTE: by doing this, the job will only get its allocated rdl */
         job->rdl = rdl_accumulator_copy (a);
         rc = 0;
     }
-
-    return rc;
-}
-
-/*
- * Recursively search the resource r and update this job's lwj key
- * with the core count per rank (i.e., node for the time being)
- */
-static int update_job_cores (flux_t h, struct resource *jr, flux_lwj_t *job,
-                             uint64_t *pnode, uint32_t *pcores)
-{
-    bool imanode = false;
-    char *key = NULL;
-    char *lwjtag = NULL;
-    const char *type = NULL;
-    json_object *o = NULL;
-    json_object *o2 = NULL;
-    json_object *o3 = NULL;
-    struct resource *c;
-    int rc = 0;
-
-    if (jr) {
-        o = rdl_resource_json (jr);
-        if (o) {
-            flux_log (h, LOG_DEBUG, "considering: %s",
-                      json_object_to_json_string (o));
-        } else {
-            flux_log (h, LOG_ERR, "update_job_cores invalid resource");
-            rc = -1;
-            goto ret;
-        }
-    } else {
-        flux_log (h, LOG_ERR, "update_job_cores passed a null resource");
-        rc = -1;
-        goto ret;
-    }
-
-    Jget_str (o, "type", &type);
-    if (strcmp (type, "node") == 0) {
-        *pcores = 0;
-        imanode = true;
-    } else if (strcmp (type, CORETYPE) == 0) {
-        /* we need to limit our allocation to just the tagged cores */
-        asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
-        Jget_obj (o, "tags", &o2);
-        Jget_obj (o2, lwjtag, &o3);
-        if (o3) {
-            (*pcores)++;
-        }
-        free (lwjtag);
-    }
-    json_object_put (o);
-
-    while ((rc == 0) && (c = rdl_resource_next_child (jr))) {
-        rc = update_job_cores (h, c, job, pnode, pcores);
-        rdl_resource_destroy (c);
-    }
-
-    if (imanode) {
-        if (asprintf (&key, "lwj.%ld.rank.%ld.cores", job->lwj_id,
-                      *pnode) < 0) {
-            flux_log (h, LOG_ERR, "update_job_cores key create failed");
-            rc = -1;
-            goto ret;
-        } else if (kvs_put_int64 (h, key, *pcores) < 0) {
-            flux_log (h, LOG_ERR, "update_job_cores %ld node failed: %s",
-                      job->lwj_id, strerror (errno));
-            rc = -1;
-            goto ret;
-        }
-        free (key);
-        (*pnode)++;
-    }
-
-ret:
-    return rc;
-}
-
-/*
- * allocate_resources() updates job and resource records in the
- * kvs to reflect the resources' allocation to the job.
- *
- * This plugin creates lwj entries that tell wrexecd how many tasks to
- * launch per node.
- *
- * The key has the form:  lwj.<jobID>.rank.<nodeID>.cores
- * The value will be the number of tasks to launch on that node.
- *
- * Inputs:  uri of the resource and job
- * Returns: 0 on success
- */
-int allocate_resources (flux_t h, const char *uri, flux_lwj_t *job)
-{
-    char *key = NULL;
-    char *rdlstr = NULL;
-    uint64_t node = 0;
-    uint32_t cores = 0;
-    struct resource *jr = rdl_resource_get (job->rdl, uri);
-    int rc = -1;
-
-    if (jr)
-        rc = update_job_cores (h, jr, job, &node, &cores);
-    else
-        flux_log (h, LOG_ERR, "allocate_resources passed a null resource");
-
-    if (rc == 0) {
-        rc = -1;
-        rdlstr = rdl_serialize (job->rdl);
-        if (!rdlstr) {
-            flux_log (h, LOG_ERR, "%ld rdl_serialize failed: %s",
-                      job->lwj_id, strerror (errno));
-        } else if (asprintf (&key, "lwj.%ld.rdl", job->lwj_id) < 0) {
-            flux_log (h, LOG_ERR, "allocate_resources key create failed");
-        } else if (kvs_put_string (h, key, rdlstr) < 0) {
-            flux_log (h, LOG_ERR, "allocate_resources %ld rdl write failed: %s",
-                      job->lwj_id, strerror (errno));
-        } else {
-            rc = 0;
-        }
-    }
-    free (key);
-    free (rdlstr);
 
     return rc;
 }
@@ -399,6 +278,10 @@ int release_resources (flux_t h, struct rdl *rdl, const char *uri,
         flux_log (h, LOG_ERR, "release_resources failed to get resources: %s",
                   strerror (errno));
     }
+
+    /* NOTE: the job's rdl should be destoryed as well */
+    rdl_destroy (job->rdl);
+    job->rdl = NULL;
 
     return rc;
 }

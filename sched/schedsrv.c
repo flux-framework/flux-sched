@@ -23,82 +23,117 @@
 \*****************************************************************************/
 
 /*
- * schedsrv.c - common scheduler services
+ * schedsrv.c - scheduler frameowrk service comms module 
  *
  * Update Log:
- *       May 24 2012 DHA: File created.
+ *       Apr 12 2015 DHA: Code refactoring including JSC API integration
+ *       May 24 2014 DHA: File created.
  */
 
+#include <czmq.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <libgen.h>
-#include <czmq.h>
-#include <json/json.h>
 #include <dlfcn.h>
+#include <stdbool.h>
+#include <json/json.h>
 #include <flux/core.h>
 
-#include "src/common/libutil/jsonutil.h"
-#include "src/common/libutil/log.h"
-#include "src/common/libutil/xzmalloc.h"
+/* We assume the abstraction in rdl.h is generic for now */
 #include "rdl.h"
 #include "scheduler.h"
+#include "src/common/libutil/log.h"
+#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/xzmalloc.h"
+#include "src/common/libutil/shortjson.h"
 
-#define MAX_STR_LEN 128
+#define DYNAMIC_SCHEDULING 0
+#define ENABLE_TIMER_EVENT 0
+#define SCHED_UNIMPL -1
 
-/****************************************************************
- *
- *                 INTERNAL DATA STRUCTURE
- *
- ****************************************************************/
+#if ENABLE_TIMER_EVENT
+static int timer_event_cb (flux_t h, void *arg);
+#endif
+static int res_event_cb (flux_t h, int t, zmsg_t **zmsg, void *arg);
+static int job_status_cb (JSON jcb, void *arg, int errnum);
 
-struct stab_struct {
-    int i;
-    const char *s;
-};
+/******************************************************************************
+ *                                                                            *
+ *              Scheduler Framework Service Module Context                    *
+ *                                                                            *
+ ******************************************************************************/
 
-/****************************************************************
- *
- *                 STATIC DATA
- *
- ****************************************************************/
-static zlist_t *p_queue = NULL;
-static zlist_t *r_queue = NULL;
-static zlist_t *ev_queue = NULL;
-static flux_t h = NULL;
-static struct rdl *rdl = NULL;
-static char* resource = NULL;
-static struct rdl *(*find_resources) (flux_t h, struct rdl *rdl, const char *uri,
-                                   flux_lwj_t *job, bool *preserve);
-static int (*select_resources)(flux_t h, struct rdl *rdl, const char *uri,
-                               struct resource *fr, flux_lwj_t *job,
-                               bool reserve);
-static int (*allocate_resources) (flux_t h, const char *uri, flux_lwj_t *job);
-static int (*release_resources) (flux_t h, struct rdl *rdl, const char *uri,
-                                 flux_lwj_t *job);
+typedef struct rdl *(FIND_PTR)( flux_t h, struct rdl *r, const char *u, 
+                                flux_lwj_t *j, bool *p);
+typedef int (SEL_PTR)(flux_t h, struct rdl *r, const char *u, 
+                                struct resource *f, flux_lwj_t *j, bool s);
+typedef int (REL_PTR)(flux_t h, struct rdl *r, const char *u, flux_lwj_t *j);
 
-static struct stab_struct jobstate_tab[] = {
-    { j_null,      "null" },
-    { j_reserved,  "reserved" },
-    { j_submitted, "submitted" },
-    { j_unsched,   "unsched" },
-    { j_pending,   "pending" },
-    { j_runrequest,"runrequest" },
-    { j_allocated, "allocated" },
-    { j_starting,  "starting" },
-    { j_running,   "running" },
-    { j_cancelled, "cancelled" },
-    { j_complete,  "complete" },
-    { j_reaped,    "reaped" },
-    { -1, NULL },
-};
+typedef struct sched_ops {
+    void          *dso;               /* Scheduler plug-in DSO handle */
+    FIND_PTR      *find_resources;    /* func pointer to find resources */
+    SEL_PTR       *select_resources;  /* func pointer to select resources */
+    REL_PTR       *release_resources; /* func pointer to free resources */
+} sched_ops_t; 
 
-/****************************************************************
- *
- *         Resource Description Library Setup
- *
- ****************************************************************/
+typedef struct {
+    struct rdllib *rdl_lib;           /* rdllib */ 
+    struct rdl    *root_rdl;          /* rdl object pointing to the root */
+    char          *root_uri;          /* Name of the root of the RDL hierachy */
+} rdlctx_t;
+
+/* TODO: Implement prioritization function for p_queue */
+typedef struct {
+    flux_t        h;
+    zlist_t      *p_queue;            /* Pending job priority queue */
+    zlist_t      *r_queue;            /* Running job queue */
+    zlist_t      *c_queue;            /* Complete/cancelled job queue */
+    rdlctx_t      rctx;               /* RDL context */
+    sched_ops_t   sops;               /* scheduler plugin operations */
+} ssrvctx_t;
+
+/******************************************************************************
+ *                                                                            *
+ *                                 Utilities                                  *
+ *                                                                            *
+ ******************************************************************************/
+static void freectx (ssrvctx_t *ctx)
+{
+    /* FIXME: we probably need some item free hooked into the lists 
+     * ignore this for a while. 
+     */
+    zlist_destroy (&(ctx->p_queue));
+    zlist_destroy (&(ctx->r_queue));
+    zlist_destroy (&(ctx->c_queue));
+    rdllib_close (ctx->rctx.rdl_lib);
+    dlclose (ctx->sops.dso);
+}
+
+static ssrvctx_t *getctx (flux_t h)
+{
+    ssrvctx_t *ctx = (ssrvctx_t *)flux_aux_get (h, "schedsrv");
+    if (!ctx) {
+        ctx = xzmalloc (sizeof (*ctx));
+        ctx->h = h;
+        if (!(ctx->p_queue = zlist_new ()))
+            oom ();
+        if (!(ctx->r_queue = zlist_new ()))
+            oom ();
+        if (!(ctx->c_queue = zlist_new ()))
+            oom ();
+        ctx->rctx.rdl_lib = NULL;
+        ctx->rctx.root_uri = NULL;
+        ctx->rctx.root_rdl = NULL;
+        ctx->sops.dso = NULL;
+        ctx->sops.find_resources = NULL;
+        ctx->sops.select_resources = NULL;
+        ctx->sops.release_resources = NULL;
+        flux_aux_set (h, "schedsrv", ctx, (FluxFreeFn)freectx);
+    }
+    return ctx;
+}
 
 static void f_err (flux_t h, const char *msg, ...)
 {
@@ -108,315 +143,484 @@ static void f_err (flux_t h, const char *msg, ...)
     va_end (ap);
 }
 
-static void setup_rdl_lua (void)
+static inline void get_jobid (JSON jcb, int64_t *jid)
 {
-    flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
-    flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
-
-    rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
+    Jget_int64 (jcb, JSC_JOBID, jid);
 }
 
-static int
-signal_event ( )
+static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
 {
-    int rc = 0;
+    JSON o;
+    Jget_obj (jcb, JSC_STATE_PAIR, &o);
+    Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
+    Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
+}
 
-    if (flux_event_send (h, NULL, "sched.event") < 0) {
-        flux_log (h, LOG_ERR,
-                 "flux_event_send: %s", strerror (errno));
-        rc = -1;
-        goto ret;
+static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
+{
+    int rc = -1;
+    int64_t nn = 0; 
+    int64_t nc = 0; 
+    JSON jcb = NULL;
+    JSON o = NULL;
+
+    if (!j) goto done;
+
+    j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
+    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
+        flux_log (h, LOG_ERR, "error in jsc_query_job.");
+        goto done;
     }
-
-ret:
+    if (!Jget_obj (jcb, JSC_RDESC, &o)) goto done; 
+    if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
+    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
+    j->req->nnodes = (uint64_t) nn;
+    j->req->ncores = (uint32_t) nc;
+    rc = 0;
+done:
+    if (jcb) 
+        Jput (jcb);
     return rc;
 }
 
+static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
+{
+    int rc = -1;
+    JSON jcb = Jnew ();
+    JSON o = Jnew ();
+    Jadd_int64 (o, JSC_STATE_PAIR_OSTATE, (int64_t) os);
+    Jadd_int64 (o, JSC_STATE_PAIR_NSTATE , (int64_t) ns);
+    /* don't want to use Jadd_obj because I want to transfer the ownership */
+    json_object_object_add (jcb, JSC_STATE_PAIR, o);
+    rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcb);
+    Jput (jcb);
+    return rc;
+}
 
-static flux_lwj_t *
-find_lwj (int64_t id)
+static inline bool is_newjob (JSON jcb)
+{
+    int64_t os, ns;
+    get_states (jcb, &os, &ns);
+    return ((os == J_NULL) && (ns == J_NULL))? true : false;
+}
+
+static bool inline is_node (const char *t)
+{
+    return (strcmp (t, "node") == 0)? true: false; 
+}
+
+static bool inline is_core (const char *t)
+{
+    return (strcmp (t, "core") == 0)? true: false; 
+}
+
+static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
+{
+    int rc = -1;
+    int64_t jid = -1;;
+    flux_lwj_t *job = NULL;
+
+    get_jobid (jcb, &jid);
+    if ( !(job = (flux_lwj_t *) xzmalloc (sizeof (*job))))
+        oom ();
+
+    job->lwj_id = jid;
+    job->state = J_NULL;
+    if (zlist_append (ctx->p_queue, job) != 0) {
+        flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
+        goto done;
+    }
+    rc = 0;
+done:
+    return rc;
+}
+
+static flux_lwj_t *q_find_job (ssrvctx_t *ctx, int64_t id)
 {
     flux_lwj_t *j = NULL;
-
-    j = zlist_first (p_queue);
-    while (j) {
+    /* NOTE: performance issue when we have 
+     * large numbers of jobs in the system?
+     */
+    for (j = zlist_first (ctx->p_queue); j; j = zlist_next (ctx->p_queue))
         if (j->lwj_id == id)
-            break;
-        j = zlist_next (p_queue);
-    }
-    if (j)
-        return j;
-
-    j = zlist_first (r_queue);
-    while (j) {
+            return j;
+    for (j = zlist_first (ctx->r_queue); j; j = zlist_next (ctx->r_queue))
         if (j->lwj_id == id)
-            break;
-        j = zlist_next (r_queue);
-    }
-
-    return j;
+            return j;
+    for (j = zlist_first (ctx->c_queue); j; j = zlist_next (ctx->c_queue))
+        if (j->lwj_id == id)
+            return j;
+    return NULL;
 }
 
-
-/****************************************************************
- *
- *              Utility Functions
- *
- ****************************************************************/
-
-static char * ctime_iso8601_now (char *buf, size_t sz)
+static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 {
-    struct tm tm;
-    time_t now = time (NULL);
-
-    memset (buf, 0, sz);
-
-    if (!localtime_r (&now, &tm))
-        err_exit ("localtime");
-    strftime (buf, sz, "%FT%T", &tm);
-
-    return buf;
+    zlist_remove (ctx->p_queue, j);
+    return zlist_append (ctx->r_queue, j);
 }
 
-static int
-stab_lookup (struct stab_struct *ss, const char *s)
+static int q_move_to_cqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 {
-    while (ss->s != NULL) {
-        if (!strcmp (ss->s, s))
-            return ss->i;
-        ss++;
-    }
-    return -1;
+    /* NOTE: performance issue? */
+    // FIXME: no transition from pending queue to cqueue yet
+    //zlist_remove (ctx->p_queue, j);
+    zlist_remove (ctx->r_queue, j);
+    return zlist_append (ctx->c_queue, j);
 }
 
-static const char *
-stab_rlookup (struct stab_struct *ss, int i)
+static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, JSON jcb, job_state_t *ns)
 {
-    while (ss->s != NULL) {
-        if (ss->i == i)
-            return ss->s;
-        ss++;
-    }
-    return "unknown";
+    int64_t jid = -1, os64 = 0, ns64 = 0;
+    get_jobid (jcb, &jid);
+    get_states (jcb, &os64, &ns64);
+    *ns = (job_state_t) ns64;
+    return q_find_job (ctx, jid);
 }
 
 #if 0
-static void print_resource (struct resource *r)
+static char *ctime_iso8601_now (char *buf, size_t sz)
 {
-    json_object *o = rdl_resource_json (r);
-    struct resource *c;
-
-    flux_log (h, LOG_DEBUG, "%s", json_object_to_json_string (o));
-
-    rdl_resource_iterator_reset (r);
-    while ((c = rdl_resource_next_child (r))) {
-        print_resource (c);
-        rdl_resource_destroy (c);
-    }
-    json_object_put (o);
+    struct tm tm;
+    time_t now = time (NULL);
+    memset (buf, 0, sz);
+    if (!localtime_r (&now, &tm))
+        err_exit ("localtime");
+    strftime (buf, sz, "%FT%T", &tm);
+    return buf;
 }
 #endif
 
-/*
- * Update the job's kvs entry for state and mark the time.
- * Intended to be part of a series of changes, so the caller must
- * invoke the kvs_commit at some future point.
- */
-int update_job_state (flux_lwj_t *job, lwj_event_e e)
+
+/******************************************************************************
+ *                                                                            *
+ *                            Scheduler Plugin Loader                         *
+ *                                                                            *
+ ******************************************************************************/
+
+static int resolve_functions (ssrvctx_t *ctx)
 {
-    char buf [64];
-    char *key = NULL;
-    char *key2 = NULL;
-    int rc = -1;
-    const char *state;
+    int rc = -1; 
 
-    ctime_iso8601_now (buf, sizeof (buf));
-
-    state = stab_rlookup (jobstate_tab, e);
-    if (!strcmp (state, "unknown")) {
-        flux_log (h, LOG_ERR, "unknown job state %d", e);
-    } else if (asprintf (&key, "lwj.%ld.state", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state key create failed");
-    } else if (kvs_put_string (h, key, state) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state %ld state update failed: %s",
-                  job->lwj_id, strerror (errno));
-    } else if (asprintf (&key2, "lwj.%ld.%s-time", job->lwj_id, state) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state key2 create failed");
-    } else if (kvs_put_string (h, key2, buf) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state %ld %s-time failed: %s",
-                  job->lwj_id, state, strerror (errno));
-    } else {
-        rc = 0;
-        flux_log (h, LOG_DEBUG, "updating job %ld state to %s",
-                  job->lwj_id, state);
+    ctx->sops.find_resources = dlsym (ctx->sops.dso, "find_resources");
+    if (!(ctx->sops.find_resources) || !(*(ctx->sops.find_resources))) {
+        flux_log (ctx->h, LOG_ERR, "can't load find_resources: %s", dlerror ());
+        goto done;
     }
+    ctx->sops.select_resources = dlsym (ctx->sops.dso, "select_resources");
+    if (!(ctx->sops.select_resources) || !(*(ctx->sops.select_resources))) {
+        flux_log (ctx->h, LOG_ERR, "can't load select_resources: %s", dlerror ());
+        goto done;
+    }
+    ctx->sops.release_resources = dlsym (ctx->sops.dso, "release_resources");
+    if (!(ctx->sops.release_resources) || !(*(ctx->sops.release_resources))) {
+        flux_log (ctx->h, LOG_ERR, "can't load release_resources: %s", dlerror ());
+        goto done;
+    }
+    rc = 0;
 
-    free (key);
-    free (key2);
-
+done:
     return rc;
 }
 
-static inline void
-set_event (flux_event_t *e,
-           event_class_e c, int ei, flux_lwj_t *j)
+static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
 {
-    e->t = c;
-    e->lwj = j;
-    switch (c) {
-    case lwj_event:
-        e->ev.je = (lwj_event_e) ei;
-        break;
-    case res_event:
-        e->ev.re = (res_event_e) ei;
-        break;
-    default:
-        flux_log (h, LOG_ERR, "unknown ev class");
-        break;
+    int rc = -1;
+    flux_t h = ctx->h;
+    char *path = NULL;;
+    char *searchpath = getenv ("FLUX_MODULE_PATH");
+
+    if (!searchpath) {
+        flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
+        goto done;
     }
-    return;
+    if (!(path = flux_modfind (searchpath, pin))) {
+        flux_log (h, LOG_ERR, "%s: not found in module search path %s",
+                  pin, searchpath);
+        goto done;
+    }
+    if (!(ctx->sops.dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
+        flux_log (h, LOG_ERR, "failed to open sched plugin: %s",
+                  dlerror ());
+        goto done;
+    }
+    flux_log (h, LOG_DEBUG, "loaded: %s", pin);
+    rc = resolve_functions (ctx);
+
+done:
+    return rc; 
 }
 
 
-static int
-extract_lwjid (const char *k, int64_t *i)
+/******************************************************************************
+ *                                                                            *
+ *                   Setting Up RDL (RFC 4)                                   *
+ *                                                                            *
+ ******************************************************************************/
+
+static void setup_rdl_lua (flux_t h)
+{
+    flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
+    flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
+    rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
+}
+
+static int load_rdl (ssrvctx_t *ctx, zhash_t *args)
+{
+    int rc = -1;
+    const char *path = NULL;
+
+    setup_rdl_lua (ctx->h);
+    if (!(path = zhash_lookup (args, "rdl-conf"))) {
+        flux_log (ctx->h, LOG_ERR, "rdl-conf argument is not set");
+        goto done;
+    }
+    if (!(ctx->rctx.rdl_lib = rdllib_open ()) 
+        || !(ctx->rctx.root_rdl = rdl_loadfile (ctx->rctx.rdl_lib, path))) {
+        flux_log (ctx->h, LOG_ERR, "can't load from %s: %s", path, strerror (errno));
+        goto done;
+    }
+    if (!(ctx->rctx.root_uri = zhash_lookup (args, "rdl-resource"))) {
+        flux_log (ctx->h, LOG_INFO, "using default rdl resource");
+        ctx->rctx.root_uri = "default";
+    }
+    if (!rdl_resource_get (ctx->rctx.root_rdl, ctx->rctx.root_uri)) {
+        flux_log (ctx->h, LOG_ERR, "can't get %s: %s", 
+            ctx->rctx.root_uri, strerror (errno));
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG, "rdl successfully loaded");
+    rc = 0;
+done:
+    return rc;
+}
+
+
+/******************************************************************************
+ *                                                                            *
+ *                     Scheduler Event Registeration                          *
+ *                                                                            *
+ ******************************************************************************/
+
+/*
+ * Register events, some of which CAN triger a scheduling loop iteration.
+ * Currently,
+ *    -  Resource event: invoke the schedule loop; 
+ *    -  Timer event: invoke the schedule loop;
+ *    -  Job event (JSC notification): triggers actions based on FSM 
+ *          and some state changes trigger the schedule loop.
+ */
+static int inline reg_events (ssrvctx_t *ctx) 
 {
     int rc = 0;
-    char *kcopy = NULL;
-    char *lwj = NULL;
-    char *id = NULL;
+    flux_t h = ctx->h;
 
-    if (!k) {
+    if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.res.event",
+                             res_event_cb, (void *)h) < 0) {
+        flux_log (h, LOG_ERR, 
+                  "error registering resource event handler: %s",
+                  strerror (errno));
         rc = -1;
-        goto ret;
+        goto done;
     }
-
-    kcopy = strdup (k);
-    lwj = strtok (kcopy, ".");
-    if (strncmp(lwj, "lwj", 3) != 0) {
+    /* TODO: we need a way to manage environment variables or 
+       configrations 
+     */
+#if ENABLE_TIMER_EVENT 
+    if (flux_tmouthandler_add (h, 30000, false, timer_event_cb, (void *)h) < 0) {
+        flux_log (h, LOG_ERR,
+                  "error registering timer event CB: %s",
+                  strerror (errno));
         rc = -1;
-        goto ret;
+        goto done;
     }
-    id = strtok (NULL, ".");
-    *i = strtoul(id, (char **) NULL, 10);
-
-ret:
-    free (kcopy);
-
-    return rc;
-}
-
-static int
-extract_lwjinfo (flux_lwj_t *j)
-{
-    char *key = NULL;
-    char *state;
-    int64_t reqnodes = 0;
-    int64_t reqtasks = 0;
-    int rc = -1;
-
-    j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-
-    if (asprintf (&key, "lwj.%ld.state", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo state key create failed");
-        goto ret;
-    } else if (kvs_get_string (h, key, &state) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo %s: %s", key, strerror (errno));
-        goto ret;
-    } else {
-        j->state = stab_lookup (jobstate_tab, state);
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %s", key, state);
-        free(key);
-        free(state);
+#endif
+    if (jsc_notify_status (h, job_status_cb, (void *)h) != 0) {
+        flux_log (h, LOG_ERR, "error registering a job status change CB");
+        rc = -1;
+        goto done;
     }
 
-    if (asprintf (&key, "lwj.%ld.nnodes", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo nnodes key create failed");
-        goto ret;
-    } else if (kvs_get_int64 (h, key, &reqnodes) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo get %s: %s",
-                  key, strerror (errno));
-        goto ret;
-    } else {
-        j->req->nnodes = reqnodes;
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqnodes);
-        free(key);
-    }
-
-    if (asprintf (&key, "lwj.%ld.ntasks", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo ntasks key create failed");
-        goto ret;
-    } else if (kvs_get_int64 (h, key, &reqtasks) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo get %s: %s",
-                  key, strerror (errno));
-        goto ret;
-    } else {
-        /* Assuming a 1:1 relationship right now between cores and tasks */
-        j->req->ncores = reqtasks;
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqtasks);
-        free(key);
-        j->rdl = NULL;
-        j->reserve = false;    /* for now */
-        rc = 0;
-    }
-
-ret:
+done:
     return rc;
 }
 
 
-static void
-issue_lwj_event (lwj_event_e e, flux_lwj_t *j)
+/********************************************************************************
+ *                                                                              *
+ *            Task Program Execution Service Request (RFC 8)                    *
+ *                                                                              *
+ ********************************************************************************/
+
+static void inline build_contain_1node_req (int64_t nc, JSON rarr)
 {
-    flux_event_t *ev
-        = (flux_event_t *) xzmalloc (sizeof (flux_event_t));
-    ev->t = lwj_event;
-    ev->ev.je = e;
-    ev->lwj = j;
-
-    if (zlist_append (ev_queue, ev) == -1) {
-        flux_log (h, LOG_ERR,
-                  "enqueuing an event failed");
-        goto ret;
-    }
-    if (signal_event () == -1) {
-        flux_log (h, LOG_ERR,
-                  "signaling an event failed");
-        goto ret;
-    }
-
-ret:
-    return;
+    JSON e = Jnew ();
+    JSON o = Jnew ();
+    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NCORES, nc); 
+    json_object_object_add (e, JSC_RDL_ALLOC_CONTAINED, o);
+    json_object_array_add (rarr, e);
 }
 
-/****************************************************************
- *
- *         Scheduler Activities
- *
- ****************************************************************/
+/*
+ * Because the job's rdl should only contain what's allocated to the job,
+ * this traverse the entire tree post-order walk 
+ */
+static int build_contain_req (flux_t h, int64_t j, struct resource *jr, JSON rarr)
+{
+    int rc = 0;
+    const char *type = NULL;
+    json_object *o = NULL;
+    struct resource *c = NULL;
+
+    if (!jr) return -1;
+    if (!(o = rdl_resource_json (jr))) return -1;
+    if (!Jget_str (o, "type", &type)) return -1;
+
+    if (is_node (type)) {
+        /* base case -- node */
+        int64_t ncores;
+        if (!(o = rdl_resource_aggregate_json (jr))) {
+            rc = -1;
+            goto done;
+        }
+        if (!Jget_int64 (o, "core", &ncores)) return -1;
+        build_contain_1node_req (ncores, rarr); 
+    } else {
+        /* recurse -- post-order walk until reaching to the node level */
+        while ((rc == 0) && (c = rdl_resource_next_child (jr))) {
+            rc = build_contain_req (h, j, c, rarr); 
+            /* FIXME: does c really need to be destroyed? */
+            rdl_resource_destroy (c); 
+        }
+    }
+done:
+    if (o) 
+        Jput (o);
+    return rc;
+}
 
 
 /*
- * Update the resource and job records to reflect the allocation.
+ * Once the job gets allocated to its own copy of rdl, this
+ *    1) serializes the rdl and sends it to TP exec service
+ *    2) builds JSC_RDL_ALLOC JCB and sends it to TP exec service
+ *    3) sends JCB state update with J_ALLOCATE 
  */
-static int
-update_records (flux_lwj_t *job)
+static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 {
     int rc = -1;
+    flux_t h = ctx->h;
+    char *rdlstr = NULL; 
+    struct resource *jr = NULL;
+    JSON jcb = Jnew (); 
+    JSON arr = Jnew_ar ();
 
-    if (update_job_state (job, j_allocated)) {
-        flux_log (h, LOG_ERR, "update_job failed to update job %ld to %s",
-                  job->lwj_id, stab_rlookup (jobstate_tab, j_allocated));
-    } else if ((*allocate_resources) (h, resource, job)) {
-        flux_log (h, LOG_ERR, "failed to allocate resources for job %ld",
+    /* NOTE: move the logic from allocate_resources in plugin to here */
+    /* struct resource *jr = rdl_resource_get (job->rdl, uri) */
+    if (!(rdlstr = rdl_serialize (job->rdl))) {
+        flux_log (h, LOG_ERR, "%ld rdl_serialize failed: %s",
+                  job->lwj_id, strerror (errno));
+        goto done;
+    }
+    /* NOTE: this will make a copy of the string */
+    Jadd_str (jcb, JSC_RDL, (const char *)rdlstr);
+    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL, jcb) != 0) {
+        flux_log (h, LOG_ERR, "error jsc udpate: %ld (%s)", job->lwj_id, 
+                  strerror (errno));
+        goto done;
+    }
+    jr = rdl_resource_get (job->rdl, ctx->rctx.root_uri);
+    if (build_contain_req (h, job->lwj_id, jr, arr) != 0) {
+        flux_log (h, LOG_ERR, "error requesting containment for job"); 
+        goto done;
+    }
+    json_object_object_add (jcb, JSC_RDL_ALLOC, arr);
+    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
+        flux_log (h, LOG_ERR, "error updating jcb"); 
+        goto done;
+    }
+    Jput (arr);
+    if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
+        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
                   job->lwj_id);
-    } else if (kvs_commit (h) < 0) {
-        flux_log (h, LOG_ERR, "kvs_commit error!");
-    } else {
-        rc = 0;
+        goto done; ;
     }
 
+done:
+    if (jcb) 
+        Jput (jcb);
+    if (rdlstr) 
+        free (rdlstr);
     return rc;
+}
+
+#if DYNAMIC_SCHEDULING 
+static int req_tpexec_grow (flux_t h, flux_lwj_t *job)
+{
+    /* TODO: NOT IMPLEMENTED */
+    /* This runtime grow service will grow the resource set of the job.
+       The special non-elastic case will be to grow the resource from
+       zero to the selected RDL
+    */
+    return SCHED_UNIMPL;
+}
+
+static int req_tpexec_shrink (flux_t h, flux_lwj_t *job)
+{
+    /* TODO: NOT IMPLEMENTED */
+    return SCHED_UNIMPL;
+}
+
+static int req_tpexec_map (flux_t h, flux_lwj_t *job)
+{
+    /* TODO: NOT IMPLEMENTED */
+    /* This runtime grow service will grow the resource set of the job.
+       The special non-elastic case will be to grow the resource from
+       zero to RDL
+    */
+    return SCHED_UNIMPL;
+}
+#endif 
+
+static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
+{
+    if ((update_state (h, job->lwj_id, job->state, J_RUNREQUEST)) != 0) {
+        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
+                  job->lwj_id);
+        return -1;
+    }
+    if (flux_event_send (h, NULL, "wrexec.run.%ld", job->lwj_id) < 0) {
+        flux_log (h, LOG_ERR, "request_run event send failed: %s",
+                  strerror (errno));
+        return -1;
+    }
+    flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+    return 0;
+}
+
+static int req_tpexec_run (flux_t h, flux_lwj_t *job)
+{
+    /* TODO: wreckrun does not provide grow and map yet 
+     *   we will switch to the following sequence under the TP exec service 
+     *   that provides RFC 8. 
+     *
+     *   req_tpexec_grow 
+     *   req_tpexec_map
+     *   req_tpexec_exec
+     */
+    return req_tpexec_exec (h, job);
+} 
+
+
+/********************************************************************************
+ *                                                                              *
+ *           Actions on Job/Res/Timer event including Scheduling Loop           *
+ *                                                                              *
+ ********************************************************************************/
+
+static int inline release_resources (ssrvctx_t *ctx, flux_lwj_t *job)
+{
+    return ctx->sops.release_resources (ctx->h, ctx->rctx.root_rdl, 
+                                 ctx->rctx.root_uri, job);
 }
 
 /*
@@ -425,42 +629,66 @@ update_records (flux_lwj_t *job)
  * proceeds to allocate those resources and update the kvs's lwj entry
  * in preparation for job execution.
  */
-int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
+static int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
 {
-    bool reserve = false;
     int rc = -1;
-    //struct rdl_accumulator *a = NULL;
-    struct resource *fr = NULL;         /* found resource */
+    flux_t h = ctx->h;
+    bool reserve = false;
+    struct rdl *rrdl = ctx->rctx.root_rdl;
     struct rdl *frdl = NULL;            /* found rdl */
+    struct resource *fr = NULL;         /* found resource */
+    const char *ruri = ctx->rctx.root_uri;
 
-    if ((frdl = (*find_resources) (h, rdl, uri, job, &reserve))) {
-        if ((fr = rdl_resource_get (frdl, uri))) {
-            //a = rdl_accumulator_create (rdl);
-            if (!select_resources (h, rdl, uri, fr, job, reserve)) {
-                /* Transition the job back to submitted to prevent the
-                 * scheduler from trying to schedule it again */
-                job->state = j_submitted;
-                rc = update_records (job);
-            }
-        } else {
-            flux_log (h, LOG_ERR, "failed to get found resource for job %ld",
-                      job->lwj_id);
-        }
-        rdl_destroy (frdl);
+    if (!(frdl = ctx->sops.find_resources (h, rrdl,ruri,job,&reserve))) { 
+        flux_log (h, LOG_ERR, "couldn't find resources for job %ld",
+            job->lwj_id);
+        goto done;
+    }
+    if (!(fr = rdl_resource_get (frdl, ruri))) {
+        flux_log (h, LOG_ERR, "failed to get found resource for job %ld", 
+        job->lwj_id);
+        goto done;
+    }
+    if ((ctx->sops.select_resources (h, rrdl, ruri, fr, job, reserve)) != 0) {
+        flux_log (h, LOG_ERR, "failed to select resources for job %ld",
+            job->lwj_id);
+        /* Scheduler specific job transition 
+         * TODO: We will deal with revervation associated with backfill 
+         * later.
+         */
+        job->state = J_PENDING;
+        goto done;
     }
 
+    /* Scheduler specific job transition */
+    job->state = J_SELECTED;
+    if (req_tpexec_allocate (ctx, job) != 0) {
+        flux_log (h, LOG_ERR, "failed to request allocate for job %ld",
+            job->lwj_id);
+        goto done;
+    }
+    rdl_destroy (frdl);
+    rc = 0;
+
+done:
     return rc;
 }
 
-int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
+static int schedule_jobs (ssrvctx_t *ctx)
 {
-    flux_lwj_t *job = NULL;
     int rc = 0;
-
+    flux_lwj_t *job = NULL;
+    /* TODO: 1. we might need to invoke prioritize_qeueu here 
+       or making this as a continous operation by another thread 
+       or comms module.
+       2. when dynamic scheduling is supported, the loop
+       should traverse through running job queue as well. 
+     */
+    zlist_t *jobs = ctx->p_queue;
     job = zlist_first (jobs);
     while (!rc && job) {
-        if (job->state == j_unsched) {
-            rc = schedule_job (rdl, uri, job);
+        if (job->state == J_SCHEDREQ) {
+            rc = schedule_job (ctx, job);
         }
         job = zlist_next (jobs);
     }
@@ -469,530 +697,191 @@ int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
 }
 
 
-/****************************************************************
- *
- *         Actions Led by Current State + an Event
- *
- ****************************************************************/
+/********************************************************************************
+ *                                                                              *
+ *                        Scheduler Event Handling                              *
+ *                                                                              *
+ ********************************************************************************/
 
-static int
-request_run (flux_lwj_t *job)
+#define VERIFY(rc) if (!(rc)) {goto bad_transition;}  
+static inline bool trans (job_state_t ex, job_state_t n, job_state_t *o)
 {
-    int rc = -1;
-
-    if (update_job_state (job, j_runrequest) < 0) {
-        flux_log (h, LOG_ERR, "request_run failed to update job %ld to %s",
-                  job->lwj_id, stab_rlookup (jobstate_tab, j_runrequest));
-    } else if (kvs_commit (h) < 0) {
-        flux_log (h, LOG_ERR, "kvs_commit error!");
-    } else if (flux_event_send (h, NULL, "wrexec.run.%ld", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "request_run event send failed: %s",
-                  strerror (errno));
-    } else {
-        flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
-        rc = 0;
+    if (ex == n) {
+        *o = n;
+        return true;
     }
-
-    return rc;
+    return false;
 }
+        
+/* 
+ * Following is a state machine. action is invoked when an external job
+ * state event is delivered. But in action, certain events are also generated,
+ * some events are realized by falling through some of the case statements. 
+ */
 
-
-static int
-issue_res_event (flux_lwj_t *lwj)
+static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
 {
-    int rc = 0;
-    flux_event_t *newev
-        = (flux_event_t *) xzmalloc (sizeof (flux_event_t));
+    flux_t h = ctx->h;
+    job_state_t oldstate = job->state;
 
-    // TODO: how to update the status of each entry as "free"
-    // then destroy zlist_t without having to destroy
-    // the elements
-    // release lwj->resource
-
-    newev->t = res_event;
-    newev->ev.re = r_released;
-    newev->lwj = lwj;
-
-    if (zlist_append (ev_queue, newev) == -1) {
-        flux_log (h, LOG_ERR,
-                  "enqueuing an event failed");
-        rc = -1;
-        goto ret;
-    }
-    if (signal_event () == -1) {
-        flux_log (h, LOG_ERR,
-                  "signal the event-enqueued event ");
-        rc = -1;
-        goto ret;
-    }
-
-ret:
-    return rc;
-}
-
-static int
-move_to_r_queue (flux_lwj_t *lwj)
-{
-    zlist_remove (p_queue, lwj);
-    return zlist_append (r_queue, lwj);
-}
-
-
-static int
-action_j_event (flux_event_t *e)
-{
-    /* e->lwj->state is the current state
-     * e->ev.je      is the new state
-     */
     flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
-              e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
-                              stab_rlookup (jobstate_tab, e->ev.je));
+              job->lwj_id, jsc_job_num2state (oldstate),
+              jsc_job_num2state (newstate));
 
-    switch (e->lwj->state) {
-    case j_null:
-        if (e->ev.je == j_reserved) {
-            e->lwj->state = j_reserved;
+    switch (oldstate) {
+        case J_NULL: 
+            VERIFY (trans (J_NULL, newstate, &(job->state))
+                    || trans (J_RESERVED, newstate, &(job->state))); 
             break;
-        }
-        /* deliberate fall-through */
-    case j_reserved:
-        if (e->ev.je != j_submitted) {
-            goto bad_transition;
-        }
-        extract_lwjinfo (e->lwj);
-        if (e->lwj->state != j_submitted) {
-            flux_log (h, LOG_ERR,
-                      "job %ld read state mismatch ", e->lwj->lwj_id);
-            goto bad_transition;
-        }
-        /* Transition the job temporarily to unscheduled to flag it as
-         * a candidate to be scheduled */
-        flux_log (h, LOG_DEBUG, "setting %ld to unscheduled state",
-                  e->lwj->lwj_id);
-        e->lwj->state = j_unsched;
-        schedule_jobs (rdl, resource, p_queue);
-        break;
-
-    case j_submitted:
-        if (e->ev.je != j_allocated) {
-            goto bad_transition;
-        }
-        e->lwj->state = j_allocated;
-        request_run(e->lwj);
-        break;
-
-    case j_unsched:
-        /* TODO */
-        goto bad_transition;
-        break;
-
-    case j_pending:
-        /* TODO */
-        goto bad_transition;
-        break;
-
-    case j_allocated:
-        if (e->ev.je != j_runrequest) {
-            goto bad_transition;
-        }
-        e->lwj->state = j_runrequest;
-        break;
-
-    case j_runrequest:
-        if (e->ev.je != j_starting) {
-            goto bad_transition;
-        }
-        e->lwj->state = j_starting;
-        break;
-
-    case j_starting:
-        if (e->ev.je != j_running) {
-            goto bad_transition;
-        }
-        e->lwj->state = j_running;
-        move_to_r_queue (e->lwj);
-        break;
-
-    case j_running:
-        if (e->ev.je != j_complete) {
-            goto bad_transition;
-        }
-        /* TODO move this to j_complete case once reaped is implemented */
-        zlist_remove (r_queue, e->lwj);
-        issue_res_event (e->lwj);
-        break;
-
-    case j_cancelled:
-        /* TODO */
-        goto bad_transition;
-        break;
-
-    case j_complete:
-        if (e->ev.je != j_reaped) {
-            goto bad_transition;
-        }
-//        zlist_remove (r_queue, e->lwj);
-        break;
-
-    case j_reaped:
-        if (e->ev.je != j_complete) {
-            goto bad_transition;
-        }
-        e->lwj->state = j_reaped;
-        break;
-
-    default:
-        flux_log (h, LOG_ERR, "job %ld unknown state %d",
-                  e->lwj->lwj_id, e->lwj->state);
-        break;
+        case J_RESERVED:
+            VERIFY (trans (J_SUBMITTED, newstate, &(job->state)));
+            fill_resource_req (h, job);
+            /* fall through for implicit event generation */
+        case J_SUBMITTED: 
+            VERIFY (trans (J_PENDING, J_PENDING, &(job->state)));
+            /* fall through for implicit event generation */
+        case J_PENDING: 
+            VERIFY (trans (J_SCHEDREQ, J_SCHEDREQ, &(job->state)));
+            schedule_jobs (ctx); /* includes request allocate if successful */
+            break;
+        case J_SCHEDREQ:
+            /* A schedule reqeusted should not get an event. */ 
+            /* SCHEDREQ -> SELECTED happens implicitly within schedule jobs */
+            VERIFY (false);
+            break;
+        case J_SELECTED: 
+            VERIFY (trans (J_ALLOCATED, newstate, &(job->state)));
+            req_tpexec_run (h, job);
+            break;
+        case J_ALLOCATED:
+            VERIFY (trans (J_RUNREQUEST, newstate, &(job->state)));
+            break;
+        case J_RUNREQUEST:
+            VERIFY (trans (J_STARTING, newstate, &(job->state)));
+            break;
+        case J_STARTING:
+            VERIFY (trans (J_RUNNING, newstate, &(job->state)));
+            q_move_to_rqueue (ctx, job);
+            break;
+        case J_RUNNING:
+            VERIFY (trans (J_COMPLETE, newstate, &(job->state))
+                    || trans (J_CANCELLED, newstate, &(job->state)))
+            q_move_to_cqueue (ctx, job); 
+            if ((release_resources (ctx, job) == 0))  
+                flux_event_send (h, NULL, "sched.res.event");
+            break;
+        case J_CANCELLED:
+            VERIFY (trans (J_REAPED, newstate, &(job->state)));
+            zlist_remove (ctx->c_queue, job);
+            if (job->req)
+                free (job->req);
+            free (job);
+            break;
+        case J_COMPLETE:
+            VERIFY (trans (J_REAPED, newstate, &(job->state)));
+            zlist_remove (ctx->c_queue, job);
+            if (job->req)
+                free (job->req);
+            free (job);
+            break;
+        case J_REAPED:
+        default:
+            VERIFY (false); 
+            break;
     }
-
     return 0;
 
 bad_transition:
     flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
-              e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
-                              stab_rlookup (jobstate_tab, e->ev.je));
+              job->lwj_id, jsc_job_num2state (oldstate),
+              jsc_job_num2state (newstate));
     return -1;
 }
 
-
-static int
-action_r_event (flux_event_t *e)
+/* TODO: we probably need to abstract out resource status & control  API 
+ * For now, the only resource event is raised when a job releases its 
+ * RDL allocation.   
+ */ 
+static int res_event_cb (flux_t h, int t, zmsg_t **zmsg, void *arg)
 {
-    int rc = -1;
-
-    if ((e->ev.re == r_released) || (e->ev.re == r_attempt)) {
-        (*release_resources) (h, rdl, resource, e->lwj);
-        schedule_jobs (rdl, resource, p_queue);
-        rc = 0;
-    }
-
-    return rc;
+    schedule_jobs (getctx ((flux_t)arg));
+    return 0;
 }
 
-
-static int
-action (flux_event_t *e)
+#if ENABLE_TIMER_EVENT
+static int timer_event_cb (flux_t h, void *arg)
 {
-    int rc = 0;
-
-    switch (e->t) {
-    case lwj_event:
-        rc = action_j_event (e);
-        break;
-
-    case res_event:
-        rc = action_r_event (e);
-        break;
-
-    default:
-        flux_log (h, LOG_ERR, "unknown event type");
-        break;
-    }
-
-    return rc;
+    //flux_log (h, LOG_ERR, "TIMER CALLED");
+    schedule_jobs (getctx ((flux_t)arg));
+    return 0;
 }
+#endif 
 
-
-/****************************************************************
- *
- *         Abstractions for KVS Callback Registeration
- *
- ****************************************************************/
-
-static int
-reg_newlwj_hdlr (KVSSetInt64F *func)
+static int job_status_cb (JSON jcb, void *arg, int errnum)
 {
-    if (kvs_watch_int64 (h,"lwj.next-id", func, (void *) h) < 0) {
-        flux_log (h, LOG_ERR, "watch lwj.next-id: %s",
-                  strerror (errno));
+    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    flux_lwj_t *j = NULL;
+    job_state_t ns = J_FOR_RENT;
+
+    if (errnum > 0) {
+        flux_log (ctx->h, LOG_ERR, "job_status_cb: errnum passed in");
         return -1;
     }
-    flux_log (h, LOG_DEBUG, "registered lwj creation callback");
-
-    return 0;
+    if (is_newjob (jcb)) 
+        append_to_pqueue (ctx, jcb);
+    if ((j = fetch_job_and_event (ctx, jcb, &ns)) == NULL) {
+        flux_log (ctx->h, LOG_ERR, "error fetching job and event");
+        return -1;
+    }
+    Jput (jcb);
+    return action (ctx, j, ns);
 }
 
 
-static int
-reg_lwj_state_hdlr (const char *path, KVSSetStringF *func)
+/******************************************************************************
+ *                                                                            *
+ *                     Scheduler Service Module Main                          *
+ *                                                                            * 
+ ******************************************************************************/
+
+int mod_main (flux_t h, zhash_t *args)
 {
-    int rc = 0;
-    char *k = NULL;
-
-    asprintf (&k, "%s.state", path);
-    if (kvs_watch_string (h, k, func, (void *)h) < 0) {
-        flux_log (h, LOG_ERR,
-                  "watch a lwj state in %s: %s.",
-                  k, strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    flux_log (h, LOG_DEBUG, "registered lwj %s.state change callback", path);
-
-ret:
-    free (k);
-    return rc;
-}
-
-
-/****************************************************************
- *                KVS Watch Callback Functions
- ****************************************************************/
-static int
-lwjstate_cb (const char *key, const char *val, void *arg, int errnum)
-{
-    int64_t lwj_id;
-    flux_lwj_t *j = NULL;
-    lwj_event_e e;
-
-    if (errnum > 0) {
-        /* Ignore ENOENT.  It is expected when this cb is called right
-         * after registration.
-         */
-        if (errnum != ENOENT) {
-            flux_log (h, LOG_ERR, "lwjstate_cb key(%s), val(%s): %s",
-                      key, val, strerror (errnum));
-        }
-        goto ret;
-    }
-
-    if (extract_lwjid (key, &lwj_id) == -1) {
-        flux_log (h, LOG_ERR, "ill-formed key");
-        goto ret;
-    }
-    flux_log (h, LOG_DEBUG, "lwjstate_cb: %ld, %s", lwj_id, val);
-
-    j = find_lwj (lwj_id);
-    if (j) {
-        e = stab_lookup (jobstate_tab, val);
-        issue_lwj_event (e, j);
-    } else
-        flux_log (h, LOG_ERR, "lwjstate_cb: find_lwj %ld failed", lwj_id);
-
-ret:
-    return 0;
-}
-
-/* The val argument is for the *next* job id.  Hence, the job id of
- * the new job will be (val - 1).
- */
-static int
-newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
-{
-    char path[MAX_STR_LEN];
-    flux_lwj_t *j = NULL;
-
-    if (errnum > 0) {
-        /* Ignore ENOENT.  It is expected when this cb is called right
-         * after registration.
-         */
-        if (errnum != ENOENT) {
-            flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%ld): %s",
-                      key, val, strerror (errnum));
-            goto error;
-        }
-        goto ret;
-    } else if (val < 0) {
-        flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%ld)", key, val);
-        goto error;
-    } else {
-        flux_log (h, LOG_DEBUG, "newlwj_cb key(%s), val(%ld)", key, val);
-    }
-
-    if ( !(j = (flux_lwj_t *) xzmalloc (sizeof (flux_lwj_t))) ) {
-        flux_log (h, LOG_ERR, "oom");
-        goto error;
-    }
-    j->lwj_id = val - 1;
-    j->state = j_null;
-    snprintf (path, MAX_STR_LEN, "lwj.%ld", j->lwj_id);
-    if (zlist_append (p_queue, j) == -1) {
-        flux_log (h, LOG_ERR,
-                  "appending a job to pending queue failed");
-        goto error;
-    }
-    if (reg_lwj_state_hdlr (path, (KVSSetStringF *) lwjstate_cb) == -1) {
-        flux_log (h, LOG_ERR,
-                  "register lwj state change "
-                  "handling callback: %s",
-                  strerror (errno));
-        goto error;
-    }
-ret:
-    return 0;
-
-error:
-    if (j)
-        free (j);
-
-    return 0;
-}
-
-
-static int
-event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
-{
-    flux_event_t *e = NULL;
-
-    while ( (e = zlist_pop (ev_queue)) != NULL) {
-        action (e);
-        free (e);
-    }
-
-    zmsg_destroy (zmsg);
-
-    return 0;
-}
-
-
-/****************************************************************
- *
- *        High Level Job and Resource Event Handlers
- *
- ****************************************************************/
-int mod_main (flux_t p, zhash_t *args)
-{
-    char *path;
+    int rc = -1;
+    ssrvctx_t *ctx = NULL;
     char *schedplugin = "sched.plugin1";
-    char *searchpath = getenv ("FLUX_MODULE_PATH");
-    int rc = 0;
-    struct rdllib *l = NULL;
-    struct resource *r = NULL;
-    void *dso;
 
-    h = p;
+    if (!(ctx = getctx (h))) {
+        flux_log (h, LOG_ERR, "can't find or allocate the context");
+        goto done;
+    }
     if (flux_rank (h) != 0) {
         flux_log (h, LOG_ERR, "sched module must only run on rank 0");
-        rc = -1;
-        goto ret;
+        goto done;
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
-
-    if (!searchpath) {
-//        searchpath = MODULE_PATH;
-        flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
-        rc = -1;
-        goto ret;
+    if (load_sched_plugin (ctx, schedplugin) != 0) {
+        flux_log (h, LOG_ERR, "failed to load scheduler plugin");
+        goto done;
     }
-
-    if (!(path = flux_modfind (searchpath, schedplugin))) {
-        flux_log (h, LOG_ERR, "%s: not found in module search path %s",
-                  schedplugin, searchpath);
-        rc = -1;
-        goto ret;
+    flux_log (h, LOG_INFO, "scheduler plugin loaded");
+    if (load_rdl (ctx, args) != 0) {
+        flux_log (h, LOG_ERR, "failed to setup and load RDL");
+        goto done;
     }
-
-    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
-        flux_log (h, LOG_ERR, "failed to open sched plugin: %s", dlerror ());
-        rc = -1;
-        goto ret;
-    } else {
-        flux_log (h, LOG_DEBUG, "loaded: %s", schedplugin);
+    flux_log (h, LOG_INFO, "scheduler plugin loaded");
+    if (reg_events (ctx) != 0) {
+        flux_log (h, LOG_ERR, "failed to reg events");
+        goto done;
     }
-
-    if (!(find_resources = dlsym (dso, "find_resources")) || !*find_resources) {
-        flux_log (h, LOG_ERR, "failed to load find_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
-    }
-    if (!(select_resources = dlsym (dso, "select_resources")) ||
-        !*select_resources) {
-        flux_log (h, LOG_ERR, "failed to load select_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
-    }
-    if (!(allocate_resources = dlsym (dso, "allocate_resources")) ||
-        !*allocate_resources) {
-        flux_log (h, LOG_ERR, "failed to load allocate_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
-    }
-    if (!(release_resources = dlsym (dso, "release_resources")) ||
-        !*release_resources) {
-        flux_log (h, LOG_ERR, "failed to load release_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
-    }
-
-    if (!(path = zhash_lookup (args, "rdl-conf"))) {
-        flux_log (h, LOG_ERR, "rdl-conf argument is not set");
-        rc = -1;
-        goto ret;
-    }
-    setup_rdl_lua ();
-    if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
-        flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
-                  path, strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    if (!(resource = zhash_lookup (args, "rdl-resource"))) {
-        flux_log (h, LOG_INFO, "using default rdl resource");
-        resource = "default";
-    }
-
-    if (!(r = rdl_resource_get (rdl, resource))) {
-        flux_log (h, LOG_ERR, "failed to get %s: %s", resource,
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-
-    p_queue = zlist_new ();
-    r_queue = zlist_new ();
-    ev_queue = zlist_new ();
-    if (!p_queue || !r_queue || !ev_queue) {
-        flux_log (h, LOG_ERR,
-                  "init for queues failed: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    if (flux_event_subscribe (h, "sched.event") < 0) {
-        flux_log (h, LOG_ERR,
-                  "subscribing to event: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.event",
-                             event_cb, NULL) < 0) {
-        flux_log (h, LOG_ERR,
-                  "register event handling callback: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
-    if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
-        flux_log (h, LOG_ERR,
-                  "register new lwj handling "
-                  "callback: %s",
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
+    flux_log (h, LOG_INFO, "events registered");
     if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR,
-                  "flux_reactor_start: %s",
-                  strerror (errno));
+        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
         rc =  -1;
-        goto ret;
+        goto done;
     }
+    rc = 0;
 
-    zlist_destroy (&p_queue);
-    zlist_destroy (&r_queue);
-    zlist_destroy (&ev_queue);
-
-    rdllib_close(l);
-    dlclose (dso);
-
-ret:
+done:
     return rc;
 }
 

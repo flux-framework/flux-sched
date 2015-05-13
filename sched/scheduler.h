@@ -1,70 +1,51 @@
+ /*****************************************************************************\
+ *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
+ *  LLNL-CODE-658032 All rights reserved.
+ *
+ *  This file is part of the Flux resource manager framework.
+ *  For details, see https://github.com/flux-framework.
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the license, or (at your option)
+ *  any later version.
+ *
+ *  Flux is distributed in the hope that it will be useful, but WITHOUT
+ *  ANY WARRANTY; without even the IMPLIED WARRANTY OF MERCHANTABILITY or
+ *  FITNESS FOR A PARTICULAR PURPOSE.  See the terms and conditions of the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ *  See also:  http://www.gnu.org/licenses/
+ \*****************************************************************************/
+
 /*
- *-------------------------------------------------------------------------------
- * Copyright and authorship blurb here
- *-------------------------------------------------------------------------------
  * scheduler.h - common data structure for scheduler framework and plugins
  *
  * Update Log:
- * 	     May 24 2012 DHA: File created.
+ *       Apr 08 2015 DHA: Code refactoring w/ JSC API
+ * 	     May 24 2014 DHA: File created.
  */
 
 #ifndef SCHEDULER_H
 #define SCHEDULER_H 1
 
-#include <stdint.h>
 #include <czmq.h>
+#include <stdint.h>
 
+#include "rdl.h"
+/* FIXME: fix the build system so not to have path to this header */
+#include "src/common/libjsc/jstatctl.h"
 
-/**
- *  Enumerates lightweight-job and resource events
- */
-typedef enum {
-    j_null,      /*!< the state has yet to be assigned */
-    j_reserved,  /*!< a job has a reservation in KVS*/
-    j_submitted, /*!< a job added to KVS */
-    j_unsched,   /*!< a job never gone through sched_loop */
-    j_pending,   /*!< a job set to pending */
-    j_allocated, /*!< a job got allocated to resource */
-    j_runrequest,/*!< a job is requested to be executed */
-    j_starting,  /*!< a job is starting */
-    j_running,   /*!< a job is running */
-    j_cancelled, /*!< a job got cancelled */
-    j_complete,  /*!< a job completed */
-    j_reaped,    /*!< a job reaped */
-    j_for_rent   /*!< Space For Rent */
-} lwj_event_e;
-
-
-typedef lwj_event_e lwj_state_e;
-
-
-/**
- *  Enumerates resource events
- */
-typedef enum {
-    r_null,      /*!< the state has yet to be assigned */
-    r_added,     /*!< RDL reported some resources added */
-    r_released,  /*!< a lwj released some resources */
-    r_attempt,   /*!< attemp to schedule again */
-    r_failed,    /*!< some resource failed */
-    r_recovered, /*!< some failed resources recovered */
-    r_for_rent   /*!< Space For Rent */
-} res_event_e;
-
-
-/**
- *  Whether an event is a lwj or resource event
- */
-typedef enum {
-    lwj_event,   /*!< is a lwj event */
-    res_event,   /*!< is a resource event */
-} event_class_e;
 
 /**
  *  Defines resource request info block.
  *  This needs to be expanded as RDL evolves.
  */
-typedef struct flux_resources {
+typedef struct {
     uint64_t nnodes; /*!< num of nodes requested by a job */
     uint32_t ncores; /*!< num of cores requested by a job */
 } flux_res_t;
@@ -74,29 +55,15 @@ typedef struct flux_resources {
  *  Defines LWJ info block (this needs to be expanded of course)
  */
 typedef struct {
-    int64_t lwj_id; /*!< LWJ id */
-    lwj_state_e state;
-    bool reserve;
-    flux_res_t *req;   /*!< resources requested by this LWJ */
-    struct rdl *rdl;  /*!< resources allocated to this LWJ */
+    int64_t     lwj_id;  /*!< LWJ id */
+    job_state_t state;   /*!< current job state */
+    bool        reserve;
+    flux_res_t *req;     /*!< resources requested by this LWJ */
+    struct rdl *rdl;     /*!< resources allocated to this LWJ */
 } flux_lwj_t;
-
-
-/**
- *  Defines an event that goes into the event queue
- */
-typedef struct {
-    event_class_e t;    /*!< lwj or res event? */
-    union u {
-        lwj_event_e je; /*!< use this if the class is lwj */
-        res_event_e re; /*!< use this if the class is res */
-    } ev;               /*!< event */
-    flux_lwj_t *lwj;    /*!< if lwj event, a ref. Don't free */
-} flux_event_t;
 
 #endif /* SCHEDULER_H */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
-

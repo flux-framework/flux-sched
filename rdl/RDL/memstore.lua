@@ -1076,7 +1076,7 @@ local function get_aggregate (store, node, result)
     --  either, so we return immediately, pruning the remainder of the
     --  hierarchy.
     local r = assert (store:get (node.id))
-    assert (r.size, "no size for "..require 'inspect'(r))
+    -- assert (r.size, "no size for "..require 'inspect'(r))
     if r.allocated == r.size then
         return result
     end
