@@ -50,6 +50,9 @@
 //types, something we need to think about
 typedef struct zhash_t resources;
 
+static bool select_children (flux_t h, resrc_tree_list_t *found_children,
+                             resrc_reqst_list_t *reqst_children,
+                             resrc_tree_t *parent_tree);
 
 /*
  * find_resources() identifies the all of the resource candidates for
@@ -63,7 +66,7 @@ typedef struct zhash_t resources;
  *                   or NULL if none (or not enough) are found
  */
 resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
-                                   resrc_reqst_t *resrc_reqst, bool *preserve)
+                                   resrc_reqst_t *resrc_reqst)
 {
     int64_t nfound = 0;
     resrc_t *resrc = NULL;
@@ -100,25 +103,92 @@ ret:
     return found_trees;
 }
 
-static uint64_t select_children (flux_t h, resrc_tree_list_t *children,
-                                 resrc_tree_list_t *selected_res, char *type,
-                                 uint64_t *pcount)
+static bool select_child (flux_t h, resrc_tree_list_t *found_children,
+                          resrc_reqst_t *child_reqst,
+                          resrc_tree_t *parent_tree)
 {
-    resrc_tree_t *child = NULL;
-    uint64_t selected = 0;
+    resrc_tree_t *resrc_tree = NULL;
+    resrc_tree_t *child_tree = NULL;
+    bool selected = false;
 
-    child = resrc_tree_list_first (children);
-    while (child && *pcount) {
-        if (!strcmp (resrc_type (resrc_tree_resrc (child)), type)) {
-            flux_log (h, LOG_DEBUG, "selected %s: %s", type,
-                      resrc_type (resrc_tree_resrc (child)));
-            (*pcount)--;
-            selected++;
-        } else if (resrc_tree_list_size (resrc_tree_children (child))) {
-            selected += select_children (h, resrc_tree_children (child),
-                                         selected_res, type, pcount);
+    resrc_tree = resrc_tree_list_first (found_children);
+    while (resrc_tree) {
+        selected = false;
+        if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
+                                  resrc_reqst_resrc (child_reqst), true)) {
+            if (resrc_reqst_num_children (child_reqst)) {
+                if (resrc_tree_num_children (resrc_tree)) {
+                    child_tree = resrc_tree_new (parent_tree,
+                                                 resrc_tree_resrc (resrc_tree));
+                    if (select_children (h, resrc_tree_children (resrc_tree),
+                                         resrc_reqst_children (child_reqst),
+                                         child_tree)) {
+                        resrc_reqst_add_found (child_reqst, 1);
+                        selected = true;
+                        if (resrc_reqst_nfound (child_reqst) >=
+                            resrc_reqst_reqrd (child_reqst))
+                            goto ret;
+                    } else {
+                        resrc_tree_destroy (child_tree);
+                    }
+                }
+            } else {
+                (void) resrc_tree_new (parent_tree,
+                                       resrc_tree_resrc (resrc_tree));
+                resrc_reqst_add_found (child_reqst, 1);
+                selected = true;
+                if (resrc_reqst_nfound (child_reqst) >=
+                    resrc_reqst_reqrd (child_reqst))
+                    goto ret;
+            }
         }
-        child = resrc_tree_list_next (children);
+        /*
+         * The following clause allows the resource request to be
+         * sparsely defined.  E.g., it might only stipulate a node
+         * with 4 cores and omit the intervening socket.
+         */
+        if (!selected) {
+            if (resrc_tree_num_children (resrc_tree)) {
+                child_tree = resrc_tree_new (parent_tree,
+                                             resrc_tree_resrc (resrc_tree));
+                if (select_child (h, resrc_tree_children (resrc_tree),
+                                  child_reqst, child_tree)) {
+                    selected = true;
+                    if (resrc_reqst_nfound (child_reqst) >=
+                        resrc_reqst_reqrd (child_reqst))
+                        goto ret;
+                } else {
+                    resrc_tree_destroy (child_tree);
+                }
+            }
+        }
+        resrc_tree = resrc_tree_list_next (found_children);
+    }
+ret:
+    return selected;
+}
+
+
+static bool select_children (flux_t h, resrc_tree_list_t *found_children,
+                                 resrc_reqst_list_t *reqst_children,
+                                 resrc_tree_t *parent_tree)
+{
+    resrc_reqst_t *child_reqst = resrc_reqst_list_first (reqst_children);
+    bool selected = false;
+
+    while (child_reqst) {
+        resrc_reqst_clear_found (child_reqst);
+        selected = false;
+
+        if (select_child (h, found_children, child_reqst, parent_tree) &&
+            (resrc_reqst_nfound (child_reqst) >=
+             resrc_reqst_reqrd (child_reqst)))
+            selected = true;
+
+        if (!selected)
+            break;
+
+        child_reqst = resrc_reqst_list_next (reqst_children);
     }
 
     return selected;
@@ -131,54 +201,58 @@ static uint64_t select_children (flux_t h, resrc_tree_list_t *children,
  * consideration as candidates for other jobs.
  *
  * Inputs:  found_trees - list of resource tree candidates
- *          job - the job for which we are selecting the resources
- *          reserve - if true and if not enough resources were found,
- *                    return what was found, to be reserved for the
- *                    job at a subsequent step.
+ *          resrc_reqst - the resources the job requests
  * Returns: a list of selected resource trees, or null if none (or not enough)
  *          are selected
  */
 resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
-                                     flux_lwj_t *job, bool reserve)
+                                     resrc_reqst_t *resrc_reqst)
 {
+    int64_t reqrd;
     resrc_t *resrc;
-    resrc_tree_t *rt;
-    uint64_t cpn;       /* cores per node */
-    uint64_t ctn;       /* cores this node */
-    uint64_t ncores;
-    uint64_t nnodes;
     resrc_tree_list_t *selected_res = NULL;
+    resrc_tree_t *new_tree = NULL;
+    resrc_tree_t *rt;
 
-    if (!job) {
-        flux_log (h, LOG_ERR, "select_resources called with null job");
+    if (!resrc_reqst) {
+        flux_log (h, LOG_ERR, "select_resources called with empty request");
         return NULL;
     }
 
-    ncores = job->req->ncores;
-    nnodes = job->req->nnodes;
-    cpn = job->req->corespernode;
+    reqrd = resrc_reqst_reqrd (resrc_reqst);
     selected_res = resrc_tree_new_list ();
 
     rt = resrc_tree_list_first (found_trees);
-    while (nnodes && rt) {
+    while (reqrd && rt) {
         resrc = resrc_tree_resrc (rt);
-        if (!strncmp (resrc_type (resrc), "node", 5)) {
-            ctn = MIN (ncores, cpn);
-
-            if (ctn && resrc_tree_list_size (resrc_tree_children (resrc_phys_tree
-                                                                  (resrc)))) {
-                ncores -= select_children (h, resrc_tree_children
-                                           (resrc_phys_tree (resrc)),
-                                           selected_res, "core", &ctn);
+        if (resrc_match_resource (resrc, resrc_reqst_resrc (resrc_reqst),
+                                  true)) {
+            new_tree = resrc_tree_new (NULL, resrc);
+            if (resrc_reqst_num_children (resrc_reqst)) {
+                if (resrc_tree_num_children (rt)) {
+                    if (select_children (h, resrc_tree_children (rt),
+                                         resrc_reqst_children (resrc_reqst),
+                                         new_tree)) {
+                        resrc_tree_list_append (selected_res, new_tree);
+                        flux_log (h, LOG_DEBUG, "selected1 %s",
+                                  resrc_name (resrc));
+                        reqrd--;
+                    } else {
+                        resrc_tree_destroy (new_tree);
+                    }
+                }
+            } else {
+                resrc_tree_list_append (selected_res, new_tree);
+                flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
+                reqrd--;
             }
-            zlist_append ((zlist_t *) selected_res, rt);
-            flux_log (h, LOG_DEBUG, "selected node: %s", resrc_name (resrc));
-            nnodes--;
-            rt = resrc_tree_list_next (found_trees);
         }
+        rt = resrc_tree_list_next (found_trees);
     }
 
-    if ((nnodes || ncores) && !reserve) {
+    /* If we did not select all that was required and the selected
+     * resource list is empty, destroy the list. */
+    if (reqrd && !resrc_tree_list_size (selected_res)) {
         zlist_destroy ((zlist_t **) &selected_res);
         selected_res = NULL;
     }

@@ -71,11 +71,11 @@ static flux_t h = NULL;
 static resources_t *resrcs = NULL;
 
 static resrc_tree_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
-                                             resrc_reqst_t *resrc_reqst,
-                                             bool *preserve);
+                                             resrc_reqst_t *resrc_reqst);
+
 static resrc_tree_list_t *(*select_resources) (flux_t h,
                                                resrc_tree_list_t *resrc_trees,
-                                               flux_lwj_t *job, bool reserve);
+                                               resrc_reqst_t *resrc_reqst);
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -457,9 +457,8 @@ int schedule_job (flux_lwj_t *job)
 {
     JSON child_core = NULL;
     JSON req_res = NULL;
-    bool reserve = false;
     int rc = -1;
-    int64_t nfound = 0;
+    int64_t nnodes = 0;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *found_trees = NULL;
     resrc_tree_list_t *selected_trees = NULL;
@@ -487,38 +486,39 @@ int schedule_job (flux_lwj_t *job)
     if (!resrc_reqst)
         goto ret;
 
-    if ((found_trees = (find_resources) (h, resrcs, resrc_reqst, &reserve))) {
-        nfound = resrc_tree_list_size (found_trees);
-        if (nfound >= job->req->nnodes) {
-            flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld req: %ld",
-                      nfound, job->lwj_id, job->req->nnodes);
-        } else if (nfound && job->reserve) {
-            reserve = true;
-            flux_log (h, LOG_DEBUG, "%ld nodes reserved for lwj.%ld's req %ld",
-                      nfound, job->lwj_id, job->req->nnodes);
-        }
+    if ((found_trees = (find_resources) (h, resrcs, resrc_reqst))) {
+        nnodes = resrc_tree_list_size (found_trees);
+        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",
+                  nnodes, job->lwj_id, job->req->nnodes);
+        if ((nnodes < job->req->nnodes) && !job->reserve)
+            goto ret;
 
-        selected_trees = (select_resources) (h, found_trees, job, reserve);
-        if (selected_trees) {
-            if (reserve) {
-                resrc_tree_list_reserve (selected_trees, job->lwj_id);
-            } else {
+        if ((selected_trees = (select_resources) (h, found_trees,
+                                                  resrc_reqst))) {
+            nnodes = resrc_tree_list_size (selected_trees);
+            if (nnodes == job->req->nnodes) {
                 resrc_tree_list_allocate (selected_trees, job->lwj_id);
                 /* Transition the job back to submitted to prevent the
                  * scheduler from trying to schedule it again */
                 job->state = j_submitted;
                 rc = update_job_records (job, selected_trees);
+                flux_log (h, LOG_DEBUG,
+                          "%ld nodes selected for lwj.%ld, reqrd: %ld",
+                          nnodes, job->lwj_id, job->req->nnodes);
+            } else if (job->reserve) {
+                resrc_tree_list_reserve (selected_trees, job->lwj_id);
+                flux_log (h, LOG_DEBUG,
+                          "%ld nodes reserved for lwj.%ld's reqrd %ld",
+                          nnodes, job->lwj_id, job->req->nnodes);
             }
         }
-        /*
-         * selected_trees contain the same elements as found_trees, so
-         * there is no need to destroy its contents
-         */
-        /* resrc_tree_list_destroy (found_trees); */
-        /* zlist_destroy ((zlist_t **)&selected_trees); */
     }
-    resrc_reqst_destroy (resrc_reqst);
 ret:
+    if (resrc_reqst)
+        resrc_reqst_destroy (resrc_reqst);
+    if (found_trees)
+        resrc_tree_list_destroy (found_trees);
+
     return rc;
 }
 
