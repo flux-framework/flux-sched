@@ -34,6 +34,7 @@
 #include "src/common/libutil/xzmalloc.h"
 
 typedef struct zlist_t resrc_tree_list;
+typedef struct zlist_t resrc_reqst_list;
 
 struct resrc_tree {
     resrc_tree_t *parent;
@@ -61,6 +62,13 @@ resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree)
     if (resrc_tree)
         return (resrc_t *)resrc_tree->resrc;
     return NULL;
+}
+
+size_t resrc_tree_num_children (resrc_tree_t *resrc_tree)
+{
+    if (resrc_tree)
+        return zlist_size (resrc_tree->children);
+    return -1;
 }
 
 resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
@@ -229,6 +237,13 @@ resrc_tree_list_t *resrc_tree_new_list ()
     return (resrc_tree_list_t *) zlist_new ();
 }
 
+int resrc_tree_list_append (resrc_tree_list_t *rtl, resrc_tree_t *rt)
+{
+    if (rtl && rt)
+        return zlist_append ((zlist_t *) rtl, (void *) rt);
+    return -1;
+}
+
 resrc_tree_t *resrc_tree_list_first (resrc_tree_list_t *rtl)
 {
     return zlist_first ((zlist_t*) rtl);
@@ -334,6 +349,66 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
  * Resource request
  ***********************************************************************/
 
+resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return (resrc_t *)resrc_reqst->resrc;
+    return NULL;
+}
+
+int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->reqrd;
+    return -1;
+}
+
+int64_t resrc_reqst_nfound (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->nfound;
+    return -1;
+}
+
+int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound)
+{
+    if (resrc_reqst) {
+        resrc_reqst->nfound += nfound;
+        return (resrc_reqst->nfound);
+    }
+    return -1;
+}
+
+void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
+{
+    resrc_reqst_t *child;
+
+    if (resrc_reqst) {
+        resrc_reqst->nfound = 0;
+        if (zlist_size (resrc_reqst->children)) {
+            child = zlist_first (resrc_reqst->children);
+            while (child) {
+                resrc_reqst_clear_found (child);
+                child = zlist_next (resrc_reqst->children);
+            }
+        }
+    }
+}
+
+size_t resrc_reqst_num_children (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return zlist_size (resrc_reqst->children);
+    return -1;
+}
+
+resrc_reqst_list_t *resrc_reqst_children (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return (resrc_reqst_list_t *)resrc_reqst->children;
+    return NULL;
+}
+
 int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
 {
     int rc = -1;
@@ -403,6 +478,7 @@ void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
     resrc_reqst_t *child;
 
     if (resrc_reqst) {
+        printf ("%ld of %ld ", resrc_reqst->nfound, resrc_reqst->reqrd);
         resrc_print_resource (resrc_reqst->resrc);
         if (zlist_size (resrc_reqst->children)) {
             child = zlist_first (resrc_reqst->children);
@@ -433,6 +509,56 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
         free (resrc_reqst);
     }
 }
+
+/***********************************************************************
+ * Resource request list
+ ***********************************************************************/
+
+resrc_reqst_list_t *resrc_reqst_new_list ()
+{
+    return (resrc_reqst_list_t *) zlist_new ();
+}
+
+int resrc_reqst_list_append (resrc_reqst_list_t *rrl, resrc_reqst_t *rr)
+{
+    if (rrl && rr)
+        return zlist_append ((zlist_t *) rrl, (void *) rr);
+    return -1;
+}
+
+resrc_reqst_t *resrc_reqst_list_first (resrc_reqst_list_t *rrl)
+{
+    return zlist_first ((zlist_t*) rrl);
+}
+
+resrc_reqst_t *resrc_reqst_list_next (resrc_reqst_list_t *rrl)
+{
+    return zlist_next ((zlist_t*) rrl);
+}
+
+size_t resrc_reqst_list_size (resrc_reqst_list_t *rrl)
+{
+    return zlist_size ((zlist_t*) rrl);
+}
+
+void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
+{
+    zlist_t *child;
+    zlist_t* rtl = (zlist_t*) resrc_reqst_list;
+
+    if (rtl) {
+        if (zlist_size (rtl)) {
+            child = zlist_first (rtl);
+            while (child) {
+                resrc_reqst_destroy ((resrc_reqst_t*) child);
+                child = zlist_next (rtl);
+            }
+        }
+        zlist_destroy (&rtl);
+        free (rtl);
+    }
+}
+
 
 static bool match_child (zlist_t * r_trees, resrc_reqst_t *resrc_reqst,
                          resrc_tree_t *parent_tree, bool available)
