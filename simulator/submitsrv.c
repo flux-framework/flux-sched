@@ -35,7 +35,7 @@
 #include "src/common/libutil/shortjson.h"
 #include "simulator.h"
 
-static const char const *module_name = "submit";
+static const char *module_name = "submit";
 static zlist_t *jobs;  //TODO: remove from "global" scope
 
 //Compare two job_t's based on submit time
@@ -183,7 +183,8 @@ int send_join_request (flux_t h)
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
 	Jadd_double (o, "next_event", get_next_submit_time());
-	if (flux_request_send (h, o, "%s", "sim.join") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -196,7 +197,8 @@ int send_reply_request (flux_t h, sim_state_t *sim_state)
 {
 	JSON o = sim_state_to_json (sim_state);
 	Jadd_bool (o, "event_finished", true);
-	if (flux_request_send (h, o, "%s", "sim.reply") < 0){
+	if (flux_json_request (h, FLUX_NODEID_ANY,
+                                  FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
 		Jput (o);
 		return -1;
 	}
@@ -230,7 +232,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 	Jadd_int (o, "nnodes", job->nnodes);
 	Jadd_int (o, "ntasks", job->ncpus);
 
-	response = flux_rpc (h, o, "job.create");
+	flux_json_rpc (h, FLUX_NODEID_ANY, "job.create", o, &response);
 	Jget_int64 (response, "jobid", &new_jobid);
 
 	//Update lwj.%jobid%'s state in the kvs to "submitted"
@@ -289,9 +291,8 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	JSON o;
 	const char *json_string;
 	sim_state_t *sim_state;
-	char *tag;
 
-	if (flux_msg_decode (*zmsg, &tag, &o) < 0 || o == NULL){
+	if (flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
 		return -1;
@@ -299,7 +300,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 //Logging
 	json_string = Jtostr (o);
-	flux_log(h, LOG_DEBUG, "received a trigger (%s): %s", tag, json_string);
+	flux_log(h, LOG_DEBUG, "received a trigger (submit.trigger): %s", json_string);
 
 //Handle the trigger
 	sim_state = json_to_sim_state (o);

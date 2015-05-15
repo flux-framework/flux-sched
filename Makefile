@@ -2,6 +2,20 @@ include Makefile.inc
 
 SUBDIRS = rdl resrc sched simulator t
 
-all clean install check:
-	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
+.PHONY: all clean $(SUBDIRS)
+all check clean: $(SUBDIRS)
 
+all: TARGET="all"
+clean: TARGET="clean"
+check: all
+	$(MAKE) TARGET="check"
+
+$(SUBDIRS):
+	@$(MAKE) -C $@ $(TARGET)
+
+sched: rdl
+simulator: rdl
+t: rdl sched simulator
+
+.PHONY: force
+force: ;

@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
-#include <json/json.h>
+#include <json.h>
 #include <dlfcn.h>
 #include <flux/core.h>
 
@@ -280,6 +280,10 @@ ret:
     return rc;
 }
 
+/* XXX: Unused function set_event() commented out to avoid compile-time
+ *      errors with -Wunused-function
+ */
+#if 0
 static inline void
 set_event (flux_event_t *e,
            event_class_e c, int ei, flux_lwj_t *j)
@@ -299,6 +303,7 @@ set_event (flux_event_t *e,
     }
     return;
 }
+#endif
 
 
 static int
