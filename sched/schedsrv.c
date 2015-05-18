@@ -42,8 +42,9 @@
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
-#include "rdl.h"
-#include "scheduler.h"
+#include "resrc.h"
+#include "resrc_tree.h"
+#include "schedsrv.h"
 
 #define MAX_STR_LEN 128
 
@@ -67,16 +68,14 @@ static zlist_t *p_queue = NULL;
 static zlist_t *r_queue = NULL;
 static zlist_t *ev_queue = NULL;
 static flux_t h = NULL;
-static struct rdl *rdl = NULL;
-static char* resource = NULL;
-static struct rdl *(*find_resources) (flux_t h, struct rdl *rdl, const char *uri,
-                                   flux_lwj_t *job, bool *preserve);
-static int (*select_resources)(flux_t h, struct rdl *rdl, const char *uri,
-                               struct resource *fr, flux_lwj_t *job,
-                               bool reserve);
-static int (*allocate_resources) (flux_t h, const char *uri, flux_lwj_t *job);
-static int (*release_resources) (flux_t h, struct rdl *rdl, const char *uri,
-                                 flux_lwj_t *job);
+static resources_t *resrcs = NULL;
+
+static resrc_tree_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
+                                             resrc_reqst_t *resrc_reqst);
+
+static resrc_tree_list_t *(*select_resources) (flux_t h,
+                                               resrc_tree_list_t *resrc_trees,
+                                               resrc_reqst_t *resrc_reqst);
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -99,22 +98,6 @@ static struct stab_struct jobstate_tab[] = {
  *         Resource Description Library Setup
  *
  ****************************************************************/
-
-static void f_err (flux_t h, const char *msg, ...)
-{
-    va_list ap;
-    va_start (ap, msg);
-    flux_vlog (h, LOG_ERR, msg, ap);
-    va_end (ap);
-}
-
-static void setup_rdl_lua (void)
-{
-    flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
-    flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
-
-    rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
-}
 
 static int
 signal_event ( )
@@ -147,7 +130,7 @@ find_lwj (int64_t id)
     if (j)
         return j;
 
-    j = zlist_first (r_queue);
+    j = zlist_next (r_queue);
     while (j) {
         if (j->lwj_id == id)
             break;
@@ -200,23 +183,6 @@ stab_rlookup (struct stab_struct *ss, int i)
     return "unknown";
 }
 
-#if 0
-static void print_resource (struct resource *r)
-{
-    json_object *o = rdl_resource_json (r);
-    struct resource *c;
-
-    flux_log (h, LOG_DEBUG, "%s", json_object_to_json_string (o));
-
-    rdl_resource_iterator_reset (r);
-    while ((c = rdl_resource_next_child (r))) {
-        print_resource (c);
-        rdl_resource_destroy (c);
-    }
-    json_object_put (o);
-}
-#endif
-
 /*
  * Update the job's kvs entry for state and mark the time.
  * Intended to be part of a series of changes, so the caller must
@@ -254,6 +220,63 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     free (key);
     free (key2);
 
+    return rc;
+}
+
+int update_job_resources (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
+{
+    char *key = NULL;
+    JSON o;
+    int rc = -1;
+
+    o = Jnew ();
+    if ((rc = resrc_tree_list_serialize (o, resrc_trees))) {
+        flux_log (h, LOG_ERR, "failed to serialize resources for job %ld: %s",
+                  job->lwj_id, strerror (errno));
+    } else if (asprintf (&key, "lwj.%ld.resrcs", job->lwj_id) < 0) {
+        flux_log (h, LOG_ERR, "update_job_resources key create failed");
+    } else if (kvs_put (h, key, o) < 0) {
+        flux_log (h, LOG_ERR, "update_job_resources %ld commit failed: %s",
+                  job->lwj_id, strerror (errno));
+    } else {
+        job->resrc_trees = resrc_trees;
+        Jput (o);
+        free (key);
+        rc = 0;
+    }
+
+    /*
+     * At this point, the scheduler's work is done for this job.  It
+     * has allocated resources to the job and saved the job record.
+     * The following is an interim solution to assign tasks to each
+     * rank.  Eventually the launch facility will take on this
+     * responsibility and map the tasks to resources.  When that
+     * happens, the following clause can be removed
+     */
+    if (!rc) {
+        uint64_t coresthisnode;
+        uint64_t i;
+        uint64_t ncores = job->req->ncores;
+        uint64_t nnodes = job->req->nnodes;
+        uint64_t corespernode = job->req->corespernode;
+
+        rc = -1;
+        for (i = 0; i < nnodes; i++) {
+            coresthisnode = MIN (ncores, corespernode);
+            if (asprintf (&key, "lwj.%ld.rank.%ld.cores", job->lwj_id, i) < 0) {
+                flux_log (h, LOG_ERR, "update_job_resources key create failed");
+                goto ret;
+            } else if (kvs_put_int64 (h, key, coresthisnode) < 0) {
+                flux_log (h, LOG_ERR, "update_job_resources %ld node failed: %s",
+                          job->lwj_id, strerror (errno));
+                goto ret;
+            }
+            free (key);
+            ncores -= coresthisnode;
+        }
+        rc = 0;
+    }
+ret:
     return rc;
 }
 
@@ -296,7 +319,7 @@ extract_lwjid (const char *k, int64_t *i)
         goto ret;
     }
 
-    kcopy = strdup (k);
+    kcopy = xstrdup (k);
     lwj = strtok (kcopy, ".");
     if (strncmp(lwj, "lwj", 3) != 0) {
         rc = -1;
@@ -360,7 +383,7 @@ extract_lwjinfo (flux_lwj_t *j)
         j->req->ncores = reqtasks;
         flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqtasks);
         free(key);
-        j->rdl = NULL;
+        j->resrc_trees = NULL;
         j->reserve = false;    /* for now */
         rc = 0;
     }
@@ -385,8 +408,7 @@ issue_lwj_event (lwj_event_e e, flux_lwj_t *j)
         goto ret;
     }
     if (signal_event () == -1) {
-        flux_log (h, LOG_ERR,
-                  "signaling an event failed");
+        flux_log (h, LOG_ERR, "job event signal failed");
         goto ret;
     }
 
@@ -402,18 +424,17 @@ ret:
 
 
 /*
- * Update the resource and job records to reflect the allocation.
+ * Update the job records to reflect the allocation.
  */
-static int
-update_records (flux_lwj_t *job)
+static int update_job_records (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
 {
     int rc = -1;
 
     if (update_job_state (job, j_allocated)) {
         flux_log (h, LOG_ERR, "update_job failed to update job %ld to %s",
                   job->lwj_id, stab_rlookup (jobstate_tab, j_allocated));
-    } else if ((*allocate_resources) (h, resource, job)) {
-        flux_log (h, LOG_ERR, "failed to allocate resources for job %ld",
+    } else if (update_job_resources (job, resrc_trees)) {
+        flux_log (h, LOG_ERR, "failed to save resources for job %ld",
                   job->lwj_id);
     } else if (kvs_commit (h) < 0) {
         flux_log (h, LOG_ERR, "kvs_commit error!");
@@ -428,46 +449,90 @@ update_records (flux_lwj_t *job)
  * schedule_job() searches through all of the idle resources to
  * satisfy a job's requirements.  If enough resources are found, it
  * proceeds to allocate those resources and update the kvs's lwj entry
- * in preparation for job execution.
+ * in preparation for job execution.  If less resources
+ * are found than the job requires, and if the job asks to reserve
+ * resources, then those resources will be reserved.
  */
-int schedule_job (struct rdl *rdl, const char *uri, flux_lwj_t *job)
+int schedule_job (flux_lwj_t *job)
 {
-    bool reserve = false;
+    JSON child_core = NULL;
+    JSON req_res = NULL;
     int rc = -1;
-    //struct rdl_accumulator *a = NULL;
-    struct resource *fr = NULL;         /* found resource */
-    struct rdl *frdl = NULL;            /* found rdl */
+    int64_t nnodes = 0;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
 
-    if ((frdl = (*find_resources) (h, rdl, uri, job, &reserve))) {
-        if ((fr = rdl_resource_get (frdl, uri))) {
-            //a = rdl_accumulator_create (rdl);
-            if (!select_resources (h, rdl, uri, fr, job, reserve)) {
+    /*
+     * Require at least one task per node, and
+     * Assume (for now) one task per core.
+     */
+    if (job->req->ncores < job->req->nnodes)
+        job->req->ncores = job->req->nnodes;
+    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
+        job->req->nnodes;
+
+    child_core = Jnew ();
+    Jadd_str (child_core, "type", "core");
+    Jadd_int (child_core, "req_qty", job->req->corespernode);
+
+    req_res = Jnew ();
+    Jadd_str (req_res, "type", "node");
+    Jadd_int (req_res, "req_qty", job->req->nnodes);
+    json_object_object_add (req_res, "req_child", child_core);
+
+    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
+    Jput (req_res);
+    if (!resrc_reqst)
+        goto ret;
+
+    if ((found_trees = (find_resources) (h, resrcs, resrc_reqst))) {
+        nnodes = resrc_tree_list_size (found_trees);
+        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",
+                  nnodes, job->lwj_id, job->req->nnodes);
+        if ((nnodes < job->req->nnodes) && !job->reserve)
+            goto ret;
+
+        if ((selected_trees = (select_resources) (h, found_trees,
+                                                  resrc_reqst))) {
+            nnodes = resrc_tree_list_size (selected_trees);
+            if (nnodes == job->req->nnodes) {
+                resrc_tree_list_allocate (selected_trees, job->lwj_id);
                 /* Transition the job back to submitted to prevent the
                  * scheduler from trying to schedule it again */
                 job->state = j_submitted;
-                rc = update_records (job);
+                rc = update_job_records (job, selected_trees);
+                flux_log (h, LOG_DEBUG,
+                          "%ld nodes selected for lwj.%ld, reqrd: %ld",
+                          nnodes, job->lwj_id, job->req->nnodes);
+            } else if (job->reserve) {
+                resrc_tree_list_reserve (selected_trees, job->lwj_id);
+                flux_log (h, LOG_DEBUG,
+                          "%ld nodes reserved for lwj.%ld's reqrd %ld",
+                          nnodes, job->lwj_id, job->req->nnodes);
             }
-        } else {
-            flux_log (h, LOG_ERR, "failed to get found resource for job %ld",
-                      job->lwj_id);
         }
-        rdl_destroy (frdl);
     }
+ret:
+    if (resrc_reqst)
+        resrc_reqst_destroy (resrc_reqst);
+    if (found_trees)
+        resrc_tree_list_destroy (found_trees);
 
     return rc;
 }
 
-int schedule_jobs (struct rdl *rdl, const char *uri, zlist_t *jobs)
+int schedule_jobs (zlist_t *jobs)
 {
     flux_lwj_t *job = NULL;
     int rc = 0;
 
-    job = zlist_first (jobs);
+    job = (flux_lwj_t*)zlist_first (jobs);
     while (!rc && job) {
         if (job->state == j_unsched) {
-            rc = schedule_job (rdl, uri, job);
+            rc = schedule_job (job);
         }
-        job = zlist_next (jobs);
+        job = (flux_lwj_t*)zlist_next (jobs);
     }
 
     return rc;
@@ -525,8 +590,7 @@ issue_res_event (flux_lwj_t *lwj)
         goto ret;
     }
     if (signal_event () == -1) {
-        flux_log (h, LOG_ERR,
-                  "signal the event-enqueued event ");
+        flux_log (h, LOG_ERR, "resource event signal failed");
         rc = -1;
         goto ret;
     }
@@ -546,6 +610,7 @@ move_to_r_queue (flux_lwj_t *lwj)
 static int
 action_j_event (flux_event_t *e)
 {
+    int rc = 0;
     /* e->lwj->state is the current state
      * e->ev.je      is the new state
      */
@@ -575,7 +640,7 @@ action_j_event (flux_event_t *e)
         flux_log (h, LOG_DEBUG, "setting %ld to unscheduled state",
                   e->lwj->lwj_id);
         e->lwj->state = j_unsched;
-        schedule_jobs (rdl, resource, p_queue);
+        schedule_jobs (p_queue);
         break;
 
     case j_submitted:
@@ -623,8 +688,13 @@ action_j_event (flux_event_t *e)
             goto bad_transition;
         }
         /* TODO move this to j_complete case once reaped is implemented */
-        zlist_remove (r_queue, e->lwj);
+        if ((rc = resrc_tree_list_release (e->lwj->resrc_trees,
+                                           e->lwj->lwj_id))) {
+            flux_log (h, LOG_ERR, "failed to release resources for job %ld",
+                      e->lwj->lwj_id);
+        }
         issue_res_event (e->lwj);
+        zlist_remove (r_queue, e->lwj);
         break;
 
     case j_cancelled:
@@ -652,7 +722,7 @@ action_j_event (flux_event_t *e)
         break;
     }
 
-    return 0;
+    return rc;
 
 bad_transition:
     flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
@@ -668,9 +738,7 @@ action_r_event (flux_event_t *e)
     int rc = -1;
 
     if ((e->ev.re == r_released) || (e->ev.re == r_attempt)) {
-        (*release_resources) (h, rdl, resource, e->lwj);
-        schedule_jobs (rdl, resource, p_queue);
-        rc = 0;
+        rc = schedule_jobs (p_queue);
     }
 
     return rc;
@@ -860,39 +928,39 @@ event_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 int mod_main (flux_t p, zhash_t *args)
 {
     char *path;
+    char* resource = NULL;
     char *schedplugin = "sched.plugin1";
     char *searchpath = getenv ("FLUX_MODULE_PATH");
     int rc = 0;
-    struct rdllib *l = NULL;
-    struct resource *r = NULL;
-    void *dso;
+    void *dso = NULL;
 
     h = p;
     if (flux_rank (h) != 0) {
         flux_log (h, LOG_ERR, "sched module must only run on rank 0");
         rc = -1;
-        goto ret;
+        goto ret1;
     }
+
     flux_log (h, LOG_INFO, "sched comms module starting");
 
     if (!searchpath) {
 //        searchpath = MODULE_PATH;
         flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
         rc = -1;
-        goto ret;
+        goto ret1;
     }
 
     if (!(path = flux_modfind (searchpath, schedplugin))) {
         flux_log (h, LOG_ERR, "%s: not found in module search path %s",
                   schedplugin, searchpath);
         rc = -1;
-        goto ret;
+        goto ret1;
     }
 
     if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
         flux_log (h, LOG_ERR, "failed to open sched plugin: %s", dlerror ());
         rc = -1;
-        goto ret;
+        goto ret1;
     } else {
         flux_log (h, LOG_DEBUG, "loaded: %s", schedplugin);
     }
@@ -901,53 +969,28 @@ int mod_main (flux_t p, zhash_t *args)
         flux_log (h, LOG_ERR, "failed to load find_resources symbol: %s",
                   dlerror ());
         rc = -1;
-        goto ret;
+        goto ret2;
     }
     if (!(select_resources = dlsym (dso, "select_resources")) ||
         !*select_resources) {
         flux_log (h, LOG_ERR, "failed to load select_resources symbol: %s",
                   dlerror ());
         rc = -1;
-        goto ret;
-    }
-    if (!(allocate_resources = dlsym (dso, "allocate_resources")) ||
-        !*allocate_resources) {
-        flux_log (h, LOG_ERR, "failed to load allocate_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
-    }
-    if (!(release_resources = dlsym (dso, "release_resources")) ||
-        !*release_resources) {
-        flux_log (h, LOG_ERR, "failed to load release_resources symbol: %s",
-                  dlerror ());
-        rc = -1;
-        goto ret;
+        goto ret2;
     }
 
     if (!(path = zhash_lookup (args, "rdl-conf"))) {
         flux_log (h, LOG_ERR, "rdl-conf argument is not set");
         rc = -1;
-        goto ret;
-    }
-    setup_rdl_lua ();
-    if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
-        flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
-                  path, strerror (errno));
-        rc = -1;
-        goto ret;
+        goto ret2;
     }
     if (!(resource = zhash_lookup (args, "rdl-resource"))) {
         flux_log (h, LOG_INFO, "using default rdl resource");
         resource = "default";
     }
 
-    if (!(r = rdl_resource_get (rdl, resource))) {
-        flux_log (h, LOG_ERR, "failed to get %s: %s", resource,
-                  strerror (errno));
-        rc = -1;
-        goto ret;
-    }
+    if (!(resrcs = resrc_generate_resources (path, resource)))
+        goto ret2;
 
     p_queue = zlist_new ();
     r_queue = zlist_new ();
@@ -957,14 +1000,14 @@ int mod_main (flux_t p, zhash_t *args)
                   "init for queues failed: %s",
                   strerror (errno));
         rc = -1;
-        goto ret;
+        goto ret3;
     }
     if (flux_event_subscribe (h, "sched.event") < 0) {
         flux_log (h, LOG_ERR,
                   "subscribing to event: %s",
                   strerror (errno));
         rc = -1;
-        goto ret;
+        goto ret3;
     }
     if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.event",
                              event_cb, NULL) < 0) {
@@ -972,7 +1015,7 @@ int mod_main (flux_t p, zhash_t *args)
                   "register event handling callback: %s",
                   strerror (errno));
         rc = -1;
-        goto ret;
+        goto ret3;
     }
     if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
         flux_log (h, LOG_ERR,
@@ -980,24 +1023,24 @@ int mod_main (flux_t p, zhash_t *args)
                   "callback: %s",
                   strerror (errno));
         rc = -1;
-        goto ret;
+        goto ret3;
     }
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR,
                   "flux_reactor_start: %s",
                   strerror (errno));
         rc =  -1;
-        goto ret;
+        goto ret3;
     }
 
+ret3:
     zlist_destroy (&p_queue);
     zlist_destroy (&r_queue);
     zlist_destroy (&ev_queue);
-
-    rdllib_close(l);
+    resrc_destroy_resources(&resrcs);
+ret2:
     dlclose (dso);
-
-ret:
+ret1:
     return rc;
 }
 

@@ -39,368 +39,225 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/jsonutil.h"
-#include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/log.h"
-#include "rdl.h"
-#include "scheduler.h"
+#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/xzmalloc.h"
+#include "resrc.h"
+#include "resrc_tree.h"
+#include "schedsrv.h"
 
-static const char* CORETYPE = "core";
+//TODO: this plugin inherently must know the inner structure of the opaque
+//types, something we need to think about
+typedef struct zhash_t resources;
+
+static bool select_children (flux_t h, resrc_tree_list_t *found_children,
+                             resrc_reqst_list_t *reqst_children,
+                             resrc_tree_t *parent_tree);
 
 /*
- * find_resources() identifies the all of the resource candidates for the
- * job.  The set of resources returned could be more than the job
+ * find_resources() identifies the all of the resource candidates for
+ * the job.  The set of resources returned could be more than the job
  * requires.  A later call to select_resources() will cull this list
- * down to the most appropriate set for the job.  If less resources
- * are found than the job requires, and if the job asks to reserve
- * resources, then *preserve will be set to true.
+ * down to the most appropriate set for the job.
  *
- * Inputs:  the complete rdl and the job
- * Returns: pointer to the found resources or NULL if no (or not enough)
- *          resources were found
- * Other Outputs: whether the returned resources are to be reserved.
+ * Inputs:  resrcs - hash table of all resources
+ *          resrc_reqst - the resources the job requests
+ * Returns: a list of resource trees satisfying the job's request,
+ *                   or NULL if none (or not enough) are found
  */
-struct rdl *find_resources (flux_t h, struct rdl *rdl, const char *uri,
-                         flux_lwj_t *job, bool *preserve)
+resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
+                                   resrc_reqst_t *resrc_reqst)
 {
-    int32_t cores;
-    json_object *args = util_json_object_new_object ();
-    json_object *o;
-    struct resource *r = NULL;
-    struct rdl *frdl = NULL;            /* found rdl */
-    bool found = false;
+    int64_t nfound = 0;
+    resrc_t *resrc = NULL;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_t *resrc_tree = NULL;
 
-    if (!job || !rdl || !uri) {
+    if (!resrcs || !resrc_reqst) {
         flux_log (h, LOG_ERR, "find_resources invalid arguments");
         goto ret;
     }
 
-    util_json_object_add_string (args, "type", "core");
-    util_json_object_add_boolean (args, "available", true);
-    frdl = rdl_find (rdl, args);
+    resrc = zhash_lookup ((zhash_t *)resrcs, "head");
+    if (resrc) {
+        resrc_tree = resrc_phys_tree (resrc);
+    } else {
+        printf ("Failed to find head resource\n");
+        goto ret;
+    }
 
-    if (frdl) {
-        if ((r = rdl_resource_get (frdl, uri)) == NULL) {
-            flux_log (h, LOG_INFO, "no resources available for job %ld",
-                      job->lwj_id);
-            goto ret;
-        }
+    found_trees = resrc_tree_new_list ();
+    if (!found_trees) {
+        flux_log (h, LOG_ERR, "find_resources new tree list failed");
+        goto ret;
+    }
 
-        o = rdl_resource_aggregate_json (r);
-        if (o) {
-            if (util_json_object_get_int (o, "core", &cores)) {
-                flux_log (h, LOG_ERR, "find_resources failed to get cores: %s",
-                          strerror (errno));
-                goto ret;
-            } else if (cores >= job->req->ncores) {
-                *preserve = false;
-                flux_log (h, LOG_DEBUG, "%d cores found for lwj.%ld req: %d",
-                          cores, job->lwj_id, job->req->ncores);
-                found = true;
-            } else if (cores && job->reserve) {
-                *preserve = true;
-                flux_log (h, LOG_DEBUG, "%d cores reserved for lwj.%ld's req %d",
-                          cores, job->lwj_id, job->req->ncores);
-                found = true;
-            }
-            json_object_put (o);
-        }
+    nfound = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
+                               found_trees, true);
+
+    if (!nfound) {
+        resrc_tree_list_destroy (found_trees);
+        found_trees = NULL;
     }
 ret:
-    if (!found) {
-        rdl_destroy (frdl);
-        frdl = NULL;
-    }
-
-    return frdl;
+    return found_trees;
 }
 
-/*
- * select_resource implements the resource selection policy of this
- * plugin.  It establishes the criteria for what constitutes the best
- * resource for the job.  select_resource is recursive, visiting each
- * member of the hierarchy in child-first order.
- *
- * Each resource selected for the job is tagged with the job's ID.  If
- * reserve is reqested, a "reserve" tag is also assigned.
- */
-static bool select_resource (flux_t h, struct rdl *rdl, const char *resrc,
-                             struct resource *fr, struct rdl_accumulator *a,
-                             flux_lwj_t *job, flux_res_t *preq,
-                             flux_res_t *palloc, bool reserve)
+static bool select_child (flux_t h, resrc_tree_list_t *found_children,
+                          resrc_reqst_t *child_reqst,
+                          resrc_tree_t *parent_tree)
 {
-    char *lwjtag = NULL;
-    char *uri = NULL;
-    const char *type = NULL;
-    json_object *o = NULL;
-    struct resource *c;
-    struct resource *r;
-    bool found = false;
+    resrc_tree_t *resrc_tree = NULL;
+    resrc_tree_t *child_tree = NULL;
+    bool selected = false;
 
-    asprintf (&uri, "%s:%s", resrc, rdl_resource_path (fr));
-    r = rdl_resource_get (rdl, uri);
-    free (uri);
-
-    if (rdl_resource_available (r)) {
-        o = rdl_resource_json (r);
-        Jget_str (o, "type", &type);
-        if (reserve)
-            asprintf (&lwjtag, "reserve.lwj.%ld", job->lwj_id);
-        else
-            asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
-        if (preq->nnodes && (strcmp (type, "node") == 0)) {
-            preq->nnodes--;
-            palloc->nnodes++;
-        } else if (preq->ncores && (strcmp (type, CORETYPE) == 0) &&
-                   (preq->ncores > preq->nnodes)) {
-            /* The (preq->ncores > preq->nnodes) requirement
-             * guarantees at least one core per node. */
-            rdl_resource_tag (r, lwjtag);
-            rdl_accumulator_add (a, r);
-            if (!rdl_resource_alloc (r, 1)) {
-                preq->ncores--;
-                palloc->ncores++;
-                flux_log (h, LOG_DEBUG, "selected core: %s",
-                          json_object_to_json_string (o));
+    resrc_tree = resrc_tree_list_first (found_children);
+    while (resrc_tree) {
+        selected = false;
+        if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
+                                  resrc_reqst_resrc (child_reqst), true)) {
+            if (resrc_reqst_num_children (child_reqst)) {
+                if (resrc_tree_num_children (resrc_tree)) {
+                    child_tree = resrc_tree_new (parent_tree,
+                                                 resrc_tree_resrc (resrc_tree));
+                    if (select_children (h, resrc_tree_children (resrc_tree),
+                                         resrc_reqst_children (child_reqst),
+                                         child_tree)) {
+                        resrc_reqst_add_found (child_reqst, 1);
+                        selected = true;
+                        if (resrc_reqst_nfound (child_reqst) >=
+                            resrc_reqst_reqrd (child_reqst))
+                            goto ret;
+                    } else {
+                        resrc_tree_destroy (child_tree);
+                    }
+                }
             } else {
-                flux_log (h, LOG_ERR, "failed to select %s",
-                          json_object_to_json_string (o));
+                (void) resrc_tree_new (parent_tree,
+                                       resrc_tree_resrc (resrc_tree));
+                resrc_reqst_add_found (child_reqst, 1);
+                selected = true;
+                if (resrc_reqst_nfound (child_reqst) >=
+                    resrc_reqst_reqrd (child_reqst))
+                    goto ret;
             }
         }
-        free (lwjtag);
-        json_object_put (o);
-
-        found = !(preq->nnodes || preq->ncores);
-
-        while (!found && (c = rdl_resource_next_child (fr))) {
-            found = select_resource (h, rdl, resrc, c, a, job, preq, palloc,
-                                     reserve);
-            rdl_resource_destroy (c);
+        /*
+         * The following clause allows the resource request to be
+         * sparsely defined.  E.g., it might only stipulate a node
+         * with 4 cores and omit the intervening socket.
+         */
+        if (!selected) {
+            if (resrc_tree_num_children (resrc_tree)) {
+                child_tree = resrc_tree_new (parent_tree,
+                                             resrc_tree_resrc (resrc_tree));
+                if (select_child (h, resrc_tree_children (resrc_tree),
+                                  child_reqst, child_tree)) {
+                    selected = true;
+                    if (resrc_reqst_nfound (child_reqst) >=
+                        resrc_reqst_reqrd (child_reqst))
+                        goto ret;
+                } else {
+                    resrc_tree_destroy (child_tree);
+                }
+            }
         }
+        resrc_tree = resrc_tree_list_next (found_children);
+    }
+ret:
+    return selected;
+}
+
+
+static bool select_children (flux_t h, resrc_tree_list_t *found_children,
+                                 resrc_reqst_list_t *reqst_children,
+                                 resrc_tree_t *parent_tree)
+{
+    resrc_reqst_t *child_reqst = resrc_reqst_list_first (reqst_children);
+    bool selected = false;
+
+    while (child_reqst) {
+        resrc_reqst_clear_found (child_reqst);
+        selected = false;
+
+        if (select_child (h, found_children, child_reqst, parent_tree) &&
+            (resrc_reqst_nfound (child_reqst) >=
+             resrc_reqst_reqrd (child_reqst)))
+            selected = true;
+
+        if (!selected)
+            break;
+
+        child_reqst = resrc_reqst_list_next (reqst_children);
     }
 
-    return found;
+    return selected;
 }
 
 /*
  * select_resources() selects from the set of resource candidates the
  * best resources for the job.  If reserve is set, whatever resources
- * are selected with be reserved for the job and removed from
+ * are selected will be reserved for the job and removed from
  * consideration as candidates for other jobs.
  *
- * Inputs:  the complete rdl, the root of the found resources, and the job
- * Returns: 0 on success
+ * Inputs:  found_trees - list of resource tree candidates
+ *          resrc_reqst - the resources the job requests
+ * Returns: a list of selected resource trees, or null if none (or not enough)
+ *          are selected
  */
-int select_resources (flux_t h, struct rdl *rdl, const char *uri,
-                      struct resource *fr, flux_lwj_t *job, bool reserve)
+resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
+                                     resrc_reqst_t *resrc_reqst)
 {
-    int rc = -1;
-    struct rdl_accumulator *a = NULL;
-    flux_res_t alloc;
-    flux_res_t req;
+    int64_t reqrd;
+    resrc_t *resrc;
+    resrc_tree_list_t *selected_res = NULL;
+    resrc_tree_t *new_tree = NULL;
+    resrc_tree_t *rt;
 
-    req.nnodes = job->req->nnodes;
-    req.ncores = job->req->ncores;
-    alloc.nnodes = 0;
-    alloc.ncores = 0;
-
-    a = rdl_accumulator_create (rdl);
-    if (select_resource (h, rdl, uri, fr, a, job, &req, &alloc, reserve)) {
-        job->rdl = rdl_accumulator_copy (a);
-        rc = 0;
+    if (!resrc_reqst) {
+        flux_log (h, LOG_ERR, "select_resources called with empty request");
+        return NULL;
     }
 
-    return rc;
-}
+    reqrd = resrc_reqst_reqrd (resrc_reqst);
+    selected_res = resrc_tree_new_list ();
 
-/*
- * Recursively search the resource r and update this job's lwj key
- * with the core count per rank (i.e., node for the time being)
- */
-static int update_job_cores (flux_t h, struct resource *jr, flux_lwj_t *job,
-                             uint64_t *pnode, uint32_t *pcores)
-{
-    bool imanode = false;
-    char *key = NULL;
-    char *lwjtag = NULL;
-    const char *type = NULL;
-    json_object *o = NULL;
-    json_object *o2 = NULL;
-    json_object *o3 = NULL;
-    struct resource *c;
-    int rc = 0;
-
-    if (jr) {
-        o = rdl_resource_json (jr);
-        if (o) {
-            flux_log (h, LOG_DEBUG, "considering: %s",
-                      json_object_to_json_string (o));
-        } else {
-            flux_log (h, LOG_ERR, "update_job_cores invalid resource");
-            rc = -1;
-            goto ret;
+    rt = resrc_tree_list_first (found_trees);
+    while (reqrd && rt) {
+        resrc = resrc_tree_resrc (rt);
+        if (resrc_match_resource (resrc, resrc_reqst_resrc (resrc_reqst),
+                                  true)) {
+            new_tree = resrc_tree_new (NULL, resrc);
+            if (resrc_reqst_num_children (resrc_reqst)) {
+                if (resrc_tree_num_children (rt)) {
+                    if (select_children (h, resrc_tree_children (rt),
+                                         resrc_reqst_children (resrc_reqst),
+                                         new_tree)) {
+                        resrc_tree_list_append (selected_res, new_tree);
+                        flux_log (h, LOG_DEBUG, "selected1 %s",
+                                  resrc_name (resrc));
+                        reqrd--;
+                    } else {
+                        resrc_tree_destroy (new_tree);
+                    }
+                }
+            } else {
+                resrc_tree_list_append (selected_res, new_tree);
+                flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
+                reqrd--;
+            }
         }
-    } else {
-        flux_log (h, LOG_ERR, "update_job_cores passed a null resource");
-        rc = -1;
-        goto ret;
+        rt = resrc_tree_list_next (found_trees);
     }
 
-    Jget_str (o, "type", &type);
-    if (strcmp (type, "node") == 0) {
-        *pcores = 0;
-        imanode = true;
-    } else if (strcmp (type, CORETYPE) == 0) {
-        /* we need to limit our allocation to just the tagged cores */
-        asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
-        Jget_obj (o, "tags", &o2);
-        Jget_obj (o2, lwjtag, &o3);
-        if (o3) {
-            (*pcores)++;
-        }
-        free (lwjtag);
-    }
-    json_object_put (o);
-
-    while ((rc == 0) && (c = rdl_resource_next_child (jr))) {
-        rc = update_job_cores (h, c, job, pnode, pcores);
-        rdl_resource_destroy (c);
+    /* If we did not select all that was required and the selected
+     * resource list is empty, destroy the list. */
+    if (reqrd && !resrc_tree_list_size (selected_res)) {
+        zlist_destroy ((zlist_t **) &selected_res);
+        selected_res = NULL;
     }
 
-    if (imanode) {
-        if (asprintf (&key, "lwj.%ld.rank.%ld.cores", job->lwj_id,
-                      *pnode) < 0) {
-            flux_log (h, LOG_ERR, "update_job_cores key create failed");
-            rc = -1;
-            goto ret;
-        } else if (kvs_put_int64 (h, key, *pcores) < 0) {
-            flux_log (h, LOG_ERR, "update_job_cores %ld node failed: %s",
-                      job->lwj_id, strerror (errno));
-            rc = -1;
-            goto ret;
-        }
-        free (key);
-        (*pnode)++;
-    }
-
-ret:
-    return rc;
-}
-
-/*
- * allocate_resources() updates job and resource records in the
- * kvs to reflect the resources' allocation to the job.
- *
- * This plugin creates lwj entries that tell wrexecd how many tasks to
- * launch per node.
- *
- * The key has the form:  lwj.<jobID>.rank.<nodeID>.cores
- * The value will be the number of tasks to launch on that node.
- *
- * Inputs:  uri of the resource and job
- * Returns: 0 on success
- */
-int allocate_resources (flux_t h, const char *uri, flux_lwj_t *job)
-{
-    char *key = NULL;
-    char *rdlstr = NULL;
-    uint64_t node = 0;
-    uint32_t cores = 0;
-    struct resource *jr = rdl_resource_get (job->rdl, uri);
-    int rc = -1;
-
-    if (jr)
-        rc = update_job_cores (h, jr, job, &node, &cores);
-    else
-        flux_log (h, LOG_ERR, "allocate_resources passed a null resource");
-
-    if (rc == 0) {
-        rc = -1;
-        rdlstr = rdl_serialize (job->rdl);
-        if (!rdlstr) {
-            flux_log (h, LOG_ERR, "%ld rdl_serialize failed: %s",
-                      job->lwj_id, strerror (errno));
-        } else if (asprintf (&key, "lwj.%ld.rdl", job->lwj_id) < 0) {
-            flux_log (h, LOG_ERR, "allocate_resources key create failed");
-        } else if (kvs_put_string (h, key, rdlstr) < 0) {
-            flux_log (h, LOG_ERR, "allocate_resources %ld rdl write failed: %s",
-                      job->lwj_id, strerror (errno));
-        } else {
-            rc = 0;
-        }
-    }
-    free (key);
-    free (rdlstr);
-
-    return rc;
-}
-
-/*
- * Recursively search the job's resource r and:
- * - remove its lwj tag and
- * - free the resource of this job
- *
- * Returns: 0 on success
- */
-static int release_lwj_resource (flux_t h, struct rdl *rdl, const char *resrc,
-                                 struct resource *jr, int64_t lwj_id)
-{
-    char *lwjtag = NULL;
-    char *uri = NULL;
-    const char *type = NULL;
-    int rc = 0;
-    json_object *o = NULL;
-    struct resource *c;
-    struct resource *r;
-
-    asprintf (&uri, "%s:%s", resrc, rdl_resource_path (jr));
-    r = rdl_resource_get (rdl, uri);
-
-    if (r) {
-        o = rdl_resource_json (r);
-        Jget_str (o, "type", &type);
-        if (strcmp (type, CORETYPE) == 0) {
-            asprintf (&lwjtag, "lwj.%ld", lwj_id);
-            rdl_resource_delete_tag (r, lwjtag);
-            rdl_resource_free (r, 1);
-            flux_log (h, LOG_DEBUG, "%s released: %ld now available",
-                      rdl_resource_path (r), rdl_resource_available (r));
-            free (lwjtag);
-        }
-        json_object_put (o);
-
-        while (!rc && (c = rdl_resource_next_child (jr))) {
-            rc = release_lwj_resource (h, rdl, resrc, c, lwj_id);
-            rdl_resource_destroy (c);
-        }
-    } else {
-        flux_log (h, LOG_ERR, "release_lwj_resource failed to get %s", uri);
-        rc = -1;
-    }
-    free (uri);
-
-    return rc;
-}
-
-/*
- * release_resources() visits all the resources allocated to a job,
- * and releases the job's claim on them.  This is mostly a bookkeeping
- * exercise whereby the lwj tag is removed and the associated
- * "allocated" values are decremented accordingly.
- */
-int release_resources (flux_t h, struct rdl *rdl, const char *uri,
-                       flux_lwj_t *job)
-{
-    int rc = -1;
-    struct resource *jr = rdl_resource_get (job->rdl, uri);
-
-    if (jr) {
-        rc = release_lwj_resource (h, rdl, uri, jr, job->lwj_id);
-    } else {
-        flux_log (h, LOG_ERR, "release_resources failed to get resources: %s",
-                  strerror (errno));
-    }
-
-    return rc;
+    return (resrc_tree_list_t*)selected_res;
 }
 
 MOD_NAME ("sched.plugin1");
