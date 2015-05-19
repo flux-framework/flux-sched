@@ -189,18 +189,20 @@ static int
 signal_event ( )
 {
     int rc = 0;
-	if (in_sim && sim_state != NULL){
-		queue_timer_change (module_name);
-		//send_reply_request (h, sim_state);
-		goto ret;
-	}
-    else if (flux_event_send (h, NULL, "sim_sched.event") < 0) {
-        flux_log (h, LOG_ERR,
-                 "flux_event_send: %s", strerror (errno));
-        rc = -1;
+    zmsg_t *zmsg = NULL;
+
+    if (in_sim && sim_state != NULL) {
+        queue_timer_change (module_name);
+        //send_reply_request (h, sim_state);
         goto ret;
+    } else if (!(zmsg = flux_event_encode ("sim_sched.event", NULL))
+             || flux_event_send (h, &zmsg) < 0) {
+        flux_log (h, LOG_ERR,
+                  "flux_event_send: %s", strerror (errno));
+        rc = -1;
     }
 
+    zmsg_destroy (&zmsg);
 ret:
     return rc;
 }
@@ -794,6 +796,7 @@ request_run (flux_lwj_t *job)
 {
     int rc = -1;
     char *topic = NULL;
+    zmsg_t *zmsg = NULL;
 
     if (update_job_state (job, j_runrequest) < 0) {
         flux_log (h, LOG_ERR, "request_run failed to update job %ld to %s",
@@ -805,7 +808,9 @@ request_run (flux_lwj_t *job)
         goto done;
     }
     if (!in_sim) {
-        if (flux_event_send (h, NULL, "rexec.run.%ld", job->lwj_id) < 0) {
+        topic = xasprintf ("rexec.run.%ld", job->lwj_id);
+        if (!(zmsg = flux_event_encode (topic, NULL))
+            || flux_event_send (h, &zmsg) < 0) {
             flux_log (h, LOG_ERR, "request_run event send failed: %s",
                       strerror (errno));
             goto done;
@@ -813,7 +818,7 @@ request_run (flux_lwj_t *job)
     } else {
         topic = xasprintf ("sim_exec.run.%ld", job->lwj_id);
         if (flux_json_request (h, FLUX_NODEID_ANY,
-                                  FLUX_MATCHTAG_NONE, topic, NULL) < 0) {
+                               FLUX_MATCHTAG_NONE, topic, NULL) < 0) {
             flux_log (h, LOG_ERR, "request_run request send failed: %s",
                       strerror (errno));
             goto done;
@@ -824,6 +829,8 @@ request_run (flux_lwj_t *job)
 done:
     if (topic)
         free (topic);
+
+    zmsg_destroy (&zmsg);
     return rc;
 }
 

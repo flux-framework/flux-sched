@@ -406,7 +406,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON o = NULL;
-	char *tag = NULL;
+	const char *tag;
 	ctx_t *ctx = (ctx_t *) arg;
 	int *jobid = (int *) malloc (sizeof (int));
 
@@ -414,8 +414,6 @@ static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 			|| flux_json_request_decode (*zmsg, &o) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
-		if (tag)
-			free (tag);
 		return -1;
 	}
 
@@ -428,8 +426,6 @@ static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	flux_log(h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 
 //Cleanup
-	if (tag)
-		free (tag);
 	Jput (o);
 	zmsg_destroy (zmsg);
 	return 0;

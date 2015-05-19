@@ -91,10 +91,12 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 int send_start_event(flux_t h)
 {
 	JSON o = Jnew();
+	zmsg_t *zmsg = NULL;
 	Jadd_str (o, "mod_name", "sim");
 	Jadd_int (o, "rank", flux_rank(h));
 	Jadd_int (o, "sim_time", 0);
-	if (flux_event_send (h, o, "%s", "sim.start") < 0){
+	if (!(zmsg = flux_event_encode ("sim.start", Jtostr (o)))
+            || flux_event_send (h, &zmsg) < 0){
 		Jput(o);
 		return -1;
 	}

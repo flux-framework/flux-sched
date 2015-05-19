@@ -103,15 +103,16 @@ static int
 signal_event ( )
 {
     int rc = 0;
+    zmsg_t *zmsg = NULL;
 
-    if (flux_event_send (h, NULL, "sched.event") < 0) {
-        flux_log (h, LOG_ERR,
-                 "flux_event_send: %s", strerror (errno));
+    if (!(zmsg = flux_event_encode ("sched.event", NULL))
+        || flux_event_send (h, &zmsg) < 0) {
+        flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                  __FUNCTION__, strerror (errno));
         rc = -1;
-        goto ret;
     }
 
-ret:
+    zmsg_destroy (&zmsg);
     return rc;
 }
 
@@ -549,20 +550,29 @@ static int
 request_run (flux_lwj_t *job)
 {
     int rc = -1;
+    zmsg_t *zmsg = NULL;
 
     if (update_job_state (job, j_runrequest) < 0) {
         flux_log (h, LOG_ERR, "request_run failed to update job %ld to %s",
                   job->lwj_id, stab_rlookup (jobstate_tab, j_runrequest));
     } else if (kvs_commit (h) < 0) {
         flux_log (h, LOG_ERR, "kvs_commit error!");
-    } else if (flux_event_send (h, NULL, "wrexec.run.%ld", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "request_run event send failed: %s",
-                  strerror (errno));
     } else {
-        flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
-        rc = 0;
+        char *topic;
+
+        asprintf (&topic, "wrexec.run.%ld", job->lwj_id);
+        if (!(zmsg = flux_event_encode (topic, NULL))
+            || flux_event_send (h, &zmsg) < 0) {
+            flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                      __FUNCTION__, strerror (errno));
+        } else {
+            flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+            rc = 0;
+        }
+        free (topic);
     }
 
+    zmsg_destroy (&zmsg);
     return rc;
 }
 
