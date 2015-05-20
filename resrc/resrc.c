@@ -467,7 +467,7 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
     resrc_pool_t *r_pool;       /* resource pool */
     resrc_pool_t *s_pool;       /* sample pool */
 
-    if (!strncmp (resrc->type, sample->type, sizeof (sample->type))) {
+    if (!strcmp (resrc->type, sample->type)) {
         if (zhash_size (sample->tags)) {
             if (!zhash_size (resrc->tags)) {
                 goto ret;
