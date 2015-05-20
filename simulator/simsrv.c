@@ -98,9 +98,11 @@ int send_start_event(flux_t h)
 	if (!(zmsg = flux_event_encode ("sim.start", Jtostr (o)))
             || flux_event_send (h, &zmsg) < 0){
 		Jput(o);
+		zmsg_destroy (&zmsg);
 		return -1;
 	}
 	Jput(o);
+	zmsg_destroy (&zmsg);
 	return 0;
 }
 

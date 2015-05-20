@@ -560,9 +560,11 @@ request_run (flux_lwj_t *job)
     } else {
         char *topic;
 
-        asprintf (&topic, "wrexec.run.%ld", job->lwj_id);
-        if (!(zmsg = flux_event_encode (topic, NULL))
-            || flux_event_send (h, &zmsg) < 0) {
+        if (asprintf (&topic, "wrexec.run.%ld", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else if (!(zmsg = flux_event_encode (topic, NULL))
+                   || flux_event_send (h, &zmsg) < 0) {
             flux_log (h, LOG_ERR, "%s: error sending event: %s",
                       __FUNCTION__, strerror (errno));
         } else {
@@ -804,8 +806,10 @@ reg_lwj_state_hdlr (const char *path, KVSSetStringF *func)
     int rc = 0;
     char *k = NULL;
 
-    asprintf (&k, "%s.state", path);
-    if (kvs_watch_string (h, k, func, (void *)h) < 0) {
+    if (asprintf (&k, "%s.state", path) < 0) {
+        flux_log (h, LOG_ERR, "%s: lwj state create failed: %s",
+                  __FUNCTION__, strerror (errno));
+    } else if (kvs_watch_string (h, k, func, (void *)h) < 0) {
         flux_log (h, LOG_ERR,
                   "watch a lwj state in %s: %s.",
                   k, strerror (errno));
