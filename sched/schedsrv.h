@@ -81,7 +81,7 @@ typedef struct {
     lwj_state_e state;
     bool reserve;       /* reserve resources for job if true */
     flux_res_t *req;    /*!< resources requested by this LWJ */
-    resrc_tree_list_t *resrc_trees; /*!< resources allocated to this LWJ */
+    resrc_tree_list_t resrc_trees; /*!< resources allocated to this LWJ */
 } flux_lwj_t;
 
 

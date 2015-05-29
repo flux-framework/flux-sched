@@ -37,48 +37,48 @@ typedef struct zlist_t resrc_tree_list;
 typedef struct zlist_t resrc_reqst_list;
 
 struct resrc_tree {
-    resrc_tree_t *parent;
-    resrc_t *resrc;
+    resrc_tree_t parent;
+    resrc_t resrc;
     zlist_t *children;
 };
 
 struct resrc_reqst {
-    resrc_reqst_t *parent;
-    resrc_t *resrc;
+    resrc_reqst_t parent;
+    resrc_t resrc;
     int64_t reqrd;
     int64_t nfound;
     zlist_t *children;
 };
 
-static bool match_children (zlist_t * r_trees, zlist_t *req_trees,
-                            resrc_tree_t *parent_tree, bool available);
+static bool match_children (zlist_t *r_trees, zlist_t *req_trees,
+                            resrc_tree_t parent_tree, bool available);
 
 /***********************************************************************
  * Resource tree
  ***********************************************************************/
 
-resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree)
+resrc_t resrc_tree_resrc (resrc_tree_t resrc_tree)
 {
     if (resrc_tree)
-        return (resrc_t *)resrc_tree->resrc;
+        return (resrc_t)resrc_tree->resrc;
     return NULL;
 }
 
-size_t resrc_tree_num_children (resrc_tree_t *resrc_tree)
+size_t resrc_tree_num_children (resrc_tree_t resrc_tree)
 {
     if (resrc_tree)
         return zlist_size (resrc_tree->children);
     return -1;
 }
 
-resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
+resrc_tree_list_t resrc_tree_children (resrc_tree_t resrc_tree)
 {
     if (resrc_tree)
-        return (resrc_tree_list_t *)resrc_tree->children;
+        return (resrc_tree_list_t)resrc_tree->children;
     return NULL;
 }
 
-int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child)
+int resrc_tree_add_child (resrc_tree_t parent, resrc_tree_t child)
 {
     int rc = -1;
     if (parent)
@@ -87,9 +87,9 @@ int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child)
     return rc;
 }
 
-resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc)
+resrc_tree_t resrc_tree_new (resrc_tree_t parent, resrc_t resrc)
 {
-    resrc_tree_t *resrc_tree = xzmalloc (sizeof (resrc_tree_t));
+    resrc_tree_t resrc_tree = xzmalloc (sizeof (struct resrc_tree));
     if (resrc_tree) {
         resrc_tree->parent = parent;
         resrc_tree->resrc = resrc;
@@ -102,9 +102,9 @@ resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc)
     return resrc_tree;
 }
 
-resrc_tree_t* resrc_tree_copy (resrc_tree_t *resrc_tree)
+resrc_tree_t resrc_tree_copy (resrc_tree_t resrc_tree)
 {
-    resrc_tree_t *new_resrc_tree = xzmalloc (sizeof (resrc_tree_t));
+    resrc_tree_t new_resrc_tree = xzmalloc (sizeof (struct resrc_tree));
 
     if (new_resrc_tree) {
         new_resrc_tree->parent = resrc_tree->parent;
@@ -116,7 +116,7 @@ resrc_tree_t* resrc_tree_copy (resrc_tree_t *resrc_tree)
     return new_resrc_tree;
 }
 
-void resrc_tree_free (resrc_tree_t *resrc_tree)
+void resrc_tree_free (resrc_tree_t resrc_tree)
 {
     if (resrc_tree) {
         zlist_destroy (&resrc_tree->children);
@@ -124,9 +124,9 @@ void resrc_tree_free (resrc_tree_t *resrc_tree)
     }
 }
 
-void resrc_tree_destroy (resrc_tree_t *resrc_tree)
+void resrc_tree_destroy (resrc_tree_t resrc_tree)
 {
-    resrc_tree_t *child;
+    resrc_tree_t child;
 
     if (resrc_tree) {
         if (resrc_tree->parent)
@@ -143,9 +143,9 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree)
     }
 }
 
-void resrc_tree_print (resrc_tree_t *resrc_tree)
+void resrc_tree_print (resrc_tree_t resrc_tree)
 {
-    resrc_tree_t *child;
+    resrc_tree_t child;
 
     if (resrc_tree) {
         resrc_print_resource (resrc_tree->resrc);
@@ -159,7 +159,7 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
     }
 }
 
-int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
+int resrc_tree_serialize (JSON o, resrc_tree_t rt)
 {
     int rc = -1;
 
@@ -168,7 +168,7 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
         if (zlist_size (rt->children)) {
             JSON co = Jnew ();
             json_object_object_add (o, resrc_name (rt->resrc), co);
-            resrc_tree_t *child = zlist_first (rt->children);
+            resrc_tree_t child = zlist_first (rt->children);
             while (!rc && child) {
                 rc = resrc_tree_serialize (co, child);
                 child = zlist_next (rt->children);
@@ -180,13 +180,13 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *rt)
     return rc;
 }
 
-int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id)
+int resrc_tree_allocate (resrc_tree_t rt, int64_t job_id)
 {
     int rc = -1;
     if (rt) {
         rc = resrc_allocate_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
+            resrc_tree_t child = zlist_first (rt->children);
             while (!rc && child) {
                 rc = resrc_tree_allocate (child, job_id);
                 child = zlist_next (rt->children);
@@ -196,13 +196,13 @@ int resrc_tree_allocate (resrc_tree_t *rt, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id)
+int resrc_tree_reserve (resrc_tree_t rt, int64_t job_id)
 {
     int rc = -1;
     if (rt) {
         rc = resrc_reserve_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
+            resrc_tree_t child = zlist_first (rt->children);
             while (!rc && child) {
                 rc = resrc_tree_reserve (child, job_id);
                 child = zlist_next (rt->children);
@@ -212,13 +212,13 @@ int resrc_tree_reserve (resrc_tree_t *rt, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_release (resrc_tree_t *rt, int64_t job_id)
+int resrc_tree_release (resrc_tree_t rt, int64_t job_id)
 {
     int rc = -1;
     if (rt) {
         rc = resrc_release_resource (rt->resrc, job_id);
         if (zlist_size (rt->children)) {
-            resrc_tree_t *child = zlist_first (rt->children);
+            resrc_tree_t child = zlist_first (rt->children);
             while (!rc && child) {
                 rc = resrc_tree_release (child, job_id);
                 child = zlist_next (rt->children);
@@ -232,43 +232,43 @@ int resrc_tree_release (resrc_tree_t *rt, int64_t job_id)
  * Resource tree list
  ***********************************************************************/
 
-resrc_tree_list_t *resrc_tree_new_list ()
+resrc_tree_list_t resrc_tree_new_list ()
 {
-    return (resrc_tree_list_t *) zlist_new ();
+    return (resrc_tree_list_t) zlist_new ();
 }
 
-int resrc_tree_list_append (resrc_tree_list_t *rtl, resrc_tree_t *rt)
+int resrc_tree_list_append (resrc_tree_list_t rtl, resrc_tree_t rt)
 {
     if (rtl && rt)
         return zlist_append ((zlist_t *) rtl, (void *) rt);
     return -1;
 }
 
-resrc_tree_t *resrc_tree_list_first (resrc_tree_list_t *rtl)
+resrc_tree_t resrc_tree_list_first (resrc_tree_list_t rtl)
 {
     return zlist_first ((zlist_t*) rtl);
 }
 
-resrc_tree_t *resrc_tree_list_next (resrc_tree_list_t *rtl)
+resrc_tree_t resrc_tree_list_next (resrc_tree_list_t rtl)
 {
     return zlist_next ((zlist_t*) rtl);
 }
 
-size_t resrc_tree_list_size (resrc_tree_list_t *rtl)
+size_t resrc_tree_list_size (resrc_tree_list_t rtl)
 {
     return zlist_size ((zlist_t*) rtl);
 }
 
-void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
+void resrc_tree_list_destroy (resrc_tree_list_t resrc_tree_list)
 {
     zlist_t *child;
-    zlist_t* rtl = (zlist_t*) resrc_tree_list;
+    zlist_t *rtl = (zlist_t*) resrc_tree_list;
 
     if (rtl) {
         if (zlist_size (rtl)) {
             child = zlist_first (rtl);
             while (child) {
-                resrc_tree_destroy ((resrc_tree_t*) child);
+                resrc_tree_destroy ((resrc_tree_t) child);
                 child = zlist_next (rtl);
             }
         }
@@ -277,9 +277,9 @@ void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
     }
 }
 
-int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
+int resrc_tree_list_serialize (JSON o, resrc_tree_list_t rtl)
 {
-    resrc_tree_t *rt;
+    resrc_tree_t rt;
     int rc = -1;
 
     if (o && rtl) {
@@ -294,9 +294,9 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
     return rc;
 }
 
-int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id)
+int resrc_tree_list_allocate (resrc_tree_list_t rtl, int64_t job_id)
 {
-    resrc_tree_t *rt;
+    resrc_tree_t rt;
     int rc = -1;
 
     if (rtl) {
@@ -311,9 +311,9 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
+int resrc_tree_list_reserve (resrc_tree_list_t rtl, int64_t job_id)
 {
-    resrc_tree_t *rt;
+    resrc_tree_t rt;
     int rc = -1;
 
     if (rtl) {
@@ -328,9 +328,9 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
+int resrc_tree_list_release (resrc_tree_list_t rtl, int64_t job_id)
 {
-    resrc_tree_t *rt;
+    resrc_tree_t rt;
     int rc = -1;
 
     if (rtl) {
@@ -349,28 +349,28 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
  * Resource request
  ***********************************************************************/
 
-resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst)
+resrc_t resrc_reqst_resrc (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
-        return (resrc_t *)resrc_reqst->resrc;
+        return (resrc_t)resrc_reqst->resrc;
     return NULL;
 }
 
-int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst)
+int64_t resrc_reqst_reqrd (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
         return resrc_reqst->reqrd;
     return -1;
 }
 
-int64_t resrc_reqst_nfound (resrc_reqst_t *resrc_reqst)
+int64_t resrc_reqst_nfound (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
         return resrc_reqst->nfound;
     return -1;
 }
 
-int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound)
+int64_t resrc_reqst_add_found (resrc_reqst_t resrc_reqst, int64_t nfound)
 {
     if (resrc_reqst) {
         resrc_reqst->nfound += nfound;
@@ -379,9 +379,9 @@ int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound)
     return -1;
 }
 
-void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
+void resrc_reqst_clear_found (resrc_reqst_t resrc_reqst)
 {
-    resrc_reqst_t *child;
+    resrc_reqst_t child;
 
     if (resrc_reqst) {
         resrc_reqst->nfound = 0;
@@ -395,21 +395,21 @@ void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
     }
 }
 
-size_t resrc_reqst_num_children (resrc_reqst_t *resrc_reqst)
+size_t resrc_reqst_num_children (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
         return zlist_size (resrc_reqst->children);
     return -1;
 }
 
-resrc_reqst_list_t *resrc_reqst_children (resrc_reqst_t *resrc_reqst)
+resrc_reqst_list_t resrc_reqst_children (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
-        return (resrc_reqst_list_t *)resrc_reqst->children;
+        return (resrc_reqst_list_t)resrc_reqst->children;
     return NULL;
 }
 
-int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
+int resrc_reqst_add_child (resrc_reqst_t parent, resrc_reqst_t child)
 {
     int rc = -1;
     if (parent) {
@@ -420,9 +420,9 @@ int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
     return rc;
 }
 
-resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty)
+resrc_reqst_t resrc_reqst_new (resrc_t resrc, int64_t qty)
 {
-    resrc_reqst_t *resrc_reqst = xzmalloc (sizeof (resrc_reqst_t));
+    resrc_reqst_t resrc_reqst = xzmalloc (sizeof (struct resrc_reqst));
     if (resrc_reqst) {
         resrc_reqst->parent = NULL;
         resrc_reqst->resrc = resrc;
@@ -436,14 +436,14 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty)
     return resrc_reqst;
 }
 
-resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
+resrc_reqst_t resrc_reqst_from_json (JSON o, resrc_t parent)
 {
     int qty = 0;
     JSON ca = NULL;     /* array of child json objects */
     JSON co = NULL;     /* child json object */
-    resrc_t *resrc = NULL;
-    resrc_reqst_t *child_reqst = NULL;
-    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_t resrc = NULL;
+    resrc_reqst_t child_reqst = NULL;
+    resrc_reqst_t resrc_reqst = NULL;
 
     if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
         goto ret;
@@ -473,9 +473,9 @@ ret:
     return resrc_reqst;
 }
 
-void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
+void resrc_reqst_print (resrc_reqst_t resrc_reqst)
 {
-    resrc_reqst_t *child;
+    resrc_reqst_t child;
 
     if (resrc_reqst) {
         printf ("%ld of %ld ", resrc_reqst->nfound, resrc_reqst->reqrd);
@@ -490,9 +490,9 @@ void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
     }
 }
 
-void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
+void resrc_reqst_destroy (resrc_reqst_t resrc_reqst)
 {
-    resrc_reqst_t *child;
+    resrc_reqst_t child;
 
     if (resrc_reqst) {
         if (resrc_reqst->parent)
@@ -514,43 +514,43 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
  * Resource request list
  ***********************************************************************/
 
-resrc_reqst_list_t *resrc_reqst_new_list ()
+resrc_reqst_list_t resrc_reqst_new_list ()
 {
-    return (resrc_reqst_list_t *) zlist_new ();
+    return (resrc_reqst_list_t) zlist_new ();
 }
 
-int resrc_reqst_list_append (resrc_reqst_list_t *rrl, resrc_reqst_t *rr)
+int resrc_reqst_list_append (resrc_reqst_list_t rrl, resrc_reqst_t rr)
 {
     if (rrl && rr)
         return zlist_append ((zlist_t *) rrl, (void *) rr);
     return -1;
 }
 
-resrc_reqst_t *resrc_reqst_list_first (resrc_reqst_list_t *rrl)
+resrc_reqst_t resrc_reqst_list_first (resrc_reqst_list_t rrl)
 {
     return zlist_first ((zlist_t*) rrl);
 }
 
-resrc_reqst_t *resrc_reqst_list_next (resrc_reqst_list_t *rrl)
+resrc_reqst_t resrc_reqst_list_next (resrc_reqst_list_t rrl)
 {
     return zlist_next ((zlist_t*) rrl);
 }
 
-size_t resrc_reqst_list_size (resrc_reqst_list_t *rrl)
+size_t resrc_reqst_list_size (resrc_reqst_list_t rrl)
 {
     return zlist_size ((zlist_t*) rrl);
 }
 
-void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
+void resrc_reqst_list_destroy (resrc_reqst_list_t resrc_reqst_list)
 {
     zlist_t *child;
-    zlist_t* rtl = (zlist_t*) resrc_reqst_list;
+    zlist_t *rtl = (zlist_t*) resrc_reqst_list;
 
     if (rtl) {
         if (zlist_size (rtl)) {
             child = zlist_first (rtl);
             while (child) {
-                resrc_reqst_destroy ((resrc_reqst_t*) child);
+                resrc_reqst_destroy ((resrc_reqst_t) child);
                 child = zlist_next (rtl);
             }
         }
@@ -560,11 +560,11 @@ void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
 }
 
 
-static bool match_child (zlist_t * r_trees, resrc_reqst_t *resrc_reqst,
-                         resrc_tree_t *parent_tree, bool available)
+static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
+                         resrc_tree_t parent_tree, bool available)
 {
-    resrc_tree_t *resrc_tree = NULL;
-    resrc_tree_t *child_tree = NULL;
+    resrc_tree_t resrc_tree = NULL;
+    resrc_tree_t child_tree = NULL;
     bool found = false;
 
     resrc_tree = zlist_first (r_trees);
@@ -617,10 +617,10 @@ static bool match_child (zlist_t * r_trees, resrc_reqst_t *resrc_reqst,
  * cycles through all of the resource children and returns true if all
  * of the requested children were found
  */
-static bool match_children (zlist_t * r_trees, zlist_t *req_trees,
-                            resrc_tree_t *parent_tree, bool available)
+static bool match_children (zlist_t *r_trees, zlist_t *req_trees,
+                            resrc_tree_t parent_tree, bool available)
 {
-    resrc_reqst_t *resrc_reqst = zlist_first (req_trees);
+    resrc_reqst_t resrc_reqst = zlist_first (req_trees);
     bool found = false;
 
     while (resrc_reqst) {
@@ -641,12 +641,12 @@ static bool match_children (zlist_t * r_trees, zlist_t *req_trees,
 }
 
 /* returns the number of composites found */
-int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
-                       resrc_tree_list_t *found_in, bool available)
+int resrc_tree_search (resrc_tree_list_t resrcs_in, resrc_reqst_t resrc_reqst,
+                       resrc_tree_list_t found_in, bool available)
 {
     int64_t nfound = 0;
-    resrc_tree_t *new_tree = NULL;
-    resrc_tree_t *resrc_tree;
+    resrc_tree_t new_tree = NULL;
+    resrc_tree_t resrc_tree;
     zlist_t *found_trees = (zlist_t*)found_in;
     zlist_t *resrc_trees = (zlist_t*)resrcs_in;
 

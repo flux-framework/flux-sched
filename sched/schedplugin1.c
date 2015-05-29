@@ -50,9 +50,9 @@
 //types, something we need to think about
 typedef struct zhash_t resources;
 
-static bool select_children (flux_t h, resrc_tree_list_t *found_children,
-                             resrc_reqst_list_t *reqst_children,
-                             resrc_tree_t *parent_tree);
+static bool select_children (flux_t h, resrc_tree_list_t found_children,
+                             resrc_reqst_list_t reqst_children,
+                             resrc_tree_t parent_tree);
 
 /*
  * find_resources() identifies the all of the resource candidates for
@@ -65,13 +65,13 @@ static bool select_children (flux_t h, resrc_tree_list_t *found_children,
  * Returns: a list of resource trees satisfying the job's request,
  *                   or NULL if none (or not enough) are found
  */
-resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
-                                   resrc_reqst_t *resrc_reqst)
+resrc_tree_list_t find_resources (flux_t h, resources_t resrcs,
+                                  resrc_reqst_t resrc_reqst)
 {
     int64_t nfound = 0;
-    resrc_t *resrc = NULL;
-    resrc_tree_list_t *found_trees = NULL;
-    resrc_tree_t *resrc_tree = NULL;
+    resrc_t resrc = NULL;
+    resrc_tree_list_t found_trees = NULL;
+    resrc_tree_t resrc_tree = NULL;
 
     if (!resrcs || !resrc_reqst) {
         flux_log (h, LOG_ERR, "find_resources invalid arguments");
@@ -93,7 +93,7 @@ resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
     }
 
     nfound = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
-                               found_trees, true);
+                                found_trees, true);
 
     if (!nfound) {
         resrc_tree_list_destroy (found_trees);
@@ -103,12 +103,12 @@ ret:
     return found_trees;
 }
 
-static bool select_child (flux_t h, resrc_tree_list_t *found_children,
-                          resrc_reqst_t *child_reqst,
-                          resrc_tree_t *parent_tree)
+static bool select_child (flux_t h, resrc_tree_list_t found_children,
+                          resrc_reqst_t child_reqst,
+                          resrc_tree_t parent_tree)
 {
-    resrc_tree_t *resrc_tree = NULL;
-    resrc_tree_t *child_tree = NULL;
+    resrc_tree_t resrc_tree = NULL;
+    resrc_tree_t child_tree = NULL;
     bool selected = false;
 
     resrc_tree = resrc_tree_list_first (found_children);
@@ -169,11 +169,11 @@ ret:
 }
 
 
-static bool select_children (flux_t h, resrc_tree_list_t *found_children,
-                                 resrc_reqst_list_t *reqst_children,
-                                 resrc_tree_t *parent_tree)
+static bool select_children (flux_t h, resrc_tree_list_t found_children,
+                             resrc_reqst_list_t reqst_children,
+                             resrc_tree_t parent_tree)
 {
-    resrc_reqst_t *child_reqst = resrc_reqst_list_first (reqst_children);
+    resrc_reqst_t child_reqst = resrc_reqst_list_first (reqst_children);
     bool selected = false;
 
     while (child_reqst) {
@@ -205,14 +205,14 @@ static bool select_children (flux_t h, resrc_tree_list_t *found_children,
  * Returns: a list of selected resource trees, or null if none (or not enough)
  *          are selected
  */
-resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
-                                     resrc_reqst_t *resrc_reqst)
+resrc_tree_list_t select_resources (flux_t h, resrc_tree_list_t found_trees,
+                                    resrc_reqst_t resrc_reqst)
 {
     int64_t reqrd;
-    resrc_t *resrc;
-    resrc_tree_list_t *selected_res = NULL;
-    resrc_tree_t *new_tree = NULL;
-    resrc_tree_t *rt;
+    resrc_t resrc;
+    resrc_tree_list_t selected_res = NULL;
+    resrc_tree_t new_tree = NULL;
+    resrc_tree_t rt;
 
     if (!resrc_reqst) {
         flux_log (h, LOG_ERR, "select_resources called with empty request");
@@ -257,7 +257,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
         selected_res = NULL;
     }
 
-    return (resrc_tree_list_t*)selected_res;
+    return (resrc_tree_list_t)selected_res;
 }
 
 MOD_NAME ("sched.plugin1");

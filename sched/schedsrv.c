@@ -68,14 +68,14 @@ static zlist_t *p_queue = NULL;
 static zlist_t *r_queue = NULL;
 static zlist_t *ev_queue = NULL;
 static flux_t h = NULL;
-static resources_t *resrcs = NULL;
+static resources_t resrcs = NULL;
 
-static resrc_tree_list_t *(*find_resources) (flux_t h, resources_t *resrcs,
-                                             resrc_reqst_t *resrc_reqst);
+static resrc_tree_list_t (*find_resources) (flux_t h, resources_t resrcs,
+                                            resrc_reqst_t resrc_reqst);
 
-static resrc_tree_list_t *(*select_resources) (flux_t h,
-                                               resrc_tree_list_t *resrc_trees,
-                                               resrc_reqst_t *resrc_reqst);
+static resrc_tree_list_t (*select_resources) (flux_t h,
+                                              resrc_tree_list_t resrc_trees,
+                                              resrc_reqst_t resrc_reqst);
 
 static struct stab_struct jobstate_tab[] = {
     { j_null,      "null" },
@@ -224,7 +224,7 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
     return rc;
 }
 
-int update_job_resources (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
+int update_job_resources (flux_lwj_t *job, resrc_tree_list_t resrc_trees)
 {
     char *key = NULL;
     JSON o;
@@ -427,7 +427,7 @@ ret:
 /*
  * Update the job records to reflect the allocation.
  */
-static int update_job_records (flux_lwj_t *job, resrc_tree_list_t *resrc_trees)
+static int update_job_records (flux_lwj_t *job, resrc_tree_list_t resrc_trees)
 {
     int rc = -1;
 
@@ -460,9 +460,9 @@ int schedule_job (flux_lwj_t *job)
     JSON req_res = NULL;
     int rc = -1;
     int64_t nnodes = 0;
-    resrc_reqst_t *resrc_reqst = NULL;
-    resrc_tree_list_t *found_trees = NULL;
-    resrc_tree_list_t *selected_trees = NULL;
+    resrc_reqst_t resrc_reqst = NULL;
+    resrc_tree_list_t found_trees = NULL;
+    resrc_tree_list_t selected_trees = NULL;
 
     /*
      * Require at least one task per node, and
@@ -628,7 +628,7 @@ action_j_event (flux_event_t *e)
      */
     flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
               e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
-                              stab_rlookup (jobstate_tab, e->ev.je));
+              stab_rlookup (jobstate_tab, e->ev.je));
 
     switch (e->lwj->state) {
     case j_null:
@@ -739,7 +739,7 @@ action_j_event (flux_event_t *e)
 bad_transition:
     flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
               e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
-                              stab_rlookup (jobstate_tab, e->ev.je));
+              stab_rlookup (jobstate_tab, e->ev.je));
     return -1;
 }
 
