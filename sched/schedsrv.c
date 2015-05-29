@@ -201,16 +201,16 @@ int update_job_state (flux_lwj_t *job, lwj_event_e e)
 
     state = stab_rlookup (jobstate_tab, e);
     if (!strcmp (state, "unknown")) {
-        flux_log (h, LOG_ERR, "unknown job state %d", e);
+        flux_log (h, LOG_ERR, "%s: unknown job state %d", __FUNCTION__, e);
     } else if (asprintf (&key, "lwj.%ld.state", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state key create failed");
+        flux_log (h, LOG_ERR, "%s: key create failed", __FUNCTION__);
     } else if (kvs_put_string (h, key, state) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state %ld state update failed: %s",
+        flux_log (h, LOG_ERR, "%s: %ld state update failed: %s", __FUNCTION__,
                   job->lwj_id, strerror (errno));
     } else if (asprintf (&key2, "lwj.%ld.%s-time", job->lwj_id, state) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state key2 create failed");
+        flux_log (h, LOG_ERR, "%s: key2 create failed", __FUNCTION__);
     } else if (kvs_put_string (h, key2, buf) < 0) {
-        flux_log (h, LOG_ERR, "update_job_state %ld %s-time failed: %s",
+        flux_log (h, LOG_ERR, "%s: %ld %s-time failed: %s", __FUNCTION__,
                   job->lwj_id, state, strerror (errno));
     } else {
         rc = 0;
@@ -232,12 +232,12 @@ int update_job_resources (flux_lwj_t *job, resrc_tree_list_t resrc_trees)
 
     o = Jnew ();
     if ((rc = resrc_tree_list_serialize (o, resrc_trees))) {
-        flux_log (h, LOG_ERR, "failed to serialize resources for job %ld: %s",
-                  job->lwj_id, strerror (errno));
+        flux_log (h, LOG_ERR, "%s: failed to serialize job %ld resources: %s",
+                  __FUNCTION__, job->lwj_id, strerror (errno));
     } else if (asprintf (&key, "lwj.%ld.resrcs", job->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "update_job_resources key create failed");
+        flux_log (h, LOG_ERR, "%s: key create failed", __FUNCTION__);
     } else if (kvs_put (h, key, o) < 0) {
-        flux_log (h, LOG_ERR, "update_job_resources %ld commit failed: %s",
+        flux_log (h, LOG_ERR, "%s: %ld commit failed: %s", __FUNCTION__,
                   job->lwj_id, strerror (errno));
     } else {
         job->resrc_trees = resrc_trees;
@@ -265,10 +265,10 @@ int update_job_resources (flux_lwj_t *job, resrc_tree_list_t resrc_trees)
         for (i = 0; i < nnodes; i++) {
             coresthisnode = MIN (ncores, corespernode);
             if (asprintf (&key, "lwj.%ld.rank.%ld.cores", job->lwj_id, i) < 0) {
-                flux_log (h, LOG_ERR, "update_job_resources key create failed");
+                flux_log (h, LOG_ERR, "%s: key create failed", __FUNCTION__);
                 goto ret;
             } else if (kvs_put_int64 (h, key, coresthisnode) < 0) {
-                flux_log (h, LOG_ERR, "update_job_resources %ld node failed: %s",
+                flux_log (h, LOG_ERR, "%s: %ld node failed: %s", __FUNCTION__,
                           job->lwj_id, strerror (errno));
                 goto ret;
             }
@@ -299,7 +299,7 @@ set_event (flux_event_t *e,
         e->ev.re = (res_event_e) ei;
         break;
     default:
-        flux_log (h, LOG_ERR, "unknown ev class");
+        flux_log (h, LOG_ERR, "%s: unknown event class", __FUNCTION__);
         break;
     }
     return;
@@ -347,42 +347,42 @@ extract_lwjinfo (flux_lwj_t *j)
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
 
     if (asprintf (&key, "lwj.%ld.state", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo state key create failed");
+        flux_log (h, LOG_ERR, "%s: state key create failed", __FUNCTION__);
         goto ret;
     } else if (kvs_get_string (h, key, &state) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo %s: %s", key, strerror (errno));
+        flux_log (h, LOG_ERR, "%s: %s: %s", __FUNCTION__, key, strerror (errno));
         goto ret;
     } else {
         j->state = stab_lookup (jobstate_tab, state);
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %s", key, state);
+        flux_log (h, LOG_DEBUG, "%s: got %s: %s", __FUNCTION__, key, state);
         free(key);
         free(state);
     }
 
     if (asprintf (&key, "lwj.%ld.nnodes", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo nnodes key create failed");
+        flux_log (h, LOG_ERR, "%s: nnodes key create failed", __FUNCTION__);
         goto ret;
     } else if (kvs_get_int64 (h, key, &reqnodes) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo get %s: %s",
+        flux_log (h, LOG_ERR, "%s: get %s: %s", __FUNCTION__,
                   key, strerror (errno));
         goto ret;
     } else {
         j->req->nnodes = reqnodes;
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqnodes);
+        flux_log (h, LOG_DEBUG, "%s: got %s: %ld", __FUNCTION__, key, reqnodes);
         free(key);
     }
 
     if (asprintf (&key, "lwj.%ld.ntasks", j->lwj_id) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo ntasks key create failed");
+        flux_log (h, LOG_ERR, "%s: ntasks key create failed", __FUNCTION__);
         goto ret;
     } else if (kvs_get_int64 (h, key, &reqtasks) < 0) {
-        flux_log (h, LOG_ERR, "extract_lwjinfo get %s: %s",
+        flux_log (h, LOG_ERR, "%s: get %s: %s", __FUNCTION__,
                   key, strerror (errno));
         goto ret;
     } else {
         /* Assuming a 1:1 relationship right now between cores and tasks */
         j->req->ncores = reqtasks;
-        flux_log (h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqtasks);
+        flux_log (h, LOG_DEBUG, "%s: got %s: %ld", __FUNCTION__, key, reqtasks);
         free(key);
         j->resrc_trees = NULL;
         j->reserve = false;    /* for now */
@@ -404,12 +404,11 @@ issue_lwj_event (lwj_event_e e, flux_lwj_t *j)
     ev->lwj = j;
 
     if (zlist_append (ev_queue, ev) == -1) {
-        flux_log (h, LOG_ERR,
-                  "enqueuing an event failed");
+        flux_log (h, LOG_ERR, "%s: enqueuing an event failed", __FUNCTION__);
         goto ret;
     }
     if (signal_event () == -1) {
-        flux_log (h, LOG_ERR, "job event signal failed");
+        flux_log (h, LOG_ERR, "%s: job event signal failed", __FUNCTION__);
         goto ret;
     }
 
@@ -432,13 +431,13 @@ static int update_job_records (flux_lwj_t *job, resrc_tree_list_t resrc_trees)
     int rc = -1;
 
     if (update_job_state (job, j_allocated)) {
-        flux_log (h, LOG_ERR, "update_job failed to update job %ld to %s",
+        flux_log (h, LOG_ERR, "%s: failed to update job %ld to %s", __FUNCTION__,
                   job->lwj_id, stab_rlookup (jobstate_tab, j_allocated));
     } else if (update_job_resources (job, resrc_trees)) {
-        flux_log (h, LOG_ERR, "failed to save resources for job %ld",
-                  job->lwj_id);
+        flux_log (h, LOG_ERR, "%s: failed to save job %ld resources",
+                  __FUNCTION__, job->lwj_id);
     } else if (kvs_commit (h) < 0) {
-        flux_log (h, LOG_ERR, "kvs_commit error!");
+        flux_log (h, LOG_ERR, "%s: kvs_commit error!", __FUNCTION__);
     } else {
         rc = 0;
     }
@@ -553,10 +552,10 @@ request_run (flux_lwj_t *job)
     zmsg_t *zmsg = NULL;
 
     if (update_job_state (job, j_runrequest) < 0) {
-        flux_log (h, LOG_ERR, "request_run failed to update job %ld to %s",
+        flux_log (h, LOG_ERR, "%s: failed to update job %ld to %s", __FUNCTION__,
                   job->lwj_id, stab_rlookup (jobstate_tab, j_runrequest));
     } else if (kvs_commit (h) < 0) {
-        flux_log (h, LOG_ERR, "kvs_commit error!");
+        flux_log (h, LOG_ERR, "%s: kvs_commit error!", __FUNCTION__);
     } else {
         char *topic;
 
@@ -596,13 +595,12 @@ issue_res_event (flux_lwj_t *lwj)
     newev->lwj = lwj;
 
     if (zlist_append (ev_queue, newev) == -1) {
-        flux_log (h, LOG_ERR,
-                  "enqueuing an event failed");
+        flux_log (h, LOG_ERR, "%s: enqueuing an event failed", __FUNCTION__);
         rc = -1;
         goto ret;
     }
     if (signal_event () == -1) {
-        flux_log (h, LOG_ERR, "resource event signal failed");
+        flux_log (h, LOG_ERR, "%s: resource event signal failed", __FUNCTION__);
         rc = -1;
         goto ret;
     }
@@ -643,8 +641,8 @@ action_j_event (flux_event_t *e)
         }
         extract_lwjinfo (e->lwj);
         if (e->lwj->state != j_submitted) {
-            flux_log (h, LOG_ERR,
-                      "job %ld read state mismatch ", e->lwj->lwj_id);
+            flux_log (h, LOG_ERR, "%s: job %ld read state mismatch ",
+                      __FUNCTION__, e->lwj->lwj_id);
             goto bad_transition;
         }
         /* Transition the job temporarily to unscheduled to flag it as
@@ -702,8 +700,8 @@ action_j_event (flux_event_t *e)
         /* TODO move this to j_complete case once reaped is implemented */
         if ((rc = resrc_tree_list_release (e->lwj->resrc_trees,
                                            e->lwj->lwj_id))) {
-            flux_log (h, LOG_ERR, "failed to release resources for job %ld",
-                      e->lwj->lwj_id);
+            flux_log (h, LOG_ERR, "%s: failed to release resources for job %ld",
+                      __FUNCTION__, e->lwj->lwj_id);
         }
         issue_res_event (e->lwj);
         zlist_remove (r_queue, e->lwj);
@@ -729,7 +727,7 @@ action_j_event (flux_event_t *e)
         break;
 
     default:
-        flux_log (h, LOG_ERR, "job %ld unknown state %d",
+        flux_log (h, LOG_ERR, "%s: job %ld unknown state %d", __FUNCTION__,
                   e->lwj->lwj_id, e->lwj->state);
         break;
     }
@@ -737,8 +735,9 @@ action_j_event (flux_event_t *e)
     return rc;
 
 bad_transition:
-    flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
-              e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
+    flux_log (h, LOG_ERR, "%s: job %ld bad state transition from %s to %s",
+              __FUNCTION__, e->lwj->lwj_id, stab_rlookup (jobstate_tab,
+                                                          e->lwj->state),
               stab_rlookup (jobstate_tab, e->ev.je));
     return -1;
 }
@@ -772,7 +771,7 @@ action (flux_event_t *e)
         break;
 
     default:
-        flux_log (h, LOG_ERR, "unknown event type");
+        flux_log (h, LOG_ERR, "%s: unknown event type", __FUNCTION__);
         break;
     }
 
@@ -790,7 +789,7 @@ static int
 reg_newlwj_hdlr (KVSSetInt64F *func)
 {
     if (kvs_watch_int64 (h,"lwj.next-id", func, (void *) h) < 0) {
-        flux_log (h, LOG_ERR, "watch lwj.next-id: %s",
+        flux_log (h, LOG_ERR, "%s: watch lwj.next-id: %s", __FUNCTION__,
                   strerror (errno));
         return -1;
     }
@@ -810,9 +809,8 @@ reg_lwj_state_hdlr (const char *path, KVSSetStringF *func)
         flux_log (h, LOG_ERR, "%s: lwj state create failed: %s",
                   __FUNCTION__, strerror (errno));
     } else if (kvs_watch_string (h, k, func, (void *)h) < 0) {
-        flux_log (h, LOG_ERR,
-                  "watch a lwj state in %s: %s.",
-                  k, strerror (errno));
+        flux_log (h, LOG_ERR, "%s: watch a lwj state in %s: %s",
+                  __FUNCTION__, k, strerror (errno));
         rc = -1;
         goto ret;
     }
@@ -839,24 +837,24 @@ lwjstate_cb (const char *key, const char *val, void *arg, int errnum)
          * after registration.
          */
         if (errnum != ENOENT) {
-            flux_log (h, LOG_ERR, "lwjstate_cb key(%s), val(%s): %s",
+            flux_log (h, LOG_ERR, "%s: key(%s), val(%s): %s", __FUNCTION__,
                       key, val, strerror (errnum));
         }
         goto ret;
     }
 
     if (extract_lwjid (key, &lwj_id) == -1) {
-        flux_log (h, LOG_ERR, "ill-formed key");
+        flux_log (h, LOG_ERR, "%s: ill-formed key", __FUNCTION__);
         goto ret;
     }
-    flux_log (h, LOG_DEBUG, "lwjstate_cb: %ld, %s", lwj_id, val);
+    flux_log (h, LOG_DEBUG, "%s: %ld, %s", __FUNCTION__, lwj_id, val);
 
     j = find_lwj (lwj_id);
     if (j) {
         e = stab_lookup (jobstate_tab, val);
         issue_lwj_event (e, j);
     } else
-        flux_log (h, LOG_ERR, "lwjstate_cb: find_lwj %ld failed", lwj_id);
+        flux_log (h, LOG_ERR, "%s: find_lwj %ld failed", __FUNCTION__, lwj_id);
 
 ret:
     return 0;
@@ -876,16 +874,16 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
          * after registration.
          */
         if (errnum != ENOENT) {
-            flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%ld): %s",
+            flux_log (h, LOG_ERR, "%s: key(%s), val(%ld): %s", __FUNCTION__,
                       key, val, strerror (errnum));
             goto error;
         }
         goto ret;
     } else if (val < 0) {
-        flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%ld)", key, val);
+        flux_log (h, LOG_ERR, "%s: key(%s), val(%ld)", __FUNCTION__, key, val);
         goto error;
     } else {
-        flux_log (h, LOG_DEBUG, "newlwj_cb key(%s), val(%ld)", key, val);
+        flux_log (h, LOG_DEBUG, "%s: key(%s), val(%ld)", __FUNCTION__, key, val);
     }
 
     if ( !(j = (flux_lwj_t *) xzmalloc (sizeof (flux_lwj_t))) ) {
@@ -896,15 +894,13 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
     j->state = j_null;
     snprintf (path, MAX_STR_LEN, "lwj.%ld", j->lwj_id);
     if (zlist_append (p_queue, j) == -1) {
-        flux_log (h, LOG_ERR,
-                  "appending a job to pending queue failed");
+        flux_log (h, LOG_ERR, "%s: appending a job to pending queue failed",
+                  __FUNCTION__);
         goto error;
     }
     if (reg_lwj_state_hdlr (path, (KVSSetStringF *) lwjstate_cb) == -1) {
-        flux_log (h, LOG_ERR,
-                  "register lwj state change "
-                  "handling callback: %s",
-                  strerror (errno));
+        flux_log (h, LOG_ERR, "%s: register lwj state change callback: %s",
+                  __FUNCTION__, strerror (errno));
         goto error;
     }
 ret:
@@ -1010,39 +1006,30 @@ int mod_main (flux_t p, zhash_t *args)
     r_queue = zlist_new ();
     ev_queue = zlist_new ();
     if (!p_queue || !r_queue || !ev_queue) {
-        flux_log (h, LOG_ERR,
-                  "init for queues failed: %s",
-                  strerror (errno));
+        flux_log (h, LOG_ERR, "init for queues failed: %s", strerror (errno));
         rc = -1;
         goto ret3;
     }
     if (flux_event_subscribe (h, "sched.event") < 0) {
-        flux_log (h, LOG_ERR,
-                  "subscribing to event: %s",
-                  strerror (errno));
+        flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         rc = -1;
         goto ret3;
     }
     if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.event",
                              event_cb, NULL) < 0) {
-        flux_log (h, LOG_ERR,
-                  "register event handling callback: %s",
+        flux_log (h, LOG_ERR, "register event handling callback: %s",
                   strerror (errno));
         rc = -1;
         goto ret3;
     }
     if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
-        flux_log (h, LOG_ERR,
-                  "register new lwj handling "
-                  "callback: %s",
+        flux_log (h, LOG_ERR, "register new lwj handling callback: %s",
                   strerror (errno));
         rc = -1;
         goto ret3;
     }
     if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR,
-                  "flux_reactor_start: %s",
-                  strerror (errno));
+        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
         rc =  -1;
         goto ret3;
     }

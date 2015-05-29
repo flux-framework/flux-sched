@@ -74,7 +74,7 @@ resrc_tree_list_t find_resources (flux_t h, resources_t resrcs,
     resrc_tree_t resrc_tree = NULL;
 
     if (!resrcs || !resrc_reqst) {
-        flux_log (h, LOG_ERR, "find_resources invalid arguments");
+        flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
         goto ret;
     }
 
@@ -88,7 +88,7 @@ resrc_tree_list_t find_resources (flux_t h, resources_t resrcs,
 
     found_trees = resrc_tree_new_list ();
     if (!found_trees) {
-        flux_log (h, LOG_ERR, "find_resources new tree list failed");
+        flux_log (h, LOG_ERR, "%s: new tree list failed", __FUNCTION__);
         goto ret;
     }
 
@@ -215,7 +215,7 @@ resrc_tree_list_t select_resources (flux_t h, resrc_tree_list_t found_trees,
     resrc_tree_t rt;
 
     if (!resrc_reqst) {
-        flux_log (h, LOG_ERR, "select_resources called with empty request");
+        flux_log (h, LOG_ERR, "%s: called with empty request", __FUNCTION__);
         return NULL;
     }
 
