@@ -57,7 +57,7 @@ struct resrc {
     int32_t max_jobs;
     uuid_t uuid;
     resource_state_t state;
-    resrc_tree_t *phys_tree;
+    resrc_tree_t phys_tree;
     zlist_t *graphs;
     zlist_t *jobs;
     zlist_t *resrv_jobs;
@@ -71,28 +71,28 @@ struct resrc {
  *  API
  ***************************************************************************/
 
-char *resrc_type (resrc_t *resrc)
+char *resrc_type (resrc_t resrc)
 {
     if (resrc)
         return resrc->type;
     return NULL;
 }
 
-char *resrc_name (resrc_t *resrc)
+char *resrc_name (resrc_t resrc)
 {
     if (resrc)
         return resrc->name;
     return NULL;
 }
 
-int64_t resrc_id (resrc_t *resrc)
+int64_t resrc_id (resrc_t resrc)
 {
     if (resrc)
         return resrc->id;
     return -1;
 }
 
-resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
+resrc_tree_t resrc_phys_tree (resrc_t resrc)
 {
     if (resrc)
         return resrc->phys_tree;
@@ -101,18 +101,18 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 
 void jobid_destroy (void *object)
 {
-	int64_t *tmp = (int64_t *)object;
-	free (tmp);
+    int64_t *tmp = (int64_t *)object;
+    free (tmp);
 }
 
-resource_list_t *resrc_new_id_list ()
+resource_list_t resrc_new_id_list ()
 {
-    return (resource_list_t *) zlist_new ();
+    return (resource_list_t) zlist_new ();
 }
 
-void resrc_id_list_destroy (resource_list_t *resrc_ids_in)
+void resrc_id_list_destroy (resource_list_t resrc_ids_in)
 {
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zlist_t *resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
 
     if (resrc_ids) {
@@ -122,22 +122,22 @@ void resrc_id_list_destroy (resource_list_t *resrc_ids_in)
     }
 }
 
-char *resrc_list_first (resource_list_t *rl)
+char *resrc_list_first (resource_list_t rl)
 {
     return zlist_first ((zlist_t*)rl);
 }
 
-char *resrc_list_next (resource_list_t *rl)
+char *resrc_list_next (resource_list_t rl)
 {
     return zlist_next ((zlist_t*)rl);
 }
 
-size_t resrc_list_size (resource_list_t *rl)
+size_t resrc_list_size (resource_list_t rl)
 {
     return zlist_size ((zlist_t*)rl);
 }
 
-static void free_int64 (void** pval)
+static void free_int64 (void **pval)
 {
     int64_t *int64p = *pval;
     free (int64p);
@@ -162,7 +162,7 @@ static resrc_pool_t *resrc_new_pool (int64_t items)
     return pool;
 }
 
-static void resrc_pool_hash_destroy (void** pval)
+static void resrc_pool_hash_destroy (void **pval)
 {
     resrc_pool_t *pool = *pval;
 
@@ -173,10 +173,10 @@ static void resrc_pool_hash_destroy (void** pval)
     }
 }
 
-resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
-                                uuid_t uuid)
+resrc_t resrc_new_resource (const char *type, const char *name, int64_t id,
+                            uuid_t uuid)
 {
-    resrc_t *resrc = xzmalloc (sizeof (resrc_t));
+    resrc_t resrc = xzmalloc (sizeof (struct resrc));
     if (resrc) {
         resrc->type = strdup (type);
         if (name)
@@ -201,9 +201,9 @@ resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
     return resrc;
 }
 
-resrc_t *resrc_copy_resource (resrc_t *resrc)
+resrc_t resrc_copy_resource (resrc_t resrc)
 {
-    resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
+    resrc_t new_resrc = xzmalloc (sizeof (struct resrc));
 
     if (new_resrc) {
         new_resrc->type = strdup (resrc->type);
@@ -229,7 +229,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
 void resrc_resource_destroy (void *object)
 {
     int64_t *id_ptr;
-    resrc_t *resrc = (resrc_t *) object;
+    resrc_t resrc = (resrc_t) object;
 
     if (resrc) {
         if (resrc->type)
@@ -256,8 +256,8 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
-                                    struct resource *r)
+static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
+                                   struct resource *r)
 {
     char *fullname = NULL;
     char *nodename = NULL;
@@ -268,9 +268,9 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     JSON o = NULL;
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
-    resrc_t *resrc = NULL;
-    resrc_tree_t *parent_tree = NULL;
-    resrc_tree_t *resrc_tree = NULL;
+    resrc_t resrc = NULL;
+    resrc_tree_t parent_tree = NULL;
+    resrc_tree_t resrc_tree = NULL;
     struct resource *c;
     uuid_t uuid;
 
@@ -341,10 +341,10 @@ ret:
     return resrc;
 }
 
-resources_t *resrc_generate_resources (const char *path, char *resource)
+resources_t resrc_generate_resources (const char *path, char *resource)
 {
     const char *nodelist = NULL;
-    resrc_t *resrc = NULL;
+    resrc_t resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
@@ -374,15 +374,15 @@ resources_t *resrc_generate_resources (const char *path, char *resource)
     rdl_destroy (rdl);
     rdllib_close (l);
 ret:
-    return (resources_t *)resrcs;
+    return (resources_t)resrcs;
 }
 
-void resrc_destroy_resources (resources_t **resources)
+void resrc_destroy_resources (resources_t *resources)
 {
     zhash_destroy ((zhash_t**)resources);
 }
 
-int resrc_to_json (JSON o, resrc_t *resrc)
+int resrc_to_json (JSON o, resrc_t resrc)
 {
     int rc = -1;
     if (resrc) {
@@ -392,7 +392,7 @@ int resrc_to_json (JSON o, resrc_t *resrc)
     return rc;
 }
 
-void resrc_print_resource (resrc_t *resrc)
+void resrc_print_resource (resrc_t resrc)
 {
     char out[40];
     char *tag;
@@ -439,10 +439,10 @@ void resrc_print_resource (resrc_t *resrc)
     }
 }
 
-void resrc_print_resources (resources_t *resrcs)
+void resrc_print_resources (resources_t resrcs)
 {
     char *resrc_id = NULL;
-    resrc_t *resrc = NULL;
+    resrc_t resrc = NULL;
     zlist_t *resrc_ids = NULL;
 
     if (!resrcs) {
@@ -456,10 +456,10 @@ void resrc_print_resources (resources_t *resrcs)
         resrc_print_resource (resrc);
         resrc_id = zlist_next (resrc_ids);
     }
-    resrc_id_list_destroy ((resource_list_t *)resrc_ids);
+    resrc_id_list_destroy ((resource_list_t)resrc_ids);
 }
 
-bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
+bool resrc_match_resource (resrc_t resrc, resrc_t sample, bool available)
 {
     bool rc = false;
     char *stag = NULL;          /* sample tag */
@@ -508,17 +508,17 @@ ret:
 }
 
 #if 0
-int resrc_search_flat_resources (resources_t *resrcs_in,
-                                 resource_list_t *found_in, JSON req_res,
+int resrc_search_flat_resources (resources_t resrcs_in,
+                                 resource_list_t found_in, JSON req_res,
                                  bool available)
 {
-    zhash_t * resrcs = (zhash_t*)resrcs_in;
-    zlist_t * found = (zlist_t*)found_in;
+    zhash_t *resrcs = (zhash_t*)resrcs_in;
+    zlist_t *found = (zlist_t*)found_in;
     char *resrc_id = NULL;
     const char *type = NULL;
     int nfound = 0;
     int req_qty = 0;
-    resrc_t *resrc;
+    resrc_t resrc;
     zlist_t *resrc_ids;
 
     if (!resrcs || !found || !req_res) {
@@ -539,13 +539,13 @@ int resrc_search_flat_resources (resources_t *resrcs_in,
         resrc_id = zlist_next (resrc_ids);
     }
 
-    resrc_id_list_destroy ((resource_list_t *)resrc_ids);
+    resrc_id_list_destroy ((resource_list_t)resrc_ids);
 ret:
     return nfound;
 }
 #endif
 
-bool resrc_has_pool (resrc_t *resrc, char* type)
+bool resrc_has_pool (resrc_t resrc, char *type)
 {
     bool rc = false;
 
@@ -554,7 +554,7 @@ bool resrc_has_pool (resrc_t *resrc, char* type)
     return rc;
 }
 
-int resrc_select_pool_items (resrc_t *resrc, char* type, int64_t items)
+int resrc_select_pool_items (resrc_t resrc, char *type, int64_t items)
 {
     resrc_pool_t *pool;
     int rc = -1;
@@ -573,7 +573,7 @@ int resrc_select_pool_items (resrc_t *resrc, char* type, int64_t items)
  * the form of a new job_id/items key value pair being added to the
  * resource pool's allocation table.
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
+int resrc_allocate_resource (resrc_t resrc, int64_t job_id)
 {
     int64_t *id_ptr;
     int rc = -1;
@@ -605,13 +605,13 @@ ret:
     return rc;
 }
 
-int resrc_allocate_resources (resources_t *resrcs_in,
-                              resource_list_t *resrc_ids_in, int64_t job_id)
+int resrc_allocate_resources (resources_t resrcs_in,
+                              resource_list_t resrc_ids_in, int64_t job_id)
 {
-    zhash_t * resrcs = (zhash_t *)resrcs_in;
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zhash_t *resrcs = (zhash_t *)resrcs_in;
+    zlist_t *resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    resrc_t *resrc;
+    resrc_t resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -632,7 +632,7 @@ ret:
 /*
  * Just like resrc_allocate_resource() above, but for a reservation
  */
-int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
+int resrc_reserve_resource (resrc_t resrc, int64_t job_id)
 {
     int64_t *id_ptr;
     int rc = -1;
@@ -665,13 +665,13 @@ ret:
     return rc;
 }
 
-int resrc_reserve_resources (resources_t *resrcs_in,
-                             resource_list_t *resrc_ids_in, int64_t job_id)
+int resrc_reserve_resources (resources_t resrcs_in,
+                             resource_list_t resrc_ids_in, int64_t job_id)
 {
-    zhash_t * resrcs = (zhash_t*)resrcs_in;
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zhash_t *resrcs = (zhash_t*)resrcs_in;
+    zlist_t *resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    resrc_t *resrc;
+    resrc_t resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !job_id) {
@@ -689,14 +689,14 @@ ret:
     return rc;
 }
 
-JSON resrc_id_serialize (resources_t *resrcs_in, resource_list_t *resrc_ids_in)
+JSON resrc_id_serialize (resources_t resrcs_in, resource_list_t resrc_ids_in)
 {
-    zhash_t * resrcs = (zhash_t *)resrcs_in;
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zhash_t *resrcs = (zhash_t *)resrcs_in;
+    zlist_t *resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
     JSON ja;
     JSON o = NULL;
-    resrc_t *resrc;
+    resrc_t resrc;
 
     if (!resrcs || !resrc_ids) {
         goto ret;
@@ -715,7 +715,7 @@ ret:
     return o;
 }
 
-int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
+int resrc_release_resource (resrc_t resrc, int64_t rel_job)
 {
     int64_t *id_ptr;
     int rc = 0;
@@ -755,13 +755,13 @@ ret:
     return rc;
 }
 
-int resrc_release_resources (resources_t *resrcs_in,
-                             resource_list_t * resrc_ids_in, int64_t rel_job)
+int resrc_release_resources (resources_t resrcs_in,
+                             resource_list_t resrc_ids_in, int64_t rel_job)
 {
-    zhash_t * resrcs = (zhash_t *)resrcs_in;
-    zlist_t * resrc_ids = (zlist_t*)resrc_ids_in;
+    zhash_t *resrcs = (zhash_t *)resrcs_in;
+    zlist_t *resrc_ids = (zlist_t*)resrc_ids_in;
     char *resrc_id;
-    resrc_t *resrc;
+    resrc_t resrc;
     int rc = 0;
 
     if (!resrcs || !resrc_ids || !rel_job) {
@@ -779,12 +779,12 @@ ret:
     return rc;
 }
 
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
+resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 {
     const char *type = NULL;
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
-    resrc_t *resrc = NULL;
+    resrc_t resrc = NULL;
 
     if (!Jget_str (o, "type", &type))
         goto ret;
