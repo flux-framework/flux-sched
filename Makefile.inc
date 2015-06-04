@@ -23,6 +23,7 @@ ifneq ($(FLUX_SRCDIR),)
 vpath %.c $(FLUX_SRCDIR)/src/bindings/lua
 vpath %.c $(FLUX_SRCDIR)/src/common/liblsd
 vpath %.c $(FLUX_SRCDIR)/src/common/libutil
+vpath %.c $(FLUX_SRCDIR)/src/modules/libjsc
 endif
 
 #

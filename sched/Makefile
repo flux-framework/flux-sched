@@ -9,7 +9,7 @@ BUILD = schedsrv.so schedplugin1.so
 
 all: $(BUILD)
 
-schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
+schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o jstatctl.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 schedplugin1.so: schedplugin1.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS)
