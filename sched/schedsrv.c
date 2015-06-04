@@ -191,6 +191,8 @@ static inline bool is_newjob (JSON jcb)
     return ((os == J_NULL) && (ns == J_NULL))? true : false;
 }
 
+/* clang warning:  error: unused function */
+#if 0
 static bool inline is_node (const char *t)
 {
     return (strcmp (t, "node") == 0)? true: false;
@@ -200,6 +202,7 @@ static bool inline is_core (const char *t)
 {
     return (strcmp (t, "core") == 0)? true: false;
 }
+#endif
 
 static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
