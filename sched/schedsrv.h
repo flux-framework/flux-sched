@@ -37,8 +37,6 @@
 #include <czmq.h>
 
 #include "resrc.h"
-/* FIXME: fix the build system so not to have path to this header */
-#include "src/modules/libjsc/jstatctl.h"
 
 
 /**
