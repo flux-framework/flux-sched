@@ -64,22 +64,22 @@ static int job_status_cb (JSON jcb, void *arg, int errnum);
  *                                                                            *
  ******************************************************************************/
 
-typedef resrc_tree_list_t (FIND_PTR) (flux_t h, resources_t resrcs,
+typedef resrc_tree_list_t (*find_f) (flux_t h, resources_t resrcs,
                                             resrc_reqst_t resrc_reqst);
 
-typedef resrc_tree_list_t (SEL_PTR) (flux_t h,
+typedef resrc_tree_list_t (*sel_f) (flux_t h,
                                               resrc_tree_list_t resrc_trees,
                                               resrc_reqst_t resrc_reqst);
 
 typedef struct sched_ops {
-    void          *dso;               /* Scheduler plug-in DSO handle */
-    FIND_PTR      *find_resources;    /* func pointer to find resources */
-    SEL_PTR       *select_resources;  /* func pointer to select resources */
+    void         *dso;                /* Scheduler plug-in DSO handle */
+    find_f        find_resources;     /* func pointer to find resources */
+    sel_f         select_resources;   /* func pointer to select resources */
 } sched_ops_t;
 
 typedef struct {
     resources_t   root_resrcs;        /* resrcs object pointing to the root */
-    char          *root_uri;          /* Name of the root of the RDL hierachy */
+    char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
 /* TODO: Implement prioritization function for p_queue */
