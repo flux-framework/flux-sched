@@ -196,9 +196,9 @@ signal_event ( )
         //send_reply_request (h, sim_state);
         goto ret;
     } else if (!(zmsg = flux_event_encode ("sim_sched.event", NULL))
-             || flux_event_send (h, &zmsg) < 0) {
+             || flux_sendmsg (h, &zmsg) < 0) {
         flux_log (h, LOG_ERR,
-                  "flux_event_send: %s", strerror (errno));
+                  "flux_sendmsg: %s", strerror (errno));
         rc = -1;
     }
 
@@ -810,7 +810,7 @@ request_run (flux_lwj_t *job)
     if (!in_sim) {
         topic = xasprintf ("rexec.run.%ld", job->lwj_id);
         if (!(zmsg = flux_event_encode (topic, NULL))
-            || flux_event_send (h, &zmsg) < 0) {
+            || flux_sendmsg (h, &zmsg) < 0) {
             flux_log (h, LOG_ERR, "request_run event send failed: %s",
                       strerror (errno));
             goto done;

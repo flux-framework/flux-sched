@@ -542,7 +542,7 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else if (!(zmsg = flux_event_encode (topic, NULL))
-                   || flux_event_send (h, &zmsg) < 0) {
+                   || flux_sendmsg (h, &zmsg) < 0) {
             flux_log (h, LOG_ERR, "%s: error sending event: %s",
                       __FUNCTION__, strerror (errno));
         } else {
@@ -759,7 +759,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         } else {
             zmsg_t *zmsg = flux_event_encode ("sched.res.event", NULL);
 
-            if (!zmsg || flux_event_send (h, &zmsg) < 0) {
+            if (!zmsg || flux_sendmsg (h, &zmsg) < 0) {
                 flux_log (h, LOG_ERR, "%s: error sending event: %s",
                           __FUNCTION__, strerror (errno));
             } else
