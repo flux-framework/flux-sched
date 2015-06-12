@@ -47,8 +47,9 @@ typedef struct {
 	double prev_sim_time;
 } ctx_t;
 
-static void freectx (ctx_t *ctx)
+static void freectx (void *arg)
 {
+    ctx_t *ctx = arg;
 	free_simstate (ctx->sim_state);
 
 	while (zlist_size (ctx->queued_events) > 0)
@@ -73,7 +74,7 @@ static ctx_t *getctx (flux_t h)
 		ctx->queued_events = zlist_new ();
 		ctx->running_jobs = zlist_new ();
 		ctx->prev_sim_time = 0;
-        flux_aux_set (h, "simsrv", ctx, (FluxFreeFn)freectx);
+        flux_aux_set (h, "simsrv", ctx, freectx);
     }
 
     return ctx;

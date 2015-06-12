@@ -97,8 +97,9 @@ typedef struct {
  *                                 Utilities                                  *
  *                                                                            *
  ******************************************************************************/
-static void freectx (ssrvctx_t *ctx)
+static void freectx (void *arg)
 {
+    ssrvctx_t *ctx = arg;
     /* FIXME: we probably need some item free hooked into the lists
      * ignore this for a while.
      */
@@ -125,7 +126,7 @@ static ssrvctx_t *getctx (flux_t h)
         ctx->sops.dso = NULL;
         ctx->sops.find_resources = NULL;
         ctx->sops.select_resources = NULL;
-        flux_aux_set (h, "schedsrv", ctx, (FluxFreeFn)freectx);
+        flux_aux_set (h, "schedsrv", ctx, freectx);
     }
     return ctx;
 }

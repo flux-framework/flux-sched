@@ -47,8 +47,9 @@ typedef struct {
     int rank;
 } ctx_t;
 
-static void freectx (ctx_t *ctx)
+static void freectx (void *arg)
 {
+    ctx_t *ctx = arg;
 	free_simstate (ctx->sim_state);
     free (ctx);
 }
@@ -63,7 +64,7 @@ static ctx_t *getctx (flux_t h)
         ctx->master = flux_treeroot (h);
         ctx->rank = flux_rank (h);
 		ctx->sim_state = new_simstate ();
-        flux_aux_set (h, "simsrv", ctx, (FluxFreeFn)freectx);
+        flux_aux_set (h, "simsrv", ctx, freectx);
     }
 
     return ctx;
