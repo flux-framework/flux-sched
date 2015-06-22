@@ -155,7 +155,7 @@ int main (int argc, char *argv[])
 
     memory = Jnew ();
     Jadd_str (memory, "type", "memory");
-    Jadd_int (memory, "req_qty", 100);
+    Jadd_int (memory, "size", 100);
 
     ja = Jnew_ar ();
     json_object_array_add (ja, child_core);

@@ -265,6 +265,7 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     const char *tmp = NULL;
     const char *type = NULL;
     int64_t id;
+    int64_t size;
     JSON o = NULL;
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
@@ -296,15 +297,11 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     if (parent) {
         asprintf (&fullname, "%s.%s.%ld", parent->name, name, id);
         parent_tree = parent->phys_tree;
-        if (!strncmp (type, "memory", 6)) {
-            int64_t items;
-            resrc_pool_t *pool;
-
-            Jget_int64 (o, "size", &items);
-            pool = resrc_new_pool (items);
+        if (Jget_int64 (o, "size", &size) && (size > 1)) {
+            resrc_pool_t *pool = resrc_new_pool (size);
             if (pool) {
                 zhash_insert (parent->pools, type, pool);
-                /* we've added a memory pool and so we're done */
+                /* we've added a pool (no children), so we're done */
                 goto ret;
             } else {
                 oom ();
@@ -517,7 +514,6 @@ int resrc_search_flat_resources (resources_t resrcs_in,
     char *resrc_id = NULL;
     const char *type = NULL;
     int nfound = 0;
-    int req_qty = 0;
     resrc_t resrc;
     zlist_t *resrc_ids;
 
@@ -526,8 +522,6 @@ int resrc_search_flat_resources (resources_t resrcs_in,
     }
 
     Jget_str (req_res, "type", &type);
-    Jget_int (req_res, "req_qty", &req_qty);
-
     resrc_ids = zhash_keys (resrcs);
     resrc_id = zlist_first (resrc_ids);
     while (resrc_id) {
@@ -782,6 +776,7 @@ ret:
 resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 {
     const char *type = NULL;
+    int64_t size;
     JSON jtago = NULL;  /* json tag object */
     json_object_iter iter;
     resrc_t resrc = NULL;
@@ -790,20 +785,13 @@ resrc_t resrc_new_from_json (JSON o, resrc_t parent)
         goto ret;
 
     if (parent) {
-        if (!strncmp (type, "memory", 6)) {
-            int64_t items;
-            resrc_pool_t *pool;
-
-            if (Jget_int64 (o, "req_qty", &items)) {
-                pool = resrc_new_pool (items);
-                if (pool) {
-                    zhash_insert (parent->pools, type, pool);
-                    goto ret;
-                } else {
-                    oom ();
-                }
+        if (Jget_int64 (o, "size", &size) && (size > 1)) {
+            resrc_pool_t *pool = resrc_new_pool (size);
+            if (pool) {
+                zhash_insert (parent->pools, type, pool);
+                goto ret;
             } else {
-                printf ("missing size for memory resource\n");
+                oom ();
             }
         }
     }
