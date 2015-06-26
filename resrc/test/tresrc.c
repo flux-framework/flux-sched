@@ -50,8 +50,10 @@ static void test_select_children (resrc_tree_t rt)
 {
     if (rt) {
         resrc_t resrc = resrc_tree_resrc (rt);
-        if (resrc_has_pool (resrc, "memory")) {
-            resrc_select_pool_items (resrc, "memory", 100);
+        if (strcmp (resrc_type(resrc), "memory")) {
+            resrc_stage_resrc (resrc, 1);
+        } else {
+            resrc_stage_resrc (resrc, 100);
         }
         if (zlist_size ((zlist_t*)resrc_tree_children(rt))) {
             resrc_tree_t child = zlist_first ((zlist_t*)
@@ -68,7 +70,7 @@ static void test_select_children (resrc_tree_t rt)
  * Select some resources from the found trees
  */
 static resrc_tree_list_t test_select_resources (resrc_tree_list_t found_trees,
-                                                int skip)
+                                                int select)
 {
     resrc_tree_list_t selected_res = resrc_tree_new_list ();
     resrc_tree_t rt;
@@ -76,9 +78,10 @@ static resrc_tree_list_t test_select_resources (resrc_tree_list_t found_trees,
 
     rt = resrc_tree_list_first (found_trees);
     while (rt) {
-        if (!(count % skip)) {
+        if (count == select) {
             test_select_children (rt);
             zlist_append ((zlist_t *) selected_res, rt);
+            break;
         }
         count++;
         rt = resrc_tree_list_next (found_trees);
@@ -155,6 +158,7 @@ int main (int argc, char *argv[])
 
     memory = Jnew ();
     Jadd_str (memory, "type", "memory");
+    Jadd_int (memory, "req_qty", 1);
     Jadd_int (memory, "size", 100);
 
     ja = Jnew_ar ();
@@ -235,7 +239,7 @@ int main (int argc, char *argv[])
     ok (!rc, "successfully allocated resources for job 3");
     zlist_destroy ((zlist_t**) &selected_trees);
 
-    selected_trees = test_select_resources (found_trees, 2);
+    selected_trees = test_select_resources (found_trees, 4);
     rc = resrc_tree_list_reserve (selected_trees, 4);
     ok (!rc, "successfully reserved resources for job 4");
     zlist_destroy ((zlist_t**) &selected_trees);

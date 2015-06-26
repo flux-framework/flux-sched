@@ -566,6 +566,7 @@ static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
     resrc_tree_t resrc_tree = NULL;
     resrc_tree_t child_tree = NULL;
     bool found = false;
+    bool success = false;
 
     resrc_tree = zlist_first (r_trees);
     while (resrc_tree) {
@@ -581,6 +582,7 @@ static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
                                         available)) {
                         resrc_reqst->nfound++;
                         found = true;
+                        success = true;
                     } else {
                         resrc_tree_destroy (child_tree);
                     }
@@ -589,6 +591,7 @@ static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
                 (void) resrc_tree_new (parent_tree, resrc_tree->resrc);
                 resrc_reqst->nfound++;
                 found = true;
+                success = true;
             }
         }
         /*
@@ -601,7 +604,7 @@ static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
                 child_tree = resrc_tree_new (parent_tree, resrc_tree->resrc);
                 if (match_child (resrc_tree->children, resrc_reqst, child_tree,
                                  available)) {
-                    found = true;
+                    success = true;
                 } else {
                     resrc_tree_destroy (child_tree);
                 }
@@ -610,7 +613,7 @@ static bool match_child (zlist_t *r_trees, resrc_reqst_t resrc_reqst,
         resrc_tree = zlist_next (r_trees);
     }
 
-    return found;
+    return success;
 }
 
 /*
