@@ -40,6 +40,16 @@ char *resrc_name (resrc_t resrc);
 int64_t resrc_id (resrc_t resrc);
 
 /*
+ * Return the size of the resource
+ */
+size_t resrc_size (resrc_t resrc);
+
+/*
+ * Return the resource state as a string
+ */
+char* resrc_state (resrc_t resrc);
+
+/*
  * Return the physical tree for the resouce
  */
 resrc_tree_t resrc_phys_tree (resrc_t resrc);
@@ -78,7 +88,7 @@ size_t resrc_list_size ();
  * Create a new resource object
  */
 resrc_t resrc_new_resource (const char *type, const char *name, int64_t id,
-                                uuid_t uuid);
+                            uuid_t uuid, size_t size);
 
 /*
  * Create a copy of a resource object
@@ -141,14 +151,9 @@ int resrc_search_flat_resources (resources_t resrcs, resource_list_t found,
                                  JSON req_res, bool available);
 
 /*
- * Determine whether a resource contains a pool type
+ * Stage size elements of a resource
  */
-bool resrc_has_pool (resrc_t resrc, char* type);
-
-/*
- * Select specified items from resource pool
- */
-int resrc_select_pool_items (resrc_t resrc, char* type, int64_t items);
+void resrc_stage_resrc(resrc_t resrc, size_t size);
 
 /*
  * Allocate a resource to a job
