@@ -320,7 +320,7 @@ resources_t resrc_generate_resources (const char *path, char *resource)
     if (!(resrcs = zhash_new ()))
         goto ret;
 
-    if ((nodelist = getenv ("SLURM_JOB_NODELIST"))) {
+    if ((nodelist = getenv ("SLURM_NODELIST"))) {
         hostset = hostset_create (nodelist);
         if (hostset)
             slurm_job = true;
