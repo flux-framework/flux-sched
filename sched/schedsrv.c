@@ -55,7 +55,7 @@
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t h, void *arg);
 #endif
-static int res_event_cb (flux_t h, int t, zmsg_t **zmsg, void *arg);
+static int res_event_cb (flux_t h, int t, flux_msg_t **msg, void *arg);
 static int job_status_cb (JSON jcb, void *arg, int errnum);
 
 /******************************************************************************
@@ -491,8 +491,9 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %ld",
                   job->lwj_id);
-        goto done; ;
+        goto done;
     }
+    rc = 0;
 
 done:
     if (jcb)
@@ -537,18 +538,18 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
                   job->lwj_id);
     } else {
         char *topic = NULL;
-        zmsg_t *zmsg = NULL;
+        flux_msg_t *msg = NULL;
 
         if (asprintf (&topic, "wrexec.run.%ld", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
-        } else if (!(zmsg = flux_event_encode (topic, NULL))
-                   || flux_sendmsg (h, &zmsg) < 0) {
+        } else if (!(msg = flux_event_encode (topic, NULL))
+                   || flux_send (h, msg, 0) < 0) {
             flux_log (h, LOG_ERR, "%s: error sending event: %s",
                       __FUNCTION__, strerror (errno));
         } else {
             flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
-            zmsg_destroy (&zmsg);
+            flux_msg_destroy (msg);
             rc = 0;
         }
         free (topic);
@@ -758,13 +759,13 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
             flux_log (h, LOG_ERR, "%s: failed to release resources for job %ld",
                       __FUNCTION__, job->lwj_id);
         } else {
-            zmsg_t *zmsg = flux_event_encode ("sched.res.event", NULL);
+            flux_msg_t *msg = flux_event_encode ("sched.res.event", NULL);
 
-            if (!zmsg || flux_sendmsg (h, &zmsg) < 0) {
+            if (!msg || flux_send (h, msg, 0) < 0) {
                 flux_log (h, LOG_ERR, "%s: error sending event: %s",
                           __FUNCTION__, strerror (errno));
             } else
-                zmsg_destroy (&zmsg);
+                flux_msg_destroy (msg);
         }
         break;
     case J_CANCELLED:
@@ -799,7 +800,7 @@ bad_transition:
  * For now, the only resource event is raised when a job releases its
  * RDL allocation.
  */
-static int res_event_cb (flux_t h, int t, zmsg_t **zmsg, void *arg)
+static int res_event_cb (flux_t h, int t, flux_msg_t **msg, void *arg)
 {
     schedule_jobs (getctx ((flux_t)arg));
     return 0;
