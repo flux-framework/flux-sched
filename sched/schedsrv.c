@@ -491,8 +491,9 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %ld",
                   job->lwj_id);
-        goto done; ;
+        goto done;
     }
+    rc = 0;
 
 done:
     if (jcb)
