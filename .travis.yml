@@ -8,6 +8,7 @@ compiler:
 
 cache:
   directories:
+    - $HOME/flux-core
     - $HOME/local
     - $HOME/.luarocks
     - $HOME/.ccache
@@ -40,9 +41,9 @@ before_install:
 
 script:
  - export CC="ccache $CC"
- - git clone https://github.com/flux-framework/flux-core ../flux-core
- - (cd ../flux-core && pwd && ./autogen.sh && ./configure && make -j 2)
- - (cd ../flux-core/src/common/libtap && make check)
- - ./config ../flux-core && make check
+ - test -d  $HOME/flux-core/.git || git clone https://github.com/flux-framework/flux-core $HOME/flux-core
+ - (cd $HOME/flux-core && git pull && ./autogen.sh && ./configure && make -j 2)
+ - (cd $HOME/flux-core/src/common/libtap && make check)
+ - ./config $HOME/flux-core && make check
 
 
