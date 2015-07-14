@@ -47,11 +47,13 @@ run_timeout() {
 test_under_flux() {
     size=$1
     tdir=$2
+    log_file="$TEST_NAME.broker.log"
     if test -n "$TEST_UNDER_FLUX_ACTIVE" ; then
+        cleanup rm "${SHARNESS_TEST_DIRECTORY:-..}/$log_file"
         unset TEST_UNDER_FLUX_ACTIVE
         return
     fi
-    quiet="-o -q"
+    quiet="-o -q,-L${log_file}"
     if test "$verbose" = "t"; then
         flags="${flags} --verbose"
         quiet=""
