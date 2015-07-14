@@ -67,7 +67,7 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux -M${tdir}/sched -C${tdir}/rdl/?.so -L${tdir}/rdl/?.lua start --size=${size} ${quiet} "sh $0 ${flags}"
+      exec flux -M${tdir}/sched start --size=${size} ${quiet} "sh $0 ${flags}"
 }
 
 
