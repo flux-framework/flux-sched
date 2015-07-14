@@ -5,8 +5,8 @@ LIBS = $(FLUX_LIBS) $(RDL_LIBS) $(RESRC_LIBS)
 
 TESTRESRC_INPUT_FILE := $(abs_topdir)/conf/hype.lua
 
-LUA_PATH = $(abs_topdir)/rdl/?.lua;$(FLUX_SRCDIR)/src/bindings/lua/?.lua;;;
-LUA_CPATH = $(abs_topdir)/rdl/?.so;$(FLUX_SRCDIR)/src/bindings/lua/.libs/?.so;;;
+LUA_PATH := $(LUA_PATH);$(abs_topdir)/rdl/?.lua;$(FLUX_SRCDIR)/src/bindings/lua/?.lua;;;
+LUA_CPATH := $(LUA_CPATH);$(abs_topdir)/rdl/?.so;$(FLUX_SRCDIR)/src/bindings/lua/.libs/?.so;;;
 
 export CFLAGS TESTRESRC_INPUT_FILE LUA_PATH LUA_CPATH
 
