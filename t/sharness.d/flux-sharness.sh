@@ -47,11 +47,13 @@ run_timeout() {
 test_under_flux() {
     size=$1
     tdir=$2
+    log_file="$TEST_NAME.broker.log"
     if test -n "$TEST_UNDER_FLUX_ACTIVE" ; then
+        cleanup rm "${SHARNESS_TEST_DIRECTORY:-..}/$log_file"
         unset TEST_UNDER_FLUX_ACTIVE
         return
     fi
-    quiet="-o -q"
+    quiet="-o -q,-L${log_file}"
     if test "$verbose" = "t"; then
         flags="${flags} --verbose"
         quiet=""
@@ -65,7 +67,7 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux -M${tdir}/sched -C${tdir}/rdl/?.so -L${tdir}/rdl/?.lua start --size=${size} ${quiet} "sh $0 ${flags}"
+      exec flux -M${tdir}/sched start --size=${size} ${quiet} "sh $0 ${flags}"
 }
 
 
