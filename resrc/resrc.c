@@ -247,7 +247,7 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     int64_t id;
     size_t size;
     JSON o = NULL;
-    JSON jtago = NULL;  /* json tag object */
+    JSON jtagso = NULL;  /* json tags object */
     json_object_iter iter;
     resrc_t resrc = NULL;
     resrc_tree_t parent_tree = NULL;
@@ -264,7 +264,7 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     name = rdl_resource_name(r);    /* includes the id */
     path = rdl_resource_path(r);
     size = rdl_resource_size(r);
-    jtago = Jobj_get (o, "tags");
+    jtagso = Jobj_get (o, "tags");
 
     /*
      * If we are running within a SLURM allocation, ignore any rdl
@@ -284,9 +284,14 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
         resrc->phys_tree = resrc_tree;
         zhash_insert (resrcs, path, resrc);
         zhash_freefn (resrcs, path, resrc_resource_destroy);
-        if (jtago) {
-            json_object_object_foreachC (jtago, iter) {
-                zhash_insert (resrc->tags, iter.key, "t");
+        if (jtagso) {
+            JSON jtago;        /* json tag object */
+            char *tag;
+
+            json_object_object_foreachC (jtagso, iter) {
+                jtago = Jget (iter.val);
+                tag = strdup (json_object_get_string (jtago));
+                zhash_insert (resrc->tags, iter.key, tag);
             }
         }
 
@@ -366,7 +371,7 @@ void resrc_print_resource (resrc_t resrc)
                 resrc->type, resrc->name, resrc->id, resrc_state (resrc), uuid,
                 resrc->size, resrc->available);
         if (zhash_size (resrc->tags)) {
-            printf (", tags");
+            printf (", tags:");
             tag = zhash_first (resrc->tags);
             while (tag) {
                 printf (", %s", (char *)zhash_cursor (resrc->tags));
@@ -670,7 +675,7 @@ ret:
 
 resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 {
-    JSON jtago = NULL;  /* json tag object */
+    JSON jtagso = NULL;  /* json tags object */
     const char *type = NULL;
     int64_t ssize;
     json_object_iter iter;
@@ -684,10 +689,15 @@ resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 
     resrc = resrc_new_resource (type, NULL, -1, 0, size);
     if (resrc) {
-        jtago = Jobj_get (o, "tags");
-        if (jtago) {
-            json_object_object_foreachC (jtago, iter) {
-                zhash_insert (resrc->tags, iter.key, "t");
+        jtagso = Jobj_get (o, "tags");
+        if (jtagso) {
+            JSON jtago;        /* json tag object */
+            char *tag;
+
+            json_object_object_foreachC (jtagso, iter) {
+                jtago = Jget (iter.val);
+                tag = strdup (json_object_get_string (jtago));
+                zhash_insert (resrc->tags, iter.key, tag);
             }
         }
     }
