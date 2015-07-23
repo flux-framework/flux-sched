@@ -835,6 +835,25 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
     return action (ctx, j, ns);
 }
 
+static zhash_t *zhash_fromargv (int argc, char **argv)
+{
+    zhash_t *args = zhash_new ();
+    int i;
+
+    if (args) {
+        for (i = 0; i < argc; i++) {
+            char *key = xstrdup (argv[i]);
+            char *val = strchr (key, '=');
+            if (val) {
+                *val++ = '\0';
+                zhash_update (args, key, xstrdup (val));
+                zhash_freefn (args, key, free);
+            }
+            free (key);
+        }
+    }
+    return args;
+}
 
 /******************************************************************************
  *                                                                            *
@@ -842,12 +861,15 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
  *                                                                            *
  ******************************************************************************/
 
-int mod_main (flux_t h, zhash_t *args)
+int mod_main (flux_t h, int argc, char **argv)
 {
     int rc = -1;
     ssrvctx_t *ctx = NULL;
     char *schedplugin = "sched.plugin1";
+    zhash_t *args = zhash_fromargv (argc, argv);
 
+    if (!args)
+        oom ();
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
         goto done;
@@ -880,6 +902,7 @@ int mod_main (flux_t h, zhash_t *args)
     rc = 0;
 
 done:
+    zhash_destroy (&args);
     return rc;
 }
 
