@@ -2,7 +2,7 @@ include ../Makefile.inc
 
 SUBDIRS = test
 CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
-LIBS = $(FLUX_LIBS) $(RDL_LIBS)
+LIBS = $(FLUX_LIBS) $(RDL_LIBS) -luuid
 
 X_OBJS_LIB = hostlist.o
 
