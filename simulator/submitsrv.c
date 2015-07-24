@@ -39,6 +39,8 @@
 static const char *module_name = "submit";
 static zlist_t *jobs;  //TODO: remove from "global" scope
 
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3,0,1)
 //Compare two job_t's based on submit time
 //Return true if they should be swapped
 //AKA job1 was submitted after job2
@@ -48,6 +50,24 @@ bool compare_job_t (void *item1, void *item2)
 	job_t *job2 = (job_t *) item2;
 	return job1->submit_time > job2->submit_time;
 }
+#else
+// Compare two job_t's based on submit time
+// Return > 0 if job1 was submitted after job2,
+//        < 0 if job1 was submitted before job2,
+//        = 0 if submit times are (essentially) equivalent
+int compare_job_t (void *x, void *y)
+{
+	double t1 = ((job_t *) x)->submit_time;
+	double t2 = ((job_t *) y)->submit_time;
+	double delta = t1 - t2;
+	if (abs (delta) < DBL_EPSILON)
+		return 0;
+	else if (delta > 0)
+		return -1;
+	else
+		return (-1);
+}
+#endif /* CZMQ_VERSION > 3.0.0 */
 
 //Figure out when the next submit time is
 //This assumes the list is sorted by submit time
