@@ -33,6 +33,7 @@
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
 static const char *module_name = "submit";
@@ -320,8 +321,32 @@ static msghandler_t htab[] = {
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-int mod_main(flux_t h, zhash_t *args)
+/* FIXME: make this go away by changing arg style */
+static zhash_t *zhash_fromargv (int argc, char **argv)
 {
+    zhash_t *args = zhash_new ();
+    int i;
+
+    if (args) {
+        for (i = 0; i < argc; i++) {
+            char *key = xstrdup (argv[i]);
+            char *val = strchr (key, '=');
+            if (val) {
+                *val++ = '\0';
+                zhash_update (args, key, xstrdup (val));
+                zhash_freefn (args, key, free);
+            }
+            free (key);
+        }
+    }
+    return args;
+}
+
+int mod_main(flux_t h, int argc, char **argv)
+{
+	zhash_t *args = zhash_fromargv (argc, argv);
+	if (!args)
+		oom ();
 	char *csv_filename;
 	if (flux_rank (h) != 0) {
 		flux_log (h, LOG_ERR, "submit module must only run on rank 0");
@@ -353,7 +378,7 @@ int mod_main(flux_t h, zhash_t *args)
 		flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
 		return -1;
 	}
-
+	zhash_destroy (&args);
 	return 0;
 }
 

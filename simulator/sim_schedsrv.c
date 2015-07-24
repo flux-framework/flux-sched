@@ -1468,13 +1468,36 @@ static msghandler_t htab[] = {
 
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-int mod_main (flux_t p, zhash_t *args)
+/* FIXME: make this go away by changing arg style */
+static zhash_t *zhash_fromargv (int argc, char **argv)
+{
+    zhash_t *args = zhash_new ();
+    int i;
+
+    if (args) {
+        for (i = 0; i < argc; i++) {
+            char *key = xstrdup (argv[i]);
+            char *val = strchr (key, '=');
+            if (val) {
+                *val++ = '\0';
+                zhash_update (args, key, xstrdup (val));
+                zhash_freefn (args, key, free);
+            }
+            free (key);
+        }
+    }
+    return args;
+}
+
+int mod_main (flux_t p, int argc, char **argv)
 {
     int rc = 0;
     char *path;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
-
+    zhash_t *args = zhash_fromargv (argc, argv);
+    if (!args)
+        oom ();
     h = p;
     if (flux_rank (h) != 0) {
         flux_log (h, LOG_ERR, "sim_ched module must only run on rank 0");
@@ -1582,6 +1605,7 @@ skip_for_sim:
     rdllib_close(l);
 
 ret:
+    zhash_destroy (&args);
     return rc;
 }
 
