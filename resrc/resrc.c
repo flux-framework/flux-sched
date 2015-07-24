@@ -294,6 +294,8 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
                 jpropo = Jget (iter.val);
                 property = strdup (json_object_get_string (jpropo));
                 zhash_insert (resrc->properties, iter.key, property);
+                zhash_freefn (resrc->properties, iter.key, free);
+                Jput (jpropo);
             }
         }
         if (jtagso) {
@@ -304,6 +306,8 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
                 jtago = Jget (iter.val);
                 tag = strdup (json_object_get_string (jtago));
                 zhash_insert (resrc->tags, iter.key, tag);
+                zhash_freefn (resrc->tags, iter.key, free);
+                Jput (jtago);
             }
         }
 
@@ -548,10 +552,12 @@ int resrc_allocate_resource (resrc_t resrc, int64_t job_id)
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
+        zhash_freefn (resrc->allocs, id_ptr, free);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
         rc = 0;
+        free (id_ptr);
     }
 ret:
     return rc;
@@ -598,12 +604,14 @@ int resrc_reserve_resource (resrc_t resrc, int64_t job_id)
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+        zhash_freefn (resrc->reservtns, id_ptr, free);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         if (resrc->state != RESOURCE_ALLOCATED)
             resrc->state = RESOURCE_RESERVED;
 
         rc = 0;
+        free (id_ptr);
     }
 ret:
     return rc;
@@ -670,7 +678,7 @@ int resrc_release_resource (resrc_t resrc, int64_t rel_job)
         goto ret;
     }
 
-    asprintf(&id_ptr, "%ld", rel_job);
+    asprintf (&id_ptr, "%ld", rel_job);
     size_ptr = zhash_lookup (resrc->allocs, id_ptr);
     if (size_ptr) {
         resrc->available += *size_ptr;
@@ -682,6 +690,7 @@ int resrc_release_resource (resrc_t resrc, int64_t rel_job)
                 resrc->state = RESOURCE_IDLE;
         }
     }
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -736,6 +745,8 @@ resrc_t resrc_new_from_json (JSON o, resrc_t parent)
                 jpropo = Jget (iter.val);
                 property = strdup (json_object_get_string (jpropo));
                 zhash_insert (resrc->properties, iter.key, property);
+                zhash_freefn (resrc->properties, iter.key, free);
+                Jput (jpropo);
             }
         }
 
@@ -748,6 +759,8 @@ resrc_t resrc_new_from_json (JSON o, resrc_t parent)
                 jtago = Jget (iter.val);
                 tag = strdup (json_object_get_string (jtago));
                 zhash_insert (resrc->tags, iter.key, tag);
+                zhash_freefn (resrc->tags, iter.key, free);
+                Jput (jtago);
             }
         }
     }
