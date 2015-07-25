@@ -247,7 +247,8 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     int64_t id;
     size_t size;
     JSON o = NULL;
-    JSON jtago = NULL;  /* json tag object */
+    JSON jpropso = NULL; /* json properties object */
+    JSON jtagso = NULL;  /* json tags object */
     json_object_iter iter;
     resrc_t resrc = NULL;
     resrc_tree_t parent_tree = NULL;
@@ -264,7 +265,8 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     name = rdl_resource_name(r);    /* includes the id */
     path = rdl_resource_path(r);
     size = rdl_resource_size(r);
-    jtago = Jobj_get (o, "tags");
+    jpropso = Jobj_get (o, "properties");
+    jtagso = Jobj_get (o, "tags");
 
     /*
      * If we are running within a SLURM allocation, ignore any rdl
@@ -284,9 +286,28 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
         resrc->phys_tree = resrc_tree;
         zhash_insert (resrcs, path, resrc);
         zhash_freefn (resrcs, path, resrc_resource_destroy);
-        if (jtago) {
-            json_object_object_foreachC (jtago, iter) {
-                zhash_insert (resrc->tags, iter.key, "t");
+        if (jpropso) {
+            JSON jpropo;        /* json property object */
+            char *property;
+
+            json_object_object_foreachC (jpropso, iter) {
+                jpropo = Jget (iter.val);
+                property = strdup (json_object_get_string (jpropo));
+                zhash_insert (resrc->properties, iter.key, property);
+                zhash_freefn (resrc->properties, iter.key, free);
+                Jput (jpropo);
+            }
+        }
+        if (jtagso) {
+            JSON jtago;        /* json tag object */
+            char *tag;
+
+            json_object_object_foreachC (jtagso, iter) {
+                jtago = Jget (iter.val);
+                tag = strdup (json_object_get_string (jtago));
+                zhash_insert (resrc->tags, iter.key, tag);
+                zhash_freefn (resrc->tags, iter.key, free);
+                Jput (jtago);
             }
         }
 
@@ -356,6 +377,7 @@ int resrc_to_json (JSON o, resrc_t resrc)
 void resrc_print_resource (resrc_t resrc)
 {
     char uuid[40];
+    char *property;
     char *tag;
     size_t *size_ptr;
 
@@ -365,8 +387,17 @@ void resrc_print_resource (resrc_t resrc)
                 " avail: %lu",
                 resrc->type, resrc->name, resrc->id, resrc_state (resrc), uuid,
                 resrc->size, resrc->available);
+        if (zhash_size (resrc->properties)) {
+            printf (", properties:");
+            property = zhash_first (resrc->properties);
+            while (property) {
+                printf (" %s: %s", (char *)zhash_cursor (resrc->properties),
+                        property);
+                property = zhash_next (resrc->properties);
+            }
+        }
         if (zhash_size (resrc->tags)) {
-            printf (", tags");
+            printf (", tags:");
             tag = zhash_first (resrc->tags);
             while (tag) {
                 printf (", %s", (char *)zhash_cursor (resrc->tags));
@@ -418,11 +449,26 @@ void resrc_print_resources (resources_t resrcs)
 bool resrc_match_resource (resrc_t resrc, resrc_t sample, bool available)
 {
     bool rc = false;
+    char *sproperty = NULL;     /* sample property */
     char *stag = NULL;          /* sample tag */
 
     if (!strcmp (resrc->type, sample->type) && sample->size) {
         if (sample->size > resrc->available)
             goto ret;
+
+        if (zhash_size (sample->properties)) {
+            if (!zhash_size (resrc->properties)) {
+                goto ret;
+            }
+            /* be sure the resource has all the requested properties */
+            /* TODO: validate the value of each property */
+            zhash_first (sample->properties);
+            do {
+                sproperty = (char *)zhash_cursor (sample->properties);
+                if (!zhash_lookup (resrc->properties, sproperty))
+                    goto ret;
+            } while (zhash_next (sample->properties));
+        }
 
         if (zhash_size (sample->tags)) {
             if (!zhash_size (resrc->tags)) {
@@ -506,10 +552,12 @@ int resrc_allocate_resource (resrc_t resrc, int64_t job_id)
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
+        zhash_freefn (resrc->allocs, id_ptr, free);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
         rc = 0;
+        free (id_ptr);
     }
 ret:
     return rc;
@@ -556,12 +604,14 @@ int resrc_reserve_resource (resrc_t resrc, int64_t job_id)
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+        zhash_freefn (resrc->reservtns, id_ptr, free);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         if (resrc->state != RESOURCE_ALLOCATED)
             resrc->state = RESOURCE_RESERVED;
 
         rc = 0;
+        free (id_ptr);
     }
 ret:
     return rc;
@@ -628,7 +678,7 @@ int resrc_release_resource (resrc_t resrc, int64_t rel_job)
         goto ret;
     }
 
-    asprintf(&id_ptr, "%ld", rel_job);
+    asprintf (&id_ptr, "%ld", rel_job);
     size_ptr = zhash_lookup (resrc->allocs, id_ptr);
     if (size_ptr) {
         resrc->available += *size_ptr;
@@ -640,6 +690,7 @@ int resrc_release_resource (resrc_t resrc, int64_t rel_job)
                 resrc->state = RESOURCE_IDLE;
         }
     }
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -670,7 +721,8 @@ ret:
 
 resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 {
-    JSON jtago = NULL;  /* json tag object */
+    JSON jpropso = NULL; /* json properties object */
+    JSON jtagso = NULL;  /* json tags object */
     const char *type = NULL;
     int64_t ssize;
     json_object_iter iter;
@@ -684,10 +736,31 @@ resrc_t resrc_new_from_json (JSON o, resrc_t parent)
 
     resrc = resrc_new_resource (type, NULL, -1, 0, size);
     if (resrc) {
-        jtago = Jobj_get (o, "tags");
-        if (jtago) {
-            json_object_object_foreachC (jtago, iter) {
-                zhash_insert (resrc->tags, iter.key, "t");
+        jpropso = Jobj_get (o, "properties");
+        if (jpropso) {
+            JSON jpropo;        /* json property object */
+            char *property;
+
+            json_object_object_foreachC (jpropso, iter) {
+                jpropo = Jget (iter.val);
+                property = strdup (json_object_get_string (jpropo));
+                zhash_insert (resrc->properties, iter.key, property);
+                zhash_freefn (resrc->properties, iter.key, free);
+                Jput (jpropo);
+            }
+        }
+
+        jtagso = Jobj_get (o, "tags");
+        if (jtagso) {
+            JSON jtago;        /* json tag object */
+            char *tag;
+
+            json_object_object_foreachC (jtagso, iter) {
+                jtago = Jget (iter.val);
+                tag = strdup (json_object_get_string (jtago));
+                zhash_insert (resrc->tags, iter.key, tag);
+                zhash_freefn (resrc->tags, iter.key, free);
+                Jput (jtago);
             }
         }
     }

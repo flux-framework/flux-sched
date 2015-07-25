@@ -97,6 +97,7 @@ int main (int argc, char *argv[])
     int rc = 0;
     int verbose = 0;
     JSON ja = NULL;
+    JSON jpropo = NULL; /* json property object */
     /* JSON jtago = NULL;  /\* json tag object *\/ */
     JSON child_core = NULL;
     JSON child_sock = NULL;
@@ -152,9 +153,13 @@ int main (int argc, char *argv[])
     /*
      *  Build a resource composite to search for
      */
+    jpropo = Jnew ();
+    Jadd_int (jpropo, "localid", 1);
+
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", 6);
+    json_object_object_add (child_core, "properties", jpropo);
 
     memory = Jnew ();
     Jadd_str (memory, "type", "memory");
