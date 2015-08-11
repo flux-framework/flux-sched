@@ -63,7 +63,7 @@ int compare_job_t (void *x, void *y)
 	if (abs (delta) < DBL_EPSILON)
 		return 0;
 	else if (delta > 0)
-		return -1;
+		return 1;
 	else
 		return (-1);
 }
