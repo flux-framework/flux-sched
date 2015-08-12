@@ -39,12 +39,25 @@ function Node:initialize (arg)
           id = id,
           name = basename,
           properties = arg.properties or {},
+          tags = arg.tags or {}
         }
     )
+
+	local num_sockets = 0
+	for _,_ in pairs (arg.sockets) do
+	   num_sockets = num_sockets + 1
+	end
+
+	local bw_per_socket = 0
+    if arg.tags ~= nil and arg.tags['max_bw'] ~= nil then
+	   bw_per_socket = arg.tags.max_bw / num_sockets
+    end
+
     local sockid = 0
     for _,c in pairs (arg.sockets) do
         self:add_child (Socket{ id = sockid, cpus = c,
-                                memory = arg.memory_per_socket })
+                                memory = arg.memory_per_socket,
+                                tags = { ["max_bw"] = bw_per_socket, ["alloc_bw"] = 0 }})
         sockid = sockid + 1
     end
 end
