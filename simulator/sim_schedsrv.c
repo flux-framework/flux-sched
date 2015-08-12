@@ -1468,36 +1468,13 @@ static msghandler_t htab[] = {
 
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-/* FIXME: make this go away by changing arg style */
-static zhash_t *zhash_fromargv (int argc, char **argv)
-{
-    zhash_t *args = zhash_new ();
-    int i;
-
-    if (args) {
-        for (i = 0; i < argc; i++) {
-            char *key = xstrdup (argv[i]);
-            char *val = strchr (key, '=');
-            if (val) {
-                *val++ = '\0';
-                zhash_update (args, key, xstrdup (val));
-                zhash_freefn (args, key, free);
-            }
-            free (key);
-        }
-    }
-    return args;
-}
-
 int mod_main (flux_t p, int argc, char **argv)
 {
-    int rc = 0;
-    char *path;
+    int i, rc = 0;
+    char *path = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
-    zhash_t *args = zhash_fromargv (argc, argv);
-    if (!args)
-        oom ();
+
     h = p;
     if (flux_rank (h) != 0) {
         flux_log (h, LOG_ERR, "sim_ched module must only run on rank 0");
@@ -1506,7 +1483,17 @@ int mod_main (flux_t p, int argc, char **argv)
     }
     flux_log (h, LOG_INFO, "sim_sched comms module starting");
 
-    if (!(path = zhash_lookup (args, "rdl-conf"))) {
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf")))
+            path = xstrdup (strstr (argv[i], "=") + 1);
+        else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource")))
+            resource = xstrdup (strstr (argv[i], "=") + 1);
+        else {
+            flux_log (h, LOG_ERR, "module load option %s invalid", argv[i]);
+            goto ret;
+        }
+    }
+    if (!path) {
         flux_log (h, LOG_ERR, "rdl-conf argument is not set");
         rc = -1;
         goto ret;
@@ -1518,7 +1505,7 @@ int mod_main (flux_t p, int argc, char **argv)
         rc = -1;
         goto ret;
     }
-    if (!(resource = zhash_lookup (args, "rdl-resource"))) {
+    if (!resource) {
         flux_log (h, LOG_INFO, "using default rdl resource");
         resource = "default";
     }
@@ -1605,7 +1592,7 @@ skip_for_sim:
     rdllib_close(l);
 
 ret:
-    zhash_destroy (&args);
+    free(path);
     return rc;
 }
 
