@@ -106,6 +106,8 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
+    resrc_destroy_resources (&(ctx->rctx.root_resrcs));
+    free (ctx->rctx.root_uri);
     dlclose (ctx->sops.dso);
 }
 
@@ -338,26 +340,39 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
-static int load_rdl (ssrvctx_t *ctx, zhash_t *args)
+static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
 {
-    int rc = -1;
-    const char *path = NULL;
+    int i, rc = -1;
+    char *path = NULL;
+    char *uri = NULL;
 
     setup_rdl_lua (ctx->h);
-    if (!(path = zhash_lookup (args, "rdl-conf"))) {
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf")))
+            path = xstrdup (strstr (argv[i], "=") + 1);
+        else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource")))
+            uri = xstrdup (strstr (argv[i], "=") + 1);
+        else {
+            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
+            goto done;
+        }
+    }
+
+    if (!path) {
         flux_log (ctx->h, LOG_ERR, "rdl-conf argument is not set");
         goto done;
     }
-    if (!(ctx->rctx.root_uri = zhash_lookup (args, "rdl-resource"))) {
-        flux_log (ctx->h, LOG_INFO, "using default rdl resource");
-        ctx->rctx.root_uri = "default";
-    }
+    if (uri)
+        ctx->rctx.root_uri = uri;
+    else
+        ctx->rctx.root_uri = xstrdup ("default");
 
     if (!(ctx->rctx.root_resrcs = resrc_generate_resources (path,
                                                             ctx->rctx.root_uri)))
         goto done;
-
-    flux_log (ctx->h, LOG_DEBUG, "rdl successfully loaded");
+    flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
+              ctx->rctx.root_uri, path);
+    free(path);
     rc = 0;
 done:
     return rc;
@@ -835,26 +850,6 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
     return action (ctx, j, ns);
 }
 
-static zhash_t *zhash_fromargv (int argc, char **argv)
-{
-    zhash_t *args = zhash_new ();
-    int i;
-
-    if (args) {
-        for (i = 0; i < argc; i++) {
-            char *key = xstrdup (argv[i]);
-            char *val = strchr (key, '=');
-            if (val) {
-                *val++ = '\0';
-                zhash_update (args, key, xstrdup (val));
-                zhash_freefn (args, key, free);
-            }
-            free (key);
-        }
-    }
-    return args;
-}
-
 /******************************************************************************
  *                                                                            *
  *                     Scheduler Service Module Main                          *
@@ -866,10 +861,7 @@ int mod_main (flux_t h, int argc, char **argv)
     int rc = -1;
     ssrvctx_t *ctx = NULL;
     char *schedplugin = "sched.plugin1";
-    zhash_t *args = zhash_fromargv (argc, argv);
 
-    if (!args)
-        oom ();
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
         goto done;
@@ -884,7 +876,7 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "scheduler plugin loaded");
-    if (load_rdl (ctx, args) != 0) {
+    if (load_rdl (ctx, argc, argv) != 0) {
         flux_log (h, LOG_ERR, "failed to setup and load RDL");
         goto done;
     }
@@ -902,7 +894,6 @@ int mod_main (flux_t h, int argc, char **argv)
     rc = 0;
 
 done:
-    zhash_destroy (&args);
     return rc;
 }
 
