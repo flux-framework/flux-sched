@@ -46,6 +46,7 @@
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_reqst.h"
 #include "schedsrv.h"
 
 #define DYNAMIC_SCHEDULING 0

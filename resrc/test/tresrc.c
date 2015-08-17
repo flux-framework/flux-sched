@@ -30,6 +30,7 @@
 
 #include "../resrc.h"
 #include "../resrc_tree.h"
+#include "../resrc_reqst.h"
 #include "src/common/libtap/tap.h"
 
 
