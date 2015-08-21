@@ -33,17 +33,20 @@
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
 
-typedef struct zlist_t resrc_reqst_list;
+struct resrc_reqst_list {
+    zlist_t *list;
+};
 
 struct resrc_reqst {
     resrc_reqst_t parent;
     resrc_t resrc;
     int64_t reqrd;
     int64_t nfound;
-    zlist_t *children;
+    resrc_reqst_list_t children;
 };
 
-static bool match_children (resrc_tree_list_t r_trees, zlist_t *req_trees,
+static bool match_children (resrc_tree_list_t r_trees,
+                            resrc_reqst_list_t req_trees,
                             resrc_tree_t parent_tree, bool available);
 
 /***********************************************************************
@@ -86,11 +89,11 @@ void resrc_reqst_clear_found (resrc_reqst_t resrc_reqst)
 
     if (resrc_reqst) {
         resrc_reqst->nfound = 0;
-        if (zlist_size (resrc_reqst->children)) {
-            child = zlist_first (resrc_reqst->children);
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            child = resrc_reqst_list_first (resrc_reqst->children);
             while (child) {
                 resrc_reqst_clear_found (child);
-                child = zlist_next (resrc_reqst->children);
+                child = resrc_reqst_list_next (resrc_reqst->children);
             }
         }
     }
@@ -99,14 +102,14 @@ void resrc_reqst_clear_found (resrc_reqst_t resrc_reqst)
 size_t resrc_reqst_num_children (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
-        return zlist_size (resrc_reqst->children);
-    return -1;
+        return zlist_size (resrc_reqst->children->list);
+    return 0;
 }
 
 resrc_reqst_list_t resrc_reqst_children (resrc_reqst_t resrc_reqst)
 {
     if (resrc_reqst)
-        return (resrc_reqst_list_t)resrc_reqst->children;
+        return resrc_reqst->children;
     return NULL;
 }
 
@@ -115,7 +118,7 @@ int resrc_reqst_add_child (resrc_reqst_t parent, resrc_reqst_t child)
     int rc = -1;
     if (parent) {
         child->parent = parent;
-        rc = zlist_append (parent->children, child);
+        rc = resrc_reqst_list_append (parent->children, child);
     }
 
     return rc;
@@ -129,7 +132,7 @@ resrc_reqst_t resrc_reqst_new (resrc_t resrc, int64_t qty)
         resrc_reqst->resrc = resrc;
         resrc_reqst->reqrd = qty;
         resrc_reqst->nfound = 0;
-        resrc_reqst->children = zlist_new ();
+        resrc_reqst->children = resrc_reqst_new_list ();
     } else {
         oom ();
     }
@@ -181,11 +184,11 @@ void resrc_reqst_print (resrc_reqst_t resrc_reqst)
     if (resrc_reqst) {
         printf ("%ld of %ld ", resrc_reqst->nfound, resrc_reqst->reqrd);
         resrc_print_resource (resrc_reqst->resrc);
-        if (zlist_size (resrc_reqst->children)) {
-            child = zlist_first (resrc_reqst->children);
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            child = resrc_reqst_list_first (resrc_reqst->children);
             while (child) {
                 resrc_reqst_print (child);
-                child = zlist_next (resrc_reqst->children);
+                child = resrc_reqst_list_next (resrc_reqst->children);
             }
         }
     }
@@ -197,15 +200,15 @@ void resrc_reqst_destroy (resrc_reqst_t resrc_reqst)
 
     if (resrc_reqst) {
         if (resrc_reqst->parent)
-            zlist_remove (resrc_reqst->parent->children, resrc_reqst);
-        if (zlist_size (resrc_reqst->children)) {
-            child = zlist_first (resrc_reqst->children);
+            resrc_reqst_list_remove (resrc_reqst->parent->children, resrc_reqst);
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            child = resrc_reqst_list_first (resrc_reqst->children);
             while (child) {
                 resrc_reqst_destroy (child);
-                child = zlist_next (resrc_reqst->children);
+                child = resrc_reqst_list_next (resrc_reqst->children);
             }
         }
-        zlist_destroy (&resrc_reqst->children);
+        resrc_reqst_list_destroy (resrc_reqst->children);
         resrc_resource_destroy (resrc_reqst->resrc);
         free (resrc_reqst);
     }
@@ -217,46 +220,58 @@ void resrc_reqst_destroy (resrc_reqst_t resrc_reqst)
 
 resrc_reqst_list_t resrc_reqst_new_list ()
 {
-    return (resrc_reqst_list_t) zlist_new ();
+    resrc_reqst_list_t new_list = xzmalloc (sizeof (struct resrc_reqst_list));
+    new_list->list = zlist_new ();
+    return new_list;
 }
 
 int resrc_reqst_list_append (resrc_reqst_list_t rrl, resrc_reqst_t rr)
 {
-    if (rrl && rr)
-        return zlist_append ((zlist_t *) rrl, (void *) rr);
+    if (rrl && rrl->list && rr)
+        return zlist_append  (rrl->list, (void *) rr);
     return -1;
 }
 
 resrc_reqst_t resrc_reqst_list_first (resrc_reqst_list_t rrl)
 {
-    return zlist_first ((zlist_t*) rrl);
+    if (rrl && rrl->list)
+        return zlist_first (rrl->list);
+    return NULL;
 }
 
 resrc_reqst_t resrc_reqst_list_next (resrc_reqst_list_t rrl)
 {
-    return zlist_next ((zlist_t*) rrl);
+    if (rrl && rrl->list)
+        return zlist_next (rrl->list);
+    return NULL;
 }
 
 size_t resrc_reqst_list_size (resrc_reqst_list_t rrl)
 {
-    return zlist_size ((zlist_t*) rrl);
+    if (rrl && rrl->list)
+        return zlist_size (rrl->list);
+    return 0;
+}
+
+void resrc_reqst_list_remove (resrc_reqst_list_t rrl, resrc_reqst_t rr)
+{
+    zlist_remove (rrl->list, rr);
 }
 
 void resrc_reqst_list_destroy (resrc_reqst_list_t resrc_reqst_list)
 {
     zlist_t *child;
-    zlist_t *rtl = (zlist_t*) resrc_reqst_list;
 
-    if (rtl) {
-        if (zlist_size (rtl)) {
-            child = zlist_first (rtl);
+    if (resrc_reqst_list) {
+        if (zlist_size (resrc_reqst_list->list)) {
+            child = zlist_first (resrc_reqst_list->list);
             while (child) {
                 resrc_reqst_destroy ((resrc_reqst_t) child);
-                child = zlist_next (rtl);
+                child = zlist_next (resrc_reqst_list->list);
             }
         }
-        zlist_destroy (&rtl);
-        free (rtl);
+        zlist_destroy (&resrc_reqst_list->list);
+        free (resrc_reqst_list);
     }
 }
 
@@ -274,7 +289,7 @@ static bool match_child (resrc_tree_list_t r_trees, resrc_reqst_t resrc_reqst,
         found = false;
         if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
                                   resrc_reqst->resrc, available)) {
-            if (zlist_size (resrc_reqst->children)) {
+            if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     child_tree = resrc_tree_new (parent_tree,
                                                  resrc_tree_resrc (resrc_tree));
@@ -323,10 +338,11 @@ static bool match_child (resrc_tree_list_t r_trees, resrc_reqst_t resrc_reqst,
  * cycles through all of the resource children and returns true if all
  * of the requested children were found
  */
-static bool match_children (resrc_tree_list_t r_trees, zlist_t *req_trees,
+static bool match_children (resrc_tree_list_t r_trees,
+                            resrc_reqst_list_t req_trees,
                             resrc_tree_t parent_tree, bool available)
 {
-    resrc_reqst_t resrc_reqst = zlist_first (req_trees);
+    resrc_reqst_t resrc_reqst = resrc_reqst_list_first (req_trees);
     bool found = false;
 
     while (resrc_reqst) {
@@ -340,7 +356,7 @@ static bool match_children (resrc_tree_list_t r_trees, zlist_t *req_trees,
         if (!found)
             break;
 
-        resrc_reqst = zlist_next (req_trees);
+        resrc_reqst = resrc_reqst_list_next (req_trees);
     }
 
     return found;
@@ -348,12 +364,11 @@ static bool match_children (resrc_tree_list_t r_trees, zlist_t *req_trees,
 
 /* returns the number of composites found */
 int resrc_tree_search (resrc_tree_list_t resrcs_in, resrc_reqst_t resrc_reqst,
-                       resrc_tree_list_t found_in, bool available)
+                       resrc_tree_list_t found_trees, bool available)
 {
     int64_t nfound = 0;
     resrc_tree_t new_tree = NULL;
     resrc_tree_t resrc_tree;
-    zlist_t *found_trees = (zlist_t*)found_in;
 
     if (!resrcs_in || !found_trees || !resrc_reqst) {
         goto ret;
@@ -363,14 +378,14 @@ int resrc_tree_search (resrc_tree_list_t resrcs_in, resrc_reqst_t resrc_reqst,
     while (resrc_tree) {
         if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
                                   resrc_reqst->resrc, available)) {
-            if (zlist_size (resrc_reqst->children)) {
+            if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     new_tree = resrc_tree_new (NULL,
                                                resrc_tree_resrc (resrc_tree));
                     if (match_children (resrc_tree_children (resrc_tree),
                                         resrc_reqst->children, new_tree,
                                         available)) {
-                        zlist_append (found_trees, new_tree);
+                        resrc_tree_list_append (found_trees, new_tree);
                         nfound++;
                     } else {
                         resrc_tree_destroy (new_tree);
@@ -378,12 +393,12 @@ int resrc_tree_search (resrc_tree_list_t resrcs_in, resrc_reqst_t resrc_reqst,
                 }
             } else {
                 new_tree = resrc_tree_new (NULL, resrc_tree_resrc (resrc_tree));
-                zlist_append (found_trees, new_tree);
+                resrc_tree_list_append (found_trees, new_tree);
                 nfound++;
             }
         } else if (resrc_tree_num_children (resrc_tree)) {
             nfound += resrc_tree_search (resrc_tree_children (resrc_tree),
-                                         resrc_reqst, found_in, available);
+                                         resrc_reqst, found_trees, available);
         }
         resrc_tree = resrc_tree_list_next (resrcs_in);
     }

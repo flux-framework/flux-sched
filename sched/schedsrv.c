@@ -107,7 +107,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
-    resrc_destroy_resources (&(ctx->rctx.root_resrcs));
+    resrc_destroy_resources ((ctx->rctx.root_resrcs));
     free (ctx->rctx.root_uri);
     dlclose (ctx->sops.dso);
 }

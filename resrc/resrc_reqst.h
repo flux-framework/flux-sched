@@ -105,6 +105,11 @@ resrc_reqst_t resrc_reqst_list_next (resrc_reqst_list_t rrl);
 size_t resrc_reqst_list_size (resrc_reqst_list_t rrl);
 
 /*
+ * Remove an item from the resource reqst list
+ */
+void resrc_reqst_list_remove (resrc_reqst_list_t rrl, resrc_reqst_t rr);
+
+/*
  * Destroy a resrc_reqst_list_t object
  */
 void resrc_reqst_list_destroy (resrc_reqst_list_t rrl);

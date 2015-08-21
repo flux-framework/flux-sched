@@ -83,7 +83,7 @@ int resrc_tree_release (resrc_tree_t rt, int64_t job_id);
 /*
  * Create a new list of resrc_tree_t objects
  */
-resrc_tree_list_t resrc_tree_new_list ();
+resrc_tree_list_t resrc_tree_list_new ();
 
 /*
  * Append a resource tree to the resource tree list
@@ -106,7 +106,13 @@ resrc_tree_t resrc_tree_list_next (resrc_tree_list_t rtl);
 size_t resrc_tree_list_size (resrc_tree_list_t rtl);
 
 /*
- * Destroy a resrc_tree_list_t object
+ * Free memory of a resrc_tree_list_t object
+ * Does not recursively free
+ */
+void resrc_tree_list_free (resrc_tree_list_t resrc_tree_list);
+
+/*
+ * Destroy a resrc_tree_list_t object including all children
  */
 void resrc_tree_list_destroy (resrc_tree_list_t rtl);
 

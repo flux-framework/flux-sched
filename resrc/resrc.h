@@ -107,9 +107,14 @@ void resrc_resource_destroy (void *object);
 resources_t resrc_generate_resources (const char *path, char*resource);
 
 /*
+ * Lookup a resource by id
+ */
+resrc_t resrc_lookup (resources_t resrcs, char *resrc_id);
+
+/*
  * De-allocate the resources handle
  */
-void resrc_destroy_resources (resources_t *resources);
+void resrc_destroy_resources (resources_t resources);
 
 /*
  * Add the input resource to the json object
