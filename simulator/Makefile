@@ -8,37 +8,33 @@ JOBDATA=job_data/2014-06-01.csv
 
 COMMON_OBJS = simulator.o xzmalloc.o log.o jsonutil.o
 
-SCHEDULERS_C = $(wildcard sim_sched*.c)
+SCHEDULERS_C = $(wildcard sim_sched_*.c)
+SCHEDULERS_SO = $(SCHEDULERS_C:sim_sched_%.c=sim_sched_%.so)
 SCHEDULER_OBJS = scheduler.o
 
-BUILD = sim.so submit.so sim_exec.so sim_sched.so
+BUILD = sim.so submit.so sim_exec.so $(SCHEDULERS_SO)
 
 all:  $(BUILD)
 
-sim.so: simsrv.o $(COMMON_OBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
-submit.so: submitsrv.o $(COMMON_OBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
-sim_sched.so: sim_schedsrv.o $(COMMON_OBJS) $(SCHEDULER_OBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
-sim_exec.so: sim_execsrv.o $(COMMON_OBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
+sim_sched_%.so: sim_sched_%.c $(COMMON_OBJS) $(SCHEDULER_OBJS)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS)
 
-# N.B. "race fix" in job module is conditionally disabled
-# turn it on there if needed until there is a proper fix for the race
+%.so : %srv.o $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS)
 
 start:
-	$(FLUX) start
+	$(FLUX) -B ../.build/src/broker/flux-broker start
 load:
 	$(FLUX) module load ./sim.so
 	$(FLUX) module load ./submit.so job-csv=$(JOBDATA)
-	$(FLUX) module load ./sim_sched.so rdl-conf=$(CONF)
 	$(FLUX) module load ./sim_exec.so
 unload:
 	$(FLUX) module load sim_exec
 	$(FLUX) module load sim_sched
 	$(FLUX) module load submit
 	$(FLUX) module load sim
+sim_sched_%: sim_sched_%.so load
+	$(FLUX) module load ./$@.so rdl-conf=$(CONF)
 
 check:
 	echo "This is an empty depenendency"
@@ -48,7 +44,7 @@ clean:
 	rm -f *.a *.o *.so
 
 ## Debugging conveinences
-SCHED=sim_sched.so
+SCHED=sim_sched_fcfs.so
 EXEC_MOD=--module ./sim_exec.so
 SIM_MOD=--module ./sim.so --modopt sim:save-path=${SAVEPATH}
 SUBMIT_MOD=--module ./submit.so --modopt submit:job-csv=${JOBDATA}
