@@ -47,4 +47,30 @@ check:
 clean:
 	rm -f *.a *.o *.so
 
+## Debugging conveinences
+SCHED=sim_sched.so
+EXEC_MOD=--module ./sim_exec.so
+SIM_MOD=--module ./sim.so --modopt sim:save-path=${SAVEPATH}
+SUBMIT_MOD=--module ./submit.so --modopt submit:job-csv=${JOBDATA}
+SCHED_MOD=--module ./${SCHED} --modopt sim_sched:rdl-conf=${CONF}
+BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD}
+BROKER=$(FLUX_BUILDDIR)/src/broker/.libs/flux-broker
+
+VALGRIND=$(shell which valgrind)
+TOTALVIEW=$(shell which totalview)
+GDB=$(shell which gdb)
+LLDB=$(shell which lldb)
+
+callgrind:
+	$(FLUX) $(VALGRIND) --tool=callgrind --trace-children=yes $(BROKER) $(BROKER_OPTS)
+valgrind:
+	$(FLUX)	$(VALGRIND) --log-file="%p.valgrind.out" --tool=memcheck --leak-check=full --show-leak-kinds=all --trace-children=yes $(BROKER) $(BROKER_OPTS)
+gdb:
+	$(FLUX) $(GDB) --args $(BROKER) $(BROKER_OPTS)
+lldb:
+	$(FLUX) $(LLDB) -- $(BROKER) $(BROKER_OPTS)
+totalview:
+	$(FLUX) $(TOTALVIEW) --args $(BROKER) $(BROKER_OPTS)
+
+
 .PHONY: all clean load unload start
