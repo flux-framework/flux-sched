@@ -158,7 +158,7 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     if (!j) goto done;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
+    if ((rc = jsc_query_jcb_obj (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
         flux_log (h, LOG_ERR, "error in jsc_query_job.");
         goto done;
     }
@@ -183,7 +183,7 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE , (int64_t) ns);
     /* don't want to use Jadd_obj because I want to transfer the ownership */
     json_object_object_add (jcb, JSC_STATE_PAIR, o);
-    rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcb);
+    rc = jsc_update_jcb_obj (h, jid, JSC_STATE_PAIR, jcb);
     Jput (jcb);
     return rc;
 }
@@ -424,7 +424,7 @@ static int inline reg_events (ssrvctx_t *ctx)
         goto done;
     }
 #endif
-    if (jsc_notify_status (h, job_status_cb, (void *)h) != 0) {
+    if (jsc_notify_status_obj (h, job_status_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "error registering a job status change CB");
         rc = -1;
         goto done;
@@ -487,7 +487,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     Jadd_obj (jcb, JSC_RDL, ro);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL, jcb) != 0) {
+    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %ld (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
@@ -499,7 +499,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     json_object_object_add (jcb, JSC_RDL_ALLOC, arr);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
+    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
