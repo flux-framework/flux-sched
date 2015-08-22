@@ -8,7 +8,10 @@ JOBDATA=job_data/2014-06-01.csv
 
 COMMON_OBJS = simulator.o xzmalloc.o log.o jsonutil.o
 
-BUILD = sim.so submit.so sim_sched.so sim_exec.so
+SCHEDULERS_C = $(wildcard sim_sched*.c)
+SCHEDULER_OBJS = scheduler.o
+
+BUILD = sim.so submit.so sim_exec.so sim_sched.so
 
 all:  $(BUILD)
 
@@ -16,7 +19,7 @@ sim.so: simsrv.o $(COMMON_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
 submit.so: submitsrv.o $(COMMON_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
-sim_sched.so: sim_schedsrv.o $(COMMON_OBJS)
+sim_sched.so: sim_schedsrv.o $(COMMON_OBJS) $(SCHEDULER_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
 sim_exec.so: sim_execsrv.o $(COMMON_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
@@ -36,7 +39,7 @@ unload:
 	$(FLUX) module load sim_sched
 	$(FLUX) module load submit
 	$(FLUX) module load sim
-	
+
 check:
 	echo "This is an empty depenendency"
 

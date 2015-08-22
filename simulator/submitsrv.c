@@ -120,7 +120,7 @@ int insert_into_job (job_t *job, char *column_name, char *value)
 		job->execution_time = convert_time_to_sec (value);
 	}
 	else if (!strncmp (column_name, "IORate(MB)", 10)){ //ignore the \n at the end using strncmp
-		job->io_rate = atoi (value) * 1024 * 1024; //convert MB to bytes
+		job->io_rate = atol (value);
 	}
 	return 0;
 }
@@ -164,7 +164,9 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
 		populate_header (curr_line, header);
 		fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
 		curr_column = zlist_first (header);
-	}
+	} else {
+        flux_log (h, LOG_ERR, "header not found");
+    }
 
 	//Start making jobs from the actual data
 	while (fget_rc != NULL && feof (fp) == 0) {
@@ -183,6 +185,8 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
 		zlist_append (jobs, curr_job);
 		fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
 		curr_column = zlist_first (header);
+        if (curr_line[0] == '#') //reached a comment line, stop processing file
+          break;
 	}
 	zlist_sort (jobs, compare_job_t);
 
@@ -213,21 +217,6 @@ int send_join_request (flux_t h)
 	return 0;
 }
 
-//Reply back to the sim module with the updated sim state (in JSON form)
-int send_reply_request (flux_t h, sim_state_t *sim_state)
-{
-	JSON o = sim_state_to_json (sim_state);
-	Jadd_bool (o, "event_finished", true);
-	if (flux_json_request (h, FLUX_NODEID_ANY,
-                                  FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
-		Jput (o);
-		return -1;
-	}
-   flux_log(h, LOG_DEBUG, "sent a reply request");
-   Jput (o);
-   return 0;
-}
-
 //Based on the sim_time, schedule any jobs that need to be scheduled
 //Next, add an event timer for the scheduler to the sim_state
 //Finally, updated the submit event timer with the next submit time
@@ -252,6 +241,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 	}
 	Jadd_int (o, "nnodes", job->nnodes);
 	Jadd_int (o, "ntasks", job->ncpus);
+    Jadd_bool (o, "race_workaround", true);
 
 	flux_json_rpc (h, FLUX_NODEID_ANY, "job.create", o, &response);
 	Jget_int64 (response, "jobid", &new_jobid);
@@ -326,7 +316,7 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 //Handle the trigger
 	sim_state = json_to_sim_state (o);
 	schedule_next_job (h, sim_state);
-	send_reply_request (h, sim_state);
+	send_reply_request (h, sim_state, module_name);
 
 //Cleanup
 	free_simstate (sim_state);
@@ -341,28 +331,7 @@ static msghandler_t htab[] = {
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-/* FIXME: make this go away by changing arg style */
-static zhash_t *zhash_fromargv (int argc, char **argv)
-{
-    zhash_t *args = zhash_new ();
-    int i;
-
-    if (args) {
-        for (i = 0; i < argc; i++) {
-            char *key = xstrdup (argv[i]);
-            char *val = strchr (key, '=');
-            if (val) {
-                *val++ = '\0';
-                zhash_update (args, key, xstrdup (val));
-                zhash_freefn (args, key, free);
-            }
-            free (key);
-        }
-    }
-    return args;
-}
-
-int mod_main(flux_t h, int argc, char **argv)
+int mod_main (flux_t h, int argc, char **argv)
 {
 	zhash_t *args = zhash_fromargv (argc, argv);
 	if (!args)

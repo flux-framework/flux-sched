@@ -200,7 +200,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	zhash_t *timers = sim_state->timers;
 	if (zhash_insert (timers, mod_name, next_event) < 0){ //key already exists
 		flux_log (h, LOG_ERR, "duplicate join request from %s, module already exists in sim_state", mod_name);
-		return -1;
+		return 0;
 	}
 
 	//TODO: this is horribly hackish, improve the handshake to avoid this hardcoded # of modules
@@ -282,14 +282,11 @@ static void copy_new_state_data (ctx_t *ctx, sim_state_t *curr_sim_state, sim_st
 static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 {
 	JSON request = NULL;
-	bool event_finished;
-	//const char *json_string;
 	ctx_t *ctx = arg;
 	sim_state_t *curr_sim_state = ctx->sim_state;
 	sim_state_t *reply_sim_state;
 
-	if (flux_json_request_decode (*zmsg, &request) < 0
-		|| !Jget_bool (request, "event_finished", &event_finished)) {
+	if (flux_json_request_decode (*zmsg, &request) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
 		return 0;

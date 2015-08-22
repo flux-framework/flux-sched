@@ -36,12 +36,6 @@
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/shortjson.h"
 #include "simulator.h"
-#include "rdl.h"
-
-/*
-static struct rdllib *l = NULL;
-static struct rdl *rdl = NULL;
-*/
 
 sim_state_t *new_simstate ()
 {
@@ -74,9 +68,9 @@ void free_simstate (sim_state_t* sim_state)
 			zhash_destroy (& (sim_state->timers));
 		}
 		free (sim_state);
-		return;
-	}
-	fprintf (stderr, "free_simstate called on a NULL pointer\n");
+	} else {
+        fprintf (stderr, "free_simstate called on a NULL pointer\n");
+    }
 }
 
 static int add_timers_to_json (const char *key, void *item, void *argument)
@@ -102,6 +96,7 @@ JSON sim_state_to_json (sim_state_t *sim_state)
 	Jadd_double (o, "sim_time", sim_state->sim_time);
 	Jadd_obj (o, "event_timers", event_timers);
 
+    Jput (event_timers);
 	return o;
 }
 
@@ -187,7 +182,7 @@ int put_job_in_kvs (job_t *job)
 	if (!kvsdir_exists (job->kvs_dir, "ncpus"))
 		kvsdir_put_int (job->kvs_dir, "ncpus", job->ncpus);
 	if (!kvsdir_exists (job->kvs_dir, "io_rate"))
-		kvsdir_put_double (job->kvs_dir, "io_rate", job->io_rate);
+		kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate);
 
 	flux_t h = kvsdir_handle (job->kvs_dir);
 	kvs_commit (h);
@@ -204,6 +199,9 @@ int put_job_in_kvs (job_t *job)
 
 job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
 {
+    if (kvsdir == NULL)
+        return NULL;
+
 	job_t *job = blank_job();
 
 	job->kvs_dir = kvsdir;
@@ -219,7 +217,7 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
 	kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
 	kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
 	kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
-	kvsdir_get_double (job->kvs_dir, "io_rate", &job->io_rate);
+	kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
 
 	return job;
 }
@@ -227,6 +225,7 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
 int send_alive_request (flux_t h, const char* module_name)
 {
 	JSON o = Jnew ();
+
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
 	if (flux_json_request (h, FLUX_NODEID_ANY,
@@ -238,62 +237,37 @@ int send_alive_request (flux_t h, const char* module_name)
 	return 0;
 }
 
-/*
-static void f_err (flux_t h, const char *msg, ...)
+//Reply back to the sim module with the updated sim state (in JSON form)
+int send_reply_request (flux_t h, sim_state_t *sim_state, const char *module_name)
 {
-    va_list ap;
-    va_start (ap, msg);
-    flux_vlog (h, LOG_ERR, msg, ap);
-    va_end (ap);
+	JSON o = sim_state_to_json (sim_state);
+    Jadd_str (o, "mod_name", module_name);
+    if (flux_json_request (h, FLUX_NODEID_ANY,
+                           FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
+		Jput (o);
+		return -1;
+	}
+	flux_log(h, LOG_DEBUG, "sent a reply request: %s", Jtostr(o));
+    Jput (o);
+    return 0;
 }
 
-static void setup_rdl (flux_t h)
+zhash_t *zhash_fromargv (int argc, char **argv)
 {
-    char *s;
-    char  exe_path [MAXPATHLEN];
-    char *exe_dir;
-    char *rdllib;
+    zhash_t *args = zhash_new ();
+    int i;
 
-    memset (exe_path, 0, MAXPATHLEN);
-    if (readlink ("/proc/self/exe", exe_path, MAXPATHLEN - 1) < 0)
-        err_exit ("readlink (/proc/self/exe)");
-    exe_dir = dirname (exe_path);
-
-    s = getenv ("LUA_CPATH");
-    setenvf ("LUA_CPATH", 1, "%s/dlua/?.so;%s", exe_dir, s ? s : ";");
-    s = getenv ("LUA_PATH");
-    setenvf ("LUA_PATH", 1, "%s/dlua/?.lua;%s", exe_dir, s ? s : ";");
-
-    flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
-    flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
-
-    asprintf (&rdllib, "%s/lib/librdl.so", exe_dir);
-    if (!dlopen (rdllib, RTLD_NOW | RTLD_GLOBAL)) {
-        flux_log (h, LOG_ERR, "dlopen %s failed", rdllib);
-        return;
+    if (args) {
+        for (i = 0; i < argc; i++) {
+            char *key = strdup (argv[i]);
+            char *val = strchr (key, '=');
+            if (val) {
+                *val++ = '\0';
+                zhash_update (args, key, strdup (val));
+                zhash_freefn (args, key, free);
+            }
+            free (key);
+        }
     }
-    free(rdllib);
-
-    rdllib_set_default_errf (h, (rdl_err_f)(&f_err));
+    return args;
 }
-
-struct rdl* get_rdl (flux_t h, char *path)
-{
-	if (rdl == NULL) {
-		setup_rdl (h);
-		if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path))) {
-			flux_log (h, LOG_ERR, "failed to load resources from %s: %s",
-					  path, strerror (errno));
-			return NULL;
-		}
-	}
-	return rdl;
-}
-
-void close_rdl ()
-{
-	if (rdl != NULL) {
-		//rdllib_close (l);
-	}
-}
-*/
