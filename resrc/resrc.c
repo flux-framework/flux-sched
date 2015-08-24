@@ -130,12 +130,6 @@ resrc_tree_t resrc_phys_tree (resrc_t resrc)
     return NULL;
 }
 
-void jobid_destroy (void *object)
-{
-    int64_t *tmp = (int64_t *)object;
-    free (tmp);
-}
-
 resource_list_t resrc_new_id_list ()
 {
     resource_list_t new_list = xzmalloc (sizeof (struct resource_list));

@@ -55,11 +55,6 @@ char* resrc_state (resrc_t resrc);
 resrc_tree_t resrc_phys_tree (resrc_t resrc);
 
 /*
- * Free memory allocated to a job id
- */
-void jobid_destroy (void *object);
-
-/*
  * Create a list of resource keys
  */
 resource_list_t resrc_new_id_list ();
