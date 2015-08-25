@@ -44,11 +44,9 @@
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_reqst.h"
 #include "schedsrv.h"
 
-//TODO: this plugin inherently must know the inner structure of the opaque
-//types, something we need to think about
-typedef struct zhash_t resources;
 
 static bool select_children (flux_t h, resrc_tree_list_t found_children,
                              resrc_reqst_list_t reqst_children,
@@ -78,7 +76,7 @@ resrc_tree_list_t find_resources (flux_t h, resources_t resrcs,
         goto ret;
     }
 
-    resrc = zhash_lookup ((zhash_t *)resrcs, "head");
+    resrc = resrc_lookup (resrcs, "head");
     if (resrc) {
         resrc_tree = resrc_phys_tree (resrc);
     } else {
@@ -86,7 +84,7 @@ resrc_tree_list_t find_resources (flux_t h, resources_t resrcs,
         goto ret;
     }
 
-    found_trees = resrc_tree_new_list ();
+    found_trees = resrc_tree_list_new ();
     if (!found_trees) {
         flux_log (h, LOG_ERR, "%s: new tree list failed", __FUNCTION__);
         goto ret;
@@ -220,7 +218,7 @@ resrc_tree_list_t select_resources (flux_t h, resrc_tree_list_t found_trees,
     }
 
     reqrd = resrc_reqst_reqrd (resrc_reqst);
-    selected_res = resrc_tree_new_list ();
+    selected_res = resrc_tree_list_new ();
 
     rt = resrc_tree_list_first (found_trees);
     while (reqrd && rt) {
@@ -253,8 +251,7 @@ resrc_tree_list_t select_resources (flux_t h, resrc_tree_list_t found_trees,
     /* If we did not select all that was required and the selected
      * resource list is empty, destroy the list. */
     if (reqrd && !resrc_tree_list_size (selected_res)) {
-        zlist_destroy ((zlist_t **) &selected_res);
-        selected_res = NULL;
+        resrc_tree_list_destroy (selected_res);
     }
 
     return (resrc_tree_list_t)selected_res;

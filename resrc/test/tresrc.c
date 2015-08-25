@@ -30,6 +30,7 @@
 
 #include "../resrc.h"
 #include "../resrc_tree.h"
+#include "../resrc_reqst.h"
 #include "src/common/libtap/tap.h"
 
 
@@ -55,12 +56,11 @@ static void test_select_children (resrc_tree_t rt)
         } else {
             resrc_stage_resrc (resrc, 100);
         }
-        if (zlist_size ((zlist_t*)resrc_tree_children(rt))) {
-            resrc_tree_t child = zlist_first ((zlist_t*)
-                                              resrc_tree_children(rt));
+        if (resrc_tree_num_children (rt)) {
+            resrc_tree_t child = resrc_tree_list_first (resrc_tree_children(rt));
             while (child) {
                 test_select_children (child);
-                child = zlist_next ((zlist_t*)resrc_tree_children(rt));
+                child = resrc_tree_list_next (resrc_tree_children(rt));
             }
         }
     }
@@ -72,7 +72,7 @@ static void test_select_children (resrc_tree_t rt)
 static resrc_tree_list_t test_select_resources (resrc_tree_list_t found_trees,
                                                 int select)
 {
-    resrc_tree_list_t selected_res = resrc_tree_new_list ();
+    resrc_tree_list_t selected_res = resrc_tree_list_new ();
     resrc_tree_t rt;
     int count = 1;
 
@@ -80,14 +80,14 @@ static resrc_tree_list_t test_select_resources (resrc_tree_list_t found_trees,
     while (rt) {
         if (count == select) {
             test_select_children (rt);
-            zlist_append ((zlist_t *) selected_res, rt);
+            resrc_tree_list_append (selected_res, rt);
             break;
         }
         count++;
         rt = resrc_tree_list_next (found_trees);
     }
 
-    return (resrc_tree_list_t)selected_res;
+    return selected_res;
 }
 
 int main (int argc, char *argv[])
@@ -107,7 +107,7 @@ int main (int argc, char *argv[])
     resources_t resrcs = NULL;
     resrc_t resrc = NULL;
     resrc_reqst_t resrc_reqst = NULL;
-    resrc_tree_list_t found_trees = resrc_tree_new_list ();
+    resrc_tree_list_t found_trees = resrc_tree_list_new ();
     resrc_tree_list_t selected_trees;
     resrc_tree_t found_tree = NULL;
     resrc_tree_t resrc_tree = NULL;
@@ -134,7 +134,7 @@ int main (int argc, char *argv[])
         printf ("End of flat resources\n");
     }
 
-    resrc = zhash_lookup ((zhash_t *)resrcs, "head");
+    resrc = resrc_lookup (resrcs, "head");
     ok ((resrc != NULL), "tree head found");
     if (!resrc)
         goto ret;
@@ -232,22 +232,22 @@ int main (int argc, char *argv[])
     selected_trees = test_select_resources (found_trees, 1);
     rc = resrc_tree_list_allocate (selected_trees, 1);
     ok (!rc, "successfully allocated resources for job 1");
-    zlist_destroy ((zlist_t**) &selected_trees);
+    resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 2);
     rc = resrc_tree_list_allocate (selected_trees, 2);
     ok (!rc, "successfully allocated resources for job 2");
-    zlist_destroy ((zlist_t**) &selected_trees);
+    resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 3);
     rc = resrc_tree_list_allocate (selected_trees, 3);
     ok (!rc, "successfully allocated resources for job 3");
-    zlist_destroy ((zlist_t**) &selected_trees);
+    resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 4);
     rc = resrc_tree_list_reserve (selected_trees, 4);
     ok (!rc, "successfully reserved resources for job 4");
-    zlist_destroy ((zlist_t**) &selected_trees);
+    resrc_tree_list_free (selected_trees);
 
     printf ("allocate and reserve took: %lf\n", ((double)get_time())/1000000);
 
@@ -269,7 +269,7 @@ int main (int argc, char *argv[])
     init_time();
     resrc_reqst_destroy (resrc_reqst);
     resrc_tree_list_destroy (found_trees);
-    resrc_destroy_resources (&resrcs);
+    resrc_destroy_resources (resrcs);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);
 ret:
     done_testing ();

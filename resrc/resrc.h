@@ -55,11 +55,6 @@ char* resrc_state (resrc_t resrc);
 resrc_tree_t resrc_phys_tree (resrc_t resrc);
 
 /*
- * Free memory allocated to a job id
- */
-void jobid_destroy (void *object);
-
-/*
  * Create a list of resource keys
  */
 resource_list_t resrc_new_id_list ();
@@ -107,9 +102,14 @@ void resrc_resource_destroy (void *object);
 resources_t resrc_generate_resources (const char *path, char*resource);
 
 /*
+ * Lookup a resource by id
+ */
+resrc_t resrc_lookup (resources_t resrcs, char *resrc_id);
+
+/*
  * De-allocate the resources handle
  */
-void resrc_destroy_resources (resources_t *resources);
+void resrc_destroy_resources (resources_t resources);
 
 /*
  * Add the input resource to the json object

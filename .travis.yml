@@ -24,6 +24,7 @@ addons:
       - aspell
       - libopenmpi-dev
       - ccache
+      - libhwloc-dev
       - libmunge-dev
       - munge
 
