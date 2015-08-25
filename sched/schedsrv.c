@@ -65,12 +65,11 @@ static int job_status_cb (JSON jcb, void *arg, int errnum);
  *                                                                            *
  ******************************************************************************/
 
-typedef resrc_tree_list_t (*find_f) (flux_t h, resources_t resrcs,
-                                            resrc_reqst_t resrc_reqst);
+typedef resrc_tree_list_t *(*find_f) (flux_t h, resources_t *resrcs,
+                                      resrc_reqst_t *resrc_reqst);
 
-typedef resrc_tree_list_t (*sel_f) (flux_t h,
-                                              resrc_tree_list_t resrc_trees,
-                                              resrc_reqst_t resrc_reqst);
+typedef resrc_tree_list_t *(*sel_f) (flux_t h, resrc_tree_list_t *resrc_trees,
+                                     resrc_reqst_t *resrc_reqst);
 
 typedef struct sched_ops {
     void         *dso;                /* Scheduler plug-in DSO handle */
@@ -79,7 +78,7 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
-    resources_t   root_resrcs;        /* resrcs object pointing to the root */
+    resources_t  *root_resrcs;        /* resrcs object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
@@ -609,9 +608,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     flux_t h = ctx->h;
     int rc = -1;
     int64_t nnodes = 0;
-    resrc_reqst_t resrc_reqst = NULL;
-    resrc_tree_list_t found_trees = NULL;
-    resrc_tree_list_t selected_trees = NULL;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
 
     /*
      * Require at least one task per node, and
