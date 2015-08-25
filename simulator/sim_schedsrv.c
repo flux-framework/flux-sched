@@ -1108,7 +1108,7 @@ static int
 wait_for_lwj_init ()
 {
     int rc = 0;
-    kvsdir_t dir = NULL;
+    kvsdir_t *dir = NULL;
 
     if (kvs_watch_once_dir (h, &dir, "lwj") < 0) {
         flux_log (h, LOG_ERR, "wait_for_lwj_init: %s",
@@ -1128,7 +1128,7 @@ ret:
 
 
 static int
-reg_newlwj_hdlr (KVSSetInt64F *func)
+reg_newlwj_hdlr (kvs_set_int64_f func)
 {
     if (kvs_watch_int64 (h,"lwj.next-id", func, (void *) h) < 0) {
         flux_log (h, LOG_ERR, "watch lwj.next-id: %s",
@@ -1142,7 +1142,7 @@ reg_newlwj_hdlr (KVSSetInt64F *func)
 
 
 static int
-reg_lwj_state_hdlr (const char *path, KVSSetStringF *func)
+reg_lwj_state_hdlr (const char *path, kvs_set_string_f func)
 {
     int rc = 0;
     char *k = NULL;
@@ -1201,7 +1201,7 @@ ret:
     return;
 }
 
-static void queue_kvs_cb (const char *key, const char *val, void *arg, int errnum)
+static int queue_kvs_cb (const char *key, const char *val, void *arg, int errnum)
 {
 	int key_len;
 	int val_len;
@@ -1226,6 +1226,8 @@ static void queue_kvs_cb (const char *key, const char *val, void *arg, int errnu
 	kvs_event->val = val_copy;
 	flux_log (h, LOG_DEBUG, "Event queued - key: %s, val: %s", kvs_event->key, kvs_event->val);
 	zlist_append (kvs_queue, kvs_event);
+
+    return 0;
 }
 
 /*
@@ -1272,7 +1274,7 @@ static void handle_kvs_queue ()
 /* The val argument is for the *next* job id.  Hence, the job id of
  * the new job will be (val - 1).
  */
-static void
+static int
 newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
 {
     char path[MAX_STR_LEN];
@@ -1308,7 +1310,7 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
                   "appending a job to pending queue failed");
         goto error;
     }
-    if (reg_lwj_state_hdlr (path, (KVSSetStringF *) queue_kvs_cb) == -1) {
+    if (reg_lwj_state_hdlr (path, queue_kvs_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register lwj state change "
                   "handling callback: %s",
@@ -1316,14 +1318,14 @@ newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         goto error;
     }
 ret:
-    return;
+    return 0;
 
 error:
 	flux_log (h, LOG_ERR, "newlwj_cb failed");
     if (j)
         free (j);
 
-    return;
+    return 0;
 }
 
 static int newlwj_rpc (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
@@ -1562,7 +1564,7 @@ int mod_main (flux_t p, int argc, char **argv)
         goto ret;
     }
 
-    if (reg_newlwj_hdlr ((KVSSetInt64F*) newlwj_cb) == -1) {
+    if (reg_newlwj_hdlr (newlwj_cb) == -1) {
         flux_log (h, LOG_ERR,
                   "register new lwj handling "
                   "callback: %s",
