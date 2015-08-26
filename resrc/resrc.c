@@ -56,7 +56,7 @@ struct resrc {
     size_t available;
     size_t staged;
     resource_state_t state;
-    resrc_tree_t phys_tree;
+    resrc_tree_t *phys_tree;
     zlist_t *graphs;
     zhash_t *properties;
     zhash_t *tags;
@@ -69,35 +69,35 @@ struct resrc {
  *  API
  ***************************************************************************/
 
-char *resrc_type (resrc_t resrc)
+char *resrc_type (resrc_t *resrc)
 {
     if (resrc)
         return resrc->type;
     return NULL;
 }
 
-char *resrc_name (resrc_t resrc)
+char *resrc_name (resrc_t *resrc)
 {
     if (resrc)
         return resrc->name;
     return NULL;
 }
 
-int64_t resrc_id (resrc_t resrc)
+int64_t resrc_id (resrc_t *resrc)
 {
     if (resrc)
         return resrc->id;
     return -1;
 }
 
-size_t resrc_size (resrc_t resrc)
+size_t resrc_size (resrc_t *resrc)
 {
     if (resrc)
         return resrc->size;
     return 0;
 }
 
-char* resrc_state (resrc_t resrc)
+char* resrc_state (resrc_t *resrc)
 {
     char* str = NULL;
 
@@ -123,21 +123,21 @@ char* resrc_state (resrc_t resrc)
     return str;
 }
 
-resrc_tree_t resrc_phys_tree (resrc_t resrc)
+resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 {
     if (resrc)
         return resrc->phys_tree;
     return NULL;
 }
 
-resource_list_t resrc_new_id_list ()
+resource_list_t *resrc_new_id_list ()
 {
-    resource_list_t new_list = xzmalloc (sizeof (struct resource_list));
+    resource_list_t *new_list = xzmalloc (sizeof (resource_list_t));
     new_list->list = zlist_new ();
     return new_list;
 }
 
-void resrc_id_list_destroy (resource_list_t resrc_ids)
+void resrc_id_list_destroy (resource_list_t *resrc_ids)
 {
     char *resrc_id;
 
@@ -149,31 +149,31 @@ void resrc_id_list_destroy (resource_list_t resrc_ids)
     free (resrc_ids);
 }
 
-char *resrc_list_first (resource_list_t rl)
+char *resrc_list_first (resource_list_t *rl)
 {
     if (rl && rl->list)
         return zlist_first (rl->list);
     return NULL;
 }
 
-char *resrc_list_next (resource_list_t rl)
+char *resrc_list_next (resource_list_t *rl)
 {
     if (rl && rl->list)
         return zlist_next (rl->list);
     return NULL;
 }
 
-size_t resrc_list_size (resource_list_t rl)
+size_t resrc_list_size (resource_list_t *rl)
 {
     if (rl && rl->list)
         return zlist_size (rl->list);
     return 0;
 }
 
-resrc_t resrc_new_resource (const char *type, const char *name, int64_t id,
-                            uuid_t uuid, size_t size)
+resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
+                             uuid_t uuid, size_t size)
 {
-    resrc_t resrc = xzmalloc (sizeof (struct resrc));
+    resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = strdup (type);
         if (name)
@@ -196,9 +196,9 @@ resrc_t resrc_new_resource (const char *type, const char *name, int64_t id,
     return resrc;
 }
 
-resrc_t resrc_copy_resource (resrc_t resrc)
+resrc_t *resrc_copy_resource (resrc_t *resrc)
 {
-    resrc_t new_resrc = xzmalloc (sizeof (struct resrc));
+    resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
 
     if (new_resrc) {
         new_resrc->type = strdup (resrc->type);
@@ -219,7 +219,7 @@ resrc_t resrc_copy_resource (resrc_t resrc)
 
 void resrc_resource_destroy (void *object)
 {
-    resrc_t resrc = (resrc_t) object;
+    resrc_t *resrc = (resrc_t *) object;
 
     if (resrc) {
         if (resrc->type)
@@ -240,8 +240,8 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
-                                   struct resource *r)
+static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
+                                    struct resource *r)
 {
     const char *name = NULL;
     const char *path = NULL;
@@ -253,9 +253,9 @@ static resrc_t resrc_add_resource (zhash_t *resrcs, resrc_t parent,
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
     json_object_iter iter;
-    resrc_t resrc = NULL;
-    resrc_tree_t parent_tree = NULL;
-    resrc_tree_t resrc_tree = NULL;
+    resrc_t *resrc = NULL;
+    resrc_tree_t *parent_tree = NULL;
+    resrc_tree_t *resrc_tree = NULL;
     struct resource *c;
     uuid_t uuid;
 
@@ -326,14 +326,14 @@ ret:
     return resrc;
 }
 
-resources_t resrc_generate_resources (const char *path, char *resource)
+resources_t *resrc_generate_resources (const char *path, char *resource)
 {
     const char *nodelist = NULL;
-    resrc_t resrc = NULL;
+    resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
-    resources_t resrcs = NULL;
+    resources_t *resrcs = NULL;
 
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path)))
         goto ret;
@@ -341,7 +341,7 @@ resources_t resrc_generate_resources (const char *path, char *resource)
     if (!(r = rdl_resource_get (rdl, resource)))
         goto ret;
 
-    resrcs = xzmalloc (sizeof (struct resources));
+    resrcs = xzmalloc (sizeof (resources_t));
     if (!(resrcs->hash = zhash_new ()))
         goto ret;
 
@@ -363,14 +363,14 @@ ret:
     return resrcs;
 }
 
-resrc_t resrc_lookup (resources_t resrcs, char *resrc_id)
+resrc_t *resrc_lookup (resources_t *resrcs, char *resrc_id)
 {
     if (resrcs && resrcs->hash)
         return (zhash_lookup (resrcs->hash, resrc_id));
     return NULL;
 }
 
-void resrc_destroy_resources (resources_t resrcs)
+void resrc_destroy_resources (resources_t *resrcs)
 {
     if (resrcs && resrcs->hash) {
         zhash_destroy (&(resrcs->hash));
@@ -378,7 +378,7 @@ void resrc_destroy_resources (resources_t resrcs)
     }
 }
 
-int resrc_to_json (JSON o, resrc_t resrc)
+int resrc_to_json (JSON o, resrc_t *resrc)
 {
     int rc = -1;
     if (resrc) {
@@ -388,7 +388,7 @@ int resrc_to_json (JSON o, resrc_t resrc)
     return rc;
 }
 
-void resrc_print_resource (resrc_t resrc)
+void resrc_print_resource (resrc_t *resrc)
 {
     char uuid[40];
     char *property;
@@ -440,10 +440,10 @@ void resrc_print_resource (resrc_t resrc)
     }
 }
 
-void resrc_print_resources (resources_t resrcs)
+void resrc_print_resources (resources_t *resrcs)
 {
     char *resrc_id = NULL;
-    resrc_t resrc = NULL;
+    resrc_t *resrc = NULL;
     zlist_t *resrc_ids = NULL;
 
     if (!resrcs || !resrcs->hash) {
@@ -460,7 +460,7 @@ void resrc_print_resources (resources_t resrcs)
     zlist_destroy (&resrc_ids);
 }
 
-bool resrc_match_resource (resrc_t resrc, resrc_t sample, bool available)
+bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
 {
     bool rc = false;
     char *sproperty = NULL;     /* sample property */
@@ -508,13 +508,13 @@ ret:
 }
 
 #if 0
-int resrc_search_flat_resources (resources_t resrcs, resource_list_t found,
+int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
                                  JSON req_res, bool available)
 {
     char *resrc_id = NULL;
     const char *type = NULL;
     int nfound = 0;
-    resrc_t resrc;
+    resrc_t *resrc;
     zlist_t *resrc_ids;
 
     if (!resrcs || !found || !req_res) {
@@ -539,7 +539,7 @@ ret:
 }
 #endif
 
-void resrc_stage_resrc (resrc_t resrc, size_t size)
+void resrc_stage_resrc (resrc_t *resrc, size_t size)
 {
     if (resrc)
         resrc->staged = size;
@@ -549,7 +549,7 @@ void resrc_stage_resrc (resrc_t resrc, size_t size)
  * Allocate the staged size of a resource to the specified job_id and
  * change its state to allocated.
  */
-int resrc_allocate_resource (resrc_t resrc, int64_t job_id)
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
 {
     char *id_ptr = NULL;
     size_t *size_ptr;
@@ -574,11 +574,11 @@ ret:
     return rc;
 }
 
-int resrc_allocate_resources (resources_t resrcs, resource_list_t resrc_ids,
+int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
                               int64_t job_id)
 {
     char *resrc_id;
-    resrc_t resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrcs->hash || !resrc_ids || !resrc_ids->list || !job_id) {
@@ -599,7 +599,7 @@ ret:
 /*
  * Just like resrc_allocate_resource() above, but for a reservation
  */
-int resrc_reserve_resource (resrc_t resrc, int64_t job_id)
+int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
 {
     char *id_ptr = NULL;
     size_t *size_ptr;
@@ -626,11 +626,11 @@ ret:
     return rc;
 }
 
-int resrc_reserve_resources (resources_t resrcs, resource_list_t resrc_ids,
+int resrc_reserve_resources (resources_t *resrcs, resource_list_t *resrc_ids,
                              int64_t job_id)
 {
     char *resrc_id;
-    resrc_t resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrcs->hash || !resrc_ids || !job_id) {
@@ -648,12 +648,12 @@ ret:
     return rc;
 }
 
-JSON resrc_id_serialize (resources_t resrcs, resource_list_t resrc_ids)
+JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids)
 {
     char *resrc_id;
     JSON ja;
     JSON o = NULL;
-    resrc_t resrc;
+    resrc_t *resrc;
 
     if (!resrcs || !resrcs->hash || !resrc_ids) {
         goto ret;
@@ -672,7 +672,7 @@ ret:
     return o;
 }
 
-int resrc_release_resource (resrc_t resrc, int64_t rel_job)
+int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
 {
     char *id_ptr = NULL;
     size_t *size_ptr;
@@ -700,11 +700,11 @@ ret:
     return rc;
 }
 
-int resrc_release_resources (resources_t resrcs, resource_list_t resrc_ids,
+int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
                              int64_t rel_job)
 {
     char *resrc_id;
-    resrc_t resrc;
+    resrc_t *resrc;
     int rc = 0;
 
     if (!resrcs || !resrcs->hash || !resrc_ids || !rel_job) {
@@ -722,14 +722,14 @@ ret:
     return rc;
 }
 
-resrc_t resrc_new_from_json (JSON o, resrc_t parent)
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
 {
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
     const char *type = NULL;
     int64_t ssize;
     json_object_iter iter;
-    resrc_t resrc = NULL;
+    resrc_t *resrc = NULL;
     size_t size = 1;
 
     if (!Jget_str (o, "type", &type))

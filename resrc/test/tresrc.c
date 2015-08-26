@@ -47,20 +47,21 @@ u_int64_t get_time() {
         + (t.tv_usec - start_time.tv_usec);
 }
 
-static void test_select_children (resrc_tree_t rt)
+static void test_select_children (resrc_tree_t *rt)
 {
     if (rt) {
-        resrc_t resrc = resrc_tree_resrc (rt);
+        resrc_t *resrc = resrc_tree_resrc (rt);
         if (strcmp (resrc_type(resrc), "memory")) {
             resrc_stage_resrc (resrc, 1);
         } else {
             resrc_stage_resrc (resrc, 100);
         }
         if (resrc_tree_num_children (rt)) {
-            resrc_tree_t child = resrc_tree_list_first (resrc_tree_children(rt));
+            resrc_tree_t *child = resrc_tree_list_first (
+                resrc_tree_children (rt));
             while (child) {
                 test_select_children (child);
-                child = resrc_tree_list_next (resrc_tree_children(rt));
+                child = resrc_tree_list_next (resrc_tree_children (rt));
             }
         }
     }
@@ -69,11 +70,11 @@ static void test_select_children (resrc_tree_t rt)
 /*
  * Select some resources from the found trees
  */
-static resrc_tree_list_t test_select_resources (resrc_tree_list_t found_trees,
-                                                int select)
+static resrc_tree_list_t *test_select_resources (resrc_tree_list_t *found_trees,
+                                                 int select)
 {
-    resrc_tree_list_t selected_res = resrc_tree_list_new ();
-    resrc_tree_t rt;
+    resrc_tree_list_t *selected_res = resrc_tree_list_new ();
+    resrc_tree_t *rt;
     int count = 1;
 
     rt = resrc_tree_list_first (found_trees);
@@ -104,13 +105,13 @@ int main (int argc, char *argv[])
     JSON memory = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
-    resources_t resrcs = NULL;
-    resrc_t resrc = NULL;
-    resrc_reqst_t resrc_reqst = NULL;
-    resrc_tree_list_t found_trees = resrc_tree_list_new ();
-    resrc_tree_list_t selected_trees;
-    resrc_tree_t found_tree = NULL;
-    resrc_tree_t resrc_tree = NULL;
+    resources_t *resrcs = NULL;
+    resrc_t *resrc = NULL;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *found_trees = resrc_tree_list_new ();
+    resrc_tree_list_t *selected_trees;
+    resrc_tree_t *found_tree = NULL;
+    resrc_tree_t *resrc_tree = NULL;
 
     plan (14);
     if (filename == NULL || *filename == '\0')

@@ -39,182 +39,176 @@ struct resrc_tree_list {
 
 
 struct resrc_tree {
-    resrc_tree_t parent;
-    resrc_t resrc;
-    resrc_tree_list_t children;
+    resrc_tree_t *parent;
+    resrc_t *resrc;
+    resrc_tree_list_t *children;
 };
 
 /***********************************************************************
  * Resource tree
  ***********************************************************************/
 
-resrc_t resrc_tree_resrc (resrc_tree_t resrc_tree)
+resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree)
-        return (resrc_t)resrc_tree->resrc;
+        return resrc_tree->resrc;
     return NULL;
 }
 
-size_t resrc_tree_num_children (resrc_tree_t resrc_tree)
+size_t resrc_tree_num_children (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree)
         return resrc_tree_list_size (resrc_tree->children);
     return 0;
 }
 
-resrc_tree_list_t resrc_tree_children (resrc_tree_t resrc_tree)
+resrc_tree_list_t *resrc_tree_children (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree)
         return resrc_tree->children;
     return NULL;
 }
 
-int resrc_tree_add_child (resrc_tree_t parent, resrc_tree_t child)
+int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child)
 {
     int rc = -1;
-    if (parent)
-        rc = zlist_append (parent->children->list, child);
+    if (parent) {
+        child->parent = parent;
+        rc = resrc_tree_list_append (parent->children, child);
+    }
 
     return rc;
 }
 
-resrc_tree_t resrc_tree_new (resrc_tree_t parent, resrc_t resrc)
+resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc)
 {
-    resrc_tree_t resrc_tree = xzmalloc (sizeof (struct resrc_tree));
+    resrc_tree_t *resrc_tree = xzmalloc (sizeof (resrc_tree_t));
     if (resrc_tree) {
         resrc_tree->parent = parent;
         resrc_tree->resrc = resrc;
         resrc_tree->children = resrc_tree_list_new ();
         (void) resrc_tree_add_child (parent, resrc_tree);
-    } else {
-        oom ();
     }
 
     return resrc_tree;
 }
 
-resrc_tree_t resrc_tree_copy (resrc_tree_t resrc_tree)
+resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
 {
-    resrc_tree_t new_resrc_tree = xzmalloc (sizeof (struct resrc_tree));
+    resrc_tree_t *new_resrc_tree = xzmalloc (sizeof (resrc_tree_t));
 
     if (new_resrc_tree) {
         new_resrc_tree->parent = resrc_tree->parent;
         new_resrc_tree->resrc = resrc_tree->resrc;
         new_resrc_tree->children = resrc_tree_list_new ();
         new_resrc_tree->children->list = zlist_dup (resrc_tree->children->list);
-    } else {
-        oom ();
     }
 
     return new_resrc_tree;
 }
 
-void resrc_tree_free (resrc_tree_t resrc_tree)
+void resrc_tree_free (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree) {
-        zlist_destroy (&(resrc_tree->children->list));
-        free (resrc_tree->children);
+        resrc_tree_list_free (resrc_tree->children);
+        /* do not destroy the resrc_tree->resrc */
         free (resrc_tree);
     }
 }
 
-void resrc_tree_destroy (resrc_tree_t resrc_tree)
+void resrc_tree_destroy (resrc_tree_t *resrc_tree)
 {
-    resrc_tree_t child;
-
     if (resrc_tree) {
         if (resrc_tree->parent)
-            zlist_remove (resrc_tree->parent->children->list, resrc_tree);
-        if (zlist_size (resrc_tree->children->list)) {
-            child = zlist_first (resrc_tree->children->list);
+            resrc_tree_list_remove (resrc_tree->parent->children, resrc_tree);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (child) {
                 resrc_tree_destroy (child);
-                child = zlist_next (resrc_tree->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         }
         resrc_tree_free (resrc_tree);
     }
 }
 
-void resrc_tree_print (resrc_tree_t resrc_tree)
+void resrc_tree_print (resrc_tree_t *resrc_tree)
 {
-    resrc_tree_t child;
-
     if (resrc_tree) {
         resrc_print_resource (resrc_tree->resrc);
-        if (zlist_size (resrc_tree->children->list)) {
-            child = zlist_first (resrc_tree->children->list);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (child) {
                 resrc_tree_print (child);
-                child = zlist_next (resrc_tree->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         }
     }
 }
 
-int resrc_tree_serialize (JSON o, resrc_tree_t rt)
+int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
 {
     int rc = -1;
 
-    if (o && rt) {
+    if (o && resrc_tree) {
         rc = 0;
-        if (zlist_size (rt->children->list)) {
+        if (resrc_tree_num_children (resrc_tree)) {
             JSON co = Jnew ();
-            json_object_object_add (o, resrc_name (rt->resrc), co);
-            resrc_tree_t child = zlist_first (rt->children->list);
+            json_object_object_add (o, resrc_name (resrc_tree->resrc), co);
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
                 rc = resrc_tree_serialize (co, child);
-                child = zlist_next (rt->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         } else {
-            rc = resrc_to_json (o, rt->resrc);
+            rc = resrc_to_json (o, resrc_tree->resrc);
         }
     }
     return rc;
 }
 
-int resrc_tree_allocate (resrc_tree_t rt, int64_t job_id)
+int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id)
 {
     int rc = -1;
-    if (rt) {
-        rc = resrc_allocate_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children->list)) {
-            resrc_tree_t child = zlist_first (rt->children->list);
+    if (resrc_tree) {
+        rc = resrc_allocate_resource (resrc_tree->resrc, job_id);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
                 rc = resrc_tree_allocate (child, job_id);
-                child = zlist_next (rt->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         }
     }
     return rc;
 }
 
-int resrc_tree_reserve (resrc_tree_t rt, int64_t job_id)
+int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id)
 {
     int rc = -1;
-    if (rt) {
-        rc = resrc_reserve_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children->list)) {
-            resrc_tree_t child = zlist_first (rt->children->list);
+    if (resrc_tree) {
+        rc = resrc_reserve_resource (resrc_tree->resrc, job_id);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
                 rc = resrc_tree_reserve (child, job_id);
-                child = zlist_next (rt->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         }
     }
     return rc;
 }
 
-int resrc_tree_release (resrc_tree_t rt, int64_t job_id)
+int resrc_tree_release (resrc_tree_t *resrc_tree, int64_t job_id)
 {
     int rc = -1;
-    if (rt) {
-        rc = resrc_release_resource (rt->resrc, job_id);
-        if (zlist_size (rt->children->list)) {
-            resrc_tree_t child = zlist_first (rt->children->list);
+    if (resrc_tree) {
+        rc = resrc_release_resource (resrc_tree->resrc, job_id);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
                 rc = resrc_tree_release (child, job_id);
-                child = zlist_next (rt->children->list);
+                child = resrc_tree_list_next (resrc_tree->children);
             }
         }
     }
@@ -225,67 +219,73 @@ int resrc_tree_release (resrc_tree_t rt, int64_t job_id)
  * Resource tree list
  ***********************************************************************/
 
-resrc_tree_list_t resrc_tree_list_new ()
+resrc_tree_list_t *resrc_tree_list_new ()
 {
-    resrc_tree_list_t new_list = xzmalloc (sizeof (struct resrc_tree_list));
+    resrc_tree_list_t *new_list = xzmalloc (sizeof (resrc_tree_list_t));
     new_list->list = zlist_new ();
     return new_list;
 }
 
-int resrc_tree_list_append (resrc_tree_list_t rtl, resrc_tree_t rt)
+int resrc_tree_list_append (resrc_tree_list_t *rtl, resrc_tree_t *rt)
 {
     if (rtl && rtl->list && rt)
         return zlist_append (rtl->list, (void *) rt);
     return -1;
 }
 
-resrc_tree_t resrc_tree_list_first (resrc_tree_list_t rtl)
+resrc_tree_t *resrc_tree_list_first (resrc_tree_list_t *rtl)
 {
     if (rtl && rtl->list)
         return zlist_first (rtl->list);
     return NULL;
 }
 
-resrc_tree_t resrc_tree_list_next (resrc_tree_list_t rtl)
+resrc_tree_t *resrc_tree_list_next (resrc_tree_list_t *rtl)
 {
     if (rtl && rtl->list)
         return zlist_next (rtl->list);
     return NULL;
 }
 
-size_t resrc_tree_list_size (resrc_tree_list_t rtl)
+size_t resrc_tree_list_size (resrc_tree_list_t *rtl)
 {
     if (rtl && rtl->list)
         return zlist_size (rtl->list);
     return 0;
 }
 
-void resrc_tree_list_free (resrc_tree_list_t resrc_tree_list)
+void resrc_tree_list_remove (resrc_tree_list_t *rtl, resrc_tree_t *rt)
+{
+    zlist_remove (rtl->list, rt);
+}
+
+void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list)
 {
     if (resrc_tree_list) {
-        zlist_destroy (&resrc_tree_list->list);
+        if (resrc_tree_list->list) {
+            zlist_destroy (&(resrc_tree_list->list));
+        }
         free (resrc_tree_list);
     }
 }
 
-void resrc_tree_list_destroy (resrc_tree_list_t resrc_tree_list)
+void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
 {
     if (resrc_tree_list) {
-        zlist_t *child;
-        if (zlist_size (resrc_tree_list->list)) {
-            child = zlist_first (resrc_tree_list->list);
+        if (resrc_tree_list_size (resrc_tree_list)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree_list);
             while (child) {
-                resrc_tree_destroy ((resrc_tree_t) child);
-                child = zlist_next (resrc_tree_list->list);
+                resrc_tree_destroy (child);
+                child = resrc_tree_list_next (resrc_tree_list);
             }
         }
         resrc_tree_list_free (resrc_tree_list);
     }
 }
 
-int resrc_tree_list_serialize (JSON o, resrc_tree_list_t rtl)
+int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
 {
-    resrc_tree_t rt;
+    resrc_tree_t *rt;
     int rc = -1;
 
     if (o && rtl && rtl->list) {
@@ -300,9 +300,9 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t rtl)
     return rc;
 }
 
-int resrc_tree_list_allocate (resrc_tree_list_t rtl, int64_t job_id)
+int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id)
 {
-    resrc_tree_t rt;
+    resrc_tree_t *rt;
     int rc = -1;
 
     if (rtl) {
@@ -317,9 +317,9 @@ int resrc_tree_list_allocate (resrc_tree_list_t rtl, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_list_reserve (resrc_tree_list_t rtl, int64_t job_id)
+int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
 {
-    resrc_tree_t rt;
+    resrc_tree_t *rt;
     int rc = -1;
 
     if (rtl) {
@@ -334,9 +334,9 @@ int resrc_tree_list_reserve (resrc_tree_list_t rtl, int64_t job_id)
     return rc;
 }
 
-int resrc_tree_list_release (resrc_tree_list_t rtl, int64_t job_id)
+int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
 {
-    resrc_tree_t rt;
+    resrc_tree_t *rt;
     int rc = -1;
 
     if (rtl) {
