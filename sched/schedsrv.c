@@ -616,6 +616,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
      * Require at least one task per node, and
      * Assume (for now) one task per core.
      */
+    job->req->nnodes = (job->req->nnodes ? job->req->nnodes : 1);
     if (job->req->ncores < job->req->nnodes)
         job->req->ncores = job->req->nnodes;
     job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
