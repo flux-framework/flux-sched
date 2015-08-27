@@ -36,34 +36,33 @@
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
-//ctx is used in several other modules and I liked the idea
-//Its main use is to pass around the global state between functions
-//without using a global variables, it also makes serializing the global
-//state much easier
 typedef struct {
 	sim_state_t *sim_state;
     flux_t h;
-    bool master;
-    int rank;
+    bool rdl_changed;
+    char* rdl_string;
+    bool exit_on_complete;
 } ctx_t;
 
 static void freectx (void *arg)
 {
     ctx_t *ctx = arg;
 	free_simstate (ctx->sim_state);
+    free (ctx->rdl_string);
     free (ctx);
 }
 
-static ctx_t *getctx (flux_t h)
+static ctx_t *getctx (flux_t h, bool exit_on_complete)
 {
     ctx_t *ctx = (ctx_t *)flux_aux_get (h, "simsrv");
 
     if (!ctx) {
         ctx = xzmalloc (sizeof (*ctx));
         ctx->h = h;
-        ctx->master = flux_treeroot (h);
-        ctx->rank = flux_rank (h);
 		ctx->sim_state = new_simstate ();
+        ctx->rdl_string = NULL;
+        ctx->rdl_changed = false;
+        ctx->exit_on_complete = exit_on_complete;
         flux_aux_set (h, "simsrv", ctx, freectx);
     }
 
@@ -79,6 +78,7 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 	if (flux_json_request (h, FLUX_NODEID_ANY,
                                   FLUX_MATCHTAG_NONE, topic, o) < 0) {
 		flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
+        Jput(o);
 		return -1;
 	}
 	//flux_log (h, LOG_DEBUG, "sent a trigger to %s", mod_name);
@@ -91,20 +91,37 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 //and that they should join
 int send_start_event(flux_t h)
 {
+    int rc = 0;
+	flux_msg_t *msg = NULL;
+
 	JSON o = Jnew();
-	zmsg_t *zmsg = NULL;
 	Jadd_str (o, "mod_name", "sim");
 	Jadd_int (o, "rank", flux_rank(h));
 	Jadd_int (o, "sim_time", 0);
-	if (!(zmsg = flux_event_encode ("sim.start", Jtostr (o)))
-            || flux_sendmsg (h, &zmsg) < 0){
-		Jput(o);
-		zmsg_destroy (&zmsg);
-		return -1;
+
+	if (!(msg = flux_event_encode ("sim.start", Jtostr (o)))
+        || flux_send (h, msg, 0) < 0){
+		rc = -1;
 	}
+
 	Jput(o);
-	zmsg_destroy (&zmsg);
-	return 0;
+	flux_msg_destroy (msg);
+	return rc;
+}
+
+// Send an event to all modules that the simulation has completed
+int send_complete_event (flux_t h)
+{
+    int rc = 0;
+	flux_msg_t *msg = NULL;
+
+	if (!(msg = flux_event_encode ("sim.complete", NULL))
+        || flux_send (h, msg, 0) < 0) {
+        rc = -1;
+    }
+
+	flux_msg_destroy (msg);
+	return rc;
 }
 
 //Looks at the current state and launches the next trigger
@@ -123,7 +140,6 @@ static int handle_next_event (ctx_t *ctx){
 	keys = zhash_keys(timers);
 
 	//Get the next occuring event time/module
-	//TODO: convert this block of code into a zhash_foreach function
 	double *min_event_time = NULL, *curr_event_time = NULL;
 	char *mod_name = NULL, *curr_name = NULL;
 
@@ -136,7 +152,6 @@ static int handle_next_event (ctx_t *ctx){
 		}
 	}
 	if (min_event_time == NULL){
-		flux_log (ctx->h, LOG_INFO, "No events remaining");
 		return -1;
 	}
 	while (zlist_size (keys) > 0){
@@ -203,8 +218,9 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 		return 0;
 	}
 
-	//TODO: this is horribly hackish, improve the handshake to avoid this hardcoded # of modules
-	//maybe use a timeout?
+	//TODO: this is horribly hackish, improve the handshake to avoid
+	//this hardcoded # of modules. maybe use a timeout?  ZMQ provides
+	//support for polling etc with timeouts, should try that
 	static int num_modules = 3;
 	num_modules--;
 	if (num_modules <= 0){
@@ -223,7 +239,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 //try and determine what the new timer value should be.  There are ~12 possible cases
 //captured by the ~7 if/else statements below.
 //The general idea is leave the timer alone if the reply = previous (echo'd back)
-//and to use the reply time if the reply if > sim time but < prev
+//and to use the reply time if the reply is > sim time but < prev
 //There are many permutations of the three paramters which result in an invalid state
 //hopefully all of those cases are checked for and logged.
 
@@ -272,10 +288,37 @@ static int check_for_new_timers (const char *key, void *item, void *argument)
 
 static void copy_new_state_data (ctx_t *ctx, sim_state_t *curr_sim_state, sim_state_t *reply_sim_state)
 {
-	if (reply_sim_state->sim_time > curr_sim_state->sim_time)
+	if (reply_sim_state->sim_time > curr_sim_state->sim_time) {
 		curr_sim_state->sim_time = reply_sim_state->sim_time;
+    }
 
 	zhash_foreach (reply_sim_state->timers, check_for_new_timers, ctx);
+}
+
+static int rdl_update_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+{
+	JSON o = NULL;
+	const char *tag = NULL;
+    const char *json_string = NULL;
+    const char *rdl_string = NULL;
+	ctx_t *ctx = (ctx_t *) arg;
+
+	if (flux_event_decode (*zmsg, &tag, &json_string) < 0 || json_string == NULL){
+		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+		Jput (o);
+		return -1;
+	}
+
+    o = Jfromstr(json_string);
+    Jget_str(o, "rdl_string", &rdl_string);
+    if (rdl_string) {
+        free (ctx->rdl_string);
+        ctx->rdl_string = strdup (rdl_string);
+        ctx->rdl_changed = true;
+    }
+
+    Jput (o);
+    return 0;
 }
 
 //Recevied a reply to a trigger ("sim.reply")
@@ -292,15 +335,18 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 		return 0;
 	}
 
-	//Logging
-	//json_string = Jtostr (request);
-	//flux_log (h, LOG_DEBUG, "received reply - %s", json_string);
-
 	//De-serialize and get new info
 	reply_sim_state = json_to_sim_state (request);
 	copy_new_state_data (ctx, curr_sim_state, reply_sim_state);
 
-	handle_next_event (ctx);
+	if (handle_next_event (ctx) < 0) {
+        flux_log (h, LOG_DEBUG, "No events remaining");
+        if (ctx->exit_on_complete) {
+            msg_exit ("exit_on_complete is set. Exiting now.");
+        } else {
+            send_complete_event(h);
+        }
+    }
 
 	free_simstate (reply_sim_state);
 	Jput(request);
@@ -337,24 +383,42 @@ static msghandler_t htab[] = {
     { FLUX_MSGTYPE_REQUEST, "sim.join",       join_cb },
     { FLUX_MSGTYPE_REQUEST, "sim.reply",      reply_cb },
     { FLUX_MSGTYPE_REQUEST, "sim.alive",      alive_cb },
+    { FLUX_MSGTYPE_EVENT,   "rdl.update",     rdl_update_cb },
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-int mod_main(flux_t h, int argc, char **argv)
+int mod_main (flux_t h, int argc, char **argv)
 {
-	ctx_t *ctx = getctx(h);
+    zhash_t *args = zhash_fromargv (argc, argv);
+	ctx_t *ctx;
+    char *eoc_str;
+    bool exit_on_complete;
+
 	if (flux_rank (h) != 0) {
 		flux_log(h, LOG_ERR, "sim module must only run on rank 0");
 		return -1;
 	}
+
 	flux_log (h, LOG_INFO, "sim comms module starting");
+
+    if (!(eoc_str = zhash_lookup (args, "exit-on-complete"))) {
+        flux_log (h, LOG_ERR, "exit-on-complete argument is not set, defaulting to false");
+        exit_on_complete = false;
+    } else {
+        exit_on_complete = (!strcmp (eoc_str, "true") || !strcmp (eoc_str, "True"));
+    }
+    ctx = getctx(h, exit_on_complete);
+
+	if (flux_event_subscribe (h, "rdl.update") < 0){
+        flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+		return -1;
+	}
 
 	if (flux_msghandler_addvec (h, htab, htablen, ctx) < 0) {
 		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
 		return -1;
 	}
-	sleep(1);
-	flux_log (h, LOG_DEBUG, "sim left sleep");
+
 	if (send_start_event (h) < 0){
 		flux_log (h, LOG_ERR, "sim failed to send start event");
 		return -1;
