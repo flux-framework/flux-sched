@@ -11,7 +11,7 @@ BUILD = libresrc.so.0
 all: $(BUILD)
 	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
-libresrc.so.0: resrc.o resrc_tree.o $(X_OBJS_LIB)
+libresrc.so.0: resrc.o resrc_tree.o resrc_reqst.o $(X_OBJS_LIB)
 	$(CC) -shared -Wl,--version-script=resrc_version.map -o $@ $^ $(LIBS)
 	ln -sf $(shell basename $@) $(@:.0=)
 

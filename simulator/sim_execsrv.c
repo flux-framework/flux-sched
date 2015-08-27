@@ -81,7 +81,7 @@ static ctx_t *getctx (flux_t h)
 }
 
 //Given the kvs dir of a job, change the state of the job and timestamp the change
-static int update_job_state (ctx_t *ctx, kvsdir_t kvs_dir, char* state, double update_time)
+static int update_job_state (ctx_t *ctx, kvsdir_t *kvs_dir, char* state, double update_time)
 {
 	char *timer_key = NULL;
 
@@ -289,7 +289,7 @@ static int handle_queued_events (ctx_t *ctx)
 {
 	job_t *job = NULL;
 	int *jobid = NULL;
-	kvsdir_t kvs_dir;
+	kvsdir_t *kvs_dir;
 	flux_t h = ctx->h;
 	zlist_t *queued_events = ctx->queued_events;
 	zlist_t *running_jobs = ctx->running_jobs;

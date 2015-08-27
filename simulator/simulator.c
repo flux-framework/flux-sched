@@ -202,7 +202,7 @@ int put_job_in_kvs (job_t *job)
 	return 0;
 }
 
-job_t *pull_job_from_kvs (kvsdir_t kvsdir)
+job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
 {
 	job_t *job = blank_job();
 

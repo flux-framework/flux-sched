@@ -239,7 +239,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 	double *new_submit_mod_time;
 	JSON response;
 	int64_t new_jobid = -1;
-	kvsdir_t dir;
+	kvsdir_t *dir;
 	job_t *job;
 
 	//Get the next job to submit

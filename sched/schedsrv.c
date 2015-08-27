@@ -46,6 +46,7 @@
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_reqst.h"
 #include "schedsrv.h"
 
 #define DYNAMIC_SCHEDULING 0
@@ -64,12 +65,11 @@ static int job_status_cb (JSON jcb, void *arg, int errnum);
  *                                                                            *
  ******************************************************************************/
 
-typedef resrc_tree_list_t (*find_f) (flux_t h, resources_t resrcs,
-                                            resrc_reqst_t resrc_reqst);
+typedef resrc_tree_list_t *(*find_f) (flux_t h, resources_t *resrcs,
+                                      resrc_reqst_t *resrc_reqst);
 
-typedef resrc_tree_list_t (*sel_f) (flux_t h,
-                                              resrc_tree_list_t resrc_trees,
-                                              resrc_reqst_t resrc_reqst);
+typedef resrc_tree_list_t *(*sel_f) (flux_t h, resrc_tree_list_t *resrc_trees,
+                                     resrc_reqst_t *resrc_reqst);
 
 typedef struct sched_ops {
     void         *dso;                /* Scheduler plug-in DSO handle */
@@ -78,7 +78,7 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
-    resources_t   root_resrcs;        /* resrcs object pointing to the root */
+    resources_t  *root_resrcs;        /* resrcs object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
@@ -106,7 +106,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
-    resrc_destroy_resources (&(ctx->rctx.root_resrcs));
+    resrc_destroy_resources ((ctx->rctx.root_resrcs));
     free (ctx->rctx.root_uri);
     dlclose (ctx->sops.dso);
 }
@@ -157,7 +157,7 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     if (!j) goto done;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
+    if ((rc = jsc_query_jcb_obj (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
         flux_log (h, LOG_ERR, "error in jsc_query_job.");
         goto done;
     }
@@ -182,7 +182,7 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE , (int64_t) ns);
     /* don't want to use Jadd_obj because I want to transfer the ownership */
     json_object_object_add (jcb, JSC_STATE_PAIR, o);
-    rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcb);
+    rc = jsc_update_jcb_obj (h, jid, JSC_STATE_PAIR, jcb);
     Jput (jcb);
     return rc;
 }
@@ -423,7 +423,7 @@ static int inline reg_events (ssrvctx_t *ctx)
         goto done;
     }
 #endif
-    if (jsc_notify_status (h, job_status_cb, (void *)h) != 0) {
+    if (jsc_notify_status_obj (h, job_status_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "error registering a job status change CB");
         rc = -1;
         goto done;
@@ -486,7 +486,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     Jadd_obj (jcb, JSC_RDL, ro);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL, jcb) != 0) {
+    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %ld (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
@@ -498,7 +498,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     json_object_object_add (jcb, JSC_RDL_ALLOC, arr);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
+    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
@@ -608,14 +608,15 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     flux_t h = ctx->h;
     int rc = -1;
     int64_t nnodes = 0;
-    resrc_reqst_t resrc_reqst = NULL;
-    resrc_tree_list_t found_trees = NULL;
-    resrc_tree_list_t selected_trees = NULL;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
 
     /*
      * Require at least one task per node, and
      * Assume (for now) one task per core.
      */
+    job->req->nnodes = (job->req->nnodes ? job->req->nnodes : 1);
     if (job->req->ncores < job->req->nnodes)
         job->req->ncores = job->req->nnodes;
     job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
