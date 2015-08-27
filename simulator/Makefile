@@ -1,10 +1,11 @@
 include ../Makefile.inc
 
+SUBDIRS = test
 CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
-LIBS = $(FLUX_LIBS) $(RDL_LIBS)
+LIBS = $(FLUX_LIBS) $(RDL_LIBS) $(KVS_LIBS)
 
 CONF=../conf/hype.lua
-JOBDATA=job_data/2014-06-01.csv
+JOBDATA=job_data/hype-large.sorted.csv
 
 COMMON_OBJS = simulator.o xzmalloc.o log.o jsonutil.o
 
@@ -15,6 +16,7 @@ SCHEDULER_OBJS = scheduler.o
 BUILD = sim.so submit.so sim_exec.so $(SCHEDULERS_SO)
 
 all:  $(BUILD)
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
 sim_sched_%.so: sim_sched_%.c $(COMMON_OBJS) $(SCHEDULER_OBJS)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS)
@@ -36,12 +38,12 @@ unload:
 sim_sched_%: sim_sched_%.so load
 	$(FLUX) module load ./$@.so rdl-conf=$(CONF)
 
-check:
-	echo "This is an empty depenendency"
-
+check: all
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
 clean:
 	rm -f *.a *.o *.so
+	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
 ## Debugging conveinences
 SCHED=sim_sched_fcfs.so
