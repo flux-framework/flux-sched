@@ -451,59 +451,37 @@ static int handle_queued_events (ctx_t *ctx)
 	return 0;
 }
 
-
-//Request to join the simulation
-static int send_join_request(flux_t h)
-{
-	JSON o = Jnew ();
-	Jadd_str (o, "mod_name", module_name);
-	Jadd_int (o, "rank", flux_rank (h));
-	Jadd_double (o, "next_event", -1);
-	if (flux_json_request (h, FLUX_NODEID_ANY,
-                                  FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
-		Jput (o);
-		return -1;
-	}
-	Jput (o);
-	return 0;
-}
-
 //Received an event that a simulation is starting
-static int start_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void start_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
 	flux_log(h, LOG_DEBUG, "received a start event");
-	if (send_join_request (h) < 0){
+	if (send_join_request (h, module_name, -1) < 0){
 		flux_log (h, LOG_ERR, "failed to register with sim module");
-		return -1;
+		return;
 	}
 	flux_log (h, LOG_DEBUG, "sent a join request");
 
 	if (flux_event_unsubscribe (h, "sim.start") < 0){
 		flux_log (h, LOG_ERR, "failed to unsubscribe from \"sim.start\"");
-		return -1;
 	} else {
 		flux_log (h, LOG_DEBUG, "unsubscribed from \"sim.start\"");
 	}
-
-	//Cleanup
-	zmsg_destroy (zmsg);
-
-	return 0;
 }
 
-static int rdl_update_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void rdl_update_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
 	JSON o = NULL;
     const char *rdl_string = NULL, *json_str = NULL;
 	ctx_t *ctx = (ctx_t *) arg;
     int64_t rdl_int = 0;
 
-	if (flux_event_decode (*zmsg, NULL, &json_str) < 0) {
+	if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL
+        || !(o = Jfromstr (json_str))) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-		return -1;
+		return;
 	}
 
-    o = Jfromstr(json_str);
     Jget_int64(o, "rdl_int", &rdl_int);
     Jget_str(o, "rdl_string", &rdl_string);
 
@@ -514,32 +492,29 @@ static int rdl_update_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
         rdllib_close(ctx->rdllib);
         ctx->rdllib = rdllib_open();
         ctx->rdl = rdl_load(ctx->rdllib, rdl_string);
-    } else {
-        return -1;
     }
 
     Jput (o);
-
-    return 0;
 }
 
 //Handle trigger requests from the sim module ("sim_exec.trigger")
-static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void trigger_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
-	JSON o;
-	const char *json_string;
-	double next_termination;
+	JSON o = NULL;
+	const char *json_str = NULL;
+	double next_termination = -1;
+    zhash_t *job_hash = NULL;
 	ctx_t *ctx = (ctx_t *) arg;
-    zhash_t *job_hash;
 
-	if (flux_json_request_decode (*zmsg, &o) < 0) {
+	if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL
+        || !(o = Jfromstr (json_str))) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-		return -1;
+		return;
 	}
 
 //Logging
-	json_string = Jtostr (o);
-	flux_log(h, LOG_DEBUG, "received a trigger (sim_exec.trigger: %s", json_string);
+	flux_log(h, LOG_DEBUG, "received a trigger (sim_exec.trigger: %s", json_str);
 
 //Handle the trigger
 	ctx->sim_state = json_to_sim_state (o);
@@ -549,47 +524,41 @@ static int trigger_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	handle_completed_jobs (ctx);
 	next_termination = determine_next_termination (ctx, ctx->sim_state->sim_time, job_hash);
 	set_event_timer (ctx, "sim_exec", next_termination);
-	send_reply_request (h, ctx->sim_state, module_name);
+	send_reply_request (h, module_name, ctx->sim_state);
 
 //Cleanup
 	free_simstate (ctx->sim_state);
 	Jput (o);
     zhash_destroy (&job_hash);
-	zmsg_destroy (zmsg);
-	return 0;
 }
 
-static int run_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void run_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
-	const char *tag;
+	const char *topic;
 	ctx_t *ctx = (ctx_t *) arg;
 	int *jobid = (int *) malloc (sizeof (int));
 
-	if (flux_msg_get_topic (*zmsg, &tag) < 0) {
+	if (flux_msg_get_topic (msg, &topic) < 0) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-		return -1;
+		return;
 	}
 
 //Logging
-	flux_log(h, LOG_DEBUG, "received a request (%s)", tag);
+	flux_log(h, LOG_DEBUG, "received a request (%s)", topic);
 
 //Handle Request
-	sscanf (tag, "sim_exec.run.%d", jobid);
+	sscanf (topic, "sim_exec.run.%d", jobid);
 	zlist_append (ctx->queued_events, jobid);
 	flux_log(h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
-
-//Cleanup
-	zmsg_destroy (zmsg);
-	return 0;
 }
 
-static msghandler_t htab[] = {
+static struct flux_msghandler htab[] = {
     { FLUX_MSGTYPE_EVENT,   "sim.start",        start_cb },
     { FLUX_MSGTYPE_EVENT,   "rdl.update",        rdl_update_cb },
     { FLUX_MSGTYPE_REQUEST, "sim_exec.trigger",   trigger_cb },
     { FLUX_MSGTYPE_REQUEST, "sim_exec.run.*",   run_cb },
+    FLUX_MSGHANDLER_TABLE_END,
 };
-const int htablen = sizeof (htab) / sizeof (htab[0]);
 
 int mod_main (flux_t h, int argc, char **argv)
 {
@@ -608,8 +577,8 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
 		return -1;
 	}
-	if (flux_msghandler_addvec (h, htab, htablen, ctx) < 0) {
-		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
+	if (flux_msg_watcher_addvec (h, htab, ctx) < 0) {
+		flux_log (h, LOG_ERR, "flux_msg_watcher_add: %s", strerror (errno));
 		return -1;
 	}
 

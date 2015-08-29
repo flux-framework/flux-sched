@@ -73,18 +73,25 @@ static ctx_t *getctx (flux_t h, bool exit_on_complete)
 //converts sim_state to JSON, formats request tag based on "mod_name"
 static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 {
-	JSON o = sim_state_to_json (sim_state);
-	char *topic = xasprintf ("%s.trigger", mod_name);
-	if (flux_json_request (h, FLUX_NODEID_ANY,
-                                  FLUX_MATCHTAG_NONE, topic, o) < 0) {
+    int rc = 0;
+    flux_msg_t *msg = NULL;
+	JSON o = NULL;
+	char *topic = NULL;
+
+    o = sim_state_to_json (sim_state);
+
+    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
+    topic = xasprintf ("%s.trigger", mod_name);
+    flux_msg_set_topic (msg, topic);
+    flux_msg_set_payload_json (msg, Jtostr (o));
+    if (flux_send (h, msg, 0) < 0) {
 		flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
-        Jput(o);
-		return -1;
+        rc = -1;
 	}
-	//flux_log (h, LOG_DEBUG, "sent a trigger to %s", mod_name);
+
 	Jput(o);
 	free (topic);
-	return 0;
+	return rc;
 }
 
 //Send out a call to all modules that the simulation is starting
@@ -152,6 +159,7 @@ static int handle_next_event (ctx_t *ctx){
 		}
 	}
 	if (min_event_time == NULL){
+        flux_log (ctx->h, LOG_ERR, "%s: min_event_time is NULL", __FUNCTION__);
 		return -1;
 	}
 	while (zlist_size (keys) > 0){
@@ -187,27 +195,29 @@ static int handle_next_event (ctx_t *ctx){
 }
 
 //Recevied a request to join the simulation ("sim.join")
-static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void join_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
-	JSON request = NULL;
-	const char *mod_name;
 	int mod_rank;
+	JSON request = NULL;
+	const char *mod_name = NULL, *json_str = NULL;
 	double *next_event = (double *) malloc (sizeof (double));
 	ctx_t *ctx = arg;
 	sim_state_t *sim_state = ctx->sim_state;
 
-	if (flux_json_request_decode (*zmsg, &request) < 0
+    if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL
+        || !(request = Jfromstr (json_str))
 		|| !Jget_str (request, "mod_name", &mod_name)
 		|| !Jget_int (request, "rank", &mod_rank)
 		|| !Jget_double (request, "next_event", next_event)) {
 		flux_log (h, LOG_ERR, "%s: bad join message", __FUNCTION__);
 		Jput(request);
-		return 0;
+        return;
 	}
 	if (mod_rank < 0 || mod_rank >= flux_size (h)) {
 		Jput(request);
 		flux_log (h, LOG_ERR, "%s: bad rank in join message", __FUNCTION__);
-		return 0;
+        return;
 	}
 
 	flux_log (h, LOG_DEBUG, "join rcvd from module %s on rank %d, next event at %f", mod_name, mod_rank, *next_event);
@@ -215,7 +225,7 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	zhash_t *timers = sim_state->timers;
 	if (zhash_insert (timers, mod_name, next_event) < 0){ //key already exists
 		flux_log (h, LOG_ERR, "duplicate join request from %s, module already exists in sim_state", mod_name);
-		return 0;
+        return;
 	}
 
 	//TODO: this is horribly hackish, improve the handshake to avoid
@@ -226,13 +236,11 @@ static int join_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 	if (num_modules <= 0){
 		if (handle_next_event (ctx) < 0){
 			flux_log (h, LOG_ERR, "failure while handling next event");
-			return -1;
+            return;
 		}
 	}
 
 	Jput(request);
-	zmsg_destroy(zmsg);
-	return 0;
 }
 
 //Based on the simulation time, the previous timer value, and the reply timer value
@@ -295,44 +303,45 @@ static void copy_new_state_data (ctx_t *ctx, sim_state_t *curr_sim_state, sim_st
 	zhash_foreach (reply_sim_state->timers, check_for_new_timers, ctx);
 }
 
-static int rdl_update_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void rdl_update_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
 	JSON o = NULL;
-	const char *tag = NULL;
-    const char *json_string = NULL;
-    const char *rdl_string = NULL;
+	const char *json_str = NULL, *rdl_str = NULL;
 	ctx_t *ctx = (ctx_t *) arg;
 
-	if (flux_event_decode (*zmsg, &tag, &json_string) < 0 || json_string == NULL){
+ 	if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL
+        || !(o = Jfromstr (json_str))) {
 		flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
 		Jput (o);
-		return -1;
+		return;
 	}
 
-    o = Jfromstr(json_string);
-    Jget_str(o, "rdl_string", &rdl_string);
-    if (rdl_string) {
+    Jget_str(o, "rdl_string", &rdl_str);
+    if (rdl_str) {
         free (ctx->rdl_string);
-        ctx->rdl_string = strdup (rdl_string);
+        ctx->rdl_string = strdup (rdl_str);
         ctx->rdl_changed = true;
     }
 
     Jput (o);
-    return 0;
 }
 
 //Recevied a reply to a trigger ("sim.reply")
-static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void reply_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
+    const char *json_str = NULL;
 	JSON request = NULL;
 	ctx_t *ctx = arg;
 	sim_state_t *curr_sim_state = ctx->sim_state;
 	sim_state_t *reply_sim_state;
 
-	if (flux_json_request_decode (*zmsg, &request) < 0) {
+	if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL
+        || !(request = Jfromstr(json_str))) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
 		Jput(request);
-		return 0;
+		return;
 	}
 
 	//De-serialize and get new info
@@ -350,40 +359,33 @@ static int reply_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
 
 	free_simstate (reply_sim_state);
 	Jput(request);
-	zmsg_destroy(zmsg);
-	return 0;
 }
 
-static int alive_cb (flux_t h, int typemask, zmsg_t **zmsg, void *arg)
+static void alive_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
-	JSON request = NULL;
-	const char *json_string;
+	const char *json_str;
 
-	if (flux_json_request_decode (*zmsg, &request) < 0) {
+	if (flux_msg_get_payload_json (msg, &json_str) < 0
+        || json_str == NULL) {
 		flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
-		Jput(request);
-		return 0;
+		return;
 	}
 
-	json_string = Jtostr (request);
-	flux_log (h, LOG_DEBUG, "received alive request - %s", json_string);
+	flux_log (h, LOG_DEBUG, "received alive request - %s", json_str);
 
 	if (send_start_event (h) < 0){
 		flux_log (h, LOG_ERR, "sim failed to send start event");
-		return -1;
+		return;
 	}
 	flux_log (h, LOG_DEBUG, "sending start event again");
-
-	Jput(request);
-	zmsg_destroy(zmsg);
-	return 0;
 }
 
-static msghandler_t htab[] = {
+static struct flux_msghandler htab[] = {
     { FLUX_MSGTYPE_REQUEST, "sim.join",       join_cb },
     { FLUX_MSGTYPE_REQUEST, "sim.reply",      reply_cb },
     { FLUX_MSGTYPE_REQUEST, "sim.alive",      alive_cb },
     { FLUX_MSGTYPE_EVENT,   "rdl.update",     rdl_update_cb },
+    FLUX_MSGHANDLER_TABLE_END,
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
@@ -414,8 +416,8 @@ int mod_main (flux_t h, int argc, char **argv)
 		return -1;
 	}
 
-	if (flux_msghandler_addvec (h, htab, htablen, ctx) < 0) {
-		flux_log (h, LOG_ERR, "flux_msghandler_add: %s", strerror (errno));
+	if (flux_msg_watcher_addvec (h, htab, ctx) < 0) {
+		flux_log (h, LOG_ERR, "flux_msg_watcher_add: %s", strerror (errno));
 		return -1;
 	}
 

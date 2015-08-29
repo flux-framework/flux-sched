@@ -224,32 +224,66 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
 
 int send_alive_request (flux_t h, const char* module_name)
 {
+    int rc = 0;
+    flux_msg_t *msg = NULL;
 	JSON o = Jnew ();
 
 	Jadd_str (o, "mod_name", module_name);
 	Jadd_int (o, "rank", flux_rank (h));
-	if (flux_json_request (h, FLUX_NODEID_ANY,
-                                  FLUX_MATCHTAG_NONE, "sim.alive", o) < 0) {
-		Jput (o);
-		return -1;
+
+    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
+    flux_msg_set_topic (msg, "sim.alive");
+    flux_msg_set_payload_json (msg, Jtostr (o));
+    if (flux_send (h, msg, 0) < 0) {
+		rc = -1;
 	}
+
 	Jput (o);
-	return 0;
+	return rc;
 }
 
 //Reply back to the sim module with the updated sim state (in JSON form)
-int send_reply_request (flux_t h, sim_state_t *sim_state, const char *module_name)
+int send_reply_request (flux_t h, const char *module_name, sim_state_t *sim_state)
 {
-	JSON o = sim_state_to_json (sim_state);
+    int rc = 0;
+    flux_msg_t *msg = NULL;
+	JSON o = NULL;
+
+    o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
-    if (flux_json_request (h, FLUX_NODEID_ANY,
-                           FLUX_MATCHTAG_NONE, "sim.reply", o) < 0) {
-		Jput (o);
-		return -1;
+
+    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
+    flux_msg_set_topic (msg, "sim.reply");
+    flux_msg_set_payload_json (msg, Jtostr (o));
+    if (flux_send (h, msg, 0) < 0) {
+		rc = -1;
 	}
-	flux_log(h, LOG_DEBUG, "sent a reply request: %s", Jtostr(o));
+
+	flux_log(h, LOG_DEBUG, "sent a reply request: %s", Jtostr (o));
     Jput (o);
-    return 0;
+    return rc;
+}
+
+//Request to join the simulation
+int send_join_request (flux_t h, const char *module_name, double next_event)
+{
+    int rc = 0;
+    flux_msg_t *msg = NULL;
+	JSON o = Jnew ();
+
+	Jadd_str (o, "mod_name", module_name);
+	Jadd_int (o, "rank", flux_rank (h));
+	Jadd_double (o, "next_event", next_event);
+
+    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
+    flux_msg_set_topic (msg, "sim.join");
+    flux_msg_set_payload_json (msg, Jtostr (o));
+	if (flux_send (h, msg, 0) < 0) {
+        rc = -1;
+	}
+
+	Jput (o);
+	return rc;
 }
 
 zhash_t *zhash_fromargv (int argc, char **argv)

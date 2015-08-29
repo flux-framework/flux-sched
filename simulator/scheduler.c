@@ -59,21 +59,20 @@ static struct stab_struct jobstate_tab[] = {
 
 int send_rdl_update (flux_t h, struct rdl* rdl)
 {
+    int rc = 0;
+    flux_msg_t *msg = NULL;
     JSON o = Jnew();
-    zmsg_t *zmsg = NULL;
 
     Jadd_int64(o, "rdl_int", (int64_t) rdl);
 
-	if (!(zmsg = flux_event_encode ("rdl.update", Jtostr (o)))
-            || flux_sendmsg (h, &zmsg) < 0){
-		Jput(o);
-        zmsg_destroy (&zmsg);
-		return -1;
+	if (!(msg = flux_event_encode ("rdl.update", Jtostr (o)))
+        || flux_send (h, msg, 0) < 0){
+		rc = -1;
 	}
 
     Jput (o);
-    zmsg_destroy (&zmsg);
-    return 0;
+    flux_msg_destroy (msg);
+    return rc;
 }
 
 struct rdl *get_free_subset (struct rdl *rdl, const char *type)
@@ -213,7 +212,7 @@ void trigger_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *a
 	handle_timer_queue (ctx, sim_state);
 
     send_rdl_update (h, ctx->rdl);
-	send_reply_request (h, sim_state, module_name);
+	send_reply_request (h, module_name, sim_state);
 
     free_simstate (sim_state);
 	Jput (o);
@@ -554,19 +553,19 @@ ret:
 int signal_event (ctx_t *ctx)
 {
     int rc = 0;
-    zmsg_t *zmsg = NULL;
+    flux_msg_t *msg = NULL;
 
     if (ctx->in_sim) {
         queue_timer_change (ctx, module_name);
         goto ret;
-    } else if (!(zmsg = flux_event_encode ("sim_sched.event", NULL))
-             || flux_sendmsg (ctx->h, &zmsg) < 0) {
+    } else if (!(msg = flux_event_encode ("sim_sched.event", NULL))
+               || flux_send (ctx->h, msg, 0) < 0) {
         flux_log (ctx->h, LOG_ERR,
-                  "flux_sendmsg: %s", strerror (errno));
+                  "flux_send: %s", strerror (errno));
         rc = -1;
     }
 
-    zmsg_destroy (&zmsg);
+    flux_msg_destroy (msg);
 ret:
     return rc;
 }
@@ -945,7 +944,7 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
 {
     int rc = -1;
     char *topic = NULL;
-    zmsg_t *zmsg = NULL;
+    flux_msg_t *msg = NULL;
 
     if (update_job_state (ctx, job, j_runrequest) < 0) {
         flux_log (ctx->h, LOG_ERR, "request_run failed to update job %ld to %s",
@@ -958,16 +957,17 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
     }
     if (!ctx->in_sim) {
         topic = xasprintf ("rexec.run.%ld", job->lwj_id);
-        if (!(zmsg = flux_event_encode (topic, NULL))
-            || flux_sendmsg (ctx->h, &zmsg) < 0) {
+        if (!(msg = flux_event_encode (topic, NULL))
+            || flux_send (ctx->h, msg, 0) < 0) {
             flux_log (ctx->h, LOG_ERR, "request_run event send failed: %s",
                       strerror (errno));
             goto done;
         }
     } else {
         topic = xasprintf ("sim_exec.run.%ld", job->lwj_id);
-        if (flux_json_request (ctx->h, FLUX_NODEID_ANY,
-                               FLUX_MATCHTAG_NONE, topic, NULL) < 0) {
+        msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
+        flux_msg_set_topic (msg, topic);
+        if (flux_send (ctx->h, msg, 0) < 0) {
             flux_log (ctx->h, LOG_ERR, "request_run request send failed: %s",
                       strerror (errno));
             goto done;
@@ -979,7 +979,7 @@ done:
     if (topic)
         free (topic);
 
-    zmsg_destroy (&zmsg);
+    flux_msg_destroy (msg);
     return rc;
 }
 
@@ -1541,28 +1541,13 @@ void end_schedule_loop (ctx_t *ctx) {
     ctx->run_schedule_loop = false;
 }
 
-int send_join_request(flux_t h)
-{
-	JSON o = Jnew ();
-	Jadd_str (o, "mod_name", module_name);
-	Jadd_int (o, "rank", flux_rank (h));
-	Jadd_double (o, "next_event", -1);
-    if (flux_json_request (h, FLUX_NODEID_ANY,
-                              FLUX_MATCHTAG_NONE, "sim.join", o) < 0) {
-		Jput (o);
-		return -1;
-	}
-	Jput (o);
-	return 0;
-}
-
 //Received an event that a simulation is starting
 void start_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg)
 {
     ctx_t *ctx = getctx (h);
 
 	flux_log(h, LOG_DEBUG, "received a start event");
-	if (send_join_request (h) < 0){
+	if (send_join_request (h, module_name, -1) < 0){
 		flux_log (h, LOG_ERR, "submit module failed to register with sim module");
 		return;
 	}

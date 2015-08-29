@@ -228,7 +228,6 @@ void queue_schedule_loop (ctx_t *ctx);
 bool should_run_schedule_loop (ctx_t *ctx, int time);
 void end_schedule_loop (ctx_t *ctx);
 
-int send_join_request(flux_t h);
 void start_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg);
 
 int init_and_start_scheduler (flux_t h, ctx_t *ctx, zhash_t *args, struct flux_msghandler *tab);
