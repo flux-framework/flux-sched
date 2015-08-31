@@ -368,7 +368,6 @@ static void rdl_resource_destroy_nolist (struct resource *r)
 {
     if (r->rdl->L) {
         luaL_unref (r->rdl->L, LUA_GLOBALSINDEX, r->lua_ref);
-        lua_gc (r->rdl->L, LUA_GCCOLLECT, 0);
         r->rdl = NULL;
     }
     free (r->name);
@@ -873,7 +872,6 @@ void rdl_accumulator_destroy (struct rdl_accumulator *a)
 
     if (a->rdl) {
         luaL_unref (a->rdl->L, LUA_GLOBALSINDEX, a->lua_ref);
-        lua_gc (a->rdl->L, LUA_GCCOLLECT, 0);
         a->rdl = NULL;
     }
     free (a);
@@ -984,6 +982,25 @@ struct rdl * rdl_accumulator_copy (struct rdl_accumulator *a)
     rdl = rdl_load (a->rdl->rl, s);
     free (s);
     return (rdl);
+}
+
+bool rdl_accumulator_is_empty (struct rdl_accumulator *a)
+{
+  bool ret_val = true;
+  lua_State *L = a->rdl->L;
+
+  lua_rdl_accumulator_method_push (a, "is_empty");
+
+  if (lua_pcall (L, 1, LUA_MULTRET, 0)) {
+    VERR (a->rdl->rl, "accumulator_is_empty had an error in pcall.  Additional info: %s\n", lua_tostring (L, -1));
+  } else if (lua_isnoneornil (L, -1)) {
+    VERR (a->rdl->rl, "lua method 'is_empty' returned none or nil. Additional info: %s\n", lua_tostring (L, -1));
+  } else {
+    ret_val = lua_toboolean(L, -1);
+  }
+
+  lua_settop (L, 0);
+  return ret_val;
 }
 
 /*

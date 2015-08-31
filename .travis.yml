@@ -38,6 +38,7 @@ before_install:
   - eval `luarocks path`
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - bash ./travis-dep-builder.sh --cachedir=$HOME/local/.cache
+  - eval $(./travis-dep-builder.sh --printenv)
   - pip install --user cffi coverage
 
 script:
