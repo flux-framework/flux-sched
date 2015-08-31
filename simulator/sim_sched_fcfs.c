@@ -44,18 +44,20 @@
 static flux_t h = NULL;
 static ctx_t *ctx = NULL;
 
-bool allocate_bandwidth (flux_lwj_t *job, struct resource *r, zlist_t *ancestors)
+bool allocate_bandwidth (flux_lwj_t *job,
+                         struct resource *r,
+                         zlist_t *ancestors)
 {
-	struct resource *curr_r = NULL;
+    struct resource *curr_r = NULL;
 
-	allocate_resource_bandwidth (r, job->req.io_rate);
- 	curr_r = zlist_first (ancestors);
-	while (curr_r != NULL) {
-		allocate_resource_bandwidth (curr_r, job->req.io_rate);
-		curr_r = zlist_next (ancestors);
-	}
+    allocate_resource_bandwidth (r, job->req.io_rate);
+    curr_r = zlist_first (ancestors);
+    while (curr_r != NULL) {
+        allocate_resource_bandwidth (curr_r, job->req.io_rate);
+        curr_r = zlist_next (ancestors);
+    }
 
-	return true;
+    return true;
 }
 
 int schedule_jobs (ctx_t *ctx, double sim_time)
@@ -70,34 +72,41 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
     free_rdl = get_free_subset (rdl, "core");
     if (free_rdl) {
         curr_free_cores = get_free_count (free_rdl, uri, "core");
-        flux_log (h, LOG_DEBUG, "get_free_subset returned %ld free cores", curr_free_cores);
+        flux_log (h,
+                  LOG_DEBUG,
+                  "get_free_subset returned %ld free cores",
+                  curr_free_cores);
     } else {
-        flux_log (h, LOG_DEBUG, "get_free_subset returned nothing, setting curr_free_cores = 0");
+        flux_log (h,
+                  LOG_DEBUG,
+                  "get_free_subset returned nothing, setting curr_free_cores = "
+                  "0");
         curr_free_cores = 0;
     }
 
-    zlist_sort(jobs, job_compare_t);
+    zlist_sort (jobs, job_compare_t);
     job = zlist_first (jobs);
     while (job_scheduled && job) {
-		if (job->state == j_unsched) {
-			job_scheduled = schedule_job (ctx, rdl, free_rdl, uri, curr_free_cores, job);
+        if (job->state == j_unsched) {
+            job_scheduled =
+                schedule_job (ctx, rdl, free_rdl, uri, curr_free_cores, job);
             if (job_scheduled) {
-                remove_job_resources_from_rdl(free_rdl, uri, job);
+                remove_job_resources_from_rdl (free_rdl, uri, job);
                 curr_free_cores -= job->alloc.ncores;
                 rc += 1;
             }
-		}
+        }
         job = zlist_next (jobs);
     }
-	flux_log (h, LOG_DEBUG, "Finished iterating over the jobs list");
+    flux_log (h, LOG_DEBUG, "Finished iterating over the jobs list");
     rdl_destroy (free_rdl);
     return rc;
 }
 
 static struct flux_msghandler htab[] = {
-    { FLUX_MSGTYPE_EVENT,   "sim.start",     start_cb },
-    { FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb },
-    { FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch",  newlwj_rpc },
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
+    {FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb},
+    {FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch", newlwj_rpc},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -108,7 +117,7 @@ int mod_main (flux_t p, int argc, char **argv)
     h = p;
     ctx = getctx (h);
 
-    return init_and_start_scheduler(h, ctx, args, htab);
+    return init_and_start_scheduler (h, ctx, args, htab);
 }
 
 MOD_NAME ("sim_sched");

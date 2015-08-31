@@ -39,24 +39,22 @@
  *  Enumerates lightweight-job and resource events
  */
 typedef enum {
-    j_null,      /*!< the state has yet to be assigned */
-    j_reserved,  /*!< a job has a reservation in KVS*/
-    j_submitted, /*!< a job added to KVS */
-    j_unsched,   /*!< a job never gone through sched_loop */
-    j_pending,   /*!< a job set to pending */
-    j_allocated, /*!< a job got allocated to resource */
-    j_runrequest,/*!< a job is requested to be executed */
-    j_starting,  /*!< a job is starting */
-    j_running,   /*!< a job is running */
-    j_cancelled, /*!< a job got cancelled */
-    j_complete,  /*!< a job completed */
-    j_reaped,    /*!< a job reaped */
-    j_for_rent   /*!< Space For Rent */
+    j_null,       /*!< the state has yet to be assigned */
+    j_reserved,   /*!< a job has a reservation in KVS*/
+    j_submitted,  /*!< a job added to KVS */
+    j_unsched,    /*!< a job never gone through sched_loop */
+    j_pending,    /*!< a job set to pending */
+    j_allocated,  /*!< a job got allocated to resource */
+    j_runrequest, /*!< a job is requested to be executed */
+    j_starting,   /*!< a job is starting */
+    j_running,    /*!< a job is running */
+    j_cancelled,  /*!< a job got cancelled */
+    j_complete,   /*!< a job completed */
+    j_reaped,     /*!< a job reaped */
+    j_for_rent    /*!< Space For Rent */
 } lwj_event_e;
 
-
 typedef lwj_event_e lwj_state_e;
-
 
 /**
  *  Enumerates resource events
@@ -71,15 +69,13 @@ typedef enum {
     r_for_rent   /*!< Space For Rent */
 } res_event_e;
 
-
 /**
  *  Whether an event is a lwj or resource event
  */
 typedef enum {
-    lwj_event,   /*!< is a lwj event */
-    res_event,   /*!< is a resource event */
+    lwj_event, /*!< is a lwj event */
+    res_event, /*!< is a resource event */
 } event_class_e;
-
 
 /**
  *  Defines resources as provided by RDL.
@@ -89,7 +85,6 @@ typedef struct {
     void *resource;
 } flux_res_t;
 
-
 /**
  *  Defines resource request info block.
  *  This needs to be expanded as RDL evolves.
@@ -98,10 +93,9 @@ typedef struct {
 typedef struct {
     uint64_t nnodes; /*!< num of nodes requested by a job */
     uint32_t ncores; /*!< num of cores requested by a job */
-    uint64_t io_rate; //amount of io bw (in MB) requested by a job
-    double walltime; //amount of time requested by a job
+    uint64_t io_rate;  // amount of io bw (in MB) requested by a job
+    double walltime;  // amount of time requested by a job
 } flux_req_t;
-
 
 /**
  *  Defines LWJ info block (this needs to be expanded of course)
@@ -114,12 +108,11 @@ typedef struct {
     struct rdl *rdl;  /*!< resources allocated to this LWJ */
 } flux_lwj_t;
 
-
 /**
  *  Defines an event that goes into the event queue
  */
 typedef struct {
-    event_class_e t;    /*!< lwj or res event? */
+    event_class_e t; /*!< lwj or res event? */
     union u {
         lwj_event_e je; /*!< use this if the class is lwj */
         res_event_e re; /*!< use this if the class is res */
@@ -137,7 +130,7 @@ typedef struct {
     zlist_t *timer_queue;
     bool in_sim;
     bool run_schedule_loop;
-    char* uri;
+    char *uri;
     struct rdl *rdl;
 } ctx_t;
 
@@ -147,24 +140,32 @@ struct stab_struct {
 };
 
 typedef struct {
-	char *key;
-	char *val;
-	int errnum;
+    char *key;
+    char *val;
+    int errnum;
 } kvs_event_t;
 
 extern const char *IDLETAG;
-extern const char* CORETYPE;
+extern const char *CORETYPE;
 
-int send_rdl_update (flux_t h, struct rdl* rdl);
+int send_rdl_update (flux_t h, struct rdl *rdl);
 struct rdl *get_free_subset (struct rdl *rdl, const char *type);
 int64_t get_free_count (struct rdl *rdl, const char *uri, const char *type);
-void remove_job_resources_from_rdl (struct rdl *rdl, const char *uri, flux_lwj_t *job);
+void remove_job_resources_from_rdl (struct rdl *rdl,
+                                    const char *uri,
+                                    flux_lwj_t *job);
 
-void trigger_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg);
+void trigger_cb (flux_t h,
+                 flux_msg_watcher_t *w,
+                 const flux_msg_t *msg,
+                 void *arg);
 void handle_kvs_queue (ctx_t *ctx);
 
 int queue_kvs_cb (const char *key, const char *val, void *arg, int errnum);
-void newlwj_rpc (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg);
+void newlwj_rpc (flux_t h,
+                 flux_msg_watcher_t *w,
+                 const flux_msg_t *msg,
+                 void *arg);
 int newlwj_cb (const char *key, int64_t val, void *arg, int errnum);
 int reg_lwj_state_hdlr (flux_t h, const char *path, kvs_set_string_f func);
 int reg_newlwj_hdlr (flux_t h, kvs_set_int64_f func);
@@ -180,43 +181,60 @@ void issue_lwj_event (ctx_t *ctx, lwj_event_e e, flux_lwj_t *j);
 void lwjstate_cb (const char *key, const char *val, void *arg, int errnum);
 int signal_event (ctx_t *ctx);
 
-void queue_timer_change (ctx_t *ctx, const char* module);
+void queue_timer_change (ctx_t *ctx, const char *module);
 void handle_timer_queue (ctx_t *ctx, sim_state_t *sim_state);
 
-void set_next_event(const char* module, sim_state_t *sim_state);
+void set_next_event (const char *module, sim_state_t *sim_state);
 void handle_event_queue (ctx_t *ctx);
-int issue_res_event (ctx_t* ctx, flux_lwj_t *lwj);
+int issue_res_event (ctx_t *ctx, flux_lwj_t *lwj);
 int move_to_r_queue (ctx_t *ctx, flux_lwj_t *lwj);
 int move_to_c_queue (ctx_t *ctx, flux_lwj_t *lwj);
-int action_j_event  (ctx_t *ctx, flux_event_t *e);
+int action_j_event (ctx_t *ctx, flux_event_t *e);
 int action_r_event (ctx_t *ctx, flux_event_t *e);
 int action (ctx_t *ctx, flux_event_t *e);
 
 int request_run (ctx_t *ctx, flux_lwj_t *job);
 
-char * ctime_iso8601_now (char *buf, size_t sz);
+char *ctime_iso8601_now (char *buf, size_t sz);
 int stab_lookup (struct stab_struct *ss, const char *s);
-const char * stab_rlookup (struct stab_struct *ss, int i);
+const char *stab_rlookup (struct stab_struct *ss, int i);
 
 int update_job (ctx_t *ctx, flux_lwj_t *job);
 int update_job_state (ctx_t *ctx, flux_lwj_t *job, lwj_event_e e);
 int update_job_resources (ctx_t *ctx, flux_lwj_t *job);
-int update_job_cores (ctx_t *ctx, struct resource *jr, flux_lwj_t *job,
-                          uint64_t *pnode, uint32_t *pcores);
+int update_job_cores (ctx_t *ctx,
+                      struct resource *jr,
+                      flux_lwj_t *job,
+                      uint64_t *pnode,
+                      uint32_t *pcores);
 
 int print_resources (struct resource *r);
 int idlize_resources (struct resource *r);
-int release_resources (ctx_t *ctx, struct rdl *rdl, const char *uri, flux_lwj_t *job);
-int release_lwj_resource (ctx_t *ctx, struct rdl *rdl, struct resource *jr, char *lwjtag);
-void deallocate_bandwidth (ctx_t *ctx, struct rdl *rdl, const char *uri, flux_lwj_t *job);
-void deallocate_resource_bandwidth (ctx_t *ctx, struct resource *r, int64_t amount);
+int release_resources (ctx_t *ctx,
+                       struct rdl *rdl,
+                       const char *uri,
+                       flux_lwj_t *job);
+int release_lwj_resource (ctx_t *ctx,
+                          struct rdl *rdl,
+                          struct resource *jr,
+                          char *lwjtag);
+void deallocate_bandwidth (ctx_t *ctx,
+                           struct rdl *rdl,
+                           const char *uri,
+                           flux_lwj_t *job);
+void deallocate_resource_bandwidth (ctx_t *ctx,
+                                    struct resource *r,
+                                    int64_t amount);
 void allocate_resource_bandwidth (struct resource *r, int64_t amount);
-bool allocate_resources (struct rdl *rdl, const char *hierarchy,
-                         struct resource *fr, struct rdl_accumulator *accum,
-                         flux_lwj_t *job, zlist_t *ancestors);
+bool allocate_resources (struct rdl *rdl,
+                         const char *hierarchy,
+                         struct resource *fr,
+                         struct rdl_accumulator *accum,
+                         flux_lwj_t *job,
+                         zlist_t *ancestors);
 int64_t get_avail_bandwidth (struct resource *r);
 
-#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3,0,1)
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
 bool job_compare_termination_fn (void *item1, void *item2);
 bool job_compare_t (void *item1, void *item2);
 #else
@@ -228,23 +246,34 @@ void queue_schedule_loop (ctx_t *ctx);
 bool should_run_schedule_loop (ctx_t *ctx, int time);
 void end_schedule_loop (ctx_t *ctx);
 
-void start_cb (flux_t h, flux_msg_watcher_t *w, const flux_msg_t *msg, void *arg);
+void start_cb (flux_t h,
+               flux_msg_watcher_t *w,
+               const flux_msg_t *msg,
+               void *arg);
 
-int init_and_start_scheduler (flux_t h, ctx_t *ctx, zhash_t *args, struct flux_msghandler *tab);
+int init_and_start_scheduler (flux_t h,
+                              ctx_t *ctx,
+                              zhash_t *args,
+                              struct flux_msghandler *tab);
 
-int schedule_job (ctx_t *ctx, struct rdl *rdl, struct rdl *free_rdl,
-                  const char *uri, int64_t free_cores, flux_lwj_t *job);
+int schedule_job (ctx_t *ctx,
+                  struct rdl *rdl,
+                  struct rdl *free_rdl,
+                  const char *uri,
+                  int64_t free_cores,
+                  flux_lwj_t *job);
 
 bool resources_equal (struct resource *r1, struct resource *r2);
-
 
 /********
  User-implemented
 ********/
 
-//Should return the number of jobs scheduled
+// Should return the number of jobs scheduled
 int schedule_jobs (ctx_t *ctx, double sim_time);
-bool allocate_bandwidth (flux_lwj_t *job, struct resource *r, zlist_t *ancestors);
+bool allocate_bandwidth (flux_lwj_t *job,
+                         struct resource *r,
+                         zlist_t *ancestors);
 
 #endif /* SCHEDULER_H */
 

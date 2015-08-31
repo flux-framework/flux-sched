@@ -44,34 +44,46 @@
 static flux_t h = NULL;
 static ctx_t *ctx = NULL;
 
-bool allocate_bandwidth (flux_lwj_t *job, struct resource *r, zlist_t *ancestors)
+bool allocate_bandwidth (flux_lwj_t *job,
+                         struct resource *r,
+                         zlist_t *ancestors)
 {
-	struct resource *curr_r = NULL;
+    struct resource *curr_r = NULL;
 
-	allocate_resource_bandwidth (r, job->req.io_rate);
- 	curr_r = zlist_first (ancestors);
-	while (curr_r != NULL) {
-		allocate_resource_bandwidth (curr_r, job->req.io_rate);
-		curr_r = zlist_next (ancestors);
-	}
+    allocate_resource_bandwidth (r, job->req.io_rate);
+    curr_r = zlist_first (ancestors);
+    while (curr_r != NULL) {
+        allocate_resource_bandwidth (curr_r, job->req.io_rate);
+        curr_r = zlist_next (ancestors);
+    }
 
-	return true;
+    return true;
 }
 
-//Calculate the earliest point in time where the number of free cores
-//is greater than the number of cores required by the reserved job.
-//Output is the time at which this occurs and the number of cores that
-//are free, excluding the cores that will be used by the reserved job
-void calculate_shadow_info (flux_lwj_t *reserved_job, struct rdl *rdl, const char *uri,
-                             zlist_t *running_jobs, double *shadow_time, int64_t *shadow_free_cores) {
+// Calculate the earliest point in time where the number of free cores
+// is greater than the number of cores required by the reserved job.
+// Output is the time at which this occurs and the number of cores that
+// are free, excluding the cores that will be used by the reserved job
+void calculate_shadow_info (flux_lwj_t *reserved_job,
+                            struct rdl *rdl,
+                            const char *uri,
+                            zlist_t *running_jobs,
+                            double *shadow_time,
+                            int64_t *shadow_free_cores)
+{
     job_t *curr_job_t;
     struct rdl *frdl = NULL;
 
     if (zlist_size (running_jobs) == 0) {
-        flux_log (h, LOG_ERR, "No running jobs and reserved job still doesn't fit.");
+        flux_log (h,
+                  LOG_ERR,
+                  "No running jobs and reserved job still doesn't fit.");
         return;
     } else {
-        flux_log (h, LOG_DEBUG, "calculate_shadow_info found %zu jobs currently running", zlist_size (running_jobs));
+        flux_log (h,
+                  LOG_DEBUG,
+                  "calculate_shadow_info found %zu jobs currently running",
+                  zlist_size (running_jobs));
     }
 
     frdl = get_free_subset (rdl, "core");
@@ -79,40 +91,72 @@ void calculate_shadow_info (flux_lwj_t *reserved_job, struct rdl *rdl, const cha
         *shadow_free_cores = get_free_count (frdl, uri, "core");
         rdl_destroy (frdl);
     } else {
-        flux_log (h, LOG_DEBUG, "get_free_subset returned nothing, setting shadow_free_cores = 0");
+        flux_log (h,
+                  LOG_DEBUG,
+                  "get_free_subset returned nothing, setting shadow_free_cores "
+                  "= 0");
         *shadow_free_cores = 0;
     }
 
-    zlist_sort(running_jobs, job_compare_termination_fn);
+    zlist_sort (running_jobs, job_compare_termination_fn);
 
     curr_job_t = zlist_first (running_jobs);
     while ((*shadow_free_cores < reserved_job->req.ncores) && curr_job_t) {
-        flux_log (h, LOG_DEBUG, "reserved_job_req_cores: %d, free cores: %ld, curr_job: %d, curr_job_ncores: %d", reserved_job->req.ncores, *shadow_free_cores, curr_job_t->id, curr_job_t->ncpus);
+        flux_log (h,
+                  LOG_DEBUG,
+                  "reserved_job_req_cores: %d, free cores: %ld, curr_job: %d, "
+                  "curr_job_ncores: %d",
+                  reserved_job->req.ncores,
+                  *shadow_free_cores,
+                  curr_job_t->id,
+                  curr_job_t->ncpus);
         *shadow_free_cores += curr_job_t->ncpus;
         *shadow_time = curr_job_t->start_time + curr_job_t->time_limit;
         curr_job_t = zlist_next (running_jobs);
     }
 
-    //Subtract out the cores that will be used by reserved job
+    // Subtract out the cores that will be used by reserved job
     *shadow_free_cores -= reserved_job->req.ncores;
 }
 
-//Determines if a job is eligible for backfilling or not
-//Written as a series of if statements for clarity
-bool job_backfill_eligible (flux_lwj_t *job, int64_t curr_free_cores, int64_t shadow_free_cores, double shadow_time, double sim_time) {
-    bool terminates_before_shadow_time = ((sim_time + job->req.walltime) < shadow_time);
-    int64_t min_of_curr_shadow_cores = (curr_free_cores < shadow_free_cores) ? curr_free_cores : shadow_free_cores;
+// Determines if a job is eligible for backfilling or not
+// Written as a series of if statements for clarity
+bool job_backfill_eligible (flux_lwj_t *job,
+                            int64_t curr_free_cores,
+                            int64_t shadow_free_cores,
+                            double shadow_time,
+                            double sim_time)
+{
+    bool terminates_before_shadow_time =
+        ((sim_time + job->req.walltime) < shadow_time);
+    int64_t min_of_curr_shadow_cores = (curr_free_cores < shadow_free_cores)
+                                           ? curr_free_cores
+                                           : shadow_free_cores;
 
-    flux_log (h, LOG_DEBUG, "backfill info - shadow_time: %f, curr_free_cores: %ld, shadow_free_cores: %ld, job_req_cores: %d", shadow_time, curr_free_cores, shadow_free_cores, job->req.ncores);
-    flux_log (h, LOG_DEBUG, "backfill info - term_before_shadow_time: %d, min_of_curr_shadow_cores: %ld", terminates_before_shadow_time, min_of_curr_shadow_cores);
+    flux_log (h,
+              LOG_DEBUG,
+              "backfill info - shadow_time: %f, curr_free_cores: %ld, "
+              "shadow_free_cores: %ld, job_req_cores: %d",
+              shadow_time,
+              curr_free_cores,
+              shadow_free_cores,
+              job->req.ncores);
+    flux_log (h,
+              LOG_DEBUG,
+              "backfill info - term_before_shadow_time: %d, "
+              "min_of_curr_shadow_cores: %ld",
+              terminates_before_shadow_time,
+              min_of_curr_shadow_cores);
 
     if (terminates_before_shadow_time && curr_free_cores >= job->req.ncores) {
-        //Job ends before reserved job starts, make sure we have enough cores currently to schedule it
+        // Job ends before reserved job starts, make sure we have enough cores
+        // currently to schedule it
         return true;
-    } else if (!terminates_before_shadow_time && min_of_curr_shadow_cores >= job->req.ncores) {
-        //Job ends after reserved job starts, make sure we will have
-        //enough free cores at shadow time to not delay the reserved
-        //job
+    } else if (!terminates_before_shadow_time
+               && min_of_curr_shadow_cores >= job->req.ncores) {
+        // Job ends after reserved job starts, make sure we will have
+        // enough free cores at shadow time to not delay the reserved
+        // job
         return true;
     } else {
         return false;
@@ -121,7 +165,8 @@ bool job_backfill_eligible (flux_lwj_t *job, int64_t curr_free_cores, int64_t sh
 
 int schedule_jobs (ctx_t *ctx, double sim_time)
 {
-    flux_lwj_t *curr_queued_job = NULL, *reserved_job = NULL, *curr_running_job = NULL;
+    flux_lwj_t *curr_queued_job = NULL, *reserved_job = NULL,
+               *curr_running_job = NULL;
     job_t *curr_job_t;
     kvsdir_t *curr_kvs_dir = NULL;
     int rc = 0, job_scheduled = 1;
@@ -129,27 +174,36 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
     int64_t shadow_free_cores = -1, curr_free_cores = -1;
     struct rdl *rdl = ctx->rdl, *free_rdl = NULL;
     char *uri = ctx->uri;
-    zlist_t *jobs = ctx->p_queue, *queued_jobs = zlist_dup (jobs), *running_jobs = zlist_new ();
+    zlist_t *jobs = ctx->p_queue, *queued_jobs = zlist_dup (jobs),
+            *running_jobs = zlist_new ();
 
-    zlist_sort(queued_jobs, job_compare_t);
+    zlist_sort (queued_jobs, job_compare_t);
     free_rdl = get_free_subset (rdl, "core");
     if (free_rdl) {
         curr_free_cores = get_free_count (free_rdl, uri, "core");
     } else {
-        flux_log (h, LOG_DEBUG, "get_free_subset returned nothing, setting curr_free_cores = 0");
+        flux_log (h,
+                  LOG_DEBUG,
+                  "get_free_subset returned nothing, setting curr_free_cores = "
+                  "0");
         curr_free_cores = 0;
     }
 
-    //Schedule all jobs at the front of the queue
+    // Schedule all jobs at the front of the queue
     curr_queued_job = zlist_first (queued_jobs);
     while (job_scheduled && curr_queued_job) {
-		if (curr_queued_job->state == j_unsched) {
-			job_scheduled = schedule_job (ctx, rdl, free_rdl, uri, curr_free_cores, curr_queued_job);
+        if (curr_queued_job->state == j_unsched) {
+            job_scheduled = schedule_job (
+                ctx, rdl, free_rdl, uri, curr_free_cores, curr_queued_job);
             if (job_scheduled) {
                 curr_free_cores -= curr_queued_job->alloc.ncores;
                 rc += 1;
-                if (kvs_get_dir (h,  &curr_kvs_dir, "lwj.%ld", curr_queued_job->lwj_id)) {
-                    flux_log (h, LOG_ERR, "lwj.%ld kvsdir not found", curr_queued_job->lwj_id);
+                if (kvs_get_dir (
+                        h, &curr_kvs_dir, "lwj.%ld", curr_queued_job->lwj_id)) {
+                    flux_log (h,
+                              LOG_ERR,
+                              "lwj.%ld kvsdir not found",
+                              curr_queued_job->lwj_id);
                 } else {
                     curr_job_t = pull_job_from_kvs (curr_kvs_dir);
                     if (curr_job_t->start_time == 0)
@@ -159,16 +213,20 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
             } else {
                 reserved_job = curr_queued_job;
             }
-		}
+        }
         curr_queued_job = zlist_next (queued_jobs);
     }
 
-    //reserved job is now set, start backfilling
+    // reserved job is now set, start backfilling
     if (reserved_job && curr_queued_job) {
         curr_running_job = zlist_first (ctx->r_queue);
         while (curr_running_job != NULL) {
-            if (kvs_get_dir (h,  &curr_kvs_dir, "lwj.%ld", curr_running_job->lwj_id)) {
-                flux_log (h, LOG_ERR, "lwj.%ld kvsdir not found", curr_running_job->lwj_id);
+            if (kvs_get_dir (
+                    h, &curr_kvs_dir, "lwj.%ld", curr_running_job->lwj_id)) {
+                flux_log (h,
+                          LOG_ERR,
+                          "lwj.%ld kvsdir not found",
+                          curr_running_job->lwj_id);
             } else {
                 curr_job_t = pull_job_from_kvs (curr_kvs_dir);
                 if (curr_job_t->start_time == 0)
@@ -177,35 +235,67 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
             }
             curr_running_job = zlist_next (ctx->r_queue);
         }
-        calculate_shadow_info (reserved_job, rdl, uri, running_jobs, &shadow_time, &shadow_free_cores);
-        flux_log(h, LOG_DEBUG, "Job %ld has the reservation", reserved_job->lwj_id);
-        flux_log(h, LOG_DEBUG, "Shadow info - shadow time: %f, shadow free cores: %ld", shadow_time, shadow_free_cores);
+        calculate_shadow_info (reserved_job,
+                               rdl,
+                               uri,
+                               running_jobs,
+                               &shadow_time,
+                               &shadow_free_cores);
+        flux_log (h,
+                  LOG_DEBUG,
+                  "Job %ld has the reservation",
+                  reserved_job->lwj_id);
+        flux_log (h,
+                  LOG_DEBUG,
+                  "Shadow info - shadow time: %f, shadow free cores: %ld",
+                  shadow_time,
+                  shadow_free_cores);
 
         while (curr_queued_job && shadow_time >= 0 && curr_free_cores > 0) {
-            if (curr_queued_job->state == j_unsched &&
-                job_backfill_eligible (curr_queued_job, curr_free_cores, shadow_free_cores, shadow_time, sim_time)) {
-                flux_log(h, LOG_DEBUG, "Job %ld is eligible for backfilling. Attempting to schedule.", curr_queued_job->lwj_id);
+            if (curr_queued_job->state == j_unsched
+                && job_backfill_eligible (curr_queued_job,
+                                          curr_free_cores,
+                                          shadow_free_cores,
+                                          shadow_time,
+                                          sim_time)) {
+                flux_log (h,
+                          LOG_DEBUG,
+                          "Job %ld is eligible for backfilling. Attempting to "
+                          "schedule.",
+                          curr_queued_job->lwj_id);
 
-                job_scheduled = schedule_job(ctx, rdl, free_rdl, uri, curr_free_cores, curr_queued_job);
+                job_scheduled = schedule_job (
+                    ctx, rdl, free_rdl, uri, curr_free_cores, curr_queued_job);
                 if (job_scheduled) {
                     curr_free_cores -= curr_queued_job->alloc.ncores;
                     rc += 1;
-                    if ((sim_time + curr_queued_job->req.walltime) >= shadow_time) {
+                    if ((sim_time + curr_queued_job->req.walltime)
+                        >= shadow_time) {
                         shadow_free_cores -= curr_queued_job->alloc.ncores;
                     }
-                    flux_log(h, LOG_DEBUG, "Job %ld was backfilled.", curr_queued_job->lwj_id);
-                } else  {
-                    flux_log(h, LOG_DEBUG, "Job %ld was not backfillied", curr_queued_job->lwj_id);
+                    flux_log (h,
+                              LOG_DEBUG,
+                              "Job %ld was backfilled.",
+                              curr_queued_job->lwj_id);
+                } else {
+                    flux_log (h,
+                              LOG_DEBUG,
+                              "Job %ld was not backfillied",
+                              curr_queued_job->lwj_id);
                 }
             } else {
-                flux_log(h, LOG_DEBUG, "Job %ld is not eligible for backfilling, moving on to the next job.", curr_queued_job->lwj_id);
+                flux_log (h,
+                          LOG_DEBUG,
+                          "Job %ld is not eligible for backfilling, moving on "
+                          "to the next job.",
+                          curr_queued_job->lwj_id);
             }
             curr_queued_job = zlist_next (queued_jobs);
         }
     }
 
-	flux_log (h, LOG_DEBUG, "Finished iterating over the queued_jobs list");
-    //Cleanup
+    flux_log (h, LOG_DEBUG, "Finished iterating over the queued_jobs list");
+    // Cleanup
     curr_job_t = zlist_pop (running_jobs);
     while (curr_job_t != NULL) {
         free_job (curr_job_t);
@@ -216,12 +306,11 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
     return rc;
 }
 
-
 static struct flux_msghandler htab[] = {
-    { FLUX_MSGTYPE_EVENT,   "sim.start",     start_cb },
-    { FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb },
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
+    {FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb},
     //{ FLUX_MSGTYPE_EVENT,   "sim_sched.event",   event_cb },
-    { FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch",  newlwj_rpc },
+    {FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch", newlwj_rpc},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -232,7 +321,7 @@ int mod_main (flux_t p, int argc, char **argv)
     h = p;
     ctx = getctx (h);
 
-    return init_and_start_scheduler(h, ctx, args, htab);
+    return init_and_start_scheduler (h, ctx, args, htab);
 }
 
 MOD_NAME ("sim_sched");
