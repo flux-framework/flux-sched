@@ -1,13 +1,13 @@
 include ../Makefile.inc
 
 SUBDIRS = test
-CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
-LIBS = $(FLUX_LIBS) $(RDL_LIBS) $(KVS_LIBS)
+CFLAGS = $(COMMON_CFLAGS) $(SCHEDCOMM_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
+LIBS = $(SCHEDCOMM_LIBS) $(FLUX_LIBS) $(RDL_LIBS) $(KVS_LIBS)
 
 CONF=../conf/hype.lua
 JOBDATA=job_data/hype-large.sorted.csv
 
-COMMON_OBJS = simulator.o xzmalloc.o log.o jsonutil.o
+COMMON_OBJS = simulator.o
 
 SCHEDULERS_C = $(wildcard sim_sched_*.c)
 SCHEDULERS_SO = $(SCHEDULERS_C:sim_sched_%.c=sim_sched_%.so)

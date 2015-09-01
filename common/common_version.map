@@ -1,0 +1,13 @@
+{ global:
+    exit_*;
+    hostlist_*;
+    hostset_*;
+    json_*;
+    list_*;
+    lua_*;
+    ok_*;
+    optparse_*;
+    tap_*;
+    local: *;
+};
+

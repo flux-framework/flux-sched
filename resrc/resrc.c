@@ -32,9 +32,8 @@
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
-#include "src/common/liblsd/hostlist.h"
-#include "src/common/libutil/jsonutil.h"
-#include "src/common/libutil/xzmalloc.h"
+#include "hostlist.h"
+#include "xzmalloc.h"
 
 static bool slurm_job = false;
 static hostset_t hostset = NULL;

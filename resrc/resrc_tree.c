@@ -31,7 +31,7 @@
 
 #include "rdl.h"
 #include "resrc_tree.h"
-#include "src/common/libutil/xzmalloc.h"
+#include "xzmalloc.h"
 
 struct resrc_tree_list {
     zlist_t *list;

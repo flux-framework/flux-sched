@@ -29,8 +29,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "src/common/libutil/log.h"
-#include "src/common/libutil/jsonutil.h"
+#include "log.h"
+#include "jsonutil.h"
 #include "rdl.h"
 
 static void perr (void *ctx, const char *fmt, ...)

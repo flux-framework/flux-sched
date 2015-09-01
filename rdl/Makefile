@@ -1,21 +1,18 @@
 include ../Makefile.inc
 
 SUBDIRS = test
-CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS)
-LIBS = $(FLUX_LIBS)
-
-X_OBJS_CMD = optparse.o list.o
-X_OBJS_LIB = json-lua.o list.o
+CFLAGS = $(COMMON_CFLAGS) $(SCHEDCOMM_CFLAGS) $(FLUX_CFLAGS)
+LIBS = $(SCHEDCOMM_LIBS) $(FLUX_LIBS)
 
 BUILD = flux-rdltool librdl.so.0 cpuset.so
 
 all: $(BUILD)
 	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
 
-flux-rdltool: flux-rdltool.o $(X_OBJS_CMD) librdl.so.0
+flux-rdltool: flux-rdltool.o librdl.so.0
 	$(CC) -o $@ $^ $(LIBS) $(RDL_LIBS)
 
-librdl.so.0: rdl.o $(X_OBJS_LIB)
+librdl.so.0: rdl.o
 	$(CC) -shared -Wl,--version-script=rdl_version.map -o $@ $^ $(LIBS)
 	ln -sf $(shell basename $@) $(@:.0=)
 
