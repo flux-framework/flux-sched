@@ -19,15 +19,8 @@ FLUX_LIBS := $(shell pkg-config --libs flux-core)
 #FIXME: Need a way to pick up module interface libs from pkg-config? 
 endif
 
-#
-# Borrow some source from flux-core source tree that was not
-# intended to be exported (FIXME)
-#
-ifneq ($(FLUX_SRCDIR),)
-vpath %.c $(FLUX_SRCDIR)/src/bindings/lua
-vpath %.c $(FLUX_SRCDIR)/src/common/liblsd
-vpath %.c $(FLUX_SRCDIR)/src/common/libutil
-endif
+SCHEDCOMM_CFLAGS = -I$(topdir)common
+SCHEDCOMM_LIBS = -Wl,-rpath,$(abs_topdir)/common -L$(topdir)common -lschedcomm
 
 #
 # Build against (in-tree) librdl
@@ -49,4 +42,4 @@ KVS_LIBS = -Wl,-rpath,$(FLUX_BUILDDIR)/src/modules/kvs/.libs \
 # When we invoke flux we need to provide additional LUA paths for RDL
 #
 FLUX = flux -C$(RDL_LUA_CPATH) -L$(RDL_LUA_PATH) -M$(SCHED_MODULE_PATH) -x$(SUBMIT_EXEC_PATH)
-COMMON_CFLAGS = -g -Wall -Werror -Wno-error=deprecated-declarations -fPIC -D_GNU_SOURCE=1
+COMMON_CFLAGS = -g -Wall -Werror -Wno-error=deprecated-declarations -fPIC -D_GNU_SOURCE=1 -I../common

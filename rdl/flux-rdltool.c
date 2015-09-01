@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "src/common/libutil/optparse.h"
+#include "optparse.h"
 #include "rdl.h"
 
 struct prog_ctx {

@@ -33,8 +33,8 @@
 #include <lauxlib.h>
 
 #include "rdl.h"
-#include "src/common/liblsd/list.h"
-#include "src/bindings/lua/json-lua.h"
+#include "list.h"
+#include "json-lua.h"
 
 #define VERR(r,args...) (*((r)->errf)) ((r)->errctx, args)
 

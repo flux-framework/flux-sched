@@ -1,7 +1,7 @@
 include ../Makefile.inc
 
-CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RESRC_CFLAGS)
-LIBS = $(FLUX_LIBS) $(RESRC_LIBS)
+CFLAGS = $(COMMON_CFLAGS) $(SCHEDCOMM_CFLAGS) $(FLUX_CFLAGS) $(RESRC_CFLAGS)
+LIBS = $(SCHEDCOMM_LIBS) $(FLUX_LIBS) $(RESRC_LIBS)
 
 CONF=../conf/hype.lua
 
@@ -9,9 +9,9 @@ BUILD = schedsrv.so schedplugin1.so
 
 all: $(BUILD)
 
-schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
+schedsrv.so: schedsrv.o
 	$(CC) -shared -o $@ $^ $(LIBS) 
-schedplugin1.so: schedplugin1.o xzmalloc.o log.o jsonutil.o
+schedplugin1.so: schedplugin1.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 
 start:

@@ -28,10 +28,10 @@
 #include <sys/time.h>
 #include <czmq.h>
 
-#include "../resrc.h"
-#include "../resrc_tree.h"
-#include "../resrc_reqst.h"
-#include "src/common/libtap/tap.h"
+#include "resrc.h"
+#include "resrc_tree.h"
+#include "resrc_reqst.h"
+#include "tap.h"
 
 
 static struct timeval start_time;
