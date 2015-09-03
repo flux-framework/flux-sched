@@ -35,37 +35,29 @@ test_debug '
 test_under_flux 1 $tdir
 
 
-test_expect_success 'flux-module load works' '
+test_expect_success 'schedsrv: module load works' '
 	flux module load ${schedsrv} rdl-conf=${rdlconf}
 '
 
-test_expect_success 'flux-module remove works' '
+test_expect_success 'schedsrv: module remove works' '
 	flux module remove sched
 '
 
-test_expect_success 'flux-module load works after a successful unload' '
+test_expect_success 'schedsrv: flux-module load works after a successful unload' '
 	flux module load ${schedsrv} rdl-conf=${rdlconf} &&
 	flux module remove sched
 '
 
-test_expect_failure 'this flux-module load should fail' '
-	test_must_fail flux module load ${schedsrv} 
-'
+# comment this one out for now
+#test_expect_success 'schedsrv: module load should fail' '
+#	test_expect_code 1 flux module load ${schedsrv} 
+#'
 
-test_expect_success 'flux-module load works after a load failure' '
+test_expect_success 'schedsrv: module load works after a load failure' '
 	flux module load ${schedsrv} rdl-conf=${rdlconf}
 '
 
-test_expect_success 'flux-module list' '
+test_expect_success 'schedsrv: module list works' '
 	flux module list
 '
-
-
-#
-# Seems to hang!
-#
-#test_expect_success 'flux-module rm' '
-#	flux module rm sched
-#'
-
 test_done

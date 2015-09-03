@@ -56,7 +56,8 @@
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t h, void *arg);
 #endif
-static int res_event_cb (flux_t h, int t, flux_msg_t **msg, void *arg);
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+                          const flux_msg_t *msg, void *arg);
 static int job_status_cb (JSON jcb, void *arg, int errnum);
 
 /******************************************************************************
@@ -100,9 +101,6 @@ typedef struct {
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
-    /* FIXME: we probably need some item free hooked into the lists
-     * ignore this for a while.
-     */
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
@@ -385,6 +383,11 @@ done:
  *                                                                            *
  ******************************************************************************/
 
+static struct flux_msghandler htab[] = {
+    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb},
+      FLUX_MSGHANDLER_TABLE_END
+};
+
 /*
  * Register events, some of which CAN triger a scheduling loop iteration.
  * Currently,
@@ -398,13 +401,12 @@ static int inline reg_events (ssrvctx_t *ctx)
     int rc = 0;
     flux_t h = ctx->h;
 
-    if (flux_event_subscribe (h, "sched.res.event") < 0) {
+    if (flux_event_subscribe (h, "sched.res.") < 0) {
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         rc = -1;
         goto done;
     }
-    if (flux_msghandler_add (h, FLUX_MSGTYPE_EVENT, "sched.res.event",
-                             res_event_cb, (void *)h) < 0) {
+    if (flux_msg_watcher_addvec (h, htab, (void *)h) < 0) {
         flux_log (h, LOG_ERR,
                   "error registering resource event handler: %s",
                   strerror (errno));
@@ -775,7 +777,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
             flux_log (h, LOG_ERR, "%s: failed to release resources for job %ld",
                       __FUNCTION__, job->lwj_id);
         } else {
-            flux_msg_t *msg = flux_event_encode ("sched.res.event", NULL);
+            flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
 
             if (!msg || flux_send (h, msg, 0) < 0) {
                 flux_log (h, LOG_ERR, "%s: error sending event: %s",
@@ -816,10 +818,11 @@ bad_transition:
  * For now, the only resource event is raised when a job releases its
  * RDL allocation.
  */
-static int res_event_cb (flux_t h, int t, flux_msg_t **msg, void *arg)
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+                          const flux_msg_t *msg, void *arg)
 {
     schedule_jobs (getctx ((flux_t)arg));
-    return 0;
+    return;
 }
 
 #if ENABLE_TIMER_EVENT
