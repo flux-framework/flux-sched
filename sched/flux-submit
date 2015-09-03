@@ -99,6 +99,17 @@ if not lwj then wreck:die ("f:kvsdir(lwj.%d): %s\n", resp.jobid, err) end
 lwj.state = "submitted"
 lwj:commit()
 
+--
+--  Send "submitted" event: 
+--  This is so that JSC can be notified of this event through subscribe. 
+--  Here, this doesn't have to wait for its own event because 
+--  the schedsrv will not change the state until it sees this event.
+--
+local pl = {}
+pl["lwj"] = resp.jobid
+local rc,err = f:sendevent (pl, "wreck.state.submitted", resp.jobid)
+if not rc then wreck:die ("sendevent: %s\n", err) end
+
 os.exit (0)
 
 -- vi: ts=4 sw=4 expandtab
