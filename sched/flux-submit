@@ -57,7 +57,7 @@ if not wreck:parse_cmdline (arg) then
 end
 
 -- Set signal handlers
-posix.signal[posix.SIGTERM] = posix.signal[posix.SIGINT]
+-- posix.signal[posix.SIGTERM] = posix.signal[posix.SIGINT]
 
 -- Start in-program timer:
 local tt = timer.new()
