@@ -200,7 +200,7 @@ int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
 /*
  * Create a resrc_t object from a json object
  */
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent);
+resrc_t *resrc_new_from_json (JSON o);
 
 /* 
  * Get epoch time

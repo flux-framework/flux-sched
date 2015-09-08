@@ -150,7 +150,7 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
     if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
         goto ret;
 
-    resrc = resrc_new_from_json (o, parent);
+    resrc = resrc_new_from_json (o);
     if (resrc) {
         resrc_reqst = resrc_reqst_new (resrc, qty);
 

@@ -815,7 +815,7 @@ ret:
     return rc;
 }
 
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent)
+resrc_t *resrc_new_from_json (JSON o)
 {
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
