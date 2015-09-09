@@ -107,16 +107,18 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
     return new_resrc_tree;
 }
 
-void resrc_tree_free (resrc_tree_t *resrc_tree)
+void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
         resrc_tree_list_free (resrc_tree->children);
-        /* do not destroy the resrc_tree->resrc */
+        if (destroy_resrc) {
+            resrc_resource_destroy (resrc_tree->resrc);
+        }
         free (resrc_tree);
     }
 }
 
-void resrc_tree_destroy (resrc_tree_t *resrc_tree)
+void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
         if (resrc_tree->parent)
@@ -124,11 +126,11 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree)
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (child) {
-                resrc_tree_destroy (child);
+                resrc_tree_destroy (child, destroy_resrc);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
-        resrc_tree_free (resrc_tree);
+        resrc_tree_free (resrc_tree, destroy_resrc);
     }
 }
 
@@ -273,13 +275,14 @@ void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list)
     }
 }
 
-void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
+void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list,
+                              bool destroy_resrc)
 {
     if (resrc_tree_list) {
         if (resrc_tree_list_size (resrc_tree_list)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree_list);
             while (child) {
-                resrc_tree_destroy (child);
+                resrc_tree_destroy (child, destroy_resrc);
                 child = resrc_tree_list_next (resrc_tree_list);
             }
         }

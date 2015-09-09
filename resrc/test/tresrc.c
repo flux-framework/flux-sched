@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/time.h>
 #include <czmq.h>
@@ -269,7 +270,7 @@ int main (int argc, char *argv[])
 
     init_time();
     resrc_reqst_destroy (resrc_reqst);
-    resrc_tree_list_destroy (found_trees);
+    resrc_tree_list_destroy (found_trees, false);
     resrc_destroy_resources (resrcs);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);
 ret:

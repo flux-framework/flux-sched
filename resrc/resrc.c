@@ -228,7 +228,7 @@ void resrc_resource_destroy (void *object)
         if (resrc->name)
             free (resrc->name);
         if (resrc->phys_tree) {
-            resrc_tree_free (resrc->phys_tree);
+            resrc_tree_free (resrc->phys_tree, false);
             resrc->phys_tree = NULL;
         }
         if (resrc->graphs)

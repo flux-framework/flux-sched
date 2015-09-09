@@ -45,12 +45,12 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree);
 /*
  * Free a resrc_tree_t object
  */
-void resrc_tree_free (resrc_tree_t *resrc_tree);
+void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc);
 
 /*
  * Destroy an entire tree of resrc_tree_t objects
  */
-void resrc_tree_destroy (resrc_tree_t *resrc_tree);
+void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc);
 
 /*
  * Print the resources in a resrc_tree_t object
@@ -119,7 +119,7 @@ void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list);
 /*
  * Destroy a resrc_tree_list_t object including all children
  */
-void resrc_tree_list_destroy (resrc_tree_list_t *rtl);
+void resrc_tree_list_destroy (resrc_tree_list_t *rtl, bool destroy_resrc);
 
 /*
  * Add the input list of resource trees to the json object

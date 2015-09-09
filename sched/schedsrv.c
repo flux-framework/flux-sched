@@ -680,7 +680,7 @@ done:
     if (resrc_reqst)
         resrc_reqst_destroy (resrc_reqst);
     if (found_trees)
-        resrc_tree_list_destroy (found_trees);
+        resrc_tree_list_destroy (found_trees, false);
 
     return rc;
 }
