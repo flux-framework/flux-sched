@@ -481,7 +481,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     flux_t h = ctx->h;
     JSON jcb = Jnew ();
     JSON arr = Jnew_ar ();
-    JSON ro = Jnew ();
+    JSON ro = Jnew_ar ();
 
     if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
         flux_log (h, LOG_ERR, "%ld resource serialization failed: %s",

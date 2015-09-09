@@ -173,6 +173,32 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
     return rc;
 }
 
+resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
+{
+    JSON ca = NULL;     /* array of child json objects */
+    JSON co = NULL;     /* child json object */
+    resrc_t *resrc = NULL;
+    resrc_tree_t *resrc_tree = NULL;
+
+    resrc = resrc_new_from_json (o);
+    if (resrc) {
+        resrc_tree = resrc_tree_new (parent, resrc);
+
+        if ((ca = Jobj_get (o, "children"))) {
+            int i, nchildren = 0;
+
+            if (Jget_ar_len (ca, &nchildren)) {
+                for (i=0; i < nchildren; i++) {
+                    Jget_ar_obj (ca, i, &co);
+                    (void) resrc_tree_deserialize (co, resrc_tree);
+                }
+            }
+        }
+    }
+
+    return resrc_tree;
+}
+
 int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime)
 {
     int rc = -1;
@@ -306,6 +332,27 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
     }
 
     return rc;
+}
+
+resrc_tree_list_t *resrc_tree_list_deserialize (JSON o)
+{
+    JSON ca = NULL;     /* array of child json objects */
+    int i, nchildren = 0;
+    resrc_tree_t *rt = NULL;
+    resrc_tree_list_t *rtl = resrc_tree_list_new ();
+
+    if (o && rtl) {
+        if (Jget_ar_len (o, &nchildren)) {
+            for (i=0; i < nchildren; i++) {
+                Jget_ar_obj (o, i, &ca);
+                rt = resrc_tree_deserialize (ca, NULL);
+                if (!rt || resrc_tree_list_append (rtl, rt))
+                    break;
+            }
+        }
+    }
+
+    return rtl;
 }
 
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime)

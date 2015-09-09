@@ -109,8 +109,10 @@ int main (int argc, char *argv[])
     resources_t *resrcs = NULL;
     resrc_t *resrc = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *deserialized_trees = NULL;
     resrc_tree_list_t *found_trees = resrc_tree_list_new ();
     resrc_tree_list_t *selected_trees;
+    resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
@@ -227,6 +229,17 @@ int main (int argc, char *argv[])
     if (verbose) {
         printf ("The found resources serialized: %s\n", Jtostr (o));
     }
+
+    deserialized_trees = resrc_tree_list_deserialize (o);
+    if (verbose) {
+        printf ("Listing deserialized trees\n");
+        deserialized_tree = resrc_tree_list_first (deserialized_trees);
+        while (deserialized_tree) {
+            resrc_tree_print (deserialized_tree);
+            deserialized_tree = resrc_tree_list_next (deserialized_trees);
+       }
+        printf ("End of deserialized trees\n");
+    }
     Jput (o);
 
     init_time();
@@ -270,6 +283,7 @@ int main (int argc, char *argv[])
 
     init_time();
     resrc_reqst_destroy (resrc_reqst);
+    resrc_tree_list_destroy (deserialized_trees, true);
     resrc_tree_list_destroy (found_trees, false);
     resrc_destroy_resources (resrcs);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);
