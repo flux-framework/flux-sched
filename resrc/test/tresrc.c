@@ -217,7 +217,7 @@ int main (int argc, char *argv[])
         printf ("End of found trees\n");
     }
 
-    o = Jnew ();
+    o = Jnew_ar ();
     init_time();
     rc = resrc_tree_list_serialize (o, found_trees);
     ok (!rc, "found resource serialization took: %lf",

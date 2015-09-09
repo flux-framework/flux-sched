@@ -394,7 +394,9 @@ int resrc_to_json (JSON o, resrc_t *resrc)
 {
     int rc = -1;
     if (resrc) {
-        Jadd_str (o, resrc_name (resrc), resrc_type (resrc));
+        Jadd_str (o, "type", resrc_type (resrc));
+        Jadd_str (o, "name", resrc_name (resrc));
+        Jadd_int64 (o, "size", resrc_size (resrc));
         rc = 0;
     }
     return rc;
@@ -819,6 +821,7 @@ resrc_t *resrc_new_from_json (JSON o)
 {
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
+    const char *name = NULL;
     const char *type = NULL;
     int64_t ssize;
     json_object_iter iter;
@@ -828,10 +831,13 @@ resrc_t *resrc_new_from_json (JSON o)
 
     if (!Jget_str (o, "type", &type))
         goto ret;
+    Jget_str (o, "name", &name);
     if (Jget_int64 (o, "size", &ssize))
         size = (size_t) ssize;
+    else
+        size = 1;
 
-    resrc = resrc_new_resource (type, NULL, -1, 0, size);
+    resrc = resrc_new_resource (type, name, -1, 0, size);
     if (resrc) {
         jpropso = Jobj_get (o, "properties");
         if (jpropso) {
