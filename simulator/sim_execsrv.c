@@ -49,8 +49,10 @@ typedef struct {
     struct rdl *rdl;
 } ctx_t;
 
+#if SIMEXEC_IO
 static double determine_io_penalty (double job_bandwidth, double min_bandwidth);
 static double *get_job_min_from_hash (zhash_t *job_hash, int job_id);
+#endif
 
 static void freectx (void *arg)
 {
@@ -92,19 +94,37 @@ static ctx_t *getctx (flux_t h)
 // Given the kvs dir of a job, change the state of the job and
 // timestamp the change
 static int update_job_state (ctx_t *ctx,
+                             int64_t jobid,
                              kvsdir_t *kvs_dir,
-                             char *state,
+                             job_state_t new_state,
                              double update_time)
 {
     char *timer_key = NULL;
 
-    asprintf (&timer_key, "%s_time", state);
+    switch (new_state) {
+    case J_STARTING: timer_key = "starting_time"; break;
+    case J_RUNNING: timer_key = "running_time"; break;
+    case J_COMPLETE: timer_key = "complete_time"; break;
+    default: break;
+    }
+    if (timer_key == NULL) {
+        flux_log (ctx->h, LOG_ERR, "Unknown state %d", (int) new_state);
+        return -1;
+    }
 
-    kvsdir_put_string (kvs_dir, "state", state);
+    JSON jcb = Jnew ();
+    JSON o = Jnew ();
+
+    Jadd_int64 (o, JSC_STATE_PAIR_NSTATE, (int64_t) new_state);
+    Jadd_obj (jcb, JSC_STATE_PAIR, o);
+    jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
+
     kvsdir_put_double (kvs_dir, timer_key, update_time);
     kvs_commit (ctx->h);
 
-    free (timer_key);
+    Jput (jcb);
+    Jput (o);
+
     return 0;
 }
 
@@ -122,8 +142,10 @@ static double determine_next_termination (ctx_t *ctx,
                                           zhash_t *job_hash)
 {
     double next_termination = -1, curr_termination = -1;
+#if SIMEXEC_IO
     double projected_future_io_time, job_io_penalty, computation_time_remaining;
     double *job_min_bandwidth;
+#endif
     zlist_t *running_jobs = ctx->running_jobs;
     job_t *job = zlist_first (running_jobs);
 
@@ -131,6 +153,7 @@ static double determine_next_termination (ctx_t *ctx,
         if (job->start_time <= curr_time) {
             curr_termination =
                 job->start_time + job->execution_time + job->io_time;
+#if SIMEXEC_IO
             computation_time_remaining =
                 job->execution_time
                 - ((curr_time - job->start_time) - job->io_time);
@@ -140,6 +163,7 @@ static double determine_next_termination (ctx_t *ctx,
             projected_future_io_time =
                 (computation_time_remaining)*job_io_penalty;
             curr_termination += projected_future_io_time;
+#endif
             if (curr_termination < next_termination || next_termination < 0) {
                 next_termination = curr_termination;
             }
@@ -172,9 +196,12 @@ static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
     flux_t h = ctx->h;
 
     flux_log (h, LOG_INFO, "Job %d completed", job->id);
-    update_job_state (ctx, job->kvs_dir, "complete", completion_time);
-    set_event_timer (ctx, "sim_sched", ctx->sim_state->sim_time + .00001);
+
+    update_job_state (ctx, job->id, job->kvs_dir, J_COMPLETE, completion_time);
+    set_event_timer (ctx, "sched", ctx->sim_state->sim_time + .00001);
+    kvsdir_put_double (job->kvs_dir, "complete_time", completion_time);
     kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
+
     kvs_commit (h);
     free_job (job);
 
@@ -221,6 +248,7 @@ static int handle_completed_jobs (ctx_t *ctx)
     return 0;
 }
 
+#if SIMEXEC_IO
 static int64_t get_alloc_bandwidth (struct resource *r)
 {
     int64_t alloc_bw;
@@ -409,6 +437,7 @@ static double determine_io_penalty (double job_bandwidth, double min_bandwidth)
 
     return io_penalty;
 }
+#endif
 
 // Model io contention that occurred between previous event and the
 // curr sim time. Remove completed jobs from the list of running jobs
@@ -419,9 +448,13 @@ static int advance_time (ctx_t *ctx, zhash_t *job_hash)
 
     job_t *job = NULL;
     int num_jobs = -1;
-    double next_event = -1, next_termination = -1, curr_progress = -1,
-           io_penalty = 0, io_percentage = 0;
+    double next_event = -1, next_termination = -1, curr_progress = -1
+#if SIMEXEC_IO
+        ,io_penalty = 0, io_percentage = 0;
     double *job_min_bandwidth = NULL;
+#else
+    ;
+#endif
 
     zlist_t *running_jobs = ctx->running_jobs;
     double sim_time = ctx->sim_state->sim_time;
@@ -440,6 +473,7 @@ static int advance_time (ctx_t *ctx, zhash_t *job_hash)
         while (num_jobs > 0) {
             job = zlist_pop (running_jobs);
             if (job->start_time <= curr_time) {
+#if SIMEXEC_IO
                 // Get the minimum bandwidth between a resource in the job and
                 // the pfs
                 job_min_bandwidth = get_job_min_from_hash (job_hash, job->id);
@@ -447,6 +481,7 @@ static int advance_time (ctx_t *ctx, zhash_t *job_hash)
                     determine_io_penalty (job->io_rate, *job_min_bandwidth);
                 io_percentage = (io_penalty / (io_penalty + 1));
                 job->io_time += (next_event - curr_time) * io_percentage;
+#endif
                 curr_progress = calc_curr_progress (job, next_event);
                 if (curr_progress < 1)
                     zlist_append (running_jobs, job);
@@ -482,14 +517,14 @@ static int handle_queued_events (ctx_t *ctx)
         if (kvs_get_dir (h, &kvs_dir, "lwj.%d", *jobid) < 0)
             err_exit ("kvs_get_dir (id=%d)", *jobid);
         job = pull_job_from_kvs (kvs_dir);
-        if (update_job_state (ctx, kvs_dir, "starting", sim_time) < 0) {
+        if (update_job_state (ctx, *jobid, kvs_dir, J_STARTING, sim_time) < 0) {
             flux_log (h,
                       LOG_ERR,
                       "failed to set job %d's state to starting",
                       *jobid);
             return -1;
         }
-        if (update_job_state (ctx, kvs_dir, "running", sim_time) < 0) {
+        if (update_job_state (ctx, *jobid, kvs_dir, J_RUNNING, sim_time) < 0) {
             flux_log (h,
                       LOG_ERR,
                       "failed to set job %d's state to running",
@@ -527,39 +562,6 @@ static void start_cb (flux_t h,
     }
 }
 
-static void rdl_update_cb (flux_t h,
-                           flux_msg_handler_t *w,
-                           const flux_msg_t *msg,
-                           void *arg)
-{
-    JSON o = NULL;
-    const char *rdl_string = NULL, *json_str = NULL;
-    ctx_t *ctx = (ctx_t *)arg;
-    int64_t rdl_int = 0;
-
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
-        || !(o = Jfromstr (json_str))) {
-        flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-        return;
-    }
-
-    Jget_int64 (o, "rdl_int", &rdl_int);
-    Jget_str (o, "rdl_string", &rdl_string);
-
-    if (rdl_int) {
-        ctx->rdl = (struct rdl *)rdl_int;
-    } else if (rdl_string) {
-        flux_log (h,
-                  LOG_DEBUG,
-                  "resetting rdllib & rdl based on rdl.update string");
-        rdllib_close (ctx->rdllib);
-        ctx->rdllib = rdllib_open ();
-        ctx->rdl = rdl_load (ctx->rdllib, rdl_string);
-    }
-
-    Jput (o);
-}
-
 // Handle trigger requests from the sim module ("sim_exec.trigger")
 static void trigger_cb (flux_t h,
                         flux_msg_handler_t *w,
@@ -587,7 +589,9 @@ static void trigger_cb (flux_t h,
     // Handle the trigger
     ctx->sim_state = json_to_sim_state (o);
     handle_queued_events (ctx);
+#if SIMEXEC_IO
     job_hash = determine_all_min_bandwidth (ctx->rdl, ctx->running_jobs);
+#endif
     advance_time (ctx, job_hash);
     handle_completed_jobs (ctx);
     next_termination =
@@ -626,7 +630,6 @@ static void run_cb (flux_t h,
 
 static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb},
     FLUX_MSGHANDLER_TABLE_END,
@@ -642,10 +645,6 @@ int mod_main (flux_t h, int argc, char **argv)
     flux_log (h, LOG_INFO, "module starting");
 
     if (flux_event_subscribe (h, "sim.start") < 0) {
-        flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
-        return -1;
-    }
-    if (flux_event_subscribe (h, "rdl.update") < 0) {
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }

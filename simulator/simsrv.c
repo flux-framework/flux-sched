@@ -169,7 +169,7 @@ static int handle_next_event (ctx_t *ctx)
         if (*curr_event_time > 0
             && ((*curr_event_time < *min_event_time)
                 || (*curr_event_time == *min_event_time
-                    && !strcmp (curr_name, "sim_sched")))) {
+                    && !strcmp (curr_name, "sched")))) {
             free (mod_name);
             mod_name = curr_name;
             min_event_time = curr_event_time;

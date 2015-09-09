@@ -1600,7 +1600,7 @@ int job_compare_t (void *item1, void *item2)
     double t1 = ((job_t *)item1)->submit_time;
     double t2 = ((job_t *)item2)->submit_time;
     double delta = t1 - t2;
-    if (abs (delta) < DBL_EPSILON)
+    if (fabs (delta) < DBL_EPSILON)
         return 0;
     else if (delta > 0)
         return 1;
@@ -1636,7 +1636,7 @@ int job_compare_termination_fn (void *item1, void *item2)
     double t1 = job1->start_time + job1->time_limit;
     double t2 = job2->start_time + job2->time_limit;
     double delta = t1 - t2;
-    if (abs (delta) < DBL_EPSILON)
+    if (fabs (delta) < DBL_EPSILON)
         return 0;
     else if (delta > 0)
         return 1;

@@ -48,6 +48,7 @@
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
 #include "schedsrv.h"
+#include "../simulator/simulator.h"
 
 #define DYNAMIC_SCHEDULING 0
 #define ENABLE_TIMER_EVENT 0
@@ -79,6 +80,25 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
+    JSON jcb;
+    void *arg;
+    int errnum;
+} jsc_event_t;
+
+typedef struct {
+    flux_t h;
+    void *arg;
+} res_event_t;
+
+typedef struct {
+    bool in_sim;
+    sim_state_t *sim_state;
+    zlist_t *res_queue;
+    zlist_t *jsc_queue;
+    zlist_t *timer_queue;
+} simctx_t;
+
+typedef struct {
     resrc_t      *root_resrc;         /* resrc object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
@@ -90,6 +110,7 @@ typedef struct {
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
     rdlctx_t      rctx;               /* RDL context */
+    simctx_t      sctx;               /* simulator context */
     sched_ops_t   sops;               /* scheduler plugin operations */
 } ssrvctx_t;
 
@@ -106,6 +127,10 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->c_queue));
     resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
+    free (ctx->sctx.sim_state);
+    zlist_destroy (&(ctx->sctx.res_queue));
+    zlist_destroy (&(ctx->sctx.jsc_queue));
+    zlist_destroy (&(ctx->sctx.timer_queue));
     dlclose (ctx->sops.dso);
 }
 
@@ -123,6 +148,11 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
+        ctx->sctx.in_sim = false;
+        ctx->sctx.sim_state = NULL;
+        ctx->sctx.res_queue = NULL;
+        ctx->sctx.jsc_queue = NULL;
+        ctx->sctx.timer_queue = NULL;
         ctx->sops.dso = NULL;
         ctx->sops.find_resources = NULL;
         ctx->sops.select_resources = NULL;
@@ -339,23 +369,11 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
-static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
+static int load_rdl (ssrvctx_t *ctx, char *path, char *uri)
 {
-    int i, rc = -1;
-    char *path = NULL;
-    char *uri = NULL;
+    int rc = -1;
 
     setup_rdl_lua (ctx->h);
-    for (i = 0; i < argc; i++) {
-        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf")))
-            path = xstrdup (strstr (argv[i], "=") + 1);
-        else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource")))
-            uri = xstrdup (strstr (argv[i], "=") + 1);
-        else {
-            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
-            goto done;
-        }
-    }
 
     if (!path) {
         flux_log (ctx->h, LOG_ERR, "rdl-conf argument is not set");
@@ -371,12 +389,288 @@ static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
         goto done;
     flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
               ctx->rctx.root_uri, path);
-    free(path);
     rc = 0;
 done:
     return rc;
 }
 
+/******************************************************************************
+ *                                                                            *
+ *                         Simulator Specific Code                            *
+ *                                                                            *
+ ******************************************************************************/
+
+/*
+ * Simulator Helper Functions
+ */
+
+static void queue_timer_change (ssrvctx_t *ctx, const char *module)
+{
+    zlist_append (ctx->sctx.timer_queue, (void *)module);
+}
+
+// Set the timer for "module" to happen relatively soon
+// If the mod is sim_exec, it shouldn't happen immediately
+// because the scheduler still needs to transition through
+// 3->4 states before the sim_exec module can actually "exec" a job
+static void set_next_event (const char *module, sim_state_t *sim_state)
+{
+    double next_event;
+    double *timer = zhash_lookup (sim_state->timers, module);
+    next_event =
+        sim_state->sim_time + ((!strcmp (module, "sim_exec")) ? .0001 : .00001);
+    if (*timer > next_event || *timer < 0) {
+        *timer = next_event;
+    }
+}
+
+static void handle_timer_queue (ssrvctx_t *ctx, sim_state_t *sim_state)
+{
+    while (zlist_size (ctx->sctx.timer_queue) > 0)
+        set_next_event (zlist_pop (ctx->sctx.timer_queue), sim_state);
+
+#if ENABLE_TIMER_EVENT
+    // Set scheduler loop to run in next occuring scheduler block
+    double *this_timer = zhash_lookup (sim_state->timers, "sched");
+    double next_schedule_block =
+         sim_state->sim_time
+        + (SCHED_INTERVAL - ((int)sim_state->sim_time % SCHED_INTERVAL));
+    if ctx->run_schedule_loop &&
+        ((next_schedule_block < *this_timer || *this_timer < 0)) {
+        *this_timer = next_schedule_block;
+    }
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "run_sched_loop: %d, next_schedule_block: %f, this_timer: %f",
+              ctx->run_schedule_loop,
+              next_schedule_block,
+              *this_timer);
+#endif
+}
+
+static void handle_jsc_queue (ssrvctx_t *ctx)
+{
+    jsc_event_t *jsc_event = NULL;
+
+    while (zlist_size (ctx->sctx.jsc_queue) > 0) {
+        jsc_event = (jsc_event_t *)zlist_pop (ctx->sctx.jsc_queue);
+        flux_log (ctx->h,
+                  LOG_DEBUG,
+                  "JscEvent being handled - JSON: %s, errnum: %d",
+                  Jtostr (jsc_event->jcb),
+                  jsc_event->errnum);
+        job_status_cb (jsc_event->jcb, jsc_event->arg, jsc_event->errnum);
+        Jput (jsc_event->jcb);
+        free (jsc_event);
+    }
+}
+
+static void handle_res_queue (ssrvctx_t *ctx)
+{
+    res_event_t *res_event = NULL;
+
+    while (zlist_size (ctx->sctx.res_queue) > 0) {
+        res_event = (res_event_t *)zlist_pop (ctx->sctx.res_queue);
+        flux_log (ctx->h,
+                  LOG_DEBUG,
+                  "ResEvent being handled");
+        res_event_cb (res_event->h, NULL, NULL, res_event->arg);
+        free (res_event);
+    }
+}
+
+
+/*
+ * Simulator Callbacks
+ */
+
+static void start_cb (flux_t h,
+                 flux_msg_handler_t *w,
+                 const flux_msg_t *msg,
+                 void *arg)
+{
+    flux_log (h, LOG_DEBUG, "received a start event");
+    if (send_join_request (h, "sched", -1) < 0) {
+        flux_log (h,
+                  LOG_ERR,
+                  "submit module failed to register with sim module");
+        return;
+    }
+    flux_log (h, LOG_DEBUG, "sent a join request");
+
+    if (flux_event_unsubscribe (h, "sim.start") < 0) {
+        flux_log (h, LOG_ERR, "failed to unsubscribe from \"sim.start\"");
+        return;
+    } else {
+        flux_log (h, LOG_DEBUG, "unsubscribed from \"sim.start\"");
+    }
+
+    return;
+}
+
+static int sim_job_status_cb (JSON jcb, void *arg, int errnum)
+{
+    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    jsc_event_t *event = (jsc_event_t*) malloc (sizeof (jsc_event_t));
+
+    event->jcb = Jget (jcb);
+    event->arg = arg;
+    event->errnum = errnum;
+
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "JscEvent being queued - JSON: %s, errnum: %d",
+              Jtostr (event->jcb),
+              event->errnum);
+    zlist_append (ctx->sctx.jsc_queue, event);
+
+    return 0;
+}
+
+static void sim_res_event_cb (flux_t h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg) {
+    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    res_event_t *event = (res_event_t*) malloc (sizeof (res_event_t));
+    const char *topic = NULL;
+
+    event->h = h;
+    event->arg = arg;
+
+    flux_msg_get_topic (msg, &topic);
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "ResEvent being queued - topic: %s",
+              topic);
+    zlist_append (ctx->sctx.res_queue, event);
+}
+
+static void trigger_cb (flux_t h,
+                 flux_msg_handler_t *w,
+                 const flux_msg_t *msg,
+                 void *arg)
+{
+    clock_t start, diff;
+    double seconds;
+    bool sched_loop;
+    const char *json_str = NULL;
+    JSON o = NULL;
+    sim_state_t *sim_state = NULL;
+    ssrvctx_t *ctx = getctx (h);
+
+    if (flux_request_decode (msg, NULL, &json_str) < 0 || json_str == NULL
+        || !(o = Jfromstr (json_str))) {
+        flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+        Jput (o);
+        return;
+    }
+
+    flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
+    sim_state = json_to_sim_state (o);
+
+    start = clock ();
+
+    handle_jsc_queue (ctx);
+    handle_res_queue (ctx);
+
+    sched_loop = true;
+    /*
+    if ((sched_loop =
+             should_run_schedule_loop (ctx, (int)sim_state->sim_time))) {
+        flux_log (h, LOG_DEBUG, "Running the schedule loop");
+        if (schedule_jobs (ctx, sim_state->sim_time) > 0) {
+            queue_timer_change (ctx, module_name);
+        }
+        end_schedule_loop (ctx);
+    }
+    */
+
+    diff = clock () - start;
+    seconds = ((double)diff) / CLOCKS_PER_SEC;
+    sim_state->sim_time += seconds;
+    if (sched_loop) {
+        flux_log (h,
+                  LOG_DEBUG,
+                  "scheduler timer: events + loop took %f seconds",
+                  seconds);
+    } else {
+        flux_log (h,
+                  LOG_DEBUG,
+                  "scheduler timer: events took %f seconds",
+                  seconds);
+    }
+
+    handle_timer_queue (ctx, sim_state);
+
+    send_reply_request (h, "sched", sim_state);
+
+    free_simstate (sim_state);
+    Jput (o);
+}
+
+/*
+ * Simulator Initialization Functions
+ */
+
+static struct flux_msg_handler_spec sim_htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
+    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb},
+    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb},
+    FLUX_MSGHANDLER_TABLE_END,
+};
+
+static int reg_sim_events (ssrvctx_t *ctx)
+{
+    int rc = -1;
+    flux_t h = ctx->h;
+
+    if (flux_event_subscribe (ctx->h, "sim.start") < 0) {
+        flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+        goto done;
+    }
+    if (flux_event_subscribe (ctx->h, "sched.res.") < 0) {
+        flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+        goto done;
+    }
+    if (flux_msg_handler_addvec (ctx->h, sim_htab, (void *)h) < 0) {
+        flux_log (ctx->h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
+        goto done;
+    }
+    if (jsc_notify_status_obj (h, sim_job_status_cb, (void *)h) != 0) {
+        flux_log (h, LOG_ERR, "error registering a job status change CB");
+        goto done;
+    }
+
+    send_alive_request (ctx->h, "sched");
+
+    rc = 0;
+ done:
+    return rc;
+}
+
+static int setup_sim (ssrvctx_t *ctx, char *sim_arg)
+{
+    int rc = -1;
+
+    if (sim_arg == NULL || !strncmp (sim_arg, "false", 5)) {
+        rc = 0;
+        goto done;
+    } else if (strncmp (sim_arg, "true", 4)) {
+        flux_log (ctx->h, LOG_ERR, "unknown argument (%s) for sim option", sim_arg);
+        goto done;
+    } else {
+        flux_log (ctx->h, LOG_DEBUG, "setting up sim in scheduler");
+    }
+
+    ctx->sctx.in_sim = true;
+    ctx->sctx.sim_state = NULL;
+    ctx->sctx.res_queue = zlist_new ();
+    ctx->sctx.jsc_queue = zlist_new ();
+    ctx->sctx.timer_queue = zlist_new ();
+
+    rc = 0;
+ done:
+    return rc;
+}
 
 /******************************************************************************
  *                                                                            *
@@ -511,6 +805,10 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
                   job->lwj_id);
         goto done;
     }
+    if (ctx->sctx.in_sim) {
+        queue_timer_change (ctx, "sched");
+    }
+
     rc = 0;
 
 done:
@@ -549,30 +847,61 @@ static int req_tpexec_map (flux_t h, flux_lwj_t *job)
 
 static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
 {
+    char *topic = NULL;
+    flux_msg_t *msg = NULL;
+    ssrvctx_t *ctx = getctx (h);
     int rc = -1;
 
     if ((update_state (h, job->lwj_id, job->state, J_RUNREQUEST)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
-    } else {
-        char *topic = NULL;
-        flux_msg_t *msg = NULL;
+        goto done;
+    }
 
+    if (ctx->sctx.in_sim) {
+        if (asprintf (&topic, "sim_exec.run.%ld", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
+                      __FUNCTION__, strerror (errno));
+            goto done;
+        }
+        if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
+                   || flux_msg_set_topic (msg, topic) < 0) {
+            flux_log (h, LOG_ERR, "%s: request create failed: %s",
+                      __FUNCTION__, strerror (errno));
+            goto done;
+        }
+    } else { // not in sim
         if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
-        } else if (!(msg = flux_event_encode (topic, NULL))
-                   || flux_send (h, msg, 0) < 0) {
-            flux_log (h, LOG_ERR, "%s: error sending event: %s",
+            goto done;
+        }
+        if (!(msg = flux_event_encode (topic, NULL))) {
+            flux_log (h, LOG_ERR, "%s: event create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else {
             flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
             flux_msg_destroy (msg);
             rc = 0;
         }
-        free (topic);
     }
 
+    if (flux_send (h, msg, 0) < 0) {
+        flux_log (h, LOG_ERR, "%s: error sending msg: %s",
+                  __FUNCTION__, strerror (errno));
+        goto done;
+    }
+
+    if (ctx->sctx.in_sim)
+        queue_timer_change (ctx, "sim_exec");
+
+    flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+    rc = 0;
+
+ done:
+    if (msg)
+        flux_msg_destroy (msg);
+    free (topic);
     return rc;
 }
 
@@ -867,9 +1196,23 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
 
 int mod_main (flux_t h, int argc, char **argv)
 {
-    int rc = -1;
+    int rc = -1, i = 0;
     ssrvctx_t *ctx = NULL;
     char *schedplugin = "sched.plugin1";
+    char *uri = NULL, *path = NULL, *sim = NULL;
+
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
+            path = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
+            uri = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
+            sim = xstrdup (strstr (argv[i], "=") + 1);
+        } else {
+            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
+            goto done;
+        }
+    }
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
@@ -885,14 +1228,24 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "scheduler plugin loaded");
-    if (load_rdl (ctx, argc, argv) != 0) {
+    if (load_rdl (ctx, path, uri) != 0) {
         flux_log (h, LOG_ERR, "failed to setup and load RDL");
         goto done;
     }
     flux_log (h, LOG_INFO, "RDL loaded");
-    if (reg_events (ctx) != 0) {
-        flux_log (h, LOG_ERR, "failed to reg events");
-        goto done;
+    if (setup_sim (ctx, sim) != 0) {
+        flux_log (h, LOG_INFO, "failed to setup sim");
+    }
+    if (ctx->sctx.in_sim) {
+        if (reg_sim_events (ctx) != 0) {
+            flux_log (h, LOG_ERR, "failed to reg events");
+            goto done;
+        }
+    } else {
+        if (reg_events (ctx) != 0) {
+            flux_log (h, LOG_ERR, "failed to reg events");
+            goto done;
+        }
     }
     flux_log (h, LOG_INFO, "events registered");
     if (flux_reactor_start (h) < 0) {
@@ -903,6 +1256,9 @@ int mod_main (flux_t h, int argc, char **argv)
     rc = 0;
 
 done:
+    free (path);
+    free (uri);
+    free (sim);
     return rc;
 }
 

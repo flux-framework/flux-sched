@@ -59,7 +59,7 @@ int compare_job_t (void *x, void *y)
     double t1 = ((job_t *)x)->submit_time;
     double t2 = ((job_t *)y)->submit_time;
     double delta = t1 - t2;
-    if (abs (delta) < DBL_EPSILON)
+    if (fabs (delta) < DBL_EPSILON)
         return 0;
     else if (delta > 0)
         return 1;
@@ -200,20 +200,15 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
 int schedule_next_job (flux_t h, sim_state_t *sim_state)
 {
     const char *resp_json_str = NULL;
-    JSON req_json = NULL, resp_json = NULL;
-    flux_msg_t *req_msg = NULL, *resp_msg = NULL;
+    JSON req_json = NULL, resp_json = NULL, event_json = NULL;
+    flux_rpc_t *rpc = NULL;
+    flux_msg_t *msg = NULL;
     kvsdir_t *dir = NULL;
     job_t *job = NULL;
     int64_t new_jobid = -1;
     double *new_sched_mod_time = NULL, *new_submit_mod_time = NULL;
 
     zhash_t *timers = sim_state->timers;
-    struct flux_match match = {
-        .typemask = FLUX_MSGTYPE_RESPONSE,
-        .matchtag = flux_matchtag_alloc (h, 1),
-        .bsize = 1,
-        .topic_glob = NULL,
-    };
 
     // Get the next job to submit
     // Then craft a "job.create" from the job_t and wait for jobid in response
@@ -225,23 +220,18 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
     req_json = Jnew ();
     Jadd_int (req_json, "nnodes", job->nnodes);
     Jadd_int (req_json, "ntasks", job->ncpus);
-    Jadd_bool (req_json, "race_workaround", true);
+    //Jadd_bool (req_json, "race_workaround", true);
 
-    req_msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (req_msg, "job.create");
-    flux_msg_set_payload_json (req_msg, Jtostr (req_json));
-    flux_msg_set_matchtag (req_msg, match.matchtag);
-
-    if (flux_send (h, req_msg, 0) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed sending job.create", __FUNCTION__);
-        Jput (req_json);
+    rpc = flux_rpc (h, "job.create", Jtostr (req_json), FLUX_NODEID_ANY, 0);
+    Jput (req_json);
+    if (rpc == NULL) {
+        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    Jput (req_json);
-
-    if (!(resp_msg = flux_recv (h, match, 0))
-        || flux_msg_get_payload_json (resp_msg, &resp_json_str) < 0
-        || resp_json_str == NULL
+    if (flux_rpc_get (rpc, NULL, &resp_json_str) < 0) {
+        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
+    }
+    if (resp_json_str == NULL
         || !(resp_json = Jfromstr (resp_json_str))) {
         flux_log (h,
                   LOG_ERR,
@@ -262,13 +252,23 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
     put_job_in_kvs (job);
     kvs_commit (h);
 
+    // Send "submitted" event
+    event_json = Jnew();
+    Jadd_int64 (event_json, "lwj", new_jobid);
+    if (!(msg = flux_event_encode ("wreck.state.submitted", Jtostr (event_json)))
+        || flux_send (h, msg, 0) < 0) {
+        return -1;
+    }
+    Jput (event_json);
+    flux_msg_destroy (msg);
+
     // Update event timers in reply (submit and sched)
-    new_sched_mod_time = (double *)zhash_lookup (timers, "sim_sched");
+    new_sched_mod_time = (double *)zhash_lookup (timers, "sched");
     if (new_sched_mod_time != NULL)
         *new_sched_mod_time = sim_state->sim_time + .00001;
     flux_log (h,
               LOG_DEBUG,
-              "added a sim_sched timer that will occur at %f",
+              "added a sched timer that will occur at %f",
               *new_sched_mod_time);
     new_submit_mod_time = (double *)zhash_lookup (timers, module_name);
     if (get_next_submit_time () > *new_sched_mod_time)

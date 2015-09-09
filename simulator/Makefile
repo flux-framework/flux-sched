@@ -58,7 +58,7 @@ SIM_MOD=--module ./simsrv.so --modopt sim:save-path=${SAVEPATH}
 SUBMIT_MOD=--module ./submitsrv.so --modopt submit:job-csv=${JOBDATA}
 #SCHED_MOD=--module ./${SCHED} --modopt sim_sched:rdl-conf=${CONF}
 SCHED_MOD=--module ./${SCHED} --modopt sched:rdl-conf=${CONF} --modopt sched:in-sim=true
-BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD}
+BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD} --boot-method=SINGLE
 BROKER=$(FLUX_BUILDDIR)/src/broker/.libs/flux-broker
 
 VALGRIND=$(shell which valgrind)
