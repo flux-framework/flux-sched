@@ -105,9 +105,7 @@ lwj:commit()
 --  Here, this doesn't have to wait for its own event because 
 --  the schedsrv will not change the state until it sees this event.
 --
-local pl = {}
-pl["lwj"] = resp.jobid
-local rc,err = f:sendevent (pl, "wreck.state.submitted", resp.jobid)
+local rc,err = f:sendevent ({lwj = resp.jobid}, "wreck.state.submitted")
 if not rc then wreck:die ("sendevent: %s\n", err) end
 
 os.exit (0)
