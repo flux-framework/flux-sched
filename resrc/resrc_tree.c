@@ -351,6 +351,39 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
     return rc;
 }
 
+
+int resrc_tree_update_walltime (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime)
+{
+    int rc = -1;
+    if (resrc_tree) {
+        rc = resrc_update_walltime (resrc_tree->resrc, job_id, walltime);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
+            while (!rc && child) {
+                rc = resrc_tree_update_walltime (child, job_id, walltime);
+                child = resrc_tree_list_next (resrc_tree->children);
+            }
+        }
+    }
+    return rc;
+}
+
+int resrc_tree_list_update_walltime (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime)
+{
+    resrc_tree_t *rt;
+    int rc = -1;
+
+    if (rtl) {
+        rc = 0;
+        rt = resrc_tree_list_first (rtl);
+        while (!rc && rt) {
+            rc = resrc_tree_update_walltime (rt, job_id, walltime);
+            rt = resrc_tree_list_next (rtl);
+        }
+    }
+
+    return rc;
+}
 /*
  * vi: ts=4 sw=4 expandtab
  */

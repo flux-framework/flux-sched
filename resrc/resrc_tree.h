@@ -142,4 +142,8 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id);
 int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id);
 
 
+int resrc_tree_update_walltime (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime);
+int resrc_tree_list_update_walltime (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime);
+
+
 #endif /* !FLUX_RESRC_TREE_H */

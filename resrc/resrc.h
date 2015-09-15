@@ -7,6 +7,9 @@
 
 #include <uuid/uuid.h>
 #include "src/common/libutil/shortjson.h"
+#include "time.h"
+
+#define TIME_MAX UINT64_MAX
 
 typedef struct resource_list resource_list_t;
 typedef struct resources resources_t;
@@ -198,5 +201,15 @@ int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
  * Create a resrc_t object from a json object
  */
 resrc_t *resrc_new_from_json (JSON o, resrc_t *parent);
+
+/* 
+ * Get epoch time
+ */
+static inline int64_t epochtime ()
+{
+    return (int64_t) time (NULL);
+}
+
+int resrc_update_walltime (resrc_t *resrc, int64_t job_id, int64_t walltime);
 
 #endif /* !FLUX_RESRC_H */
