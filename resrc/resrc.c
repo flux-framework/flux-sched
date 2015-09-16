@@ -32,12 +32,11 @@
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
-#include "src/common/liblsd/hostlist.h"
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
-static bool slurm_job = false;
-static hostset_t hostset = NULL;
+/*static bool slurm_job = false;*/
+/*static hostset_t hostset = NULL;*/
 
 struct resources {
     zhash_t *hash;
@@ -275,10 +274,11 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
      * If we are running within a SLURM allocation, ignore any rdl
      * node resources that are not part of the allocation.
      */
-    if (slurm_job && !strncmp (type, "node", 5)) {
-        if (!hostset_within(hostset, name))
-            goto ret;
-    }
+/* temporarily comment out to fix build */
+/*    if (slurm_job && !strncmp (type, "node", 5)) {*/
+/*        if (!hostset_within(hostset, name))*/
+/*            goto ret;*/
+/*    } */
 
     if (parent)
         parent_tree = parent->phys_tree;
@@ -321,14 +321,13 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     } else {
         oom ();
     }
-ret:
+
     Jput (o);
     return resrc;
 }
 
 resources_t *resrc_generate_resources (const char *path, char *resource)
 {
-    const char *nodelist = NULL;
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
@@ -345,11 +344,12 @@ resources_t *resrc_generate_resources (const char *path, char *resource)
     if (!(resrcs->hash = zhash_new ()))
         goto ret;
 
-    if ((nodelist = getenv ("SLURM_NODELIST"))) {
-        hostset = hostset_create (nodelist);
-        if (hostset)
-            slurm_job = true;
-    }
+/* temporarily comment out to fix build */
+/*    if ((nodelist = getenv ("SLURM_NODELIST"))) {*/
+/*        hostset = hostset_create (nodelist);*/
+/*        if (hostset)*/
+/*            slurm_job = true;*/
+/*    }*/
 
     if (!(resrc = resrc_add_resource (resrcs->hash, NULL, r)))
         goto ret;
