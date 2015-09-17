@@ -507,7 +507,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 
     /* fix job start and end time from now */
     jstarttime = time_now;
-    jendtime = time_now + jwalltime;
+    jendtime = jstarttime + jwalltime;
     tstarttime = TIME_MAX;
 
     /* Iterate over resrc's twindow and find if it sample fits from now */
