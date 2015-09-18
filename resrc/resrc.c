@@ -489,6 +489,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     int64_t jwalltime;
     int64_t tstarttime;
     int64_t rstarttime;
+    int64_t lendtime;
 
     char *json_str_walltime = NULL;
     char *json_str_window = NULL;
@@ -509,6 +510,15 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     jstarttime = time_now;
     jendtime = jstarttime + jwalltime;
     tstarttime = TIME_MAX;
+
+    /* If jendtime is greater than the lifetime of the resource, then falst */
+    json_str_window = zhash_lookup (resrc->twindow, "0");
+    JSON lt = Jfromstr (json_str_window);
+    Jget_int64 (lt, "endtime", &lendtime);
+    Jput (lt);
+    if (jendtime > (lendtime - 10)) {
+        return false;
+    }
 
     /* Iterate over resrc's twindow and find if it sample fits from now */
     json_str_window = zhash_first (resrc->twindow);
