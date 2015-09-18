@@ -161,13 +161,13 @@ void resrc_stage_resrc(resrc_t *resrc, size_t size);
 /*
  * Allocate a resource to a job
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id);
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime);
 
 /*
  * Allocate a set of resources to a job
  */
 int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                              int64_t job_id);
+                              int64_t job_id, int64_t walltime);
 
 /*
  * Reserve a resource for a job
@@ -210,6 +210,5 @@ static inline int64_t epochtime ()
     return (int64_t) time (NULL);
 }
 
-int resrc_update_walltime (resrc_t *resrc, int64_t job_id, int64_t walltime);
 
 #endif /* !FLUX_RESRC_H */

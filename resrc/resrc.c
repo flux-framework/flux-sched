@@ -618,11 +618,13 @@ void resrc_stage_resrc (resrc_t *resrc, size_t size)
  * Allocate the staged size of a resource to the specified job_id and
  * change its state to allocated.
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
 {
     char *id_ptr = NULL;
     size_t *size_ptr;
     int rc = -1;
+    JSON j;
+    int64_t now = epochtime ();
 
     if (resrc && job_id) {
         if (resrc->staged > resrc->available)
@@ -636,6 +638,15 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id)
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
+        
+        /* add walltime */
+        j = Jnew ();    
+        Jadd_int64 (j, "starttime", now);
+        Jadd_int64 (j, "endtime", now + walltime);
+        asprintf (&id_ptr, "%ld", job_id);
+        zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j));
+        Jput (j);
+    
         rc = 0;
         free (id_ptr);
     }
@@ -643,30 +654,8 @@ ret:
     return rc;
 }
 
-int resrc_update_walltime (resrc_t *resrc, int64_t job_id, int64_t walltime)
-{
-    int rc = -1;
-
-    if (resrc && job_id) {
-
-        JSON j = Jnew ();
-        int64_t now = epochtime ();
-        char *id_ptr = NULL;
-        Jadd_int64 (j, "starttime", now);
-        Jadd_int64 (j, "endtime", now + walltime);
-        asprintf (&id_ptr, "%ld", job_id);
-        zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j) );
-        Jput (j);
-        rc = 0;
-        free (id_ptr);       
-
-    }
-
-    return rc;
-}
-
 int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                              int64_t job_id)
+                              int64_t job_id, int64_t walltime)
 {
     char *resrc_id;
     resrc_t *resrc;
@@ -680,7 +669,7 @@ int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
     resrc_id = zlist_first (resrc_ids->list);
     while (!rc && resrc_id) {
         resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_allocate_resource (resrc, job_id);
+        rc = resrc_allocate_resource (resrc, job_id, walltime);
         resrc_id = zlist_next (resrc_ids->list);
     }
 ret:
@@ -781,6 +770,7 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
     if (size_ptr) {
         resrc->available += *size_ptr;
         zhash_delete (resrc->allocs, id_ptr);
+        zhash_delete (resrc->twindow, id_ptr);
         if (!zhash_size (resrc->allocs)) {
             if (zhash_size (resrc->reservtns))
                 resrc->state = RESOURCE_RESERVED;

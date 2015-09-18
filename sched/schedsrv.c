@@ -654,8 +654,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
-                resrc_tree_list_allocate (selected_trees, job->lwj_id);
-                resrc_tree_list_update_walltime (selected_trees, job->lwj_id, job->req->walltime);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id, job->req->walltime);
                 /* Scheduler specific job transition */
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;

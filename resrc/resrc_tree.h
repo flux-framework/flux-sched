@@ -65,7 +65,7 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree);
 /*
  * Allocate all the resources in a resource tree
  */
-int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id);
+int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime);
 
 /*
  * Reserve all the resources in a resource tree
@@ -129,7 +129,7 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl);
 /*
  * Allocate all the resources in a list of resource trees
  */
-int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id);
+int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime);
 
 /*
  * Reserve all the resources in a list of resource trees
@@ -140,10 +140,6 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id);
  * Release all the resources in a list of resource trees
  */
 int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id);
-
-
-int resrc_tree_update_walltime (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime);
-int resrc_tree_list_update_walltime (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime);
 
 
 #endif /* !FLUX_RESRC_TREE_H */
