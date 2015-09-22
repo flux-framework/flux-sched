@@ -47,6 +47,7 @@ typedef struct flux_resources {
     uint64_t nnodes; /*!< num of nodes requested by a job */
     uint64_t ncores; /*!< num of cores requested by a job */
     uint64_t corespernode; /*!< num of cores per node requested by a job */
+    uint64_t walltime; /*!< walltime requested by a job */
 } flux_res_t;
 
 
@@ -59,6 +60,7 @@ typedef struct {
     bool        reserve; /*!< reserve resources for job if true */
     flux_res_t *req;     /*!< resources requested by this LWJ */
     resrc_tree_list_t *resrc_trees; /*!< resources allocated to this LWJ */
+
 } flux_lwj_t;
 
 #endif /* SCHEDSRV_H */

@@ -40,6 +40,7 @@ struct resrc_reqst_list {
 struct resrc_reqst {
     resrc_reqst_t *parent;
     resrc_t *resrc;
+    int64_t walltime;
     int64_t reqrd;
     int64_t nfound;
     resrc_reqst_list_t *children;

@@ -164,6 +164,7 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
     j->req->nnodes = (uint64_t) nn;
     j->req->ncores = (uint32_t) nc;
+    j->req->walltime = (uint64_t) 3600;
     rc = 0;
 done:
     if (jcb)
@@ -627,10 +628,13 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", job->req->corespernode);
+    Jadd_int64 (child_core, "walltime", job->req->walltime);
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
     Jadd_int (req_res, "req_qty", job->req->nnodes);
+    Jadd_int (req_res, "walltime", job->req->walltime);
+
     json_object_object_add (req_res, "req_child", child_core);
 
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
@@ -650,7 +654,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
-                resrc_tree_list_allocate (selected_trees, job->lwj_id);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id, job->req->walltime);
                 /* Scheduler specific job transition */
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;

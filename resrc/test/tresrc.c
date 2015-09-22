@@ -231,17 +231,17 @@ int main (int argc, char *argv[])
     init_time();
 
     selected_trees = test_select_resources (found_trees, 1);
-    rc = resrc_tree_list_allocate (selected_trees, 1);
+    rc = resrc_tree_list_allocate (selected_trees, 1, 3600);
     ok (!rc, "successfully allocated resources for job 1");
     resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 2);
-    rc = resrc_tree_list_allocate (selected_trees, 2);
+    rc = resrc_tree_list_allocate (selected_trees, 2, 3600);
     ok (!rc, "successfully allocated resources for job 2");
     resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 3);
-    rc = resrc_tree_list_allocate (selected_trees, 3);
+    rc = resrc_tree_list_allocate (selected_trees, 3, 3600);
     ok (!rc, "successfully allocated resources for job 3");
     resrc_tree_list_free (selected_trees);
 
