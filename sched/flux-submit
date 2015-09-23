@@ -4,8 +4,6 @@
 -- Modules:
 -------------------------------------------------------------------------------
 local flux = require 'flux'
-local posix = require 'flux-lua.posix'
-local timer = require 'flux-lua.timer'
 
 local prog = string.match (arg[0], "([^/]+)$")
 local shortprog = prog:match ("flux%-(.+)$")
@@ -56,12 +54,6 @@ if not wreck:parse_cmdline (arg) then
     wreck:die ("Failed to process cmdline args\n")
 end
 
--- Set signal handlers
--- posix.signal[posix.SIGTERM] = posix.signal[posix.SIGINT]
-
--- Start in-program timer:
-local tt = timer.new()
-
 --  Create new connection to local cmbd:
 --
 local f, err = flux.new()
@@ -75,8 +67,8 @@ wreck.nnodes = wreck:getopt ("N")
 wreck.tasks_per_node = wreck:getopt ("t")
 alloc_tasks_hack (f, wreck, lwj)
 
-wreck:say ("%4.03fs: Submitting LWJ request for %d nodes %d tasks (cmdline \"%s\")\n",
-    tt:get0(), wreck.nnodes, wreck.ntasks, table.concat (wreck.cmdline, ' '))
+wreck:say ("Submitting LWJ request for %d nodes %d tasks (cmdline \"%s\")\n",
+    wreck.nnodes, wreck.ntasks, table.concat (wreck.cmdline, ' '))
 
 --
 --  Send job request message with tag="job.create"
@@ -88,7 +80,7 @@ if resp.errnum then
     wreck:die ("job.create message failed with errnum=%d\n", resp.errnum)
 end
 
-wreck:say ("%4.03fs: Submitted jobid %d\n", tt:get0(), resp.jobid)
+wreck:say ("Submitted jobid %d\n", resp.jobid)
 
 --
 --  Get a handle to this lwj kvsdir:
