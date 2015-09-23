@@ -66,7 +66,7 @@ static int job_status_cb (JSON jcb, void *arg, int errnum);
  *                                                                            *
  ******************************************************************************/
 
-typedef resrc_tree_list_t *(*find_f) (flux_t h, resources_t *resrcs,
+typedef resrc_tree_list_t *(*find_f) (flux_t h, resrc_t *resrc,
                                       resrc_reqst_t *resrc_reqst);
 
 typedef resrc_tree_list_t *(*sel_f) (flux_t h, resrc_tree_list_t *resrc_trees,
@@ -79,7 +79,7 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
-    resources_t  *root_resrcs;        /* resrcs object pointing to the root */
+    resrc_t      *root_resrc;         /* resrc object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
@@ -104,7 +104,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
-    resrc_destroy_resources ((ctx->rctx.root_resrcs));
+    resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
     dlclose (ctx->sops.dso);
 }
@@ -121,7 +121,7 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
             oom ();
-        ctx->rctx.root_resrcs = NULL;
+        ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
         ctx->sops.dso = NULL;
         ctx->sops.find_resources = NULL;
@@ -366,7 +366,7 @@ static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
     else
         ctx->rctx.root_uri = xstrdup ("default");
 
-    if (!(ctx->rctx.root_resrcs = resrc_generate_resources (path,
+    if (!(ctx->rctx.root_resrc = resrc_generate_resources (path,
                                                             ctx->rctx.root_uri)))
         goto done;
     flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
@@ -642,7 +642,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     if (!resrc_reqst)
         goto done;
 
-    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrcs,
+    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
                                                  resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
         flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",

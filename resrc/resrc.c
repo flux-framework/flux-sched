@@ -35,14 +35,6 @@
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
-struct resources {
-    zhash_t *hash;
-};
-
-struct resource_list {
-    zlist_t *list;
-};
-
 struct resrc {
     char *type;
     char *name;
@@ -127,46 +119,6 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
     return NULL;
 }
 
-resource_list_t *resrc_new_id_list ()
-{
-    resource_list_t *new_list = xzmalloc (sizeof (resource_list_t));
-    new_list->list = zlist_new ();
-    return new_list;
-}
-
-void resrc_id_list_destroy (resource_list_t *resrc_ids)
-{
-    char *resrc_id;
-
-    if (resrc_ids && resrc_ids->list) {
-        while ((resrc_id = zlist_pop (resrc_ids->list)))
-            free (resrc_id);
-        zlist_destroy (&resrc_ids->list);
-    }
-    free (resrc_ids);
-}
-
-char *resrc_list_first (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_first (rl->list);
-    return NULL;
-}
-
-char *resrc_list_next (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_next (rl->list);
-    return NULL;
-}
-
-size_t resrc_list_size (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_size (rl->list);
-    return 0;
-}
-
 resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
                              uuid_t uuid, size_t size)
 {
@@ -225,10 +177,9 @@ void resrc_resource_destroy (void *object)
             free (resrc->type);
         if (resrc->name)
             free (resrc->name);
-        if (resrc->phys_tree) {
-            resrc_tree_free (resrc->phys_tree, false);
-            resrc->phys_tree = NULL;
-        }
+        /* Don't worry about freeing resrc->phys_tree.  It will be
+         * freed by resrc_tree_free()
+         */
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
@@ -240,8 +191,7 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
-                                    struct resource *r)
+static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
 {
     const char *name = NULL;
     const char *path = NULL;
@@ -278,8 +228,6 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     if (resrc) {
         resrc_tree = resrc_tree_new (parent_tree, resrc);
         resrc->phys_tree = resrc_tree;
-        zhash_insert (resrcs, path, resrc);
-        zhash_freefn (resrcs, path, resrc_resource_destroy);
         if (jpropso) {
             JSON jpropo;        /* json property object */
             char *property;
@@ -315,7 +263,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         }
 
         while ((c = rdl_resource_next_child (r))) {
-            (void) resrc_add_resource (resrcs, resrc, c);
+            (void) resrc_add_resource (resrc, c);
             rdl_resource_destroy (c);
         }
     } else {
@@ -326,49 +274,23 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     return resrc;
 }
 
-resources_t *resrc_generate_resources (const char *path, char *resource)
+resrc_t *resrc_generate_resources (const char *path, char *resource)
 {
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
-    resources_t *resrcs = NULL;
 
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path)))
         goto ret;
 
-    if (!(r = rdl_resource_get (rdl, resource)))
-        goto ret;
-
-    resrcs = xzmalloc (sizeof (resources_t));
-    if (!(resrcs->hash = zhash_new ()))
-        goto ret;
-
-    if (!(resrc = resrc_add_resource (resrcs->hash, NULL, r)))
-        goto ret;
-
-    /* add the root resource to the table under a unique key */
-    zhash_insert (resrcs->hash, "head", resrc);
+    if ((r = rdl_resource_get (rdl, resource)))
+        resrc = resrc_add_resource (NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
 ret:
-    return resrcs;
-}
-
-resrc_t *resrc_lookup (resources_t *resrcs, char *resrc_id)
-{
-    if (resrcs && resrcs->hash)
-        return (zhash_lookup (resrcs->hash, resrc_id));
-    return NULL;
-}
-
-void resrc_destroy_resources (resources_t *resrcs)
-{
-    if (resrcs && resrcs->hash) {
-        zhash_destroy (&(resrcs->hash));
-        free (resrcs);
-    }
+    return resrc;
 }
 
 int resrc_to_json (JSON o, resrc_t *resrc)
@@ -433,26 +355,6 @@ void resrc_print_resource (resrc_t *resrc)
         }
         printf ("\n");
     }
-}
-
-void resrc_print_resources (resources_t *resrcs)
-{
-    char *resrc_id = NULL;
-    resrc_t *resrc = NULL;
-    zlist_t *resrc_ids = NULL;
-
-    if (!resrcs || !resrcs->hash) {
-        return;
-    }
-
-    resrc_ids = zhash_keys (resrcs->hash);
-    resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        resrc_print_resource (resrc);
-        resrc_id = zlist_next (resrc_ids);
-    }
-    zlist_destroy (&resrc_ids);
 }
 
 /*
@@ -569,38 +471,6 @@ ret:
     return rc;
 }
 
-#if 0
-int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
-                                 JSON req_res, bool available)
-{
-    char *resrc_id = NULL;
-    const char *type = NULL;
-    int nfound = 0;
-    resrc_t *resrc;
-    zlist_t *resrc_ids;
-
-    if (!resrcs || !found || !req_res) {
-        goto ret;
-    }
-
-    Jget_str (req_res, "type", &type);
-    resrc_ids = zhash_keys (resrcs->hash);
-    resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        if (resrc_match_resource (resrc, type, available)) {
-            zlist_append (found->list, strdup (resrc_id));
-            nfound++;
-        }
-        resrc_id = zlist_next (resrc_ids);
-    }
-
-    zlist_destroy (&resrc_ids);
-ret:
-    return nfound;
-}
-#endif
-
 void resrc_stage_resrc (resrc_t *resrc, size_t size)
 {
     if (resrc)
@@ -647,30 +517,6 @@ ret:
     return rc;
 }
 
-int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                              int64_t job_id, int64_t walltime)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !resrc_ids->list || !job_id) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_allocate_resource (resrc, job_id, walltime);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-ret:
-    return rc;
-}
-
-
-
 /*
  * Just like resrc_allocate_resource() above, but for a reservation
  */
@@ -701,52 +547,6 @@ ret:
     return rc;
 }
 
-int resrc_reserve_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t job_id)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !job_id) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_reserve_resource (resrc, job_id);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-ret:
-    return rc;
-}
-
-JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids)
-{
-    char *resrc_id;
-    JSON ja;
-    JSON o = NULL;
-    resrc_t *resrc;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids) {
-        goto ret;
-    }
-
-    o = Jnew ();
-    ja = Jnew_ar ();
-    resrc_id = zlist_first (resrc_ids->list);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        Jadd_ar_str (ja, resrc->name);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-    json_object_object_add (o, "resrcs", ja);
-ret:
-    return o;
-}
-
 int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
 {
     char *id_ptr = NULL;
@@ -772,28 +572,6 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
         }
     }
     free (id_ptr);
-ret:
-    return rc;
-}
-
-int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t rel_job)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !rel_job) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_release_resource (resrc, rel_job);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
 ret:
     return rc;
 }

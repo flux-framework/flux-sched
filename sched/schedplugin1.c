@@ -66,26 +66,18 @@ static bool select_children (flux_t h, resrc_tree_list_t *found_children,
  * Returns: a list of resource trees satisfying the job's request,
  *                   or NULL if none (or not enough) are found
  */
-resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
+resrc_tree_list_t *find_resources (flux_t h, resrc_t *resrc,
                                    resrc_reqst_t *resrc_reqst)
 {
     int64_t nfound = 0;
-    resrc_t *resrc = NULL;
     resrc_tree_list_t *found_trees = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    if (!resrcs || !resrc_reqst) {
+    if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
         goto ret;
     }
-
-    resrc = resrc_lookup (resrcs, "head");
-    if (resrc) {
-        resrc_tree = resrc_phys_tree (resrc);
-    } else {
-        printf ("Failed to find head resource\n");
-        goto ret;
-    }
+    resrc_tree = resrc_phys_tree (resrc);
 
     found_trees = resrc_tree_list_new ();
     if (!found_trees) {
