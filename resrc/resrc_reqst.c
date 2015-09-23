@@ -150,7 +150,7 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
     if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
         goto ret;
 
-    resrc = resrc_new_from_json (o);
+    resrc = resrc_new_from_json (o, NULL, false);
     if (resrc) {
         resrc_reqst = resrc_reqst_new (resrc, qty);
 
@@ -180,6 +180,7 @@ void resrc_reqst_free (resrc_reqst_t *resrc_reqst)
     if (resrc_reqst) {
         zlist_destroy (&(resrc_reqst->children->list));
         free (resrc_reqst->children);
+        resrc_reqst->children = NULL;
         resrc_resource_destroy (resrc_reqst->resrc);
         free (resrc_reqst);
     }

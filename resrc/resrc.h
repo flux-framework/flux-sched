@@ -72,6 +72,11 @@ resrc_t *resrc_copy_resource (resrc_t *resrc);
 void resrc_resource_destroy (void *object);
 
 /*
+ * Create a resrc_t object from a json object
+ */
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical);
+
+/*
  * Return the head of a resource tree of all resources described by a
  * configuration file
  */
@@ -118,11 +123,6 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id);
 int resrc_release_resource (resrc_t *resrc, int64_t rel_job);
 
 /*
- * Create a resrc_t object from a json object
- */
-resrc_t *resrc_new_from_json (JSON o);
-
-/* 
  * Get epoch time
  */
 static inline int64_t epochtime ()

@@ -191,43 +191,49 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 {
-    const char *name = NULL;
-    const char *path = NULL;
-    const char *tmp = NULL;
-    const char *type = NULL;
-    int64_t id;
-    size_t size;
-    JSON o = NULL;
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
+    char *name = NULL;
+    const char *jname = NULL;
+    const char *tmp = NULL;
+    const char *type = NULL;
+    int64_t jduration;
+    int64_t id;
+    int64_t ssize;
     json_object_iter iter;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
-    resrc_tree_t *resrc_tree = NULL;
-    struct resource *c;
+    size_t size = 1;
     uuid_t uuid;
 
-    o = rdl_resource_json (r);
-    Jget_str (o, "type", &type);
+    if (!Jget_str (o, "type", &type))
+        goto ret;
+    Jget_str (o, "name", &jname);
     if (!(Jget_int64 (o, "id", &id)))
         id = 0;
-    Jget_str (o, "uuid", &tmp);
-    uuid_parse (tmp, uuid);
-    name = rdl_resource_name(r);    /* includes the id */
-    path = rdl_resource_path(r);
-    size = rdl_resource_size(r);
-    jpropso = Jobj_get (o, "properties");
-    jtagso = Jobj_get (o, "tags");
+    name = xasprintf ("%s%ld", jname, id);
+    if (Jget_str (o, "uuid", &tmp))
+        uuid_parse (tmp, uuid);
+    else
+        uuid_clear(uuid);
+    if (Jget_int64 (o, "size", &ssize))
+        size = (size_t) ssize;
 
-    if (parent)
-        parent_tree = parent->phys_tree;
     resrc = resrc_new_resource (type, name, id, uuid, size);
-
     if (resrc) {
-        resrc_tree = resrc_tree_new (parent_tree, resrc);
-        resrc->phys_tree = resrc_tree;
+        /*
+         * Are we constructing the resource's physical tree?  If
+         * false, this is just a resource that is part of a request.
+         */
+        if (physical) {
+            if (parent)
+                parent_tree = parent->phys_tree;
+            resrc->phys_tree = resrc_tree_new (parent_tree, resrc);
+        }
+
+        jpropso = Jobj_get (o, "properties");
         if (jpropso) {
             JSON jpropo;        /* json property object */
             char *property;
@@ -240,6 +246,8 @@ static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
                 Jput (jpropo);
             }
         }
+
+        jtagso = Jobj_get (o, "tags");
         if (jtagso) {
             JSON jtago;        /* json tag object */
             char *tag;
@@ -254,20 +262,37 @@ static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
         }
 
         /* add twindow */
-        if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
+        if (Jget_int64 (o, "walltime", &jduration)) {
+            JSON w = Jnew ();
+            Jadd_int64 (w, "walltime", jduration);
+            zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
+            Jput (w);
+        } else if ((!strncmp (type, "node", 5)) ||
+                   (!strncmp (type, "core", 5))) {
             JSON j = Jnew ();
             Jadd_int64 (j, "start", epochtime ());
             Jadd_int64 (j, "end", TIME_MAX);
             zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
             Jput (j);
         }
+    }
+ret:
+    free (name);
+    return resrc;
+}
 
-        while ((c = rdl_resource_next_child (r))) {
-            (void) resrc_add_resource (resrc, c);
-            rdl_resource_destroy (c);
-        }
-    } else {
-        oom ();
+static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
+{
+    JSON o = NULL;
+    resrc_t *resrc = NULL;
+    struct resource *c;
+
+    o = rdl_resource_json (r);
+    resrc = resrc_new_from_json (o, parent, true);
+
+    while ((c = rdl_resource_next_child (r))) {
+        (void) resrc_add_resource (resrc, c);
+        rdl_resource_destroy (c);
     }
 
     Jput (o);
@@ -574,68 +599,6 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
     free (id_ptr);
 ret:
     return rc;
-}
-
-resrc_t *resrc_new_from_json (JSON o)
-{
-    JSON jpropso = NULL; /* json properties object */
-    JSON jtagso = NULL;  /* json tags object */
-    const char *name = NULL;
-    const char *type = NULL;
-    int64_t ssize;
-    json_object_iter iter;
-    resrc_t *resrc = NULL;
-    size_t size = 1;
-    int64_t jduration;
-
-    if (!Jget_str (o, "type", &type))
-        goto ret;
-    Jget_str (o, "name", &name);
-    if (Jget_int64 (o, "size", &ssize))
-        size = (size_t) ssize;
-    else
-        size = 1;
-
-    resrc = resrc_new_resource (type, name, -1, 0, size);
-    if (resrc) {
-        jpropso = Jobj_get (o, "properties");
-        if (jpropso) {
-            JSON jpropo;        /* json property object */
-            char *property;
-
-            json_object_object_foreachC (jpropso, iter) {
-                jpropo = Jget (iter.val);
-                property = strdup (json_object_get_string (jpropo));
-                zhash_insert (resrc->properties, iter.key, property);
-                zhash_freefn (resrc->properties, iter.key, free);
-                Jput (jpropo);
-            }
-        }
-
-        jtagso = Jobj_get (o, "tags");
-        if (jtagso) {
-            JSON jtago;        /* json tag object */
-            char *tag;
-
-            json_object_object_foreachC (jtagso, iter) {
-                jtago = Jget (iter.val);
-                tag = strdup (json_object_get_string (jtago));
-                zhash_insert (resrc->tags, iter.key, tag);
-                zhash_freefn (resrc->tags, iter.key, free);
-                Jput (jtago);
-            }
-        }
-
-        if (Jget_int64 (o, "walltime", &jduration)) {
-            JSON w = Jnew ();
-            Jadd_int64 (w, "walltime", jduration);
-            zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
-            Jput (w);
-        }
-
-    }
-ret:
-    return resrc;
 }
 
 
