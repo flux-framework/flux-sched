@@ -150,7 +150,7 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
     if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
         goto ret;
 
-    resrc = resrc_new_from_json (o, parent);
+    resrc = resrc_new_from_json (o);
     if (resrc) {
         resrc_reqst = resrc_reqst_new (resrc, qty);
 
@@ -302,7 +302,7 @@ static bool match_child (resrc_tree_list_t *r_trees, resrc_reqst_t *resrc_reqst,
                         found = true;
                         success = true;
                     } else {
-                        resrc_tree_destroy (child_tree);
+                        resrc_tree_destroy (child_tree, false);
                     }
                 }
             } else {
@@ -326,7 +326,7 @@ static bool match_child (resrc_tree_list_t *r_trees, resrc_reqst_t *resrc_reqst,
                                  child_tree, available)) {
                     success = true;
                 } else {
-                    resrc_tree_destroy (child_tree);
+                    resrc_tree_destroy (child_tree, false);
                 }
             }
         }
@@ -390,7 +390,7 @@ int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
                         resrc_tree_list_append (found_trees, new_tree);
                         nfound++;
                     } else {
-                        resrc_tree_destroy (new_tree);
+                        resrc_tree_destroy (new_tree, false);
                     }
                 }
             } else {

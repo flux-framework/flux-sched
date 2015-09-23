@@ -97,7 +97,7 @@ resrc_tree_list_t *find_resources (flux_t h, resources_t *resrcs,
                                 found_trees, true);
 
     if (!nfound) {
-        resrc_tree_list_destroy (found_trees);
+        resrc_tree_list_destroy (found_trees, false);
         found_trees = NULL;
     }
 ret:
@@ -130,7 +130,7 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
                             resrc_reqst_reqrd (child_reqst))
                             goto ret;
                     } else {
-                        resrc_tree_destroy (child_tree);
+                        resrc_tree_destroy (child_tree, false);
                     }
                 }
             } else {
@@ -159,7 +159,7 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
                         resrc_reqst_reqrd (child_reqst))
                         goto ret;
                 } else {
-                    resrc_tree_destroy (child_tree);
+                    resrc_tree_destroy (child_tree, false);
                 }
             }
         }
@@ -239,7 +239,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
                                   resrc_name (resrc));
                         reqrd--;
                     } else {
-                        resrc_tree_destroy (new_tree);
+                        resrc_tree_destroy (new_tree, false);
                     }
                 }
             } else {
@@ -254,7 +254,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
     /* If we did not select all that was required and the selected
      * resource list is empty, destroy the list. */
     if (reqrd && !resrc_tree_list_size (selected_res)) {
-        resrc_tree_list_destroy (selected_res);
+        resrc_tree_list_destroy (selected_res, false);
     }
 
     return selected_res;

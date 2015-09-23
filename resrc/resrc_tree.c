@@ -107,16 +107,18 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
     return new_resrc_tree;
 }
 
-void resrc_tree_free (resrc_tree_t *resrc_tree)
+void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
         resrc_tree_list_free (resrc_tree->children);
-        /* do not destroy the resrc_tree->resrc */
+        if (destroy_resrc) {
+            resrc_resource_destroy (resrc_tree->resrc);
+        }
         free (resrc_tree);
     }
 }
 
-void resrc_tree_destroy (resrc_tree_t *resrc_tree)
+void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
         if (resrc_tree->parent)
@@ -124,11 +126,11 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree)
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (child) {
-                resrc_tree_destroy (child);
+                resrc_tree_destroy (child, destroy_resrc);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
-        resrc_tree_free (resrc_tree);
+        resrc_tree_free (resrc_tree, destroy_resrc);
     }
 }
 
@@ -148,23 +150,53 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
 
 int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
 {
+    JSON co = Jnew ();
     int rc = -1;
 
     if (o && resrc_tree) {
-        rc = 0;
-        if (resrc_tree_num_children (resrc_tree)) {
-            JSON co = Jnew ();
-            json_object_object_add (o, resrc_name (resrc_tree->resrc), co);
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (!rc && child) {
-                rc = resrc_tree_serialize (co, child);
-                child = resrc_tree_list_next (resrc_tree->children);
+        rc = resrc_to_json (co, resrc_tree->resrc);
+        json_object_array_add (o, co);
+        if (!rc) {
+            if (resrc_tree_num_children (resrc_tree)) {
+                JSON ja = Jnew_ar ();
+                resrc_tree_t *child;
+
+                json_object_object_add (co, "children", ja);
+                child = resrc_tree_list_first (resrc_tree->children);
+                while (!rc && child) {
+                    rc = resrc_tree_serialize (ja, child);
+                    child = resrc_tree_list_next (resrc_tree->children);
+                }
             }
-        } else {
-            rc = resrc_to_json (o, resrc_tree->resrc);
         }
     }
     return rc;
+}
+
+resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
+{
+    JSON ca = NULL;     /* array of child json objects */
+    JSON co = NULL;     /* child json object */
+    resrc_t *resrc = NULL;
+    resrc_tree_t *resrc_tree = NULL;
+
+    resrc = resrc_new_from_json (o);
+    if (resrc) {
+        resrc_tree = resrc_tree_new (parent, resrc);
+
+        if ((ca = Jobj_get (o, "children"))) {
+            int i, nchildren = 0;
+
+            if (Jget_ar_len (ca, &nchildren)) {
+                for (i=0; i < nchildren; i++) {
+                    Jget_ar_obj (ca, i, &co);
+                    (void) resrc_tree_deserialize (co, resrc_tree);
+                }
+            }
+        }
+    }
+
+    return resrc_tree;
 }
 
 int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime)
@@ -269,13 +301,14 @@ void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list)
     }
 }
 
-void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list)
+void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list,
+                              bool destroy_resrc)
 {
     if (resrc_tree_list) {
         if (resrc_tree_list_size (resrc_tree_list)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree_list);
             while (child) {
-                resrc_tree_destroy (child);
+                resrc_tree_destroy (child, destroy_resrc);
                 child = resrc_tree_list_next (resrc_tree_list);
             }
         }
@@ -291,13 +324,35 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
     if (o && rtl && rtl->list) {
         rc = 0;
         rt = resrc_tree_list_first (rtl);
-        while (!rc && rt) {
-            rc = resrc_tree_serialize (o, rt);
+        while (rt) {
+            if ((rc = resrc_tree_serialize (o, rt)))
+                break;
             rt = resrc_tree_list_next (rtl);
         }
     }
 
     return rc;
+}
+
+resrc_tree_list_t *resrc_tree_list_deserialize (JSON o)
+{
+    JSON ca = NULL;     /* array of child json objects */
+    int i, nchildren = 0;
+    resrc_tree_t *rt = NULL;
+    resrc_tree_list_t *rtl = resrc_tree_list_new ();
+
+    if (o && rtl) {
+        if (Jget_ar_len (o, &nchildren)) {
+            for (i=0; i < nchildren; i++) {
+                Jget_ar_obj (o, i, &ca);
+                rt = resrc_tree_deserialize (ca, NULL);
+                if (!rt || resrc_tree_list_append (rtl, rt))
+                    break;
+            }
+        }
+    }
+
+    return rtl;
 }
 
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime)
