@@ -35,9 +35,6 @@
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
-/*static bool slurm_job = false;*/
-/*static hostset_t hostset = NULL;*/
-
 struct resources {
     zhash_t *hash;
 };
@@ -68,6 +65,7 @@ struct resrc {
 /***************************************************************************
  *  API
  ***************************************************************************/
+
 char *resrc_type (resrc_t *resrc)
 {
     if (resrc)
@@ -273,16 +271,6 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
     jpropso = Jobj_get (o, "properties");
     jtagso = Jobj_get (o, "tags");
 
-    /*
-     * If we are running within a SLURM allocation, ignore any rdl
-     * node resources that are not part of the allocation.
-     */
-/* temporarily comment out to fix build */
-/*    if (slurm_job && !strncmp (type, "node", 5)) {*/
-/*        if (!hostset_within(hostset, name))*/
-/*            goto ret;*/
-/*    } */
-
     if (parent)
         parent_tree = parent->phys_tree;
     resrc = resrc_new_resource (type, name, id, uuid, size);
@@ -355,13 +343,6 @@ resources_t *resrc_generate_resources (const char *path, char *resource)
     resrcs = xzmalloc (sizeof (resources_t));
     if (!(resrcs->hash = zhash_new ()))
         goto ret;
-
-/* temporarily comment out to fix build */
-/*    if ((nodelist = getenv ("SLURM_NODELIST"))) {*/
-/*        hostset = hostset_create (nodelist);*/
-/*        if (hostset)*/
-/*            slurm_job = true;*/
-/*    }*/
 
     if (!(resrc = resrc_add_resource (resrcs->hash, NULL, r)))
         goto ret;
