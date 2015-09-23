@@ -321,7 +321,7 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
             JSON j = Jnew ();
             Jadd_int64 (j, "start", epochtime ());
-            Jadd_int64 (j, "end", TIME_MAX); 
+            Jadd_int64 (j, "end", TIME_MAX);
             zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
             Jput (j);
         }
@@ -478,13 +478,13 @@ void resrc_print_resources (resources_t *resrcs)
  * Finds if a resrc_t *sample matches with resrc_t *resrc in terms of walltime
  *
  * Note: this function is working on a resource that is already AVAILABLE.
- * Therefore it is sufficient if the walltime fits before the earliest starttime 
+ * Therefore it is sufficient if the walltime fits before the earliest starttime
  * of a reserved job.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 {
     bool rc = false;
-    
+
     int64_t time_now = epochtime ();
     int64_t jstarttime;
     int64_t jendtime;
@@ -495,12 +495,12 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 
     char *json_str_walltime = NULL;
     char *json_str_window = NULL;
-    
+
     /* retrieve first element of twindow from request sample */
     json_str_walltime = zhash_first (sample->twindow);
     if (!json_str_walltime)
         return true;
-    
+
     /* retrieve the walltime information from request sample */
     JSON jw = Jfromstr (json_str_walltime);
     if (!(Jget_int64 (jw, "walltime", &jwalltime))) {
@@ -525,10 +525,10 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     /* Iterate over resrc's twindow and find if it sample fits from now */
     json_str_window = zhash_first (resrc->twindow);
     while (json_str_window) {
-        
+
         JSON rw = Jfromstr (json_str_window);
         Jget_int64 (rw, "starttime", &rstarttime);
-        
+
         if (rstarttime > time_now)
             tstarttime = tstarttime < rstarttime ? tstarttime : rstarttime;
 
@@ -536,7 +536,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     }
 
     rc = jendtime <= tstarttime ? true : false;
-    
+
     return rc;
 }
 
@@ -650,15 +650,15 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
-        
+
         /* add walltime */
-        j = Jnew ();    
+        j = Jnew ();
         Jadd_int64 (j, "starttime", now);
         Jadd_int64 (j, "endtime", now + walltime);
         asprintf (&id_ptr, "%ld", job_id);
         zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j));
         Jput (j);
-    
+
         rc = 0;
         free (id_ptr);
     }
@@ -872,8 +872,8 @@ resrc_t *resrc_new_from_json (JSON o)
             Jadd_int64 (w, "walltime", jduration);
             zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
             Jput (w);
-        } 
-        
+        }
+
     }
 ret:
     return resrc;

@@ -56,7 +56,7 @@
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t h, void *arg);
 #endif
-static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w,
                           const flux_msg_t *msg, void *arg);
 static int job_status_cb (JSON jcb, void *arg, int errnum);
 
@@ -386,7 +386,7 @@ done:
 
 static struct flux_msghandler htab[] = {
     { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb},
-      FLUX_MSGHANDLER_TABLE_END
+    FLUX_MSGHANDLER_TABLE_END
 };
 
 /*
@@ -822,7 +822,7 @@ bad_transition:
  * For now, the only resource event is raised when a job releases its
  * RDL allocation.
  */
-static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w,
                           const flux_msg_t *msg, void *arg)
 {
     schedule_jobs (getctx ((flux_t)arg));
