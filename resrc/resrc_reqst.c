@@ -206,7 +206,8 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
 void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst) {
-        printf ("%ld of %ld ", resrc_reqst->nfound, resrc_reqst->reqrd);
+        printf ("%"PRId64" of %"PRId64" ", resrc_reqst->nfound,
+                resrc_reqst->reqrd);
         resrc_print_resource (resrc_reqst->resrc);
         if (resrc_reqst_num_children (resrc_reqst)) {
             resrc_reqst_t *child = resrc_reqst_list_first

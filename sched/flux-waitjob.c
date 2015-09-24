@@ -159,10 +159,10 @@ int wait_job_complete (flux_t h, int64_t jobid)
         Jget_int64 (o, JSC_STATE_PAIR_NSTATE, &state);
         Jput (jcb);
         free (json_str);
-        flux_log (h, LOG_INFO, "%ld already started (%s)",
+        flux_log (h, LOG_INFO, "%"PRId64" already started (%s)",
                      jobid, jsc_job_num2state (state));
         if (state == J_COMPLETE) {
-            flux_log (h, LOG_INFO, "%ld already completed", jobid);
+            flux_log (h, LOG_INFO, "%"PRId64" already completed", jobid);
             if (ctx->sync)
                 create_outfile (ctx->sync);
             rc =0;

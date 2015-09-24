@@ -484,13 +484,13 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     JSON ro = Jnew_ar ();
 
     if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
-        flux_log (h, LOG_ERR, "%ld resource serialization failed: %s",
+        flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
                   job->lwj_id, strerror (errno));
         goto done;
     }
     Jadd_obj (jcb, JSC_RDL, ro);
     if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
-        flux_log (h, LOG_ERR, "error jsc udpate: %ld (%s)", job->lwj_id,
+        flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
     }
@@ -507,7 +507,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     }
     Jput (arr);
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
-        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
+        flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
         goto done;
     }
@@ -552,13 +552,13 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
     int rc = -1;
 
     if ((update_state (h, job->lwj_id, job->state, J_RUNREQUEST)) != 0) {
-        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
+        flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
     } else {
         char *topic = NULL;
         flux_msg_t *msg = NULL;
 
-        if (asprintf (&topic, "wrexec.run.%ld", job->lwj_id) < 0) {
+        if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else if (!(msg = flux_event_encode (topic, NULL))
@@ -566,7 +566,7 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
             flux_log (h, LOG_ERR, "%s: error sending event: %s",
                       __FUNCTION__, strerror (errno));
         } else {
-            flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
             flux_msg_destroy (msg);
             rc = 0;
         }
@@ -645,8 +645,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
                                                  resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
-        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",
-                  nnodes, job->lwj_id, job->req->nnodes);
+        flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for lwj.%"PRId64", "
+                  "reqrd: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
         if ((nnodes < job->req->nnodes) && !job->reserve)
             goto done;
 
@@ -654,24 +654,25 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
-                resrc_tree_list_allocate (selected_trees, job->lwj_id, job->req->walltime);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id,
+                                          job->req->walltime);
                 /* Scheduler specific job transition */
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;
                 if (req_tpexec_allocate (ctx, job) != 0) {
                     flux_log (h, LOG_ERR,
-                              "failed to request allocate for job %ld",
+                              "failed to request allocate for job %"PRId64"",
                               job->lwj_id);
                     goto done;
                 }
-                flux_log (h, LOG_DEBUG,
-                          "%ld nodes selected for lwj.%ld, reqrd: %ld",
+                flux_log (h, LOG_DEBUG, "%"PRId64" nodes selected for "
+                          "lwj.%"PRId64", reqrd: %"PRId64"",
                           nnodes, job->lwj_id, job->req->nnodes);
             } else if (job->reserve) {
                 resrc_tree_list_reserve (selected_trees, job->lwj_id);
-                flux_log (h, LOG_DEBUG,
-                          "%ld nodes reserved for lwj.%ld's reqrd %ld",
-                          nnodes, job->lwj_id, job->req->nnodes);
+                flux_log (h, LOG_DEBUG, "%"PRId64" nodes reserved for lwj."
+                          "%"PRId64"'s reqrd %"PRId64"", nnodes, job->lwj_id,
+                          job->req->nnodes);
             }
         }
     }
@@ -734,8 +735,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
     flux_t h = ctx->h;
     job_state_t oldstate = job->state;
 
-    flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
-              job->lwj_id, jsc_job_num2state (oldstate),
+    flux_log (h, LOG_DEBUG, "attempting job %"PRId64" state change from "
+              "%s to %s", job->lwj_id, jsc_job_num2state (oldstate),
               jsc_job_num2state (newstate));
 
     switch (oldstate) {
@@ -778,8 +779,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
                 || trans (J_CANCELLED, newstate, &(job->state)));
         q_move_to_cqueue (ctx, job);
         if ((resrc_tree_list_release (job->resrc_trees, job->lwj_id))) {
-            flux_log (h, LOG_ERR, "%s: failed to release resources for job %ld",
-                      __FUNCTION__, job->lwj_id);
+            flux_log (h, LOG_ERR, "%s: failed to release resources for job "
+                      "%"PRId64"", __FUNCTION__, job->lwj_id);
         } else {
             flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
 
@@ -812,7 +813,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
     return 0;
 
 bad_transition:
-    flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
+    flux_log (h, LOG_ERR, "job %"PRId64" bad state transition from %s to %s",
               job->lwj_id, jsc_job_num2state (oldstate),
               jsc_job_num2state (newstate));
     return -1;

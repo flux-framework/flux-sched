@@ -213,7 +213,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     Jget_str (o, "name", &jname);
     if (!(Jget_int64 (o, "id", &id)))
         id = 0;
-    name = xasprintf ("%s%ld", jname, id);
+    name = xasprintf ("%s%"PRId64"", jname, id);
     if (Jget_str (o, "uuid", &tmp))
         uuid_parse (tmp, uuid);
     else
@@ -339,8 +339,8 @@ void resrc_print_resource (resrc_t *resrc)
 
     if (resrc) {
         uuid_unparse (resrc->uuid, uuid);
-        printf ("resrc type:%s, name:%s, id:%ld, state: %s, uuid: %s, size: %lu,"
-                " avail: %lu",
+        printf ("resrc type:%s, name:%s, id:%"PRId64", state: %s, uuid: %s, "
+                "size: %lu, avail: %lu",
                 resrc->type, resrc->name, resrc->id, resrc_state (resrc), uuid,
                 resrc->size, resrc->available);
         if (zhash_size (resrc->properties)) {
@@ -518,11 +518,12 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        asprintf(&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
         zhash_freefn (resrc->allocs, id_ptr, free);
+        free (id_ptr);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
@@ -531,7 +532,7 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
         j = Jnew ();
         Jadd_int64 (j, "starttime", now);
         Jadd_int64 (j, "endtime", now + walltime);
-        asprintf (&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j));
         Jput (j);
 
@@ -555,7 +556,7 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        asprintf(&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
@@ -583,7 +584,7 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
         goto ret;
     }
 
-    asprintf (&id_ptr, "%ld", rel_job);
+    id_ptr = xasprintf ("%"PRId64"", rel_job);
     size_ptr = zhash_lookup (resrc->allocs, id_ptr);
     if (size_ptr) {
         resrc->available += *size_ptr;
