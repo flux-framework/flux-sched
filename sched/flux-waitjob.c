@@ -134,7 +134,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     Jput (jcb);
 
     if ((j == ctx->jobid) && (ns == J_COMPLETE)) {
-        if (ctx->sync) 
+        if (ctx->sync)
             create_outfile (ctx->sync);
         raise (SIGINT);
     }
@@ -151,7 +151,7 @@ int wait_job_complete (flux_t h, int64_t jobid)
     wjctx_t *ctx = getctx (h);
     ctx->jobid = jobid;
     char *json_str = NULL;
-    int64_t state = J_NULL; 
+    int64_t state = J_NULL;
 
     if (jsc_query_jcb (h, jobid, JSC_STATE_PAIR, &json_str) == 0) {
         jcb = Jfromstr (json_str);
@@ -159,11 +159,11 @@ int wait_job_complete (flux_t h, int64_t jobid)
         Jget_int64 (o, JSC_STATE_PAIR_NSTATE, &state);
         Jput (jcb);
         free (json_str);
-        flux_log (h, LOG_INFO, "%ld already started (%s)", 
+        flux_log (h, LOG_INFO, "%"PRId64" already started (%s)",
                      jobid, jsc_job_num2state (state));
         if (state == J_COMPLETE) {
-            flux_log (h, LOG_INFO, "%ld already completed", jobid);
-            if (ctx->sync) 
+            flux_log (h, LOG_INFO, "%"PRId64" already completed", jobid);
+            if (ctx->sync)
                 create_outfile (ctx->sync);
             rc =0;
             goto done;
@@ -179,7 +179,7 @@ int wait_job_complete (flux_t h, int64_t jobid)
     }
 
 done:
-    return rc; 
+    return rc;
 }
 
 /******************************************************************************
@@ -203,7 +203,7 @@ int main (int argc, char *argv[])
                 usage ();
                 break;
             case 'o': /* --out */
-                fn = strdup (optarg);  
+                fn = strdup (optarg);
                 break;
             default:
                 usage ();

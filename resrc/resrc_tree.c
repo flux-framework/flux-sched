@@ -87,7 +87,8 @@ resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc)
         resrc_tree->parent = parent;
         resrc_tree->resrc = resrc;
         resrc_tree->children = resrc_tree_list_new ();
-        (void) resrc_tree_add_child (parent, resrc_tree);
+        if (parent)
+            (void) resrc_tree_add_child (parent, resrc_tree);
     }
 
     return resrc_tree;
@@ -111,6 +112,7 @@ void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
         resrc_tree_list_free (resrc_tree->children);
+        resrc_tree->children = NULL;
         if (destroy_resrc) {
             resrc_resource_destroy (resrc_tree->resrc);
         }
@@ -180,7 +182,7 @@ resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
     resrc_t *resrc = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    resrc = resrc_new_from_json (o);
+    resrc = resrc_new_from_json (o, NULL, false);
     if (resrc) {
         resrc_tree = resrc_tree_new (parent, resrc);
 

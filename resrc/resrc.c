@@ -35,17 +35,6 @@
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
-/*static bool slurm_job = false;*/
-/*static hostset_t hostset = NULL;*/
-
-struct resources {
-    zhash_t *hash;
-};
-
-struct resource_list {
-    zlist_t *list;
-};
-
 struct resrc {
     char *type;
     char *name;
@@ -68,6 +57,7 @@ struct resrc {
 /***************************************************************************
  *  API
  ***************************************************************************/
+
 char *resrc_type (resrc_t *resrc)
 {
     if (resrc)
@@ -129,46 +119,6 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
     return NULL;
 }
 
-resource_list_t *resrc_new_id_list ()
-{
-    resource_list_t *new_list = xzmalloc (sizeof (resource_list_t));
-    new_list->list = zlist_new ();
-    return new_list;
-}
-
-void resrc_id_list_destroy (resource_list_t *resrc_ids)
-{
-    char *resrc_id;
-
-    if (resrc_ids && resrc_ids->list) {
-        while ((resrc_id = zlist_pop (resrc_ids->list)))
-            free (resrc_id);
-        zlist_destroy (&resrc_ids->list);
-    }
-    free (resrc_ids);
-}
-
-char *resrc_list_first (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_first (rl->list);
-    return NULL;
-}
-
-char *resrc_list_next (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_next (rl->list);
-    return NULL;
-}
-
-size_t resrc_list_size (resource_list_t *rl)
-{
-    if (rl && rl->list)
-        return zlist_size (rl->list);
-    return 0;
-}
-
 resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
                              uuid_t uuid, size_t size)
 {
@@ -227,10 +177,9 @@ void resrc_resource_destroy (void *object)
             free (resrc->type);
         if (resrc->name)
             free (resrc->name);
-        if (resrc->phys_tree) {
-            resrc_tree_free (resrc->phys_tree, false);
-            resrc->phys_tree = NULL;
-        }
+        /* Don't worry about freeing resrc->phys_tree.  It will be
+         * freed by resrc_tree_free()
+         */
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
@@ -242,56 +191,49 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
-                                    struct resource *r)
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 {
-    const char *name = NULL;
-    const char *path = NULL;
-    const char *tmp = NULL;
-    const char *type = NULL;
-    int64_t id;
-    size_t size;
-    JSON o = NULL;
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
+    char *name = NULL;
+    const char *jname = NULL;
+    const char *tmp = NULL;
+    const char *type = NULL;
+    int64_t jduration;
+    int64_t id;
+    int64_t ssize;
     json_object_iter iter;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
-    resrc_tree_t *resrc_tree = NULL;
-    struct resource *c;
+    size_t size = 1;
     uuid_t uuid;
 
-    o = rdl_resource_json (r);
-    Jget_str (o, "type", &type);
+    if (!Jget_str (o, "type", &type))
+        goto ret;
+    Jget_str (o, "name", &jname);
     if (!(Jget_int64 (o, "id", &id)))
         id = 0;
-    Jget_str (o, "uuid", &tmp);
-    uuid_parse (tmp, uuid);
-    name = rdl_resource_name(r);    /* includes the id */
-    path = rdl_resource_path(r);
-    size = rdl_resource_size(r);
-    jpropso = Jobj_get (o, "properties");
-    jtagso = Jobj_get (o, "tags");
+    name = xasprintf ("%s%"PRId64"", jname, id);
+    if (Jget_str (o, "uuid", &tmp))
+        uuid_parse (tmp, uuid);
+    else
+        uuid_clear(uuid);
+    if (Jget_int64 (o, "size", &ssize))
+        size = (size_t) ssize;
 
-    /*
-     * If we are running within a SLURM allocation, ignore any rdl
-     * node resources that are not part of the allocation.
-     */
-/* temporarily comment out to fix build */
-/*    if (slurm_job && !strncmp (type, "node", 5)) {*/
-/*        if (!hostset_within(hostset, name))*/
-/*            goto ret;*/
-/*    } */
-
-    if (parent)
-        parent_tree = parent->phys_tree;
     resrc = resrc_new_resource (type, name, id, uuid, size);
-
     if (resrc) {
-        resrc_tree = resrc_tree_new (parent_tree, resrc);
-        resrc->phys_tree = resrc_tree;
-        zhash_insert (resrcs, path, resrc);
-        zhash_freefn (resrcs, path, resrc_resource_destroy);
+        /*
+         * Are we constructing the resource's physical tree?  If
+         * false, this is just a resource that is part of a request.
+         */
+        if (physical) {
+            if (parent)
+                parent_tree = parent->phys_tree;
+            resrc->phys_tree = resrc_tree_new (parent_tree, resrc);
+        }
+
+        jpropso = Jobj_get (o, "properties");
         if (jpropso) {
             JSON jpropo;        /* json property object */
             char *property;
@@ -304,6 +246,8 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
                 Jput (jpropo);
             }
         }
+
+        jtagso = Jobj_get (o, "tags");
         if (jtagso) {
             JSON jtago;        /* json tag object */
             char *tag;
@@ -318,76 +262,60 @@ static resrc_t *resrc_add_resource (zhash_t *resrcs, resrc_t *parent,
         }
 
         /* add twindow */
-        if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
+        if (Jget_int64 (o, "walltime", &jduration)) {
+            JSON w = Jnew ();
+            Jadd_int64 (w, "walltime", jduration);
+            zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
+            Jput (w);
+        } else if ((!strncmp (type, "node", 5)) ||
+                   (!strncmp (type, "core", 5))) {
             JSON j = Jnew ();
             Jadd_int64 (j, "start", epochtime ());
-            Jadd_int64 (j, "end", TIME_MAX); 
+            Jadd_int64 (j, "end", TIME_MAX);
             zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
             Jput (j);
         }
+    }
+ret:
+    free (name);
+    return resrc;
+}
 
-        while ((c = rdl_resource_next_child (r))) {
-            (void) resrc_add_resource (resrcs, resrc, c);
-            rdl_resource_destroy (c);
-        }
-    } else {
-        oom ();
+static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
+{
+    JSON o = NULL;
+    resrc_t *resrc = NULL;
+    struct resource *c;
+
+    o = rdl_resource_json (r);
+    resrc = resrc_new_from_json (o, parent, true);
+
+    while ((c = rdl_resource_next_child (r))) {
+        (void) resrc_add_resource (resrc, c);
+        rdl_resource_destroy (c);
     }
 
     Jput (o);
     return resrc;
 }
 
-resources_t *resrc_generate_resources (const char *path, char *resource)
+resrc_t *resrc_generate_resources (const char *path, char *resource)
 {
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
     struct rdllib *l = NULL;
     struct resource *r = NULL;
-    resources_t *resrcs = NULL;
 
     if (!(l = rdllib_open ()) || !(rdl = rdl_loadfile (l, path)))
         goto ret;
 
-    if (!(r = rdl_resource_get (rdl, resource)))
-        goto ret;
-
-    resrcs = xzmalloc (sizeof (resources_t));
-    if (!(resrcs->hash = zhash_new ()))
-        goto ret;
-
-/* temporarily comment out to fix build */
-/*    if ((nodelist = getenv ("SLURM_NODELIST"))) {*/
-/*        hostset = hostset_create (nodelist);*/
-/*        if (hostset)*/
-/*            slurm_job = true;*/
-/*    }*/
-
-    if (!(resrc = resrc_add_resource (resrcs->hash, NULL, r)))
-        goto ret;
-
-    /* add the root resource to the table under a unique key */
-    zhash_insert (resrcs->hash, "head", resrc);
+    if ((r = rdl_resource_get (rdl, resource)))
+        resrc = resrc_add_resource (NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
 ret:
-    return resrcs;
-}
-
-resrc_t *resrc_lookup (resources_t *resrcs, char *resrc_id)
-{
-    if (resrcs && resrcs->hash)
-        return (zhash_lookup (resrcs->hash, resrc_id));
-    return NULL;
-}
-
-void resrc_destroy_resources (resources_t *resrcs)
-{
-    if (resrcs && resrcs->hash) {
-        zhash_destroy (&(resrcs->hash));
-        free (resrcs);
-    }
+    return resrc;
 }
 
 int resrc_to_json (JSON o, resrc_t *resrc)
@@ -411,8 +339,8 @@ void resrc_print_resource (resrc_t *resrc)
 
     if (resrc) {
         uuid_unparse (resrc->uuid, uuid);
-        printf ("resrc type:%s, name:%s, id:%ld, state: %s, uuid: %s, size: %lu,"
-                " avail: %lu",
+        printf ("resrc type:%s, name:%s, id:%"PRId64", state: %s, uuid: %s, "
+                "size: %lu, avail: %lu",
                 resrc->type, resrc->name, resrc->id, resrc_state (resrc), uuid,
                 resrc->size, resrc->available);
         if (zhash_size (resrc->properties)) {
@@ -454,37 +382,17 @@ void resrc_print_resource (resrc_t *resrc)
     }
 }
 
-void resrc_print_resources (resources_t *resrcs)
-{
-    char *resrc_id = NULL;
-    resrc_t *resrc = NULL;
-    zlist_t *resrc_ids = NULL;
-
-    if (!resrcs || !resrcs->hash) {
-        return;
-    }
-
-    resrc_ids = zhash_keys (resrcs->hash);
-    resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        resrc_print_resource (resrc);
-        resrc_id = zlist_next (resrc_ids);
-    }
-    zlist_destroy (&resrc_ids);
-}
-
 /*
  * Finds if a resrc_t *sample matches with resrc_t *resrc in terms of walltime
  *
  * Note: this function is working on a resource that is already AVAILABLE.
- * Therefore it is sufficient if the walltime fits before the earliest starttime 
+ * Therefore it is sufficient if the walltime fits before the earliest starttime
  * of a reserved job.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 {
     bool rc = false;
-    
+
     int64_t time_now = epochtime ();
     int64_t jstarttime;
     int64_t jendtime;
@@ -495,12 +403,12 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 
     char *json_str_walltime = NULL;
     char *json_str_window = NULL;
-    
+
     /* retrieve first element of twindow from request sample */
     json_str_walltime = zhash_first (sample->twindow);
     if (!json_str_walltime)
         return true;
-    
+
     /* retrieve the walltime information from request sample */
     JSON jw = Jfromstr (json_str_walltime);
     if (!(Jget_int64 (jw, "walltime", &jwalltime))) {
@@ -525,10 +433,10 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     /* Iterate over resrc's twindow and find if it sample fits from now */
     json_str_window = zhash_first (resrc->twindow);
     while (json_str_window) {
-        
+
         JSON rw = Jfromstr (json_str_window);
         Jget_int64 (rw, "starttime", &rstarttime);
-        
+
         if (rstarttime > time_now)
             tstarttime = tstarttime < rstarttime ? tstarttime : rstarttime;
 
@@ -536,7 +444,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
     }
 
     rc = jendtime <= tstarttime ? true : false;
-    
+
     return rc;
 }
 
@@ -588,38 +496,6 @@ ret:
     return rc;
 }
 
-#if 0
-int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
-                                 JSON req_res, bool available)
-{
-    char *resrc_id = NULL;
-    const char *type = NULL;
-    int nfound = 0;
-    resrc_t *resrc;
-    zlist_t *resrc_ids;
-
-    if (!resrcs || !found || !req_res) {
-        goto ret;
-    }
-
-    Jget_str (req_res, "type", &type);
-    resrc_ids = zhash_keys (resrcs->hash);
-    resrc_id = zlist_first (resrc_ids);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        if (resrc_match_resource (resrc, type, available)) {
-            zlist_append (found->list, strdup (resrc_id));
-            nfound++;
-        }
-        resrc_id = zlist_next (resrc_ids);
-    }
-
-    zlist_destroy (&resrc_ids);
-ret:
-    return nfound;
-}
-#endif
-
 void resrc_stage_resrc (resrc_t *resrc, size_t size)
 {
     if (resrc)
@@ -642,53 +518,30 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        asprintf(&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
         zhash_freefn (resrc->allocs, id_ptr, free);
+        free (id_ptr);
         resrc->available -= resrc->staged;
         resrc->staged = 0;
         resrc->state = RESOURCE_ALLOCATED;
-        
+
         /* add walltime */
-        j = Jnew ();    
+        j = Jnew ();
         Jadd_int64 (j, "starttime", now);
         Jadd_int64 (j, "endtime", now + walltime);
-        asprintf (&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j));
         Jput (j);
-    
+
         rc = 0;
         free (id_ptr);
     }
 ret:
     return rc;
 }
-
-int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                              int64_t job_id, int64_t walltime)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !resrc_ids->list || !job_id) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_allocate_resource (resrc, job_id, walltime);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-ret:
-    return rc;
-}
-
-
 
 /*
  * Just like resrc_allocate_resource() above, but for a reservation
@@ -703,7 +556,7 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        asprintf(&id_ptr, "%ld", job_id);
+        id_ptr = xasprintf("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
@@ -720,52 +573,6 @@ ret:
     return rc;
 }
 
-int resrc_reserve_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t job_id)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !job_id) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_reserve_resource (resrc, job_id);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-ret:
-    return rc;
-}
-
-JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids)
-{
-    char *resrc_id;
-    JSON ja;
-    JSON o = NULL;
-    resrc_t *resrc;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids) {
-        goto ret;
-    }
-
-    o = Jnew ();
-    ja = Jnew_ar ();
-    resrc_id = zlist_first (resrc_ids->list);
-    while (resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        Jadd_ar_str (ja, resrc->name);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-    json_object_object_add (o, "resrcs", ja);
-ret:
-    return o;
-}
-
 int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
 {
     char *id_ptr = NULL;
@@ -777,7 +584,7 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
         goto ret;
     }
 
-    asprintf (&id_ptr, "%ld", rel_job);
+    id_ptr = xasprintf ("%"PRId64"", rel_job);
     size_ptr = zhash_lookup (resrc->allocs, id_ptr);
     if (size_ptr) {
         resrc->available += *size_ptr;
@@ -793,90 +600,6 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
     free (id_ptr);
 ret:
     return rc;
-}
-
-int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t rel_job)
-{
-    char *resrc_id;
-    resrc_t *resrc;
-    int rc = 0;
-
-    if (!resrcs || !resrcs->hash || !resrc_ids || !rel_job) {
-        rc = -1;
-        goto ret;
-    }
-
-    resrc_id = zlist_first (resrc_ids->list);
-    while (!rc && resrc_id) {
-        resrc = zhash_lookup (resrcs->hash, resrc_id);
-        rc = resrc_release_resource (resrc, rel_job);
-        resrc_id = zlist_next (resrc_ids->list);
-    }
-ret:
-    return rc;
-}
-
-resrc_t *resrc_new_from_json (JSON o)
-{
-    JSON jpropso = NULL; /* json properties object */
-    JSON jtagso = NULL;  /* json tags object */
-    const char *name = NULL;
-    const char *type = NULL;
-    int64_t ssize;
-    json_object_iter iter;
-    resrc_t *resrc = NULL;
-    size_t size = 1;
-    int64_t jduration;
-
-    if (!Jget_str (o, "type", &type))
-        goto ret;
-    Jget_str (o, "name", &name);
-    if (Jget_int64 (o, "size", &ssize))
-        size = (size_t) ssize;
-    else
-        size = 1;
-
-    resrc = resrc_new_resource (type, name, -1, 0, size);
-    if (resrc) {
-        jpropso = Jobj_get (o, "properties");
-        if (jpropso) {
-            JSON jpropo;        /* json property object */
-            char *property;
-
-            json_object_object_foreachC (jpropso, iter) {
-                jpropo = Jget (iter.val);
-                property = strdup (json_object_get_string (jpropo));
-                zhash_insert (resrc->properties, iter.key, property);
-                zhash_freefn (resrc->properties, iter.key, free);
-                Jput (jpropo);
-            }
-        }
-
-        jtagso = Jobj_get (o, "tags");
-        if (jtagso) {
-            JSON jtago;        /* json tag object */
-            char *tag;
-
-            json_object_object_foreachC (jtagso, iter) {
-                jtago = Jget (iter.val);
-                tag = strdup (json_object_get_string (jtago));
-                zhash_insert (resrc->tags, iter.key, tag);
-                zhash_freefn (resrc->tags, iter.key, free);
-                Jput (jtago);
-            }
-        }
-
-        if (Jget_int64 (o, "walltime", &jduration)) {
-            JSON w = Jnew ();
-            Jadd_int64 (w, "walltime", jduration);
-            zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
-            Jput (w);
-        } 
-        
-    }
-ret:
-    return resrc;
 }
 
 

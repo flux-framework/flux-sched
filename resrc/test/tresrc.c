@@ -106,7 +106,6 @@ int main (int argc, char *argv[])
     JSON memory = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
-    resources_t *resrcs = NULL;
     resrc_t *resrc = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *deserialized_trees = NULL;
@@ -116,7 +115,7 @@ int main (int argc, char *argv[])
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    plan (14);
+    plan (13);
     if (filename == NULL || *filename == '\0')
         filename = getenv ("TESTRESRC_INPUT_FILE");
 
@@ -125,21 +124,10 @@ int main (int argc, char *argv[])
     ok ((access (filename, R_OK) == 0), "resoure file readable");
 
     init_time();
-    resrcs = resrc_generate_resources (filename, "default");
+    resrc = resrc_generate_resources (filename, "default");
 
-    ok ((resrcs != NULL), "resource generation took: %lf",
+    ok ((resrc != NULL), "resource generation took: %lf",
         ((double)get_time())/1000000);
-    if (!resrcs)
-        goto ret;
-
-    if (verbose) {
-        printf ("Listing flat resources:\n");
-        resrc_print_resources (resrcs);
-        printf ("End of flat resources\n");
-    }
-
-    resrc = resrc_lookup (resrcs, "head");
-    ok ((resrc != NULL), "tree head found");
     if (!resrc)
         goto ret;
 
@@ -268,7 +256,7 @@ int main (int argc, char *argv[])
 
     if (verbose) {
         printf ("Allocated and reserved resources\n");
-        resrc_print_resources (resrcs);
+        resrc_tree_print (resrc_tree);
     }
 
     init_time();
@@ -278,14 +266,14 @@ int main (int argc, char *argv[])
 
     if (verbose) {
         printf ("Same resources without job 1\n");
-        resrc_print_resources (resrcs);
+        resrc_tree_print (resrc_tree);
     }
 
     init_time();
     resrc_reqst_destroy (resrc_reqst);
     resrc_tree_list_destroy (deserialized_trees, true);
     resrc_tree_list_destroy (found_trees, false);
-    resrc_destroy_resources (resrcs);
+    resrc_tree_destroy (resrc_tree, true);
     printf("destroy took: %lf\n", ((double)get_time())/1000000);
 ret:
     done_testing ();

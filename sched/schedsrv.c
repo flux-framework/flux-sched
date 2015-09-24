@@ -56,7 +56,7 @@
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t h, void *arg);
 #endif
-static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w,
                           const flux_msg_t *msg, void *arg);
 static int job_status_cb (JSON jcb, void *arg, int errnum);
 
@@ -66,7 +66,7 @@ static int job_status_cb (JSON jcb, void *arg, int errnum);
  *                                                                            *
  ******************************************************************************/
 
-typedef resrc_tree_list_t *(*find_f) (flux_t h, resources_t *resrcs,
+typedef resrc_tree_list_t *(*find_f) (flux_t h, resrc_t *resrc,
                                       resrc_reqst_t *resrc_reqst);
 
 typedef resrc_tree_list_t *(*sel_f) (flux_t h, resrc_tree_list_t *resrc_trees,
@@ -79,7 +79,7 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
-    resources_t  *root_resrcs;        /* resrcs object pointing to the root */
+    resrc_t      *root_resrc;         /* resrc object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
@@ -104,7 +104,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
-    resrc_destroy_resources ((ctx->rctx.root_resrcs));
+    resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
     dlclose (ctx->sops.dso);
 }
@@ -121,7 +121,7 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
             oom ();
-        ctx->rctx.root_resrcs = NULL;
+        ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
         ctx->sops.dso = NULL;
         ctx->sops.find_resources = NULL;
@@ -366,7 +366,7 @@ static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
     else
         ctx->rctx.root_uri = xstrdup ("default");
 
-    if (!(ctx->rctx.root_resrcs = resrc_generate_resources (path,
+    if (!(ctx->rctx.root_resrc = resrc_generate_resources (path,
                                                             ctx->rctx.root_uri)))
         goto done;
     flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
@@ -386,7 +386,7 @@ done:
 
 static struct flux_msghandler htab[] = {
     { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb},
-      FLUX_MSGHANDLER_TABLE_END
+    FLUX_MSGHANDLER_TABLE_END
 };
 
 /*
@@ -484,13 +484,13 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     JSON ro = Jnew_ar ();
 
     if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
-        flux_log (h, LOG_ERR, "%ld resource serialization failed: %s",
+        flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
                   job->lwj_id, strerror (errno));
         goto done;
     }
     Jadd_obj (jcb, JSC_RDL, ro);
     if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
-        flux_log (h, LOG_ERR, "error jsc udpate: %ld (%s)", job->lwj_id,
+        flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
     }
@@ -507,7 +507,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     }
     Jput (arr);
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
-        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
+        flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
         goto done;
     }
@@ -552,13 +552,13 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
     int rc = -1;
 
     if ((update_state (h, job->lwj_id, job->state, J_RUNREQUEST)) != 0) {
-        flux_log (h, LOG_ERR, "failed to update the state of job %ld",
+        flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
     } else {
         char *topic = NULL;
         flux_msg_t *msg = NULL;
 
-        if (asprintf (&topic, "wrexec.run.%ld", job->lwj_id) < 0) {
+        if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else if (!(msg = flux_event_encode (topic, NULL))
@@ -566,7 +566,7 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
             flux_log (h, LOG_ERR, "%s: error sending event: %s",
                       __FUNCTION__, strerror (errno));
         } else {
-            flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
             flux_msg_destroy (msg);
             rc = 0;
         }
@@ -642,11 +642,11 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     if (!resrc_reqst)
         goto done;
 
-    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrcs,
+    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
                                                  resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
-        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",
-                  nnodes, job->lwj_id, job->req->nnodes);
+        flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for lwj.%"PRId64", "
+                  "reqrd: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
         if ((nnodes < job->req->nnodes) && !job->reserve)
             goto done;
 
@@ -654,24 +654,25 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
-                resrc_tree_list_allocate (selected_trees, job->lwj_id, job->req->walltime);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id,
+                                          job->req->walltime);
                 /* Scheduler specific job transition */
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;
                 if (req_tpexec_allocate (ctx, job) != 0) {
                     flux_log (h, LOG_ERR,
-                              "failed to request allocate for job %ld",
+                              "failed to request allocate for job %"PRId64"",
                               job->lwj_id);
                     goto done;
                 }
-                flux_log (h, LOG_DEBUG,
-                          "%ld nodes selected for lwj.%ld, reqrd: %ld",
+                flux_log (h, LOG_DEBUG, "%"PRId64" nodes selected for "
+                          "lwj.%"PRId64", reqrd: %"PRId64"",
                           nnodes, job->lwj_id, job->req->nnodes);
             } else if (job->reserve) {
                 resrc_tree_list_reserve (selected_trees, job->lwj_id);
-                flux_log (h, LOG_DEBUG,
-                          "%ld nodes reserved for lwj.%ld's reqrd %ld",
-                          nnodes, job->lwj_id, job->req->nnodes);
+                flux_log (h, LOG_DEBUG, "%"PRId64" nodes reserved for lwj."
+                          "%"PRId64"'s reqrd %"PRId64"", nnodes, job->lwj_id,
+                          job->req->nnodes);
             }
         }
     }
@@ -734,8 +735,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
     flux_t h = ctx->h;
     job_state_t oldstate = job->state;
 
-    flux_log (h, LOG_DEBUG, "attempting job %ld state change from %s to %s",
-              job->lwj_id, jsc_job_num2state (oldstate),
+    flux_log (h, LOG_DEBUG, "attempting job %"PRId64" state change from "
+              "%s to %s", job->lwj_id, jsc_job_num2state (oldstate),
               jsc_job_num2state (newstate));
 
     switch (oldstate) {
@@ -778,8 +779,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
                 || trans (J_CANCELLED, newstate, &(job->state)));
         q_move_to_cqueue (ctx, job);
         if ((resrc_tree_list_release (job->resrc_trees, job->lwj_id))) {
-            flux_log (h, LOG_ERR, "%s: failed to release resources for job %ld",
-                      __FUNCTION__, job->lwj_id);
+            flux_log (h, LOG_ERR, "%s: failed to release resources for job "
+                      "%"PRId64"", __FUNCTION__, job->lwj_id);
         } else {
             flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
 
@@ -812,7 +813,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
     return 0;
 
 bad_transition:
-    flux_log (h, LOG_ERR, "job %ld bad state transition from %s to %s",
+    flux_log (h, LOG_ERR, "job %"PRId64" bad state transition from %s to %s",
               job->lwj_id, jsc_job_num2state (oldstate),
               jsc_job_num2state (newstate));
     return -1;
@@ -822,7 +823,7 @@ bad_transition:
  * For now, the only resource event is raised when a job releases its
  * RDL allocation.
  */
-static void res_event_cb (flux_t h, flux_msg_watcher_t *w, 
+static void res_event_cb (flux_t h, flux_msg_watcher_t *w,
                           const flux_msg_t *msg, void *arg)
 {
     schedule_jobs (getctx ((flux_t)arg));

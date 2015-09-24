@@ -11,8 +11,6 @@
 
 #define TIME_MAX UINT64_MAX
 
-typedef struct resource_list resource_list_t;
-typedef struct resources resources_t;
 typedef struct resrc resrc_t;
 typedef struct resrc_tree resrc_tree_t;
 
@@ -58,31 +56,6 @@ char* resrc_state (resrc_t *resrc);
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
 
 /*
- * Create a list of resource keys
- */
-resource_list_t *resrc_new_id_list ();
-
-/*
- * Destroy a list of resource keys
- */
-void resrc_id_list_destroy (resource_list_t *resrc_ids);
-
-/*
- * Get the first element in the resource id list
- */
-char *resrc_list_first (resource_list_t *rl);
-
-/*
- * Get the next element in the resource id list
- */
-char *resrc_list_next ();
-
-/*
- * Get the number of elements in the resource id list
- */
-size_t resrc_list_size ();
-
-/*
  * Create a new resource object
  */
 resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
@@ -99,20 +72,15 @@ resrc_t *resrc_copy_resource (resrc_t *resrc);
 void resrc_resource_destroy (void *object);
 
 /*
- * Create a hash table of all resources described by a configuration
- * file
+ * Create a resrc_t object from a json object
  */
-resources_t *resrc_generate_resources (const char *path, char*resource);
+resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical);
 
 /*
- * Lookup a resource by id
+ * Return the head of a resource tree of all resources described by a
+ * configuration file
  */
-resrc_t *resrc_lookup (resources_t *resrcs, char *resrc_id);
-
-/*
- * De-allocate the resources handle
- */
-void resrc_destroy_resources (resources_t *resrcs);
+resrc_t *resrc_generate_resources (const char *path, char*resource);
 
 /*
  * Add the input resource to the json object
@@ -125,11 +93,6 @@ int resrc_to_json (JSON o, resrc_t *resrc);
 void resrc_print_resource (resrc_t *resrc);
 
 /*
- * Provide a listing to stdout of every resource in hash table
- */
-void resrc_print_resources (resources_t *resrcs);
-
-/*
  * Determine whether a specific resource has the required characteristics
  * Inputs:  resrc     - the specific resource under evaluation
  *          sample    - sample resource with the required characteristics
@@ -138,20 +101,6 @@ void resrc_print_resources (resources_t *resrcs);
  * Returns: true if the input resource has the required characteristics
  */
 bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available);
-
-/*
- * Search a table of resources for the requested type
- * Inputs:  resrcs    - hash table of all resources
- *          found     - running list of keys to previously found resources
- *          req_res   - requested resource
- *          available - when true, consider only idle resources
- *                      otherwise find all possible resources matching type
- * Returns: the number of matching resources found
- *          found     - any resources found are added to this list
- *
- */
-int resrc_search_flat_resources (resources_t *resrcs, resource_list_t *found,
-                                 JSON req_res, bool available);
 
 /*
  * Stage size elements of a resource
@@ -164,27 +113,9 @@ void resrc_stage_resrc(resrc_t *resrc, size_t size);
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime);
 
 /*
- * Allocate a set of resources to a job
- */
-int resrc_allocate_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                              int64_t job_id, int64_t walltime);
-
-/*
  * Reserve a resource for a job
  */
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id);
-
-/*
- * Reserve a set of resources to a job
- */
-int resrc_reserve_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t job_id);
-
-/*
- * Create a json object containing the resources present in the input
- * list
- */
-JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids);
 
 /*
  * Remove a job allocation from a resource
@@ -192,17 +123,6 @@ JSON resrc_id_serialize (resources_t *resrcs, resource_list_t *resrc_ids);
 int resrc_release_resource (resrc_t *resrc, int64_t rel_job);
 
 /*
- * Remove a job allocation from a set of resources
- */
-int resrc_release_resources (resources_t *resrcs, resource_list_t *resrc_ids,
-                             int64_t rel_job);
-
-/*
- * Create a resrc_t object from a json object
- */
-resrc_t *resrc_new_from_json (JSON o);
-
-/* 
  * Get epoch time
  */
 static inline int64_t epochtime ()
