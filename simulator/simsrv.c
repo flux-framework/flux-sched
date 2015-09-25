@@ -203,7 +203,7 @@ static int handle_next_event (ctx_t *ctx)
 
 // Recevied a request to join the simulation ("sim.join")
 static void join_cb (flux_t h,
-                     flux_msg_watcher_t *w,
+                     flux_msg_handler_t *w,
                      const flux_msg_t *msg,
                      void *arg)
 {
@@ -329,7 +329,7 @@ static void copy_new_state_data (ctx_t *ctx,
 }
 
 static void rdl_update_cb (flux_t h,
-                           flux_msg_watcher_t *w,
+                           flux_msg_handler_t *w,
                            const flux_msg_t *msg,
                            void *arg)
 {
@@ -356,7 +356,7 @@ static void rdl_update_cb (flux_t h,
 
 // Recevied a reply to a trigger ("sim.reply")
 static void reply_cb (flux_t h,
-                      flux_msg_watcher_t *w,
+                      flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
@@ -391,7 +391,7 @@ static void reply_cb (flux_t h,
 }
 
 static void alive_cb (flux_t h,
-                      flux_msg_watcher_t *w,
+                      flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
@@ -411,7 +411,7 @@ static void alive_cb (flux_t h,
     flux_log (h, LOG_DEBUG, "sending start event again");
 }
 
-static struct flux_msghandler htab[] = {
+static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb},
     {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb},
     {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb},
@@ -450,8 +450,8 @@ int mod_main (flux_t h, int argc, char **argv)
         return -1;
     }
 
-    if (flux_msg_watcher_addvec (h, htab, ctx) < 0) {
-        flux_log (h, LOG_ERR, "flux_msg_watcher_add: %s", strerror (errno));
+    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+        flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
 

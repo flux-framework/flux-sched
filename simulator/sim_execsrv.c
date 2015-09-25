@@ -509,7 +509,7 @@ static int handle_queued_events (ctx_t *ctx)
 
 // Received an event that a simulation is starting
 static void start_cb (flux_t h,
-                      flux_msg_watcher_t *w,
+                      flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
@@ -528,7 +528,7 @@ static void start_cb (flux_t h,
 }
 
 static void rdl_update_cb (flux_t h,
-                           flux_msg_watcher_t *w,
+                           flux_msg_handler_t *w,
                            const flux_msg_t *msg,
                            void *arg)
 {
@@ -562,7 +562,7 @@ static void rdl_update_cb (flux_t h,
 
 // Handle trigger requests from the sim module ("sim_exec.trigger")
 static void trigger_cb (flux_t h,
-                        flux_msg_watcher_t *w,
+                        flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
 {
@@ -602,7 +602,7 @@ static void trigger_cb (flux_t h,
 }
 
 static void run_cb (flux_t h,
-                    flux_msg_watcher_t *w,
+                    flux_msg_handler_t *w,
                     const flux_msg_t *msg,
                     void *arg)
 {
@@ -624,7 +624,7 @@ static void run_cb (flux_t h,
     flux_log (h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 }
 
-static struct flux_msghandler htab[] = {
+static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
     {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb},
@@ -649,8 +649,8 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_watcher_addvec (h, htab, ctx) < 0) {
-        flux_log (h, LOG_ERR, "flux_msg_watcher_add: %s", strerror (errno));
+    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+        flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
 

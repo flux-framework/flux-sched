@@ -156,14 +156,14 @@ void remove_job_resources_from_rdl (struct rdl *rdl,
                                     flux_lwj_t *job);
 
 void trigger_cb (flux_t h,
-                 flux_msg_watcher_t *w,
+                 flux_msg_handler_t *w,
                  const flux_msg_t *msg,
                  void *arg);
 void handle_kvs_queue (ctx_t *ctx);
 
 int queue_kvs_cb (const char *key, const char *val, void *arg, int errnum);
 void newlwj_rpc (flux_t h,
-                 flux_msg_watcher_t *w,
+                 flux_msg_handler_t *w,
                  const flux_msg_t *msg,
                  void *arg);
 int newlwj_cb (const char *key, int64_t val, void *arg, int errnum);
@@ -247,14 +247,14 @@ bool should_run_schedule_loop (ctx_t *ctx, int time);
 void end_schedule_loop (ctx_t *ctx);
 
 void start_cb (flux_t h,
-               flux_msg_watcher_t *w,
+               flux_msg_handler_t *w,
                const flux_msg_t *msg,
                void *arg);
 
 int init_and_start_scheduler (flux_t h,
                               ctx_t *ctx,
                               zhash_t *args,
-                              struct flux_msghandler *tab);
+                              struct flux_msg_handler_spec *tab);
 
 int schedule_job (ctx_t *ctx,
                   struct rdl *rdl,

@@ -103,7 +103,7 @@ int schedule_jobs (ctx_t *ctx, double sim_time)
     return rc;
 }
 
-static struct flux_msghandler htab[] = {
+static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch", newlwj_rpc},
