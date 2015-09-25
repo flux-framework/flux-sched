@@ -288,7 +288,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 
 // Received an event that a simulation is starting
 static void start_cb (flux_t h,
-                      flux_msg_watcher_t *w,
+                      flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
@@ -310,7 +310,7 @@ static void start_cb (flux_t h,
 
 // Handle trigger requests from the sim module ("submit.trigger")
 static void trigger_cb (flux_t h,
-                        flux_msg_watcher_t *w,
+                        flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
 {
@@ -341,7 +341,7 @@ static void trigger_cb (flux_t h,
     Jput (o);
 }
 
-static struct flux_msghandler htab[] = {
+static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
     {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb},
     FLUX_MSGHANDLER_TABLE_END,
@@ -372,8 +372,8 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_watcher_addvec (h, htab, NULL) < 0) {
-        flux_log (h, LOG_ERR, "flux_msg_watcher_addvec: %s", strerror (errno));
+    if (flux_msg_handler_addvec (h, htab, NULL) < 0) {
+        flux_log (h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         return -1;
     }
 

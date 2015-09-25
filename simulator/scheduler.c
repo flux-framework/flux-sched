@@ -169,7 +169,7 @@ void remove_job_resources_from_rdl (struct rdl *rdl,
 }
 
 void trigger_cb (flux_t h,
-                 flux_msg_watcher_t *w,
+                 flux_msg_handler_t *w,
                  const flux_msg_t *msg,
                  void *arg)
 {
@@ -284,7 +284,7 @@ int queue_kvs_cb (const char *key, const char *val, void *arg, int errnum)
 }
 
 void newlwj_rpc (flux_t h,
-                 flux_msg_watcher_t *w,
+                 flux_msg_handler_t *w,
                  const flux_msg_t *msg,
                  void *arg)
 {
@@ -1668,7 +1668,7 @@ void end_schedule_loop (ctx_t *ctx)
 
 // Received an event that a simulation is starting
 void start_cb (flux_t h,
-               flux_msg_watcher_t *w,
+               flux_msg_handler_t *w,
                const flux_msg_t *msg,
                void *arg)
 {
@@ -1705,7 +1705,7 @@ void start_cb (flux_t h,
 int init_and_start_scheduler (flux_t h,
                               ctx_t *ctx,
                               zhash_t *args,
-                              struct flux_msghandler *tab)
+                              struct flux_msg_handler_spec *tab)
 {
     int rc = 0;
     char *path;
@@ -1769,8 +1769,8 @@ int init_and_start_scheduler (flux_t h,
         rc = -1;
         goto ret;
     }
-    if (flux_msg_watcher_addvec (h, tab, NULL) < 0) {
-        flux_log (h, LOG_ERR, "flux_msg_watcher_addvec: %s", strerror (errno));
+    if (flux_msg_handler_addvec (h, tab, NULL) < 0) {
+        flux_log (h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         return -1;
     }
 
@@ -1805,7 +1805,7 @@ skip_for_sim:
     rdllib_close (rdllib);
 
 ret:
-    flux_msg_watcher_delvec (h, tab);
+    flux_msg_handler_delvec (tab);
     return rc;
 }
 
