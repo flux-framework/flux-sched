@@ -37,6 +37,7 @@
 
 struct resrc {
     char *type;
+    char *path;
     char *name;
     int64_t id;
     uuid_t uuid;
@@ -62,6 +63,13 @@ char *resrc_type (resrc_t *resrc)
 {
     if (resrc)
         return resrc->type;
+    return NULL;
+}
+
+char *resrc_path (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->path;
     return NULL;
 }
 
@@ -119,12 +127,15 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
     return NULL;
 }
 
-resrc_t *resrc_new_resource (const char *type, const char *name, int64_t id,
-                             uuid_t uuid, size_t size)
+resrc_t *resrc_new_resource (const char *type, const char *path,
+                             const char *name, int64_t id, uuid_t uuid,
+                             size_t size)
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = strdup (type);
+        if (path)
+            resrc->path = strdup (path);
         if (name)
             resrc->name = strdup (name);
         resrc->id = id;
@@ -152,6 +163,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
 
     if (new_resrc) {
         new_resrc->type = strdup (resrc->type);
+        new_resrc->path = strdup (resrc->path);
         new_resrc->name = strdup (resrc->name);
         new_resrc->id = resrc->id;
         uuid_copy (new_resrc->uuid, resrc->uuid);
@@ -175,6 +187,8 @@ void resrc_resource_destroy (void *object)
     if (resrc) {
         if (resrc->type)
             free (resrc->type);
+        if (resrc->path)
+            free (resrc->path);
         if (resrc->name)
             free (resrc->name);
         /* Don't worry about freeing resrc->phys_tree.  It will be
@@ -193,10 +207,11 @@ void resrc_resource_destroy (void *object)
 
 resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 {
+    JSON jhierarchyo = NULL; /* json hierarchy object */
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
-    char *name = NULL;
-    const char *jname = NULL;
+    const char *name = NULL;
+    const char *path = NULL;
     const char *tmp = NULL;
     const char *type = NULL;
     int64_t jduration;
@@ -210,18 +225,21 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
     if (!Jget_str (o, "type", &type))
         goto ret;
-    Jget_str (o, "name", &jname);
+    Jget_str (o, "name", &name);
     if (!(Jget_int64 (o, "id", &id)))
         id = 0;
-    name = xasprintf ("%s%"PRId64"", jname, id);
     if (Jget_str (o, "uuid", &tmp))
         uuid_parse (tmp, uuid);
     else
         uuid_clear(uuid);
     if (Jget_int64 (o, "size", &ssize))
         size = (size_t) ssize;
+    if (!Jget_str (o, "path", &path)) {
+        if ((jhierarchyo = Jobj_get (o, "hierarchy")))
+            Jget_str (jhierarchyo, "default", &path);
+    }
 
-    resrc = resrc_new_resource (type, name, id, uuid, size);
+    resrc = resrc_new_resource (type, path, name, id, uuid, size);
     if (resrc) {
         /*
          * Are we constructing the resource's physical tree?  If
@@ -277,7 +295,6 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
         }
     }
 ret:
-    free (name);
     return resrc;
 }
 
@@ -320,10 +337,16 @@ ret:
 
 int resrc_to_json (JSON o, resrc_t *resrc)
 {
+    char uuid[40];
     int rc = -1;
+
     if (resrc) {
         Jadd_str (o, "type", resrc_type (resrc));
+        Jadd_str (o, "path", resrc_path (resrc));
         Jadd_str (o, "name", resrc_name (resrc));
+        Jadd_int64 (o, "id", resrc_id (resrc));
+        uuid_unparse (resrc->uuid, uuid);
+        Jadd_str (o, "uuid", uuid);
         Jadd_int64 (o, "size", resrc_size (resrc));
         rc = 0;
     }
@@ -339,10 +362,10 @@ void resrc_print_resource (resrc_t *resrc)
 
     if (resrc) {
         uuid_unparse (resrc->uuid, uuid);
-        printf ("resrc type:%s, name:%s, id:%"PRId64", state: %s, uuid: %s, "
-                "size: %lu, avail: %lu",
-                resrc->type, resrc->name, resrc->id, resrc_state (resrc), uuid,
-                resrc->size, resrc->available);
+        printf ("resrc type: %s, path: %s, name: %s, id: %"PRId64", state: %s, "
+                "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
+                resrc->type, resrc->path, resrc->name, resrc->id,
+                resrc_state (resrc), uuid, resrc->size, resrc->available);
         if (zhash_size (resrc->properties)) {
             printf (", properties:");
             property = zhash_first (resrc->properties);
@@ -364,7 +387,7 @@ void resrc_print_resource (resrc_t *resrc)
             printf (", allocs");
             size_ptr = zhash_first (resrc->allocs);
             while (size_ptr) {
-                printf (", %s: %lu",
+                printf (", %s: %"PRIu64"",
                         (char *)zhash_cursor (resrc->allocs), *size_ptr);
                 size_ptr = zhash_next (resrc->allocs);
             }
@@ -373,7 +396,7 @@ void resrc_print_resource (resrc_t *resrc)
             printf (", reserved jobs");
             size_ptr = zhash_first (resrc->reservtns);
             while (size_ptr) {
-                printf (", %s: %lu",
+                printf (", %s: %"PRIu64"",
                         (char *)zhash_cursor (resrc->reservtns), *size_ptr);
                 size_ptr = zhash_next (resrc->reservtns);
             }
