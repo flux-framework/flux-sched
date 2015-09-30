@@ -78,42 +78,48 @@ sync_flux_jstat () {
     echo $p
 }
 
-wait_job () {
+timed_wait_job () {
     sess=$1
     jobid=$2
-    rm -f waitjob$sess.pid
-    (
-        # run this in a subshell
-        flux -x$tdir/sched waitjob -o waitout.$sess $jobid &
-        p=$!
-        cat <<HEREDOC > waitjob$sess.pid
-$p
-HEREDOC
-        wait $p
-        #rm -f output.$sess
-    )&
-    return 0
+    to=$3
+    rc=0
+    flux -x$tdir/sched waitjob -s wo.st.$sess -c wo.end.$sess $jobid &
+    while [ ! -f wo.st.$sess -a $to -ge 0 ]
+    do
+        sleep 1
+        to=`expr $to - 1`
+    done
+    if [ $to -lt 0 ]; then
+        rc=48
+    fi
+    return $rc
 }
 
-sync_wait_job () {
+timed_sync_wait_job () {
     sess=$1
-    while [ ! -f waitout.$sess ]
+    to=$2
+    rc=0
+    while [ ! -f wo.end.$sess -a $to -ge 0 ]
     do
-        sleep 2
+        sleep 1
+        to=`expr $to - 1`
     done
-    return 0
+    if [ $to -lt 0 ]; then
+        rc=48
+    fi
+    return $rc
 }
 
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
     flux module load ${schedsrv} rdl-conf=${rdlconf} &&
     run_flux_jstat 1 &&
     p=$( sync_flux_jstat 1) &&
-    wait_job 1 1 &&
+    timed_wait_job 1 1 5 &&
     flux -x$tdir/sched submit -N 4 -n 4 hostname &&
     cat >expected1 <<-EOF &&
 $trans
 EOF
-    sync_wait_job 1 &&
+    timed_sync_wait_job 1 5 &&
     cp output.1 output.1.cp &&
     kill -INT $p &&
     test_cmp expected1 output.1.cp 
@@ -122,7 +128,7 @@ EOF
 test_expect_success 'jsc: expected job-event sequence for multiple-job scheduling' '
     run_flux_jstat 2 &&
     p=$( sync_flux_jstat 2) &&
-    wait_job 2 6 &&
+    timed_wait_job 2 6 5 &&
     flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
     flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
     flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
@@ -135,7 +141,7 @@ $trans
 $trans
 $trans
 EOF
-    sync_wait_job 2 &&
+    timed_sync_wait_job 2 15 &&
     cp output.2 output.2.cp &&
     sort expected2 > expected2.sort &&
     sort output.2.cp > output.2.cp.sort &&
