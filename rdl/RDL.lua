@@ -27,7 +27,7 @@
 --
 -- First, load some useful modules:
 --
-local hostlist = require 'hostlist'
+local hostlist = require 'flux.hostlist'
 
 --
 -- Get the base path for this module to use in searching for
@@ -104,7 +104,7 @@ local function rdl_parse_environment ()
     ---
     -- Load extra functions defined in RDL/lib/?.lua
     ---
-    local glob = require 'posix'.glob
+    local glob = require 'flux.posix'.glob
     for _,path in pairs (glob (basepath .. "RDL/lib/*.lua")) do
         local f = assert (loadfile (path))
         local name = path:match("([^/]+)%.lua")
