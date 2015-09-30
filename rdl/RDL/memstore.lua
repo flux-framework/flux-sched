@@ -815,7 +815,7 @@ local function do_find (r, dst, args)
 end
 
 function MemStore:find (arg)
-    local hostlist = require 'hostlist'
+    local hostlist = require 'flux.hostlist'
     local a = self:resource_accumulator ()
 
     if arg.name then

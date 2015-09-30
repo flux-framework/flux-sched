@@ -24,7 +24,7 @@ tsched_lib: tsched_lib.c $(COMMON_OBJS) $(SCHEDULER_OBJS)
 
 check: tsched_lib
 	@export LUA_PATH="$(LUA_PATH);$(abs_topdir)/rdl/?.lua;$(FLUX_SRCDIR)/src/bindings/lua/?.lua;;;"; \
-	export LUA_CPATH="$(LUA_CPATH);$(abs_topdir)/rdl/?.so;$(FLUX_BUILDDIR)/src/bindings/lua/.libs/?.so;;;"; \
+	export LUA_CPATH="$(LUA_CPATH);$(abs_topdir)/rdl/?.so;$(FLUX_BUILDDIR)/src/bindings/lua/?.so;;;"; \
 	export TESTSIM_INPUT_FILE="$(TESTSIM_INPUT_FILE)"; \
 	./tsched_lib
 

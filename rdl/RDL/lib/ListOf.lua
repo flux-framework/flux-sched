@@ -1,4 +1,4 @@
-
+local hostlist = require 'flux.hostlist'
 local function ListOf (arg)
     local ids = arg.ids or arg.hostids
     local T = arg.type or arg[1]

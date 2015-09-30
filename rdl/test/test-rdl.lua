@@ -326,7 +326,7 @@ Hierarchy "default" {
     b = assert (rdl2:aggregate('default'))
     assert (equals (a, b), "Expected ".. i(a) .. " got ".. i(b))
 
-    local hl = require 'hostlist'.new ("bar[5-10]")
+    local hl = require 'flux.hostlist'.new ("bar[5-10]")
 
     for name in hl:next() do
         local id = tonumber (name:match ("[0-9]+$"))
@@ -363,7 +363,7 @@ Hierarchy "default" {
     assert_not_nil (rdl)
     assert_true (is_table (rdl))
 
-    local t0 = require 'timer'.new()
+    local t0 = require 'flux.timer'.new()
     local r = assert (rdl:find{ type = "core" })
     local delta = t0:get0()
     assert_true (delta < 0.02, "rdl_find took "..delta.." seconds")

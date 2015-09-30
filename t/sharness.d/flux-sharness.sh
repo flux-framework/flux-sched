@@ -70,7 +70,10 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux -M${tdir}/sched -C"${tdir}/rdl/?.so" -L"${tdir}/rdl/?.lua" start --size=${size} ${quiet} "sh $0 ${flags}"
+      exec flux -M${tdir}/sched \
+        -C"${tdir}/rdl/?.so;${FLUX_SOURCE_DIR}/src/bindings/lua/?.so" \
+        -L"${tdir}/rdl/?.lua;${FLUX_SOURCE_DIR}/src/bindings/lua/?.lua" \
+        start --size=${size} ${quiet} "sh $0 ${flags}"
 }
 
 mock_bootstrap_instance() {
@@ -120,12 +123,12 @@ TEST_NAME=$SHARNESS_TEST_NAME
 export TEST_NAME
 
 #  Test requirements for testsuite
-if ! lua -e 'require "posix"'; then
-    error "failed to find lua posix module in path"
-fi
-if ! lua -e 'require "hostlist"'; then
-    error "failed to find lua posix module in path"
-fi
+#if ! lua -e 'require "flux.posix"'; then
+#    error "failed to find lua posix module in path"
+#fi
+#if ! lua -e 'require "flux.hostlist"'; then
+#    error "failed to find lua posix module in path"
+#fi
 
 
 # vi: ts=4 sw=4 expandtab
