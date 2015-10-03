@@ -5,8 +5,8 @@ CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
 LIBS = $(FLUX_LIBS) $(RDL_LIBS) $(KVS_LIBS)
 ALL_LIBS=$(LIBS) $(SIM_LIBS)
 
-CONF=../conf/hype.lua
-JOBDATA=job_data/hype-large.sorted.csv
+CONF=../conf/hype-io.lua
+JOBDATA=job_data/hype.csv
 
 COMMON_OBJS = xzmalloc.o log.o jsonutil.o
 
@@ -42,7 +42,7 @@ unload:
 sim_sched_%: sim_sched_%.so load
 	$(FLUX) module load ./$@.so rdl-conf=$(CONF)
 sched: load
-	$(FLUX) module load ../sched/schedsrv.so rdl-conf=$(CONF) in-sim=true
+	$(FLUX) module load ../sched/schedsrv.so rdl-conf=$(CONF) in-sim=true plugin=sched.plugin1 backfill=easy
 
 check: all
 	for subdir in $(SUBDIRS); do make -C $$subdir $@; done
@@ -57,7 +57,7 @@ EXEC_MOD=--module ./sim_execsrv.so
 SIM_MOD=--module ./simsrv.so --modopt sim:save-path=${SAVEPATH}
 SUBMIT_MOD=--module ./submitsrv.so --modopt submit:job-csv=${JOBDATA}
 #SCHED_MOD=--module ./${SCHED} --modopt sim_sched:rdl-conf=${CONF}
-SCHED_MOD=--module ./${SCHED} --modopt sched:rdl-conf=${CONF} --modopt sched:in-sim=true
+SCHED_MOD=--module ./${SCHED} --modopt sched:rdl-conf=${CONF} --modopt sched:in-sim=true --modopt sched:plugin=sched.plugin1 --modopt sched:backfill=easy
 BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD} --boot-method=SINGLE
 BROKER=$(FLUX_BUILDDIR)/src/broker/.libs/flux-broker
 

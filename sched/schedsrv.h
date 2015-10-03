@@ -58,9 +58,10 @@ typedef struct {
     int64_t     lwj_id;  /*!< LWJ id */
     job_state_t state;   /*!< current job state */
     bool        reserve; /*!< reserve resources for job if true */
+    bool        reserved; // Job has resources reserved for it
     flux_res_t *req;     /*!< resources requested by this LWJ */
     resrc_tree_list_t *resrc_trees; /*!< resources allocated to this LWJ */
-
+    int64_t starttime;
 } flux_lwj_t;
 
 #endif /* SCHEDSRV_H */

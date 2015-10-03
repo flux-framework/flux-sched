@@ -11,7 +11,7 @@ all: $(BUILD)
 
 schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS) $(SIM_LIBS)
-schedplugin1.so: schedplugin1.o xzmalloc.o log.o jsonutil.o
+schedplugin%.so: schedplugin%.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 flux-waitjob: flux-waitjob.o log.o jsonutil.o
 	$(CC) -o $@ $^ $(LIBS)
