@@ -9,7 +9,7 @@
 #include "src/common/libutil/shortjson.h"
 #include "time.h"
 
-#define TIME_MAX UINT64_MAX
+#define TIME_MAX INT64_MAX
 
 typedef struct resrc resrc_t;
 typedef struct resrc_tree resrc_tree_t;
@@ -50,6 +50,18 @@ int64_t resrc_id (resrc_t *resrc);
  */
 size_t resrc_size (resrc_t *resrc);
 
+/*
+ * Return the amount of the resource available at the given time
+ */
+size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
+
+/*
+ * Return the least amount of the resource available during the time
+ * range
+ */
+size_t resrc_available_during_range (resrc_t *resrc,
+                                     int64_t range_start_time,
+                                     int64_t range_end_time);
 /*
  * Return the resource state as a string
  */
@@ -116,12 +128,14 @@ void resrc_stage_resrc(resrc_t *resrc, size_t size);
 /*
  * Allocate a resource to a job
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime);
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id,
+                             int64_t time_now, int64_t walltime);
 
 /*
  * Reserve a resource for a job
  */
-int resrc_reserve_resource (resrc_t *resrc, int64_t job_id);
+int resrc_reserve_resource (resrc_t *resrc, int64_t job_id,
+                            int64_t time_now, int64_t walltime);
 
 /*
  * Remove a job allocation from a resource

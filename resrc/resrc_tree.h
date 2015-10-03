@@ -70,12 +70,14 @@ resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent);
 /*
  * Allocate all the resources in a resource tree
  */
-int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime);
+int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
+                         int64_t time_now, int64_t walltime);
 
 /*
  * Reserve all the resources in a resource tree
  */
-int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id);
+int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
+                        int64_t time_now, int64_t walltime);
 
 /*
  * Release all the resources in a resource tree
@@ -139,12 +141,14 @@ resrc_tree_list_t *resrc_tree_list_deserialize (JSON o);
 /*
  * Allocate all the resources in a list of resource trees
  */
-int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime);
+int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
+                              int64_t time_now, int64_t walltime);
 
 /*
  * Reserve all the resources in a list of resource trees
  */
-int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id);
+int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id,
+                             int64_t time_now, int64_t walltime);
 
 /*
  * Release all the resources in a list of resource trees

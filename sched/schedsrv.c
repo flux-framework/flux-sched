@@ -554,7 +554,6 @@ static void trigger_cb (flux_t h,
     bool sched_loop;
     const char *json_str = NULL;
     JSON o = NULL;
-    sim_state_t *sim_state = NULL;
     ssrvctx_t *ctx = getctx (h);
 
     if (flux_request_decode (msg, NULL, &json_str) < 0 || json_str == NULL
@@ -565,7 +564,7 @@ static void trigger_cb (flux_t h,
     }
 
     flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
-    sim_state = json_to_sim_state (o);
+    ctx->sctx.sim_state = json_to_sim_state (o);
 
     start = clock ();
 
@@ -586,7 +585,7 @@ static void trigger_cb (flux_t h,
 
     diff = clock () - start;
     seconds = ((double)diff) / CLOCKS_PER_SEC;
-    sim_state->sim_time += seconds;
+    ctx->sctx.sim_state->sim_time += seconds;
     if (sched_loop) {
         flux_log (h,
                   LOG_DEBUG,
@@ -599,11 +598,11 @@ static void trigger_cb (flux_t h,
                   seconds);
     }
 
-    handle_timer_queue (ctx, sim_state);
+    handle_timer_queue (ctx, ctx->sctx.sim_state);
 
-    send_reply_request (h, "sched", sim_state);
+    send_reply_request (h, "sched", ctx->sctx.sim_state);
 
-    free_simstate (sim_state);
+    free_simstate (ctx->sctx.sim_state);
     Jput (o);
 }
 
@@ -925,6 +924,38 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  *                                                                              *
  *******************************************************************************/
 
+static int stage_tree (resrc_tree_t *resrc_tree, flux_lwj_t *job)
+{
+    //printf ("Entering %s, called on %s\n", __FUNCTION__, resrc_name (resrc_tree_resrc (resrc_tree)));
+    int rc = 0;
+    if (resrc_tree) {
+        // TODO: what to do about memory or IO?
+        resrc_stage_resrc (resrc_tree_resrc (resrc_tree), 1);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree_children (resrc_tree));
+            while (!rc && child) {
+                rc = stage_tree (child, job);
+                child = resrc_tree_list_next (resrc_tree_children (resrc_tree));
+            }
+        }
+    }
+    return rc;
+}
+
+static int stage_tree_list (resrc_tree_list_t *selected_trees, flux_lwj_t *job)
+{
+    //printf ("Entering %s\n", __FUNCTION__);
+    int rc = 0;
+    resrc_tree_t *rt = resrc_tree_list_first (selected_trees);
+
+    while (rt && !rc) {
+        rc = stage_tree (rt, job);
+        rt = resrc_tree_list_next (selected_trees);
+    }
+
+    return rc;
+}
+
 /*
  * schedule_job() searches through all of the idle resources to
  * satisfy a job's requirements.  If enough resources are found, it
@@ -933,7 +964,7 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  * are found than the job requires, and if the job asks to reserve
  * resources, then those resources will be reserved.
  */
-int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
+int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t time_now)
 {
     JSON child_core = NULL;
     JSON req_res = NULL;
@@ -957,12 +988,14 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", job->req->corespernode);
-    Jadd_int64 (child_core, "walltime", job->req->walltime);
+    Jadd_int64 (child_core, "starttime", time_now);
+    Jadd_int64 (child_core, "endtime", time_now + job->req->walltime);
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
     Jadd_int (req_res, "req_qty", job->req->nnodes);
-    Jadd_int (req_res, "walltime", job->req->walltime);
+    Jadd_int64 (req_res, "starttime", time_now);
+    Jadd_int64 (req_res, "endtime", time_now + job->req->walltime);
 
     json_object_object_add (req_res, "req_child", child_core);
 
@@ -983,8 +1016,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
+                stage_tree_list (selected_trees, job);
                 resrc_tree_list_allocate (selected_trees, job->lwj_id,
-                                          job->req->walltime);
+                                          time_now, job->req->walltime);
                 /* Scheduler specific job transition */
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;
@@ -998,7 +1032,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                           "lwj.%"PRId64", reqrd: %"PRId64"",
                           nnodes, job->lwj_id, job->req->nnodes);
             } else if (job->reserve) {
-                resrc_tree_list_reserve (selected_trees, job->lwj_id);
+                resrc_tree_list_reserve (selected_trees, job->lwj_id,
+                                         time_now, job->req->walltime);
                 flux_log (h, LOG_DEBUG, "%"PRId64" nodes reserved for lwj."
                           "%"PRId64"'s reqrd %"PRId64"", nnodes, job->lwj_id,
                           job->req->nnodes);
@@ -1026,10 +1061,12 @@ static int schedule_jobs (ssrvctx_t *ctx)
        should traverse through running job queue as well.
     */
     zlist_t *jobs = ctx->p_queue;
+    int64_t time_now = (ctx->sctx.in_sim) ? (int64_t) ctx->sctx.sim_state->sim_time : -1;
+
     job = zlist_first (jobs);
     while (!rc && job) {
         if (job->state == J_SCHEDREQ) {
-            rc = schedule_job (ctx, job);
+            rc = schedule_job (ctx, job, time_now);
         }
         job = (flux_lwj_t*)zlist_next (jobs);
     }
