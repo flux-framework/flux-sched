@@ -275,7 +275,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
         *new_submit_mod_time = get_next_submit_time ();
     else
         *new_submit_mod_time = *new_sched_mod_time + .0001;
-    flux_log (h, LOG_INFO, "submitted job %ld (%d in csv)", new_jobid, job->id);
+    flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
     flux_log (h,
               LOG_DEBUG,
               "next submit event will occur at %f",

@@ -29,9 +29,9 @@ sim_sched_%.so: sim_sched_%.c $(COMMON_OBJS) $(SCHEDULER_OBJS) libsim.so
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(ALL_LIBS)
 
 start:
-	$(FLUX) -B ../.build/src/broker/flux-broker start
+	$(FLUX) -B ../.build/src/broker/flux-broker start -o -l 7
 load:
-	$(FLUX) module load ./simsrv.so exit-on-complete=true
+	$(FLUX) module load ./simsrv.so exit-on-complete=false
 	$(FLUX) module load ./submitsrv.so job-csv=$(JOBDATA)
 	$(FLUX) module load ./sim_execsrv.so
 unload:
@@ -58,7 +58,7 @@ SIM_MOD=--module ./simsrv.so --modopt sim:save-path=${SAVEPATH}
 SUBMIT_MOD=--module ./submitsrv.so --modopt submit:job-csv=${JOBDATA}
 #SCHED_MOD=--module ./${SCHED} --modopt sim_sched:rdl-conf=${CONF}
 SCHED_MOD=--module ./${SCHED} --modopt sched:rdl-conf=${CONF} --modopt sched:in-sim=true --modopt sched:plugin=sched.plugin1 --modopt sched:backfill=easy
-BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD} --boot-method=SINGLE
+BROKER_OPTS=-Lstderr ${EXEC_MOD} ${SIM_MOD} ${SUBMIT_MOD} ${SCHED_MOD} --boot-method=SINGLE -l 7
 BROKER=$(FLUX_BUILDDIR)/src/broker/.libs/flux-broker
 
 VALGRIND=$(shell which valgrind)

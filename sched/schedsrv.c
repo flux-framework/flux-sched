@@ -874,7 +874,7 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
     }
 
     if (ctx->sctx.in_sim) {
-        if (asprintf (&topic, "sim_exec.run.%ld", job->lwj_id) < 0) {
+        if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
             goto done;
@@ -910,7 +910,7 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
     if (ctx->sctx.in_sim)
         queue_timer_change (ctx, "sim_exec");
 
-    flux_log (h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+    flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
     rc = 0;
 
  done:
@@ -1117,7 +1117,7 @@ int reserve_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t time_now)
     if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
                                                  resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
-        flux_log (h, LOG_DEBUG, "%ld nodes found for lwj.%ld, reqrd: %ld",
+        flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for lwj.%"PRId64", reqrd: %"PRId64"",
                   nnodes, job->lwj_id, job->req->nnodes);
         if ((nnodes < job->req->nnodes) && !job->reserve)
             goto done;
@@ -1229,7 +1229,7 @@ static int easy_backfill (ssrvctx_t *ctx)
 
     reserved_job = job;
 
-    flux_log (ctx->h, LOG_DEBUG, "Job %ld is now the reserved job",
+    flux_log (ctx->h, LOG_DEBUG, "Job %"PRId64" is now the reserved job",
               job->lwj_id);
     // Find start time of reserved job and make a reservation
     zlist_sort (completion_times, compare_int64_ascending);
@@ -1241,7 +1241,7 @@ static int easy_backfill (ssrvctx_t *ctx)
     {
         // Don't test the same time multiple times
         if (prev_completion_time != *completion_time) {
-            flux_log (ctx->h, LOG_DEBUG, "Attempting to reserve job %ld at time %ld",
+            flux_log (ctx->h, LOG_DEBUG, "Attempting to reserve job %"PRId64" at time %"PRId64"",
                       job->lwj_id, (*completion_time) + 1);
             rc = reserve_job (ctx, reserved_job, (*completion_time) + 1);
         }
@@ -1256,7 +1256,7 @@ static int easy_backfill (ssrvctx_t *ctx)
            job = (flux_lwj_t*)zlist_next (jobs))
     {
         if (job->state == J_SCHEDREQ) {
-            flux_log (ctx->h, LOG_DEBUG, "Attempting to backfill job %ld", job->lwj_id);
+            flux_log (ctx->h, LOG_DEBUG, "Attempting to backfill job %"PRId64"", job->lwj_id);
             rc = schedule_job (ctx, job, time_now);
         }
     }

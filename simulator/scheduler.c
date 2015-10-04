@@ -330,7 +330,7 @@ int newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         if (errnum != ENOENT) {
             flux_log (h,
                       LOG_ERR,
-                      "newlwj_cb key(%s), val(%ld): %s",
+                      "newlwj_cb key(%s), val(%"PRId64"): %s",
                       key,
                       val,
                       strerror (errnum));
@@ -338,17 +338,17 @@ int newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         } else {
             flux_log (h,
                       LOG_DEBUG,
-                      "newlwj_cb key(%s), val(%ld): %s",
+                      "newlwj_cb key(%s), val(%"PRId64"): %s",
                       key,
                       val,
                       strerror (errnum));
         }
         goto ret;
     } else if (val < 0) {
-        flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%ld)", key, val);
+        flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%"PRId64")", key, val);
         goto error;
     } else {
-        flux_log (h, LOG_DEBUG, "newlwj_cb key(%s), val(%ld)", key, val);
+        flux_log (h, LOG_DEBUG, "newlwj_cb key(%s), val(%"PRId64")", key, val);
     }
 
     if (!(j = (flux_lwj_t *)malloc (sizeof (flux_lwj_t)))) {
@@ -364,7 +364,7 @@ int newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
         goto error;
     }
 
-    snprintf (path, MAX_STR_LEN, "lwj.%ld", j->lwj_id);
+    snprintf (path, MAX_STR_LEN, "lwj.%"PRId64"", j->lwj_id);
     if (reg_lwj_state_hdlr (h, path, queue_kvs_cb) == -1) {
         flux_log (h,
                   LOG_ERR,
@@ -473,7 +473,7 @@ int unwatch_lwj (ctx_t *ctx, flux_lwj_t *job)
     char *key = NULL;
     int rc = 0;
 
-    if (asprintf (&key, "lwj.%ld.state", job->lwj_id) < 0) {
+    if (asprintf (&key, "lwj.%"PRId64".state", job->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key create failed");
         rc = -1;
     } else if (kvs_unwatch (ctx->h, key)) {
@@ -484,7 +484,7 @@ int unwatch_lwj (ctx_t *ctx, flux_lwj_t *job)
     }
     free (key);
 
-    asprintf (&key, "lwj.%ld", job->lwj_id);
+    asprintf (&key, "lwj.%"PRId64"", job->lwj_id);
     // dump_kvs_dir (ctx->h, key);
     free (key);
 
@@ -561,14 +561,14 @@ void lwjstate_cb (const char *key, const char *val, void *arg, int errnum)
         flux_log (h, LOG_ERR, "ill-formed key: %s", key);
         goto ret;
     }
-    flux_log (h, LOG_DEBUG, "lwjstate_cb: %ld, %s", lwj_id, val);
+    flux_log (h, LOG_DEBUG, "lwjstate_cb: %"PRId64", %s", lwj_id, val);
 
     j = find_lwj (ctx, lwj_id);
     if (j) {
         e = stab_lookup (jobstate_tab, val);
         issue_lwj_event (ctx, e, j);
     } else
-        flux_log (h, LOG_ERR, "lwjstate_cb: find_lwj %ld failed", lwj_id);
+        flux_log (h, LOG_ERR, "lwjstate_cb: find_lwj %"PRId64" failed", lwj_id);
 
 ret:
     return;
@@ -647,7 +647,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
     int64_t io_rate = 0;
     int rc = -1;
 
-    if (asprintf (&key, "lwj.%ld.state", j->lwj_id) < 0) {
+    if (asprintf (&key, "lwj.%"PRId64".state", j->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo state key create failed");
         goto ret;
     } else if (kvs_get_string (ctx->h, key, &state) < 0) {
@@ -660,7 +660,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         free (key);
     }
 
-    if (asprintf (&key, "lwj.%ld.nnodes", j->lwj_id) < 0) {
+    if (asprintf (&key, "lwj.%"PRId64".nnodes", j->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo nnodes key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &reqnodes) < 0) {
@@ -673,11 +673,11 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
     } else {
         j->req.nnodes = reqnodes;
         flux_log (
-            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqnodes);
+            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %"PRId64"", key, reqnodes);
         free (key);
     }
 
-    if (asprintf (&key, "lwj.%ld.ntasks", j->lwj_id) < 0) {
+    if (asprintf (&key, "lwj.%"PRId64".ntasks", j->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo ntasks key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &reqtasks) < 0) {
@@ -691,7 +691,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         /* Assuming a 1:1 relationship right now between cores and tasks */
         j->req.ncores = reqtasks;
         flux_log (
-            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, reqtasks);
+            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %"PRId64"", key, reqtasks);
         free (key);
         j->alloc.nnodes = 0;
         j->alloc.ncores = 0;
@@ -699,7 +699,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         rc = 0;
     }
 
-    if (asprintf (&key, "lwj.%ld.io_rate", j->lwj_id) < 0) {
+    if (asprintf (&key, "lwj.%"PRId64".io_rate", j->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo io_rate key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &io_rate) < 0) {
@@ -713,7 +713,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         j->req.io_rate = io_rate;
         j->alloc.io_rate = -1;  // currently not used
         flux_log (
-            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %ld", key, io_rate);
+            ctx->h, LOG_DEBUG, "extract_lwjinfo got %s: %"PRId64"", key, io_rate);
         free (key);
     }
 
@@ -834,7 +834,7 @@ int action_j_event (ctx_t *ctx, flux_event_t *e)
      * e->ev.je      is the new state
      */
     /*
-        flux_log (ctx->h, LOG_DEBUG, "attempting job %ld state change from %s to
+        flux_log (ctx->h, LOG_DEBUG, "attempting job %"PRId64" state change from %s to
        %s",
               e->lwj->lwj_id, stab_rlookup (jobstate_tab, e->lwj->state),
                               stab_rlookup (jobstate_tab, e->ev.je));
@@ -855,7 +855,7 @@ int action_j_event (ctx_t *ctx, flux_event_t *e)
             if (e->lwj->state != j_submitted) {
                 flux_log (ctx->h,
                           LOG_ERR,
-                          "job %ld read state mismatch ",
+                          "job %"PRId64" read state mismatch ",
                           e->lwj->lwj_id);
                 goto bad_transition;
             }
@@ -937,7 +937,7 @@ int action_j_event (ctx_t *ctx, flux_event_t *e)
         default:
             flux_log (ctx->h,
                       LOG_ERR,
-                      "job %ld unknown state %d",
+                      "job %"PRId64" unknown state %d",
                       e->lwj->lwj_id,
                       e->lwj->state);
             break;
@@ -948,7 +948,7 @@ int action_j_event (ctx_t *ctx, flux_event_t *e)
 bad_transition:
     flux_log (ctx->h,
               LOG_ERR,
-              "job %ld bad state transition from %s to %s",
+              "job %"PRId64" bad state transition from %s to %s",
               e->lwj->lwj_id,
               stab_rlookup (jobstate_tab, e->lwj->state),
               stab_rlookup (jobstate_tab, e->ev.je));
@@ -997,7 +997,7 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
     if (update_job_state (ctx, job, j_runrequest) < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "request_run failed to update job %ld to %s",
+                  "request_run failed to update job %"PRId64" to %s",
                   job->lwj_id,
                   stab_rlookup (jobstate_tab, j_runrequest));
         goto done;
@@ -1007,7 +1007,7 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     if (!ctx->in_sim) {
-        topic = xasprintf ("rexec.run.%ld", job->lwj_id);
+        topic = xasprintf ("rexec.run.%"PRId64"", job->lwj_id);
         if (!(msg = flux_event_encode (topic, NULL))
             || flux_send (ctx->h, msg, 0) < 0) {
             flux_log (ctx->h,
@@ -1017,7 +1017,7 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
             goto done;
         }
     } else {
-        topic = xasprintf ("sim_exec.run.%ld", job->lwj_id);
+        topic = xasprintf ("sim_exec.run.%"PRId64"", job->lwj_id);
         msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
         flux_msg_set_topic (msg, topic);
         if (flux_send (ctx->h, msg, 0) < 0) {
@@ -1028,7 +1028,7 @@ int request_run (ctx_t *ctx, flux_lwj_t *job)
             goto done;
         }
     }
-    flux_log (ctx->h, LOG_DEBUG, "job %ld runrequest", job->lwj_id);
+    flux_log (ctx->h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
     rc = 0;
 done:
     if (topic)
@@ -1078,20 +1078,20 @@ const char *stab_rlookup (struct stab_struct *ss, int i)
  */
 int update_job (ctx_t *ctx, flux_lwj_t *job)
 {
-    flux_log (ctx->h, LOG_DEBUG, "updating job %ld", job->lwj_id);
+    flux_log (ctx->h, LOG_DEBUG, "updating job %"PRId64"", job->lwj_id);
     int rc = -1;
 
     if (update_job_state (ctx, job, j_allocated)) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "update_job failed to update job %ld to %s",
+                  "update_job failed to update job %"PRId64" to %s",
                   job->lwj_id,
                   stab_rlookup (jobstate_tab, j_allocated));
     } else if (update_job_resources (ctx, job)) {
         kvs_commit (ctx->h);
         flux_log (ctx->h,
                   LOG_ERR,
-                  "update_job %ld resrc update failed",
+                  "update_job %"PRId64" resrc update failed",
                   job->lwj_id);
     } else if (kvs_commit (ctx->h) < 0) {
         flux_log (ctx->h, LOG_ERR, "kvs_commit error!");
@@ -1099,7 +1099,7 @@ int update_job (ctx_t *ctx, flux_lwj_t *job)
         rc = 0;
     }
 
-    flux_log (ctx->h, LOG_DEBUG, "updated job %ld", job->lwj_id);
+    flux_log (ctx->h, LOG_DEBUG, "updated job %"PRId64"", job->lwj_id);
     return rc;
 }
 
@@ -1121,20 +1121,20 @@ int update_job_state (ctx_t *ctx, flux_lwj_t *job, lwj_event_e e)
     state = stab_rlookup (jobstate_tab, e);
     if (!strcmp (state, "unknown")) {
         flux_log (ctx->h, LOG_ERR, "unknown job state %d", e);
-    } else if (asprintf (&key, "lwj.%ld.state", job->lwj_id) < 0) {
+    } else if (asprintf (&key, "lwj.%"PRId64".state", job->lwj_id) < 0) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key create failed");
     } else if (kvs_put_string (ctx->h, key, state) < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "update_job_state %ld state update failed: %s",
+                  "update_job_state %"PRId64" state update failed: %s",
                   job->lwj_id,
                   strerror (errno));
-    } else if (asprintf (&key2, "lwj.%ld.%s-time", job->lwj_id, state) < 0) {
+    } else if (asprintf (&key2, "lwj.%"PRId64".%s-time", job->lwj_id, state) < 0) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key2 create failed");
     } else if (kvs_put_string (ctx->h, key2, buf) < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "update_job_state %ld %s-time failed: %s",
+                  "update_job_state %"PRId64" %s-time failed: %s",
                   job->lwj_id,
                   state,
                   strerror (errno));
@@ -1142,7 +1142,7 @@ int update_job_state (ctx_t *ctx, flux_lwj_t *job, lwj_event_e e)
         rc = 0;
         flux_log (ctx->h,
                   LOG_DEBUG,
-                  "updated job %ld's state in the kvs to %s",
+                  "updated job %"PRId64"'s state in the kvs to %s",
                   job->lwj_id,
                   state);
     }
@@ -1216,7 +1216,7 @@ int update_job_cores (ctx_t *ctx,
         imanode = true;
     } else if (strcmp (type, CORETYPE) == 0) {
         /* we need to limit our allocation to just the tagged cores */
-        asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
+        asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
         Jget_obj (o, "tags", &o2);
         Jget_obj (o2, lwjtag, &o3);
         if (o3) {
@@ -1232,7 +1232,7 @@ int update_job_cores (ctx_t *ctx,
     }
 
     if (imanode) {
-        if (asprintf (&key, "lwj.%ld.rank.%ld.cores", job->lwj_id, *pnode)
+        if (asprintf (&key, "lwj.%"PRId64".rank.%"PRId64".cores", job->lwj_id, *pnode)
             < 0) {
             flux_log (ctx->h, LOG_ERR, "%s key create failed", __FUNCTION__);
             rc = -1;
@@ -1240,7 +1240,7 @@ int update_job_cores (ctx_t *ctx,
         } else if (kvs_put_int64 (ctx->h, key, *pcores) < 0) {
             flux_log (ctx->h,
                       LOG_ERR,
-                      "%s %ld node failed: %s",
+                      "%s %"PRId64" node failed: %s",
                       __FUNCTION__,
                       job->lwj_id,
                       strerror (errno));
@@ -1319,7 +1319,7 @@ int release_resources (ctx_t *ctx,
     struct resource *jr = rdl_resource_get (job->rdl, uri);
     char *lwjtag = NULL;
 
-    asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
+    asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
 
     if (jr) {
         rc = release_lwj_resource (ctx, rdl, jr, lwjtag);
@@ -1438,7 +1438,7 @@ void deallocate_bandwidth (ctx_t *ctx,
 {
     flux_log (ctx->h,
               LOG_DEBUG,
-              "deallocate_bandwidth job: %ld, io_rate: %ld",
+              "deallocate_bandwidth job: %"PRId64", io_rate: %"PRId64"",
               job->lwj_id,
               job->req.io_rate);
 
@@ -1471,13 +1471,13 @@ void deallocate_resource_bandwidth (ctx_t *ctx,
     rdl_resource_get_int (r, "alloc_bw", &old_alloc_bw);
     new_alloc_bw = old_alloc_bw - amount;
 
-    // flux_log (h, LOG_DEBUG, "deallocating bandwidth (was: %ld, is: %ld) at
+    // flux_log (h, LOG_DEBUG, "deallocating bandwidth (was: %"PRId64", is: %"PRId64") at
     // %s", old_alloc_bw, new_alloc_bw, Jtostr (o));
 
     if (new_alloc_bw < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "too much bandwidth deallocated (%ld) - %s",
+                  "too much bandwidth deallocated (%"PRId64") - %s",
                   amount,
                   Jtostr (o));
     }
@@ -1537,7 +1537,7 @@ bool allocate_resources (struct rdl *rdl,
 
     o = rdl_resource_json (curr);
     Jget_str (o, "type", &type);
-    asprintf (&lwjtag, "lwj.%ld", job->lwj_id);
+    asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
     if (job->req.nnodes && (strcmp (type, "node") == 0)) {
         job->req.nnodes--;
         job->alloc.nnodes++;
@@ -1838,7 +1838,7 @@ int schedule_job (ctx_t *ctx,
     } else {
         flux_log (ctx->h,
                   LOG_DEBUG,
-                  "schedule_job called on job %ld, no cores available, "
+                  "schedule_job called on job %"PRId64", no cores available, "
                   "skipping",
                   job->lwj_id);
         goto ret;
@@ -1846,8 +1846,8 @@ int schedule_job (ctx_t *ctx,
 
     flux_log (ctx->h,
               LOG_DEBUG,
-              "schedule_job called on job %ld, request cores: %d, free cores: "
-              "%ld",
+              "schedule_job called on job %"PRId64", request cores: %d, free cores: "
+              "%"PRId64"",
               job->lwj_id,
               job->req.ncores,
               free_cores);
@@ -1863,7 +1863,7 @@ int schedule_job (ctx_t *ctx,
         rdl_resource_iterator_reset (free_root);
         a = rdl_accumulator_create (rdl);
         if (allocate_resources (rdl, uri, free_root, a, job, ancestors)) {
-            flux_log (ctx->h, LOG_INFO, "scheduled job %ld", job->lwj_id);
+            flux_log (ctx->h, LOG_INFO, "scheduled job %"PRId64"", job->lwj_id);
             job->rdl = rdl_accumulator_copy (a);
             job->state = j_submitted;
             rc = update_job (ctx, job);
