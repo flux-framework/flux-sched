@@ -64,8 +64,8 @@ while flux kvs get lwj.12.complete_time 2>&1 | grep -q "No such file"; do sleep 
 sleep 0.5
 for x in $(seq 1 12); do echo "$x $(flux kvs get lwj.$x.starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
 
-#test_expect_success 'jobs scheduled in correct order' '
-#    test_cmp ${expected_order} ./actual
-#'
+test_expect_success 'jobs scheduled in correct order' '
+    test_cmp ${expected_order} ./actual
+'
 
 test_done
