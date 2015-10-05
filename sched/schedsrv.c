@@ -884,49 +884,40 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
     }
 
     if (ctx->sctx.in_sim) {
+        /* Emulation mode */
         if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
-            goto done;
-        }
-        if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
-                   || flux_msg_set_topic (msg, topic) < 0) {
+        } else if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
+                            || flux_msg_set_topic (msg, topic) < 0
+                            || flux_send (h, msg, 0) < 0) {
             flux_log (h, LOG_ERR, "%s: request create failed: %s",
                       __FUNCTION__, strerror (errno));
-            goto done;
+        } else {
+            queue_timer_change (ctx, "sim_exec");
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
+            rc = 0;
         }
-    } else { // not in sim
+    } else {
+        /* Normal mode */
         if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
-            goto done;
-        }
-        if (!(msg = flux_event_encode (topic, NULL))) {
+        } else if (!(msg = flux_event_encode (topic, NULL))
+                            || flux_send (h, msg, 0) < 0) {
             flux_log (h, LOG_ERR, "%s: event create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else {
             flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
-            flux_msg_destroy (msg);
             rc = 0;
         }
     }
 
-    if (flux_send (h, msg, 0) < 0) {
-        flux_log (h, LOG_ERR, "%s: error sending msg: %s",
-                  __FUNCTION__, strerror (errno));
-        goto done;
-    }
-
-    if (ctx->sctx.in_sim)
-        queue_timer_change (ctx, "sim_exec");
-
-    flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
-    rc = 0;
-
  done:
     if (msg)
         flux_msg_destroy (msg);
-    free (topic);
+    if (topic)
+        free (topic);
     return rc;
 }
 
