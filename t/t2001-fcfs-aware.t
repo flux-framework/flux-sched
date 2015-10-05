@@ -38,8 +38,8 @@ test_debug '
 	echo ${rdlconf} &&
     echo ${submit} &&
     echo ${jobdata} &&
-    echo ${execsrv} &&
-    echo ${sim} &&
+    echo ${sim_exec} &&
+    echo ${sim}
 '
 
 #
