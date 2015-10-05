@@ -309,6 +309,15 @@ static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, JSON jcb,
     return q_find_job (ctx, jid);
 }
 
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_int64_ascending (void *item1, void *item2)
+{
+    int64_t time1 = *((int64_t *) item1);
+    int64_t time2 = *((int64_t *) item2);
+
+    return time1 > time2;
+}
+#else
 static int compare_int64_ascending (void *item1, void *item2)
 {
     int64_t time1 = *((int64_t *) item1);
@@ -316,6 +325,7 @@ static int compare_int64_ascending (void *item1, void *item2)
 
     return time1 - time2;
 }
+#endif
 
 /******************************************************************************
  *                                                                            *

@@ -159,6 +159,20 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
     return available;
 }
 
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_windows_starttime (void *item1, void *item2)
+{
+    int64_t starttime1, starttime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "starttime", &starttime1);
+    Jget_int64 (json2, "starttime", &starttime2);
+
+    return (starttime1 > starttime2);
+}
+#else
 static int compare_windows_starttime (void *item1, void *item2)
 {
     int64_t starttime1, starttime2;
@@ -170,7 +184,22 @@ static int compare_windows_starttime (void *item1, void *item2)
 
     return (starttime1 - starttime2);
 }
+#endif
 
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_windows_endtime (void *item1, void *item2)
+{
+    int64_t endtime1, endtime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "endtime", &endtime1);
+    Jget_int64 (json2, "endtime", &endtime2);
+
+    return (endtime1 > endtime2);
+}
+#else
 static int compare_windows_endtime (void *item1, void *item2)
 {
     int64_t endtime1, endtime2;
@@ -182,6 +211,7 @@ static int compare_windows_endtime (void *item1, void *item2)
 
     return (endtime1 - endtime2);
 }
+#endif
 
 static __inline__ void
 myJput (void* o)
