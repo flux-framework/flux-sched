@@ -252,10 +252,10 @@ int main (int argc, char *argv[])
                 usage ();
                 break;
             case 's': /* --sync-start */
-                sfn = strdup (optarg);
+                sfn = xstrdup (optarg);
                 break;
             case 'c': /* --sync-complete */
-                cfn = strdup (optarg);
+                cfn = xstrdup (optarg);
                 break;
             default:
                 usage ();

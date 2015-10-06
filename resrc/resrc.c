@@ -405,11 +405,11 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
-        resrc->type = strdup (type);
+        resrc->type = xstrdup (type);
         if (path)
-            resrc->path = strdup (path);
+            resrc->path = xstrdup (path);
         if (name)
-            resrc->name = strdup (name);
+            resrc->name = xstrdup (name);
         resrc->id = id;
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
@@ -434,9 +434,9 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
     resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
 
     if (new_resrc) {
-        new_resrc->type = strdup (resrc->type);
-        new_resrc->path = strdup (resrc->path);
-        new_resrc->name = strdup (resrc->name);
+        new_resrc->type = xstrdup (resrc->type);
+        new_resrc->path = xstrdup (resrc->path);
+        new_resrc->name = xstrdup (resrc->name);
         new_resrc->id = resrc->id;
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
@@ -529,7 +529,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
             json_object_object_foreachC (jpropso, iter) {
                 jpropo = Jget (iter.val);
-                property = strdup (json_object_get_string (jpropo));
+                property = xstrdup (json_object_get_string (jpropo));
                 zhash_insert (resrc->properties, iter.key, property);
                 zhash_freefn (resrc->properties, iter.key, free);
                 Jput (jpropo);
@@ -543,7 +543,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
             json_object_object_foreachC (jtagso, iter) {
                 jtago = Jget (iter.val);
-                tag = strdup (json_object_get_string (jtago));
+                tag = xstrdup (json_object_get_string (jtago));
                 zhash_insert (resrc->tags, iter.key, tag);
                 zhash_freefn (resrc->tags, iter.key, free);
                 Jput (jtago);
@@ -686,7 +686,7 @@ void resrc_print_resource (resrc_t *resrc)
  * Therefore it is sufficient if the walltime fits before the earliest starttime
  * of a reserved job.
  */
-bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
+static bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 {
     bool rc = false;
 
