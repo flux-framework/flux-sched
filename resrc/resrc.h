@@ -7,7 +7,6 @@
 
 #include <uuid/uuid.h>
 #include "src/common/libutil/shortjson.h"
-#include "time.h"
 
 #define TIME_MAX INT64_MAX
 
@@ -95,10 +94,17 @@ void resrc_resource_destroy (void *object);
 resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical);
 
 /*
- * Return the head of a resource tree of all resources described by a
- * configuration file
+ * Return the head of a resource tree of all resources described by an
+ * rdl-formatted configuration file
  */
-resrc_t *resrc_generate_resources (const char *path, char*resource);
+resrc_t *resrc_generate_rdl_resources (const char *path, char*resource);
+
+/*
+ * Return the head of a resource tree of all resources described by an
+ * xml serialization
+ */
+resrc_t *resrc_generate_xml_resources (resrc_t *host_resrc, const char *buf,
+                                       size_t length);
 
 /*
  * Add the input resource to the json object
@@ -109,6 +115,11 @@ int resrc_to_json (JSON o, resrc_t *resrc);
  * Print details of a specific resource
  */
 void resrc_print_resource (resrc_t *resrc);
+
+/*
+ * Convenience function to create a specialized cluster resource
+ */
+resrc_t *resrc_create_cluster (char *cluster);
 
 /*
  * Determine whether a specific resource has the required characteristics

@@ -1,8 +1,8 @@
 include ../Makefile.inc
 
 SUBDIRS = test
-CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS)
-LIBS = $(FLUX_LIBS) $(RDL_LIBS) -luuid
+CFLAGS = $(COMMON_CFLAGS) $(FLUX_CFLAGS) $(RDL_CFLAGS) -I/usr/include/libxml2
+LIBS = $(FLUX_LIBS) $(RDL_LIBS) -luuid -lxml2
 
 BUILD = libresrc.so.0
 

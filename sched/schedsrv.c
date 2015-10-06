@@ -130,10 +130,14 @@ static void freectx (void *arg)
     free (ctx->backfill);
     free (ctx->rctx.root_uri);
     free (ctx->sctx.sim_state);
-    zlist_destroy (&(ctx->sctx.res_queue));
-    zlist_destroy (&(ctx->sctx.jsc_queue));
-    zlist_destroy (&(ctx->sctx.timer_queue));
-    dlclose (ctx->sops.dso);
+    if (ctx->sctx.res_queue)
+        zlist_destroy (&(ctx->sctx.res_queue));
+    if (ctx->sctx.jsc_queue)
+        zlist_destroy (&(ctx->sctx.jsc_queue));
+    if (ctx->sctx.timer_queue)
+        zlist_destroy (&(ctx->sctx.timer_queue));
+    if (ctx->sops.dso)
+        dlclose (ctx->sops.dso);
 }
 
 static ssrvctx_t *getctx (flux_t h)
@@ -395,28 +399,55 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
-static int load_rdl (ssrvctx_t *ctx, char *path, char *uri)
+static int load_resources (ssrvctx_t *ctx, char *path, char *uri)
 {
     int rc = -1;
 
     setup_rdl_lua (ctx->h);
+    if (path) {
+        if (uri)
+            ctx->rctx.root_uri = uri;
+        else
+            ctx->rctx.root_uri = xstrdup ("default");
 
-    if (!path) {
-        flux_log (ctx->h, LOG_ERR, "rdl-conf argument is not set");
-        goto done;
+        if ((ctx->rctx.root_resrc =
+             resrc_generate_rdl_resources (path, ctx->rctx.root_uri))) {
+            flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
+                      ctx->rctx.root_uri, path);
+            rc = 0;
+        } else {
+            flux_log (ctx->h, LOG_ERR, "failed to load %s rdl resource from %s",
+                      ctx->rctx.root_uri, path);
+        }
+    } else if ((ctx->rctx.root_resrc = resrc_create_cluster ("cluster"))) {
+        char    *buf = NULL;
+        char    *key;
+        int64_t i = 0;
+        size_t  buflen = 0;
+
+        rc = 0;
+        while (1) {
+            key = xasprintf ("resource.hwloc.xml.%"PRIu64"", i++);
+            if (kvs_get_string (ctx->h, key, &buf)) {
+                /* no more nodes to load - normal exit */
+                free (key);
+                break;
+            }
+            buflen = strlen (buf);
+            if ((resrc_generate_xml_resources (ctx->rctx.root_resrc, buf,
+                                               buflen))) {
+                flux_log (ctx->h, LOG_DEBUG, "loaded %s", key);
+            } else {
+                free (buf);
+                free (key);
+                rc = -1;
+                break;
+            }
+            free (buf);
+            free (key);
+        }
     }
-    if (uri)
-        ctx->rctx.root_uri = uri;
-    else
-        ctx->rctx.root_uri = xstrdup ("default");
 
-    if (!(ctx->rctx.root_resrc = resrc_generate_resources (path,
-                                                            ctx->rctx.root_uri)))
-        goto done;
-    flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
-              ctx->rctx.root_uri, path);
-    rc = 0;
-done:
     return rc;
 }
 
@@ -1480,11 +1511,11 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "scheduler plugin loaded");
-    if (load_rdl (ctx, path, uri) != 0) {
-        flux_log (h, LOG_ERR, "failed to setup and load RDL");
+    if (load_resources (ctx, path, uri) != 0) {
+        flux_log (h, LOG_ERR, "failed to load resources");
         goto done;
     }
-    flux_log (h, LOG_INFO, "RDL loaded");
+    flux_log (h, LOG_INFO, "resources loaded");
     if (setup_sim (ctx, sim) != 0) {
         flux_log (h, LOG_INFO, "failed to setup sim");
     }
