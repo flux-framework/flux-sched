@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #set -x
 
 test_description='Test easy scheduler in simulator
@@ -38,8 +38,8 @@ test_debug '
 	echo ${rdlconf} &&
     echo ${submit} &&
     echo ${jobdata} &&
-    echo ${execsrv} &&
-    echo ${sim} &&
+    echo ${sim_exec} &&
+    echo ${sim}
 '
 
 #
