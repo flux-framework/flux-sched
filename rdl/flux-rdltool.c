@@ -33,7 +33,7 @@
 #include "rdl.h"
 
 struct prog_ctx {
-    optparse_t p;
+    optparse_t *p;
     const char *filename;
     char *cmd;
     char **args;
