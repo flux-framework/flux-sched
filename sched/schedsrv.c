@@ -1491,6 +1491,7 @@ int mod_main (flux_t h, int argc, char **argv)
             ctx->backfill = xstrdup (strstr (argv[i], "=") + 1);
         } else {
             flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
+            errno = EINVAL;
             goto done;
         }
     }
@@ -1521,7 +1522,7 @@ int mod_main (flux_t h, int argc, char **argv)
     }
     if (ctx->sctx.in_sim) {
         if (reg_sim_events (ctx) != 0) {
-            flux_log (h, LOG_ERR, "failed to reg events");
+            flux_log (h, LOG_ERR, "failed to reg sim events");
             goto done;
         }
         flux_log (h, LOG_INFO, "sim events registered");
@@ -1534,7 +1535,6 @@ int mod_main (flux_t h, int argc, char **argv)
     }
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
-        rc =  -1;
         goto done;
     }
     rc = 0;
