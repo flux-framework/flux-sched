@@ -42,14 +42,13 @@ struct resrc {
     int64_t id;
     uuid_t uuid;
     size_t size;
-    size_t available;
     size_t staged;
     resource_state_t state;
     resrc_tree_t *phys_tree;
     zlist_t *graphs;
     zhash_t *properties;
     zhash_t *tags;
-    zhash_t *allocs;
+    zhash_t *allocs; // TODO: merge with twindow
     zhash_t *reservtns;
     zhash_t *twindow;
 };
@@ -92,6 +91,279 @@ size_t resrc_size (resrc_t *resrc)
     if (resrc)
         return resrc->size;
     return 0;
+}
+
+size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
+{
+    int64_t start_time;
+    int64_t end_time;
+
+    const char *window_key = NULL;
+    const char *window_json_str = NULL;
+    JSON window_json = NULL;
+    zlist_t *window_keys = NULL;
+    size_t *size_ptr = NULL;
+
+    size_t available = resrc->size;
+
+    if (time < 0) {
+        time = epochtime();
+    }
+
+    // Check that the time is during the resource lifetime
+    window_json_str = (const char*) zhash_lookup (resrc->twindow, "0");
+    if (window_json_str) {
+        window_json = Jfromstr (window_json_str);
+        if (window_json == NULL) {
+            return -1;
+        }
+        Jget_int64 (window_json, "starttime", &start_time);
+        Jget_int64 (window_json, "endtime", &end_time);
+        if (time < start_time || time > end_time) {
+            return -1;
+        }
+    }
+
+    // Iterate over all allocation windows in resrc.  We iterate using
+    // keys since we need the key to lookup the size in resrc->allocs.
+    window_keys = zhash_keys (resrc->twindow);
+    window_key = zlist_next (window_keys);
+    while (window_key) {
+        window_json_str = (const char*) zhash_lookup (resrc->twindow, window_key);
+        window_json = Jfromstr (window_json_str);
+        if (window_json == NULL) {
+            return -1;
+        }
+        Jget_int64 (window_json, "starttime", &start_time);
+        Jget_int64 (window_json, "endtime", &end_time);
+
+        // Does time intersect with window?
+        if (time >= start_time && time <= end_time) {
+            // Decrement available by allocation and/or reservation size
+            size_ptr = (size_t*)zhash_lookup (resrc->allocs, window_key);
+            if (size_ptr) {
+                available -= *size_ptr;
+            }
+            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, window_key);
+            if (size_ptr) {
+                available -= *size_ptr;
+            }
+        }
+
+        Jput (window_json);
+        window_key = zlist_next (window_keys);
+    }
+
+    zlist_destroy (&window_keys);
+
+    return available;
+}
+
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_windows_starttime (void *item1, void *item2)
+{
+    int64_t starttime1, starttime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "starttime", &starttime1);
+    Jget_int64 (json2, "starttime", &starttime2);
+
+    return (starttime1 > starttime2);
+}
+#else
+static int compare_windows_starttime (void *item1, void *item2)
+{
+    int64_t starttime1, starttime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "starttime", &starttime1);
+    Jget_int64 (json2, "starttime", &starttime2);
+
+    return (starttime1 - starttime2);
+}
+#endif
+
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_windows_endtime (void *item1, void *item2)
+{
+    int64_t endtime1, endtime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "endtime", &endtime1);
+    Jget_int64 (json2, "endtime", &endtime2);
+
+    return (endtime1 > endtime2);
+}
+#else
+static int compare_windows_endtime (void *item1, void *item2)
+{
+    int64_t endtime1, endtime2;
+    JSON json1 = (JSON) item1;
+    JSON json2 = (JSON) item2;
+
+    Jget_int64 (json1, "endtime", &endtime1);
+    Jget_int64 (json2, "endtime", &endtime2);
+
+    return (endtime1 - endtime2);
+}
+#endif
+
+static __inline__ void
+myJput (void* o)
+{
+    if (o)
+        json_object_put ((JSON)o);
+}
+
+size_t resrc_available_during_range (resrc_t *resrc,
+                                     int64_t range_start_time,
+                                     int64_t range_end_time)
+{
+    if (range_start_time == range_end_time) {
+        return resrc_available_at_time (resrc, range_start_time);
+    }
+
+    int64_t curr_start_time;
+    int64_t curr_end_time;
+
+    const char *window_key = NULL;
+    const char *window_json_str = NULL;
+    JSON window_json = NULL;
+    size_t *alloc_ptr = NULL, *reservtn_ptr = NULL;
+    zlist_t *window_keys = NULL;
+
+    zlist_t *matching_windows = zlist_new ();
+
+
+   // Check that the time is during the resource lifetime
+    window_json_str = (const char*) zhash_lookup (resrc->twindow, "0");
+    if (window_json_str) {
+        window_json = Jfromstr (window_json_str);
+        if (window_json == NULL) {
+            return -1;
+        }
+        Jget_int64 (window_json, "starttime", &curr_start_time);
+        Jget_int64 (window_json, "endtime", &curr_end_time);
+        if ( (range_start_time < curr_start_time) ||
+             (range_end_time > curr_end_time) ) {
+            return -1;
+        }
+    }
+
+    // Map allocation window strings to JSON objects.  Filter out
+    // windows that don't overlap with the input range. Then add the
+    // job id to the JSON obj and insert the JSON obj into the
+    // "matching windows" list.
+    window_keys = zhash_keys (resrc->twindow);
+    window_key = (const char *) zlist_next (window_keys);
+    while (window_key) {
+        window_json_str = (const char*) zhash_lookup (resrc->twindow, window_key);
+        window_json = Jfromstr (window_json_str);
+        if (window_json == NULL) {
+            return -1;
+        }
+        Jget_int64 (window_json, "starttime", &curr_start_time);
+        Jget_int64 (window_json, "endtime", &curr_end_time);
+
+        // Does input range intersect with window?
+        if ( !((curr_start_time < range_start_time &&
+                curr_end_time < range_start_time) ||
+               (curr_start_time > range_end_time &&
+                curr_end_time > range_end_time)) ) {
+
+            alloc_ptr = (size_t*)zhash_lookup (resrc->allocs, window_key);
+            reservtn_ptr = (size_t*)zhash_lookup (resrc->reservtns, window_key);
+            if (alloc_ptr || reservtn_ptr) {
+                // Add the window key and insert JSON obj into the
+                // "matching windows" list
+                Jadd_str (window_json, "key", window_key);
+                zlist_append (matching_windows, window_json);
+                zlist_freefn (matching_windows, window_json, myJput, true);
+            }
+        }
+
+        window_key = zlist_next (window_keys);
+    }
+
+    // Duplicate the "matching windows" list and then sort the 2 lists
+    // based on start and end times.  We will walk through these lists
+    // in order to find the minimum available during the input range
+    zlist_t *start_windows = matching_windows;
+    zlist_t *end_windows = zlist_dup (matching_windows);
+    zlist_sort (start_windows, compare_windows_starttime);
+    zlist_sort (end_windows, compare_windows_endtime);
+
+    JSON curr_start_window = zlist_first (start_windows);
+    JSON curr_end_window = zlist_first (end_windows);
+
+    Jget_int64 (curr_start_window, "starttime", &curr_start_time);
+    Jget_int64 (curr_end_window, "endtime", &curr_end_time);
+
+    size_t min_available = resrc->size;
+    size_t curr_available = resrc->size;
+    size_t *size_ptr = NULL;
+
+    // Start iterating over the windows and calculating the min
+    // available
+    //
+    // OPTIMIZE: stop iterating when curr_start_window == NULL Once we
+    // run out of start windows, curr available cannot get any
+    // smaller; we have hit our min.  Just need to test to verify that
+    // this optimziation is correct/safe.
+    while (curr_start_window) {
+        if ((curr_start_window) &&
+            (curr_start_time < curr_end_time)) {
+            // New range is starting, get its size and subtract it
+            // from current available
+            Jget_str (curr_start_window, "key", &window_key);
+            size_ptr = (size_t*)zhash_lookup (resrc->allocs, window_key);
+            if (size_ptr)
+                curr_available -= *size_ptr;
+            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, window_key);
+            if (size_ptr)
+                curr_available -= *size_ptr;
+            curr_start_window = zlist_next (start_windows);
+            if (curr_start_window) {
+                Jget_int64 (curr_start_window, "starttime", &curr_start_time);
+            } else {
+                curr_start_time = TIME_MAX;
+            }
+        } else if ((curr_end_window) &&
+                   (curr_end_time < curr_start_time)) {
+            // A range just ended, get its size and add it back into
+            // current available
+            Jget_str (curr_end_window, "key", &window_key);
+            size_ptr = (size_t*)zhash_lookup (resrc->allocs, window_key);
+            if (size_ptr)
+                curr_available += *size_ptr;
+            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, window_key);
+            if (size_ptr)
+                curr_available += *size_ptr;
+            curr_end_window = zlist_next (end_windows);
+            if (curr_end_window) {
+                Jget_int64 (curr_end_window, "endtime", &curr_end_time);
+            } else {
+                curr_end_time = TIME_MAX;
+            }
+        } else {
+            fprintf (stderr,
+                     "%s - ERR: Both start/end windows are empty\n",
+                     __FUNCTION__);
+        }
+        min_available = (curr_available < min_available) ? curr_available : min_available;
+    }
+
+    // Cleanup
+    zlist_destroy (&window_keys);
+    zlist_destroy (&end_windows);
+    zlist_destroy (&start_windows);
+
+    return min_available;
 }
 
 char* resrc_state (resrc_t *resrc)
@@ -142,7 +414,6 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
         resrc->size = size;
-        resrc->available = size;
         resrc->staged = 0;
         resrc->state = RESOURCE_IDLE;
         resrc->phys_tree = NULL;
@@ -152,6 +423,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->properties = zhash_new ();
         resrc->tags = zhash_new ();
         resrc->twindow = zhash_new ();
+        zhash_autofree (resrc->twindow);
     }
 
     return resrc;
@@ -214,7 +486,6 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     const char *path = NULL;
     const char *tmp = NULL;
     const char *type = NULL;
-    int64_t jduration;
     int64_t id;
     int64_t ssize;
     json_object_iter iter;
@@ -280,18 +551,21 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
         }
 
         /* add twindow */
-        if (Jget_int64 (o, "walltime", &jduration)) {
+        int64_t job_time;
+        if (Jget_int64 (o, "walltime", &job_time)) {
             JSON w = Jnew ();
-            Jadd_int64 (w, "walltime", jduration);
-            zhash_insert (resrc->twindow, "0", (void *)Jtostr (w));
+            Jadd_int64 (w, "walltime", job_time);
+            char *json_str = strdup (Jtostr (w));
+            zhash_insert (resrc->twindow, "0", (void *) json_str);
             Jput (w);
-        } else if ((!strncmp (type, "node", 5)) ||
-                   (!strncmp (type, "core", 5))) {
-            JSON j = Jnew ();
-            Jadd_int64 (j, "start", epochtime ());
-            Jadd_int64 (j, "end", TIME_MAX);
-            zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
-            Jput (j);
+        } else if (Jget_int64 (o, "starttime", &job_time)) {
+            JSON w = Jnew ();
+            Jadd_int64 (w, "starttime", job_time);
+            Jget_int64 (o, "endtime", &job_time);
+            Jadd_int64 (w, "endtime", job_time);
+            char *json_str = strdup (Jtostr (w));
+            zhash_insert (resrc->twindow, "0", (void *)json_str);
+            Jput (w);
         }
     }
 ret:
@@ -363,9 +637,9 @@ void resrc_print_resource (resrc_t *resrc)
     if (resrc) {
         uuid_unparse (resrc->uuid, uuid);
         printf ("resrc type: %s, path: %s, name: %s, id: %"PRId64", state: %s, "
-                "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
+                "uuid: %s, size: %"PRIu64"",
                 resrc->type, resrc->path, resrc->name, resrc->id,
-                resrc_state (resrc), uuid, resrc->size, resrc->available);
+                resrc_state (resrc), uuid, resrc->size);
         if (zhash_size (resrc->properties)) {
             printf (", properties:");
             property = zhash_first (resrc->properties);
@@ -416,57 +690,48 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 {
     bool rc = false;
 
-    int64_t time_now = epochtime ();
-    int64_t jstarttime;
-    int64_t jendtime;
-    int64_t jwalltime;
-    int64_t tstarttime;
-    int64_t rstarttime;
-    int64_t lendtime;
+    int64_t jstarttime; // Job start time
+    int64_t jendtime; // Job end time
+    int64_t jwalltime; // Job walltime
+    int64_t lendtime; // Resource lifetime end time
 
-    char *json_str_walltime = NULL;
     char *json_str_window = NULL;
 
-    /* retrieve first element of twindow from request sample */
-    json_str_walltime = zhash_first (sample->twindow);
-    if (!json_str_walltime)
+    // retrieve first element of twindow from request sample
+    json_str_window = zhash_first (sample->twindow);
+    if (!json_str_window)
         return true;
 
-    /* retrieve the walltime information from request sample */
-    JSON jw = Jfromstr (json_str_walltime);
-    if (!(Jget_int64 (jw, "walltime", &jwalltime))) {
-        Jput (jw);
+    // retrieve the start & end time information from request sample
+    JSON job_window = Jfromstr (json_str_window);
+    if (!(Jget_int64 (job_window, "starttime", &jstarttime))) {
+        Jput (job_window);
         return true;
     }
+    if (!(Jget_int64 (job_window, "endtime", &jendtime))) {
+        if ((Jget_int64 (job_window, "walltime", &jwalltime))) {
+            jendtime = jstarttime + jwalltime;
+        } else {
+            Jput (job_window);
+            return false;
+        }
+    }
+    Jput (job_window);
 
-    /* fix job start and end time from now */
-    jstarttime = time_now;
-    jendtime = jstarttime + jwalltime;
-    tstarttime = TIME_MAX;
-
-    /* If jendtime is greater than the lifetime of the resource, then falst */
+    // If jendtime is greater than the lifetime of the resource, then false
     json_str_window = zhash_lookup (resrc->twindow, "0");
-    JSON lt = Jfromstr (json_str_window);
-    Jget_int64 (lt, "endtime", &lendtime);
-    Jput (lt);
-    if (jendtime > (lendtime - 10)) {
-        return false;
+    if (json_str_window) {
+        JSON lt = Jfromstr (json_str_window);
+        Jget_int64 (lt, "endtime", &lendtime);
+        Jput (lt);
+        if (jendtime > (lendtime - 10)) {
+            return false;
+        }
     }
 
-    /* Iterate over resrc's twindow and find if it sample fits from now */
-    json_str_window = zhash_first (resrc->twindow);
-    while (json_str_window) {
-
-        JSON rw = Jfromstr (json_str_window);
-        Jget_int64 (rw, "starttime", &rstarttime);
-
-        if (rstarttime > time_now)
-            tstarttime = tstarttime < rstarttime ? tstarttime : rstarttime;
-
-        json_str_window = zhash_next (resrc->twindow);
-    }
-
-    rc = jendtime <= tstarttime ? true : false;
+    // find if it sample fits in time range
+    int64_t available = resrc_available_during_range(resrc, jstarttime, jendtime);
+    rc = (available >= sample->size);
 
     return rc;
 }
@@ -479,9 +744,6 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
     char *stag = NULL;          /* sample tag */
 
     if (!strcmp (resrc->type, sample->type) && sample->size) {
-        if (sample->size > resrc->available)
-            goto ret;
-
         if (zhash_size (sample->properties)) {
             if (!zhash_size (resrc->properties)) {
                 goto ret;
@@ -509,11 +771,13 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available)
             } while (zhash_next (sample->tags));
         }
 
-        if (available) {
-            if ((resrc->state == RESOURCE_IDLE) && (resrc_walltime_match (resrc, sample)))
-                rc = true;
-        } else
-            rc = true;
+        if (available && resrc->state != RESOURCE_IDLE) {
+            goto ret;
+        }
+
+        // Moved this check to last, because it is the most expensive
+        rc = resrc_walltime_match (resrc, sample);
+
     }
 ret:
     return rc;
@@ -529,34 +793,39 @@ void resrc_stage_resrc (resrc_t *resrc, size_t size)
  * Allocate the staged size of a resource to the specified job_id and
  * change its state to allocated.
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t walltime)
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t time_now, int64_t walltime)
 {
     char *id_ptr = NULL;
+    char *json_str = NULL;
     size_t *size_ptr;
+    size_t available;
+    int64_t end_time = time_now + walltime;
     int rc = -1;
     JSON j;
-    int64_t now = epochtime ();
+
+    if (time_now < 0) {
+        time_now = epochtime ();
+    }
 
     if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
+        available = resrc_available_during_range (resrc, time_now, end_time);
+        if (resrc->staged > available) {
             goto ret;
+        }
 
         id_ptr = xasprintf("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
         zhash_freefn (resrc->allocs, id_ptr, free);
-        free (id_ptr);
-        resrc->available -= resrc->staged;
         resrc->staged = 0;
-        resrc->state = RESOURCE_ALLOCATED;
 
         /* add walltime */
         j = Jnew ();
-        Jadd_int64 (j, "starttime", now);
-        Jadd_int64 (j, "endtime", now + walltime);
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        zhash_insert (resrc->twindow, id_ptr, (void *)Jtostr (j));
+        Jadd_int64 (j, "starttime", time_now);
+        Jadd_int64 (j, "endtime", end_time);
+        json_str = strdup (Jtostr (j));
+        zhash_insert (resrc->twindow, id_ptr, (void *)json_str);
         Jput (j);
 
         rc = 0;
@@ -569,14 +838,19 @@ ret:
 /*
  * Just like resrc_allocate_resource() above, but for a reservation
  */
-int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
+int resrc_reserve_resource (resrc_t *resrc, int64_t job_id,
+                            int64_t time_now, int64_t walltime)
 {
-    char *id_ptr = NULL;
+    char *id_ptr = NULL, *json_str = NULL;
     size_t *size_ptr;
     int rc = -1;
+    size_t available;
+    JSON j;
+    int64_t end_time = time_now + walltime;
 
     if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
+        available = resrc_available_during_range (resrc, time_now, end_time);
+        if (resrc->staged > available)
             goto ret;
 
         id_ptr = xasprintf("%"PRId64"", job_id);
@@ -584,10 +858,15 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id)
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
         zhash_freefn (resrc->reservtns, id_ptr, free);
-        resrc->available -= resrc->staged;
         resrc->staged = 0;
-        if (resrc->state != RESOURCE_ALLOCATED)
-            resrc->state = RESOURCE_RESERVED;
+
+        /* add walltime */
+        j = Jnew ();
+        Jadd_int64 (j, "starttime", time_now);
+        Jadd_int64 (j, "endtime", end_time);
+        json_str = strdup (Jtostr (j));
+        zhash_insert (resrc->twindow, id_ptr, (void *)json_str);
+        Jput (j);
 
         rc = 0;
         free (id_ptr);
@@ -599,7 +878,7 @@ ret:
 int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
 {
     char *id_ptr = NULL;
-    size_t *size_ptr;
+    size_t *alloc_ptr = NULL, *reservtn_ptr = NULL;
     int rc = 0;
 
     if (!resrc || !rel_job) {
@@ -608,23 +887,25 @@ int resrc_release_resource (resrc_t *resrc, int64_t rel_job)
     }
 
     id_ptr = xasprintf ("%"PRId64"", rel_job);
-    size_ptr = zhash_lookup (resrc->allocs, id_ptr);
-    if (size_ptr) {
-        resrc->available += *size_ptr;
+
+    alloc_ptr = zhash_lookup (resrc->allocs, id_ptr);
+    if (alloc_ptr) {
         zhash_delete (resrc->allocs, id_ptr);
-        zhash_delete (resrc->twindow, id_ptr);
-        if (!zhash_size (resrc->allocs)) {
-            if (zhash_size (resrc->reservtns))
-                resrc->state = RESOURCE_RESERVED;
-            else
-                resrc->state = RESOURCE_IDLE;
-        }
     }
+
+    reservtn_ptr = zhash_lookup (resrc->reservtns, id_ptr);
+    if (reservtn_ptr) {
+        zhash_delete (resrc->reservtns, id_ptr);
+    }
+
+    if (alloc_ptr || reservtn_ptr) {
+        zhash_delete (resrc->twindow, id_ptr);
+    }
+
     free (id_ptr);
 ret:
     return rc;
 }
-
 
 /*
  * vi: ts=4 sw=4 expandtab

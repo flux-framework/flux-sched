@@ -1,6 +1,6 @@
 include Makefile.inc
 
-SUBDIRS = rdl resrc sched simulator t
+SUBDIRS = rdl resrc simulator sched t
 
 .PHONY: all clean $(SUBDIRS)
 all check clean: $(SUBDIRS)

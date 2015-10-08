@@ -43,6 +43,8 @@ SUBMIT_EXEC_PATH = $(abs_topdir)/sched
 RESRC_CFLAGS = -I$(topdir)/resrc
 RESRC_LIBS = -Wl,-rpath,$(abs_topdir)/resrc -L$(topdir)/resrc -lresrc
 
+SIM_LIBS = -Wl,-rpath,$(abs_topdir)/simulator -L$(topdir)/simulator -lsim
+
 KVS_LIBS = -Wl,-rpath,$(FLUX_BUILDDIR)/src/modules/kvs/.libs \
          -L$(FLUX_BUILDDIR)/src/modules/kvs/.libs -lkvs
 #

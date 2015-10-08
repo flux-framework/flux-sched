@@ -201,15 +201,17 @@ resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
     return resrc_tree;
 }
 
-int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t walltime)
+int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
+                         int64_t time_now, int64_t walltime)
 {
     int rc = -1;
     if (resrc_tree) {
-        rc = resrc_allocate_resource (resrc_tree->resrc, job_id, walltime);
+        rc = resrc_allocate_resource (resrc_tree->resrc, job_id,
+                                      time_now, walltime);
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
-                rc = resrc_tree_allocate (child, job_id, walltime);
+                rc = resrc_tree_allocate (child, job_id, time_now, walltime);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
@@ -217,15 +219,17 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id, int64_t wallt
     return rc;
 }
 
-int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id)
+int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
+                        int64_t time_now, int64_t walltime)
 {
     int rc = -1;
     if (resrc_tree) {
-        rc = resrc_reserve_resource (resrc_tree->resrc, job_id);
+        rc = resrc_reserve_resource (resrc_tree->resrc, job_id,
+                                     time_now, walltime);
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
-                rc = resrc_tree_reserve (child, job_id);
+                rc = resrc_tree_reserve (child, job_id, time_now, walltime);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
@@ -357,7 +361,8 @@ resrc_tree_list_t *resrc_tree_list_deserialize (JSON o)
     return rtl;
 }
 
-int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t walltime)
+int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
+                              int64_t time_now, int64_t walltime)
 {
     resrc_tree_t *rt;
     int rc = -1;
@@ -366,7 +371,7 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t wa
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
-            rc = resrc_tree_allocate (rt, job_id, walltime);
+            rc = resrc_tree_allocate (rt, job_id, time_now, walltime);
             rt = resrc_tree_list_next (rtl);
         }
     }
@@ -374,7 +379,8 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id, int64_t wa
     return rc;
 }
 
-int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
+int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id,
+                             int64_t time_now, int64_t walltime)
 {
     resrc_tree_t *rt;
     int rc = -1;
@@ -383,7 +389,7 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id)
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
-            rc = resrc_tree_reserve (rt, job_id);
+            rc = resrc_tree_reserve (rt, job_id, time_now, walltime);
             rt = resrc_tree_list_next (rtl);
         }
     }

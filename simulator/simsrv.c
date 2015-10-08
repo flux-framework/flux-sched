@@ -160,7 +160,6 @@ static int handle_next_event (ctx_t *ctx)
         }
     }
     if (min_event_time == NULL) {
-        flux_log (ctx->h, LOG_ERR, "%s: min_event_time is NULL", __FUNCTION__);
         return -1;
     }
     while (zlist_size (keys) > 0) {
@@ -169,7 +168,7 @@ static int handle_next_event (ctx_t *ctx)
         if (*curr_event_time > 0
             && ((*curr_event_time < *min_event_time)
                 || (*curr_event_time == *min_event_time
-                    && !strcmp (curr_name, "sim_sched")))) {
+                    && !strcmp (curr_name, "sched")))) {
             free (mod_name);
             mod_name = curr_name;
             min_event_time = curr_event_time;
@@ -187,7 +186,7 @@ static int handle_next_event (ctx_t *ctx)
         // the next event for %s", mod_name);
     }
     flux_log (ctx->h,
-              LOG_INFO,
+              LOG_DEBUG,
               "Triggering %s.  Curr sim time: %f",
               mod_name,
               sim_state->sim_time);

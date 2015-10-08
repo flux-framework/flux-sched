@@ -48,6 +48,7 @@
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
 #include "schedsrv.h"
+#include "../simulator/simulator.h"
 
 #define DYNAMIC_SCHEDULING 0
 #define ENABLE_TIMER_EVENT 0
@@ -79,6 +80,25 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
+    JSON jcb;
+    void *arg;
+    int errnum;
+} jsc_event_t;
+
+typedef struct {
+    flux_t h;
+    void *arg;
+} res_event_t;
+
+typedef struct {
+    bool in_sim;
+    sim_state_t *sim_state;
+    zlist_t *res_queue;
+    zlist_t *jsc_queue;
+    zlist_t *timer_queue;
+} simctx_t;
+
+typedef struct {
     resrc_t      *root_resrc;         /* resrc object pointing to the root */
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
@@ -90,7 +110,9 @@ typedef struct {
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
     rdlctx_t      rctx;               /* RDL context */
+    simctx_t      sctx;               /* simulator context */
     sched_ops_t   sops;               /* scheduler plugin operations */
+    char         *backfill;
 } ssrvctx_t;
 
 /******************************************************************************
@@ -105,7 +127,12 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
     resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
+    free (ctx->backfill);
     free (ctx->rctx.root_uri);
+    free (ctx->sctx.sim_state);
+    zlist_destroy (&(ctx->sctx.res_queue));
+    zlist_destroy (&(ctx->sctx.jsc_queue));
+    zlist_destroy (&(ctx->sctx.timer_queue));
     dlclose (ctx->sops.dso);
 }
 
@@ -121,8 +148,14 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
             oom ();
+        ctx->backfill = NULL;
         ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
+        ctx->sctx.in_sim = false;
+        ctx->sctx.sim_state = NULL;
+        ctx->sctx.res_queue = NULL;
+        ctx->sctx.jsc_queue = NULL;
+        ctx->sctx.timer_queue = NULL;
         ctx->sops.dso = NULL;
         ctx->sops.find_resources = NULL;
         ctx->sops.select_resources = NULL;
@@ -149,6 +182,7 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     int rc = -1;
     int64_t nn = 0;
     int64_t nc = 0;
+    int64_t walltime = 0;
     JSON jcb = NULL;
     JSON o = NULL;
 
@@ -163,8 +197,12 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
     if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
     j->req->nnodes = (uint64_t) nn;
-    j->req->ncores = (uint32_t) nc;
-    j->req->walltime = (uint64_t) 3600;
+    j->req->ncores = (uint64_t) nc;
+    if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime)) {
+        j->req->walltime = (uint64_t) 3600;
+    } else {
+        j->req->walltime = (uint64_t) walltime;
+    }
     rc = 0;
 done:
     if (jcb)
@@ -218,6 +256,7 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 
     job->lwj_id = jid;
     job->state = J_NULL;
+    job->reserved = false;
     if (zlist_append (ctx->p_queue, job) != 0) {
         flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
         goto done;
@@ -270,6 +309,23 @@ static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, JSON jcb,
     return q_find_job (ctx, jid);
 }
 
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_int64_ascending (void *item1, void *item2)
+{
+    int64_t time1 = *((int64_t *) item1);
+    int64_t time2 = *((int64_t *) item2);
+
+    return time1 > time2;
+}
+#else
+static int compare_int64_ascending (void *item1, void *item2)
+{
+    int64_t time1 = *((int64_t *) item1);
+    int64_t time2 = *((int64_t *) item2);
+
+    return time1 - time2;
+}
+#endif
 
 /******************************************************************************
  *                                                                            *
@@ -339,23 +395,11 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
-static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
+static int load_rdl (ssrvctx_t *ctx, char *path, char *uri)
 {
-    int i, rc = -1;
-    char *path = NULL;
-    char *uri = NULL;
+    int rc = -1;
 
     setup_rdl_lua (ctx->h);
-    for (i = 0; i < argc; i++) {
-        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf")))
-            path = xstrdup (strstr (argv[i], "=") + 1);
-        else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource")))
-            uri = xstrdup (strstr (argv[i], "=") + 1);
-        else {
-            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
-            goto done;
-        }
-    }
 
     if (!path) {
         flux_log (ctx->h, LOG_ERR, "rdl-conf argument is not set");
@@ -371,12 +415,287 @@ static int load_rdl (ssrvctx_t *ctx, int argc, char **argv)
         goto done;
     flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
               ctx->rctx.root_uri, path);
-    free(path);
     rc = 0;
 done:
     return rc;
 }
 
+/******************************************************************************
+ *                                                                            *
+ *                         Simulator Specific Code                            *
+ *                                                                            *
+ ******************************************************************************/
+
+/*
+ * Simulator Helper Functions
+ */
+
+static void queue_timer_change (ssrvctx_t *ctx, const char *module)
+{
+    zlist_append (ctx->sctx.timer_queue, (void *)module);
+}
+
+// Set the timer for "module" to happen relatively soon
+// If the mod is sim_exec, it shouldn't happen immediately
+// because the scheduler still needs to transition through
+// 3->4 states before the sim_exec module can actually "exec" a job
+static void set_next_event (const char *module, sim_state_t *sim_state)
+{
+    double next_event;
+    double *timer = zhash_lookup (sim_state->timers, module);
+    next_event =
+        sim_state->sim_time + ((!strcmp (module, "sim_exec")) ? .0001 : .00001);
+    if (*timer > next_event || *timer < 0) {
+        *timer = next_event;
+    }
+}
+
+static void handle_timer_queue (ssrvctx_t *ctx, sim_state_t *sim_state)
+{
+    while (zlist_size (ctx->sctx.timer_queue) > 0)
+        set_next_event (zlist_pop (ctx->sctx.timer_queue), sim_state);
+
+#if ENABLE_TIMER_EVENT
+    // Set scheduler loop to run in next occuring scheduler block
+    double *this_timer = zhash_lookup (sim_state->timers, "sched");
+    double next_schedule_block =
+         sim_state->sim_time
+        + (SCHED_INTERVAL - ((int)sim_state->sim_time % SCHED_INTERVAL));
+    if ctx->run_schedule_loop &&
+        ((next_schedule_block < *this_timer || *this_timer < 0)) {
+        *this_timer = next_schedule_block;
+    }
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "run_sched_loop: %d, next_schedule_block: %f, this_timer: %f",
+              ctx->run_schedule_loop,
+              next_schedule_block,
+              *this_timer);
+#endif
+}
+
+static void handle_jsc_queue (ssrvctx_t *ctx)
+{
+    jsc_event_t *jsc_event = NULL;
+
+    while (zlist_size (ctx->sctx.jsc_queue) > 0) {
+        jsc_event = (jsc_event_t *)zlist_pop (ctx->sctx.jsc_queue);
+        flux_log (ctx->h,
+                  LOG_DEBUG,
+                  "JscEvent being handled - JSON: %s, errnum: %d",
+                  Jtostr (jsc_event->jcb),
+                  jsc_event->errnum);
+        job_status_cb (jsc_event->jcb, jsc_event->arg, jsc_event->errnum);
+        Jput (jsc_event->jcb);
+        free (jsc_event);
+    }
+}
+
+static void handle_res_queue (ssrvctx_t *ctx)
+{
+    res_event_t *res_event = NULL;
+
+    while (zlist_size (ctx->sctx.res_queue) > 0) {
+        res_event = (res_event_t *)zlist_pop (ctx->sctx.res_queue);
+        flux_log (ctx->h,
+                  LOG_DEBUG,
+                  "ResEvent being handled");
+        res_event_cb (res_event->h, NULL, NULL, res_event->arg);
+        free (res_event);
+    }
+}
+
+
+/*
+ * Simulator Callbacks
+ */
+
+static void start_cb (flux_t h,
+                 flux_msg_handler_t *w,
+                 const flux_msg_t *msg,
+                 void *arg)
+{
+    flux_log (h, LOG_DEBUG, "received a start event");
+    if (send_join_request (h, "sched", -1) < 0) {
+        flux_log (h,
+                  LOG_ERR,
+                  "submit module failed to register with sim module");
+        return;
+    }
+    flux_log (h, LOG_DEBUG, "sent a join request");
+
+    if (flux_event_unsubscribe (h, "sim.start") < 0) {
+        flux_log (h, LOG_ERR, "failed to unsubscribe from \"sim.start\"");
+        return;
+    } else {
+        flux_log (h, LOG_DEBUG, "unsubscribed from \"sim.start\"");
+    }
+
+    return;
+}
+
+static int sim_job_status_cb (JSON jcb, void *arg, int errnum)
+{
+    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    jsc_event_t *event = (jsc_event_t*) malloc (sizeof (jsc_event_t));
+
+    event->jcb = Jget (jcb);
+    event->arg = arg;
+    event->errnum = errnum;
+
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "JscEvent being queued - JSON: %s, errnum: %d",
+              Jtostr (event->jcb),
+              event->errnum);
+    zlist_append (ctx->sctx.jsc_queue, event);
+
+    return 0;
+}
+
+static void sim_res_event_cb (flux_t h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg) {
+    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    res_event_t *event = (res_event_t*) malloc (sizeof (res_event_t));
+    const char *topic = NULL;
+
+    event->h = h;
+    event->arg = arg;
+
+    flux_msg_get_topic (msg, &topic);
+    flux_log (ctx->h,
+              LOG_DEBUG,
+              "ResEvent being queued - topic: %s",
+              topic);
+    zlist_append (ctx->sctx.res_queue, event);
+}
+
+static void trigger_cb (flux_t h,
+                 flux_msg_handler_t *w,
+                 const flux_msg_t *msg,
+                 void *arg)
+{
+    clock_t start, diff;
+    double seconds;
+    bool sched_loop;
+    const char *json_str = NULL;
+    JSON o = NULL;
+    ssrvctx_t *ctx = getctx (h);
+
+    if (flux_request_decode (msg, NULL, &json_str) < 0 || json_str == NULL
+        || !(o = Jfromstr (json_str))) {
+        flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+        Jput (o);
+        return;
+    }
+
+    flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
+    ctx->sctx.sim_state = json_to_sim_state (o);
+
+    start = clock ();
+
+    handle_jsc_queue (ctx);
+    handle_res_queue (ctx);
+
+    sched_loop = true;
+    /*
+    if ((sched_loop =
+             should_run_schedule_loop (ctx, (int)sim_state->sim_time))) {
+        flux_log (h, LOG_DEBUG, "Running the schedule loop");
+        if (schedule_jobs (ctx, sim_state->sim_time) > 0) {
+            queue_timer_change (ctx, module_name);
+        }
+        end_schedule_loop (ctx);
+    }
+    */
+
+    diff = clock () - start;
+    seconds = ((double)diff) / CLOCKS_PER_SEC;
+    ctx->sctx.sim_state->sim_time += seconds;
+    if (sched_loop) {
+        flux_log (h,
+                  LOG_DEBUG,
+                  "scheduler timer: events + loop took %f seconds",
+                  seconds);
+    } else {
+        flux_log (h,
+                  LOG_DEBUG,
+                  "scheduler timer: events took %f seconds",
+                  seconds);
+    }
+
+    handle_timer_queue (ctx, ctx->sctx.sim_state);
+
+    send_reply_request (h, "sched", ctx->sctx.sim_state);
+
+    free_simstate (ctx->sctx.sim_state);
+    Jput (o);
+}
+
+/*
+ * Simulator Initialization Functions
+ */
+
+static struct flux_msg_handler_spec sim_htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
+    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb},
+    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb},
+    FLUX_MSGHANDLER_TABLE_END,
+};
+
+static int reg_sim_events (ssrvctx_t *ctx)
+{
+    int rc = -1;
+    flux_t h = ctx->h;
+
+    if (flux_event_subscribe (ctx->h, "sim.start") < 0) {
+        flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+        goto done;
+    }
+    if (flux_event_subscribe (ctx->h, "sched.res.") < 0) {
+        flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
+        goto done;
+    }
+    if (flux_msg_handler_addvec (ctx->h, sim_htab, (void *)h) < 0) {
+        flux_log (ctx->h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
+        goto done;
+    }
+    if (jsc_notify_status_obj (h, sim_job_status_cb, (void *)h) != 0) {
+        flux_log (h, LOG_ERR, "error registering a job status change CB");
+        goto done;
+    }
+
+    send_alive_request (ctx->h, "sched");
+
+    rc = 0;
+ done:
+    return rc;
+}
+
+static int setup_sim (ssrvctx_t *ctx, char *sim_arg)
+{
+    int rc = -1;
+
+    if (sim_arg == NULL || !strncmp (sim_arg, "false", 5)) {
+        rc = 0;
+        goto done;
+    } else if (strncmp (sim_arg, "true", 4)) {
+        flux_log (ctx->h, LOG_ERR, "unknown argument (%s) for sim option", sim_arg);
+        goto done;
+    } else {
+        flux_log (ctx->h, LOG_DEBUG, "setting up sim in scheduler");
+    }
+
+    ctx->sctx.in_sim = true;
+    ctx->sctx.sim_state = NULL;
+    ctx->sctx.res_queue = zlist_new ();
+    ctx->sctx.jsc_queue = zlist_new ();
+    ctx->sctx.timer_queue = zlist_new ();
+
+    rc = 0;
+ done:
+    return rc;
+}
 
 /******************************************************************************
  *                                                                            *
@@ -511,6 +830,10 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
                   job->lwj_id);
         goto done;
     }
+    if (ctx->sctx.in_sim) {
+        queue_timer_change (ctx, "sched");
+    }
+
     rc = 0;
 
 done:
@@ -549,30 +872,52 @@ static int req_tpexec_map (flux_t h, flux_lwj_t *job)
 
 static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
 {
+    char *topic = NULL;
+    flux_msg_t *msg = NULL;
+    ssrvctx_t *ctx = getctx (h);
     int rc = -1;
 
     if ((update_state (h, job->lwj_id, job->state, J_RUNREQUEST)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
-    } else {
-        char *topic = NULL;
-        flux_msg_t *msg = NULL;
+        goto done;
+    }
 
+    if (ctx->sctx.in_sim) {
+        /* Emulation mode */
+        if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
+                            || flux_msg_set_topic (msg, topic) < 0
+                            || flux_send (h, msg, 0) < 0) {
+            flux_log (h, LOG_ERR, "%s: request create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else {
+            queue_timer_change (ctx, "sim_exec");
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
+            rc = 0;
+        }
+    } else {
+        /* Normal mode */
         if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else if (!(msg = flux_event_encode (topic, NULL))
-                   || flux_send (h, msg, 0) < 0) {
-            flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                            || flux_send (h, msg, 0) < 0) {
+            flux_log (h, LOG_ERR, "%s: event create failed: %s",
                       __FUNCTION__, strerror (errno));
         } else {
             flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
-            flux_msg_destroy (msg);
             rc = 0;
         }
-        free (topic);
     }
 
+ done:
+    if (msg)
+        flux_msg_destroy (msg);
+    if (topic)
+        free (topic);
     return rc;
 }
 
@@ -596,6 +941,38 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  *                                                                              *
  *******************************************************************************/
 
+static int stage_tree (resrc_tree_t *resrc_tree, flux_lwj_t *job)
+{
+    //printf ("Entering %s, called on %s\n", __FUNCTION__, resrc_name (resrc_tree_resrc (resrc_tree)));
+    int rc = 0;
+    if (resrc_tree) {
+        // TODO: what to do about memory or IO?
+        resrc_stage_resrc (resrc_tree_resrc (resrc_tree), 1);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree_children (resrc_tree));
+            while (!rc && child) {
+                rc = stage_tree (child, job);
+                child = resrc_tree_list_next (resrc_tree_children (resrc_tree));
+            }
+        }
+    }
+    return rc;
+}
+
+static int stage_tree_list (resrc_tree_list_t *selected_trees, flux_lwj_t *job)
+{
+    //printf ("Entering %s\n", __FUNCTION__);
+    int rc = 0;
+    resrc_tree_t *rt = resrc_tree_list_first (selected_trees);
+
+    while (rt && !rc) {
+        rc = stage_tree (rt, job);
+        rt = resrc_tree_list_next (selected_trees);
+    }
+
+    return rc;
+}
+
 /*
  * schedule_job() searches through all of the idle resources to
  * satisfy a job's requirements.  If enough resources are found, it
@@ -604,7 +981,7 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  * are found than the job requires, and if the job asks to reserve
  * resources, then those resources will be reserved.
  */
-int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
+int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t time_now)
 {
     JSON child_core = NULL;
     JSON req_res = NULL;
@@ -628,12 +1005,14 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
     Jadd_int (child_core, "req_qty", job->req->corespernode);
-    Jadd_int64 (child_core, "walltime", job->req->walltime);
+    Jadd_int64 (child_core, "starttime", time_now);
+    Jadd_int64 (child_core, "endtime", time_now + job->req->walltime);
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
     Jadd_int (req_res, "req_qty", job->req->nnodes);
-    Jadd_int (req_res, "walltime", job->req->walltime);
+    Jadd_int64 (req_res, "starttime", time_now);
+    Jadd_int64 (req_res, "endtime", time_now + job->req->walltime);
 
     json_object_object_add (req_res, "req_child", child_core);
 
@@ -654,9 +1033,12 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                                                           resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
+                stage_tree_list (selected_trees, job);
                 resrc_tree_list_allocate (selected_trees, job->lwj_id,
-                                          job->req->walltime);
+                                          time_now, job->req->walltime);
                 /* Scheduler specific job transition */
+                // TODO: handle this some other way (JSC?)
+                job->starttime = time_now;
                 job->state = J_SELECTED;
                 job->resrc_trees = selected_trees;
                 if (req_tpexec_allocate (ctx, job) != 0) {
@@ -669,7 +1051,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job)
                           "lwj.%"PRId64", reqrd: %"PRId64"",
                           nnodes, job->lwj_id, job->req->nnodes);
             } else if (job->reserve) {
-                resrc_tree_list_reserve (selected_trees, job->lwj_id);
+                resrc_tree_list_reserve (selected_trees, job->lwj_id,
+                                         time_now, job->req->walltime);
                 flux_log (h, LOG_DEBUG, "%"PRId64" nodes reserved for lwj."
                           "%"PRId64"'s reqrd %"PRId64"", nnodes, job->lwj_id,
                           job->req->nnodes);
@@ -686,8 +1069,82 @@ done:
     return rc;
 }
 
-static int schedule_jobs (ssrvctx_t *ctx)
+/*
+ * reserve_job searches through all of the idle resources to satisfy
+ * a job's requirements.  If enough resources are found, it proceeds
+ * to reserve those resources.  No state transitions are
+ * made. Returns 0 if the job was allocated, -1 otherwise.
+ */
+int reserve_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t time_now)
 {
+    JSON child_core = NULL;
+    JSON req_res = NULL;
+    flux_t h = ctx->h;
+    int rc = -1;
+    int64_t nnodes = 0;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
+
+    /*
+     * Require at least one task per node, and
+     * Assume (for now) one task per core.
+     */
+    job->req->nnodes = (job->req->nnodes ? job->req->nnodes : 1);
+    if (job->req->ncores < job->req->nnodes)
+        job->req->ncores = job->req->nnodes;
+    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
+        job->req->nnodes;
+
+    child_core = Jnew ();
+    Jadd_str (child_core, "type", "core");
+    Jadd_int (child_core, "req_qty", job->req->corespernode);
+    Jadd_int64 (child_core, "starttime", time_now);
+    Jadd_int64 (child_core, "endtime", time_now + job->req->walltime);
+
+    req_res = Jnew ();
+    Jadd_str (req_res, "type", "node");
+    Jadd_int (req_res, "req_qty", job->req->nnodes);
+    Jadd_int64 (req_res, "starttime", time_now);
+    Jadd_int64 (req_res, "endtime", time_now + job->req->walltime);
+
+    json_object_object_add (req_res, "req_child", child_core);
+
+    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
+    Jput (req_res);
+    if (!resrc_reqst)
+        goto done;
+
+    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
+                                                 resrc_reqst))) {
+        nnodes = resrc_tree_list_size (found_trees);
+        flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for lwj.%"PRId64", reqrd: %"PRId64"",
+                  nnodes, job->lwj_id, job->req->nnodes);
+        if ((nnodes < job->req->nnodes) && !job->reserve)
+            goto done;
+
+        if ((selected_trees = ctx->sops.select_resources (h, found_trees,
+                                                          resrc_reqst))) {
+            nnodes = resrc_tree_list_size (selected_trees);
+            if (nnodes == job->req->nnodes) {
+                stage_tree_list (selected_trees, job);
+                resrc_tree_list_allocate (selected_trees, job->lwj_id,
+                                          time_now, job->req->walltime);
+                job->resrc_trees = selected_trees;
+                rc = 0;
+            }
+        }
+    }
+done:
+    if (resrc_reqst)
+        resrc_reqst_destroy (resrc_reqst);
+    if (found_trees)
+        resrc_tree_list_destroy (found_trees, false);
+
+    return rc;
+}
+
+static int fcfs (ssrvctx_t *ctx) {
     int rc = 0;
     flux_lwj_t *job = NULL;
     /* TODO: 1. we might need to invoke prioritize_qeueu here
@@ -697,12 +1154,125 @@ static int schedule_jobs (ssrvctx_t *ctx)
        should traverse through running job queue as well.
     */
     zlist_t *jobs = ctx->p_queue;
+    int64_t time_now = (ctx->sctx.in_sim) ? (int64_t) ctx->sctx.sim_state->sim_time : -1;
+
     job = zlist_first (jobs);
     while (!rc && job) {
         if (job->state == J_SCHEDREQ) {
-            rc = schedule_job (ctx, job);
+            rc = schedule_job (ctx, job, time_now);
         }
         job = (flux_lwj_t*)zlist_next (jobs);
+    }
+
+    return rc;
+}
+
+static int easy_backfill (ssrvctx_t *ctx)
+{
+    int rc = 0;
+    flux_lwj_t *job = NULL, *reserved_job = NULL;
+    /* TODO: 1. we might need to invoke prioritize_qeueu here
+       or making this as a continous operation by another thread
+       or comms module.
+       2. when dynamic scheduling is supported, the loop
+       should traverse through running job queue as well.
+    */
+    zlist_t *jobs = ctx->p_queue;
+    int64_t time_now = (ctx->sctx.in_sim) ? (int64_t) ctx->sctx.sim_state->sim_time : -1;
+
+    // Build completion events for all currently running jobs
+    int64_t *completion_time = NULL;
+    zlist_t *completion_times = zlist_new ();
+    // Need our own cursor into running list
+    zlist_t *running_jobs = zlist_dup (ctx->r_queue);
+    for (job = zlist_first (running_jobs); job; job = zlist_next (running_jobs)) {
+        completion_time = malloc (sizeof(int64_t));
+        *completion_time = job->starttime + job->req->walltime;
+        zlist_append (completion_times, completion_time);
+        zlist_freefn (completion_times, completion_time, free, true);
+    }
+
+    // If the job has resources reserved then release them
+    // TODO: make this method of reserving cleaner
+    for (job = zlist_first (jobs);
+         !rc && job;
+         job = (flux_lwj_t*)zlist_next (jobs))
+    {
+        if (job->reserved) {
+            flux_log (ctx->h, LOG_DEBUG, "Releasing a set of reserved resources");
+            job->reserved = false;
+            if (job->resrc_trees)
+                resrc_tree_list_release (job->resrc_trees, job->lwj_id);
+        }
+    }
+
+
+    job = zlist_first (jobs);
+    while (!rc && job) {
+        if (job->state == J_SCHEDREQ) {
+            rc = schedule_job (ctx, job, time_now);
+            if (!rc) {
+                flux_log (ctx->h, LOG_DEBUG, "Scheduled job %"PRId64"", job->lwj_id);
+                // Insert completion time for newly scheduled job
+                completion_time = malloc (sizeof(int64_t));
+                *completion_time = time_now + job->req->walltime;
+                zlist_append (completion_times, completion_time);
+                zlist_freefn (completion_times, completion_time, free, true);
+            }
+        }
+        if (!rc)
+            job = (flux_lwj_t*)zlist_next (jobs);
+    }
+
+    if (!job) { //No jobs remaining to backfill
+        return rc;
+    }
+
+    reserved_job = job;
+
+    flux_log (ctx->h, LOG_DEBUG, "Job %"PRId64" is now the reserved job",
+              job->lwj_id);
+    // Find start time of reserved job and make a reservation
+    zlist_sort (completion_times, compare_int64_ascending);
+    rc = -1;
+    int64_t prev_completion_time = -1;
+    for (completion_time = zlist_first (completion_times);
+         rc && completion_time;
+         completion_time = zlist_next (completion_times))
+    {
+        // Don't test the same time multiple times
+        if (prev_completion_time != *completion_time) {
+            flux_log (ctx->h, LOG_DEBUG, "Attempting to reserve job %"PRId64" at time %"PRId64"",
+                      job->lwj_id, (*completion_time) + 1);
+            rc = reserve_job (ctx, reserved_job, (*completion_time) + 1);
+        }
+        prev_completion_time = *completion_time;
+    }
+    job->reserved = true;
+    zlist_destroy (&completion_times);
+
+    // Begin backfilling
+    for (job = (flux_lwj_t*)zlist_next (jobs);
+           job;
+           job = (flux_lwj_t*)zlist_next (jobs))
+    {
+        if (job->state == J_SCHEDREQ) {
+            flux_log (ctx->h, LOG_DEBUG, "Attempting to backfill job %"PRId64"", job->lwj_id);
+            rc = schedule_job (ctx, job, time_now);
+        }
+    }
+
+    return rc;
+}
+
+static int schedule_jobs (ssrvctx_t *ctx)
+{
+    int rc = -1;
+
+    if (ctx->backfill) {
+        rc = easy_backfill (ctx);
+    } else {
+        rc = fcfs (ctx);
     }
 
     return rc;
@@ -867,14 +1437,39 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
 
 int mod_main (flux_t h, int argc, char **argv)
 {
-    int rc = -1;
+    int rc = -1, i = 0;
     ssrvctx_t *ctx = NULL;
-    char *schedplugin = "sched.plugin1";
+    char *schedplugin = NULL, *userplugin = NULL;
+    char *uri = NULL, *path = NULL, *sim = NULL;
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
         goto done;
     }
+
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
+            path = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
+            uri = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
+            sim = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("plugin=", argv[i], sizeof ("plugin"))) {
+            userplugin = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("backfill=", argv[i], sizeof ("backfill"))) {
+            ctx->backfill = xstrdup (strstr (argv[i], "=") + 1);
+        } else {
+            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
+            goto done;
+        }
+    }
+
+    if (userplugin == NULL) {
+        schedplugin = "sched.plugin1";
+    } else {
+        schedplugin = userplugin;
+    }
+
     if (flux_rank (h) != 0) {
         flux_log (h, LOG_ERR, "sched module must only run on rank 0");
         goto done;
@@ -885,16 +1480,27 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "scheduler plugin loaded");
-    if (load_rdl (ctx, argc, argv) != 0) {
+    if (load_rdl (ctx, path, uri) != 0) {
         flux_log (h, LOG_ERR, "failed to setup and load RDL");
         goto done;
     }
     flux_log (h, LOG_INFO, "RDL loaded");
-    if (reg_events (ctx) != 0) {
-        flux_log (h, LOG_ERR, "failed to reg events");
-        goto done;
+    if (setup_sim (ctx, sim) != 0) {
+        flux_log (h, LOG_INFO, "failed to setup sim");
     }
-    flux_log (h, LOG_INFO, "events registered");
+    if (ctx->sctx.in_sim) {
+        if (reg_sim_events (ctx) != 0) {
+            flux_log (h, LOG_ERR, "failed to reg events");
+            goto done;
+        }
+        flux_log (h, LOG_INFO, "sim events registered");
+    } else {
+        if (reg_events (ctx) != 0) {
+            flux_log (h, LOG_ERR, "failed to reg events");
+            goto done;
+        }
+        flux_log (h, LOG_INFO, "events registered");
+    }
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
         rc =  -1;
@@ -903,6 +1509,10 @@ int mod_main (flux_t h, int argc, char **argv)
     rc = 0;
 
 done:
+    free (path);
+    free (uri);
+    free (sim);
+    free (userplugin);
     return rc;
 }
 
