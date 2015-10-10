@@ -32,7 +32,8 @@ check: $(TESTS)
         rc=0; \
 	for t in $(TESTS); do \
 		./$$t; \
-		if test $$? -ne 0; then rc=1; fi; \
+		if test $$? -ne 0; then echo FAIL: $$t; rc=1; \
+				   else echo PASS: $$t; fi; \
 	done; \
 	exit $$rc
 
