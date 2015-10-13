@@ -253,8 +253,10 @@ size_t resrc_available_during_range (resrc_t *resrc,
         Jget_int64 (window_json, "endtime", &curr_end_time);
         if ( (range_start_time < curr_start_time) ||
              (range_end_time > curr_end_time) ) {
+            Jput (window_json);
             return -1;
         }
+        Jput (window_json);
     }
 
     // Map allocation window strings to JSON objects.  Filter out
@@ -286,8 +288,10 @@ size_t resrc_available_during_range (resrc_t *resrc,
                 Jadd_str (window_json, "key", window_key);
                 zlist_append (matching_windows, window_json);
                 zlist_freefn (matching_windows, window_json, myJput, true);
-            }
-        }
+            } else
+                Jput (window_json);
+        } else
+            Jput (window_json);
 
         window_key = zlist_next (window_keys);
     }
@@ -363,7 +367,7 @@ size_t resrc_available_during_range (resrc_t *resrc,
     // Cleanup
     zlist_destroy (&window_keys);
     zlist_destroy (&end_windows);
-    zlist_destroy (&start_windows);
+    zlist_destroy (&matching_windows);
 
     return min_available;
 }
@@ -425,7 +429,6 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->properties = zhash_new ();
         resrc->tags = zhash_new ();
         resrc->twindow = zhash_new ();
-        zhash_autofree (resrc->twindow);
     }
 
     return resrc;
@@ -557,16 +560,18 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
         if (Jget_int64 (o, "walltime", &job_time)) {
             JSON w = Jnew ();
             Jadd_int64 (w, "walltime", job_time);
-            char *json_str = strdup (Jtostr (w));
+            char *json_str = xstrdup (Jtostr (w));
             zhash_insert (resrc->twindow, "0", (void *) json_str);
+            zhash_freefn (resrc->twindow, "0", free);
             Jput (w);
         } else if (Jget_int64 (o, "starttime", &job_time)) {
             JSON w = Jnew ();
             Jadd_int64 (w, "starttime", job_time);
             Jget_int64 (o, "endtime", &job_time);
             Jadd_int64 (w, "endtime", job_time);
-            char *json_str = strdup (Jtostr (w));
-            zhash_insert (resrc->twindow, "0", (void *)json_str);
+            char *json_str = xstrdup (Jtostr (w));
+            zhash_insert (resrc->twindow, "0", (void *) json_str);
+            zhash_freefn (resrc->twindow, "0", free);
             Jput (w);
         }
     }
@@ -736,9 +741,11 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
         /* add twindow */
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
             JSON j = Jnew ();
-            Jadd_int64 (j, "start", epochtime ());
-            Jadd_int64 (j, "end", TIME_MAX);
-            zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
+            Jadd_int64 (j, "starttime", epochtime ());
+            Jadd_int64 (j, "endtime", TIME_MAX);
+            char *json_str = xstrdup (Jtostr (j));
+            zhash_insert (resrc->twindow, "0", (void *) json_str);
+            zhash_freefn (resrc->twindow, "0", free);
             Jput (j);
         }
     }
@@ -998,7 +1005,8 @@ void resrc_stage_resrc (resrc_t *resrc, size_t size)
  * Allocate the staged size of a resource to the specified job_id and
  * change its state to allocated.
  */
-int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t time_now, int64_t walltime)
+int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t time_now,
+                             int64_t walltime)
 {
     char *id_ptr = NULL;
     char *json_str = NULL;
@@ -1029,8 +1037,9 @@ int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t time_now, i
         j = Jnew ();
         Jadd_int64 (j, "starttime", time_now);
         Jadd_int64 (j, "endtime", end_time);
-        json_str = strdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *)json_str);
+        json_str = xstrdup (Jtostr (j));
+        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
+        zhash_freefn (resrc->twindow, id_ptr, free);
         Jput (j);
 
         rc = 0;
@@ -1069,8 +1078,9 @@ int resrc_reserve_resource (resrc_t *resrc, int64_t job_id,
         j = Jnew ();
         Jadd_int64 (j, "starttime", time_now);
         Jadd_int64 (j, "endtime", end_time);
-        json_str = strdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *)json_str);
+        json_str = xstrdup (Jtostr (j));
+        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
+        zhash_freefn (resrc->twindow, id_ptr, free);
         Jput (j);
 
         rc = 0;
