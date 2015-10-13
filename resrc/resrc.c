@@ -28,6 +28,8 @@
 #include <string.h>
 #include <assert.h>
 #include <czmq.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 #include "rdl.h"
 #include "resrc.h"
@@ -405,11 +407,11 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
-        resrc->type = strdup (type);
+        resrc->type = xstrdup (type);
         if (path)
-            resrc->path = strdup (path);
+            resrc->path = xstrdup (path);
         if (name)
-            resrc->name = strdup (name);
+            resrc->name = xstrdup (name);
         resrc->id = id;
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
@@ -434,9 +436,9 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
     resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
 
     if (new_resrc) {
-        new_resrc->type = strdup (resrc->type);
-        new_resrc->path = strdup (resrc->path);
-        new_resrc->name = strdup (resrc->name);
+        new_resrc->type = xstrdup (resrc->type);
+        new_resrc->path = xstrdup (resrc->path);
+        new_resrc->name = xstrdup (resrc->name);
         new_resrc->id = resrc->id;
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
@@ -529,7 +531,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
             json_object_object_foreachC (jpropso, iter) {
                 jpropo = Jget (iter.val);
-                property = strdup (json_object_get_string (jpropo));
+                property = xstrdup (json_object_get_string (jpropo));
                 zhash_insert (resrc->properties, iter.key, property);
                 zhash_freefn (resrc->properties, iter.key, free);
                 Jput (jpropo);
@@ -543,7 +545,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
             json_object_object_foreachC (jtagso, iter) {
                 jtago = Jget (iter.val);
-                tag = strdup (json_object_get_string (jtago));
+                tag = xstrdup (json_object_get_string (jtago));
                 zhash_insert (resrc->tags, iter.key, tag);
                 zhash_freefn (resrc->tags, iter.key, free);
                 Jput (jtago);
@@ -572,7 +574,7 @@ ret:
     return resrc;
 }
 
-static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
+static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
 {
     JSON o = NULL;
     resrc_t *resrc = NULL;
@@ -582,7 +584,7 @@ static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
     resrc = resrc_new_from_json (o, parent, true);
 
     while ((c = rdl_resource_next_child (r))) {
-        (void) resrc_add_resource (resrc, c);
+        (void) resrc_add_rdl_resource (resrc, c);
         rdl_resource_destroy (c);
     }
 
@@ -590,7 +592,7 @@ static resrc_t *resrc_add_resource (resrc_t *parent, struct resource *r)
     return resrc;
 }
 
-resrc_t *resrc_generate_resources (const char *path, char *resource)
+resrc_t *resrc_generate_rdl_resources (const char *path, char *resource)
 {
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
@@ -601,10 +603,200 @@ resrc_t *resrc_generate_resources (const char *path, char *resource)
         goto ret;
 
     if ((r = rdl_resource_get (rdl, resource)))
-        resrc = resrc_add_resource (NULL, r);
+        resrc = resrc_add_rdl_resource (NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
+ret:
+    return resrc;
+}
+
+static char *lowercase (char *str)
+{
+    if (str) {
+        int i = 0;
+        while (str[i]) {
+            str[i] = tolower((int) str[i]);
+            i++;
+        }
+    }
+    return str;
+}
+
+static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
+{
+    char *name = NULL;
+    char *path = NULL;
+    char *type = NULL;
+    int64_t id = 0;
+    resrc_t *resrc = NULL;
+    resrc_tree_t *parent_tree = NULL;
+    size_t size = 1;
+    uuid_t uuid;
+    xmlChar *prop;
+    xmlNodePtr cur;
+
+    prop = xmlGetProp (nodePtr, (const xmlChar*) "type");
+    if (prop) {
+        type = xstrdup ((char *) prop);
+        xmlFree (prop);
+        lowercase (type);
+    }
+    if (!strcmp (type, "machine")) {
+        char *c;
+        free (type);
+        type = xstrdup ("node");
+
+        cur = nodePtr->xmlChildrenNode;
+        while (cur != NULL) {
+            prop = xmlGetProp (cur, (const xmlChar *) "name");
+            if (prop && !xmlStrcmp (prop, (const xmlChar*) "HostName")) {
+                xmlFree (prop);
+                prop = xmlGetProp (cur, (const xmlChar *) "value");
+                if (prop) {
+                    name = xstrdup ((char *) prop);
+                    xmlFree (prop);
+                }
+                break;
+            }
+            xmlFree (prop);
+            cur = cur->next;
+        }
+        if (name) {
+            /*
+             * Break apart the hostname to fit the Flux resource model:
+             * generic name + id
+             */
+            for (c = name; *c; c++) {
+                if (isdigit(*c)) {
+                    id = strtol (c, NULL, 10);
+                    *c = '\0';
+                    break;
+                }
+            }
+        } else {
+            goto ret;
+        }
+    } else if (!strcmp (type, "numanode")) {
+        if (strcmp (parent->type, "numanode")) {
+            name = xstrdup (type);
+            prop = xmlGetProp (nodePtr, (const xmlChar *) "os_index");
+            if (prop) {
+                id = strtol ((char *) prop, NULL, 10);
+                xmlFree (prop);
+            }
+        } else {
+            /*
+             * We have to elevate the meager memory attribute of a
+             * NUMANode to a full-fledged Flux resrouce
+             */
+            free (type);
+            name = xstrdup ("memory");
+            type = xstrdup ("memory");
+            prop = xmlGetProp (nodePtr, (const xmlChar *) "local_memory");
+            if (prop) {
+                size = strtol ((char *) prop, NULL, 10);
+                size /= 1024;
+                xmlFree (prop);
+            }
+        }
+    } else if (!strcmp (type, "socket") || !strcmp (type, "core") ||
+               !strcmp (type, "pu")) {
+        name = xstrdup (type);
+        prop =  xmlGetProp (nodePtr, (const xmlChar *) "os_index");
+        if (prop) {
+            id = strtol ((char *) prop, NULL, 10);
+            xmlFree (prop);
+        }
+    } else {
+        /* that's all we're supporting for now... */
+        goto ret;
+    }
+
+    uuid_generate (uuid);
+    if (parent)
+        path = xasprintf ("%s/%s%"PRIu64"", parent->path, name, id);
+    else
+        path = xasprintf ("/%s%"PRIu64"", name, id);
+
+    resrc = resrc_new_resource (type, path, name, id, uuid, size);
+    if (resrc) {
+        if (parent)
+            parent_tree = parent->phys_tree;
+        resrc->phys_tree = resrc_tree_new (parent_tree, resrc);
+
+        if (!strcmp (type, "numanode") && strcmp (parent->type, "numanode")) {
+            /*
+             * create the memory resource so that it is never a parent
+             * of the NUMANode's children
+             */
+            resrc_new_from_xml (nodePtr, resrc);
+        }
+
+        /* add twindow */
+        if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
+            JSON j = Jnew ();
+            Jadd_int64 (j, "start", epochtime ());
+            Jadd_int64 (j, "end", TIME_MAX);
+            zhash_insert (resrc->twindow, "0", (void *)Jtostr (j));
+            Jput (j);
+        }
+    }
+ret:
+    free (name);
+    free (path);
+    free (type);
+
+    return resrc;
+}
+
+static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr)
+{
+    resrc_t *resrc = NULL;
+    resrc_t *retres = NULL;
+    resrc_t *surrogate = NULL;
+    xmlNode *nodeItr = NULL;
+
+    for (nodeItr = nodePtr; nodeItr; nodeItr = nodeItr->next) {
+        if (nodeItr->type == XML_ELEMENT_NODE &&
+            !xmlStrcmp (nodeItr->name, (const xmlChar *)"object")) {
+            resrc = resrc_new_from_xml (nodeItr, parent);
+            if (!retres && resrc)
+                retres = resrc;
+        }
+        if (nodeItr->xmlChildrenNode) {
+            if (resrc)
+                surrogate = resrc;
+            else
+                surrogate = parent;
+            resrc = resrc_add_xml_resource (surrogate, nodeItr->xmlChildrenNode);
+            if (!retres && resrc)
+                retres = resrc;
+        }
+    }
+
+    return retres;
+}
+
+resrc_t *resrc_generate_xml_resources (resrc_t *cluster_resrc, const char *buf,
+                                       size_t length)
+{
+    resrc_t *resrc = NULL;
+    xmlDocPtr doc; /* the resulting document tree */
+    xmlNodePtr rootElem;
+
+    if (!cluster_resrc)
+        goto ret;
+    doc = xmlReadMemory (buf, length, "noname.xml", NULL, 0);
+    if (!doc)
+        goto ret;
+
+    rootElem = xmlDocGetRootElement (doc);
+
+    if (rootElem)
+        resrc = resrc_add_xml_resource (cluster_resrc, rootElem);
+
+    xmlFreeDoc (doc);
 ret:
     return resrc;
 }
@@ -679,6 +871,19 @@ void resrc_print_resource (resrc_t *resrc)
     }
 }
 
+resrc_t *resrc_create_cluster (char *cluster)
+{
+    resrc_t *resrc = NULL;
+    uuid_t uuid;
+    char *path = xasprintf ("/%s", cluster);
+
+    uuid_generate (uuid);
+    resrc = resrc_new_resource ("cluster", path, cluster, 0, uuid, 1);
+    resrc->phys_tree = resrc_tree_new (NULL, resrc);
+    free (path);
+    return resrc;
+}
+
 /*
  * Finds if a resrc_t *sample matches with resrc_t *resrc in terms of walltime
  *
@@ -686,7 +891,7 @@ void resrc_print_resource (resrc_t *resrc)
  * Therefore it is sufficient if the walltime fits before the earliest starttime
  * of a reserved job.
  */
-bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
+static bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample)
 {
     bool rc = false;
 

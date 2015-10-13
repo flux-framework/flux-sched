@@ -28,6 +28,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <czmq.h>
+#include <hwloc.h>
 
 #include "../resrc.h"
 #include "../resrc_tree.h"
@@ -231,18 +232,24 @@ static void test_temporal_allocation ()
     resrc_resource_destroy (resource);
 }
 
+/*
+ * The test supports two options.  If there is an argument, it is
+ * treated as an RDL-formatted resource file to load.  If there is no
+ * arguement, the test reads the hwloc info from the node it is
+ * running on and uses those resources.  The 'rdl' boolean is used to
+ * steer the construction of the resource request to correlate with
+ * the loaded resources.
+ */
 int main (int argc, char *argv[])
 {
-    const char *filename = argv[1];
+    bool rdl;
+    char *buffer = NULL;
+    hwloc_topology_t topology;
+    int buflen = 0;
     int found = 0;
     int rc = 0;
     int verbose = 0;
-    JSON ja = NULL;
-    JSON jpropo = NULL; /* json property object */
-    /* JSON jtago = NULL;  /\* json tag object *\/ */
     JSON child_core = NULL;
-    JSON child_sock = NULL;
-    JSON memory = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
     resrc_t *resrc = NULL;
@@ -254,19 +261,35 @@ int main (int argc, char *argv[])
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    plan (13 + num_temporal_allocation_tests);
-    if (filename == NULL || *filename == '\0')
-        filename = getenv ("TESTRESRC_INPUT_FILE");
-
-    ok ((filename != NULL), "valid resource file name");
-    ok ((access (filename, F_OK) == 0), "resoure file exists");
-    ok ((access (filename, R_OK) == 0), "resoure file readable");
-
     init_time();
-    resrc = resrc_generate_resources (filename, "default");
+    if (argc > 1) {
+        const char *filename = argv[1];
+        plan (13 + num_temporal_allocation_tests);
+        rdl = true;
+        ok (!(filename == NULL || *filename == '\0'), "resoure file provided");
+        ok ((access (filename, F_OK) == 0), "resoure file exists");
+        ok ((access (filename, R_OK) == 0), "resoure file readable");
 
-    ok ((resrc != NULL), "resource generation took: %lf",
-        ((double)get_time())/1000000);
+        resrc = resrc_generate_rdl_resources (filename, "default");
+        ok ((resrc != NULL), "resource generation from config file took: %lf",
+            ((double)get_time())/1000000);
+    } else {
+        plan (14 + num_temporal_allocation_tests);
+        rdl = false;
+        ok ((hwloc_topology_init (&topology) == 0),
+            "hwloc topology init succeeded");
+        ok ((hwloc_topology_load (topology) == 0),
+            "hwloc topology load succeeded");
+        ok ((hwloc_topology_export_xmlbuffer (topology, &buffer, &buflen) == 0),
+            "hwloc topology export succeeded");
+        ok (((resrc = resrc_create_cluster ("cluster")) != 0),
+            "cluster resource creation succeeded");
+        ok ((resrc_generate_xml_resources (resrc, buffer, buflen) != 0),
+            "resource generation from hwloc took: %lf",
+            ((double)get_time())/1000000);
+        hwloc_free_xmlbuffer (topology, buffer);
+        hwloc_topology_destroy (topology);
+    }
     if (!resrc)
         goto ret;
 
@@ -284,39 +307,48 @@ int main (int argc, char *argv[])
     test_temporal_allocation ();
 
     /*
-     *  Build a resource composite to search for
+     *  Build a resource composite to search for.  Two variants are
+     *  constructed depending on whether the loaded resources came
+     *  from the sample RDL file or from the hwloc.  The hwloc request
+     *  does not span multiple nodes or contain the localid property.
      */
-    jpropo = Jnew ();
-    Jadd_int (jpropo, "localid", 1);
-
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
-    Jadd_int (child_core, "req_qty", 6);
-    json_object_object_add (child_core, "properties", jpropo);
-
-    memory = Jnew ();
-    Jadd_str (memory, "type", "memory");
-    Jadd_int (memory, "req_qty", 1);
-    Jadd_int (memory, "size", 100);
-
-    ja = Jnew_ar ();
-    json_object_array_add (ja, child_core);
-    json_object_array_add (ja, memory);
-
-    child_sock = Jnew ();
-    Jadd_str (child_sock, "type", "socket");
-    Jadd_int (child_sock, "req_qty", 2);
-    json_object_object_add (child_sock, "req_children", ja);
-
-    /* jtago = Jnew (); */
-    /* Jadd_bool (jtago, "maytag", true); */
-    /* Jadd_bool (jtago, "yourtag", true); */
-
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
-    /* json_object_object_add (req_res, "tags", jtago); */
-    Jadd_int (req_res, "req_qty", 2);
-    json_object_object_add (req_res, "req_child", child_sock);
+
+    if (rdl) {
+        JSON child_sock = Jnew ();
+        JSON ja = Jnew_ar ();
+        JSON jpropo = Jnew (); /* json property object */
+        JSON memory = Jnew ();
+
+        /* JSON jtago = Jnew ();  /\* json tag object *\/ */
+        /* Jadd_bool (jtago, "maytag", true); */
+        /* Jadd_bool (jtago, "yourtag", true); */
+
+        Jadd_str (memory, "type", "memory");
+        Jadd_int (memory, "req_qty", 1);
+        Jadd_int (memory, "size", 100);
+        json_object_array_add (ja, memory);
+
+        Jadd_int (child_core, "req_qty", 6);
+        Jadd_int (jpropo, "localid", 1);
+        json_object_object_add (child_core, "properties", jpropo);
+        json_object_array_add (ja, child_core);
+
+        Jadd_str (child_sock, "type", "socket");
+        Jadd_int (child_sock, "req_qty", 2);
+        json_object_object_add (child_sock, "req_children", ja);
+
+        Jadd_int (req_res, "req_qty", 2);
+        /* json_object_object_add (req_res, "tags", jtago); */
+        json_object_object_add (req_res, "req_child", child_sock);
+    } else {
+        Jadd_int (child_core, "req_qty", 2);
+        Jadd_int (req_res, "req_qty", 1);
+        json_object_object_add (req_res, "req_child", child_core);
+    }
 
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
     Jput (req_res);
