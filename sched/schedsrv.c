@@ -711,10 +711,12 @@ static int setup_sim (ssrvctx_t *ctx, char *sim_arg)
         rc = 0;
         goto done;
     } else if (strncmp (sim_arg, "true", 4)) {
-        flux_log (ctx->h, LOG_ERR, "unknown argument (%s) for sim option", sim_arg);
+        flux_log (ctx->h, LOG_ERR, "unknown argument (%s) for sim option",
+                  sim_arg);
+        errno = EINVAL;
         goto done;
     } else {
-        flux_log (ctx->h, LOG_DEBUG, "setting up sim in scheduler");
+        flux_log (ctx->h, LOG_INFO, "setting up sim in scheduler");
     }
 
     ctx->sctx.in_sim = true;
@@ -1517,8 +1519,9 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "resources loaded");
-    if (setup_sim (ctx, sim) != 0) {
-        flux_log (h, LOG_INFO, "failed to setup sim");
+    if ((sim) && setup_sim (ctx, sim) != 0) {
+        flux_log (h, LOG_ERR, "failed to setup sim");
+        goto done;
     }
     if (ctx->sctx.in_sim) {
         if (reg_sim_events (ctx) != 0) {
