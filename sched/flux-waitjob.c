@@ -43,7 +43,7 @@ typedef struct {
 
 static flux_t sig_flux_h;
 
-#define OPTIONS "h:c:s:"
+#define OPTIONS "hc:s:"
 static const struct option longopts[] = {
     {"help",          no_argument,        0, 'h'},
     {"sync-start",    required_argument,  0, 's'},
