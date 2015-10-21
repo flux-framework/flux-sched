@@ -446,6 +446,7 @@ static int load_resources (ssrvctx_t *ctx, char *path, char *uri)
             free (buf);
             free (key);
         }
+        flux_log (ctx->h, LOG_INFO, "loaded resrc using hwloc (status %d)", rc);
     }
 
     return rc;
