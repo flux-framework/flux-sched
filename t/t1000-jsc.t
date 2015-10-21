@@ -148,4 +148,44 @@ EOF
     kill -INT $p &&
     test_cmp expected2.sort output.2.cp.sort 
 '
+
+test_expect_success 'jsc: expected single-job-event sequence in hwloc read mode' '
+    flux module remove sched &&
+    flux module load ${schedsrv} &&
+    run_flux_jstat 3 &&
+    p=$( sync_flux_jstat 3) &&
+    timed_wait_job 3 7 5 &&
+    flux -x$tdir/sched submit -N 4 -n 4 hostname &&
+    cat >expected3 <<-EOF &&
+$trans
+EOF
+    timed_sync_wait_job 3 5 &&
+    cp output.3 output.3.cp &&
+    kill -INT $p &&
+    test_cmp expected3 output.3.cp 
+'
+
+test_expect_success 'jsc: expected multi-job-event sequence in hwloc read mode' '
+    run_flux_jstat 4 &&
+    p=$( sync_flux_jstat 4) &&
+    timed_wait_job 4 12 5 &&
+    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    cat >expected4 <<-EOF &&
+$trans
+$trans
+$trans
+$trans
+$trans
+EOF
+    timed_sync_wait_job 4 15 &&
+    cp output.4 output.4.cp &&
+    sort expected4 > expected4.sort &&
+    sort output.4.cp > output.4.cp.sort &&
+    kill -INT $p &&
+    test_cmp expected4.sort output.4.cp.sort 
+'
 test_done
