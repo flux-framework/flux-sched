@@ -92,22 +92,22 @@ typedef struct sched_ops {
 } sched_ops_t;
 
 typedef struct {
-    JSON jcb;
-    void *arg;
-    int errnum;
+    JSON          jcb;
+    void         *arg;
+    int           errnum;
 } jsc_event_t;
 
 typedef struct {
-    flux_t h;
-    void *arg;
+    flux_t        h;
+    void         *arg;
 } res_event_t;
 
 typedef struct {
-    bool in_sim;
-    sim_state_t *sim_state;
-    zlist_t *res_queue;
-    zlist_t *jsc_queue;
-    zlist_t *timer_queue;
+    bool          in_sim;
+    sim_state_t  *sim_state;
+    zlist_t      *res_queue;
+    zlist_t      *jsc_queue;
+    zlist_t      *timer_queue;
 } simctx_t;
 
 typedef struct {
