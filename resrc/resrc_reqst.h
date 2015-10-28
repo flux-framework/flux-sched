@@ -22,6 +22,26 @@ typedef struct resrc_reqst_list resrc_reqst_list_t;
 resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst);
 
 /*
+ * Return the start time of this request
+ */
+int64_t resrc_reqst_starttime (resrc_reqst_t *resrc_reqst);
+
+/*
+ * Set the start time of this request
+ */
+int resrc_reqst_set_starttime (resrc_reqst_t *resrc_reqst, int64_t time);
+
+/*
+ * Return the end time of this request
+ */
+int64_t resrc_reqst_endtime (resrc_reqst_t *resrc_reqst);
+
+/*
+ * Set the end time of this request
+ */
+int resrc_reqst_set_endtime (resrc_reqst_t *resrc_reqst, int64_t time);
+
+/*
  * Return the required number of resources in this request
  */
 int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst);
@@ -39,7 +59,7 @@ int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound);
 /*
  * Clear the number of resources found for this request
  */
-void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst);
+int resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst);
 
 /*
  * Return the number of children in the resource request
@@ -59,12 +79,13 @@ int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child);
 /*
  * Create a new resrc_reqst_t object
  */
-resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty);
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
+                                int64_t endtime);
 
 /*
  * Create a resrc_reqst_t object from a json object
  */
-resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent);
+resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent);
 
 /*
  * Free a resrc_reqst_t object

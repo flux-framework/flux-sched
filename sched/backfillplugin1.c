@@ -40,6 +40,28 @@
 #include "resrc_reqst.h"
 #include "schedsrv.h"
 
+#define EASY_BACKFILL 1
+
+static bool first_time_backfill = true;
+static zlist_t *completion_times = NULL;
+
+#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
+static bool compare_int64_ascending (void *item1, void *item2)
+{
+    int64_t time1 = *((int64_t *) item1);
+    int64_t time2 = *((int64_t *) item2);
+
+    return time1 > time2;
+}
+#else
+static int compare_int64_ascending (void *item1, void *item2)
+{
+    int64_t time1 = *((int64_t *) item1);
+    int64_t time2 = *((int64_t *) item2);
+
+    return time1 - time2;
+}
+#endif
 
 static bool select_children (flux_t h, resrc_tree_list_t *found_children,
                              resrc_reqst_list_t *reqst_children,
@@ -47,6 +69,9 @@ static bool select_children (flux_t h, resrc_tree_list_t *found_children,
 
 int sched_loop_setup (void)
 {
+    first_time_backfill = true;
+    if (!completion_times)
+        completion_times = zlist_new ();
     return 0;
 }
 
@@ -80,10 +105,6 @@ resrc_tree_list_t *find_resources (flux_t h, resrc_t *resrc,
         goto ret;
     }
 
-    if (resrc_reqst_set_starttime (resrc_reqst, 0) ||
-        resrc_reqst_set_endtime (resrc_reqst, 0))
-        goto ret;
-
     nfound = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
                                 found_trees, true);
 
@@ -107,7 +128,9 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
     while (resrc_tree) {
         selected = false;
         if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst_resrc (child_reqst), true, 0, 0)) {
+                                  resrc_reqst_resrc (child_reqst), true,
+                                  resrc_reqst_starttime (child_reqst),
+                                  resrc_reqst_endtime (child_reqst))) {
             if (resrc_reqst_num_children (child_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     child_tree = resrc_tree_new (parent_tree,
@@ -220,7 +243,8 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
     while (reqrd && rt) {
         resrc = resrc_tree_resrc (rt);
         if (resrc_match_resource (resrc, resrc_reqst_resrc (resrc_reqst), true,
-                                  0, 0)) {
+                                  resrc_reqst_starttime (resrc_reqst),
+                                  resrc_reqst_endtime (resrc_reqst))) {
             new_tree = resrc_tree_new (NULL, resrc);
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (rt)) {
@@ -260,7 +284,17 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
 int allocate_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
                         int64_t starttime, int64_t endtime)
 {
-    int rc = resrc_tree_list_allocate (rtl, job_id, 0, 0);
+    int rc = resrc_tree_list_allocate (rtl, job_id, starttime, endtime);
+
+    if (!rc) {
+        int64_t *completion_time = xzmalloc (sizeof(int64_t));
+        *completion_time = endtime;
+        rc = zlist_append (completion_times, completion_time);
+        zlist_freefn (completion_times, completion_time, free, true);
+        flux_log (h, LOG_DEBUG, "Allocated job %"PRId64" from %"PRId64" to "
+                  "%"PRId64"", job_id, starttime, *completion_time);
+    }
+
     return rc;
 }
 
@@ -269,15 +303,67 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
                        resrc_reqst_t *resrc_reqst)
 {
     int rc = -1;
+    int64_t *completion_time = NULL;
+    int64_t nfound = 0;
+    int64_t prev_completion_time = -1;
+    resrc_tree_list_t *found_trees = NULL;
+    resrc_tree_list_t *selected_trees = NULL;
+    resrc_tree_t *resrc_tree = NULL;
 
-    if (rtl && !(rc = resrc_tree_list_reserve (rtl, job_id, 0, 0)))
-        flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job %"PRId64"",
-                  resrc_reqst_reqrd (resrc_reqst), job_id);
+    if (EASY_BACKFILL && !first_time_backfill) {
+        goto ret;
+    } else if (!resrc || !resrc_reqst) {
+        flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
+        goto ret;
+    }
+
+    resrc_tree = resrc_phys_tree (resrc);
+    zlist_sort (completion_times, compare_int64_ascending);
+
+    for (completion_time = zlist_first (completion_times);
+         completion_time;
+         completion_time = zlist_next (completion_times)) {
+        /* Purge past times from consideration */
+        if (*completion_time < starttime) {
+            zlist_remove (completion_times, completion_time);
+            continue;
+        }
+        /* Don't test the same time multiple times */
+        if (prev_completion_time == *completion_time)
+            continue;
+
+        found_trees = resrc_tree_list_new ();
+        resrc_reqst_set_starttime (resrc_reqst, *completion_time + 1);
+        resrc_reqst_set_endtime (resrc_reqst, *completion_time + 1 + walltime);
+        flux_log (h, LOG_DEBUG, "Attempting to reserve %"PRId64" nodes for job "
+                  "%"PRId64" at time %"PRId64"", resrc_reqst_reqrd (resrc_reqst),
+                  job_id, *completion_time + 1);
+
+        nfound = resrc_tree_search (resrc_tree_children (resrc_tree),
+                                    resrc_reqst, found_trees, true);
+        if (nfound >= resrc_reqst_reqrd (resrc_reqst)) {
+            selected_trees = select_resources (h, found_trees, resrc_reqst);
+            if (selected_trees) {
+                rc = resrc_tree_list_reserve (selected_trees, job_id,
+                                              *completion_time + 1,
+                                              *completion_time + 1 + walltime);
+                first_time_backfill = false;
+                flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
+                          "%"PRId64" from %"PRId64" to %"PRId64"",
+                          resrc_reqst_reqrd (resrc_reqst), job_id,
+                          *completion_time + 1, *completion_time + 1 + walltime);
+                break;
+            }
+        }
+        prev_completion_time = *completion_time;
+        resrc_tree_list_destroy (found_trees, false);
+    }
+ret:
     return rc;
 }
 
 
-MOD_NAME ("sched.plugin1");
+MOD_NAME ("backfill.plugin1");
 
 
 /*

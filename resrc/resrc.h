@@ -59,8 +59,8 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
  * range
  */
 size_t resrc_available_during_range (resrc_t *resrc,
-                                     int64_t range_start_time,
-                                     int64_t range_end_time);
+                                     int64_t range_starttime,
+                                     int64_t range_endtime);
 /*
  * Return the resource state as a string
  */
@@ -127,9 +127,14 @@ resrc_t *resrc_create_cluster (char *cluster);
  *          sample    - sample resource with the required characteristics
  *          available - when true, consider only idle resources
  *                      otherwise find all possible resources matching type
+ *          starttime - start of period the resource needs to be available
+ *                      When the starttime is 0, only the current resource
+ *                      availability will be considered (now-based match).
+ *          endtime   - end of period the resource needs to be available
  * Returns: true if the input resource has the required characteristics
  */
-bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available);
+bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available,
+                           int64_t starttime, int64_t endtime);
 
 /*
  * Stage size elements of a resource
@@ -140,18 +145,25 @@ void resrc_stage_resrc(resrc_t *resrc, size_t size);
  * Allocate a resource to a job
  */
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id,
-                             int64_t time_now, int64_t walltime);
+                             int64_t starttime, int64_t endtime);
 
 /*
  * Reserve a resource for a job
  */
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id,
-                            int64_t time_now, int64_t walltime);
+                            int64_t starttime, int64_t endtime);
 
 /*
  * Remove a job allocation from a resource
+ * Supports both now and time-based allocations.
  */
-int resrc_release_resource (resrc_t *resrc, int64_t rel_job);
+int resrc_release_allocation (resrc_t *resrc, int64_t rel_job);
+
+/*
+ * Remove all reservations of a resource
+ * Supports both now and time-based reservations.
+ */
+int resrc_release_all_reservations (resrc_t *resrc);
 
 /*
  * Get epoch time
