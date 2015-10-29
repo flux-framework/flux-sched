@@ -40,7 +40,8 @@ struct resrc_reqst_list {
 struct resrc_reqst {
     resrc_reqst_t *parent;
     resrc_t *resrc;
-    int64_t walltime;
+    int64_t starttime;
+    int64_t endtime;
     int64_t reqrd;
     int64_t nfound;
     resrc_reqst_list_t *children;
@@ -59,6 +60,54 @@ resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst)
     if (resrc_reqst)
         return resrc_reqst->resrc;
     return NULL;
+}
+
+int64_t resrc_reqst_starttime (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->starttime;
+    return -1;
+}
+
+int resrc_reqst_set_starttime (resrc_reqst_t *resrc_reqst, int64_t time)
+{
+    if (resrc_reqst) {
+        resrc_reqst->starttime = time;
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            resrc_reqst_t *child = resrc_reqst_list_first
+                (resrc_reqst->children);
+            while (child) {
+                resrc_reqst_set_starttime (child, time);
+                child = resrc_reqst_list_next (resrc_reqst->children);
+            }
+        }
+        return 0;
+    }
+    return -1;
+}
+
+int64_t resrc_reqst_endtime (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->endtime;
+    return -1;
+}
+
+int resrc_reqst_set_endtime (resrc_reqst_t *resrc_reqst, int64_t time)
+{
+    if (resrc_reqst) {
+        resrc_reqst->endtime = time;
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            resrc_reqst_t *child = resrc_reqst_list_first
+                (resrc_reqst->children);
+            while (child) {
+                resrc_reqst_set_endtime (child, time);
+                child = resrc_reqst_list_next (resrc_reqst->children);
+            }
+        }
+        return 0;
+    }
+    return -1;
 }
 
 int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst)
@@ -84,7 +133,7 @@ int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound)
     return -1;
 }
 
-void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
+int resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst) {
         resrc_reqst->nfound = 0;
@@ -96,7 +145,9 @@ void resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
                 child = resrc_reqst_list_next (resrc_reqst->children);
             }
         }
+        return 0;
     }
+    return -1;
 }
 
 size_t resrc_reqst_num_children (resrc_reqst_t *resrc_reqst)
@@ -124,12 +175,15 @@ int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
     return rc;
 }
 
-resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty)
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
+    int64_t endtime)
 {
     resrc_reqst_t *resrc_reqst = xzmalloc (sizeof (resrc_reqst_t));
     if (resrc_reqst) {
         resrc_reqst->parent = NULL;
         resrc_reqst->resrc = resrc;
+        resrc_reqst->starttime = starttime;
+        resrc_reqst->endtime = endtime;
         resrc_reqst->reqrd = qty;
         resrc_reqst->nfound = 0;
         resrc_reqst->children = resrc_reqst_list_new ();
@@ -138,24 +192,36 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty)
     return resrc_reqst;
 }
 
-resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
+resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
 {
     int qty = 0;
     JSON ca = NULL;     /* array of child json objects */
     JSON co = NULL;     /* child json object */
     resrc_t *resrc = NULL;
+    int64_t endtime;
+    int64_t starttime;
     resrc_reqst_t *child_reqst = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
 
     if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
         goto ret;
 
+    if (parent)
+        starttime = parent->starttime;
+    else if (!(Jget_int64 (o, "starttime", &starttime)))
+        starttime = time (NULL);
+
+    if (parent)
+        endtime = parent->endtime;
+    else if (!(Jget_int64 (o, "endtime", &endtime)))
+        endtime = TIME_MAX;
+
     resrc = resrc_new_from_json (o, NULL, false);
     if (resrc) {
-        resrc_reqst = resrc_reqst_new (resrc, qty);
+        resrc_reqst = resrc_reqst_new (resrc, qty, starttime, endtime);
 
         if ((co = Jobj_get (o, "req_child"))) {
-            child_reqst = resrc_reqst_from_json (co, resrc);
+            child_reqst = resrc_reqst_from_json (co, resrc_reqst);
             if (child_reqst)
                 resrc_reqst_add_child (resrc_reqst, child_reqst);
         } else if ((ca = Jobj_get (o, "req_children"))) {
@@ -164,7 +230,7 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_t *parent)
             if (Jget_ar_len (ca, &nchildren)) {
                 for (i=0; i < nchildren; i++) {
                     Jget_ar_obj (ca, i, &co);
-                    child_reqst = resrc_reqst_from_json (co, resrc);
+                    child_reqst = resrc_reqst_from_json (co, resrc_reqst);
                     if (child_reqst)
                         resrc_reqst_add_child (resrc_reqst, child_reqst);
                 }
@@ -292,7 +358,9 @@ static bool match_child (resrc_tree_list_t *r_trees, resrc_reqst_t *resrc_reqst,
     while (resrc_tree) {
         found = false;
         if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst_resrc (resrc_reqst), available)) {
+                                  resrc_reqst->resrc, available,
+                                  resrc_reqst->starttime,
+                                  resrc_reqst->endtime)) {
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     child_tree = resrc_tree_new (parent_tree,
@@ -381,7 +449,9 @@ int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
     resrc_tree = resrc_tree_list_first (resrcs_in);
     while (resrc_tree) {
         if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst->resrc, available)) {
+                                  resrc_reqst->resrc, available,
+                                  resrc_reqst->starttime,
+                                  resrc_reqst->endtime)) {
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     new_tree = resrc_tree_new (NULL,

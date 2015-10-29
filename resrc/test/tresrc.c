@@ -109,9 +109,9 @@ static void test_temporal_allocation ()
 
     // Setup the resource allocations for the rest of the tests
     resrc_stage_resrc (resource, 5);
-    rc = (rc || resrc_allocate_resource (resource, 1, 0, 1000));
+    rc = (rc || resrc_allocate_resource (resource, 1, 1, 1000));
     resrc_stage_resrc (resource, 10);
-    rc = (rc || resrc_allocate_resource (resource, 2, 2000, 1000));
+    rc = (rc || resrc_allocate_resource (resource, 2, 2000, 3000));
     ok (!rc, "Temporal allocation setup works");
     if (rc) {
         return;
@@ -122,7 +122,7 @@ static void test_temporal_allocation ()
     // This should fail
     rc = (rc || !resrc_allocate_resource (resource, 3, 10, 3000));
     // This should work
-    rc = (rc || resrc_allocate_resource (resource, 3, 10, 1989));
+    rc = (rc || resrc_allocate_resource (resource, 3, 10, 1999));
     ok (!rc, "Overlapping temporal allocations work");
     if (rc) {
         return;
@@ -130,7 +130,7 @@ static void test_temporal_allocation ()
 
     // Test "available at time"
     // Job 1
-    available = resrc_available_at_time (resource, 0);
+    available = resrc_available_at_time (resource, 1);
     rc = (rc || !(available == 5));
     // Jobs 1 & 3
     available = resrc_available_at_time (resource, 10);
@@ -249,6 +249,7 @@ int main (int argc, char *argv[])
     int found = 0;
     int rc = 0;
     int verbose = 0;
+    int64_t nowtime = epochtime ();
     JSON child_core = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
@@ -406,22 +407,22 @@ int main (int argc, char *argv[])
     init_time ();
 
     selected_trees = test_select_resources (found_trees, 1);
-    rc = resrc_tree_list_allocate (selected_trees, 1, -1, 3600);
+    rc = resrc_tree_list_allocate (selected_trees, 1, nowtime, nowtime + 3600);
     ok (!rc, "successfully allocated resources for job 1");
     resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 2);
-    rc = resrc_tree_list_allocate (selected_trees, 2, -1, 3600);
+    rc = resrc_tree_list_allocate (selected_trees, 2, nowtime, nowtime + 3600);
     ok (!rc, "successfully allocated resources for job 2");
     resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 3);
-    rc = resrc_tree_list_allocate (selected_trees, 3, -1, 3600);
+    rc = resrc_tree_list_allocate (selected_trees, 3, nowtime, nowtime + 3600);
     ok (!rc, "successfully allocated resources for job 3");
     resrc_tree_list_free (selected_trees);
 
     selected_trees = test_select_resources (found_trees, 4);
-    rc = resrc_tree_list_reserve (selected_trees, 4, -1, 3600);
+    rc = resrc_tree_list_reserve (selected_trees, 4, nowtime, nowtime + 3600);
     ok (!rc, "successfully reserved resources for job 4");
     resrc_tree_list_free (selected_trees);
 

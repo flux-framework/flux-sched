@@ -202,16 +202,16 @@ resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
 }
 
 int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
-                         int64_t time_now, int64_t walltime)
+                         int64_t starttime, int64_t endtime)
 {
     int rc = -1;
     if (resrc_tree) {
         rc = resrc_allocate_resource (resrc_tree->resrc, job_id,
-                                      time_now, walltime);
+                                      starttime, endtime);
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
-                rc = resrc_tree_allocate (child, job_id, time_now, walltime);
+                rc = resrc_tree_allocate (child, job_id, starttime, endtime);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
@@ -220,16 +220,16 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
 }
 
 int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
-                        int64_t time_now, int64_t walltime)
+                        int64_t starttime, int64_t endtime)
 {
     int rc = -1;
     if (resrc_tree) {
         rc = resrc_reserve_resource (resrc_tree->resrc, job_id,
-                                     time_now, walltime);
+                                     starttime, endtime);
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
-                rc = resrc_tree_reserve (child, job_id, time_now, walltime);
+                rc = resrc_tree_reserve (child, job_id, starttime, endtime);
                 child = resrc_tree_list_next (resrc_tree->children);
             }
         }
@@ -241,7 +241,7 @@ int resrc_tree_release (resrc_tree_t *resrc_tree, int64_t job_id)
 {
     int rc = -1;
     if (resrc_tree) {
-        rc = resrc_release_resource (resrc_tree->resrc, job_id);
+        rc = resrc_release_allocation (resrc_tree->resrc, job_id);
         if (resrc_tree_num_children (resrc_tree)) {
             resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
             while (!rc && child) {
@@ -251,6 +251,36 @@ int resrc_tree_release (resrc_tree_t *resrc_tree, int64_t job_id)
         }
     }
     return rc;
+}
+
+int resrc_tree_release_all_reservations (resrc_tree_t *resrc_tree)
+{
+    int rc = -1;
+    if (resrc_tree) {
+        rc = resrc_release_all_reservations (resrc_tree->resrc);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
+            while (!rc && child) {
+                rc = resrc_tree_release_all_reservations (child);
+                child = resrc_tree_list_next (resrc_tree->children);
+            }
+        }
+    }
+    return rc;
+}
+
+void resrc_tree_unstage_resources (resrc_tree_t *resrc_tree)
+{
+    if (resrc_tree) {
+        resrc_stage_resrc (resrc_tree->resrc, 0);
+        if (resrc_tree_num_children (resrc_tree)) {
+            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
+            while (child) {
+                resrc_tree_unstage_resources (child);
+                child = resrc_tree_list_next (resrc_tree->children);
+            }
+        }
+    }
 }
 
 /***********************************************************************
@@ -362,7 +392,7 @@ resrc_tree_list_t *resrc_tree_list_deserialize (JSON o)
 }
 
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
-                              int64_t time_now, int64_t walltime)
+                              int64_t starttime, int64_t endtime)
 {
     resrc_tree_t *rt;
     int rc = -1;
@@ -371,7 +401,7 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
-            rc = resrc_tree_allocate (rt, job_id, time_now, walltime);
+            rc = resrc_tree_allocate (rt, job_id, starttime, endtime);
             rt = resrc_tree_list_next (rtl);
         }
     }
@@ -380,7 +410,7 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
 }
 
 int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id,
-                             int64_t time_now, int64_t walltime)
+                             int64_t starttime, int64_t endtime)
 {
     resrc_tree_t *rt;
     int rc = -1;
@@ -389,7 +419,7 @@ int resrc_tree_list_reserve (resrc_tree_list_t *rtl, int64_t job_id,
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
-            rc = resrc_tree_reserve (rt, job_id, time_now, walltime);
+            rc = resrc_tree_reserve (rt, job_id, starttime, endtime);
             rt = resrc_tree_list_next (rtl);
         }
     }
@@ -412,6 +442,36 @@ int resrc_tree_list_release (resrc_tree_list_t *rtl, int64_t job_id)
     }
 
     return rc;
+}
+
+int resrc_tree_list_release_all_reservations (resrc_tree_list_t *rtl)
+{
+    resrc_tree_t *rt;
+    int rc = -1;
+
+    if (rtl) {
+        rc = 0;
+        rt = resrc_tree_list_first (rtl);
+        while (!rc && rt) {
+            rc = resrc_tree_release_all_reservations (rt);
+            rt = resrc_tree_list_next (rtl);
+        }
+    }
+
+    return rc;
+}
+
+void resrc_tree_list_unstage_resources (resrc_tree_list_t *rtl)
+{
+    resrc_tree_t *rt;
+
+    if (rtl) {
+        rt = resrc_tree_list_first (rtl);
+        while (rt) {
+            resrc_tree_unstage_resources (rt);
+            rt = resrc_tree_list_next (rtl);
+        }
+    }
 }
 
 /*

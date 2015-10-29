@@ -5,13 +5,15 @@ LIBS = $(FLUX_LIBS) $(RESRC_LIBS)
 
 CONF=../conf/hype.lua
 
-BUILD = schedsrv.so schedplugin1.so flux-waitjob
+BUILD = schedsrv.so schedplugin1.so backfillplugin1.so flux-waitjob
 
 all: $(BUILD)
 
 schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS) $(SIM_LIBS)
 schedplugin%.so: schedplugin%.o xzmalloc.o log.o jsonutil.o
+	$(CC) -shared -o $@ $^ $(LIBS)
+backfillplugin%.so: backfillplugin%.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 flux-waitjob: flux-waitjob.o log.o jsonutil.o
 	$(CC) -o $@ $^ $(LIBS)
