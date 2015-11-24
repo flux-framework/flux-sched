@@ -283,135 +283,67 @@ int queue_kvs_cb (const char *key, const char *val, void *arg, int errnum)
     return 0;
 }
 
-void newlwj_rpc (flux_t h,
-                 flux_msg_handler_t *w,
-                 const flux_msg_t *msg,
-                 void *arg)
+static inline void get_jobid (JSON jcb, int64_t *jid)
 {
-    JSON o = NULL, o_resp = NULL;
-    const char *key = NULL, *json_str = NULL;
-    int64_t id;
-    int rc = 0;
-
-    if (flux_request_decode (msg, NULL, &json_str) < 0
-        || !(o = Jfromstr (json_str)) || !Jget_str (o, "key", &key)
-        || !Jget_int64 (o, "val", &id)) {
-        flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
-        Jput (o);
-        rc = -1;
-    } else {
-        id = id + 1;  // mimics the original kvs cb
-        newlwj_cb (key, id, h, 0);
-    }
-
-    o_resp = Jnew ();
-    Jadd_int (o_resp, "rc", rc);
-    flux_respond (h, msg, 0, Jtostr (o_resp));
-    Jput (o_resp);
-
-    if (o)
-        Jput (o);
+    Jget_int64 (jcb, JSC_JOBID, jid);
 }
 
-/* The val argument is for the *next* job id.  Hence, the job id of
- * the new job will be (val - 1).
- */
-int newlwj_cb (const char *key, int64_t val, void *arg, int errnum)
+static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
 {
-    char path[MAX_STR_LEN];
-    flux_lwj_t *j = NULL;
-    flux_t h = arg;
-    ctx_t *ctx = getctx (h);
-
-    if (errnum > 0) {
-        /* Ignore ENOENT.  It is expected when this cb is called right
-         * after registration.
-         */
-        if (errnum != ENOENT) {
-            flux_log (h,
-                      LOG_ERR,
-                      "newlwj_cb key(%s), val(%"PRId64"): %s",
-                      key,
-                      val,
-                      strerror (errnum));
-            goto error;
-        } else {
-            flux_log (h,
-                      LOG_DEBUG,
-                      "newlwj_cb key(%s), val(%"PRId64"): %s",
-                      key,
-                      val,
-                      strerror (errnum));
-        }
-        goto ret;
-    } else if (val < 0) {
-        flux_log (h, LOG_ERR, "newlwj_cb key(%s), val(%"PRId64")", key, val);
-        goto error;
-    } else {
-        flux_log (h, LOG_DEBUG, "newlwj_cb key(%s), val(%"PRId64")", key, val);
-    }
-
-    if (!(j = (flux_lwj_t *)malloc (sizeof (flux_lwj_t)))) {
-        flux_log (h, LOG_ERR, "oom");
-        goto error;
-    }
-    // j->lwj_id = val;
-    j->lwj_id = val - 1;
-    j->state = j_null;
-
-    if (zlist_append (ctx->p_queue, j) == -1) {
-        flux_log (h, LOG_ERR, "appending a job to pending queue failed");
-        goto error;
-    }
-
-    snprintf (path, MAX_STR_LEN, "lwj.%"PRId64"", j->lwj_id);
-    if (reg_lwj_state_hdlr (h, path, queue_kvs_cb) == -1) {
-        flux_log (h,
-                  LOG_ERR,
-                  "register lwj state change "
-                  "handling callback: %s",
-                  strerror (errno));
-        goto error;
-    }
-ret:
-    return 0;
-
-error:
-    flux_log (h, LOG_ERR, "newlwj_cb failed");
-    if (j)
-        free (j);
-
-    return 0;
+    JSON o;
+    Jget_obj (jcb, JSC_STATE_PAIR, &o);
+    Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
+    Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
 }
 
-int reg_lwj_state_hdlr (flux_t h, const char *path, kvs_set_string_f func)
+static inline bool is_newjob (JSON jcb)
 {
-    int rc = 0;
-    char *k = NULL;
+    int64_t os, ns;
+    get_states (jcb, &os, &ns);
+    return ((os == J_NULL) && (ns == J_NULL))? true : false;
+}
 
-    asprintf (&k, "%s.state", path);
-    if (kvs_watch_string (h, k, func, (void *)h) < 0) {
-        flux_log (
-            h, LOG_ERR, "watch a lwj state in %s: %s.", k, strerror (errno));
-        rc = -1;
-        goto ret;
+static int append_to_pqueue (ctx_t *ctx, JSON jcb)
+{
+    int rc = -1;
+    int64_t jid = -1;;
+    flux_lwj_t *job = NULL;
+
+    get_jobid (jcb, &jid);
+    if ( !(job = (flux_lwj_t *) xzmalloc (sizeof (*job))))
+        oom ();
+
+    job->lwj_id = jid;
+    job->state = (lwj_state_e) J_NULL;
+    if (zlist_append (ctx->p_queue, job) != 0) {
+        flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
+        goto done;
     }
-    flux_log (h, LOG_DEBUG, "registered lwj %s.state change callback", path);
-
-ret:
-    free (k);
+    rc = 0;
+done:
     return rc;
 }
 
-int reg_newlwj_hdlr (flux_t h, kvs_set_int64_f func)
+static int job_status_cb (JSON jcb, void *arg, int errnum)
 {
-    if (kvs_watch_int64 (h, "lwj.next-id", func, (void *)h) < 0) {
-        flux_log (h, LOG_ERR, "watch lwj.next-id: %s", strerror (errno));
+    ctx_t *ctx = getctx ((flux_t)arg);
+    flux_lwj_t *j = NULL;
+    job_state_t ns = J_FOR_RENT;
+    flux_event_t e;
+
+    if (errnum > 0) {
+        flux_log (ctx->h, LOG_ERR, "job_status_cb: errnum passed in");
         return -1;
     }
-    flux_log (h, LOG_DEBUG, "registered lwj creation callback");
 
-    return 0;
+    if (is_newjob (jcb))
+        append_to_pqueue (ctx, jcb);
+    Jput (jcb);
+
+    e.t = lwj_event;
+    e.ev.je = (lwj_event_e) ns;
+    e.lwj = j;
+    return action_j_event (ctx, &e);
 }
 
 int wait_for_lwj_init (flux_t h)
@@ -1782,12 +1714,8 @@ int init_and_start_scheduler (flux_t h,
         goto ret;
     }
 
-    if (reg_newlwj_hdlr (h, newlwj_cb) == -1) {
-        flux_log (h,
-                  LOG_ERR,
-                  "register new lwj handling "
-                  "callback: %s",
-                  strerror (errno));
+    if (jsc_notify_status_obj (h, job_status_cb, (void *)h) != 0) {
+        flux_log (h, LOG_ERR, "error registering a job status change CB");
         rc = -1;
         goto ret;
     }
