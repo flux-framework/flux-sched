@@ -432,33 +432,37 @@ static int load_resources (ssrvctx_t *ctx, char *path, char *uri)
                       ctx->rctx.root_uri, path);
         }
     } else if ((ctx->rctx.root_resrc = resrc_create_cluster ("cluster"))) {
-        char    *buf = NULL;
-        char    *key;
-        int64_t i = 0;
+        JSON o = NULL;
+        const char *buf = NULL;
+        const char *json_str = NULL;
+        flux_rpc_t *rpc;
         size_t  buflen = 0;
 
-        rc = 0;
-        while (1) {
-            key = xasprintf ("resource.hwloc.xml.%"PRIu64"", i++);
-            if (kvs_get_string (ctx->h, key, &buf)) {
-                /* no more nodes to load - normal exit */
-                free (key);
-                break;
-            }
-            buflen = strlen (buf);
-            if ((resrc_generate_xml_resources (ctx->rctx.root_resrc, buf,
-                                               buflen))) {
-                flux_log (ctx->h, LOG_DEBUG, "loaded %s", key);
-            } else {
-                free (buf);
-                free (key);
-                rc = -1;
-                break;
-            }
-            free (buf);
-            free (key);
+        if (!(rpc = flux_rpc (ctx->h, "resource-hwloc.topo", NULL,
+                              FLUX_NODEID_ANY, 0))) {
+            flux_log (ctx->h, LOG_ERR, "failed to send resource-hwloc request");
+            goto ret;
+        } else if (flux_rpc_get (rpc, NULL, &json_str) < 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to receive resource-hwloc "
+                      "response");
+            goto ret;
+        } else if (json_str == NULL  || !(o = Jfromstr (json_str))) {
+            flux_log (ctx->h, LOG_ERR, "unable to extract resource-hwloc json");
+            goto ret;
+        } else if (!Jget_str (o, "topology", &buf)) {
+            flux_log (ctx->h, LOG_ERR, "unable to read resource-hwloc topology");
+            goto ret;
         }
-        flux_log (ctx->h, LOG_INFO, "loaded resrc using hwloc (status %d)", rc);
+        buflen = strlen (buf);
+        if ((resrc_generate_xml_resources (ctx->rctx.root_resrc, buf, buflen))) {
+            flux_log (ctx->h, LOG_DEBUG, "loaded hwloc topology");
+            rc = 0;
+        } else {
+            flux_log (ctx->h, LOG_ERR, "failed to generate_xml_resources");
+        }
+    ret:
+        Jput (o);
+        flux_rpc_destroy (rpc);
     }
 
     return rc;
