@@ -115,7 +115,7 @@ test_expect_success 'jsc: expected job-event sequence for single-job scheduling'
     run_flux_jstat 1 &&
     p=$( sync_flux_jstat 1) &&
     timed_wait_job 1 1 5 &&
-    flux -x$tdir/sched submit -N 4 -n 4 hostname &&
+    flux submit -N 4 -n 4 hostname &&
     cat >expected1 <<-EOF &&
 $trans
 EOF
@@ -129,11 +129,11 @@ test_expect_success 'jsc: expected job-event sequence for multiple-job schedulin
     run_flux_jstat 2 &&
     p=$( sync_flux_jstat 2) &&
     timed_wait_job 2 6 5 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
     cat >expected2 <<-EOF &&
 $trans
 $trans
@@ -155,7 +155,7 @@ test_expect_success 'jsc: expected single-job-event sequence in hwloc read mode'
     run_flux_jstat 3 &&
     p=$( sync_flux_jstat 3) &&
     timed_wait_job 3 7 5 &&
-    flux -x$tdir/sched submit -N 4 -n 4 hostname &&
+    flux submit -N 4 -n 4 hostname &&
     cat >expected3 <<-EOF &&
 $trans
 EOF
@@ -169,11 +169,11 @@ test_expect_success 'jsc: expected multi-job-event sequence in hwloc read mode' 
     run_flux_jstat 4 &&
     p=$( sync_flux_jstat 4) &&
     timed_wait_job 4 12 5 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
+    flux submit -N 4 -n 4 sleep 2 &&
     cat >expected4 <<-EOF &&
 $trans
 $trans
