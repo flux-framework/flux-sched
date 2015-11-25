@@ -68,7 +68,7 @@ timed_sync_wait_job () {
 test_expect_success 'waitjob: works when the job has not started' '
     flux module load ${schedsrv} rdl-conf=${rdlconf} &&
     timed_wait_job 1 1 5 &&
-    flux -x$tdir/sched submit -N 4 -n 4 hostname &&
+    flux submit -N 4 -n 4 hostname &&
     timed_sync_wait_job 1 5
 '
 
@@ -78,7 +78,7 @@ test_expect_success 'waitjob: works when the job has already completed' '
 '
 
 test_expect_success 'waitjob: works when the job started but has not completed' '
-    flux -x$tdir/sched submit -N 4 -n 4 sleep 5 &&
+    flux submit -N 4 -n 4 sleep 5 &&
     timed_wait_job 3 2 3 &&
     timed_sync_wait_job 3 6
 '
