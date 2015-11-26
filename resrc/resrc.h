@@ -40,6 +40,13 @@ char *resrc_path (resrc_t *resrc);
 char *resrc_name (resrc_t *resrc);
 
 /*
+ * Return the digest of resrc -- key to find corresponding
+ * broker rank
+ */
+char *resrc_digest (resrc_t *resrc);
+char *resrc_set_digest (resrc_t *resrc, char *digest);
+
+/*
  * Return the id of the resouce
  */
 int64_t resrc_id (resrc_t *resrc);

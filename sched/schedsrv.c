@@ -23,11 +23,7 @@
 \*****************************************************************************/
 
 /*
- * schedsrv.c - scheduler frameowrk service comms module
- *
- * Update Log:
- *       Apr 12 2015 DHA: Code refactoring including JSC API integration
- *       May 24 2014 DHA: File created.
+ * schedsrv.c - scheduler framework service comms module
  */
 
 #include <stdio.h>
@@ -47,6 +43,8 @@
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
+#include "rs2rank.h"
+#include "rsreader.h"
 #include "schedsrv.h"
 #include "../simulator/simulator.h"
 
@@ -60,6 +58,7 @@ static int timer_event_cb (flux_t h, void *arg);
 static void res_event_cb (flux_t h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
 static int job_status_cb (JSON jcb, void *arg, int errnum);
+
 
 /******************************************************************************
  *                                                                            *
@@ -115,12 +114,22 @@ typedef struct {
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
+typedef struct {
+    char         *path;
+    char         *uri;
+    char         *sim;
+    char         *userplugin;
+    rsreader_t    r_mode;
+} ssrvarg_t;
+
 /* TODO: Implement prioritization function for p_queue */
 typedef struct {
     flux_t        h;
     zlist_t      *p_queue;            /* Pending job priority queue */
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
+    machs_t      *machs;              /* rs2rank table */
+    ssrvarg_t     arg;                /* args passed to this module */
     rdlctx_t      rctx;               /* RDL context */
     simctx_t      sctx;               /* simulator context */
     sched_ops_t   sops;               /* scheduler plugin operations */
@@ -131,12 +140,65 @@ typedef struct {
  *                                 Utilities                                  *
  *                                                                            *
  ******************************************************************************/
+
+static inline void ssrvarg_init (ssrvarg_t *arg)
+{
+    arg->path = NULL;
+    arg->uri = NULL;
+    arg->sim = NULL;
+    arg->userplugin = NULL;
+    arg->r_mode = RSREADER_FOR_RENT;
+}
+
+static inline void ssrvarg_free (ssrvarg_t *arg)
+{
+    if (arg->path)
+        free (arg->path);
+    if (arg->uri)
+        free (arg->uri);
+    if (arg->sim)
+        free (arg->sim);
+    if (arg->userplugin)
+        free (arg->userplugin);
+}
+
+static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
+{
+    int i = 0, rc = 0;
+
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
+            a->path = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
+            a->uri = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
+            a->sim = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("plugin=", argv[i], sizeof ("plugin"))) {
+            a->userplugin = xstrdup (strstr (argv[i], "=") + 1);
+        } else {
+            rc = -1;
+            errno = EINVAL;
+            goto done;
+        }
+    }
+    if (!(a->userplugin))
+        a->userplugin = xstrdup ("sched.plugin1");
+    if (a->path)
+        a->r_mode = (a->sim)? RSREADER_RESRC_EMUL : RSREADER_RESRC;
+    else
+        a->r_mode = RSREADER_HWLOC;
+done:
+    return rc;
+}
+
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
+    rs2rank_tab_destroy (ctx->machs);
+    ssrvarg_free (&(ctx->arg));
     resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
     free (ctx->sctx.sim_state);
@@ -162,6 +224,9 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
             oom ();
+        if (!(ctx->machs = rs2rank_tab_new ()))
+            oom ();
+        ssrvarg_init (&(ctx->arg));
         ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
         ctx->sctx.in_sim = false;
@@ -370,7 +435,7 @@ done:
     return rc;
 }
 
-static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
+static int load_sched_plugin (ssrvctx_t *ctx)
 {
     int rc = -1;
     flux_t h = ctx->h;
@@ -381,9 +446,9 @@ static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
         flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
         goto done;
     }
-    if (!(path = flux_modfind (searchpath, pin))) {
+    if (!(path = flux_modfind (searchpath, ctx->arg.userplugin))) {
         flux_log (h, LOG_ERR, "%s: not found in module search path %s",
-                  pin, searchpath);
+                  ctx->arg.userplugin, searchpath);
         goto done;
     }
     if (!(ctx->sops.dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
@@ -391,7 +456,7 @@ static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
                   dlerror ());
         goto done;
     }
-    flux_log (h, LOG_DEBUG, "loaded: %s", pin);
+    flux_log (h, LOG_DEBUG, "loaded: %s", ctx->arg.userplugin);
     rc = resolve_functions (ctx);
 
 done:
@@ -411,69 +476,129 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
-static int load_resources (ssrvctx_t *ctx, char *path, char *uri)
+static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
 {
     int rc = -1;
+    size_t len = 0;
+    uint32_t rank = 0, size = 0;
+    char *key = NULL, *rs_buf = NULL;;
 
-    setup_rdl_lua (ctx->h);
-    if (path) {
-        if (uri)
-            ctx->rctx.root_uri = uri;
-        else
-            ctx->rctx.root_uri = xstrdup ("default");
-
-        if ((ctx->rctx.root_resrc =
-             resrc_generate_rdl_resources (path, ctx->rctx.root_uri))) {
-            flux_log (ctx->h, LOG_DEBUG, "loaded %s rdl resource from %s",
-                      ctx->rctx.root_uri, path);
-            rc = 0;
-        } else {
-            flux_log (ctx->h, LOG_ERR, "failed to load %s rdl resource from %s",
-                      ctx->rctx.root_uri, path);
-        }
-    } else if ((ctx->rctx.root_resrc = resrc_create_cluster ("cluster"))) {
-        char    *buf = NULL;
-        char    *key;
-        int64_t i = 0;
-        size_t  buflen = 0;
-
-        rc = 0;
-        while (1) {
-            key = xasprintf ("resource.hwloc.xml.%"PRIu64"", i++);
-            if (kvs_get_string (ctx->h, key, &buf)) {
-                /* no more nodes to load - normal exit */
-                free (key);
-                break;
-            }
-            buflen = strlen (buf);
-            if ((resrc_generate_xml_resources (ctx->rctx.root_resrc, buf,
-                                               buflen))) {
-                flux_log (ctx->h, LOG_DEBUG, "loaded %s", key);
-            } else {
-                free (buf);
-                free (key);
-                rc = -1;
-                break;
-            }
-            free (buf);
-            free (key);
-        }
-        flux_log (ctx->h, LOG_INFO, "loaded resrc using hwloc (status %d)", rc);
+    if (flux_get_size (ctx->h, &size) == -1) {
+        flux_log (ctx->h, LOG_ERR, "can't decide the instance size");
+        goto done;
     }
+    for (rank=0; rank < size; rank++) {
+        key = xasprintf ("resource.hwloc.xml.%"PRIu32"", rank);
+        if (kvs_get_string (ctx->h, key, &rs_buf) == -1) {
+            flux_log (ctx->h, LOG_ERR, "can't get hwloc data in kvs");
+            break;
+        }
+        len = strlen (rs_buf);
+        if (rsreader_hwloc_load (rs_buf, len, rank, r_mode,
+             &(ctx->rctx.root_resrc), ctx->machs) != 0) {
+            flux_log (ctx->h, LOG_ERR, "can't load hwloc data");
+            goto done;
+        } else if (key) {
+            free (key);
+            key = NULL;
+        }
+    }
+    rc = 0;
 
+done:
+    if (key)
+        free (key);
     return rc;
 }
 
+static int load_resources (ssrvctx_t *ctx)
+{
+    int rc = -1;
+    char *turi = NULL;
+    resrc_t *tres = NULL;
+    char *path = ctx->arg.path;
+    char *uri = ctx->arg.uri;
+    rsreader_t r_mode = ctx->arg.r_mode;
+
+    setup_rdl_lua (ctx->h);
+
+    switch (r_mode) {
+    case RSREADER_RESRC_EMUL:
+        if (rsreader_resrc_bulkload (path, uri, &turi, &tres) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to load resrc");
+            goto done;
+        } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
+            goto done;
+        } else if (rsreader_force_link2rank (ctx->machs, tres) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to force a link to a rank");
+            goto done;
+        }
+        ctx->rctx.root_uri = turi;
+        ctx->rctx.root_resrc = tres;
+        flux_log (ctx->h, LOG_INFO, "loaded resrc");
+        rc = 0;
+        break;
+
+    case RSREADER_RESRC:
+        if (rsreader_resrc_bulkload (path, uri, &turi, &tres) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to load resrc");
+            goto done;
+        } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
+            goto done;
+        } else if (rsreader_link2rank (ctx->machs, tres) != 0) {
+            flux_log (ctx->h, LOG_ERR, "RDL(%s) inconsistent w/ hwloc!", path);
+            flux_log (ctx->h, LOG_INFO, "rebuild resrc using hwloc");
+            if (turi)
+                free (turi);
+            if (tres)
+                resrc_tree_destroy (resrc_phys_tree (tres), true);
+            r_mode = RSREADER_HWLOC;
+            /* deliberate fall-through to RSREADER_HWLOC! */
+        }
+        else {
+            ctx->rctx.root_uri = turi;
+            ctx->rctx.root_resrc = tres;
+            flux_log (ctx->h, LOG_INFO, "loaded resrc");
+            rc = 0;
+            break;
+        }
+
+    case RSREADER_HWLOC:
+        if (!(ctx->rctx.root_resrc = resrc_create_cluster ("cluster"))) {
+            flux_log (ctx->h, LOG_ERR, "failed to create cluster resrc");
+            goto done;
+        } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to load resrc using hwloc");
+            goto done;
+        } else if (rsreader_link2rank (ctx->machs, ctx->rctx.root_resrc) != 0) {
+            flux_log (ctx->h, LOG_ERR, "fatal: inconsistent resrc!");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "loaded resrc using hwloc");
+        rc = 0;
+        break;
+
+    default:
+        flux_log (ctx->h, LOG_ERR, "unkwown resource reader type");
+        break;
+    }
+
+done:
+    return rc;
+}
+
+
 /******************************************************************************
  *                                                                            *
- *                         Simulator Specific Code                            *
+ *                         Emulator Specific Code                             *
  *                                                                            *
  ******************************************************************************/
 
 /*
  * Simulator Helper Functions
  */
-
 static void queue_timer_change (ssrvctx_t *ctx, const char *module)
 {
     zlist_append (ctx->sctx.timer_queue, (void *)module);
@@ -797,10 +922,11 @@ done:
  *                                                                              *
  *******************************************************************************/
 
-static void inline build_contain_1node_req (int64_t nc, JSON rarr)
+static void inline build_contain_1node_req (int64_t nc, int64_t rank, JSON rarr)
 {
     JSON e = Jnew ();
     JSON o = Jnew ();
+    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINING_RANK, rank);
     Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NCORES, nc);
     json_object_object_add (e, JSC_RDL_ALLOC_CONTAINED, o);
     json_object_array_add (rarr, e);
@@ -810,18 +936,26 @@ static void inline build_contain_1node_req (int64_t nc, JSON rarr)
  * Because the job's rdl should only contain what's allocated to the job,
  * this traverse the entire tree post-order walk
  */
-static int build_contain_req (flux_t h, flux_lwj_t *job, JSON rarr)
+static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, JSON arr)
 {
-    int rc = 0;
-    int64_t n;
+    int rc = -1;
+    uint32_t rank = 0;
+    resrc_tree_t *nd = NULL;
+    resrc_t *r = NULL;
 
-    for (n = 0; n < job->req->nnodes; n++) {
-        build_contain_1node_req (job->req->corespernode, rarr);
+    for (nd = resrc_tree_list_first (job->resrc_trees); nd;
+            nd = resrc_tree_list_next (job->resrc_trees)) {
+        r = resrc_tree_resrc (nd);
+        if (strcmp (resrc_type (r), "node") != 0
+            || bridge_rs2rank_tab_query (ctx, r, &rank) != 0)
+            goto done;
+
+        build_contain_1node_req (job->req->corespernode, rank, arr);
     }
-
+    rc = 0;
+done:
     return rc;
 }
-
 
 /*
  * Once the job gets allocated to its own copy of rdl, this
@@ -834,8 +968,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     int rc = -1;
     flux_t h = ctx->h;
     JSON jcb = Jnew ();
-    JSON arr = Jnew_ar ();
     JSON ro = Jnew_ar ();
+    JSON arr = Jnew_ar ();
 
     if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
         flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
@@ -850,7 +984,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     }
     Jput (jcb);
     jcb = Jnew ();
-    if (build_contain_req (h, job, arr) != 0) {
+    if (build_contain_req (ctx, job, arr) != 0) {
         flux_log (h, LOG_ERR, "error requesting containment for job");
         goto done;
     }
@@ -1255,55 +1389,35 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
  *                                                                            *
  ******************************************************************************/
 
+
 int mod_main (flux_t h, int argc, char **argv)
 {
-    int rc = -1, i = 0;
+    int rc = -1;
     ssrvctx_t *ctx = NULL;
-    char *schedplugin = NULL, *userplugin = NULL;
-    char *uri = NULL, *path = NULL, *sim = NULL;
     uint32_t rank = 1;
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
         goto done;
     }
-
-    for (i = 0; i < argc; i++) {
-        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
-            path = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
-            uri = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
-            sim = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("plugin=", argv[i], sizeof ("plugin"))) {
-            userplugin = xstrdup (strstr (argv[i], "=") + 1);
-        } else {
-            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
-            errno = EINVAL;
-            goto done;
-        }
-    }
-
-    if (userplugin == NULL) {
-        schedplugin = "sched.plugin1";
-    } else {
-        schedplugin = userplugin;
-    }
-
     if (flux_get_rank (h, &rank)) {
         flux_log (h, LOG_ERR, "failed to determine rank");
         goto done;
     } else if (rank) {
         flux_log (h, LOG_ERR, "sched module must only run on rank 0");
         goto done;
+    } else if (ssrvarg_process_args (argc, argv, &(ctx->arg)) != 0) {
+        flux_log (h, LOG_ERR, "can't process module args");
+        goto done;
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
-    if (load_sched_plugin (ctx, schedplugin) != 0) {
+
+    if (load_sched_plugin (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to load scheduler plugin");
         goto done;
     }
-    flux_log (h, LOG_INFO, "%s plugin loaded", schedplugin);
-    if (load_resources (ctx, path, uri) != 0) {
+    flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    if (load_resources (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to load resources");
         goto done;
     }
@@ -1332,10 +1446,6 @@ int mod_main (flux_t h, int argc, char **argv)
     rc = 0;
 
 done:
-    free (path);
-    free (uri);
-    free (sim);
-    free (userplugin);
     return rc;
 }
 
