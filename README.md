@@ -12,12 +12,12 @@ behavior.
 
 #### Overview
 
-The "flux wreckrun" command is part of flux-core and provides the
-ability to launch light weight jobs on resources within a comms
-session.  flux-sched adds batch scheduling functionality to Flux.
-Jobs are submitted to flux-sched using "flux submit" which adds the
-jobs to a queue.  A scheduling plugin selects resources and decides
-when to run the job.
+The `flux wreckrun` command is part of flux-core and provides the
+ability to launch Flux programs on resources within a Flux instance.
+flux-sched adds batch scheduling functionality to Flux.  Jobs are
+submitted to flux-sched using `flux submit` which adds the jobs to a
+queue.  A scheduling plugin selects resources and decides when to run
+the job.
 
 #### Building flux-sched
 
@@ -45,9 +45,8 @@ commands out of ~/flux-core.  But we will need to append some paths
 The next step is to build the sched module.  The sched module contains
 a bifurcated structure of a core framework that has all the basic
 functionality plus a loadable plugin that implements specific
-scheduling behavior.  There is currently only one plugin.  It is
-called sched.plugin1 and it is hard coded at the moment to load
-automatically by the sched comms module.
+scheduling behavior.  There are currently two plugins available:
+sched.plugin1 and backfill.plugin1.
 
 To build the sched module, run the following commands:
 
@@ -58,16 +57,16 @@ make
 ```
 
 The flux-sched project has a rudimentary structure right now and does
-not use autotools.  "make install" is not available.  To perhaps state
-the obvious, when you run make in ~/flux-sched, the products remain
-local; they do not populate anything in ~/flux-core.
+not use autotools.  `make install` is not available.  When you run
+make in ~/flux-sched, the products remain local; they do not populate
+anything in ~/flux-core.
 
 Stepping into the ~/flux-sched/sched directory, there are a couple of
-quick checks you can run: "make start" and "make load".  These pull in
+quick checks you can run: `make start` and `make load`.  These pull in
 the definitions from ~/flux-core/etc/flux/config, establish some
 important environment variables, and should successfully fire up a
 comms session of one rank and load the sched module.  You can confirm
-by running "flux module list".  The PATH environment has been extended
+by running `flux module list`.  The PATH environment has been extended
 to include the path to flux (under ~/flux-core/).
 
 These two make targets are simple checks.  To actually exercise a
@@ -77,7 +76,7 @@ functioning sched module in a comms session, follow these steps.
 
 The following instructions assume you have successfully run a SLURM
 session as described in the flux-core README.  Also, if you have run
-"make start" or "make load", exit now.
+`make start` or `make load`, exit now.
 
 To run the example below, you will have to manually add flux-sched
 directories to the flux commands.  The following example assumes that
@@ -88,33 +87,36 @@ below.
 Create a comms session within SLURM across 3 nodes with one rank per
 node:
 ```
-~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua start -s 3 -S -N 3
+srun -N3 --pty ~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua broker
 ```
 
 Load the sched module specifying the appropriate rdl configuration
 file:
 ```
-~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua module load sched rdl-conf=../conf/hype.lua
+flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua module load sched rdl-conf=../conf/hype.lua
 ```
 
 Check to see whether the sched module loaded:
 ```
-~/flux-core/src/cmd/flux module list
+flux module list
 ```
 
 Submit a job:
 ```
-~/flux-core/src/cmd/flux -x ~/flux-sched/sched submit -N3 -n3 sleep 30
+flux submit -N3 -n3 sleep 30
 ```
 
 Examine the job:
 ```
-~/flux-core/src/cmd/flux kvs dir lwj.1
+flux kvs dir lwj.1
+```
+
+Examine the ring buffer for details on what happened.
+```
+flux dmesg
 ```
 
 Exit the session:
 ```
 exit
 ```
-
-Read the cmbd.log that was created for details on what happened.
