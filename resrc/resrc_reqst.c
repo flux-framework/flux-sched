@@ -357,10 +357,8 @@ static bool match_child (resrc_tree_list_t *r_trees, resrc_reqst_t *resrc_reqst,
     resrc_tree = resrc_tree_list_first (r_trees);
     while (resrc_tree) {
         found = false;
-        if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst->resrc, available,
-                                  resrc_reqst->starttime,
-                                  resrc_reqst->endtime)) {
+        if (resrc_match_resource (resrc_tree_resrc (resrc_tree), resrc_reqst,
+                                  available)) {
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     child_tree = resrc_tree_new (parent_tree,
@@ -448,10 +446,8 @@ int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
 
     resrc_tree = resrc_tree_list_first (resrcs_in);
     while (resrc_tree) {
-        if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst->resrc, available,
-                                  resrc_reqst->starttime,
-                                  resrc_reqst->endtime)) {
+        if (resrc_match_resource (resrc_tree_resrc (resrc_tree), resrc_reqst,
+                                  available)) {
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     new_tree = resrc_tree_new (NULL,

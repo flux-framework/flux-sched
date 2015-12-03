@@ -9,7 +9,6 @@
 #include "resrc_tree.h"
 
 
-typedef struct resrc_reqst resrc_reqst_t;
 typedef struct resrc_reqst_list resrc_reqst_list_t;
 
 /***********************************************************************

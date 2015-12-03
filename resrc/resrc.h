@@ -11,6 +11,7 @@
 #define TIME_MAX INT64_MAX
 
 typedef struct resrc resrc_t;
+typedef struct resrc_reqst resrc_reqst_t;
 typedef struct resrc_tree resrc_tree_t;
 
 typedef enum {
@@ -124,17 +125,13 @@ resrc_t *resrc_create_cluster (char *cluster);
 /*
  * Determine whether a specific resource has the required characteristics
  * Inputs:  resrc     - the specific resource under evaluation
- *          sample    - sample resource with the required characteristics
+ *          request   - resource request with the required characteristics
  *          available - when true, consider only idle resources
  *                      otherwise find all possible resources matching type
- *          starttime - start of period the resource needs to be available
- *                      When the starttime is 0, only the current resource
- *                      availability will be considered (now-based match).
- *          endtime   - end of period the resource needs to be available
  * Returns: true if the input resource has the required characteristics
  */
-bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available,
-                           int64_t starttime, int64_t endtime);
+bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
+                           bool available);
 
 /*
  * Stage size elements of a resource

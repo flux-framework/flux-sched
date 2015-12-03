@@ -127,10 +127,8 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
     resrc_tree = resrc_tree_list_first (found_children);
     while (resrc_tree) {
         selected = false;
-        if (resrc_match_resource (resrc_tree_resrc (resrc_tree),
-                                  resrc_reqst_resrc (child_reqst), true,
-                                  resrc_reqst_starttime (child_reqst),
-                                  resrc_reqst_endtime (child_reqst))) {
+        if (resrc_match_resource (resrc_tree_resrc (resrc_tree), child_reqst,
+                                  true)) {
             if (resrc_reqst_num_children (child_reqst)) {
                 if (resrc_tree_num_children (resrc_tree)) {
                     child_tree = resrc_tree_new (parent_tree,
@@ -242,9 +240,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
     rt = resrc_tree_list_first (found_trees);
     while (reqrd && rt) {
         resrc = resrc_tree_resrc (rt);
-        if (resrc_match_resource (resrc, resrc_reqst_resrc (resrc_reqst), true,
-                                  resrc_reqst_starttime (resrc_reqst),
-                                  resrc_reqst_endtime (resrc_reqst))) {
+        if (resrc_match_resource (resrc, resrc_reqst, true)) {
             new_tree = resrc_tree_new (NULL, resrc);
             if (resrc_reqst_num_children (resrc_reqst)) {
                 if (resrc_tree_num_children (rt)) {
