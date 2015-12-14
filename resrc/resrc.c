@@ -423,7 +423,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->size = size;
         resrc->available = size;
         resrc->staged = 0;
-        resrc->state = RESOURCE_IDLE;
+        resrc->state = RESOURCE_INVALID;
         resrc->phys_tree = NULL;
         resrc->graphs = NULL;
         resrc->allocs = zhash_new ();
@@ -1187,7 +1187,7 @@ int resrc_release_allocation (resrc_t *resrc, int64_t rel_job)
             zhash_delete (resrc->twindow, id_ptr);
 
         zhash_delete (resrc->allocs, id_ptr);
-        if (!zhash_size (resrc->allocs)) {
+        if ((resrc->state != RESOURCE_INVALID) && !zhash_size (resrc->allocs)) {
             if (zhash_size (resrc->reservtns))
                 resrc->state = RESOURCE_RESERVED;
             else
@@ -1234,10 +1234,12 @@ int resrc_release_all_reservations (resrc_t *resrc)
         resrc->reservtns = zhash_new ();
     }
 
-    if (zhash_size (resrc->allocs))
-        resrc->state = RESOURCE_ALLOCATED;
-    else
-        resrc->state = RESOURCE_IDLE;
+    if (resrc->state != RESOURCE_INVALID) {
+        if (zhash_size (resrc->allocs))
+            resrc->state = RESOURCE_ALLOCATED;
+        else
+            resrc->state = RESOURCE_IDLE;
+    }
 ret:
     return rc;
 }
