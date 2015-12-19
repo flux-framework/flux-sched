@@ -34,6 +34,7 @@
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_reqst.h"
 #include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
@@ -902,15 +903,17 @@ resrc_t *resrc_create_cluster (char *cluster)
 }
 
 /*
- * Finds if a resrc_t *sample matches with resrc_t *resrc over a period
+ * Finds if a resource request matches the specified resource over a period
  * defined by the start and end times.
  */
-static bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample,
-                                  int64_t starttime, int64_t endtime)
+static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
 {
     bool rc = false;
     char *json_str_window = NULL;
+    int64_t endtime = resrc_reqst_endtime (request);
     int64_t lendtime; // Resource lifetime end time
+    int64_t starttime = resrc_reqst_starttime (request);
+    size_t available = 0;
 
     /* If request endtime is greater than the lifetime of the
        resource, then return false */
@@ -924,47 +927,50 @@ static bool resrc_walltime_match (resrc_t *resrc, resrc_t *sample,
         }
     }
 
-    /* find if it sample fits in time range */
-    size_t available = resrc_available_during_range (resrc, starttime,
-                                                     endtime);
-    rc = (available >= sample->size);
+    /* find the minimum available resources during the requested time
+     * range */
+    available = resrc_available_during_range (resrc, starttime, endtime);
+
+    rc = (available >= resrc_reqst_resrc (request)->size);
 
     return rc;
 }
 
-bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available,
-                           int64_t starttime, int64_t endtime)
+bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
+                           bool available)
 {
     bool rc = false;
-    char *sproperty = NULL;     /* sample property */
-    char *stag = NULL;          /* sample tag */
+    char *rproperty = NULL;     /* request property */
+    char *rtag = NULL;          /* request tag */
 
-    if (!strcmp (resrc->type, sample->type) && sample->size) {
-        if (zhash_size (sample->properties)) {
+    if (!strcmp (resrc->type, resrc_reqst_resrc (request)->type) &&
+        resrc_reqst_reqrd (request)) {
+        if (zhash_size (resrc_reqst_resrc (request)->properties)) {
             if (!zhash_size (resrc->properties)) {
                 goto ret;
             }
             /* be sure the resource has all the requested properties */
             /* TODO: validate the value of each property */
-            zhash_first (sample->properties);
+            zhash_first (resrc_reqst_resrc (request)->properties);
             do {
-                sproperty = (char *)zhash_cursor (sample->properties);
-                if (!zhash_lookup (resrc->properties, sproperty))
+                rproperty = (char *)zhash_cursor (
+                    resrc_reqst_resrc (request)->properties);
+                if (!zhash_lookup (resrc->properties, rproperty))
                     goto ret;
-            } while (zhash_next (sample->properties));
+            } while (zhash_next (resrc_reqst_resrc (request)->properties));
         }
 
-        if (zhash_size (sample->tags)) {
+        if (zhash_size (resrc_reqst_resrc (request)->tags)) {
             if (!zhash_size (resrc->tags)) {
                 goto ret;
             }
             /* be sure the resource has all the requested tags */
-            zhash_first (sample->tags);
+            zhash_first (resrc_reqst_resrc (request)->tags);
             do {
-                stag = (char *)zhash_cursor (sample->tags);
-                if (!zhash_lookup (resrc->tags, stag))
+                rtag = (char *)zhash_cursor (resrc_reqst_resrc (request)->tags);
+                if (!zhash_lookup (resrc->tags, rtag))
                     goto ret;
-            } while (zhash_next (sample->tags));
+            } while (zhash_next (resrc_reqst_resrc (request)->tags));
         }
 
         if (available) {
@@ -974,10 +980,10 @@ bool resrc_match_resource (resrc_t *resrc, resrc_t *sample, bool available,
              * We save this for last because the time search will be
              * expensive.
              */
-            if (starttime)
-                rc = resrc_walltime_match (resrc, sample, starttime, endtime);
+            if (resrc_reqst_starttime (request))
+                rc = resrc_walltime_match (resrc, request);
             else
-                rc = (sample->size <= resrc->available);
+                rc = (resrc_reqst_resrc (request)->size <= resrc->available);
         } else {
             rc = true;
         }
