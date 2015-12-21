@@ -103,7 +103,7 @@ static void test_temporal_allocation ()
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));
-    available = resrc_available_during_range (resource, 0, 1000);
+    available = resrc_available_during_range (resource, 0, 1000, false);
     rc = (rc || !(available == 10));
     ok (!rc, "resrc_available...(time/range) on unallocated resource work");
 
@@ -162,70 +162,70 @@ static void test_temporal_allocation ()
     // Test "available during range"
 
     // Range == job window (both edges are the same)
-    available = resrc_available_during_range (resource, 2000, 3000);
+    available = resrc_available_during_range (resource, 2000, 3000, false);
     rc = (rc || !(available == 0));
-    available = resrc_available_during_range (resource, 0, 1000);
+    available = resrc_available_during_range (resource, 0, 1000, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 10, 1999);
+    available = resrc_available_during_range (resource, 10, 1999, false);
     rc = (rc || !(available == 4));
     ok (!rc, "resrc_available_during_range: range == job window works");
     rc = 0;
 
     // Range is a subset of job window (no edges are the same)
-    available = resrc_available_during_range (resource, 4, 6);
+    available = resrc_available_during_range (resource, 4, 6, false);
     rc = (rc || !(available == 5));
-    available = resrc_available_during_range (resource, 20, 999);
+    available = resrc_available_during_range (resource, 20, 999, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 1001, 1998);
+    available = resrc_available_during_range (resource, 1001, 1998, false);
     rc = (rc || !(available == 9));
-    available = resrc_available_during_range (resource, 2500, 2600);
+    available = resrc_available_during_range (resource, 2500, 2600, false);
     rc = (rc || !(available == 0));
     ok (!rc, "resrc_available_during_range: range is a subset (no edges) works");
     rc = 0;
 
     // Range is a subset of a job window (one edge is the same)
-    available = resrc_available_during_range (resource, 0, 999);
+    available = resrc_available_during_range (resource, 0, 999, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 10, 999);
+    available = resrc_available_during_range (resource, 10, 999, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 20, 1000);
+    available = resrc_available_during_range (resource, 20, 1000, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 1001, 1999);
+    available = resrc_available_during_range (resource, 1001, 1999, false);
     rc = (rc || !(available == 9));
-    available = resrc_available_during_range (resource, 1001, 1999);
+    available = resrc_available_during_range (resource, 1001, 1999, false);
     rc = (rc || !(available == 9));
     ok (!rc, "resrc_available_during_range: range is a subset (1 edge) works");
     rc = 0;
 
     // Range overlaps 1 job window
     //     (no edges are exactly equal)
-    available = resrc_available_during_range (resource, 2500, 4000);
+    available = resrc_available_during_range (resource, 2500, 4000, false);
     rc = (rc || !(available == 0));
     //     (1 edge is exactly equal)
-    available = resrc_available_during_range (resource, 3000, 5000);
+    available = resrc_available_during_range (resource, 3000, 5000, false);
     rc = (rc || !(available == 0));
     ok (!rc, "resrc_available_during_range: range overlaps 1 job works");
     rc = 0;
 
     // Range overlaps multiple job windows
     //     (no edges are exactly equal)
-    available = resrc_available_during_range (resource, 100, 1500);
+    available = resrc_available_during_range (resource, 100, 1500, false);
     rc = (rc || !(available == 4));
-    available = resrc_available_during_range (resource, 1500, 2500);
+    available = resrc_available_during_range (resource, 1500, 2500, false);
     rc = (rc || !(available == 0));
     //     (some edges are exactly equal)
-    available = resrc_available_during_range (resource, 1000, 2000);
+    available = resrc_available_during_range (resource, 1000, 2000, false);
     rc = (rc || !(available == 0));
     ok (!rc, "resrc_available_during_range: range overlaps multiple job works");
     rc = 0;
 
     // Range overlaps all job windows (edges exactly equal)
-    available = resrc_available_during_range (resource, 0, 3000);
+    available = resrc_available_during_range (resource, 0, 3000, false);
     rc = (rc || !(available == 0));
-    available = resrc_available_during_range (resource, 0, 2000);
+    available = resrc_available_during_range (resource, 0, 2000, false);
     rc = (rc || !(available == 0));
     // Range overlaps no job windows
-    available = resrc_available_during_range (resource, 3001, 5000);
+    available = resrc_available_during_range (resource, 3001, 5000, false);
     rc = (rc || !(available == 10));
     ok (!rc, "resrc_available_during_range: range overlaps all job works");
 

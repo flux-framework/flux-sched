@@ -59,9 +59,9 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
  * Return the least amount of the resource available during the time
  * range
  */
-size_t resrc_available_during_range (resrc_t *resrc,
-                                     int64_t range_starttime,
-                                     int64_t range_endtime);
+size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
+                                     int64_t range_endtime, bool exclusive);
+
 /*
  * Return the resource state as a string
  */

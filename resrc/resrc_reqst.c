@@ -42,7 +42,9 @@ struct resrc_reqst {
     resrc_t *resrc;
     int64_t starttime;
     int64_t endtime;
-    int64_t reqrd;
+    bool    exclusive;
+    int64_t reqrd_qty;
+    int64_t reqrd_size;
     int64_t nfound;
     resrc_reqst_list_t *children;
 };
@@ -110,10 +112,24 @@ int resrc_reqst_set_endtime (resrc_reqst_t *resrc_reqst, int64_t time)
     return -1;
 }
 
-int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst)
+bool resrc_reqst_exclusive (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst)
-        return resrc_reqst->reqrd;
+        return resrc_reqst->exclusive;
+    return false;
+}
+
+int64_t resrc_reqst_reqrd_qty (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->reqrd_qty;
+    return -1;
+}
+
+int64_t resrc_reqst_reqrd_size (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->reqrd_size;
     return -1;
 }
 
@@ -175,8 +191,9 @@ int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child)
     return rc;
 }
 
-resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
-    int64_t endtime)
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
+                                int64_t starttime, int64_t endtime,
+                                bool exclusive)
 {
     resrc_reqst_t *resrc_reqst = xzmalloc (sizeof (resrc_reqst_t));
     if (resrc_reqst) {
@@ -184,7 +201,9 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
         resrc_reqst->resrc = resrc;
         resrc_reqst->starttime = starttime;
         resrc_reqst->endtime = endtime;
-        resrc_reqst->reqrd = qty;
+        resrc_reqst->exclusive = exclusive;
+        resrc_reqst->reqrd_qty = qty;
+        resrc_reqst->reqrd_size = size;
         resrc_reqst->nfound = 0;
         resrc_reqst->children = resrc_reqst_list_new ();
     }
@@ -194,17 +213,33 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
 
 resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
 {
-    int qty = 0;
+    bool exclusive = false;
     JSON ca = NULL;     /* array of child json objects */
     JSON co = NULL;     /* child json object */
-    resrc_t *resrc = NULL;
     int64_t endtime;
+    int64_t qty = 0;
+    int64_t size = 0;
     int64_t starttime;
     resrc_reqst_t *child_reqst = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
+    resrc_t *resrc = NULL;
 
-    if (!Jget_int (o, "req_qty", &qty) && (qty < 1))
+    if (!Jget_int64 (o, "req_qty", &qty) && (qty < 1))
         goto ret;
+
+    /*
+     * If the size has not been specified, leave it at zero.  A size
+     * of zero means that this job request will not consume any part
+     * of the resource.  This allows multiple jobs to share the same
+     * resource.
+     */
+    if (Jget_int64 (o, "req_size", &size) && (size < 0))
+        goto ret;
+
+    /*
+     * If exclusivity has not been specified, leave it at false.
+     */
+    Jget_bool (o, "exclusive", &exclusive);
 
     if (parent)
         starttime = parent->starttime;
@@ -218,7 +253,8 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
 
     resrc = resrc_new_from_json (o, NULL, false);
     if (resrc) {
-        resrc_reqst = resrc_reqst_new (resrc, qty, starttime, endtime);
+        resrc_reqst = resrc_reqst_new (resrc, qty, size, starttime, endtime,
+                                       exclusive);
 
         if ((co = Jobj_get (o, "req_child"))) {
             child_reqst = resrc_reqst_from_json (co, resrc_reqst);
@@ -272,8 +308,10 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
 void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst) {
-        printf ("%"PRId64" of %"PRId64" ", resrc_reqst->nfound,
-                resrc_reqst->reqrd);
+        char *shared = resrc_reqst->exclusive ? "exclusive" : "shared";
+
+        printf ("%"PRId64" of %"PRId64" %s ", resrc_reqst->nfound,
+                resrc_reqst->reqrd_qty, shared);
         resrc_print_resource (resrc_reqst->resrc);
         if (resrc_reqst_num_children (resrc_reqst)) {
             resrc_reqst_t *child = resrc_reqst_list_first
@@ -420,7 +458,7 @@ static bool match_children (resrc_tree_list_t *r_trees,
         found = false;
 
         if (match_child (r_trees, resrc_reqst, parent_tree, available)) {
-            if (resrc_reqst->nfound >= resrc_reqst->reqrd)
+            if (resrc_reqst->nfound >= resrc_reqst->reqrd_qty)
                 found = true;
         }
         if (!found)
