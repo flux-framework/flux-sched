@@ -43,7 +43,7 @@ typedef struct {
 
 static flux_t sig_flux_h;
 
-#define OPTIONS "hc:s:"
+#define OPTIONS "+hc:s:"
 static const struct option longopts[] = {
     {"help",          no_argument,        0, 'h'},
     {"sync-start",    required_argument,  0, 's'},
@@ -100,13 +100,13 @@ static void sig_handler (int s)
     }
 }
 
-static void create_outfile (const char *fn)
+static void touch_outfile (const char *fn)
 {
     FILE *fp = NULL;
     if (fn && !(fp = fopen (fn, "w"))) {
         fprintf (stderr, "Failed to open %s\n", fn);
-        fclose (fp);
     }
+    fclose (fp);
 }
 
 static inline void get_jobid (JSON jcb, int64_t *j)
@@ -167,7 +167,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     Jput (jcb);
     if ((j == ctx->jobid) && (ns == J_COMPLETE)) {
         if (ctx->complete)
-            create_outfile (ctx->complete);
+            touch_outfile (ctx->complete);
         flux_log (ctx->h, LOG_INFO, "waitjob_cb: completion notified");
         raise (SIGINT);
     }
@@ -175,51 +175,29 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     return 0;
 }
 
-static void sync_event_cb (flux_t h, flux_msg_handler_t *w,
-                           const flux_msg_t *msg, void *arg)
-{
-    wjctx_t *ctx = getctx (h);
-
-    if (ctx->start)
-        create_outfile (ctx->start);
-
-    if (flux_event_unsubscribe (h, "hb") < 0) {
-        flux_log (h, LOG_ERR, "%s: flux_event_unsubscribe hb: %s",
-                 __FUNCTION__, strerror (errno));
-    }
-    if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
-        flux_log (h, LOG_ERR, "failed to reg a waitjob CB");
-    }
-    if (complete_job (ctx)) {
-        if (ctx->complete)
-            create_outfile (ctx->complete);
-        flux_log (ctx->h, LOG_INFO, "sync_event_cb: completion detected");
-    }
-    return;
-}
-
-static struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_EVENT,     "hb", sync_event_cb},
-    FLUX_MSGHANDLER_TABLE_END
-};
-
 static int wait_job_complete (flux_t h)
 {
     int rc = -1;
     sig_flux_h = h;
+    wjctx_t *ctx = getctx (h);
 
-    if (signal (SIGINT, sig_handler) == SIG_ERR) 
+    if (signal (SIGINT, sig_handler) == SIG_ERR)
         goto done;
-    if (flux_event_subscribe (h, "hb") < 0) {
-        flux_log (h, LOG_ERR, "flux_event_subscribe: %s",
-                  strerror (errno));
-        goto done;
+
+    if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
+        flux_log (h, LOG_ERR, "failed to register a waitjob CB");
     }
-    if (flux_msg_handler_addvec (h, htab, (void *)h) < 0) {
-        flux_log (h, LOG_ERR,
-                  "error registering sync event handler: %s",
-                  strerror (errno));
-        goto done;
+    /* once jsc_notify_status is returned, all of JSC events
+     * will be queued and delivered. It is safe to signal
+     * readiness.
+     */
+    if (ctx->start)
+        touch_outfile (ctx->start);
+
+    if (complete_job (ctx)) {
+        if (ctx->complete)
+            touch_outfile (ctx->complete);
+        flux_log (ctx->h, LOG_INFO, "wait_job_complete: completion detected");
     }
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR, "error in flux_reactor_start");
