@@ -224,24 +224,27 @@ myJput (void* o)
         json_object_put ((JSON)o);
 }
 
-size_t resrc_available_during_range (resrc_t *resrc,
-                                     int64_t range_starttime,
-                                     int64_t range_endtime)
+size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
+                                     int64_t range_endtime, bool exclusive)
 {
+    JSON window_json = NULL;
+    const char *id_ptr = NULL;
+    const char *window_json_str = NULL;
+    int64_t  curr_endtime;
+    int64_t  curr_starttime;
+    size_t   curr_available;
+    size_t   min_available = 0;
+    size_t  *alloc_ptr = NULL;
+    size_t  *reservtn_ptr = NULL;
+    size_t  *size_ptr = NULL;
+    zlist_t *matching_windows = NULL;
+    zlist_t *window_keys = NULL;
+
     if (range_starttime == range_endtime) {
         return resrc_available_at_time (resrc, range_starttime);
     }
 
-    int64_t curr_starttime;
-    int64_t curr_endtime;
-
-    const char *id_ptr = NULL;
-    const char *window_json_str = NULL;
-    JSON window_json = NULL;
-    size_t *alloc_ptr = NULL, *reservtn_ptr = NULL;
-    zlist_t *window_keys = NULL;
-
-    zlist_t *matching_windows = zlist_new ();
+    matching_windows = zlist_new ();
 
     // Check that the time is during the resource lifetime
     window_json_str = (const char*) zhash_lookup (resrc->twindow, "0");
@@ -281,6 +284,12 @@ size_t resrc_available_during_range (resrc_t *resrc,
                (curr_starttime > range_endtime &&
                 curr_endtime > range_endtime)) ) {
 
+            /* If the sample requires exclusive access and we are
+             * here, then we now know that exclusivity cannot be
+             * granted over the requested range.  Leave now. */
+            if (exclusive)
+                goto ret;
+
             alloc_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
             reservtn_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
             if (alloc_ptr || reservtn_ptr) {
@@ -311,9 +320,8 @@ size_t resrc_available_during_range (resrc_t *resrc,
     Jget_int64 (curr_start_window, "starttime", &curr_starttime);
     Jget_int64 (curr_end_window, "endtime", &curr_endtime);
 
-    size_t min_available = resrc->size;
-    size_t curr_available = resrc->size;
-    size_t *size_ptr = NULL;
+    min_available = resrc->size;
+    curr_available = resrc->size;
 
     // Start iterating over the windows and calculating the min
     // available
@@ -366,9 +374,9 @@ size_t resrc_available_during_range (resrc_t *resrc,
             min_available;
     }
 
-    // Cleanup
-    zlist_destroy (&window_keys);
     zlist_destroy (&end_windows);
+ret:
+    zlist_destroy (&window_keys);
     zlist_destroy (&matching_windows);
 
     return min_available;
@@ -929,9 +937,10 @@ static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
 
     /* find the minimum available resources during the requested time
      * range */
-    available = resrc_available_during_range (resrc, starttime, endtime);
+    available = resrc_available_during_range (resrc, starttime, endtime,
+                                              resrc_reqst_exclusive (request));
 
-    rc = (available >= resrc_reqst_resrc (request)->size);
+    rc = (available >= resrc_reqst_reqrd_size (request));
 
     return rc;
 }
@@ -943,8 +952,7 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
     char *rproperty = NULL;     /* request property */
     char *rtag = NULL;          /* request tag */
 
-    if (!strcmp (resrc->type, resrc_reqst_resrc (request)->type) &&
-        resrc_reqst_reqrd (request)) {
+    if (!strcmp (resrc->type, resrc_reqst_resrc (request)->type)) {
         if (zhash_size (resrc_reqst_resrc (request)->properties)) {
             if (!zhash_size (resrc->properties)) {
                 goto ret;
@@ -982,8 +990,12 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
              */
             if (resrc_reqst_starttime (request))
                 rc = resrc_walltime_match (resrc, request);
-            else
-                rc = (resrc_reqst_resrc (request)->size <= resrc->available);
+            else {
+                if (resrc_reqst_exclusive (request))
+                    rc = !zhash_size (resrc->allocs);
+                else
+                    rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
+            }
         } else {
             rc = true;
         }
@@ -1042,7 +1054,12 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t available;
 
     if (resrc && job_id) {
-        available = resrc_available_during_range (resrc, starttime, endtime);
+        /* Don't bother going through the exclusivity checks.  We will
+         * save cycles and assume the selected resources are
+         * exclusively available if that was the criteria of the
+         * search. */
+        available = resrc_available_during_range (resrc, starttime, endtime,
+                                                  false);
         if (resrc->staged > available)
             goto ret;
 
@@ -1126,7 +1143,12 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t available;
 
     if (resrc && job_id) {
-        available = resrc_available_during_range (resrc, starttime, endtime);
+        /* Don't bother going through the exclusivity checks.  We will
+         * save cycles and assume the selected resources are
+         * exclusively available if that was the criteria of the
+         * search. */
+        available = resrc_available_during_range (resrc, starttime, endtime,
+                                                  false);
         if (resrc->staged > available)
             goto ret;
 

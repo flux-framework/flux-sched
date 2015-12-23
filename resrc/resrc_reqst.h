@@ -41,9 +41,19 @@ int64_t resrc_reqst_endtime (resrc_reqst_t *resrc_reqst);
 int resrc_reqst_set_endtime (resrc_reqst_t *resrc_reqst, int64_t time);
 
 /*
+ * Return whether the request is for an exclusive allocation
+ */
+bool resrc_reqst_exclusive (resrc_reqst_t *resrc_reqst);
+
+/*
  * Return the required number of resources in this request
  */
-int64_t resrc_reqst_reqrd (resrc_reqst_t *resrc_reqst);
+int64_t resrc_reqst_reqrd_qty (resrc_reqst_t *resrc_reqst);
+
+/*
+ * Return the required size of resource in this request
+ */
+int64_t resrc_reqst_reqrd_size (resrc_reqst_t *resrc_reqst);
 
 /*
  * Return the number of resources found for this request
@@ -78,8 +88,9 @@ int resrc_reqst_add_child (resrc_reqst_t *parent, resrc_reqst_t *child);
 /*
  * Create a new resrc_reqst_t object
  */
-resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t starttime,
-                                int64_t endtime);
+resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
+                                int64_t starttime, int64_t endtime,
+                                bool exclusive);
 
 /*
  * Create a resrc_reqst_t object from a json object

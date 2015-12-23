@@ -1007,13 +1007,20 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 
     child_core = Jnew ();
     Jadd_str (child_core, "type", "core");
-    Jadd_int (child_core, "req_qty", job->req->corespernode);
+    Jadd_int64 (child_core, "req_qty", job->req->corespernode);
+    /* setting size == 1 devotes (all of) the core to the job */
+    Jadd_int64 (child_core, "req_size", 1);
+    /* setting exclusive to true prevents multiple jobs per core */
+    Jadd_bool (child_core, "exclusive", true);
     Jadd_int64 (child_core, "starttime", starttime);
     Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
 
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
-    Jadd_int (req_res, "req_qty", job->req->nnodes);
+    Jadd_int64 (req_res, "req_qty", job->req->nnodes);
+    /* requesting a size == 0 allows multiple jobs per node */
+    /* but a size == 1 preserves the old behavior which the simulator expects */
+    Jadd_int64 (req_res, "req_size", 1);
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
 
@@ -1028,7 +1035,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                                                  resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
         flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for job %"PRId64", "
-                  "reqrd: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
+                  "reqrd_qty: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
 
         resrc_tree_list_unstage_resources (found_trees);
         if ((selected_trees = ctx->sops.select_resources (h, found_trees,
@@ -1050,7 +1057,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                     goto done;
                 }
                 flux_log (h, LOG_DEBUG, "Allocated %"PRId64" nodes for job "
-                          "%"PRId64", reqrd: %"PRId64"", nnodes, job->lwj_id,
+                          "%"PRId64", reqrd_qty: %"PRId64"", nnodes, job->lwj_id,
                           job->req->nnodes);
             } else {
                 ctx->sops.reserve_resources (h, selected_trees, job->lwj_id,
