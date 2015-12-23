@@ -5,26 +5,24 @@ test_description='Test JSC with schedsrv
 
 Ensure JSC works as expected with schedsrv.
 '
+. `dirname $0`/sharness.sh
+
+tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
 
 #
-# variables
+# test_under_flux is under sharness.d/
 #
-dn=`dirname $0` 
-tdir=`readlink -e $dn/../`
-schedsrv=`readlink -e $dn/../sched/schedsrv.so`
-rdlconf=`readlink -e $dn/../conf/hype.lua`
-
-#
-# source sharness from the directore where this test
-# file resides
-#
-. ${dn}/sharness.sh
+test_under_flux 4 $tdir
+set_tdir $tdir
+set_instance_size 4
 
 #
 # print only with --debug
 #
 test_debug '
-	echo ${tdir} &&
+    echo ${tdir} &&
 	echo ${schedsrv} &&
 	echo ${rdlconf}
 '
@@ -46,94 +44,30 @@ $tr6
 $tr7
 $tr8"
 
-
-#
-# test_under_flux is under sharness.d/
-#
-test_under_flux 4 $tdir
-
-run_flux_jstat () {
-    sess=$1
-    rm -f jstat$sess.pid
-    (
-        # run this in a subshell
-        flux jstat -o output.$sess notify &
-        p=$!
-        cat <<HEREDOC > jstat$sess.pid
-$p
-HEREDOC
-        wait $p
-        #rm -f output.$sess
-    )&
-    return 0
-}
-
-sync_flux_jstat () {
-    sess=$1
-    while [ ! -f output.$sess ]
-    do
-        sleep 2
-    done
-    p=`cat jstat$sess.pid`
-    echo $p
-}
-
-timed_wait_job () {
-    sess=$1
-    jobid=$2
-    to=$3
-    rc=0
-    flux -x$tdir/sched waitjob -s wo.st.$sess -c wo.end.$sess $jobid &
-    while [ ! -f wo.st.$sess -a $to -ge 0 ]
-    do
-        sleep 1
-        to=`expr $to - 1`
-    done
-    if [ $to -lt 0 ]; then
-        rc=48
-    fi
-    return $rc
-}
-
-timed_sync_wait_job () {
-    sess=$1
-    to=$2
-    rc=0
-    while [ ! -f wo.end.$sess -a $to -ge 0 ]
-    do
-        sleep 1
-        to=`expr $to - 1`
-    done
-    if [ $to -lt 0 ]; then
-        rc=48
-    fi
-    return $rc
-}
-
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
+    adjust_session_info 1 && 
     flux module load ${schedsrv} rdl-conf=${rdlconf} &&
-    run_flux_jstat 1 &&
-    p=$( sync_flux_jstat 1) &&
-    timed_wait_job 1 1 5 &&
+    p=$(timed_run_flux_jstat output) &&
+    timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
     cat >expected1 <<-EOF &&
 $trans
 EOF
-    timed_sync_wait_job 1 5 &&
-    cp output.1 output.1.cp &&
+    timed_sync_wait_job 5 &&
+    cp output.$(get_session) output.$(get_session).cp &&
     kill -INT $p &&
-    test_cmp expected1 output.1.cp 
+    test_cmp expected1 output.$(get_session).cp 
 '
 
 test_expect_success 'jsc: expected job-event sequence for multiple-job scheduling' '
-    run_flux_jstat 2 &&
-    p=$( sync_flux_jstat 2) &&
-    timed_wait_job 2 6 5 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
+    adjust_session_info 5 && 
+    p=$(timed_run_flux_jstat output) &&
+    timed_wait_job 5 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
     cat >expected2 <<-EOF &&
 $trans
 $trans
@@ -141,39 +75,39 @@ $trans
 $trans
 $trans
 EOF
-    timed_sync_wait_job 2 15 &&
-    cp output.2 output.2.cp &&
+    timed_sync_wait_job 15 &&
+    cp output.$(get_session) output.$(get_session).cp &&
     sort expected2 > expected2.sort &&
-    sort output.2.cp > output.2.cp.sort &&
+    sort output.$(get_session).cp > output.$(get_session).cp.sort &&
     kill -INT $p &&
-    test_cmp expected2.sort output.2.cp.sort 
+    test_cmp expected2.sort output.$(get_session).cp.sort 
 '
 
-test_expect_success 'jsc: expected single-job-event sequence in hwloc read mode' '
+test_expect_success 'jsc: expected single-job-event sequence in hwloc reader mode' '
+    adjust_session_info 1 && 
     flux module remove sched &&
     flux module load ${schedsrv} &&
-    run_flux_jstat 3 &&
-    p=$( sync_flux_jstat 3) &&
-    timed_wait_job 3 7 5 &&
+    p=$(timed_run_flux_jstat output) &&
+    timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
     cat >expected3 <<-EOF &&
 $trans
 EOF
-    timed_sync_wait_job 3 5 &&
-    cp output.3 output.3.cp &&
+    timed_sync_wait_job 5 &&
+    cp output.$(get_session) output.$(get_session).cp &&
     kill -INT $p &&
-    test_cmp expected3 output.3.cp 
+    test_cmp expected3 output.$(get_session).cp 
 '
 
-test_expect_success 'jsc: expected multi-job-event sequence in hwloc read mode' '
-    run_flux_jstat 4 &&
-    p=$( sync_flux_jstat 4) &&
-    timed_wait_job 4 12 5 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
-    flux submit -N 4 -n 4 sleep 2 &&
+test_expect_success 'jsc: expected multi-job-event sequence in hwloc reader mode' '
+    adjust_session_info 5 && 
+    p=$(timed_run_flux_jstat output) &&
+    timed_wait_job 5 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
+    flux submit -N 4 -n 4 sleep 1 &&
     cat >expected4 <<-EOF &&
 $trans
 $trans
@@ -181,11 +115,12 @@ $trans
 $trans
 $trans
 EOF
-    timed_sync_wait_job 4 15 &&
-    cp output.4 output.4.cp &&
+    timed_sync_wait_job 15 &&
+    cp output.$(get_session) output.$(get_session).cp &&
     sort expected4 > expected4.sort &&
-    sort output.4.cp > output.4.cp.sort &&
+    sort output.$(get_session).cp > output.$(get_session).cp.sort &&
     kill -INT $p &&
-    test_cmp expected4.sort output.4.cp.sort 
+    test_cmp expected4.sort output.$(get_session).cp.sort 
 '
+
 test_done
