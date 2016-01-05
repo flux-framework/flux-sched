@@ -219,6 +219,7 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     } else {
         j->req->walltime = (uint64_t) walltime;
     }
+    j->req->node_exclusive = false;
     rc = 0;
 done:
     if (jcb)
@@ -263,7 +264,7 @@ static bool inline is_core (const char *t)
 static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
     int rc = -1;
-    int64_t jid = -1;;
+    int64_t jid = -1;
     flux_lwj_t *job = NULL;
 
     get_jobid (jcb, &jid);
@@ -374,7 +375,7 @@ static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
 {
     int rc = -1;
     flux_t h = ctx->h;
-    char *path = NULL;;
+    char *path = NULL;
     char *searchpath = getenv ("FLUX_MODULE_PATH");
 
     if (!searchpath) {
@@ -1018,9 +1019,13 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     req_res = Jnew ();
     Jadd_str (req_res, "type", "node");
     Jadd_int64 (req_res, "req_qty", job->req->nnodes);
-    /* requesting a size == 0 allows multiple jobs per node */
-    /* but a size == 1 preserves the old behavior which the simulator expects */
-    Jadd_int64 (req_res, "req_size", 1);
+    if (job->req->node_exclusive) {
+        Jadd_int64 (req_res, "req_size", 1);
+        Jadd_bool (req_res, "exclusive", true);
+    } else {
+        Jadd_int64 (req_res, "req_size", 0);
+        Jadd_bool (req_res, "exclusive", false);
+    }
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
 
