@@ -113,7 +113,12 @@ resrc_t *resrc_generate_xml_resources (resrc_t *host_resrc, const char *buf,
 int resrc_to_json (JSON o, resrc_t *resrc);
 
 /*
- * Print details of a specific resource
+ * Print details of a specific resource to a string buffer
+ * and return to the caller. The caller must free it.
+ */
+char *resrc_to_string (resrc_t *resrc);
+/*
+ * Print details of a specific resource to stdout
  */
 void resrc_print_resource (resrc_t *resrc);
 
