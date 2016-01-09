@@ -845,56 +845,71 @@ int resrc_to_json (JSON o, resrc_t *resrc)
     return rc;
 }
 
-void resrc_print_resource (resrc_t *resrc)
+char *resrc_to_string (resrc_t *resrc)
 {
+    char *buf;
     char uuid[40];
     char *property;
     char *tag;
     size_t *size_ptr;
+    size_t len;
+    FILE *ss;
 
-    if (resrc) {
-        uuid_unparse (resrc->uuid, uuid);
-        printf ("resrc type: %s, path: %s, name: %s, id: %"PRId64", state: %s, "
-                "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
-                resrc->type, resrc->path, resrc->name, resrc->id,
-                resrc_state (resrc), uuid, resrc->size, resrc->available);
-        if (zhash_size (resrc->properties)) {
-            printf (", properties:");
-            property = zhash_first (resrc->properties);
-            while (property) {
-                printf (" %s: %s", (char *)zhash_cursor (resrc->properties),
-                        property);
-                property = zhash_next (resrc->properties);
-            }
+    if (!resrc)
+        return NULL;
+    if (!(ss = open_memstream (&buf, &len)))
+        return NULL;
+
+    uuid_unparse (resrc->uuid, uuid);
+    fprintf (ss, "resrc type: %s, path: %s, name: %s, id: %"PRId64", state: %s, "
+            "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
+            resrc->type, resrc->path, resrc->name, resrc->id,
+            resrc_state (resrc), uuid, resrc->size, resrc->available);
+    if (zhash_size (resrc->properties)) {
+        fprintf (ss, ", properties:");
+        property = zhash_first (resrc->properties);
+        while (property) {
+            fprintf (ss, " %s: %s", (char *)zhash_cursor (resrc->properties),
+                    property);
+            property = zhash_next (resrc->properties);
         }
-        if (zhash_size (resrc->tags)) {
-            printf (", tags:");
-            tag = zhash_first (resrc->tags);
-            while (tag) {
-                printf (", %s", (char *)zhash_cursor (resrc->tags));
-                tag = zhash_next (resrc->tags);
-            }
-        }
-        if (zhash_size (resrc->allocs)) {
-            printf (", allocs");
-            size_ptr = zhash_first (resrc->allocs);
-            while (size_ptr) {
-                printf (", %s: %"PRIu64"",
-                        (char *)zhash_cursor (resrc->allocs), *size_ptr);
-                size_ptr = zhash_next (resrc->allocs);
-            }
-        }
-        if (zhash_size (resrc->reservtns)) {
-            printf (", reserved jobs");
-            size_ptr = zhash_first (resrc->reservtns);
-            while (size_ptr) {
-                printf (", %s: %"PRIu64"",
-                        (char *)zhash_cursor (resrc->reservtns), *size_ptr);
-                size_ptr = zhash_next (resrc->reservtns);
-            }
-        }
-        printf ("\n");
     }
+    if (zhash_size (resrc->tags)) {
+        fprintf (ss, ", tags:");
+        tag = zhash_first (resrc->tags);
+        while (tag) {
+            fprintf (ss, ", %s", (char *)zhash_cursor (resrc->tags));
+            tag = zhash_next (resrc->tags);
+        }
+    }
+    if (zhash_size (resrc->allocs)) {
+        fprintf (ss, ", allocs");
+        size_ptr = zhash_first (resrc->allocs);
+        while (size_ptr) {
+            fprintf (ss, ", %s: %"PRIu64"",
+                    (char *)zhash_cursor (resrc->allocs), *size_ptr);
+            size_ptr = zhash_next (resrc->allocs);
+        }
+    }
+    if (zhash_size (resrc->reservtns)) {
+        fprintf (ss, ", reserved jobs");
+        size_ptr = zhash_first (resrc->reservtns);
+        while (size_ptr) {
+            fprintf (ss, ", %s: %"PRIu64"",
+                    (char *)zhash_cursor (resrc->reservtns), *size_ptr);
+            size_ptr = zhash_next (resrc->reservtns);
+        }
+    }
+    fclose (ss);
+    return buf;
+}
+
+void resrc_print_resource (resrc_t *resrc)
+{
+    char *buffer = resrc_to_string (resrc);
+    if (resrc)
+        printf ("%s\n", buffer);
+    free (buffer);
 }
 
 resrc_t *resrc_create_cluster (char *cluster)
