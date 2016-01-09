@@ -991,10 +991,11 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             if (resrc_reqst_starttime (request))
                 rc = resrc_walltime_match (resrc, request);
             else {
-                if (resrc_reqst_exclusive (request))
-                    rc = !zhash_size (resrc->allocs);
-                else
-                    rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
+                rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
+                if (rc && resrc_reqst_exclusive (request)) {
+                    rc = !zhash_size (resrc->allocs) &&
+                        !zhash_size (resrc->reservtns);
+                }
             }
         } else {
             rc = true;

@@ -137,7 +137,8 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
                                          resrc_reqst_children (child_reqst),
                                          child_tree)) {
                         resrc_reqst_add_found (child_reqst, 1);
-                        resrc_stage_resrc (resrc_tree_resrc (resrc_tree), 1);
+                        resrc_stage_resrc (resrc_tree_resrc (resrc_tree),
+                                           resrc_reqst_reqrd_size (child_reqst));
                         selected = true;
                         if (resrc_reqst_nfound (child_reqst) >=
                             resrc_reqst_reqrd_qty (child_reqst))
@@ -150,7 +151,8 @@ static bool select_child (flux_t h, resrc_tree_list_t *found_children,
                 (void) resrc_tree_new (parent_tree,
                                        resrc_tree_resrc (resrc_tree));
                 resrc_reqst_add_found (child_reqst, 1);
-                resrc_stage_resrc (resrc_tree_resrc (resrc_tree), 1);
+                resrc_stage_resrc (resrc_tree_resrc (resrc_tree),
+                                   resrc_reqst_reqrd_size (child_reqst));
                 selected = true;
                 if (resrc_reqst_nfound (child_reqst) >=
                     resrc_reqst_reqrd_qty (child_reqst))
@@ -248,7 +250,8 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
                                          resrc_reqst_children (resrc_reqst),
                                          new_tree)) {
                         resrc_tree_list_append (selected_res, new_tree);
-                        resrc_stage_resrc (resrc, 1);
+                        resrc_stage_resrc (resrc,
+                                           resrc_reqst_reqrd_size (resrc_reqst));
                         flux_log (h, LOG_DEBUG, "selected %s%"PRId64"",
                                   resrc_name (resrc), resrc_id (resrc));
                         reqrd_qty--;
@@ -258,7 +261,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
                 }
             } else {
                 resrc_tree_list_append (selected_res, new_tree);
-                resrc_stage_resrc (resrc, 1);
+                resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst));
                 flux_log (h, LOG_DEBUG, "selected %s%"PRId64"",
                           resrc_name (resrc), resrc_id (resrc));
                 reqrd_qty--;
