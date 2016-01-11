@@ -42,6 +42,7 @@ struct resrc {
     char *type;
     char *path;
     char *name;
+    char *digest;
     int64_t id;
     uuid_t uuid;
     size_t size;
@@ -81,6 +82,20 @@ char *resrc_name (resrc_t *resrc)
     if (resrc)
         return resrc->name;
     return NULL;
+}
+
+char *resrc_digest (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->digest;
+    return NULL;
+}
+
+char *resrc_set_digest (resrc_t *resrc, char *digest)
+{
+    char *old = resrc->digest;
+    resrc->digest = digest;
+    return old;
 }
 
 int64_t resrc_id (resrc_t *resrc)
@@ -427,6 +442,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         if (name)
             resrc->name = xstrdup (name);
         resrc->id = id;
+        resrc->digest = NULL;
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
         resrc->size = size;
@@ -482,6 +498,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->path);
         if (resrc->name)
             free (resrc->name);
+        if (resrc->digest)
+            free (resrc->digest);
         /* Don't worry about freeing resrc->phys_tree.  It will be
          * freed by resrc_tree_free()
          */
