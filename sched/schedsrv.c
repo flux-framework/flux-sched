@@ -115,12 +115,21 @@ typedef struct {
     char         *root_uri;           /* Name of the root of the RDL hierachy */
 } rdlctx_t;
 
+typedef struct {
+    char         *path;
+    char         *uri;
+    char         *userplugin;
+    bool          sim;
+    bool          schedonce;          /* Use resources only once */
+} ssrvarg_t;
+
 /* TODO: Implement prioritization function for p_queue */
 typedef struct {
     flux_t        h;
     zlist_t      *p_queue;            /* Pending job priority queue */
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
+    ssrvarg_t     arg;                /* args passed to this module */
     rdlctx_t      rctx;               /* RDL context */
     simctx_t      sctx;               /* simulator context */
     sched_ops_t   sops;               /* scheduler plugin operations */
@@ -131,12 +140,71 @@ typedef struct {
  *                                 Utilities                                  *
  *                                                                            *
  ******************************************************************************/
+
+static inline void ssrvarg_init (ssrvarg_t *arg)
+{
+    arg->path = NULL;
+    arg->uri = NULL;
+    arg->userplugin = NULL;
+    arg->sim = false;
+    arg->schedonce = false;
+}
+
+static inline void ssrvarg_free (ssrvarg_t *arg)
+{
+    if (arg->path)
+        free (arg->path);
+    if (arg->uri)
+        free (arg->uri);
+    if (arg->userplugin)
+        free (arg->userplugin);
+}
+
+static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
+{
+    int i = 0, rc = 0;
+    char *schedonce = NULL;
+    char *sim = NULL;
+    for (i = 0; i < argc; i++) {
+        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
+            a->path = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("sched-once=", argv[i], sizeof ("sched-once"))) {
+            schedonce = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
+            a->uri = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
+            sim = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("plugin=", argv[i], sizeof ("plugin"))) {
+            a->userplugin = xstrdup (strstr (argv[i], "=") + 1);
+        } else {
+            rc = -1;
+            errno = EINVAL;
+            goto done;
+        }
+    }
+
+    if (!(a->userplugin))
+        a->userplugin = xstrdup ("sched.plugin1");
+
+    if (sim && !strncmp (sim, "true", sizeof ("true"))) {
+        a->sim = true;
+        free (sim);
+    }
+    if (schedonce && !strncmp (schedonce, "true", sizeof ("true"))) {
+        a->schedonce = true;
+        free (schedonce);
+    }
+done:
+    return rc;
+}
+
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
+    ssrvarg_free (&(ctx->arg));
     resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
     free (ctx->sctx.sim_state);
@@ -162,6 +230,7 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
             oom ();
+        ssrvarg_init (&(ctx->arg));
         ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
         ctx->sctx.in_sim = false;
@@ -371,20 +440,20 @@ done:
     return rc;
 }
 
-static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
+static int load_sched_plugin (ssrvctx_t *ctx)
 {
     int rc = -1;
     flux_t h = ctx->h;
-    char *path = NULL;
+    char *path = NULL;;
     char *searchpath = getenv ("FLUX_MODULE_PATH");
 
     if (!searchpath) {
         flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
         goto done;
     }
-    if (!(path = flux_modfind (searchpath, pin))) {
+    if (!(path = flux_modfind (searchpath, ctx->arg.userplugin))) {
         flux_log (h, LOG_ERR, "%s: not found in module search path %s",
-                  pin, searchpath);
+                  ctx->arg.userplugin, searchpath);
         goto done;
     }
     if (!(ctx->sops.dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
@@ -392,7 +461,7 @@ static int load_sched_plugin (ssrvctx_t *ctx, const char *pin)
                   dlerror ());
         goto done;
     }
-    flux_log (h, LOG_DEBUG, "loaded: %s", pin);
+    flux_log (h, LOG_DEBUG, "loaded: %s", ctx->arg.userplugin);
     rc = resolve_functions (ctx);
 
 done:
@@ -1269,58 +1338,37 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
 
 int mod_main (flux_t h, int argc, char **argv)
 {
-    int rc = -1, i = 0;
+    int rc = -1;
     ssrvctx_t *ctx = NULL;
-    char *schedplugin = NULL, *userplugin = NULL;
-    char *uri = NULL, *path = NULL, *sim = NULL;
     uint32_t rank = 1;
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't find or allocate the context");
         goto done;
     }
-
-    for (i = 0; i < argc; i++) {
-        if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
-            path = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
-            uri = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
-            sim = xstrdup (strstr (argv[i], "=") + 1);
-        } else if (!strncmp ("plugin=", argv[i], sizeof ("plugin"))) {
-            userplugin = xstrdup (strstr (argv[i], "=") + 1);
-        } else {
-            flux_log (ctx->h, LOG_ERR, "module load option %s invalid", argv[i]);
-            errno = EINVAL;
-            goto done;
-        }
-    }
-
-    if (userplugin == NULL) {
-        schedplugin = "sched.plugin1";
-    } else {
-        schedplugin = userplugin;
-    }
-
     if (flux_get_rank (h, &rank)) {
         flux_log (h, LOG_ERR, "failed to determine rank");
         goto done;
     } else if (rank) {
         flux_log (h, LOG_ERR, "sched module must only run on rank 0");
         goto done;
+    } else if (ssrvarg_process_args (argc, argv, &(ctx->arg)) != 0) {
+        flux_log (h, LOG_ERR, "can't process module args");
+        goto done;
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
-    if (load_sched_plugin (ctx, schedplugin) != 0) {
+
+    if (load_sched_plugin (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to load scheduler plugin");
         goto done;
     }
-    flux_log (h, LOG_INFO, "%s plugin loaded", schedplugin);
-    if (load_resources (ctx, path, uri) != 0) {
+    flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    if (load_resources (ctx, ctx->arg.path, ctx->arg.uri) != 0) {
         flux_log (h, LOG_ERR, "failed to load resources");
         goto done;
     }
     flux_log (h, LOG_INFO, "resources loaded");
-    if ((sim) && setup_sim (ctx, sim) != 0) {
+    if (ctx->arg.sim && setup_sim (ctx, ctx->arg.sim? "true" : "fase") != 0) {
         flux_log (h, LOG_ERR, "failed to setup sim");
         goto done;
     }
@@ -1344,10 +1392,6 @@ int mod_main (flux_t h, int argc, char **argv)
     rc = 0;
 
 done:
-    free (path);
-    free (uri);
-    free (sim);
-    free (userplugin);
     return rc;
 }
 
