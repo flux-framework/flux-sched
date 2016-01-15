@@ -40,6 +40,18 @@ char *resrc_path (resrc_t *resrc);
  */
 char *resrc_name (resrc_t *resrc);
 
+ /*
+ * Return the digest of resrc -- key to find corresponding
+ * broker rank
+ */
+char *resrc_digest (resrc_t *resrc);
+
+ /*
+ * Set the digest field of resrc with 'digest'. This will
+ * return the old digest.
+ */
+char *resrc_set_digest (resrc_t *resrc, char *digest);
+
 /*
  * Return the id of the resouce
  */
@@ -76,8 +88,8 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
  * Create a new resource object
  */
 resrc_t *resrc_new_resource (const char *type, const char *path,
-                             const char *name, int64_t id, uuid_t uuid,
-                             size_t size);
+                             const char *name, const char *sig,
+                             int64_t id, uuid_t uuid, size_t size);
 
 /*
  * Create a copy of a resource object
@@ -105,7 +117,7 @@ resrc_t *resrc_generate_rdl_resources (const char *path, char*resource);
  * xml serialization
  */
 resrc_t *resrc_generate_xml_resources (resrc_t *host_resrc, const char *buf,
-                                       size_t length);
+                                       size_t length, const char *sig);
 
 /*
  * Add the input resource to the json object
