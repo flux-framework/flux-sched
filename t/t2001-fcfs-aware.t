@@ -14,14 +14,12 @@ sched=`readlink -e $dn/../sched/schedsrv.so`
 rdlconf=`readlink -e $dn/../conf/hype-io.lua`
 
 submit=`readlink -e $dn/../simulator/submitsrv.so`
-jobdata=`readlink -e $dn/data/hype-io-test.csv`
+jobdata=`readlink -e $dn/data/job-traces/hype-io-test.csv`
 
 sim_exec=`readlink -e $dn/../simulator/sim_execsrv.so`
 sim=`readlink -e $dn/../simulator/simsrv.so`
 
-waitjob=`readlink -e $dn/../sched/flux-waitjob`
-
-expected_order=`readlink -e $dn/fcfs_expected`
+expected_order=`readlink -e $dn/data/emulator-data/fcfs_expected`
 
 #
 # source sharness from the directore where this test
@@ -39,7 +37,8 @@ test_debug '
     echo ${submit} &&
     echo ${jobdata} &&
     echo ${sim_exec} &&
-    echo ${sim}
+    echo ${sim} &&
+    echo ${expected_order}
 '
 
 #
