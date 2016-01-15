@@ -20,6 +20,9 @@ TESTS = \
 	lua/t0004-derived-type.t \
 	t0002-waitjob.t \
 	t1000-jsc.t \
+	t1001-rs2rank-basic.t \
+	t1002-rs2rank-64ranks.t \
+	t1003-stress.t \
 	t2000-fcfs.t \
 	t2001-fcfs-aware.t \
 	t2002-easy.t
