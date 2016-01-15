@@ -70,10 +70,10 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux -M${tdir}/sched \
-        -C"${tdir}/rdl/?.so;${FLUX_SOURCE_DIR}/src/bindings/lua/?.so" \
-        -L"${tdir}/rdl/?.lua;${FLUX_SOURCE_DIR}/src/bindings/lua/?.lua" \
-        start --size=${size} ${quiet} "sh $0 ${flags}"
+    LUA_PATH="$LUA_PATH;${tdir}/rdl/?.lua;;" \
+    LUA_CPATH="$LUA_CPATH;${tdir}/rdl/?.so;;" \
+    FLUX_MODULE_PATH="${tdir}/sched" \
+      exec flux start --size=${size} ${quiet} "sh $0 ${flags}"
 }
 
 mock_bootstrap_instance() {
