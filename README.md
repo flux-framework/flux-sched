@@ -87,13 +87,16 @@ below.
 Create a comms session within SLURM across 3 nodes with one rank per
 node:
 ```
-srun -N3 --pty ~/flux-core/src/cmd/flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua broker
+export LUA_PATH="${LUA_PATH};~/flux-sched/rdl/?.lua"
+export LUA_PATH="${LUA_CPATH};~/flux-sched/rdl/?.so"
+export FLUX_MODULE_PATH=~/flux-sched/sched
+srun -N3 --pty ~/flux-core/src/cmd/flux broker
 ```
 
 Load the sched module specifying the appropriate rdl configuration
 file:
 ```
-flux -M ~/flux-sched/sched -C ~/flux-sched/rdl/\?.so -L ~/flux-sched/rdl/\?.lua module load sched rdl-conf=../conf/hype.lua
+flux module load sched rdl-conf=../conf/hype.lua
 ```
 
 Check to see whether the sched module loaded:
