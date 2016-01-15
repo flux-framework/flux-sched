@@ -904,15 +904,15 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     int rc = -1;
     flux_t h = ctx->h;
     JSON jcb = Jnew ();
-    JSON arr = Jnew_ar ();
     JSON ro = Jnew_ar ();
+    JSON arr = Jnew_ar ();
 
     if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
         flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
                   job->lwj_id, strerror (errno));
         goto done;
     }
-    Jadd_obj (jcb, JSC_RDL, ro);
+    json_object_object_add (jcb, JSC_RDL, ro);
     if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
