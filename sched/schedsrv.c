@@ -534,16 +534,16 @@ static int load_resources (ssrvctx_t *ctx, char *path, char *uri)
     return rc;
 }
 
+
 /******************************************************************************
  *                                                                            *
- *                         Simulator Specific Code                            *
+ *                         Emulator Specific Code                             *
  *                                                                            *
  ******************************************************************************/
 
 /*
  * Simulator Helper Functions
  */
-
 static void queue_timer_change (ssrvctx_t *ctx, const char *module)
 {
     zlist_append (ctx->sctx.timer_queue, (void *)module);
@@ -619,11 +619,9 @@ static void handle_res_queue (ssrvctx_t *ctx)
     }
 }
 
-
 /*
  * Simulator Callbacks
  */
-
 static void start_cb (flux_t h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
@@ -735,10 +733,16 @@ static void trigger_cb (flux_t h,
     Jput (o);
 }
 
+
+/******************************************************************************
+ *                                                                            *
+ *                     Scheduler Eventing For Emulation Mode                  *
+ *                                                                            *
+ ******************************************************************************/
+
 /*
  * Simulator Initialization Functions
  */
-
 static struct flux_msg_handler_spec sim_htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
     {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb},
@@ -775,36 +779,28 @@ done:
     return rc;
 }
 
-static int setup_sim (ssrvctx_t *ctx, char *sim_arg)
+static int setup_sim (ssrvctx_t *ctx, bool sim)
 {
-    int rc = -1;
+    int rc = 0;
 
-    if (sim_arg == NULL || !strncmp (sim_arg, "false", 5)) {
-        rc = 0;
-        goto done;
-    } else if (strncmp (sim_arg, "true", 4)) {
-        flux_log (ctx->h, LOG_ERR, "unknown argument (%s) for sim option",
-                  sim_arg);
-        errno = EINVAL;
-        goto done;
-    } else {
+    if (sim) {
         flux_log (ctx->h, LOG_INFO, "setting up sim in scheduler");
+        ctx->sctx.in_sim = true;
+        ctx->sctx.sim_state = NULL;
+        ctx->sctx.res_queue = zlist_new ();
+        ctx->sctx.jsc_queue = zlist_new ();
+        ctx->sctx.timer_queue = zlist_new ();
     }
+    else
+        rc = -1;
 
-    ctx->sctx.in_sim = true;
-    ctx->sctx.sim_state = NULL;
-    ctx->sctx.res_queue = zlist_new ();
-    ctx->sctx.jsc_queue = zlist_new ();
-    ctx->sctx.timer_queue = zlist_new ();
-
-    rc = 0;
-done:
     return rc;
 }
 
+
 /******************************************************************************
  *                                                                            *
- *                     Scheduler Event Registeration                          *
+ *                     Scheduler Eventing For Normal Mode                     *
  *                                                                            *
  ******************************************************************************/
 
@@ -861,6 +857,94 @@ done:
 }
 
 
+/******************************************************************************
+ *                                                                            *
+ *            Mode Bridging Layer to Hide Emulation vs. Normal Mode           *
+ *                                                                            *
+ ******************************************************************************/
+
+static inline int bridge_set_execmode (ssrvctx_t *ctx)
+{
+    int rc = 0;
+    if (ctx->arg.sim && setup_sim (ctx, ctx->arg.sim) != 0) {
+        flux_log (ctx->h, LOG_ERR, "failed to setup sim mode");
+        rc = -1;
+        goto done;
+    }
+done:
+    return rc;
+}
+
+static inline int bridge_set_events (ssrvctx_t *ctx)
+{
+    int rc = -1;
+    if (ctx->sctx.in_sim) {
+        if (reg_sim_events (ctx) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to reg sim events");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "sim events registered");
+    } else {
+        if (reg_events (ctx) != 0) {
+            flux_log (ctx->h, LOG_ERR, "failed to reg events");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "events registered");
+    }
+    rc = 0;
+
+done:
+    return rc;
+}
+
+static inline int bridge_send_runrequest (ssrvctx_t *ctx, flux_lwj_t *job)
+{
+    int rc = -1;
+    flux_t h = ctx->h;
+    char *topic = NULL;
+    flux_msg_t *msg = NULL;
+
+    if (ctx->sctx.in_sim) {
+        /* Emulation mode */
+        if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
+                   || flux_msg_set_topic (msg, topic) < 0
+                   || flux_send (h, msg, 0) < 0) {
+            flux_log (h, LOG_ERR, "%s: request create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else {
+            queue_timer_change (ctx, "sim_exec");
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
+            rc = 0;
+        }
+    } else {
+        /* Normal mode */
+        if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
+            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else if (!(msg = flux_event_encode (topic, NULL))
+                   || flux_send (h, msg, 0) < 0) {
+            flux_log (h, LOG_ERR, "%s: event create failed: %s",
+                      __FUNCTION__, strerror (errno));
+        } else {
+            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
+            rc = 0;
+        }
+    }
+    if (msg)
+        flux_msg_destroy (msg);
+    if (topic)
+        free (topic);
+    return rc;
+}
+
+static inline void bridge_update_timer (ssrvctx_t *ctx)
+{
+    if (ctx->sctx.in_sim)
+        queue_timer_change (ctx, "sched");
+}
 /********************************************************************************
  *                                                                              *
  *            Task Program Execution Service Request (RFC 8)                    *
@@ -935,12 +1019,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
                   job->lwj_id);
         goto done;
     }
-    if (ctx->sctx.in_sim) {
-        queue_timer_change (ctx, "sched");
-    }
-
+    bridge_update_timer (ctx);
     rc = 0;
-
 done:
     if (jcb)
         Jput (jcb);
@@ -977,8 +1057,6 @@ static int req_tpexec_map (flux_t h, flux_lwj_t *job)
 
 static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
 {
-    char *topic = NULL;
-    flux_msg_t *msg = NULL;
     ssrvctx_t *ctx = getctx (h);
     int rc = -1;
 
@@ -986,43 +1064,13 @@ static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
         goto done;
+    } else if (bridge_send_runrequest (ctx, job) != 0) {
+        flux_log (h, LOG_ERR, "failed to send runrequest for job %"PRId64"",
+                  job->lwj_id);
+        goto done;
     }
-
-    if (ctx->sctx.in_sim) {
-        /* Emulation mode */
-        if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
-            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
-                      __FUNCTION__, strerror (errno));
-        } else if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
-                   || flux_msg_set_topic (msg, topic) < 0
-                   || flux_send (h, msg, 0) < 0) {
-            flux_log (h, LOG_ERR, "%s: request create failed: %s",
-                      __FUNCTION__, strerror (errno));
-        } else {
-            queue_timer_change (ctx, "sim_exec");
-            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
-            rc = 0;
-        }
-    } else {
-        /* Normal mode */
-        if (asprintf (&topic, "wrexec.run.%"PRId64"", job->lwj_id) < 0) {
-            flux_log (h, LOG_ERR, "%s: topic create failed: %s",
-                      __FUNCTION__, strerror (errno));
-        } else if (!(msg = flux_event_encode (topic, NULL))
-                   || flux_send (h, msg, 0) < 0) {
-            flux_log (h, LOG_ERR, "%s: event create failed: %s",
-                      __FUNCTION__, strerror (errno));
-        } else {
-            flux_log (h, LOG_DEBUG, "job %"PRId64" runrequest", job->lwj_id);
-            rc = 0;
-        }
-    }
-
+    rc = 0;
 done:
-    if (msg)
-        flux_msg_destroy (msg);
-    if (topic)
-        free (topic);
     return rc;
 }
 
@@ -1365,27 +1413,18 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    if (bridge_set_execmode (ctx) != 0) {
+        flux_log (h, LOG_ERR, "failed to setup execution mode");
+        goto done;
+    }
     if (load_resources (ctx, ctx->arg.path, ctx->arg.uri) != 0) {
         flux_log (h, LOG_ERR, "failed to load resources");
         goto done;
     }
     flux_log (h, LOG_INFO, "resources loaded");
-    if (ctx->arg.sim && setup_sim (ctx, ctx->arg.sim? "true" : "fase") != 0) {
-        flux_log (h, LOG_ERR, "failed to setup sim");
+    if (bridge_set_events (ctx) != 0) {
+        flux_log (h, LOG_ERR, "failed to set events");
         goto done;
-    }
-    if (ctx->sctx.in_sim) {
-        if (reg_sim_events (ctx) != 0) {
-            flux_log (h, LOG_ERR, "failed to reg sim events");
-            goto done;
-        }
-        flux_log (h, LOG_INFO, "sim events registered");
-    } else {
-        if (reg_events (ctx) != 0) {
-            flux_log (h, LOG_ERR, "failed to reg events");
-            goto done;
-        }
-        flux_log (h, LOG_INFO, "events registered");
     }
     if (flux_reactor_start (h) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
