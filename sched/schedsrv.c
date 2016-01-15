@@ -1247,17 +1247,19 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         VERIFY (trans (J_COMPLETE, newstate, &(job->state))
                 || trans (J_CANCELLED, newstate, &(job->state)));
         q_move_to_cqueue (ctx, job);
-        if ((resrc_tree_list_release (job->resrc_trees, job->lwj_id))) {
+        if (!ctx->arg.schedonce) {
+            /* support testing by actually not releasing the resrc */
+            if (resrc_tree_list_release (job->resrc_trees, job->lwj_id)) {
             flux_log (h, LOG_ERR, "%s: failed to release resources for job "
                       "%"PRId64"", __FUNCTION__, job->lwj_id);
+            }
+        }
+        flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
+        if (!msg || flux_send (h, msg, 0) < 0) {
+            flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                      __FUNCTION__, strerror (errno));
         } else {
-            flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
-
-            if (!msg || flux_send (h, msg, 0) < 0) {
-                flux_log (h, LOG_ERR, "%s: error sending event: %s",
-                          __FUNCTION__, strerror (errno));
-            } else
-                flux_msg_destroy (msg);
+            flux_msg_destroy (msg);
             flux_log (h, LOG_DEBUG, "Released resources for job %"PRId64"",
                       job->lwj_id);
         }
