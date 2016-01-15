@@ -29,7 +29,7 @@ sim_sched_%.so: sim_sched_%.c $(COMMON_OBJS) $(SCHEDULER_OBJS) libsim.so
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(ALL_LIBS)
 
 start:
-	$(FLUX) -B ../.build/src/broker/flux-broker start -o -l 7
+	$(FLUX) start -o -l 7
 load:
 	$(FLUX) module load ./simsrv.so exit-on-complete=false
 	$(FLUX) module load ./submitsrv.so job-csv=$(JOBDATA)
