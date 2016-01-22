@@ -48,4 +48,7 @@ script:
  - (cd $HOME/flux-core/src/common/libtap && make check)
  - ./config $HOME/flux-core && make check
 
+after_failure:
+ - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
+ - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
 
