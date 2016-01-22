@@ -667,7 +667,6 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
         lowercase (type);
     }
     if (!strcmp (type, "machine")) {
-        char *c;
         free (type);
         type = xstrdup ("node");
 
@@ -686,21 +685,8 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
             xmlFree (prop);
             cur = cur->next;
         }
-        if (name) {
-            /*
-             * Break apart the hostname to fit the Flux resource model:
-             * generic name + id
-             */
-            for (c = name; *c; c++) {
-                if (isdigit(*c)) {
-                    id = strtol (c, NULL, 10);
-                    *c = '\0';
-                    break;
-                }
-            }
-        } else {
+        if (!name)
             goto ret;
-        }
     } else if (!strcmp (type, "numanode")) {
         if (strcmp (parent->type, "numanode")) {
             name = xstrdup (type);
@@ -739,9 +725,9 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
 
     uuid_generate (uuid);
     if (parent)
-        path = xasprintf ("%s/%s%"PRIu64"", parent->path, name, id);
+        path = xasprintf ("%s/%s", parent->path, name);
     else
-        path = xasprintf ("/%s%"PRIu64"", name, id);
+        path = xasprintf ("/%s", name);
 
     resrc = resrc_new_resource (type, path, name, id, uuid, size);
     if (resrc) {
