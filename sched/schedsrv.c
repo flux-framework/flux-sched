@@ -121,6 +121,7 @@ typedef struct {
     char         *userplugin;
     bool          sim;
     bool          schedonce;          /* Use resources only once */
+    int           verbosity;
     rsreader_t    r_mode;
 } ssrvarg_t;
 
@@ -150,6 +151,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->userplugin = NULL;
     arg->sim = false;
     arg->schedonce = false;
+    arg->verbosity = 0;
 }
 
 static inline void ssrvarg_free (ssrvarg_t *arg)
@@ -166,12 +168,15 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
 {
     int i = 0, rc = 0;
     char *schedonce = NULL;
+    char *vlevel= NULL;
     char *sim = NULL;
     for (i = 0; i < argc; i++) {
         if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
             a->path = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("sched-once=", argv[i], sizeof ("sched-once"))) {
             schedonce = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("verbosity=", argv[i], sizeof ("verbosity"))) {
+            vlevel = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
             a->uri = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
@@ -195,6 +200,10 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     if (schedonce && !strncmp (schedonce, "true", sizeof ("true"))) {
         a->schedonce = true;
         free (schedonce);
+    }
+    if (vlevel) {
+         a->verbosity = strtol(vlevel, (char **)NULL, 10);
+         free (vlevel);
     }
     if (a->path)
         a->r_mode = (a->sim)? RSREADER_RESRC_EMUL : RSREADER_RESRC;
@@ -336,7 +345,7 @@ static inline bool is_newjob (JSON jcb)
 static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
     int rc = -1;
-    int64_t jid = -1;;
+    int64_t jid = -1;
     flux_lwj_t *job = NULL;
 
     get_jobid (jcb, &jid);
@@ -447,7 +456,7 @@ static int load_sched_plugin (ssrvctx_t *ctx)
 {
     int rc = -1;
     flux_t h = ctx->h;
-    char *path = NULL;;
+    char *path = NULL;
     char *searchpath = getenv ("FLUX_MODULE_PATH");
 
     if (!searchpath) {
@@ -489,7 +498,7 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
     int rc = -1;
     size_t len = 0;
     uint32_t rank = 0, size = 0;
-    char *key = NULL, *rs_buf = NULL;;
+    char *key = NULL, *rs_buf = NULL;
 
     if (flux_get_size (ctx->h, &size) == -1) {
         flux_log (ctx->h, LOG_ERR, "can't decide the instance size");
@@ -527,7 +536,7 @@ static void dump_resrc_state (flux_t h, resrc_tree_t *rt)
     if (!rt)
         return;
     str = resrc_to_string (resrc_tree_resrc (rt));
-    flux_log (h, LOG_DEBUG, "%s", str);
+    flux_log (h, LOG_INFO, "%s", str);
     free (str);
     if (resrc_tree_num_children (rt)) {
         resrc_tree_t *child = resrc_tree_list_first (resrc_tree_children (rt));
@@ -576,7 +585,10 @@ static int load_resources (ssrvctx_t *ctx)
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
             goto done;
         }
-        dump_resrc_state (ctx->h, resrc_phys_tree (tres));
+        if (ctx->arg.verbosity > 0) {
+            flux_log (ctx->h, LOG_INFO, "resrc state after resrc read");
+            dump_resrc_state (ctx->h, resrc_phys_tree (tres));
+        }
         if (rsreader_link2rank (ctx->machs, tres) != 0) {
             flux_log (ctx->h, LOG_ERR, "RDL(%s) inconsistent w/ hwloc!", path);
             flux_log (ctx->h, LOG_INFO, "rebuild resrc using hwloc");
@@ -603,6 +615,10 @@ static int load_resources (ssrvctx_t *ctx)
             goto done;
         }
         /* linking has already been done by build_hwloc_rs2rank above */
+        if (ctx->arg.verbosity > 0) {
+            flux_log (ctx->h, LOG_INFO, "resrc state after hwloc read");
+            dump_resrc_state (ctx->h, resrc_phys_tree (ctx->rctx.root_resrc));
+        }
         rc = 0;
         break;
 
@@ -1534,8 +1550,6 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "failed to load resources");
         goto done;
     }
-    flux_log (ctx->h, LOG_DEBUG, "resource state");
-    dump_resrc_state (ctx->h, resrc_phys_tree (ctx->rctx.root_resrc));
     flux_log (h, LOG_INFO, "resources loaded");
     if (bridge_set_events (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to set events");
