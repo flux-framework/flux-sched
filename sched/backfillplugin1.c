@@ -252,8 +252,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
                         resrc_tree_list_append (selected_res, new_tree);
                         resrc_stage_resrc (resrc,
                                            resrc_reqst_reqrd_size (resrc_reqst));
-                        flux_log (h, LOG_DEBUG, "selected %s%"PRId64"",
-                                  resrc_name (resrc), resrc_id (resrc));
+                        flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
                         reqrd_qty--;
                     } else {
                         resrc_tree_destroy (new_tree, false);
@@ -262,8 +261,7 @@ resrc_tree_list_t *select_resources (flux_t h, resrc_tree_list_t *found_trees,
             } else {
                 resrc_tree_list_append (selected_res, new_tree);
                 resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst));
-                flux_log (h, LOG_DEBUG, "selected %s%"PRId64"",
-                          resrc_name (resrc), resrc_id (resrc));
+                flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
                 reqrd_qty--;
             }
         }

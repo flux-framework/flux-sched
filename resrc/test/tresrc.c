@@ -99,7 +99,7 @@ static void test_temporal_allocation ()
 {
     int rc = 0;
     size_t available;
-    resrc_t *resource = resrc_new_resource ("custom", "/test", "test", 1, 0, 10);
+    resrc_t *resource = resrc_new_resource ("custom", "/test", "test", NULL, 1, 0, 10);
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));
@@ -285,7 +285,7 @@ int main (int argc, char *argv[])
             "hwloc topology export succeeded");
         ok (((resrc = resrc_create_cluster ("cluster")) != 0),
             "cluster resource creation succeeded");
-        ok ((resrc_generate_xml_resources (resrc, buffer, buflen) != 0),
+        ok ((resrc_generate_xml_resources (resrc, buffer, buflen, NULL) != 0),
             "resource generation from hwloc took: %lf",
             ((double)get_time())/1000000);
         hwloc_free_xmlbuffer (topology, buffer);

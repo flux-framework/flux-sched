@@ -9,8 +9,8 @@ BUILD = schedsrv.so schedplugin1.so backfillplugin1.so flux-waitjob
 
 all: $(BUILD)
 
-schedsrv.so: schedsrv.o xzmalloc.o log.o jsonutil.o
-	$(CC) -shared -o $@ $^ $(LIBS) $(SIM_LIBS)
+schedsrv.so: schedsrv.o rs2rank.o rsreader.o xzmalloc.o log.o jsonutil.o
+	$(CC) -shared -o $@ $^ $(LIBS) $(SIM_LIBS) -lhwloc
 schedplugin%.so: schedplugin%.o xzmalloc.o log.o jsonutil.o
 	$(CC) -shared -o $@ $^ $(LIBS)
 backfillplugin%.so: backfillplugin%.o xzmalloc.o log.o jsonutil.o

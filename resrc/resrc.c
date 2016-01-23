@@ -42,6 +42,7 @@ struct resrc {
     char *type;
     char *path;
     char *name;
+    char *digest;
     int64_t id;
     uuid_t uuid;
     size_t size;
@@ -81,6 +82,23 @@ char *resrc_name (resrc_t *resrc)
     if (resrc)
         return resrc->name;
     return NULL;
+}
+
+char *resrc_digest (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->digest;
+    return NULL;
+}
+
+char *resrc_set_digest (resrc_t *resrc, char *digest)
+{
+    char *old = NULL;
+    if (resrc) {
+        old = resrc->digest;
+        resrc->digest = digest;
+    }
+    return old;
 }
 
 int64_t resrc_id (resrc_t *resrc)
@@ -416,8 +434,8 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 }
 
 resrc_t *resrc_new_resource (const char *type, const char *path,
-                             const char *name, int64_t id, uuid_t uuid,
-                             size_t size)
+                             const char *name, const char *sig,
+                             int64_t id, uuid_t uuid, size_t size)
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
@@ -427,6 +445,9 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         if (name)
             resrc->name = xstrdup (name);
         resrc->id = id;
+        resrc->digest = NULL;
+        if (sig)
+            resrc->digest = xstrdup (sig);
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
         resrc->size = size;
@@ -453,6 +474,8 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         new_resrc->type = xstrdup (resrc->type);
         new_resrc->path = xstrdup (resrc->path);
         new_resrc->name = xstrdup (resrc->name);
+        if (resrc->digest)
+            new_resrc->digest = xstrdup (resrc->digest);
         new_resrc->id = resrc->id;
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
@@ -482,6 +505,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->path);
         if (resrc->name)
             free (resrc->name);
+        if (resrc->digest)
+            free (resrc->digest);
         /* Don't worry about freeing resrc->phys_tree.  It will be
          * freed by resrc_tree_free()
          */
@@ -530,7 +555,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             Jget_str (jhierarchyo, "default", &path);
     }
 
-    resrc = resrc_new_resource (type, path, name, id, uuid, size);
+    resrc = resrc_new_resource (type, path, name, NULL, 0, uuid, size);
     if (resrc) {
         /*
          * Are we constructing the resource's physical tree?  If
@@ -647,11 +672,13 @@ static char *lowercase (char *str)
     return str;
 }
 
-static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
+static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent,
+                                    const char *sig)
 {
     char *name = NULL;
     char *path = NULL;
     char *type = NULL;
+    char *signature = NULL;
     int64_t id = 0;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
@@ -667,10 +694,9 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
         lowercase (type);
     }
     if (!strcmp (type, "machine")) {
-        char *c;
         free (type);
         type = xstrdup ("node");
-
+        signature = sig? xstrdup (sig) : NULL;
         cur = nodePtr->xmlChildrenNode;
         while (cur != NULL) {
             prop = xmlGetProp (cur, (const xmlChar *) "name");
@@ -686,21 +712,8 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
             xmlFree (prop);
             cur = cur->next;
         }
-        if (name) {
-            /*
-             * Break apart the hostname to fit the Flux resource model:
-             * generic name + id
-             */
-            for (c = name; *c; c++) {
-                if (isdigit(*c)) {
-                    id = strtol (c, NULL, 10);
-                    *c = '\0';
-                    break;
-                }
-            }
-        } else {
+        if (!name)
             goto ret;
-        }
     } else if (!strcmp (type, "numanode")) {
         if (strcmp (parent->type, "numanode")) {
             name = xstrdup (type);
@@ -739,11 +752,11 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
 
     uuid_generate (uuid);
     if (parent)
-        path = xasprintf ("%s/%s%"PRIu64"", parent->path, name, id);
+        path = xasprintf ("%s/%s", parent->path, name);
     else
-        path = xasprintf ("/%s%"PRIu64"", name, id);
+        path = xasprintf ("/%s", name);
 
-    resrc = resrc_new_resource (type, path, name, id, uuid, size);
+    resrc = resrc_new_resource (type, path, name, signature, id, uuid, size);
     if (resrc) {
         if (parent)
             parent_tree = parent->phys_tree;
@@ -754,7 +767,7 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent)
              * create the memory resource so that it is never a parent
              * of the NUMANode's children
              */
-            resrc_new_from_xml (nodePtr, resrc);
+            resrc_new_from_xml (nodePtr, resrc, signature);
         }
 
         /* add twindow */
@@ -772,11 +785,14 @@ ret:
     free (name);
     free (path);
     free (type);
+    if (signature)
+       free (signature);
 
     return resrc;
 }
 
-static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr)
+static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr,
+                                        const char *s)
 {
     resrc_t *resrc = NULL;
     resrc_t *retres = NULL;
@@ -786,7 +802,7 @@ static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr)
     for (nodeItr = nodePtr; nodeItr; nodeItr = nodeItr->next) {
         if (nodeItr->type == XML_ELEMENT_NODE &&
             !xmlStrcmp (nodeItr->name, (const xmlChar *)"object")) {
-            resrc = resrc_new_from_xml (nodeItr, parent);
+            resrc = resrc_new_from_xml (nodeItr, parent, s);
             if (!retres && resrc)
                 retres = resrc;
         }
@@ -795,7 +811,7 @@ static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr)
                 surrogate = resrc;
             else
                 surrogate = parent;
-            resrc = resrc_add_xml_resource (surrogate, nodeItr->xmlChildrenNode);
+            resrc = resrc_add_xml_resource (surrogate, nodeItr->xmlChildrenNode, s);
             if (!retres && resrc)
                 retres = resrc;
         }
@@ -805,7 +821,7 @@ static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr)
 }
 
 resrc_t *resrc_generate_xml_resources (resrc_t *cluster_resrc, const char *buf,
-                                       size_t length)
+                                       size_t length, const char *sig)
 {
     resrc_t *resrc = NULL;
     xmlDocPtr doc; /* the resulting document tree */
@@ -820,7 +836,7 @@ resrc_t *resrc_generate_xml_resources (resrc_t *cluster_resrc, const char *buf,
     rootElem = xmlDocGetRootElement (doc);
 
     if (rootElem)
-        resrc = resrc_add_xml_resource (cluster_resrc, rootElem);
+        resrc = resrc_add_xml_resource (cluster_resrc, rootElem, sig);
 
     xmlFreeDoc (doc);
 ret:
@@ -861,10 +877,12 @@ char *resrc_to_string (resrc_t *resrc)
         return NULL;
 
     uuid_unparse (resrc->uuid, uuid);
-    fprintf (ss, "resrc type: %s, path: %s, name: %s, id: %"PRId64", state: %s, "
+    fprintf (ss, "resrc type: %s, path: %s, name: %s, digest: %s, "
+            "id: %"PRId64", state: %s, "
             "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
-            resrc->type, resrc->path, resrc->name, resrc->id,
-            resrc_state (resrc), uuid, resrc->size, resrc->available);
+            resrc->type, resrc->path, resrc->name, resrc->digest,
+            resrc->id, resrc_state (resrc),
+            uuid, resrc->size, resrc->available);
     if (zhash_size (resrc->properties)) {
         fprintf (ss, ", properties:");
         property = zhash_first (resrc->properties);
@@ -919,7 +937,7 @@ resrc_t *resrc_create_cluster (char *cluster)
     char *path = xasprintf ("/%s", cluster);
 
     uuid_generate (uuid);
-    resrc = resrc_new_resource ("cluster", path, cluster, 0, uuid, 1);
+    resrc = resrc_new_resource ("cluster", path, cluster, NULL, 0, uuid, 1);
     resrc->phys_tree = resrc_tree_new (NULL, resrc);
     free (path);
     return resrc;

@@ -22,7 +22,7 @@ HEREDOC
 
 submit_1N_sleep_jobs () {
     local procs=$1
-    local origprocs=$1
+    local origcores=$1
     local s_amnt=$2
     local opt=$3
     local rc=0
@@ -35,6 +35,7 @@ submit_1N_sleep_jobs () {
     for i in `seq $sched_start_jobid $sched_end_jobid`
     do
         flux submit -N 1 -n $procs sleep $s_amnt
+        echo "debug: flux submit -N 1 -n $procs sleep $s_amnt" 
         if [ $? -ne 0 ]
         then
             return 48
@@ -48,9 +49,9 @@ submit_1N_sleep_jobs () {
             fflop) 
                 if [ `expr $i % 2` -eq 0 ]
                 then
-                    procs=1
+                    procs=$origcores
                 else
-                    procs=$origprocs
+                    procs=1
                 fi
                 ;;
             *)     
@@ -75,7 +76,6 @@ verify_1N_sleep_jobs () {
         flux kvs get lwj.$i.rank.$rank.cores \
             > $sched_test_session.$i.out
         grep $cores $sched_test_session.$i.out
-
         if [ $? -ne 0 ]
         then
             return 48
@@ -89,9 +89,9 @@ verify_1N_sleep_jobs () {
             fflop) 
                 if [ `expr $i % 2` -eq 0 ]
                 then
-                    cores=1
-                else
                     cores=$origcores
+                else
+                    cores=1
                 fi
                 ;;
             *)
@@ -178,7 +178,7 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
-    flux -x$sched_test_dir/sched waitjob -s wo.st.$sched_test_session \
+    flux $sched_test_dir/sched/flux-waitjob -s wo.st.$sched_test_session \
          -c wo.end.$sched_test_session $sched_end_jobid &
     $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
         wo.st.$sched_test_session >&2
