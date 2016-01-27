@@ -58,7 +58,7 @@ static int timer_event_cb (flux_t h, void *arg);
 #endif
 static void res_event_cb (flux_t h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
-static int job_status_cb (JSON jcb, void *arg, int errnum);
+static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
 
 /******************************************************************************
@@ -282,6 +282,7 @@ static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
 
 static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
 {
+    char *jcbstr = NULL;
     int rc = -1;
     int64_t nn = 0;
     int64_t nc = 0;
@@ -292,8 +293,12 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     if (!j) goto done;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    if ((rc = jsc_query_jcb_obj (h, j->lwj_id, JSC_RDESC, &jcb)) != 0) {
-        flux_log (h, LOG_ERR, "error in jsc_query_job.");
+    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcbstr)) != 0) {
+        flux_log (h, LOG_ERR, "error in jsc_query_jcb.");
+        goto done;
+    }
+    if (!(jcb = Jfromstr (jcbstr))) {
+        flux_log (h, LOG_ERR, "fill_resource_req: error parsing JSON string");
         goto done;
     }
     if (!Jget_obj (jcb, JSC_RDESC, &o)) goto done;
@@ -316,6 +321,7 @@ done:
 
 static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
 {
+    const char *jcbstr = NULL;
     int rc = -1;
     JSON jcb = Jnew ();
     JSON o = Jnew ();
@@ -323,7 +329,8 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE , (int64_t) ns);
     /* don't want to use Jadd_obj because I want to transfer the ownership */
     json_object_object_add (jcb, JSC_STATE_PAIR, o);
-    rc = jsc_update_jcb_obj (h, jid, JSC_STATE_PAIR, jcb);
+    jcbstr = Jtostr (jcb);
+    rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcbstr);
     Jput (jcb);
     return rc;
 }
@@ -696,7 +703,7 @@ static void handle_jsc_queue (ssrvctx_t *ctx)
                   "JscEvent being handled - JSON: %s, errnum: %d",
                   Jtostr (jsc_event->jcb),
                   jsc_event->errnum);
-        job_status_cb (jsc_event->jcb, jsc_event->arg, jsc_event->errnum);
+        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg, jsc_event->errnum);
         Jput (jsc_event->jcb);
         free (jsc_event);
     }
@@ -743,10 +750,16 @@ static void start_cb (flux_t h,
     return;
 }
 
-static int sim_job_status_cb (JSON jcb, void *arg, int errnum)
+static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
+    JSON jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t)arg);
     jsc_event_t *event = (jsc_event_t*) xzmalloc (sizeof (jsc_event_t));
+
+    if (!(jcb = Jfromstr (jcbstr))) {
+        flux_log (ctx->h, LOG_ERR, "sim_job_status_cb: error parsing JSON string");
+        return -1;
+    }
 
     event->jcb = Jget (jcb);
     event->arg = arg;
@@ -864,7 +877,7 @@ static int reg_sim_events (ssrvctx_t *ctx)
         flux_log (ctx->h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         goto done;
     }
-    if (jsc_notify_status_obj (h, sim_job_status_cb, (void *)h) != 0) {
+    if (jsc_notify_status (h, sim_job_status_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "error registering a job status change CB");
         goto done;
     }
@@ -943,7 +956,7 @@ static int inline reg_events (ssrvctx_t *ctx)
         goto done;
     }
 #endif
-    if (jsc_notify_status_obj (h, job_status_cb, (void *)h) != 0) {
+    if (jsc_notify_status (h, job_status_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "error registering a job status change CB");
         rc = -1;
         goto done;
@@ -1113,6 +1126,7 @@ done:
  */
 static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 {
+    const char *jcbstr = NULL;
     int rc = -1;
     flux_t h = ctx->h;
     JSON jcb = Jnew ();
@@ -1125,7 +1139,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     json_object_object_add (jcb, JSC_RDL, ro);
-    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL, jcb) != 0) {
+    jcbstr = Jtostr (jcb);
+    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
@@ -1137,7 +1152,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         goto done;
     }
     json_object_object_add (jcb, JSC_RDL_ALLOC, arr);
-    if (jsc_update_jcb_obj (h, job->lwj_id, JSC_RDL_ALLOC, jcb) != 0) {
+    jcbstr = Jtostr (jcb);
+    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
@@ -1488,14 +1504,19 @@ static int timer_event_cb (flux_t h, void *arg)
 }
 #endif
 
-static int job_status_cb (JSON jcb, void *arg, int errnum)
+static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
+    JSON jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t)arg);
     flux_lwj_t *j = NULL;
     job_state_t ns = J_FOR_RENT;
 
     if (errnum > 0) {
         flux_log (ctx->h, LOG_ERR, "job_status_cb: errnum passed in");
+        return -1;
+    }
+    if (!(jcb = Jfromstr (jcbstr))) {
+        flux_log (ctx->h, LOG_ERR, "job_status_cb: error parsing JSON string");
         return -1;
     }
     if (is_newjob (jcb))
@@ -1555,8 +1576,8 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "failed to set events");
         goto done;
     }
-    if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
+    if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
+        flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
         goto done;
     }
     rc = 0;

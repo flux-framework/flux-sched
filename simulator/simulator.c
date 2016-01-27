@@ -229,9 +229,13 @@ int send_alive_request (flux_t h, const char *module_name)
     int rc = 0;
     flux_msg_t *msg = NULL;
     JSON o = Jnew ();
+    uint32_t rank;
+
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
 
     Jadd_str (o, "mod_name", module_name);
-    Jadd_int (o, "rank", flux_rank (h));
+    Jadd_int (o, "rank", rank);
 
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     flux_msg_set_topic (msg, "sim.alive");
@@ -274,9 +278,13 @@ int send_join_request (flux_t h, const char *module_name, double next_event)
     int rc = 0;
     flux_msg_t *msg = NULL;
     JSON o = Jnew ();
+    uint32_t rank;
+
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
 
     Jadd_str (o, "mod_name", module_name);
-    Jadd_int (o, "rank", flux_rank (h));
+    Jadd_int (o, "rank", rank);
     Jadd_double (o, "next_event", next_event);
 
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);

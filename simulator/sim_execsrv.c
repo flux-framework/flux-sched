@@ -638,7 +638,11 @@ static struct flux_msg_handler_spec htab[] = {
 int mod_main (flux_t h, int argc, char **argv)
 {
     ctx_t *ctx = getctx (h);
-    if (flux_rank (h) != 0) {
+    uint32_t rank;
+
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
+    if (rank != 0) {
         flux_log (h, LOG_ERR, "this module must only run on rank 0");
         return -1;
     }
@@ -655,8 +659,8 @@ int mod_main (flux_t h, int argc, char **argv)
 
     send_alive_request (h, module_name);
 
-    if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
+    if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
+        flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
         return -1;
     }
 

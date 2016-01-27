@@ -199,8 +199,8 @@ static int wait_job_complete (flux_t h)
             touch_outfile (ctx->complete);
         flux_log (ctx->h, LOG_INFO, "wait_job_complete: completion detected");
     }
-    if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR, "error in flux_reactor_start");
+    if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
+        flux_log (h, LOG_ERR, "error in flux_reactor_run");
         goto done;
     }
     rc = 0;

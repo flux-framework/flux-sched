@@ -324,8 +324,9 @@ done:
     return rc;
 }
 
-static int job_status_cb (JSON jcb, void *arg, int errnum)
+static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
+    JSON jcb = NULL;
     ctx_t *ctx = getctx ((flux_t)arg);
     flux_lwj_t *j = NULL;
     job_state_t ns = J_FOR_RENT;
@@ -335,7 +336,10 @@ static int job_status_cb (JSON jcb, void *arg, int errnum)
         flux_log (ctx->h, LOG_ERR, "job_status_cb: errnum passed in");
         return -1;
     }
-
+    if (!(jcb = Jfromstr (jcbstr))) {
+        flux_log (ctx->h, LOG_ERR, "job_status_cb: error parsing JSON string");
+        return -1;
+    }
     if (is_newjob (jcb))
         append_to_pqueue (ctx, jcb);
     Jput (jcb);
@@ -1643,8 +1647,12 @@ int init_and_start_scheduler (flux_t h,
     char *path;
     struct resource *r = NULL;
     struct rdllib *rdllib = NULL;
+    uint32_t rank;
 
-    if (flux_rank (h) != 0) {
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
+
+    if (rank != 0) {
         flux_log (h, LOG_ERR, "sim_ched module must only run on rank 0");
         rc = -1;
         goto ret;
@@ -1714,7 +1722,7 @@ int init_and_start_scheduler (flux_t h,
         goto ret;
     }
 
-    if (jsc_notify_status_obj (h, job_status_cb, (void *)h) != 0) {
+    if (jsc_notify_status (h, job_status_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "error registering a job status change CB");
         rc = -1;
         goto ret;
@@ -1724,8 +1732,8 @@ skip_for_sim:
     send_alive_request (h, module_name);
     flux_log (h, LOG_DEBUG, "sent alive request");
 
-    if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
+    if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
+        flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
         rc = -1;
         goto ret;
     }
