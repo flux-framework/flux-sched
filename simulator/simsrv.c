@@ -100,10 +100,14 @@ int send_start_event (flux_t h)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
+    uint32_t rank;
+
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
 
     JSON o = Jnew ();
     Jadd_str (o, "mod_name", "sim");
-    Jadd_int (o, "rank", flux_rank (h));
+    Jadd_int (o, "rank", rank);
     Jadd_int (o, "sim_time", 0);
 
     if (!(msg = flux_event_encode ("sim.start", Jtostr (o)))
@@ -212,6 +216,7 @@ static void join_cb (flux_t h,
     double *next_event = (double *)malloc (sizeof (double));
     ctx_t *ctx = arg;
     sim_state_t *sim_state = ctx->sim_state;
+    uint32_t size;
 
     if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
         || !(request = Jfromstr (json_str))
@@ -222,7 +227,9 @@ static void join_cb (flux_t h,
         Jput (request);
         return;
     }
-    if (mod_rank < 0 || mod_rank >= flux_size (h)) {
+    if (flux_get_size (h, &size) < 0)
+        return;
+    if (mod_rank < 0 || mod_rank >= size) {
         Jput (request);
         flux_log (h, LOG_ERR, "%s: bad rank in join message", __FUNCTION__);
         return;
@@ -425,8 +432,12 @@ int mod_main (flux_t h, int argc, char **argv)
     ctx_t *ctx;
     char *eoc_str;
     bool exit_on_complete;
+    uint32_t rank;
 
-    if (flux_rank (h) != 0) {
+    if (flux_get_rank (h, &rank) < 0)
+        return -1;
+
+    if (rank != 0) {
         flux_log (h, LOG_ERR, "sim module must only run on rank 0");
         return -1;
     }
@@ -460,8 +471,8 @@ int mod_main (flux_t h, int argc, char **argv)
     }
     flux_log (h, LOG_DEBUG, "sim sent start event");
 
-    if (flux_reactor_start (h) < 0) {
-        flux_log (h, LOG_ERR, "flux_reactor_start: %s", strerror (errno));
+    if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
+        flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
         return -1;
     }
     return 0;
