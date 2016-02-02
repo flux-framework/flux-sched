@@ -94,11 +94,11 @@ int insert_into_job (job_t *job, char *column_name, char *value)
     if (!strcmp (column_name, "JobID")) {
         job->id = atoi (value);
     } else if (!strcmp (column_name, "User")) {
-        asprintf (&job->user, "%s", value);
+        job->user = xasprintf ("%s", value);
     } else if (!strcmp (column_name, "JobName")) {
-        asprintf (&job->jobname, "%s", value);
+        job->jobname = xasprintf ("%s", value);
     } else if (!strcmp (column_name, "Account")) {
-        asprintf (&job->account, "%s", value);
+        job->account = xasprintf ("%s", value);
     } else if (!strcmp (column_name, "NNodes")) {
         job->nnodes = atoi (value);
     } else if (!strcmp (column_name, "NCPUS")) {
@@ -124,7 +124,7 @@ int populate_header (char *header_line, zlist_t *header_list)
     char *token_copy, *token;
     token = strtok (header_line, ",");
     while (token != NULL) {
-        asprintf (&token_copy, "%s", token);
+        token_copy = xasprintf ("%s", token);
         zlist_append (header_list, token_copy);
         token = strtok (NULL, ",");
     }

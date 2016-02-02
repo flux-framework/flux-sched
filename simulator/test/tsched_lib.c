@@ -71,8 +71,8 @@ int main (int argc, char *argv[])
         filename = getenv ("TESTSIM_INPUT_FILE");
 
     ok ((filename != NULL), "valid resource file name");
-    ok ((access (filename, F_OK) == 0), "resoure file exists");
-    ok ((access (filename, R_OK) == 0), "resoure file readable");
+    ok ((access (filename, F_OK) == 0), "resource file exists");
+    ok ((access (filename, R_OK) == 0), "resource file readable");
 
     init_time();
     rdllib = rdllib_open ();

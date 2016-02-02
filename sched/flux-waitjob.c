@@ -149,7 +149,7 @@ static bool complete_job (wjctx_t *ctx)
 static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
 {
     JSON jcb = NULL;
-    int64_t os, ns, j;
+    int64_t os = 0, ns = 0, j = 0;
     flux_t h = (flux_t)arg;
     wjctx_t *ctx = getctx (h);
 

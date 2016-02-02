@@ -143,7 +143,7 @@ static void remove_job_resources_helper (struct rdl *rdl,
         Jget_str (o, "type", &type);
         // Check if child matches, if so, unlink from hierarchy
         if (strcmp (type, CORETYPE) == 0) {
-            asprintf (&res_path, "%s:%s", uri, rdl_resource_path (curr_res));
+            res_path = xasprintf ("%s:%s", uri, rdl_resource_path (curr_res));
             rdl_res = rdl_resource_get (rdl, res_path);
             child_name = rdl_resource_name (child_res);
             rdl_resource_unlink_child (rdl_res, child_name);
@@ -409,7 +409,7 @@ int unwatch_lwj (ctx_t *ctx, flux_lwj_t *job)
     char *key = NULL;
     int rc = 0;
 
-    if (asprintf (&key, "lwj.%"PRId64".state", job->lwj_id) < 0) {
+    if (!(key = xasprintf ("lwj.%"PRId64".state", job->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key create failed");
         rc = -1;
     } else if (kvs_unwatch (ctx->h, key)) {
@@ -420,7 +420,7 @@ int unwatch_lwj (ctx_t *ctx, flux_lwj_t *job)
     }
     free (key);
 
-    asprintf (&key, "lwj.%"PRId64"", job->lwj_id);
+    key = xasprintf ("lwj.%"PRId64"", job->lwj_id);
     // dump_kvs_dir (ctx->h, key);
     free (key);
 
@@ -583,7 +583,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
     int64_t io_rate = 0;
     int rc = -1;
 
-    if (asprintf (&key, "lwj.%"PRId64".state", j->lwj_id) < 0) {
+    if (!(key = xasprintf ("lwj.%"PRId64".state", j->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo state key create failed");
         goto ret;
     } else if (kvs_get_string (ctx->h, key, &state) < 0) {
@@ -596,7 +596,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         free (key);
     }
 
-    if (asprintf (&key, "lwj.%"PRId64".nnodes", j->lwj_id) < 0) {
+    if (!(key = xasprintf ("lwj.%"PRId64".nnodes", j->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo nnodes key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &reqnodes) < 0) {
@@ -613,7 +613,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         free (key);
     }
 
-    if (asprintf (&key, "lwj.%"PRId64".ntasks", j->lwj_id) < 0) {
+    if (!(key = xasprintf ("lwj.%"PRId64".ntasks", j->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo ntasks key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &reqtasks) < 0) {
@@ -635,7 +635,7 @@ int extract_lwjinfo (ctx_t *ctx, flux_lwj_t *j)
         rc = 0;
     }
 
-    if (asprintf (&key, "lwj.%"PRId64".io_rate", j->lwj_id) < 0) {
+    if (!(key = xasprintf ("lwj.%"PRId64".io_rate", j->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "extract_lwjinfo io_rate key create failed");
         goto ret;
     } else if (kvs_get_int64 (ctx->h, key, &io_rate) < 0) {
@@ -1057,7 +1057,7 @@ int update_job_state (ctx_t *ctx, flux_lwj_t *job, lwj_event_e e)
     state = stab_rlookup (jobstate_tab, e);
     if (!strcmp (state, "unknown")) {
         flux_log (ctx->h, LOG_ERR, "unknown job state %d", e);
-    } else if (asprintf (&key, "lwj.%"PRId64".state", job->lwj_id) < 0) {
+    } else if (!(key = xasprintf ("lwj.%"PRId64".state", job->lwj_id))) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key create failed");
     } else if (kvs_put_string (ctx->h, key, state) < 0) {
         flux_log (ctx->h,
@@ -1065,7 +1065,7 @@ int update_job_state (ctx_t *ctx, flux_lwj_t *job, lwj_event_e e)
                   "update_job_state %"PRId64" state update failed: %s",
                   job->lwj_id,
                   strerror (errno));
-    } else if (asprintf (&key2, "lwj.%"PRId64".%s-time", job->lwj_id, state) < 0) {
+    } else if (!(key2 = xasprintf ("lwj.%"PRId64".%s-time", job->lwj_id, state))) {
         flux_log (ctx->h, LOG_ERR, "update_job_state key2 create failed");
     } else if (kvs_put_string (ctx->h, key2, buf) < 0) {
         flux_log (ctx->h,
@@ -1152,7 +1152,7 @@ int update_job_cores (ctx_t *ctx,
         imanode = true;
     } else if (strcmp (type, CORETYPE) == 0) {
         /* we need to limit our allocation to just the tagged cores */
-        asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
+        lwjtag = xasprintf ("lwj.%"PRId64"", job->lwj_id);
         Jget_obj (o, "tags", &o2);
         Jget_obj (o2, lwjtag, &o3);
         if (o3) {
@@ -1168,7 +1168,8 @@ int update_job_cores (ctx_t *ctx,
     }
 
     if (imanode) {
-        if (asprintf (&key, "lwj.%"PRId64".rank.%"PRId64".cores", job->lwj_id, *pnode)
+        if (!(key = xasprintf ("lwj.%"PRId64".rank.%"PRId64".cores", job->lwj_id,
+                               *pnode))
             < 0) {
             flux_log (ctx->h, LOG_ERR, "%s key create failed", __FUNCTION__);
             rc = -1;
@@ -1255,7 +1256,7 @@ int release_resources (ctx_t *ctx,
     struct resource *jr = rdl_resource_get (job->rdl, uri);
     char *lwjtag = NULL;
 
-    asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
+    lwjtag = xasprintf ("lwj.%"PRId64"", job->lwj_id);
 
     if (jr) {
         rc = release_lwj_resource (ctx, rdl, jr, lwjtag);
@@ -1283,7 +1284,7 @@ int release_lwj_resource (ctx_t *ctx,
     JSON o = NULL;
     struct resource *child, *curr;
 
-    asprintf (&uri, "%s:%s", ctx->uri, rdl_resource_path (jr));
+    uri = xasprintf ("%s:%s", ctx->uri, rdl_resource_path (jr));
     curr = rdl_resource_get (rdl, uri);
 
     if (curr) {
@@ -1329,7 +1330,7 @@ static void deallocate_bandwidth_helper (ctx_t *ctx,
     const char *type = NULL;
     JSON o = NULL;
 
-    asprintf (&uri, "%s:%s", ctx->uri, rdl_resource_path (jr));
+    uri = xasprintf ("%s:%s", ctx->uri, rdl_resource_path (jr));
     curr = rdl_resource_get (rdl, uri);
 
     if (curr) {
@@ -1467,13 +1468,13 @@ bool allocate_resources (struct rdl *rdl,
     struct resource *child, *curr;
     bool found = false;
 
-    asprintf (&uri, "%s:%s", hierarchy, rdl_resource_path (fr));
+    uri = xasprintf ("%s:%s", hierarchy, rdl_resource_path (fr));
     curr = rdl_resource_get (rdl, uri);
     free (uri);
 
     o = rdl_resource_json (curr);
     Jget_str (o, "type", &type);
-    asprintf (&lwjtag, "lwj.%"PRId64"", job->lwj_id);
+    lwjtag = xasprintf ("lwj.%"PRId64"", job->lwj_id);
     if (job->req.nnodes && (strcmp (type, "node") == 0)) {
         job->req.nnodes--;
         job->alloc.nnodes++;

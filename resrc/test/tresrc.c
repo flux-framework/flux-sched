@@ -267,9 +267,9 @@ int main (int argc, char *argv[])
         const char *filename = argv[1];
         plan (13 + num_temporal_allocation_tests);
         rdl = true;
-        ok (!(filename == NULL || *filename == '\0'), "resoure file provided");
-        ok ((access (filename, F_OK) == 0), "resoure file exists");
-        ok ((access (filename, R_OK) == 0), "resoure file readable");
+        ok (!(filename == NULL || *filename == '\0'), "resource file provided");
+        ok ((access (filename, F_OK) == 0), "resource file exists");
+        ok ((access (filename, R_OK) == 0), "resource file readable");
 
         resrc = resrc_generate_rdl_resources (filename, "default");
         ok ((resrc != NULL), "resource generation from config file took: %lf",

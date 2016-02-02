@@ -274,7 +274,7 @@ static inline void get_jobid (JSON jcb, int64_t *jid)
 
 static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
 {
-    JSON o;
+    JSON o = NULL;
     Jget_obj (jcb, JSC_STATE_PAIR, &o);
     Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
@@ -337,7 +337,7 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
 
 static inline bool is_newjob (JSON jcb)
 {
-    int64_t os, ns;
+    int64_t os = J_NULL, ns = J_NULL;
     get_states (jcb, &os, &ns);
     return ((os == J_NULL) && (ns == J_NULL))? true : false;
 }
@@ -703,7 +703,8 @@ static void handle_jsc_queue (ssrvctx_t *ctx)
                   "JscEvent being handled - JSON: %s, errnum: %d",
                   Jtostr (jsc_event->jcb),
                   jsc_event->errnum);
-        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg, jsc_event->errnum);
+        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg,
+                       jsc_event->errnum);
         Jput (jsc_event->jcb);
         free (jsc_event);
     }
