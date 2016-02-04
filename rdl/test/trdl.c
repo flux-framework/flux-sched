@@ -24,6 +24,9 @@
 
 /* trdl.c - test RDL C API */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <libgen.h>
 #include <stdarg.h>
 #include <stdio.h>

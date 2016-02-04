@@ -24,6 +24,9 @@
 
 /* flux-rdltool -- Test interface to Flux RDL C API */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
