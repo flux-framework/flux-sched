@@ -26,6 +26,9 @@
  * rsreader.c - resource reader modes API implementation
  */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <libgen.h>
 #include <hwloc.h>

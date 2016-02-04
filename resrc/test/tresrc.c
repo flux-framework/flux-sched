@@ -22,6 +22,9 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
