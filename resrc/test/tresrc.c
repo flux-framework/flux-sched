@@ -264,10 +264,11 @@ int main (int argc, char *argv[])
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
+    char *filename = NULL;
 
     init_time();
-    if (argc > 1) {
-        const char *filename = argv[1];
+    if ((filename = getenv ("TESTRESRC_INPUT_FILE"))) {
+//        const char *filename = argv[1];
         plan (13 + num_temporal_allocation_tests);
         rdl = true;
         ok (!(filename == NULL || *filename == '\0'), "resource file provided");
