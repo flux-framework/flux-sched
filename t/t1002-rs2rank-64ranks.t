@@ -8,8 +8,9 @@ the nodes allocated to a job.
 '
 . `dirname $0`/sharness.sh
 
-if test "$TEST_LONG" = "t"; then
-    test_set_prereq LONGTEST
+if ! test_have_prereq LONGTEST; then
+    skip_all='LONGTEST not set, skipping...'
+    test_done
 fi
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`

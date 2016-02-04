@@ -9,6 +9,10 @@ sched_start_jobid=0
 sched_end_jobid=0
 sched_test_dir=""
 
+if test "$TEST_LONG" = "t"; then
+    test_set_prereq LONGTEST
+fi
+
 #
 # Internal subroutines
 #
