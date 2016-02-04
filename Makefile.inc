@@ -11,7 +11,7 @@ ifneq ($(FLUX_BUILDDIR),)
 include $(FLUX_BUILDDIR)/etc/Makefile.inc
 PATH := $(FLUX_BUILDDIR)/src/cmd:$(PATH)
 FLUX_LIBS := -Wl,-rpath,$(FLUX_BUILDDIR)/src/modules/libjsc/.libs \
-            -L$(FLUX_BUILDDIR)/src/modules/libjsc/.libs -ljsc \
+            -L$(FLUX_BUILDDIR)/src/modules/libjsc/.libs -lflux-jsc \
             $(FLUX_LIBS)
 else
 FLUX_CFLAGS := $(shell pkg-config --cflags flux-core)
@@ -46,7 +46,7 @@ RESRC_LIBS = -Wl,-rpath,$(abs_topdir)/resrc -L$(topdir)/resrc -lresrc
 SIM_LIBS = -Wl,-rpath,$(abs_topdir)/simulator -L$(topdir)/simulator -lsim
 
 KVS_LIBS = -Wl,-rpath,$(FLUX_BUILDDIR)/src/modules/kvs/.libs \
-         -L$(FLUX_BUILDDIR)/src/modules/kvs/.libs -lkvs
+         -L$(FLUX_BUILDDIR)/src/modules/kvs/.libs -lflux-kvs
 #
 # When we invoke flux we need to provide additional LUA paths for RDL
 #

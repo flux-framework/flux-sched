@@ -43,7 +43,7 @@ before_install:
 
 script:
  - export CC="ccache $CC"
- - git clone --depth=1 https://github.com/flux-framework/flux-core $HOME/flux-core
+ - git clone --depth=50 https://github.com/flux-framework/flux-core $HOME/flux-core
  - (cd $HOME/flux-core && ./autogen.sh && ./configure && make -j 2)
  - (cd $HOME/flux-core/src/common/libtap && make check)
  - ./config $HOME/flux-core && make check
