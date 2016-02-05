@@ -38,7 +38,6 @@
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/xzmalloc.h"
 
 struct resrc {
