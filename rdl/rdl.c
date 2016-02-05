@@ -38,6 +38,7 @@
 #include "rdl.h"
 #include "src/common/liblsd/list.h"
 #include "src/bindings/lua/json-lua.h"
+#include "src/common/libutil/xzmalloc.h"
 
 #define VERR(r,args...) (*((r)->errf)) ((r)->errctx, args)
 
@@ -562,7 +563,7 @@ char * rdl_serialize (struct rdl *rdl)
     assert (rdl->rl);
 
     rdl_dostringf (rdl, "return rdl:serialize()");
-    asprintf (&s, "%s\n%s", "-- RDL v1.0", lua_tostring (rdl->L, -1));
+    s = xasprintf ("%s\n%s", "-- RDL v1.0", lua_tostring (rdl->L, -1));
     lua_settop (rdl->L, 0);
     return s;
 }
@@ -965,7 +966,7 @@ char * rdl_accumulator_serialize (struct rdl_accumulator *a)
         VERR (a->rdl->rl, "accumulator:serialize: %s\n", lua_tostring (L, -1));
         return (NULL);
     }
-    asprintf (&s, "-- RDL v1.0\n%s", lua_tostring (L, -1));
+    s = xasprintf ("-- RDL v1.0\n%s", lua_tostring (L, -1));
     lua_settop (L, 0);
     return (s);
 }
