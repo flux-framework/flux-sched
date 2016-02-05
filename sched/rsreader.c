@@ -33,7 +33,6 @@
 #include <libgen.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
