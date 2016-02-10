@@ -83,7 +83,7 @@ test_expect_success 'rs2rank: each manages a node exclusively' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with a matched RDL' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with a matched RDL' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
@@ -94,7 +94,7 @@ test_expect_success 'rs2rank: works with a matched RDL' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with an inconsistent RDL (fewer cores)' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with an inconsistent RDL (fewer cores)' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
@@ -105,7 +105,7 @@ test_expect_success 'rs2rank: works with an inconsistent RDL (fewer cores)' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with an inconsistent RDL (fewer nodes)' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with an inconsistent RDL (fewer nodes)' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
