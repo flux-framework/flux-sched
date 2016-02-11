@@ -11,7 +11,7 @@ if ! test_have_prereq LONGTEST; then
 fi
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
 basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 excl_4N4B=$basepath/004N/exclusive/04-brokers
 excl_4N4B_m_RDL=$basepath/004N/exclusive/cab.hwloc1.lua

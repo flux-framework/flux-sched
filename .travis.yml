@@ -32,7 +32,8 @@ before_install:
   - export LD_LIBRARY_PATH=$HOME/local/lib
   - export CPPFLAGS=-I$HOME/local/include
   - export LDFLAGS=-L$HOME/local/lib
-  - export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig
+  - export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$HOME/local/usr/local/lib/pkgconfig
+  - export BUILDDIR=$HOME/local/build
   - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
   - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
   - eval `luarocks path`
@@ -43,10 +44,12 @@ before_install:
 
 script:
  - export CC="ccache $CC"
- - git clone --depth=50 https://github.com/flux-framework/flux-core $HOME/flux-core
- - (cd $HOME/flux-core && ./autogen.sh && ./configure && make -j 2)
- - (cd $HOME/flux-core/src/common/libtap && make check)
- - ./config $HOME/flux-core && make check
+ - git clone --branch=local_include https://github.com/lipari/flux-core.git $HOME/flux-core
+ - (cd $HOME/flux-core && mkdir -p $BUILDDIR && cp -r * $BUILDDIR)
+ - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local && make V=1 && make install)
+ - (rm -fr $HOME/flux-core)
+ - ($HOME/local/bin/flux keygen)
+ - autoreconf -i && ./configure --with-flux-core-builddir=$BUILDDIR && make check
 
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'

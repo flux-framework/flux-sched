@@ -26,12 +26,14 @@
  * rs2rank.c - resource to rank API implementation
  */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <stdbool.h>
 #include <czmq.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"

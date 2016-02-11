@@ -9,7 +9,7 @@ the nodes allocated to a job.
 . `dirname $0`/sharness.sh
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
 basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # each of the 4 brokers manages an exclusive set of cores (4) of the cab node 
@@ -83,7 +83,7 @@ test_expect_success 'rs2rank: each manages a node exclusively' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with a matched RDL' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with a matched RDL' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
@@ -94,7 +94,7 @@ test_expect_success 'rs2rank: works with a matched RDL' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with an inconsistent RDL (fewer cores)' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with an inconsistent RDL (fewer cores)' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
@@ -105,7 +105,7 @@ test_expect_success 'rs2rank: works with an inconsistent RDL (fewer cores)' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with an inconsistent RDL (fewer nodes)' '
+test_expect_success TRAVISHAPPY 'rs2rank: works with an inconsistent RDL (fewer nodes)' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&

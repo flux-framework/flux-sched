@@ -26,6 +26,9 @@
  * schedsrv.c - scheduler framework service comms module
  */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +41,6 @@
 #include <stdbool.h>
 #include <flux/core.h>
 
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"

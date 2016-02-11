@@ -8,7 +8,7 @@ Ensure flux-waitjob works as expected.
 . `dirname $0`/sharness.sh
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
 
 #

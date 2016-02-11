@@ -26,11 +26,13 @@
  * rsreader.c - resource reader modes API implementation
  */
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <libgen.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"

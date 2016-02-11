@@ -1,0 +1,20 @@
+AM_CFLAGS = @GCCWARN@
+
+AM_CPPFLAGS = $(JSON_CFLAGS) $(CZMQ_CFLAGS) \
+    -I $(FLUX_BUILDDIR)
+
+noinst_LTLIBRARIES = libforeign.la
+
+libforeign_la_SOURCES = $(FLUX_BUILDDIR)/src/common/libtap/tap.c
+
+TESTS_ENVIRONMENT = \
+    TESTRESRC_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua" \
+    LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
+    LUA_CPATH="$(abs_top_builddir)/rdl/.libs/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
+
+TESTS = tresrc
+
+check_PROGRAMS = $(TESTS)
+tresrc_SOURCES = tresrc.c
+tresrc_CFLAGS = $(AM_CFLAGS) -I..
+tresrc_LDADD = ../libresrc.la libforeign.la $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
