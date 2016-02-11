@@ -21,26 +21,38 @@ the job.
 
 #### Building flux-sched
 
-Start with clones of flux-core and flux-sched.  To distinguish the
-directory names from the repository names, the cloned directories are
-referred to as ~/flux-core and ~/flux-sched in the discussion below.
-Follow the instructions provided in the flux-core README to build
-flux-core.  Essentially it is:
+flux-sched can only be built against an installed flux-core build.  If
+the flux-core is side installed, the PKG_CONFIG_PATH environment
+variable must include the location to flux-core's pkgconfig directory.
+
+flux-sched requires additional utilities from flux-core that are not
+included in the flux-core library. Rather than copy/paste the source
+code to these extra utilities into flux-sched, we opted to point to
+the flux-core source files and developed a mechanism for identifying
+where those extra source files can be found.  In the example below,
+the root directory for the flux-core source files is
+$HOME/local/build.
+
+flux-sched's configure script offers the `--with-flux-core-builddir`
+option that provides the means of identifying the location of the
+source to the utilities.
+
+The example below is of a side install of flux-core.  In this example,
+the flux-core and flux-sched repos are under the $HOME directory.  The
+flux-core repo is cloned, configured with a prefix that identifies the
+install directory ($HOME/local), built and installed into that
+directory.
 
 ```
+git clone <flux-core repo of your choice>
 cd ~/flux-core
+mkdir -p $HOME/local/build
+cp -r * $HOME/local/build
 ./autogen.sh
-./configure
+./configure --prefix=$HOME/local
 make
-make check
+make install
 ```
-
-At this point, the build will have created the "config" file in
-~/flux-core/etc/flux populated with values for cmbd_path, exec_path,
-lua_cpath, lua_path, man_path, and module_path that facilitate running
-flux out of the repo.  These would suffice if all you ran were
-commands out of ~/flux-core.  But we will need to append some paths
-(see below) to exercise the flux-sched facility.
 
 The next step is to build the sched module.  The sched module contains
 a bifurcated structure of a core framework that has all the basic
@@ -51,52 +63,42 @@ sched.plugin1 and backfill.plugin1.
 To build the sched module, run the following commands:
 
 ```
+export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$PKG_CONFIG_PATH
+git clone <flux-sched repo of your choice>
 cd ~/flux-sched
-./config ../flux-core
+./autogen.sh
+./configure --with-flux-core-builddir=$HOME/local/build
 make
+make check
 ```
 
-The flux-sched project has a rudimentary structure right now and does
-not use autotools.  `make install` is not available.  When you run
-make in ~/flux-sched, the products remain local; they do not populate
-anything in ~/flux-core.
+`make install`, `make dist`, and `make distcheck` are not yet
+supported in flux-sched.  When you run make in ~/flux-sched, the
+products remain local; they do not populate anything in ~/flux-core.
 
-Stepping into the ~/flux-sched/sched directory, there are a couple of
-quick checks you can run: `make start` and `make load`.  These pull in
-the definitions from ~/flux-core/etc/flux/config, establish some
-important environment variables, and should successfully fire up a
-comms session of one rank and load the sched module.  You can confirm
-by running `flux module list`.  The PATH environment has been extended
-to include the path to flux (under ~/flux-core/).
+To actually exercise a functioning sched module in a comms session,
+follow these steps.
 
-These two make targets are simple checks.  To actually exercise a
-functioning sched module in a comms session, follow these steps.
-
-##### SLURM session
-
-The following instructions assume you have successfully run a SLURM
-session as described in the flux-core README.  Also, if you have run
-`make start` or `make load`, exit now.
+##### Flux comms session
 
 To run the example below, you will have to manually add flux-sched
-directories to the flux commands.  The following example assumes that
-flux-core and flux-sched live under your home directory.  For greater
-insight into what is happening, add the -v flag to each flux command
-below.
+directories to the pertinent environment variables.  The following
+example assumes that flux-core and flux-sched live under your home
+directory.  For greater insight into what is happening, add the -v
+flag to each flux command below.
 
-Create a comms session within SLURM across 3 nodes with one rank per
-node:
+Create a comms session comprised of 3 brokers:
 ```
-export LUA_PATH="${LUA_PATH};~/flux-sched/rdl/?.lua"
-export LUA_PATH="${LUA_CPATH};~/flux-sched/rdl/?.so"
-export FLUX_MODULE_PATH=~/flux-sched/sched
-srun -N3 --pty ~/flux-core/src/cmd/flux broker
+export LUA_PATH="$HOME/flux-sched/rdl/?.lua;${LUA_PATH};;"
+export LUA_CPATH="$HOME/flux-sched/rdl/.libs/?.so;${LUA_CPATH};;"
+export FLUX_MODULE_PATH=$HOME/flux-sched/sched
+$HOME/local/bin/flux start -s3
 ```
 
-Load the sched module specifying the appropriate rdl configuration
-file:
+cd to ~/flux-sched and load the sched module specifying the
+appropriate rdl configuration file:
 ```
-flux module load sched rdl-conf=../conf/hype.lua
+flux module load sched rdl-conf=$HOME/flux-sched/conf/hype.lua
 ```
 
 Check to see whether the sched module loaded:
