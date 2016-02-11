@@ -44,9 +44,9 @@ before_install:
 
 script:
  - export CC="ccache $CC"
- - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
+ - git clone --branch=local_include https://github.com/lipari/flux-core.git $HOME/flux-core
  - (cd $HOME/flux-core && mkdir -p $BUILDDIR && cp -r * $BUILDDIR)
- - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local && make -j 2 && make install)
+ - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local && make V=1 && make install)
  - (rm -fr $HOME/flux-core)
  - ($HOME/local/bin/flux keygen)
  - autoreconf -i && ./configure --with-flux-core-builddir=$BUILDDIR && make check
