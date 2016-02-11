@@ -14,7 +14,7 @@ if ! test_have_prereq LONGTEST; then
 fi
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
 basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # each of the 64 brokers manages a full cab node exclusively

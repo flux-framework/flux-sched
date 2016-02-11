@@ -10,14 +10,14 @@ test_description='Test fcfs io-aware scheduler in simulator
 dn=`dirname $0`
 tdir=`readlink -e $dn/../`
 
-sched=`readlink -e $dn/../sched/schedsrv.so`
+sched=`readlink -e $dn/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e $dn/../conf/hype-io.lua`
 
-submit=`readlink -e $dn/../simulator/submitsrv.so`
+submit=`readlink -e $dn/../simulator/.libs/submitsrv.so`
 jobdata=`readlink -e $dn/data/job-traces/hype-io-test.csv`
 
-sim_exec=`readlink -e $dn/../simulator/sim_execsrv.so`
-sim=`readlink -e $dn/../simulator/simsrv.so`
+sim_exec=`readlink -e $dn/../simulator/.libs/sim_execsrv.so`
+sim=`readlink -e $dn/../simulator/.libs/simsrv.so`
 
 expected_order=`readlink -e $dn/data/emulator-data/fcfs_expected`
 
