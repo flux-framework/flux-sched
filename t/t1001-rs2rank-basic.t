@@ -9,7 +9,7 @@ the nodes allocated to a job.
 . `dirname $0`/sharness.sh
 
 tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
+schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
 basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # each of the 4 brokers manages an exclusive set of cores (4) of the cab node 

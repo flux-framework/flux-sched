@@ -11,7 +11,7 @@ Ensure the very basics of flux schedsvr work.
 #
 dn=`dirname $0` 
 tdir=`readlink -e $dn/../`
-schedsrv=`readlink -e $dn/../sched/schedsrv.so`
+schedsrv=`readlink -e $dn/../sched/.libs/schedsrv.so`
 rdlconf=`readlink -e $dn/../conf/hype.lua`
 
 #

@@ -11,26 +11,13 @@ unset FLUX_MODULE_PATH
 unset FLUX_CMBD_PATH
 
 #
-#  FLUX_BUILD_DIR and FLUX_SOURCE_DIR are set to build and source paths
-#  (based on current directory)
+#  FLUX_PREFIX identifies the prefix for the flux we will be testing
 #
-if test -z "$FLUX_BUILD_DIR"; then
-    if test -z "${builddir}"; then
-        FLUX_BUILD_DIR="$(cd ../.build && pwd)"
-    else
-        FLUX_BUILD_DIR="$(cd ${builddir}/.. && pwd))"
-    fi
-    export FLUX_BUILD_DIR
-fi
-if test -z "$FLUX_SOURCE_DIR"; then
-    if test -z "${srcdir}"; then
-        FLUX_SOURCE_DIR="$(cd ../.build && pwd)"
-    else
-        FLUX_SOURCE_DIR="$(cd ${srcdir}/.. && pwd)"
-    fi
-    export FLUX_SOURCE_DIR
-fi
+FLUX_PREFIX=`pkg-config --variable=prefix flux-core`
 
+if test -z "${FLUX_PREFIX}" ; then
+    FLUX_PREFIX=/usr
+fi
 
 #
 #  Extra functions for Flux testsuite
@@ -70,8 +57,8 @@ test_under_flux() {
 
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-    LUA_PATH="$LUA_PATH;${tdir}/rdl/?.lua;;" \
-    LUA_CPATH="$LUA_CPATH;${tdir}/rdl/?.so;;" \
+    LUA_PATH="${tdir}/rdl/?.lua;${FLUX_PREFIX}/share/lua/5.1/?.lua;${LUA_PATH};;" \
+    LUA_CPATH="${tdir}/rdl/.libs/?.so;${FLUX_PREFIX}/lib64/lua/5.1/?.so;${LUA_CPATH};;" \
     FLUX_MODULE_PATH="${tdir}/sched" \
       exec flux start --size=${size} ${quiet} "sh $0 ${flags}"
 }
@@ -106,9 +93,9 @@ test_on_rank() {
 if test -n "$FLUX_TEST_INSTALLED_PATH"; then
     PATH=$FLUX_TEST_INSTALLED_PATH:$PATH
     fluxbin=$FLUX_TEST_INSTALLED_PATH/flux
-else # normal case, use ${top_builddir}/src/cmd/flux
-    PATH=$FLUX_BUILD_DIR/src/cmd:$PATH
-    fluxbin=$FLUX_BUILD_DIR/src/cmd/flux
+else # normal case, use $FLUX_PREFIX
+    PATH=$FLUX_PREFIX/bin:$PATH
+    fluxbin=$FLUX_PREFIX/bin/flux
 fi
 export PATH
 
@@ -123,12 +110,12 @@ TEST_NAME=$SHARNESS_TEST_NAME
 export TEST_NAME
 
 #  Test requirements for testsuite
-#if ! lua -e 'require "flux.posix"'; then
-#    error "failed to find lua posix module in path"
-#fi
-#if ! lua -e 'require "flux.hostlist"'; then
-#    error "failed to find lua posix module in path"
-#fi
+if ! lua -e 'require "flux.posix"'; then
+    error "failed to find lua posix module in path"
+fi
+if ! lua -e 'require "flux.hostlist"'; then
+    error "failed to find lua hostlist module in path"
+fi
 
 
 # vi: ts=4 sw=4 expandtab
