@@ -102,7 +102,8 @@ static void test_temporal_allocation ()
 {
     int rc = 0;
     size_t available;
-    resrc_t *resource = resrc_new_resource ("custom", "/test", "test", NULL, 1, 0, 10);
+    resrc_t *resource = resrc_new_resource ("custom", "/test", "test", NULL, 1,
+                                            0, 10);
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));
@@ -235,20 +236,8 @@ static void test_temporal_allocation ()
     resrc_resource_destroy (resource);
 }
 
-/*
- * The test supports two options.  If there is an argument, it is
- * treated as an RDL-formatted resource file to load.  If there is no
- * arguement, the test reads the hwloc info from the node it is
- * running on and uses those resources.  The 'rdl' boolean is used to
- * steer the construction of the resource request to correlate with
- * the loaded resources.
- */
-int main (int argc, char *argv[])
+static int test_a_resrc (resrc_t *resrc, bool rdl)
 {
-    bool rdl;
-    char *buffer = NULL;
-    hwloc_topology_t topology;
-    int buflen = 0;
     int found = 0;
     int rc = 0;
     int verbose = 0;
@@ -256,7 +245,6 @@ int main (int argc, char *argv[])
     JSON child_core = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
-    resrc_t *resrc = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *deserialized_trees = NULL;
     resrc_tree_list_t *found_trees = resrc_tree_list_new ();
@@ -264,38 +252,6 @@ int main (int argc, char *argv[])
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
-
-    init_time();
-    if (argc > 1) {
-        const char *filename = argv[1];
-        plan (13 + num_temporal_allocation_tests);
-        rdl = true;
-        ok (!(filename == NULL || *filename == '\0'), "resource file provided");
-        ok ((access (filename, F_OK) == 0), "resource file exists");
-        ok ((access (filename, R_OK) == 0), "resource file readable");
-
-        resrc = resrc_generate_rdl_resources (filename, "default");
-        ok ((resrc != NULL), "resource generation from config file took: %lf",
-            ((double)get_time())/1000000);
-    } else {
-        plan (14 + num_temporal_allocation_tests);
-        rdl = false;
-        ok ((hwloc_topology_init (&topology) == 0),
-            "hwloc topology init succeeded");
-        ok ((hwloc_topology_load (topology) == 0),
-            "hwloc topology load succeeded");
-        ok ((hwloc_topology_export_xmlbuffer (topology, &buffer, &buflen) == 0),
-            "hwloc topology export succeeded");
-        ok (((resrc = resrc_create_cluster ("cluster")) != 0),
-            "cluster resource creation succeeded");
-        ok ((resrc_generate_xml_resources (resrc, buffer, buflen, NULL) != 0),
-            "resource generation from hwloc took: %lf",
-            ((double)get_time())/1000000);
-        hwloc_free_xmlbuffer (topology, buffer);
-        hwloc_topology_destroy (topology);
-    }
-    if (!resrc)
-        goto ret;
 
     resrc_tree = resrc_phys_tree (resrc);
     ok ((resrc_tree != NULL), "resource tree valid");
@@ -307,8 +263,6 @@ int main (int argc, char *argv[])
         resrc_tree_print (resrc_tree);
         printf ("End of resource tree\n");
     }
-
-    test_temporal_allocation ();
 
     /*
      *  Build a resource composite to search for.  Two variants are
@@ -429,7 +383,8 @@ int main (int argc, char *argv[])
     ok (!rc, "successfully reserved resources for job 4");
     resrc_tree_list_free (selected_trees);
 
-    printf ("allocate and reserve took: %lf\n", ((double)get_time ())/1000000);
+    printf ("        allocate and reserve took: %lf\n",
+            ((double)get_time ())/1000000);
 
     if (verbose) {
         printf ("Allocated and reserved resources\n");
@@ -451,9 +406,63 @@ int main (int argc, char *argv[])
     resrc_tree_list_destroy (deserialized_trees, true);
     resrc_tree_list_destroy (found_trees, false);
     resrc_tree_destroy (resrc_tree, true);
-    printf ("destroy took: %lf\n", ((double)get_time ())/1000000);
+    printf ("        destroy took: %lf\n", ((double)get_time ())/1000000);
 ret:
+    return rc;
+}
+
+/*
+ * These is a test of the resrc library.  The test uses two methods
+ * for generating a resrc object.  The first loads an RDL-formatted
+ * resource identified by the TESTRESRC_INPUT_FILE environment
+ * variable.  The second option generates a resrc object from the node
+ * it is running on using the hwloc library.  The test then conducts a
+ * number of resrc library operations on each of these resrc objects.
+ */
+int main (int argc, char *argv[])
+{
+    char *buffer = NULL;
+    char *filename = NULL;
+    hwloc_topology_t topology;
+    int buflen = 0;
+    int rc1 = 1, rc2 = 1;
+    resrc_t *resrc = NULL;
+
+    plan (27 + num_temporal_allocation_tests);
+    test_temporal_allocation ();
+
+    if ((filename = getenv ("TESTRESRC_INPUT_FILE"))) {
+        ok (!(filename == NULL || *filename == '\0'), "resource file provided");
+        ok ((access (filename, F_OK) == 0), "resource file exists");
+        ok ((access (filename, R_OK) == 0), "resource file readable");
+
+        init_time();
+        resrc = resrc_generate_rdl_resources (filename, "default");
+        ok ((resrc != NULL), "resource generation from config file took: %lf",
+            ((double)get_time())/1000000);
+        if (resrc)
+            rc1 = test_a_resrc (resrc, true);
+    }
+
+    init_time();
+    ok ((hwloc_topology_init (&topology) == 0),
+        "hwloc topology init succeeded");
+    ok ((hwloc_topology_load (topology) == 0),
+        "hwloc topology load succeeded");
+    ok ((hwloc_topology_export_xmlbuffer (topology, &buffer, &buflen) == 0),
+        "hwloc topology export succeeded");
+    ok (((resrc = resrc_create_cluster ("cluster")) != 0),
+        "cluster resource creation succeeded");
+    ok ((resrc_generate_xml_resources (resrc, buffer, buflen, NULL) != 0),
+        "resource generation from hwloc took: %lf",
+        ((double)get_time())/1000000);
+    hwloc_free_xmlbuffer (topology, buffer);
+    hwloc_topology_destroy (topology);
+    if (resrc)
+        rc2 = test_a_resrc (resrc, false);
+
     done_testing ();
+    return (rc1 | rc2);
 }
 
 
