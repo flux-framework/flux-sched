@@ -53,7 +53,7 @@ test_under_flux() {
         unset TEST_UNDER_FLUX_ACTIVE
         return
     fi
-    quiet="-o -q,-L${log_file}"
+    quiet="-o -q,-Slog-filename=${log_file}"
     if test "$verbose" = "t" -o -n "$FLUX_TESTS_DEBUG" ; then
         flags="${flags} --verbose"
         quiet=""
