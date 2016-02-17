@@ -25,7 +25,7 @@
 Socket = Resource:subclass ('Socket')
 
 function Socket:initialize (arg)
-    local cpuset = require 'cpuset'.new
+    local cpuset = require 'flux-cpuset'.new
 
     assert (tonumber(arg.id),   "Required Socket arg `id' missing")
     assert (type(arg.cpus) == "string", "Required Socket arg `cpus' missing")
