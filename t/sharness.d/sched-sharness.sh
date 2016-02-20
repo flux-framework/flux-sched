@@ -37,7 +37,6 @@ sched_instance_size=0
 sched_test_session=0
 sched_start_jobid=0
 sched_end_jobid=0
-sched_test_dir=""
 
 if test "$TEST_LONG" = "t"; then
     test_set_prereq LONGTEST
@@ -175,10 +174,6 @@ set_start_jobid () {
 
 set_end_jobid () {
     sched_end_jobid=$1
-}
-
-set_tdir () {
-    sched_test_dir=$1
 }
 
 adjust_session_info () {
