@@ -4,59 +4,34 @@
 test_description='Test easy scheduler in simulator
 '
 
-#
-# variables
-#
-dn=`dirname $0`
-tdir=`readlink -e $dn/../`
-
-sched=`readlink -e $dn/../sched/.libs/schedsrv.so`
-rdlconf=`readlink -e $dn/../conf/hype-io.lua`
-
-submit=`readlink -e $dn/../simulator/.libs/submitsrv.so`
-jobdata=`readlink -e $dn/data/job-traces/hype-test.csv`
-
-sim_exec=`readlink -e $dn/../simulator/.libs/sim_execsrv.so`
-sim=`readlink -e $dn/../simulator/.libs/simsrv.so`
-
-expected_order=`readlink -e $dn/data/emulator-data/easy_expected`
-
-#
 # source sharness from the directore where this test
 # file resides
 #
-. ${dn}/sharness.sh
+. $(dirname $0)/sharness.sh
 
-#
-# print only with --debug
-#
-test_debug '
-	echo ${tdir} &&
-	echo ${sched} &&
-	echo ${rdlconf} &&
-    echo ${submit} &&
-    echo ${jobdata} &&
-    echo ${sim_exec} &&
-    echo ${sim} &&
-    echo ${expected_order}
-'
+rdlconf=$(sched_src_path "conf/hype-io.lua")
+jobdata=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/job-traces/hype-test.csv")
+expected_order=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/emulator-data/easy_expected")
+
+FLUX_MODULE_PATH_PREPEND="$FLUX_MODULE_PATH_PREPEND:$(sched_build_path simulator/.libs)"
+
 
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 1 $tdir
+test_under_flux 1
 
 test_expect_success 'loading sim works' '
-	flux module load ${sim} exit-on-complete=false
+	flux module load sim exit-on-complete=false
 '
 test_expect_success 'loading submit works' '
-	flux module load ${submit} job-csv=${jobdata}
+	flux module load submit job-csv=${jobdata}
 '
 test_expect_success 'loading exec works' '
-	flux module load ${sim_exec}
+	flux module load sim_exec
 '
 test_expect_success 'loading sched works' '
-	flux module load ${sched} rdl-conf=${rdlconf} in-sim=true plugin=backfill.plugin1
+	flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=backfill.plugin1
 '
 
 while flux kvs get lwj.12.complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done

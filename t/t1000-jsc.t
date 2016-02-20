@@ -7,25 +7,11 @@ Ensure JSC works as expected with schedsrv.
 '
 . `dirname $0`/sharness.sh
 
-tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/.libs/schedsrv.so`
-rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
-
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 4 $tdir
-set_tdir $tdir
+test_under_flux 4
 set_instance_size 4
-
-#
-# print only with --debug
-#
-test_debug '
-    echo ${tdir} &&
-	echo ${schedsrv} &&
-	echo ${rdlconf}
-'
 
 tr1="null->null"
 tr2="null->reserved"
@@ -46,7 +32,7 @@ $tr8"
 
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
     adjust_session_info 1 && 
-    flux module load ${schedsrv} rdl-conf=${rdlconf} &&
+    flux module load sched rdl-conf=${RDL_CONF_DEFAULT} &&
     p=$(timed_run_flux_jstat output) &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
@@ -86,7 +72,7 @@ EOF
 test_expect_success 'jsc: expected single-job-event sequence in hwloc reader mode' '
     adjust_session_info 1 && 
     flux module remove sched &&
-    flux module load ${schedsrv} &&
+    flux module load sched &&
     p=$(timed_run_flux_jstat output) &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
