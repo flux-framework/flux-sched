@@ -212,7 +212,7 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
-    flux $sched_test_dir/sched/flux-waitjob -s wo.st.$sched_test_session \
+    flux waitjob -s wo.st.$sched_test_session \
          -c wo.end.$sched_test_session $sched_end_jobid &
     $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
         wo.st.$sched_test_session >&2
