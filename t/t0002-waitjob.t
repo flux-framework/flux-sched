@@ -11,7 +11,6 @@ Ensure flux-waitjob works as expected.
 # test_under_flux is under sharness.d/
 #
 test_under_flux 4
-set_instance_size 4
 
 test_expect_success  'waitjob: works when the job has not started' '
     adjust_session_info 1 &&

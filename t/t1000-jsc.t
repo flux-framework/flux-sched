@@ -11,7 +11,6 @@ Ensure JSC works as expected with schedsrv.
 # test_under_flux is under sharness.d/
 #
 test_under_flux 4
-set_instance_size 4
 
 tr1="null->null"
 tr2="null->reserved"

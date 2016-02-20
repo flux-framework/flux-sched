@@ -26,7 +26,6 @@ excl_4N4B_nc=16
 # test_under_flux is under sharness.d/
 #
 test_under_flux 4
-set_instance_size 4
 
 #
 # print only with --debug

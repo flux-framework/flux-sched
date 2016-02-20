@@ -145,6 +145,9 @@ verify_1N_sleep_jobs () {
 #   Accessors 
 #
 get_instance_size () {
+    if test $sched_instance_size -eq 0; then
+        sched_instance_size=$(flux getattr size)
+    fi
     echo $sched_instance_size
 }
 
@@ -158,10 +161,6 @@ get_start_jobid () {
 
 get_end_jobid () {
     echo $sched_end_jobid
-}
-
-set_instance_size () {
-    sched_instance_size=$1
 }
 
 set_session () {

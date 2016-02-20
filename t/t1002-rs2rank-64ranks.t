@@ -22,8 +22,6 @@ excl_64N64B_nc=16
 # test_under_flux is under sharness.d/
 #
 test_under_flux 64
-set_instance_size 64
-
 
 test_expect_success LONGTEST 'rs2rank: works with 64-N instance' '
     adjust_session_info 64 &&
