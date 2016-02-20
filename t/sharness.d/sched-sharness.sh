@@ -3,6 +3,36 @@
 # project-local sharness code for flux-sched
 #
 
+# Set up environment so that we find flux-sched modules, commands, and Lua libs:
+FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
+FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/.libs/?.so"
+FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs"
+FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched"
+
+## Set up environment using flux(1) in PATH
+flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
+eval $(flux env)
+
+# Return canonicalized path to a file in the *build* tree
+sched_build_path () {
+    readlink -e "${SHARNESS_BUILD_DIRECTORY}/${1}"
+}
+
+# Return canonicalized path to a file in the *src* tree
+sched_src_path () {
+    readlink -e "${SHARNESS_TEST_SRCDIR}/../${1}"
+}
+
+# Add explicit path to default rdl.conf
+RDL_CONF_DEFAULT=$(sched_src_path "conf/hype.lua")
+
+export FLUX_EXEC_PATH_PREPEND
+export FLUX_MODULE_PATH_PREPEND
+export FLUX_LUA_CPATH_PREPEND
+export FLUX_LUA_PATH_PREPEND
+export LUA_PATH
+export LUA_CPATH
+
 sched_instance_size=0
 sched_test_session=0
 sched_start_jobid=0
