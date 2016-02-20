@@ -14,7 +14,8 @@ Ensure the very basics of flux schedsvr work.
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 1
+SIZE=2
+test_under_flux ${SIZE}
 
 
 test_expect_success 'schedsrv: module load works' '
@@ -43,4 +44,8 @@ test_expect_success 'schedsrv: module list works' '
 	flux module list
 '
 
+test_expect_success 'get_instance_size works' '
+	test "$(get_instance_size)" = "$SIZE" &&
+	test "$(get_instance_size)" = "$(get_instance_size)"
+'
 test_done
