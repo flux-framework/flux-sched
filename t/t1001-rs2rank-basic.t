@@ -8,6 +8,12 @@ the nodes allocated to a job.
 '
 . `dirname $0`/sharness.sh
 
+test "$TRAVISHAPPY" = "t" && test_set_prereq TRAVISHAPPY
+if ! test_have_prereq TRAVISHAPPY; then
+    skip_all='Travis not happy yet!'
+    test_done
+fi
+
 basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # each of the 4 brokers manages an exclusive set of cores (4) of the cab node 
 excl_1N4B=$basepath/001N/exclusive/04-brokers
