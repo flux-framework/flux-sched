@@ -87,6 +87,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/common/Makefile
 		 src/common/libtap/Makefile
+		 src/common/liblsd/Makefile
                  foreign/Makefile
                  rdl/Makefile
                  rdl/test/Makefile
