@@ -1,1 +1,1 @@
-SUBDIRS = libtap liblsd
+SUBDIRS = libtap liblsd libutil
