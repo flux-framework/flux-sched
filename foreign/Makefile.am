@@ -5,6 +5,5 @@ AM_CPPFLAGS = $(JSON_CFLAGS) $(LUA_INCLUDE) $(CZMQ_CFLAGS) \
 
 noinst_LTLIBRARIES = libforeign.la
 
-nodist_libforeign_la_SOURCES = \
-    $(FLUX_BUILDDIR)/src/bindings/lua/json-lua.c
+nodist_libforeign_la_SOURCES =
 libforeign_la_LIBADD = $(LUA_LIB)
