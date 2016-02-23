@@ -39,4 +39,6 @@ fluxcmd_PROGRAMS = flux-waitjob
 flux_waitjob_SOURCES = flux-waitjob.c
 flux_waitjob_CFLAGS = $(AM_CFLAGS)
 flux_waitjob_LDADD = $(JSON_LIBS) $(FLUX_CORE_LIBS) \
-    $(top_builddir)/foreign/libforeign.la $(CZMQ_LIBS)
+    $(top_builddir)/foreign/libforeign.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
+    $(CZMQ_LIBS)
