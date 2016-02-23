@@ -13,6 +13,8 @@ check_PROGRAMS = $(TESTS)
 trdl_SOURCES = trdl.c
 trdl_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 trdl_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
     $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
 
 EXTRA_DIST= test-rdl.lua
