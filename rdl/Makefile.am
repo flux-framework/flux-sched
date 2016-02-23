@@ -35,7 +35,7 @@ flux_cpuset_la_CFLAGS = $(LUA_INCLUDE)
 flux_cpuset_la_LIBADD = $(LUA_LIB)
 flux_cpuset_la_LDFLAGS = $(luamod_ldflags)
 
-libflux_rdl_la_SOURCES = rdl.c
+libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
     $(top_builddir)/src/common/liblsd/liblsd.la \
     $(top_builddir)/src/common/libutil/libutil.la \

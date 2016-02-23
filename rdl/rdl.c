@@ -37,8 +37,9 @@
 
 #include "rdl.h"
 #include "src/common/liblsd/list.h"
-#include "src/bindings/lua/json-lua.h"
 #include "src/common/libutil/xzmalloc.h"
+
+#include "json-lua.h"
 
 #define VERR(r,args...) (*((r)->errf)) ((r)->errctx, args)
 
