@@ -84,6 +84,9 @@ fluxlib_ldflags="-shared -export-dynamic --disable-static -Wl,--no-undefined"
 AC_SUBST(fluxlib_ldflags)
 
 AC_CONFIG_FILES([Makefile
+		 src/Makefile
+		 src/common/Makefile
+		 src/common/libtap/Makefile
                  foreign/Makefile
                  rdl/Makefile
                  rdl/test/Makefile
