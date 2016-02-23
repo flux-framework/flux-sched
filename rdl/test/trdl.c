@@ -33,7 +33,7 @@
 #include <stdbool.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/jsonutil.h"
+#include "src/common/libutil/shortjson.h"
 #include "rdl.h"
 
 static void perr (void *ctx, const char *fmt, ...)
@@ -107,9 +107,9 @@ int main (int argc, char *argv[])
     /*
      *  Test find
      */
-    json_object *args = util_json_object_new_object ();
-    util_json_object_add_string (args, "type", "node");
-    util_json_object_add_int (args, "id", 300);
+    json_object *args = Jnew ();
+    Jadd_str (args, "type", "node");
+    Jadd_int (args, "id", 300);
     rdl2 = rdl_find (rdl1, args);
     json_object_put (args);
     r = rdl_resource_get (rdl2, "default");
