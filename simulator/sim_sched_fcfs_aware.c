@@ -22,6 +22,9 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +36,6 @@
 #include <time.h>
 #include <inttypes.h>
 
-#include "src/common/libutil/jsonutil.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
@@ -136,7 +138,7 @@ static struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
     {FLUX_MSGTYPE_REQUEST, "sim_sched.trigger", trigger_cb},
     //{ FLUX_MSGTYPE_EVENT,   "sim_sched.event",   event_cb },
-    {FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch", newlwj_rpc},
+    //{FLUX_MSGTYPE_REQUEST, "sim_sched.lwj-watch", newlwj_rpc},
     FLUX_MSGHANDLER_TABLE_END,
 };
 

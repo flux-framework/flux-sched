@@ -7,28 +7,14 @@ Ensure flux-waitjob works as expected.
 '
 . `dirname $0`/sharness.sh
 
-tdir=`readlink -e ${SHARNESS_TEST_SRCDIR}/../`
-schedsrv=`readlink -e ${SHARNESS_TEST_SRCDIR}/../sched/schedsrv.so`
-rdlconf=`readlink -e ${SHARNESS_TEST_SRCDIR}/../conf/hype.lua`
-
-#
-# print only with --debug
-#
-test_debug '
-	echo ${tdir} &&
-	echo ${schedsrv} &&
-	echo ${rdlconf}
-'
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 4 $tdir
-set_tdir $tdir
-set_instance_size 4
+test_under_flux 4
 
-test_expect_success 'waitjob: works when the job has not started' '
+test_expect_success  'waitjob: works when the job has not started' '
     adjust_session_info 1 &&
-    flux module load ${schedsrv} rdl-conf=${rdlconf} &&
+    flux module load sched rdl-conf=${RDL_CONF_DEFAULT} &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
     timed_sync_wait_job 5

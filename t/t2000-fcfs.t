@@ -4,35 +4,21 @@
 test_description='Test fcfs scheduler in simulator
 '
 
-#
-# variables
-#
-dn=`dirname $0`
-tdir=`readlink -e $dn/../`
-
-sched=`readlink -e $dn/../sched/schedsrv.so`
-rdlconf=`readlink -e $dn/../conf/hype-io.lua`
-
-submit=`readlink -e $dn/../simulator/submitsrv.so`
-jobdata=`readlink -e $dn/data/job-traces/hype-test.csv`
-
-sim_exec=`readlink -e $dn/../simulator/sim_execsrv.so`
-sim=`readlink -e $dn/../simulator/simsrv.so`
-
-expected_order=`readlink -e $dn/data/emulator-data/fcfs_expected`
-
-#
 # source sharness from the directore where this test
 # file resides
 #
-. ${dn}/sharness.sh
+. $(dirname $0)/sharness.sh
+FLUX_MODULE_PATH="${SHARNESS_BUILD_DIRECTORY}/simulator/.libs:${FLUX_MODULE_PATH}"
+
+rdlconf=$(readlink -e "${SHARNESS_TEST_SRCDIR}/../conf/hype-io.lua")
+jobdata=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/job-traces/hype-test.csv")
+expected_order=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/emulator-data/fcfs_expected")
+
 
 #
 # print only with --debug
 #
 test_debug '
-	echo ${tdir} &&
-	echo ${sched} &&
 	echo ${rdlconf} &&
     echo ${submit} &&
     echo ${jobdata} &&
@@ -44,19 +30,19 @@ test_debug '
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 1 $tdir
+test_under_flux 1
 
 test_expect_success 'loading sim works' '
-	flux module load ${sim} exit-on-complete=false
+	flux module load sim exit-on-complete=false
 '
 test_expect_success 'loading submit works' '
-	flux module load ${submit} job-csv=${jobdata}
+	flux module load submit job-csv=${jobdata}
 '
 test_expect_success 'loading exec works' '
-	flux module load ${sim_exec}
+	flux module load sim_exec
 '
 test_expect_success 'loading sched works' '
-	flux module load ${sched} rdl-conf=${rdlconf} in-sim=true plugin=sched.plugin1
+	flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.plugin1
 '
 
 while flux kvs get lwj.12.complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done

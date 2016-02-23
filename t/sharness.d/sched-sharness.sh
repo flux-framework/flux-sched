@@ -3,11 +3,40 @@
 # project-local sharness code for flux-sched
 #
 
+# Set up environment so that we find flux-sched modules, commands, and Lua libs:
+FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
+FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/.libs/?.so"
+FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs"
+FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched"
+
+## Set up environment using flux(1) in PATH
+flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
+eval $(flux env)
+
+# Return canonicalized path to a file in the *build* tree
+sched_build_path () {
+    readlink -e "${SHARNESS_BUILD_DIRECTORY}/${1}"
+}
+
+# Return canonicalized path to a file in the *src* tree
+sched_src_path () {
+    readlink -e "${SHARNESS_TEST_SRCDIR}/../${1}"
+}
+
+# Add explicit path to default rdl.conf
+RDL_CONF_DEFAULT=$(sched_src_path "conf/hype.lua")
+
+export FLUX_EXEC_PATH_PREPEND
+export FLUX_MODULE_PATH_PREPEND
+export FLUX_LUA_CPATH_PREPEND
+export FLUX_LUA_PATH_PREPEND
+export LUA_PATH
+export LUA_CPATH
+
 sched_instance_size=0
 sched_test_session=0
 sched_start_jobid=0
 sched_end_jobid=0
-sched_test_dir=""
 
 if test "$TEST_LONG" = "t"; then
     test_set_prereq LONGTEST
@@ -116,6 +145,9 @@ verify_1N_sleep_jobs () {
 #   Accessors 
 #
 get_instance_size () {
+    if test $sched_instance_size -eq 0; then
+        sched_instance_size=$(flux getattr size)
+    fi
     echo $sched_instance_size
 }
 
@@ -131,10 +163,6 @@ get_end_jobid () {
     echo $sched_end_jobid
 }
 
-set_instance_size () {
-    sched_instance_size=$1
-}
-
 set_session () {
     sched_test_session=$1
 }
@@ -145,10 +173,6 @@ set_start_jobid () {
 
 set_end_jobid () {
     sched_end_jobid=$1
-}
-
-set_tdir () {
-    sched_test_dir=$1
 }
 
 adjust_session_info () {
@@ -182,7 +206,7 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
-    flux $sched_test_dir/sched/flux-waitjob -s wo.st.$sched_test_session \
+    flux waitjob -s wo.st.$sched_test_session \
          -c wo.end.$sched_test_session $sched_end_jobid &
     $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
         wo.st.$sched_test_session >&2
