@@ -31,12 +31,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <getopt.h>
 
-#include "src/common/libutil/optparse.h"
 #include "rdl.h"
 
 struct prog_ctx {
-    optparse_t *p;
     const char *filename;
     char *cmd;
     char **args;
@@ -53,43 +52,39 @@ static void fatal (int code, char *format, ...)
 
 static int parse_cmdline (struct prog_ctx *ctx, int ac, char **av)
 {
-    int rc;
-    struct optparse_option opts [] = {
-        {
-            .name =    "config-file",
-            .key =     'f',
-            .has_arg = 1,
-            .arginfo = "FILE",
-            .usage =   "Load RDL config from filename FILE",
-        },
-        OPTPARSE_TABLE_END,
+    const char *usage = "[OPTIONS] CMD [ARGS]...\n"
+        "Supported CMDs include:\n"
+        " resource URI\t Print resource at URI\n"
+        " tree URI\t print hierarchy tree at URI\n"
+        " aggregate URI\t aggregate hierarchy tree at URI\n";
+    const char *options = "+f";
+    const struct option longopts[] = {
+        { "config-file", required_argument, 0, 'f' },
+        { 0, 0, 0, 0 },
     };
+    int ch;
 
-    ctx->p = optparse_create (av[0]);
-    optparse_set (ctx->p, OPTPARSE_USAGE, "[OPTIONS] CMD [ARGS]...");
-    optparse_add_option_table (ctx->p, opts);
-    optparse_add_doc (ctx->p, "\nSupported CMDs include:", 1);
-    optparse_add_doc (ctx->p, " resource URI\t Print resource at URI", 1);
-    optparse_add_doc (ctx->p, " tree URI\t print hiearchy tree at URI", 1);
-    optparse_add_doc (ctx->p, " aggregate URI\t aggregate hiearchy tree at URI", 1);
-
-    if ((rc = optparse_parse_args (ctx->p, ac, av)) < 0)
-        fatal (1, "Failed to parse cmdline options\n");
-
-    if (!av[rc])
+    while ((ch = getopt_long (ac, av, options, longopts, NULL)) != -1) {
+        switch (ch) {
+            case 'f':
+                ctx->filename = optarg;
+                break;
+            default:
+                fprintf (stderr, "Usage: flux-rdltool %s", usage);
+                exit (1);
+        }
+    }
+    if (optind == ac)
         fatal (1, "Missing command\n");
 
-    ctx->cmd = strdup (av[rc]);
-    ctx->args = av + rc + 1;
+    ctx->cmd = strdup (av[optind]);
+    ctx->args = av + optind + 1;
 
-    if (optparse_getopt (ctx->p, "config-file", &ctx->filename) == 0)
-        ctx->filename = NULL;
     return (0);
 }
 
 void prog_ctx_destroy (struct prog_ctx *ctx)
 {
-    optparse_destroy (ctx->p);
     if (ctx->cmd)
         free (ctx->cmd);
     free (ctx);
