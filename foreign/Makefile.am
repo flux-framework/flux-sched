@@ -8,7 +8,6 @@ noinst_LTLIBRARIES = libforeign.la
 nodist_libforeign_la_SOURCES = \
     $(FLUX_BUILDDIR)/src/bindings/lua/json-lua.c \
     $(FLUX_BUILDDIR)/src/common/liblsd/list.c \
-    $(FLUX_BUILDDIR)/src/common/libtap/tap.c \
     $(FLUX_BUILDDIR)/src/common/libutil/base64.c \
     $(FLUX_BUILDDIR)/src/common/libutil/jsonutil.c \
     $(FLUX_BUILDDIR)/src/common/libutil/log.c \
