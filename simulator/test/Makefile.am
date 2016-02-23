@@ -16,4 +16,5 @@ tsched_lib_CFLAGS = $(AM_CFLAGS) $(FLUX_CORE_CFLAGS) -I$(top_srcdir) \
     -I$(top_srcdir)/rdl
 tsched_lib_LDADD = $(top_builddir)/foreign/libforeign.la \
     $(top_builddir)/rdl/libflux-rdl.la $(top_builddir)/simulator/libflux-sim.la \
+    $(top_builddir)/src/common/libtap/libtap.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
