@@ -5,8 +5,7 @@ AM_CFLAGS = \
 AM_LDFLAGS = \
 	$(CODE_COVERAGE_LDFLAGS)
 
-AM_CPPFLAGS = \
-	-DWITH_PTHREADS
+AM_CPPFLAGS = -I$(top_srcdir)
 
 noinst_LTLIBRARIES = liblsd.la
 
