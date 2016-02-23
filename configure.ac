@@ -89,7 +89,6 @@ AC_CONFIG_FILES([Makefile
 		 src/common/libtap/Makefile
 		 src/common/liblsd/Makefile
 		 src/common/libutil/Makefile
-                 foreign/Makefile
                  rdl/Makefile
                  rdl/test/Makefile
                  resrc/Makefile

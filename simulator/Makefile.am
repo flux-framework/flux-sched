@@ -17,7 +17,6 @@ fluxschedinclude_HEADERS = simulator.h scheduler.h
 libflux_sim_la_SOURCES = simulator.c
 libflux_sim_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 libflux_sim_la_LIBADD = $(FLUX_CORE_LIBS) \
-    $(top_builddir)/foreign/libforeign.la \
     $(top_builddir)/src/common/libutil/libutil.la \
     $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
 libflux_sim_la_LDFLAGS = $(fluxlib_ldflags)
