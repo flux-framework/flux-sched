@@ -7,8 +7,9 @@
 #
 # DESCRIPTION
 #
-#   Use the specified path to flux-core if it has been given.
-#   Otherwise, look to the installed locations.
+#   Find flux-core with pkg-config, setting FLUX_CORE_LIBS, _CFLAGS, and:
+#   - FLUX            flux(1) command path
+#   - FLUX_PREFIX     flux-core configured prefix
 #
 # LICENSE
 #
@@ -36,31 +37,15 @@
 #
 
 AC_DEFUN([AX_FLUX_CORE], [
-  AC_ARG_WITH([flux-core-builddir],
-    [AS_HELP_STRING([--with-flux-core-builddir=[path_to_src]],
-      [specify location of installed flux-core build directory])
+  PKG_CHECK_MODULES([FLUX_CORE], [flux-core],
+    [ AC_CHECK_PROG(FLUX,[flux],[flux])
+      FLUX_PREFIX=`pkg-config --variable=prefix flux-core`
+      if test -z "${FLUX_PREFIX}" && test -n "${FLUX}" ; then
+        FLUX_PREFIX=`echo ${FLUX} | sed 's/\/bin\/flux//'`
+      fi
+      AC_SUBST(FLUX_PREFIX)
     ],
-    [PKG_CHECK_MODULES([FLUX_CORE], [flux-core],
-      [
-        if test -d $withval ; then
-          FLUX_BUILDDIR=$(cd ${withval} && pwd)
-        else
-          AC_MSG_ERROR([bad value "$withval" for --with-flux-core-builddir])
-        fi
-        AC_SUBST(FLUX_BUILDDIR)
-        AC_CHECK_PROG(FLUX,[flux],[flux])
-        FLUX_PREFIX=`pkg-config --variable=prefix flux-core`
-        if test -z "${FLUX_PREFIX}" && test -n "${FLUX}" ; then
-          FLUX_PREFIX=`echo ${FLUX} | sed 's/\/bin\/flux//'`
-        fi
-        AC_SUBST(FLUX_PREFIX)
-      ],
-      AC_MSG_ERROR([flux-core package not installed]))
-    ]
-  )
-  if test -z "${FLUX_BUILDDIR}" ; then
-    AC_MSG_ERROR([you must specify --with-flux-core-builddir])
-  fi
+    AC_MSG_ERROR([flux-core package not installed]))
   ]
 )
 

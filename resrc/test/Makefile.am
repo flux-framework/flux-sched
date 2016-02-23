@@ -1,7 +1,6 @@
 AM_CFLAGS = @GCCWARN@
 
-AM_CPPFLAGS = $(JSON_CFLAGS) $(CZMQ_CFLAGS) \
-    -I $(FLUX_BUILDDIR)
+AM_CPPFLAGS = -I$(top_srcdir) $(JSON_CFLAGS) $(CZMQ_CFLAGS)
 
 TESTS_ENVIRONMENT = \
     TESTRESRC_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua" \
