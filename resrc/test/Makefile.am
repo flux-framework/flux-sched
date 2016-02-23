@@ -13,5 +13,7 @@ check_PROGRAMS = $(TESTS)
 tresrc_SOURCES = tresrc.c
 tresrc_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 tresrc_LDADD = $(top_builddir)/resrc/libflux-resrc.la \
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
     $(top_builddir)/src/common/libtap/libtap.la \
     $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
