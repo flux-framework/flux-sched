@@ -48,23 +48,6 @@ sim_state_t *new_simstate ()
     return sim_state;
 }
 
-// A zhash_foreach function that will print all the keys/values in the hashtable
-int print_values (const char *key, void *item, void *argument)
-{
-    int *value = (int *)item;
-    fprintf (stderr, "Key: %s\tValue: %d\n", key, *value);
-    return 0;
-}
-
-// A zhash_foreach function that will set the free_fn on all the values in the
-// hashtable
-int set_freefn (const char *key, void *item, void *argument)
-{
-    zhash_t *self = (zhash_t *)argument;
-    zhash_freefn (self, key, free);
-    return 0;
-}
-
 void free_simstate (sim_state_t *sim_state)
 {
     if (sim_state != NULL) {
