@@ -5,6 +5,7 @@ sudo: false
 compiler:
   - gcc
   - clang
+  - gcc+coverage
 
 cache:
   directories:
@@ -27,28 +28,40 @@ addons:
       - libhwloc-dev
       - libmunge-dev
       - munge
+      - lcov
 
 before_install:
-  - export LD_LIBRARY_PATH=$HOME/local/lib
-  - export CPPFLAGS=-I$HOME/local/include
-  - export LDFLAGS=-L$HOME/local/lib
-  - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:$HOME/local/lib/pkgconfig
+  # If CC has "+coverage" appended then turn on code coverage for this build
+  - case "$CC" in *+coverage) CC=${CC//+*}; export COVERAGE=t;; esac
+
+  - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
+  - eval $(bash ./travis-dep-builder.sh --printenv)
+  - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
   - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
   - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
-  - eval `luarocks path`
-  - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - bash ./travis-dep-builder.sh --cachedir=$HOME/local/.cache
-  - bash ./travis-dep-builder.sh --printenv
-  - pip install --user cffi coverage
+
+  # coveralls-lcov required only for coveralls.io upload:
+  - if test "$COVERAGE" = "t"; then gem install coveralls-lcov; fi
 
 script:
  - export CC="ccache $CC"
+ - export MAKECMDS="make distcheck"
+ - export FLUX_TESTS_LOGFILE=t
+
  - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
  - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local2 && make -j 2 && make install)
  - (rm -fr $HOME/flux-core)
  - ($HOME/local2/bin/flux keygen)
- - autoreconf -i && ./configure && make check
 
+ # Enable coverage for $CC+coverage build
+ - if test "$COVERAGE" = "t" ; then ARGS=--enable-code-coverage; MAKECMDS="make && make check-code-coverage && lcov -l flux-*coverage.info" ; fi
+
+ - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
+
+after_success:
+ - ccacche -s
+ - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info; fi
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
