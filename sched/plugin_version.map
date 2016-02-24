@@ -1,0 +1,9 @@
+{ global:
+    allocate_resources;
+    find_resources;
+    reserve_resources;
+    sched_loop_setup;
+    select_resources;
+    mod_name;
+  local: *;
+};
