@@ -1,7 +1,6 @@
 AM_CFLAGS = @GCCWARN@
 
-AM_CPPFLAGS = $(JSON_CFLAGS) $(CZMQ_CFLAGS) \
-    -I $(FLUX_BUILDDIR)
+AM_CPPFLAGS = -I$(top_srcdir) $(JSON_CFLAGS) $(CZMQ_CFLAGS)
 
 TESTS = tsched_lib
 
@@ -14,6 +13,7 @@ check_PROGRAMS = $(TESTS)
 tsched_lib_SOURCES = tsched_lib.c $(top_srcdir)/simulator/scheduler.c
 tsched_lib_CFLAGS = $(AM_CFLAGS) $(FLUX_CORE_CFLAGS) -I$(top_srcdir) \
     -I$(top_srcdir)/rdl
-tsched_lib_LDADD = $(top_builddir)/foreign/libforeign.la \
-    $(top_builddir)/rdl/libflux-rdl.la $(top_builddir)/simulator/libflux-sim.la \
+tsched_lib_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
+    $(top_builddir)/simulator/libflux-sim.la \
+    $(top_builddir)/src/common/libtap/libtap.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)

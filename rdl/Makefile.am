@@ -1,7 +1,7 @@
 AM_CFLAGS = @GCCWARN@
 
-AM_CPPFLAGS = $(JSON_CFLAGS) $(LUA_INCLUDE) $(CZMQ_CFLAGS) \
-    -I $(FLUX_BUILDDIR)
+AM_CPPFLAGS = -I$(top_srcdir) \
+    $(JSON_CFLAGS) $(LUA_INCLUDE) $(CZMQ_CFLAGS)
 
 SUBDIRS = . test
 
@@ -35,9 +35,10 @@ flux_cpuset_la_CFLAGS = $(LUA_INCLUDE)
 flux_cpuset_la_LIBADD = $(LUA_LIB)
 flux_cpuset_la_LDFLAGS = $(luamod_ldflags)
 
-libflux_rdl_la_SOURCES = rdl.c
+libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
-    $(top_builddir)/foreign/libforeign.la
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la
 libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags)
 
 fluxcmd_PROGRAMS = flux-rdltool

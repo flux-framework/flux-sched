@@ -1,7 +1,6 @@
 AM_CFLAGS = @GCCWARN@
 
-AM_CPPFLAGS = $(JSON_CFLAGS) \
-    -I $(FLUX_BUILDDIR)
+AM_CPPFLAGS = -I$(top_srcdir) $(JSON_CFLAGS)
 
 TESTS_ENVIRONMENT = \
     LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
@@ -13,7 +12,9 @@ TESTS = trdl
 check_PROGRAMS = $(TESTS)
 trdl_SOURCES = trdl.c
 trdl_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
-trdl_LDADD = $(top_builddir)/foreign/libforeign.la \
-    $(top_builddir)/rdl/libflux-rdl.la $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
+trdl_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
+    $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
 
 EXTRA_DIST= test-rdl.lua

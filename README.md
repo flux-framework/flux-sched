@@ -25,18 +25,6 @@ flux-sched can only be built against an installed flux-core build.  If
 the flux-core is side installed, the PKG_CONFIG_PATH environment
 variable must include the location to flux-core's pkgconfig directory.
 
-flux-sched requires additional utilities from flux-core that are not
-included in the flux-core library. Rather than copy/paste the source
-code to these extra utilities into flux-sched, we opted to point to
-the flux-core source files and developed a mechanism for identifying
-where those extra source files can be found.  In the example below,
-the root directory for the flux-core source files is
-$HOME/local/build.
-
-flux-sched's configure script offers the `--with-flux-core-builddir`
-option that provides the means of identifying the location of the
-source to the utilities.
-
 The example below is of a side install of flux-core.  In this example,
 the flux-core and flux-sched repos are under the $HOME directory.  The
 flux-core repo is cloned, configured with a prefix that identifies the
@@ -46,8 +34,6 @@ directory.
 ```
 git clone <flux-core repo of your choice>
 cd ~/flux-core
-mkdir -p $HOME/local/build
-cp -r * $HOME/local/build
 ./autogen.sh
 ./configure --prefix=$HOME/local
 make
@@ -67,7 +53,7 @@ export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$PKG_CONFIG_PATH
 git clone <flux-sched repo of your choice>
 cd ~/flux-sched
 ./autogen.sh
-./configure --with-flux-core-builddir=$HOME/local/build
+./configure
 make
 make check
 ```

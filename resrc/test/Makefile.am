@@ -1,7 +1,6 @@
 AM_CFLAGS = @GCCWARN@
 
-AM_CPPFLAGS = $(JSON_CFLAGS) $(CZMQ_CFLAGS) \
-    -I $(FLUX_BUILDDIR)
+AM_CPPFLAGS = -I$(top_srcdir) $(JSON_CFLAGS) $(CZMQ_CFLAGS)
 
 TESTS_ENVIRONMENT = \
     TESTRESRC_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua" \
@@ -14,4 +13,7 @@ check_PROGRAMS = $(TESTS)
 tresrc_SOURCES = tresrc.c
 tresrc_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 tresrc_LDADD = $(top_builddir)/resrc/libflux-resrc.la \
-    $(top_builddir)/foreign/libforeign.la $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
+    $(top_builddir)/src/common/libtap/libtap.la \
+    $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS)
