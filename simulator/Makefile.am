@@ -3,10 +3,24 @@ AM_CFLAGS = @GCCWARN@
 AM_CPPFLAGS = -I$(top_srcdir) \
     $(JSON_CFLAGS) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS)
 
-SUBDIRS = . test
-
 CONF = $(top_srcdir)/conf/hype.lua
 JOBDATA=job_data/hype.csv
+
+TESTS = tsched_lib
+
+TESTS_ENVIRONMENT = \
+    TESTSIM_INPUT_FILE="$(abs_top_srcdir)/conf/hype-io.lua" \
+    LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
+    LUA_CPATH="$(abs_top_builddir)/rdl/.libs/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
+
+check_PROGRAMS = $(TESTS)
+tsched_lib_SOURCES = test/tsched_lib.c scheduler.c
+tsched_lib_CFLAGS = $(AM_CFLAGS) $(FLUX_CORE_CFLAGS) -I$(top_srcdir) \
+    -I$(top_srcdir)/rdl
+tsched_lib_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
+    $(top_builddir)/simulator/libflux-sim.la \
+    $(top_builddir)/src/common/libtap/libtap.la \
+    $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 
 lib_LTLIBRARIES = libflux-sim.la
 fluxmod_LTLIBRARIES = simsrv.la sim_execsrv.la submitsrv.la sim_sched_fcfs.la \

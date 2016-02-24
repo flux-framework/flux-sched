@@ -95,7 +95,6 @@ AC_CONFIG_FILES([Makefile
                  resrc/test/Makefile
                  sched/Makefile
                  simulator/Makefile
-                 simulator/test/Makefile
                  t/Makefile])
 AC_OUTPUT
 
