@@ -40,9 +40,12 @@ libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
     $(top_builddir)/src/common/liblsd/liblsd.la \
     $(top_builddir)/src/common/libutil/libutil.la
-libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags)
+libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
+    -Wl,--version-script=$(srcdir)/rdl_version.map
 
 fluxcmd_PROGRAMS = flux-rdltool
 flux_rdltool_SOURCES = flux-rdltool.c
 flux_rdltool_CFLAGS = $(AM_CFLAGS)
 flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JSON_LIBS)
+
+EXTRA_DIST = rdl_version.map
