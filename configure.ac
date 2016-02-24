@@ -22,6 +22,7 @@ AC_PROG_CXX
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_CC_C_O
+AX_CODE_COVERAGE
 
 GCCWARN="-Wall -Werror -Wno-error=deprecated-declarations"
 AC_SUBST([GCCWARN])
