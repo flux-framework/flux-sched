@@ -502,40 +502,67 @@ static void setup_rdl_lua (flux_t h)
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
 }
 
+/* Block until value of 'key' becomes non-NULL.
+ * It is an EPROTO error if value is type other than json_type_string.
+ * On success returns value, otherwise NULL with errno set.
+ */
+static json_object *get_string_blocking (flux_t h, const char *key)
+{
+    char *json_str = NULL; /* initial value for watch */
+    json_object *o = NULL;
+    int saved_errno;
+
+    if (kvs_watch_once (h, key, &json_str) < 0) {
+        saved_errno = errno;
+        goto error;
+    }
+    if (!json_str || !(o = json_tokener_parse (json_str))
+                  || json_object_get_type (o) != json_type_string) {
+        saved_errno = EPROTO;
+        goto error;
+    }
+    free (json_str);
+    return o;
+error:
+    if (json_str)
+        free (json_str);
+    if (o)
+        json_object_put (o);
+    errno = saved_errno;
+    return NULL;
+}
+
 static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
 {
     int rc = -1;
-    size_t len = 0;
     uint32_t rank = 0, size = 0;
-    char *key = NULL, *rs_buf = NULL;
 
     if (flux_get_size (ctx->h, &size) == -1) {
-        flux_log (ctx->h, LOG_ERR, "can't decide the instance size");
+        flux_log_error (ctx->h, "flux_get_size");
         goto done;
     }
     for (rank=0; rank < size; rank++) {
-        key = xasprintf ("resource.hwloc.xml.%"PRIu32"", rank);
-        if (kvs_get_string (ctx->h, key, &rs_buf) == -1) {
-            flux_log (ctx->h, LOG_ERR, "can't get hwloc data in kvs (%s)", key);
-            break;
+        json_object *o;
+        char k[64];
+        int n = snprintf (k, sizeof (k), "resource.hwloc.xml.%"PRIu32"", rank);
+        assert (n < sizeof (k));
+        if (!(o = get_string_blocking (ctx->h, k))) {
+            flux_log_error (ctx->h, "kvs_get %s", k);
+            goto done;
         }
-        len = strlen (rs_buf);
-        if (rsreader_hwloc_load (rs_buf, len, rank, r_mode,
+        const char *s = json_object_get_string (o);
+        size_t len = strlen (s);
+        if (rsreader_hwloc_load (s, len, rank, r_mode,
              &(ctx->rctx.root_resrc), ctx->machs) != 0) {
+            json_object_put (o);
             flux_log (ctx->h, LOG_ERR, "can't load hwloc data");
             goto done;
-        } else if (key) {
-            free (key);
-            key = NULL;
         }
+        json_object_put (o);
     }
     rc = 0;
 
 done:
-    if (key)
-        free (key);
-    if (rs_buf)
-        free (rs_buf);
     return rc;
 }
 
