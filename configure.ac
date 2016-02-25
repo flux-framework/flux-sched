@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([NEWS])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])
 
 #LT_PREREQ([2.4.2])
@@ -22,6 +22,7 @@ AC_PROG_CXX
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_CC_C_O
+AX_CODE_COVERAGE
 
 GCCWARN="-Wall -Werror -Wno-error=deprecated-declarations"
 AC_SUBST([GCCWARN])
@@ -95,7 +96,6 @@ AC_CONFIG_FILES([Makefile
                  resrc/test/Makefile
                  sched/Makefile
                  simulator/Makefile
-                 simulator/test/Makefile
                  t/Makefile])
 AC_OUTPUT
 
