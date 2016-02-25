@@ -234,6 +234,7 @@ static void freectx (void *arg)
         zlist_destroy (&(ctx->sctx.timer_queue));
     if (ctx->sops.dso)
         dlclose (ctx->sops.dso);
+    free (ctx);
 }
 
 static ssrvctx_t *getctx (flux_t h)
@@ -486,6 +487,7 @@ static int load_sched_plugin (ssrvctx_t *ctx)
     rc = resolve_functions (ctx);
 
 done:
+    free (path);
     return rc;
 }
 
@@ -1350,6 +1352,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                     flux_log (h, LOG_ERR,
                               "failed to request allocate for job %"PRId64"",
                               job->lwj_id);
+                    resrc_tree_list_destroy (job->resrc_trees, false);
+                    job->resrc_trees = NULL;
                     goto done;
                 }
                 flux_log (h, LOG_DEBUG, "Allocated %"PRId64" nodes for job "

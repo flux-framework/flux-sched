@@ -117,6 +117,10 @@ void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc)
         resrc_tree_list_free (resrc_tree->children);
         resrc_tree->children = NULL;
         if (destroy_resrc) {
+            resrc_tree_t *phys_tree = resrc_phys_tree (resrc_tree->resrc);
+            if (phys_tree != resrc_tree) {
+                resrc_tree_destroy (phys_tree, false);
+            }
             resrc_resource_destroy (resrc_tree->resrc);
         }
         free (resrc_tree);
