@@ -1,0 +1,16 @@
+{ global:
+    blank_job;
+    free_job;
+    free_simstate;
+    json_to_sim_state;
+    new_simstate;
+    pull_job_from_kvs;
+    put_job_in_kvs;
+    send_alive_request;
+    send_join_request;
+    send_reply_request;
+    sim_state_to_json;
+    zhash_fromargv;
+    local: *;
+};
+
