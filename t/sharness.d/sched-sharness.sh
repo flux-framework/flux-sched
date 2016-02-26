@@ -3,11 +3,19 @@
 # project-local sharness code for flux-sched
 #
 
-# Set up environment so that we find flux-sched modules, commands, and Lua libs:
-FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
-FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/?.so"
-FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs"
-FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched"
+if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
+  # Test against installed flux-sched, installed under same prefix as
+  #   flux-core.
+  # (Assume sched modules installed under PREFIX/lib/flux/sched-plugin)
+  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/sched-plugin|')
+else
+  # Set up environment so that we find flux-sched modules,
+  #  commands, and Lua libs from the build directories:
+  FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
+  FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/?.so"
+  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs"
+  FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched"
+fi
 
 ## Set up environment using flux(1) in PATH
 flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
