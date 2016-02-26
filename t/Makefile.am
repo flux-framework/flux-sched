@@ -10,12 +10,16 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 # LUA_PATH is set to find fluxometer.lua itself.
 # The PREPEND versions are required so that in-tree versions of
 #  modules are found instead of the lua modules in the path
-#  of the flux installation we're using for testing.
+#  of the flux installation we're using for testing. If
+#  $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
+#  skip the export of the PREPEND variables.
 #
 TESTS_ENVIRONMENT = \
     LUA_PATH="$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    FLUX_LUA_PATH_PREPEND="$(abs_top_srcdir)/rdl/?.lua" \
-    FLUX_LUA_CPATH_PREPEND="$(abs_top_builddir)/rdl/?.so" \
+    $(if $(FLUX_SCHED_TEST_INSTALLED),, \
+      FLUX_LUA_PATH_PREPEND="$(abs_top_srcdir)/rdl/?.lua" \
+      FLUX_LUA_CPATH_PREPEND="$(abs_top_builddir)/rdl/?.so" \
+    ) \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
