@@ -6,6 +6,7 @@ compiler:
   - gcc
   - clang
   - gcc+coverage
+  - gcc+install
 
 cache:
   directories:
@@ -34,6 +35,9 @@ before_install:
   # If CC has "+coverage" appended then turn on code coverage for this build
   - case "$CC" in *+coverage) CC=${CC//+*}; export COVERAGE=t;; esac
 
+  # If CC has "+install" appended then test "make install"
+  - case "$CC" in *+install)  CC=${CC//+*}; export TEST_INSTALL=t;; esac
+
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - eval $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
@@ -56,6 +60,9 @@ script:
 
  # Enable coverage for $CC+coverage build
  - if test "$COVERAGE" = "t" ; then ARGS=--enable-code-coverage; MAKECMDS="make && make check-code-coverage && lcov -l flux-*coverage.info" ; fi
+ 
+ # Use "make install" and set FLUX_SCHED_TEST_INSTALLED in environment for installed testing:
+ - if test "$TEST_INSTALL" = "t"; then ARGS=--prefix=$HOME/local2; MAKECMDS="make && make install && FLUX_SCHED_TEST_INSTALLED=t make check"; fi
 
  - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
 
