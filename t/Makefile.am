@@ -6,11 +6,16 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 	$(top_srcdir)/m4/tap-driver.sh
 
 #
-# These are required by the lua tests
+# Set up paths for fluxometer-based Lua tests.
+# LUA_PATH is set to find fluxometer.lua itself.
+# The PREPEND versions are required so that in-tree versions of
+#  modules are found instead of the lua modules in the path
+#  of the flux installation we're using for testing.
 #
 TESTS_ENVIRONMENT = \
-    LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    LUA_CPATH="$(abs_top_builddir)/rdl/.libs/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;" \
+    LUA_PATH="$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
+    FLUX_LUA_PATH_PREPEND="$(abs_top_srcdir)/rdl/?.lua" \
+    FLUX_LUA_CPATH_PREPEND="$(abs_top_builddir)/rdl/?.so" \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \

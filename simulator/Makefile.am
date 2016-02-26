@@ -12,7 +12,7 @@ TESTS = tsched_lib
 TESTS_ENVIRONMENT = \
     TESTSIM_INPUT_FILE="$(abs_top_srcdir)/conf/hype-io.lua" \
     LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    LUA_CPATH="$(abs_top_builddir)/rdl/.libs/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
+    LUA_CPATH="$(abs_top_builddir)/rdl/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
 
 check_PROGRAMS = $(TESTS)
 tsched_lib_SOURCES = test/tsched_lib.c scheduler.c

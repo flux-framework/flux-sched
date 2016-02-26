@@ -5,7 +5,7 @@
 
 # Set up environment so that we find flux-sched modules, commands, and Lua libs:
 FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
-FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/.libs/?.so"
+FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/?.so"
 FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs"
 FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched"
 

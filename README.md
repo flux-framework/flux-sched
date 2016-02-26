@@ -76,7 +76,7 @@ flag to each flux command below.
 Create a comms session comprised of 3 brokers:
 ```
 export LUA_PATH="$HOME/flux-sched/rdl/?.lua;${LUA_PATH};;"
-export LUA_CPATH="$HOME/flux-sched/rdl/.libs/?.so;${LUA_CPATH};;"
+export LUA_CPATH="$HOME/flux-sched/rdl/?.so;${LUA_CPATH};;"
 export FLUX_MODULE_PATH=$HOME/flux-sched/sched
 $HOME/local/bin/flux start -s3
 ```
