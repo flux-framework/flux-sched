@@ -27,14 +27,17 @@ nobase_dist_lua_SCRIPTS = \
 	RDL/uuid.lua
 
 lib_LTLIBRARIES = libflux-rdl.la
-fluxluaexec_LTLIBRARIES = flux-cpuset.la
+fluxluaexec_LTLIBRARIES = \
+    flux/cpuset.la
 
 fluxschedinclude_HEADERS = rdl.h
 
 flux_cpuset_la_SOURCES = lua-cpuset.c cpuset-str.c cpuset-str.h
 flux_cpuset_la_CFLAGS = $(LUA_INCLUDE)
 flux_cpuset_la_LIBADD = $(LUA_LIB)
-flux_cpuset_la_LDFLAGS = $(luamod_ldflags)
+flux_cpuset_la_LDFLAGS = \
+    $(luamod_ldflags) \
+    -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset
 
 libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
@@ -49,3 +52,34 @@ flux_rdltool_CFLAGS = $(AM_CFLAGS)
 flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JSON_LIBS)
 
 EXTRA_DIST = rdl_version.map
+
+# Copy any Lua modules in flux/.libs to ${top_builddir}/flux/*.so so that
+#  they can be used as require 'flux.<name>' in-tree
+#
+.PHONY: convenience-link clean-convenience-link
+
+convenience-link: $(fluxluaexec_LTLIBRARIES)
+	@for f in $^; do \
+	  soname=`$(GREP) "^dlname=" $$f | $(SED) -e "s|^dlname='\(.*\)'|\1|"`; \
+	  dirname=`dirname $(abs_builddir)/$$f `; \
+	  target=$$dirname/.libs/$$soname; link=$$dirname/$$soname; \
+	  shortdir=`echo $$f | $(SED) -e 's|[^/]*.la||'`; \
+	  shorttarget="$${shortdir}.libs/$$soname"; \
+	  echo "  LN       $$shortdir$$soname -> $$shorttarget"; \
+	  rm -f  $$link; \
+	  $(LN_S) $$target $$link; \
+	done
+
+
+clean-convenience-link:
+	@for f in $^; do \
+	  soname=`$(GREP) "^dlname=" $$f | $(SED) -e "s|^dlname='\(.*\)'|\1|"`; \
+	  dirname=`echo $(abs_builddir)/$$f | $(SED) -e 's|/[^/]*.la||'`; \
+	  target=$$dirname/.libs/$$soname; link=$$dirname/$$soname; \
+	  echo "  RM       $$link"; \
+	  rm -f $$link; \
+	done
+
+all-local:: convenience-link
+
+clean-local:: clean-convenience-link

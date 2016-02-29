@@ -10,7 +10,7 @@ schedplugin_ldflags = $(fluxlib_ldflags) -avoid-version -module \
 CONF = $(abs_top_srcdir)/conf/hype.lua
 FLUX_MODULE_PATH = $(top_srcdir)/sched
 LUA_PATH = $(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$${LUA_PATH};;
-LUA_CPATH = $(abs_top_builddir)/rdl/.libs/?.so;$${LUA_CPATH};;
+LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 
 fluxmod_LTLIBRARIES = schedsrv.la
 
