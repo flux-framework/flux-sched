@@ -3,7 +3,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src rdl resrc simulator sched t
 
-EXTRA_DIST= conf m4/tap-driver.sh
+EXTRA_DIST= \
+	conf \
+	m4/tap-driver.sh \
+	DISCLAIMER.LLNS \
+	README.md
 
 CODE_COVERAGE_IGNORE_PATTERN = \
     "$(abs_top_builddir)/t/*" \
