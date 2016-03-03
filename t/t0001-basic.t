@@ -32,9 +32,9 @@ test_expect_success 'schedsrv: flux-module load works after a successful unload'
 '
 
 # comment this one out for now
-#test_expect_success 'schedsrv: module load should fail' '
-#	test_expect_code 1 flux module load sched rdl-conf=foo
-#'
+test_expect_success 'schedsrv: module load should fail' '
+	test_expect_code 1 flux module load sched rdl-conf=foo
+'
 
 test_expect_success 'schedsrv: module load works after a load failure' '
 	flux module load sched rdl-conf=${RDL_CONF_DEFAULT}
