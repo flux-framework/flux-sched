@@ -14,12 +14,16 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 #  $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
 #  skip the export of the PREPEND variables.
 #
+#  (XXX: the only way I've found to portably do this is to substitute
+#   the required path iff FLUX_SCHED_TEST_INSTALLED is not set, otherwise we
+#   substitute the *value* of FLUX_SCHED_TEST_INSTALLED, which might
+#   be `1` or `t`, but at least this doesn't point to build directory
+#   Lua PATH)
+#
 TESTS_ENVIRONMENT = \
     LUA_PATH="$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    $(if $(FLUX_SCHED_TEST_INSTALLED),, \
-      FLUX_LUA_PATH_PREPEND="$(abs_top_srcdir)/rdl/?.lua" \
-      FLUX_LUA_CPATH_PREPEND="$(abs_top_builddir)/rdl/?.so" \
-    ) \
+    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:-$(abs_top_srcdir)/rdl/?.lua}" \
+    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:-$(abs_top_builddir)/rdl/?.so}" \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
