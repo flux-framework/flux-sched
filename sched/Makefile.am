@@ -15,7 +15,7 @@ LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 fluxmod_LTLIBRARIES = schedsrv.la
 
 schedplugin_LTLIBRARIES = sched_fcfs.la \
-                  backfillplugin1.la
+                  sched_backfill.la
 
 fluxschedinclude_HEADERS = schedsrv.h rs2rank.h rsreader.h
 
@@ -34,12 +34,12 @@ sched_fcfs_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sched_fcfs_la_LDFLAGS = $(schedplugin_ldflags)
 
-backfillplugin1_la_SOURCES = backfillplugin1.c
-backfillplugin1_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
-backfillplugin1_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
+sched_backfill_la_SOURCES = sched_backfill.c
+sched_backfill_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+sched_backfill_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-backfillplugin1_la_LDFLAGS = $(schedplugin_ldflags)
+sched_backfill_la_LDFLAGS = $(schedplugin_ldflags)
 
 fluxcmd_PROGRAMS = flux-waitjob
 flux_waitjob_SOURCES = flux-waitjob.c

@@ -363,7 +363,7 @@ ret:
 }
 
 
-MOD_NAME ("backfill.plugin1");
+MOD_NAME ("sched.backfill");
 
 
 /*
