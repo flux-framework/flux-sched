@@ -193,7 +193,7 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     }
 
     if (!(a->userplugin))
-        a->userplugin = xstrdup ("sched.plugin1");
+        a->userplugin = xstrdup ("sched.fcfs");
 
     if (sim && !strncmp (sim, "true", sizeof ("true"))) {
         a->sim = true;

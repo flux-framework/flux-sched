@@ -284,7 +284,7 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
 }
 
 
-MOD_NAME ("sched.plugin1");
+MOD_NAME ("sched.fcfs");
 
 
 /*

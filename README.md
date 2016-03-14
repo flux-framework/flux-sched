@@ -44,7 +44,7 @@ The next step is to build the sched module.  The sched module contains
 a bifurcated structure of a core framework that has all the basic
 functionality plus a loadable plugin that implements specific
 scheduling behavior.  There are currently two plugins available:
-sched.plugin1 and backfill.plugin1.
+sched.fcfs and backfill.plugin1.
 
 To build the sched module, run the following commands:
 

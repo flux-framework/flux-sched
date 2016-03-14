@@ -14,7 +14,7 @@ LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 
 fluxmod_LTLIBRARIES = schedsrv.la
 
-schedplugin_LTLIBRARIES = schedplugin1.la \
+schedplugin_LTLIBRARIES = sched_fcfs.la \
                   backfillplugin1.la
 
 fluxschedinclude_HEADERS = schedsrv.h rs2rank.h rsreader.h
@@ -27,12 +27,12 @@ schedsrv_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(top_builddir)/simulator/libflux-sim.la
 schedsrv_la_LDFLAGS = $(fluxmod_ldflags) -module
 
-schedplugin1_la_SOURCES = schedplugin1.c
-schedplugin1_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
-schedplugin1_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
+sched_fcfs_la_SOURCES = sched_fcfs.c
+sched_fcfs_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+sched_fcfs_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-schedplugin1_la_LDFLAGS = $(schedplugin_ldflags)
+sched_fcfs_la_LDFLAGS = $(schedplugin_ldflags)
 
 backfillplugin1_la_SOURCES = backfillplugin1.c
 backfillplugin1_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
