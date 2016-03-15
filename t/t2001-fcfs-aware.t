@@ -30,7 +30,7 @@ test_expect_success 'loading exec works' '
 	flux module load sim_exec
 '
 test_expect_success 'loading sched works' '
-	flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.plugin1
+	flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.fcfs
 '
 
 while flux kvs get lwj.12.complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done

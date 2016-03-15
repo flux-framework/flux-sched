@@ -1,9 +1,9 @@
 #!/bin/sh
 #set -x
 
-test_description='Test JSC with schedsrv 
+test_description='Test JSC with sched module
 
-Ensure JSC works as expected with schedsrv.
+Ensure JSC works as expected with sched module.
 '
 . `dirname $0`/sharness.sh
 
