@@ -23,7 +23,7 @@
 \*****************************************************************************/
 
 /*
- * schedsrv.c - scheduler framework service comms module
+ * sched.c - scheduler framework service comms module
  */
 
 #if HAVE_CONFIG_H
@@ -48,7 +48,7 @@
 #include "resrc_reqst.h"
 #include "rs2rank.h"
 #include "rsreader.h"
-#include "schedsrv.h"
+#include "scheduler.h"
 #include "../simulator/simulator.h"
 
 #define DYNAMIC_SCHEDULING 0
@@ -239,7 +239,7 @@ static void freectx (void *arg)
 
 static ssrvctx_t *getctx (flux_t h)
 {
-    ssrvctx_t *ctx = (ssrvctx_t *)flux_aux_get (h, "schedsrv");
+    ssrvctx_t *ctx = (ssrvctx_t *)flux_aux_get (h, "sched");
     if (!ctx) {
         ctx = xzmalloc (sizeof (*ctx));
         ctx->h = h;
@@ -265,7 +265,7 @@ static ssrvctx_t *getctx (flux_t h)
         ctx->sops.select_resources = NULL;
         ctx->sops.allocate_resources = NULL;
         ctx->sops.reserve_resources = NULL;
-        flux_aux_set (h, "schedsrv", ctx, freectx);
+        flux_aux_set (h, "sched", ctx, freectx);
     }
     return ctx;
 }

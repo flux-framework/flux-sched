@@ -40,7 +40,7 @@
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
-#include "schedsrv.h"
+#include "scheduler.h"
 
 
 static bool select_children (flux_t h, resrc_tree_list_t *found_children,

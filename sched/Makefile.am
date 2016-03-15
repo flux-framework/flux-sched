@@ -12,20 +12,20 @@ FLUX_MODULE_PATH = $(top_srcdir)/sched
 LUA_PATH = $(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$${LUA_PATH};;
 LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 
-fluxmod_LTLIBRARIES = schedsrv.la
+fluxmod_LTLIBRARIES = sched.la
 
 schedplugin_LTLIBRARIES = sched_fcfs.la \
                   sched_backfill.la
 
-fluxschedinclude_HEADERS = schedsrv.h rs2rank.h rsreader.h
+fluxschedinclude_HEADERS = scheduler.h rs2rank.h rsreader.h
 
-schedsrv_la_SOURCES = schedsrv.c rs2rank.c rsreader.c
-schedsrv_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
-schedsrv_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
+sched_la_SOURCES = sched.c rs2rank.c rsreader.c
+sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+sched_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS) \
     $(top_builddir)/src/common/libutil/libutil.la \
     $(top_builddir)/simulator/libflux-sim.la
-schedsrv_la_LDFLAGS = $(fluxmod_ldflags) -module
+sched_la_LDFLAGS = $(fluxmod_ldflags) -module
 
 sched_fcfs_la_SOURCES = sched_fcfs.c
 sched_fcfs_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc

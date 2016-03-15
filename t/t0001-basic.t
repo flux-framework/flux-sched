@@ -18,29 +18,29 @@ SIZE=2
 test_under_flux ${SIZE}
 
 
-test_expect_success 'schedsrv: module load works' '
+test_expect_success 'sched: module load works' '
 	flux module load sched rdl-conf=${RDL_CONF_DEFAULT}
 '
 
-test_expect_success 'schedsrv: module remove works' '
+test_expect_success 'sched: module remove works' '
 	flux module remove sched
 '
 
-test_expect_success 'schedsrv: flux-module load works after a successful unload' '
+test_expect_success 'sched: flux-module load works after a successful unload' '
 	flux module load sched rdl-conf=${RDL_CONF_DEFAULT} &&
 	flux module remove sched
 '
 
 # comment this one out for now
-test_expect_success 'schedsrv: module load should fail' '
+test_expect_success 'sched: module load should fail' '
 	test_expect_code 1 flux module load sched rdl-conf=foo
 '
 
-test_expect_success 'schedsrv: module load works after a load failure' '
+test_expect_success 'sched: module load works after a load failure' '
 	flux module load sched rdl-conf=${RDL_CONF_DEFAULT}
 '
 
-test_expect_success 'schedsrv: module list works' '
+test_expect_success 'sched: module list works' '
 	flux module list
 '
 

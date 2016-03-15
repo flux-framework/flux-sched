@@ -23,15 +23,15 @@
  \*****************************************************************************/
 
 /*
- * schedsrv.h - common data structure for scheduler framework and plugins
+ * scheduler.h - common data structure for scheduler framework and plugins
  *
  * Update Log:
  *       Apr 08 2015 DHA: Code refactoring w/ JSC API
  * 	     May 24 2014 DHA: File created.
  */
 
-#ifndef SCHEDSRV_H
-#define SCHEDSRV_H 1
+#ifndef SCHEDULER_H
+#define SCHEDULER_H 1
 
 #include <stdint.h>
 #include <czmq.h>
@@ -63,7 +63,7 @@ typedef struct {
     int64_t starttime;
 } flux_lwj_t;
 
-#endif /* SCHEDSRV_H */
+#endif /* SCHEDULER_H */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

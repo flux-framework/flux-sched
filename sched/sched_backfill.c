@@ -40,7 +40,7 @@
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
-#include "schedsrv.h"
+#include "scheduler.h"
 
 #define EASY_BACKFILL 1
 
