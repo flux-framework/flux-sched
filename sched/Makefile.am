@@ -19,7 +19,7 @@ schedplugin_LTLIBRARIES = sched_fcfs.la \
 
 fluxschedinclude_HEADERS = scheduler.h rs2rank.h rsreader.h
 
-sched_la_SOURCES = sched.c rs2rank.c rsreader.c
+sched_la_SOURCES = sched.c rs2rank.c rsreader.c plugin.c plugin.h
 sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 sched_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS) \
