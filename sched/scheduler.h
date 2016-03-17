@@ -34,7 +34,7 @@
 #define SCHEDULER_H 1
 
 #include <stdint.h>
-#include <czmq.h>
+#include <flux/core.h>
 
 #include "resrc.h"
 
