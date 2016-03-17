@@ -49,6 +49,8 @@
 #include "rs2rank.h"
 #include "rsreader.h"
 #include "scheduler.h"
+#include "plugin.h"
+
 #include "../simulator/simulator.h"
 
 #define DYNAMIC_SCHEDULING 0
@@ -68,30 +70,6 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum);
  *              Scheduler Framework Service Module Context                    *
  *                                                                            *
  ******************************************************************************/
-
-typedef int (*setup_f) (flux_t h);
-
-typedef resrc_tree_list_t *(*find_f) (flux_t h, resrc_t *resrc,
-                                      resrc_reqst_t *resrc_reqst);
-
-typedef resrc_tree_list_t *(*sel_f) (flux_t h, resrc_tree_list_t *resrc_trees,
-                                     resrc_reqst_t *resrc_reqst);
-
-typedef int (*alloc_f) (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
-                        int64_t starttime, int64_t endtime);
-
-typedef int (*reserv_f) (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
-                         int64_t starttime, int64_t walltime, resrc_t *resrc,
-                         resrc_reqst_t *resrc_reqst);
-
-typedef struct sched_ops {
-    void         *dso;                /* Scheduler plug-in DSO handle */
-    setup_f       sched_loop_setup;   /* prepare to run through a sched cycle */
-    find_f        find_resources;     /* find resources that match request */
-    sel_f         select_resources;   /* select the best resources */
-    alloc_f       allocate_resources; /* allocate those resources */
-    reserv_f      reserve_resources;  /* or reserve them */
-} sched_ops_t;
 
 typedef struct {
     JSON          jcb;
@@ -137,7 +115,7 @@ typedef struct {
     ssrvarg_t     arg;                /* args passed to this module */
     rdlctx_t      rctx;               /* RDL context */
     simctx_t      sctx;               /* simulator context */
-    sched_ops_t   sops;               /* scheduler plugin operations */
+    struct sched_plugin_loader *loader; /* plugin loader */
 } ssrvctx_t;
 
 /******************************************************************************
@@ -232,8 +210,8 @@ static void freectx (void *arg)
         zlist_destroy (&(ctx->sctx.jsc_queue));
     if (ctx->sctx.timer_queue)
         zlist_destroy (&(ctx->sctx.timer_queue));
-    if (ctx->sops.dso)
-        dlclose (ctx->sops.dso);
+    if (ctx->loader)
+        sched_plugin_loader_destroy (ctx->loader);
     free (ctx);
 }
 
@@ -259,12 +237,7 @@ static ssrvctx_t *getctx (flux_t h)
         ctx->sctx.res_queue = NULL;
         ctx->sctx.jsc_queue = NULL;
         ctx->sctx.timer_queue = NULL;
-        ctx->sops.dso = NULL;
-        ctx->sops.sched_loop_setup = NULL;
-        ctx->sops.find_resources = NULL;
-        ctx->sops.select_resources = NULL;
-        ctx->sops.allocate_resources = NULL;
-        ctx->sops.reserve_resources = NULL;
+        ctx->loader = NULL;
         flux_aux_set (h, "sched", ctx, freectx);
     }
     return ctx;
@@ -415,82 +388,6 @@ static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, JSON jcb,
     *ns = (job_state_t) ns64;
     return q_find_job (ctx, jid);
 }
-
-
-/******************************************************************************
- *                                                                            *
- *                            Scheduler Plugin Loader                         *
- *                                                                            *
- ******************************************************************************/
-
-static int resolve_functions (ssrvctx_t *ctx)
-{
-    int rc = -1;
-
-    ctx->sops.sched_loop_setup = dlsym (ctx->sops.dso, "sched_loop_setup");
-    if (!(ctx->sops.sched_loop_setup) || !(*(ctx->sops.sched_loop_setup))) {
-        flux_log (ctx->h, LOG_ERR, "can't load sched_loop_setup: %s",
-                  dlerror ());
-        goto done;
-    }
-    ctx->sops.find_resources = dlsym (ctx->sops.dso, "find_resources");
-    if (!(ctx->sops.find_resources) || !(*(ctx->sops.find_resources))) {
-        flux_log (ctx->h, LOG_ERR, "can't load find_resources: %s", dlerror ());
-        goto done;
-    }
-    ctx->sops.select_resources = dlsym (ctx->sops.dso, "select_resources");
-    if (!(ctx->sops.select_resources) || !(*(ctx->sops.select_resources))) {
-        flux_log (ctx->h, LOG_ERR, "can't load select_resources: %s",
-                  dlerror ());
-        goto done;
-    }
-    ctx->sops.allocate_resources = dlsym (ctx->sops.dso, "allocate_resources");
-    if (!(ctx->sops.allocate_resources) || !(*(ctx->sops.allocate_resources))) {
-        flux_log (ctx->h, LOG_ERR, "can't load allocate_resources: %s",
-                  dlerror ());
-        goto done;
-    }
-    ctx->sops.reserve_resources = dlsym (ctx->sops.dso, "reserve_resources");
-    if (!(ctx->sops.reserve_resources) || !(*(ctx->sops.reserve_resources))) {
-        flux_log (ctx->h, LOG_ERR, "can't load reserve_resources: %s",
-                  dlerror ());
-        goto done;
-    }
-    rc = 0;
-
-done:
-    return rc;
-}
-
-static int load_sched_plugin (ssrvctx_t *ctx)
-{
-    int rc = -1;
-    flux_t h = ctx->h;
-    char *path = NULL;
-    char *searchpath = getenv ("FLUX_MODULE_PATH");
-
-    if (!searchpath) {
-        flux_log (h, LOG_ERR, "FLUX_MODULE_PATH not set");
-        goto done;
-    }
-    if (!(path = flux_modfind (searchpath, ctx->arg.userplugin))) {
-        flux_log (h, LOG_ERR, "%s: not found in module search path %s",
-                  ctx->arg.userplugin, searchpath);
-        goto done;
-    }
-    if (!(ctx->sops.dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
-        flux_log (h, LOG_ERR, "failed to open sched plugin: %s",
-                  dlerror ());
-        goto done;
-    }
-    flux_log (h, LOG_DEBUG, "loaded: %s", ctx->arg.userplugin);
-    rc = resolve_functions (ctx);
-
-done:
-    free (path);
-    return rc;
-}
-
 
 /******************************************************************************
  *                                                                            *
@@ -1288,6 +1185,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_list_t *found_trees = NULL;
     resrc_tree_list_t *selected_trees = NULL;
+    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
+
+    assert (plugin != NULL); /* XXX FIXME: handle this case */
 
     /*
      * Require at least one task per node, and
@@ -1329,20 +1229,20 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     if (!resrc_reqst)
         goto done;
 
-    if ((found_trees = ctx->sops.find_resources (h, ctx->rctx.root_resrc,
-                                                 resrc_reqst))) {
+    if ((found_trees = plugin->find_resources (h, ctx->rctx.root_resrc,
+                                               resrc_reqst))) {
         nnodes = resrc_tree_list_size (found_trees);
         flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for job %"PRId64", "
                   "reqrd_qty: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
 
         resrc_tree_list_unstage_resources (found_trees);
-        if ((selected_trees = ctx->sops.select_resources (h, found_trees,
-                                                          resrc_reqst))) {
+        if ((selected_trees = plugin->select_resources (h, found_trees,
+                                                        resrc_reqst))) {
             nnodes = resrc_tree_list_size (selected_trees);
             if (nnodes == job->req->nnodes) {
-                ctx->sops.allocate_resources (h, selected_trees, job->lwj_id,
-                                              starttime, starttime +
-                                              job->req->walltime);
+                plugin->allocate_resources (h, selected_trees, job->lwj_id,
+                                            starttime, starttime +
+                                            job->req->walltime);
                 /* Scheduler specific job transition */
                 // TODO: handle this some other way (JSC?)
                 job->starttime = starttime;
@@ -1360,9 +1260,10 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                           "%"PRId64", reqrd_qty: %"PRId64"", nnodes, job->lwj_id,
                           job->req->nnodes);
             } else {
-                ctx->sops.reserve_resources (h, selected_trees, job->lwj_id,
-                                             starttime, job->req->walltime,
-                                             ctx->rctx.root_resrc, resrc_reqst);
+                plugin->reserve_resources (h, selected_trees, job->lwj_id,
+                                           starttime, job->req->walltime,
+                                           ctx->rctx.root_resrc,
+                                           resrc_reqst);
             }
         }
     }
@@ -1380,6 +1281,7 @@ static int schedule_jobs (ssrvctx_t *ctx)
 {
     int rc = 0;
     flux_lwj_t *job = NULL;
+    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
     /* Prioritizing the job queue is left to an external agent.  In
      * this way, the scheduler's activities are pared down to just
      * scheduling activies.
@@ -1391,7 +1293,8 @@ static int schedule_jobs (ssrvctx_t *ctx)
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
     resrc_tree_release_all_reservations (resrc_phys_tree (ctx->rctx.root_resrc));
-    rc = ctx->sops.sched_loop_setup (ctx->h);
+    assert (plugin != NULL); /* XXX FIXME: handle this case */
+    rc = plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
     while (!rc && job) {
         if (job->state == J_SCHEDREQ) {
@@ -1591,12 +1494,17 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     flux_log (h, LOG_INFO, "sched comms module starting");
-
-    if (load_sched_plugin (ctx) != 0) {
-        flux_log (h, LOG_ERR, "failed to load scheduler plugin");
+    if (!(ctx->loader = sched_plugin_loader_create (h))) {
+        flux_log_error (h, "failed to initialize plugin loader");
         goto done;
     }
-    flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    if (ctx->arg.userplugin) {
+        if (sched_plugin_load (ctx->loader, ctx->arg.userplugin) < 0) {
+            flux_log_error (h, "failed to load %s", ctx->arg.userplugin);
+            goto done;
+        }
+        flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    }
     if (bridge_set_execmode (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to setup execution mode");
         goto done;
@@ -1615,7 +1523,6 @@ int mod_main (flux_t h, int argc, char **argv)
         goto done;
     }
     rc = 0;
-
 done:
     return rc;
 }
