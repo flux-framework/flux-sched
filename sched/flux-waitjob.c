@@ -29,7 +29,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <czmq.h>
-#include <json.h>
 #include <flux/core.h>
 
 #include "src/common/libutil/shortjson.h"

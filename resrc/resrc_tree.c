@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <czmq.h>
 
+#include "src/common/libutil/shortjson.h"
 #include "rdl.h"
 #include "resrc_tree.h"
 #include "src/common/libutil/xzmalloc.h"

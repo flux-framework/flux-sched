@@ -30,7 +30,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <json.h>
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"

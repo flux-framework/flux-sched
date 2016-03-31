@@ -32,6 +32,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <getopt.h>
+#include <json.h>
 
 #include "rdl.h"
 

@@ -33,6 +33,7 @@
 #include <czmq.h>
 #include <hwloc.h>
 
+#include "src/common/libutil/shortjson.h"
 #include "../resrc.h"
 #include "../resrc_tree.h"
 #include "../resrc_reqst.h"

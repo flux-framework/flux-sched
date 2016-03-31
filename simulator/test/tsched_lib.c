@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <czmq.h>
 
+#include "src/common/libutil/shortjson.h"
 #include "rdl.h"
 #include "../scheduler.h"
 #include "src/common/libtap/tap.h"

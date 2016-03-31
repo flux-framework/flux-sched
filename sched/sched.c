@@ -36,12 +36,12 @@
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
-#include <json.h>
 #include <dlfcn.h>
 #include <stdbool.h>
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
+#include "src/common/libutil/shortjson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"

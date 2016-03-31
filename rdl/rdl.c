@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 
+#include <json.h>
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
