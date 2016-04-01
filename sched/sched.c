@@ -1187,7 +1187,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     resrc_tree_list_t *selected_trees = NULL;
     struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
 
-    assert (plugin != NULL); /* XXX FIXME: handle this case */
+    if (!plugin)
+        return rc;
 
     /*
      * Require at least one task per node, and
@@ -1293,7 +1294,8 @@ static int schedule_jobs (ssrvctx_t *ctx)
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
     resrc_tree_release_all_reservations (resrc_phys_tree (ctx->rctx.root_resrc));
-    assert (plugin != NULL); /* XXX FIXME: handle this case */
+    if (!plugin)
+        return -1;
     rc = plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
     while (!rc && job) {
@@ -1355,7 +1357,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         break;
     case J_SCHEDREQ:
         /* A schedule reqeusted should not get an event. */
-        /* SCHEDREQ -> SELECTED happens implicitly within schedule jobs */
+        /* SCHEDREQ -> SELECTED happens implicitly within schedule_jobs */
         VERIFY (false);
         break;
     case J_SELECTED:
