@@ -53,17 +53,14 @@ export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$PKG_CONFIG_PATH
 git clone <flux-sched repo of your choice>
 cd ~/flux-sched
 ./autogen.sh
-./configure
+./configure --prefix=$HOME/local
 make
 make check
+make install
 ```
 
-`make install`, `make dist`, and `make distcheck` are not yet
-supported in flux-sched.  When you run make in ~/flux-sched, the
-products remain local; they do not populate anything in ~/flux-core.
-
-To actually exercise a functioning sched module in a comms session,
-follow these steps.
+To exercise a functioning sched module in a comms session, follow
+these steps.
 
 ##### Flux comms session
 
@@ -84,7 +81,7 @@ $HOME/local/bin/flux start -s3
 cd to ~/flux-sched and load the sched module specifying the
 appropriate rdl configuration file:
 ```
-flux module load sched rdl-conf=$HOME/flux-sched/conf/hype.lua
+flux module load sched rdl-conf=$HOME/flux-sched/conf/hype.lua plugin=sched.fcfs
 ```
 
 Check to see whether the sched module loaded:
