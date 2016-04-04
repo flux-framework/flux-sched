@@ -40,7 +40,6 @@ libflux_sim_la_LDFLAGS = $(AM_LDFLAGS) $(fluxlib_ldflags) \
 simsrv_la_SOURCES = simsrv.c
 simsrv_la_CFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 simsrv_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 simsrv_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module -rpath /nowhere
 
@@ -48,14 +47,12 @@ sim_execsrv_la_SOURCES = sim_execsrv.c
 sim_execsrv_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 sim_execsrv_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
     $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sim_execsrv_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module -rpath /nowhere
 
 submitsrv_la_SOURCES = submitsrv.c
 submitsrv_la_CFLAGS = $(AM_CFLAGS)
 submitsrv_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 submitsrv_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module -rpath /nowhere
 
@@ -63,7 +60,6 @@ sim_sched_fcfs_la_SOURCES = sim_sched_fcfs.c scheduler.c scheduler.h
 sim_sched_fcfs_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 sim_sched_fcfs_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
     $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sim_sched_fcfs_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
     -rpath /nowhere
@@ -73,7 +69,6 @@ sim_sched_fcfs_aware_la_SOURCES = sim_sched_fcfs_aware.c scheduler.c \
 sim_sched_fcfs_aware_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 sim_sched_fcfs_aware_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
     $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sim_sched_fcfs_aware_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
     -rpath /nowhere
@@ -82,7 +77,6 @@ sim_sched_easy_la_SOURCES = sim_sched_easy.c scheduler.c scheduler.h
 sim_sched_easy_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 sim_sched_easy_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
     $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sim_sched_easy_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
     -rpath /nowhere

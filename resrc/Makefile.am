@@ -6,9 +6,9 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 
 SUBDIRS = . test
 
-lib_LTLIBRARIES = libflux-resrc.la
+noinst_LTLIBRARIES = libflux-resrc.la
 
-fluxschedinclude_HEADERS = resrc.h resrc_tree.h resrc_reqst.h
+noinst_HEADERS = resrc.h resrc_tree.h resrc_reqst.h
 
 libflux_resrc_la_SOURCES = resrc.c resrc_tree.c resrc_reqst.c
 libflux_resrc_la_CFLAGS = -I$(top_srcdir)/rdl
