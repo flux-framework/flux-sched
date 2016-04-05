@@ -95,7 +95,7 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
 /*
  * Create a resrc_reqst_t object from a json object
  */
-resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent);
+resrc_reqst_t *resrc_reqst_from_json (json_object *o, resrc_reqst_t *parent);
 
 /*
  * Free a resrc_reqst_t object

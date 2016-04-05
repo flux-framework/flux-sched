@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <json.h>
 #include <libgen.h>
 #include <dlfcn.h>
 #include <flux/core.h>

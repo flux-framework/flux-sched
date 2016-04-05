@@ -31,7 +31,6 @@
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
-#include <json.h>
 #include <dlfcn.h>
 #include <time.h>
 #include <inttypes.h>

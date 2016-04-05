@@ -31,7 +31,6 @@
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
-#include <json.h>
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"

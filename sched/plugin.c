@@ -29,6 +29,7 @@
 #include <flux/core.h>
 #include <czmq.h>
 
+#include "src/common/libutil/shortjson.h"
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"

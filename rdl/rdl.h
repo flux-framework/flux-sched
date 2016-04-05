@@ -7,7 +7,6 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <json.h>
 
 /*
  *  Forward declarations:

@@ -26,8 +26,8 @@
 #define SIMULATOR_H 1
 
 #include <czmq.h>
+#include <json.h>
 #include <flux/core.h>
-#include "src/common/libutil/shortjson.h"
 
 typedef struct {
     double sim_time;
@@ -52,8 +52,8 @@ typedef struct {
 
 sim_state_t *new_simstate ();
 void free_simstate (sim_state_t *sim_state);
-JSON sim_state_to_json (sim_state_t *state);
-sim_state_t *json_to_sim_state (JSON o);
+json_object *sim_state_to_json (sim_state_t *state);
+sim_state_t *json_to_sim_state (json_object *o);
 
 int put_job_in_kvs (job_t *job);
 job_t *pull_job_from_kvs (kvsdir_t *kvs_dir);

@@ -34,6 +34,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include "src/common/libutil/shortjson.h"
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"

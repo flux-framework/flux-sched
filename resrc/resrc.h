@@ -6,7 +6,6 @@
  */
 
 #include <uuid/uuid.h>
-#include "src/common/libutil/shortjson.h"
 
 #define TIME_MAX INT64_MAX
 
@@ -104,7 +103,7 @@ void resrc_resource_destroy (void *object);
 /*
  * Create a resrc_t object from a json object
  */
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical);
+resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical);
 
 /*
  * Return the head of a resource tree of all resources described by an
@@ -122,7 +121,7 @@ resrc_t *resrc_generate_xml_resources (resrc_t *host_resrc, const char *buf,
 /*
  * Add the input resource to the json object
  */
-int resrc_to_json (JSON o, resrc_t *resrc);
+int resrc_to_json (json_object *o, resrc_t *resrc);
 
 /*
  * Print details of a specific resource to a string buffer
