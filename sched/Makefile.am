@@ -17,7 +17,7 @@ fluxmod_LTLIBRARIES = sched.la
 schedplugin_LTLIBRARIES = sched_fcfs.la \
                   sched_backfill.la
 
-fluxschedinclude_HEADERS = scheduler.h rs2rank.h rsreader.h
+noinst_HEADERS = scheduler.h rs2rank.h rsreader.h
 
 sched_la_SOURCES = sched.c rs2rank.c rsreader.c plugin.c plugin.h
 sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
