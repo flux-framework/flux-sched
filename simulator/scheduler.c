@@ -1170,8 +1170,7 @@ int update_job_cores (ctx_t *ctx,
 
     if (imanode) {
         if (!(key = xasprintf ("lwj.%"PRId64".rank.%"PRId64".cores", job->lwj_id,
-                               *pnode))
-            < 0) {
+                               *pnode))) {
             flux_log (ctx->h, LOG_ERR, "%s key create failed", __FUNCTION__);
             rc = -1;
             goto ret;
