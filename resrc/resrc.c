@@ -1061,7 +1061,7 @@ static int resrc_allocate_resource_now (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
@@ -1100,7 +1100,7 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
         if (resrc->staged > available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
@@ -1150,7 +1150,7 @@ static int resrc_reserve_resource_now (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
@@ -1189,7 +1189,7 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
         if (resrc->staged > available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
