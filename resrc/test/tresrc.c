@@ -104,7 +104,7 @@ static void test_temporal_allocation ()
     int rc = 0;
     size_t available;
     resrc_t *resource = resrc_new_resource ("custom", "/test", "test", NULL, 1,
-                                            0, 10);
+                                            NULL, 10);
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));

@@ -453,6 +453,8 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
             resrc->digest = xstrdup (sig);
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
+        else
+            uuid_clear (resrc->uuid);
         resrc->size = size;
         resrc->available = size;
         resrc->staged = 0;
@@ -558,7 +560,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             Jget_str (jhierarchyo, "default", &path);
     }
 
-    resrc = resrc_new_resource (type, path, name, NULL, 0, uuid, size);
+    resrc = resrc_new_resource (type, path, name, NULL, id, uuid, size);
     if (resrc) {
         /*
          * Are we constructing the resource's physical tree?  If
@@ -787,9 +789,8 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent,
 ret:
     free (name);
     free (path);
+    free (signature);
     free (type);
-    if (signature)
-       free (signature);
 
     return resrc;
 }
