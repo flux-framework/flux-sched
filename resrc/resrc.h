@@ -9,6 +9,7 @@
 
 #define TIME_MAX INT64_MAX
 
+typedef struct hwloc_topology * TOPOLOGY;
 typedef struct resrc resrc_t;
 typedef struct resrc_reqst resrc_reqst_t;
 typedef struct resrc_tree resrc_tree_t;
@@ -112,11 +113,13 @@ resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical);
 resrc_t *resrc_generate_rdl_resources (const char *path, char*resource);
 
 /*
- * Return the head of a resource tree of all resources described by an
- * xml serialization
+ * Return the head of a resource tree of all resources described by a
+ * hwloc topology or NULL if errors are encountered.
+ * Note: If err_str is non-null and errors are encountered, err_str will
+ *       contain reason why.  Caller must subsequently free err_str.
  */
-resrc_t *resrc_generate_xml_resources (resrc_t *host_resrc, const char *buf,
-                                       size_t length, const char *sig);
+resrc_t *resrc_generate_hwloc_resources (resrc_t *host_resrc, TOPOLOGY topo,
+                                         const char *sig, char **err_str);
 
 /*
  * Add the input resource to the json object

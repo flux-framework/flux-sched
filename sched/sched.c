@@ -450,11 +450,13 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
             goto done;
         }
         const char *s = json_object_get_string (o);
+        char *err_str = NULL;
         size_t len = strlen (s);
-        if (rsreader_hwloc_load (s, len, rank, r_mode,
-             &(ctx->rctx.root_resrc), ctx->machs) != 0) {
+        if (rsreader_hwloc_load (s, len, rank, r_mode, &(ctx->rctx.root_resrc),
+                                 ctx->machs, &err_str)) {
             json_object_put (o);
-            flux_log (ctx->h, LOG_ERR, "can't load hwloc data");
+            flux_log_error (ctx->h, "can't load hwloc data: %s", err_str);
+            free (err_str);
             goto done;
         }
         json_object_put (o);

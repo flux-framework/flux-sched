@@ -162,7 +162,8 @@ int rsreader_resrc_load (const char *path, char *uri, uint32_t rank, char **r_ur
 }
 
 int rsreader_hwloc_load (const char *buf, size_t len, uint32_t rank,
-                         rsreader_t r_mode, resrc_t **r_resrc, machs_t *machs)
+                         rsreader_t r_mode, resrc_t **r_resrc, machs_t *machs,
+                         char **err_str)
 {
     int rc = -1;
     rssig_t *sig = NULL;
@@ -173,27 +174,24 @@ int rsreader_hwloc_load (const char *buf, size_t len, uint32_t rank,
 
     if (hwloc_topology_init (&topo) != 0)
         goto done;
-    else if (hwloc_topology_set_xmlbuffer (topo, buf, len) != 0)
-        goto done;
-    else if (hwloc_topology_load (topo) != 0)
-        goto done;
-
+    if (hwloc_topology_set_xmlbuffer (topo, buf, len) != 0)
+        goto err;
+    if (hwloc_topology_load (topo) != 0)
+        goto err;
     if (rs2rank_set_signature ((char*)buf, len, topo, &sig) != 0)
-        goto done;
-    else if (rs2rank_tab_update (machs, get_hn (topo), sig, rank) != 0)
-        goto done;
+        goto err;
+    if (rs2rank_tab_update (machs, get_hn (topo), sig, rank) != 0)
+        goto err;
 
-    /* TODO: add a new resrc function that works w/ hwloc
-     * resrc_generate_hwloc_resources (*r_resrc, topology...
-     */
-    const char *s = rs2rank_get_digest (sig);
     if (r_mode == RSREADER_HWLOC) {
-        if (!resrc_generate_xml_resources (*r_resrc, buf, len, s))
-            goto done;
+        const char *s = rs2rank_get_digest (sig);
+        if (!resrc_generate_hwloc_resources (*r_resrc, topo, s, err_str))
+            goto err;
     }
 
-    hwloc_topology_destroy (topo);
     rc = 0;
+err:
+    hwloc_topology_destroy (topo);
 done:
     return rc;
 }
