@@ -64,7 +64,8 @@ int rsreader_resrc_load (const char *path, char *uri, uint32_t rank, char **r_ur
   * through the root resrc_t object (root) if r_mode is RSREADER_RESRC.
   */
 int rsreader_hwloc_load (const char *hw_xml, size_t len, uint32_t rank,
-                         rsreader_t r_mode, resrc_t **root, machs_t *machs);
+                         rsreader_t r_mode, resrc_t **root, machs_t *machs,
+                         char **err_str);
 
 /* Traverse the entire resrc hierarchy and link each node-type
  * resrc_t object with a broker rank by filling in its digest field.

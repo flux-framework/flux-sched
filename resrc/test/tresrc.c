@@ -104,7 +104,7 @@ static void test_temporal_allocation ()
     int rc = 0;
     size_t available;
     resrc_t *resource = resrc_new_resource ("custom", "/test", "test", NULL, 1,
-                                            0, 10);
+                                            NULL, 10);
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));
@@ -422,14 +422,12 @@ ret:
  */
 int main (int argc, char *argv[])
 {
-    char *buffer = NULL;
     char *filename = NULL;
     hwloc_topology_t topology;
-    int buflen = 0;
     int rc1 = 1, rc2 = 1;
     resrc_t *resrc = NULL;
 
-    plan (27 + num_temporal_allocation_tests);
+    plan (26 + num_temporal_allocation_tests);
     test_temporal_allocation ();
 
     if ((filename = getenv ("TESTRESRC_INPUT_FILE"))) {
@@ -450,14 +448,11 @@ int main (int argc, char *argv[])
         "hwloc topology init succeeded");
     ok ((hwloc_topology_load (topology) == 0),
         "hwloc topology load succeeded");
-    ok ((hwloc_topology_export_xmlbuffer (topology, &buffer, &buflen) == 0),
-        "hwloc topology export succeeded");
     ok (((resrc = resrc_create_cluster ("cluster")) != 0),
         "cluster resource creation succeeded");
-    ok ((resrc_generate_xml_resources (resrc, buffer, buflen, NULL) != 0),
+    ok ((resrc_generate_hwloc_resources (resrc, topology, NULL, NULL) != 0),
         "resource generation from hwloc took: %lf",
         ((double)get_time())/1000000);
-    hwloc_free_xmlbuffer (topology, buffer);
     hwloc_topology_destroy (topology);
     if (resrc)
         rc2 = test_a_resrc (resrc, false);

@@ -31,8 +31,7 @@
 #include <string.h>
 #include <assert.h>
 #include <czmq.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <hwloc.h>
 
 #include "src/common/libutil/shortjson.h"
 #include "rdl.h"
@@ -453,6 +452,8 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
             resrc->digest = xstrdup (sig);
         if (uuid)
             uuid_copy (resrc->uuid, uuid);
+        else
+            uuid_clear (resrc->uuid);
         resrc->size = size;
         resrc->available = size;
         resrc->staged = 0;
@@ -558,7 +559,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             Jget_str (jhierarchyo, "default", &path);
     }
 
-    resrc = resrc_new_resource (type, path, name, NULL, 0, uuid, size);
+    resrc = resrc_new_resource (type, path, name, NULL, id, uuid, size);
     if (resrc) {
         /*
          * Are we constructing the resource's physical tree?  If
@@ -675,79 +676,68 @@ static char *lowercase (char *str)
     return str;
 }
 
-static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent,
-                                    const char *sig)
+static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
+                                          const char *sig)
 {
+    const char *hwloc_name = NULL;
     char *name = NULL;
     char *path = NULL;
-    char *type = NULL;
     char *signature = NULL;
+    char *type = NULL;
     int64_t id = 0;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     size_t size = 1;
     uuid_t uuid;
-    xmlChar *prop;
-    xmlNodePtr cur;
 
-    prop = xmlGetProp (nodePtr, (const xmlChar*) "type");
-    if (prop) {
-        type = xstrdup ((char *) prop);
-        xmlFree (prop);
-        lowercase (type);
-    }
-    if (!strcmp (type, "machine")) {
-        free (type);
+    id = obj->logical_index;
+    if (!hwloc_compare_types (obj->type, HWLOC_OBJ_MACHINE)) {
         type = xstrdup ("node");
         signature = sig? xstrdup (sig) : NULL;
-        cur = nodePtr->xmlChildrenNode;
-        while (cur != NULL) {
-            prop = xmlGetProp (cur, (const xmlChar *) "name");
-            if (prop && !xmlStrcmp (prop, (const xmlChar*) "HostName")) {
-                xmlFree (prop);
-                prop = xmlGetProp (cur, (const xmlChar *) "value");
-                if (prop) {
-                    name = xstrdup ((char *) prop);
-                    xmlFree (prop);
-                }
-                break;
-            }
-            xmlFree (prop);
-            cur = cur->next;
-        }
-        if (!name)
+        hwloc_name = hwloc_obj_get_info_by_name (obj, "HostName");
+        if (!hwloc_name)
             goto ret;
-    } else if (!strcmp (type, "numanode")) {
-        if (strcmp (parent->type, "numanode")) {
-            name = xstrdup (type);
-            prop = xmlGetProp (nodePtr, (const xmlChar *) "os_index");
-            if (prop) {
-                id = strtol ((char *) prop, NULL, 10);
-                xmlFree (prop);
-            }
-        } else {
-            /*
-             * We have to elevate the meager memory attribute of a
-             * NUMANode to a full-fledged Flux resrouce
-             */
-            free (type);
-            name = xstrdup ("memory");
-            type = xstrdup ("memory");
-            prop = xmlGetProp (nodePtr, (const xmlChar *) "local_memory");
-            if (prop) {
-                size = strtol ((char *) prop, NULL, 10);
-                size /= 1024;
-                xmlFree (prop);
-            }
-        }
-    } else if (!strcmp (type, "socket") || !strcmp (type, "core") ||
-               !strcmp (type, "pu")) {
-        name = xstrdup (type);
-        prop =  xmlGetProp (nodePtr, (const xmlChar *) "os_index");
-        if (prop) {
-            id = strtol ((char *) prop, NULL, 10);
-            xmlFree (prop);
-        }
+        name = xstrdup (hwloc_name);
+#if HWLOC_API_VERSION < 0x00010b00
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NODE)) {
+#else
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NUMANODE)) {
+#endif
+        type = xstrdup ("numanode");
+        name = xasprintf ("%s%"PRId64"", type, id);
+#if HWLOC_API_VERSION < 0x00010b00
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_SOCKET)) {
+#else
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PACKAGE)) {
+#endif
+        type = xstrdup ("socket");
+        name = xasprintf ("%s%"PRId64"", type, id);
+#if HWLOC_API_VERSION < 0x00020000
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_CACHE)) {
+        type = xstrdup ("cache");
+        name = xasprintf ("L%"PRIu32"cache%"PRId64"", obj->attr->cache.depth,
+                          id);
+        size = obj->attr->cache.size / 1024;
+#else
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_L1CACHE)) {
+        type = xstrdup ("cache");
+        name = xasprintf ("L1cache%"PRId64"", obj->attr->cache.depth, id);
+        size = obj->attr->cache.size / 1024;
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_L2CACHE)) {
+        type = xstrdup ("cache");
+        name = xasprintf ("L2cache%"PRId64"", obj->attr->cache.depth, id);
+        size = obj->attr->cache.size / 1024;
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_L3CACHE)) {
+        type = xstrdup ("cache");
+        name = xasprintf ("L3cache%"PRId64"", obj->attr->cache.depth, id);
+        size = obj->attr->cache.size / 1024;
+#endif
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_CORE)) {
+        type = xstrdup ("core");
+        name = xasprintf ("%s%"PRId64"", type, id);
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PU)) {
+        type = xstrdup ("pu");
+        name = xasprintf ("%s%"PRId64"", type, id);
     } else {
         /* that's all we're supporting for now... */
         goto ret;
@@ -765,12 +755,19 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent,
             parent_tree = parent->phys_tree;
         resrc->phys_tree = resrc_tree_new (parent_tree, resrc);
 
-        if (!strcmp (type, "numanode") && strcmp (parent->type, "numanode")) {
+        if (obj->memory.local_memory) {
+            char *mempath = xasprintf ("%s/memory", path);
+            resrc_t *mem_resrc = NULL;
             /*
-             * create the memory resource so that it is never a parent
-             * of the NUMANode's children
+             * We have to elevate the meager memory attribute of a
+             * NUMANode to a full-fledged Flux resrouce
              */
-            resrc_new_from_xml (nodePtr, resrc, signature);
+            size = obj->memory.local_memory / 1024;
+            uuid_generate (uuid);
+            mem_resrc = resrc_new_resource ("memory", mempath, "memory",
+                                            signature, 0, uuid, size);
+            mem_resrc->phys_tree = resrc_tree_new (resrc->phys_tree, mem_resrc);
+            free (mempath);
         }
 
         /* add twindow */
@@ -787,62 +784,103 @@ static resrc_t *resrc_new_from_xml (xmlNodePtr nodePtr, resrc_t *parent,
 ret:
     free (name);
     free (path);
+    free (signature);
     free (type);
-    if (signature)
-       free (signature);
 
     return resrc;
 }
 
-static resrc_t *resrc_add_xml_resource (resrc_t *parent, xmlNodePtr nodePtr,
-                                        const char *s)
+resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
+                                         hwloc_topology_t topo, const char *sig,
+                                         char **err_str)
 {
+    char *obj_ptr = NULL;
+    char *str = NULL;
+    hwloc_obj_t obj;
+    resrc_t *parent = NULL;
     resrc_t *resrc = NULL;
-    resrc_t *retres = NULL;
-    resrc_t *surrogate = NULL;
-    xmlNode *nodeItr = NULL;
+    uint32_t depth;
+    uint32_t hwloc_version;
+    uint32_t level_size;
+    uint32_t size;
+    uint32_t topodepth;
+    zhash_t *resrc_objs = zhash_new ();
 
-    for (nodeItr = nodePtr; nodeItr; nodeItr = nodeItr->next) {
-        if (nodeItr->type == XML_ELEMENT_NODE &&
-            !xmlStrcmp (nodeItr->name, (const xmlChar *)"object")) {
-            resrc = resrc_new_from_xml (nodeItr, parent, s);
-            if (!retres && resrc)
-                retres = resrc;
+    if (!cluster_resrc) {
+        str = xasprintf ("%s: cluster_resrc is null", __FUNCTION__);
+        goto ret;
+    }
+
+    hwloc_version = hwloc_get_api_version();
+    if ((hwloc_version >> 16) != (HWLOC_API_VERSION >> 16)) {
+        str = xasprintf ("%s: Compiled for hwloc API 0x%x but running on library"
+                         " API 0x%x", __FUNCTION__, HWLOC_API_VERSION,
+                         hwloc_version);
+        goto ret;
+    }
+
+    topodepth = hwloc_topology_get_depth (topo);
+    parent = cluster_resrc;
+    level_size = hwloc_get_nbobjs_by_depth (topo, 0);
+    for (size = 0; size < level_size; size++) {
+        obj = hwloc_get_obj_by_depth (topo, 0, size);
+        if (!obj) {
+            str = xasprintf ("%s: Failed to get hwloc obj at depth 0",
+                             __FUNCTION__);
+            goto ret;
         }
-        if (nodeItr->xmlChildrenNode) {
-            if (resrc)
-                surrogate = resrc;
-            else
-                surrogate = parent;
-            resrc = resrc_add_xml_resource (surrogate, nodeItr->xmlChildrenNode, s);
-            if (!retres && resrc)
-                retres = resrc;
+        resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
+        if (resrc) {
+            obj_ptr = xasprintf ("%p", obj);
+            zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
+            /* do not call the zhash_freefn() for the *resrc */
+        } else {
+            str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
+                             __FUNCTION__);
+            goto ret;
+        }
+    }
+    for (depth = 1; depth < topodepth; depth++) {
+        level_size = hwloc_get_nbobjs_by_depth (topo, depth);
+        for (size = 0; size < level_size; size++) {
+            obj = hwloc_get_obj_by_depth (topo, depth, size);
+            if (!obj) {
+                str = xasprintf ("%s: Failed to get hwloc obj at depth %u",
+                                 __FUNCTION__, depth);
+                goto ret;
+            }
+            obj_ptr = xasprintf ("%p", obj->parent);
+            parent = zhash_lookup (resrc_objs, obj_ptr);
+            free (obj_ptr);
+            if (!parent) {
+                str = xasprintf ("%s: Failed to find parent of obj depth %u",
+                                 __FUNCTION__, depth);
+                goto ret;
+            }
+            resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
+            if (resrc) {
+                obj_ptr = xasprintf ("%p", obj);
+                zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
+                /* do not call the zhash_freefn() for the *resrc */
+            } else {
+                str = xasprintf ("%s: Failed to create resrc from hwloc depth "
+                                 "%u", __FUNCTION__, depth);
+                goto ret;
+            }
+        }
+    }
+    resrc = cluster_resrc;
+ret:
+    zhash_destroy (&resrc_objs);
+    if (str) {
+        if (err_str)
+            *err_str = str;
+        else {
+            fprintf (stderr, "%s\n", str);
+            free (str);
         }
     }
 
-    return retres;
-}
-
-resrc_t *resrc_generate_xml_resources (resrc_t *cluster_resrc, const char *buf,
-                                       size_t length, const char *sig)
-{
-    resrc_t *resrc = NULL;
-    xmlDocPtr doc; /* the resulting document tree */
-    xmlNodePtr rootElem;
-
-    if (!cluster_resrc)
-        goto ret;
-    doc = xmlReadMemory (buf, length, "noname.xml", NULL, 0);
-    if (!doc)
-        goto ret;
-
-    rootElem = xmlDocGetRootElement (doc);
-
-    if (rootElem)
-        resrc = resrc_add_xml_resource (cluster_resrc, rootElem, sig);
-
-    xmlFreeDoc (doc);
-ret:
     return resrc;
 }
 
@@ -1061,7 +1099,7 @@ static int resrc_allocate_resource_now (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
@@ -1100,7 +1138,7 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
         if (resrc->staged > available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->allocs, id_ptr, size_ptr);
@@ -1150,7 +1188,7 @@ static int resrc_reserve_resource_now (resrc_t *resrc, int64_t job_id)
         if (resrc->staged > resrc->available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
@@ -1189,7 +1227,7 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
         if (resrc->staged > available)
             goto ret;
 
-        id_ptr = xasprintf("%"PRId64"", job_id);
+        id_ptr = xasprintf ("%"PRId64"", job_id);
         size_ptr = xzmalloc (sizeof (size_t));
         *size_ptr = resrc->staged;
         zhash_insert (resrc->reservtns, id_ptr, size_ptr);
