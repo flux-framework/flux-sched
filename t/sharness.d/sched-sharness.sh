@@ -33,9 +33,6 @@ sched_src_path () {
     readlink -e "${SHARNESS_TEST_SRCDIR}/../${1}"
 }
 
-# Add explicit path to default rdl.conf
-RDL_CONF_DEFAULT=$(sched_src_path "conf/hype.lua")
-
 export FLUX_EXEC_PATH_PREPEND
 export FLUX_SCHED_RC_NOOP
 export FLUX_SCHED_RC_PATH
