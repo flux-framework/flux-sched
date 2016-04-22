@@ -70,9 +70,10 @@ int rsreader_hwloc_load (const char *hw_xml, size_t len, uint32_t rank,
 /* Traverse the entire resrc hierarchy and link each node-type
  * resrc_t object with a broker rank by filling in its digest field.
  * Its hostname and digest of the resrc object are later used
- * to determine the managing broker.
+ * to determine the managing broker. If err_str is not null,
+ * this routine returns an error message along with a non-zero rc.
  */
-int rsreader_link2rank (machs_t *machs, resrc_t *root);
+int rsreader_link2rank (machs_t *machs, resrc_t *root, char **err_str);
 
 /* For testing such as emulation whereby no real mapping may
  * exist between the physcal broker rank and testing resource

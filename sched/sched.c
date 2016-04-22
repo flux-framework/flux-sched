@@ -498,6 +498,7 @@ static void dump_resrc_state (flux_t h, resrc_tree_t *rt)
 static int load_resources (ssrvctx_t *ctx)
 {
     int rc = -1;
+    char *e_str = NULL;
     char *turi = NULL;
     resrc_t *tres = NULL;
     char *path = ctx->arg.path;
