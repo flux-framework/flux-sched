@@ -74,6 +74,11 @@ AC_SUBST(schedplugindir)
 AS_VAR_SET(fluxschedincludedir, $includedir/flux/sched)
 AC_SUBST(fluxschedincludedir)
 
+AS_VAR_SET(fluxschedrc1dir, $sysconfdir/flux/rc1.d)
+AC_SUBST(fluxschedrc1dir)
+
+AS_VAR_SET(fluxschedrc3dir, $sysconfdir/flux/rc3.d)
+AC_SUBST(fluxschedrc3dir)
 
 ##
 # Macros to avoid repetition in Makefiles.am's
@@ -85,18 +90,19 @@ fluxlib_ldflags="-shared -export-dynamic --disable-static -Wl,--no-undefined"
 AC_SUBST(fluxlib_ldflags)
 
 AC_CONFIG_FILES([Makefile
-		 src/Makefile
-		 src/common/Makefile
-		 src/common/libtap/Makefile
-		 src/common/liblsd/Makefile
-		 src/common/libutil/Makefile
-                 rdl/Makefile
-                 rdl/test/Makefile
-                 resrc/Makefile
-                 resrc/test/Makefile
-                 sched/Makefile
-                 simulator/Makefile
-                 t/Makefile])
+  src/Makefile
+  src/common/Makefile
+  src/common/libtap/Makefile
+  src/common/liblsd/Makefile
+  src/common/libutil/Makefile
+  rdl/Makefile
+  rdl/test/Makefile
+  resrc/Makefile
+  resrc/test/Makefile
+  sched/Makefile
+  simulator/Makefile
+  etc/Makefile
+  t/Makefile])
 AC_OUTPUT
 
 echo "

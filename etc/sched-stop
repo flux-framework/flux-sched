@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+if [ -z ${FLUX_SCHED_RC_NOOP} ]; then
+    flux module remove sched
+fi
+

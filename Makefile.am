@@ -1,7 +1,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src rdl resrc simulator sched t
+SUBDIRS = src rdl resrc simulator sched etc t
 
 EXTRA_DIST= \
 	conf \
