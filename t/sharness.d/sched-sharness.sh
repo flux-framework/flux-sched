@@ -2,12 +2,14 @@
 #
 # project-local sharness code for flux-sched
 #
-
+FLUX_SCHED_RC_NOOP=1
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
-  # (Assume sched modules installed under PREFIX/lib/flux/sched-plugin)
-  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/sched-plugin|')
+  # (Assume sched modules installed under PREFIX/lib/flux/modeuls/sched)
+  # (We also support testing this when sched is installed
+  # another location, but only via make check)
+  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/modules/sched|'):${FLUX_MODULE_PATH_PREPEND}
 else
   # Set up environment so that we find flux-sched modules,
   #  commands, and Lua libs from the build directories:
@@ -35,6 +37,9 @@ sched_src_path () {
 RDL_CONF_DEFAULT=$(sched_src_path "conf/hype.lua")
 
 export FLUX_EXEC_PATH_PREPEND
+export FLUX_SCHED_RC_NOOP
+export FLUX_SCHED_RC_PATH
+export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND
 export FLUX_LUA_CPATH_PREPEND
 export FLUX_LUA_PATH_PREPEND
