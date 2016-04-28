@@ -12,36 +12,42 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 #  modules are found instead of the lua modules in the path
 #  of the flux installation we're using for testing. If
 #  $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
-#  skip the export of the PREPEND variables.
+#  export the $(prefix) PREPEND variables so that they can
+#  be picked up from the sched install directiories which
+#  may or may not be the same as $(FLUX_PREFIX).
 #
-#  (XXX: the only way I've found to portably do this is to substitute
-#   the required path iff FLUX_SCHED_TEST_INSTALLED is not set, otherwise we
-#   substitute the *value* of FLUX_SCHED_TEST_INSTALLED, which might
-#   be `1` or `t`, but at least this doesn't point to build directory
-#   Lua PATH)
+# FLUX_SCHED_CO_INST is exported so that runlevel-install
+# test can conditionally set FLUX_RC_EXTRA.
 #
 TESTS_ENVIRONMENT = \
     LUA_PATH="$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:-$(abs_top_srcdir)/rdl/?.lua}" \
-    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:-$(abs_top_builddir)/rdl/?.so}" \
+    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/share/lua/5.1/?.lua}" \
+    FLUX_LUA_PATH_PREPEND="$${FLUX_LUA_PATH_PREPEND:-$(abs_top_srcdir)/rdl/?.lua}" \
+    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib64/lua/5.1/?.so}" \
+    FLUX_LUA_CPATH_PREPEND="$${FLUX_LUA_CPATH_PREPEND:-$(abs_top_builddir)/rdl/?.so}" \
+    FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
+    FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
+    FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
+    FLUX_SCHED_CO_INST=$(shell if [ $(FLUX_PREFIX) = $(prefix) ]; then echo co; fi) \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
-	t0000-sharness.t \
-	t0001-basic.t \
-	lua/t0001-rdl-basic.t \
-	lua/t0002-multilevel.t \
-	lua/t0003-default-tags.t \
-	lua/t0004-derived-type.t \
-	t0002-waitjob.t \
-	t1000-jsc.t \
-	t1001-rs2rank-basic.t \
-	t1002-rs2rank-64ranks.t \
-	t1003-stress.t \
-	t1004-module-load.t \
-	t2000-fcfs.t \
-	t2001-fcfs-aware.t \
-	t2002-easy.t
+    t0000-sharness.t \
+    t0001-basic.t \
+    lua/t0001-rdl-basic.t \
+    lua/t0002-multilevel.t \
+    lua/t0003-default-tags.t \
+    lua/t0004-derived-type.t \
+    t0002-waitjob.t \
+    t0003-basic-install.t \
+    t1000-jsc.t \
+    t1001-rs2rank-basic.t \
+    t1002-rs2rank-64ranks.t \
+    t1003-stress.t \
+    t1004-module-load.t \
+    t2000-fcfs.t \
+    t2001-fcfs-aware.t \
+    t2002-easy.t
 
 check_SCRIPTS = $(TESTS)
 
