@@ -111,11 +111,12 @@ int main (int argc, char *argv[])
     Jadd_str (args, "type", "node");
     Jadd_int (args, "id", 300);
     rdl2 = rdl_find (rdl1, args);
+    if (rdl2 == NULL)
+        err_exit ("rdl_find");
     json_object_put (args);
     r = rdl_resource_get (rdl2, "default");
     if (r == NULL)
         exit (1);
-
 
     c = rdl_resource_next_child (r);
     printf ("found %s\n", rdl_resource_name (c));
