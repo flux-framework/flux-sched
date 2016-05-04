@@ -11,8 +11,8 @@ local rdl, err = RDL.eval ([[
 
  Foo = Resource:subclass 'Foo'
  function Foo:initialize (arg)
-   local name = arg.name or arg[1]
-   Resource.initialize (self, { "foo", name = name, id = arg.id })
+   local basename = arg.basename or arg[1]
+   Resource.initialize (self, { "foo", basename = basename, id = arg.id })
  end
 
  Hierarchy "default" { Foo {"bar", id = 0} }

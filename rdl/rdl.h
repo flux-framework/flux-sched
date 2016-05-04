@@ -131,6 +131,11 @@ void rdl_resource_destroy (struct resource *r);
 const char *rdl_resource_path (struct resource *r);
 
 /*
+ *  Get the string representation of the basename for resource [r].
+ */
+const char *rdl_resource_basename (struct resource *r);
+
+/*
  *  Get the string representation of the name for resource [r].
  */
 const char *rdl_resource_name (struct resource *r);
@@ -170,6 +175,7 @@ void rdl_resource_delete_tag (struct resource *r, const char *tag);
  *
  *  Format is a dictionary of name and values something like:
  *    { type: "string",
+ *      basename: "string",
  *      name: "string",
  *      id:   number,
  *      properties: { list of key/value pairs },

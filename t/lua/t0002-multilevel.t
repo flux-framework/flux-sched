@@ -12,7 +12,7 @@ uses "Node"
    Resource{ "cluster", name = "foo",
              children = {
                ListOf{ Node, ids="1-4",
-                 args = { name = "bar", sockets = { "0-1", "2-3" } }
+                 args = { basename = "bar", sockets = { "0-1", "2-3" } }
                }
 	     }
    }
