@@ -70,6 +70,7 @@ struct rdl {
 struct resource {
     struct rdl *rdl;       /*  Reference back to 'owning' rdl instance  */
     int         lua_ref;   /*  Lua reference into  rdl->L globals table */
+    char *      basename;  /*  Copy of resource basename (on first use) */
     char *      name;      /*  Copy of resource name (on first use)     */
     char *      path;      /*  Copy of resource path (on first use)     */
 };
@@ -376,6 +377,7 @@ static void rdl_resource_destroy_nolist (struct resource *r)
         luaL_unref (r->rdl->L, LUA_GLOBALSINDEX, r->lua_ref);
         r->rdl = NULL;
     }
+    free (r->basename);
     free (r->name);
     free (r->path);
     free (r);
@@ -577,6 +579,7 @@ static struct resource * create_resource_ref (struct rdl *rdl, int index)
     r->lua_ref = luaL_ref (rdl->L, LUA_GLOBALSINDEX);
     r->rdl = rdl;
     r->path = NULL;
+    r->basename = NULL;
     r->name = NULL;
     list_append (rdl->resource_list, r);
     return (r);
@@ -648,6 +651,19 @@ int lua_rdl_resource_method_call (struct resource *r, const char *name)
  *  For resource name and path, be cowardly and reread from Lua for
  *   each call. In the future, we may want to cache these values.
  */
+const char * rdl_resource_basename (struct resource *r)
+{
+    lua_State *L = r->rdl->L;
+
+    if (lua_rdl_resource_getfield (r, "basename") < 0)
+        return (NULL);
+    if (r->basename)
+        free (r->basename);
+    r->basename = strdup (lua_tostring (L, -1));
+    lua_pop (L, 1);
+    return (r->basename);
+}
+
 const char * rdl_resource_name (struct resource *r)
 {
     lua_State *L = r->rdl->L;

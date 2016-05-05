@@ -44,7 +44,7 @@ rdl, err = RDL.eval ([[
  Node:default_tags { "test" }
  Hierarchy "default" {
    Resource{ "foo", name = "bar",
-    children = { Node{ name="node", id=1, sockets = { "0" } } }
+    children = { Node{ basename="node", id=1, sockets = { "0" } } }
   }
  }
 ]])
@@ -69,7 +69,7 @@ rdl, err = RDL.eval ([[
  Resource:default_tags { "test" }
  Hierarchy "default" {
    Resource{ "foo", name = "bar",
-    children = { Node{ name="node", id=1, sockets = { "0" } } }
+    children = { Node{ basename="node", id=1, sockets = { "0" } } }
   }
  }
 ]])
@@ -88,7 +88,7 @@ rdl, err = RDL.eval ([[
  Node:default_tags { "test2" }
  Hierarchy "default" {
    Resource{ "foo", name = "bar",
-    children = { Node{ name="node", id=1, sockets = { "0" } } }
+    children = { Node{ basename="node", id=1, sockets = { "0" } } }
   }
  }
 ]])
@@ -108,7 +108,7 @@ rdl, err = RDL.eval ([[
  Node:default_tags {}
  Hierarchy "default" {
    Resource{ "foo", name = "bar",
-    children = { Node{ name="node", id=1, sockets = { "0" } } }
+    children = { Node{ basename="node", id=1, sockets = { "0" } } }
   }
  }
 ]])
@@ -130,7 +130,7 @@ rdl, err = RDL.eval ([[
  uses "Node" :default_tags { "set-a-tag" }
  Hierarchy "default" {
    Resource{ "foo", name = "bar",
-    children = { Node{ name="node", id=1, sockets = { "0" } } }
+    children = { Node{ basename="node", id=1, sockets = { "0" } } }
   }
  }
 ]])

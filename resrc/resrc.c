@@ -43,6 +43,7 @@
 struct resrc {
     char *type;
     char *path;
+    char *basename;
     char *name;
     char *digest;
     int64_t id;
@@ -76,6 +77,13 @@ char *resrc_path (resrc_t *resrc)
 {
     if (resrc)
         return resrc->path;
+    return NULL;
+}
+
+char *resrc_basename (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->basename;
     return NULL;
 }
 
@@ -436,17 +444,28 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 }
 
 resrc_t *resrc_new_resource (const char *type, const char *path,
-                             const char *name, const char *sig,
-                             int64_t id, uuid_t uuid, size_t size)
+                             const char *basename, const char *name,
+                             const char *sig, int64_t id, uuid_t uuid,
+                             size_t size)
 {
     resrc_t *resrc = xzmalloc (sizeof (resrc_t));
     if (resrc) {
         resrc->type = xstrdup (type);
         if (path)
             resrc->path = xstrdup (path);
+        if (basename)
+            resrc->basename = xstrdup (basename);
+        else
+            resrc->basename = xstrdup (type);
+        resrc->id = id;
         if (name)
             resrc->name = xstrdup (name);
-        resrc->id = id;
+        else {
+            if (id < 0)
+                resrc->name = xstrdup (resrc->basename);
+            else
+                resrc->name = xasprintf ("%s%"PRId64"", resrc->basename, id);
+        }
         resrc->digest = NULL;
         if (sig)
             resrc->digest = xstrdup (sig);
@@ -477,6 +496,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
     if (new_resrc) {
         new_resrc->type = xstrdup (resrc->type);
         new_resrc->path = xstrdup (resrc->path);
+        new_resrc->basename = xstrdup (resrc->basename);
         new_resrc->name = xstrdup (resrc->name);
         if (resrc->digest)
             new_resrc->digest = xstrdup (resrc->digest);
@@ -507,6 +527,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->type);
         if (resrc->path)
             free (resrc->path);
+        if (resrc->basename)
+            free (resrc->basename);
         if (resrc->name)
             free (resrc->name);
         if (resrc->digest)
@@ -531,6 +553,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     JSON jhierarchyo = NULL; /* json hierarchy object */
     JSON jpropso = NULL; /* json properties object */
     JSON jtagso = NULL;  /* json tags object */
+    const char *basename = NULL;
     const char *name = NULL;
     const char *path = NULL;
     const char *tmp = NULL;
@@ -545,9 +568,10 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
     if (!Jget_str (o, "type", &type))
         goto ret;
+    Jget_str (o, "basename", &basename);
     Jget_str (o, "name", &name);
     if (!(Jget_int64 (o, "id", &id)))
-        id = 0;
+        id = -1;
     if (Jget_str (o, "uuid", &tmp))
         uuid_parse (tmp, uuid);
     else
@@ -559,7 +583,8 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             Jget_str (jhierarchyo, "default", &path);
     }
 
-    resrc = resrc_new_resource (type, path, name, NULL, id, uuid, size);
+    resrc = resrc_new_resource (type, path, basename, name, NULL, id, uuid,
+                                size);
     if (resrc) {
         /*
          * Are we constructing the resource's physical tree?  If
@@ -680,11 +705,12 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
                                           const char *sig)
 {
     const char *hwloc_name = NULL;
+    char *basename = NULL;
     char *name = NULL;
     char *path = NULL;
     char *signature = NULL;
     char *type = NULL;
-    int64_t id = 0;
+    int64_t id;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     size_t size = 1;
@@ -749,7 +775,8 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
     else
         path = xasprintf ("/%s", name);
 
-    resrc = resrc_new_resource (type, path, name, signature, id, uuid, size);
+    resrc = resrc_new_resource (type, path, basename, name, signature, id, uuid,
+                                size);
     if (resrc) {
         if (parent)
             parent_tree = parent->phys_tree;
@@ -765,7 +792,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
             size = obj->memory.local_memory / 1024;
             uuid_generate (uuid);
             mem_resrc = resrc_new_resource ("memory", mempath, "memory",
-                                            signature, 0, uuid, size);
+                                            "memory0", signature, 0, uuid, size);
             mem_resrc->phys_tree = resrc_tree_new (resrc->phys_tree, mem_resrc);
             free (mempath);
         }
@@ -782,6 +809,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
         }
     }
 ret:
+    free (basename);
     free (name);
     free (path);
     free (signature);
@@ -892,6 +920,7 @@ int resrc_to_json (JSON o, resrc_t *resrc)
     if (resrc) {
         Jadd_str (o, "type", resrc_type (resrc));
         Jadd_str (o, "path", resrc_path (resrc));
+        Jadd_str (o, "basename", resrc_basename (resrc));
         Jadd_str (o, "name", resrc_name (resrc));
         Jadd_int64 (o, "id", resrc_id (resrc));
         uuid_unparse (resrc->uuid, uuid);
@@ -918,12 +947,12 @@ char *resrc_to_string (resrc_t *resrc)
         return NULL;
 
     uuid_unparse (resrc->uuid, uuid);
-    fprintf (ss, "resrc type: %s, path: %s, name: %s, digest: %s, "
-            "id: %"PRId64", state: %s, "
-            "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
-            resrc->type, resrc->path, resrc->name, resrc->digest,
-            resrc->id, resrc_state (resrc),
-            uuid, resrc->size, resrc->available);
+    fprintf (ss, "resrc type: %s, path: %s, basename: %s, name: %s, digest: %s, "
+             "id: %"PRId64", state: %s, "
+             "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
+             resrc->type, resrc->path, resrc->basename, resrc->name,
+             resrc->digest, resrc->id, resrc_state (resrc),
+             uuid, resrc->size, resrc->available);
     if (zhash_size (resrc->properties)) {
         fprintf (ss, ", properties:");
         property = zhash_first (resrc->properties);
@@ -978,7 +1007,8 @@ resrc_t *resrc_create_cluster (char *cluster)
     char *path = xasprintf ("/%s", cluster);
 
     uuid_generate (uuid);
-    resrc = resrc_new_resource ("cluster", path, cluster, NULL, 0, uuid, 1);
+    resrc = resrc_new_resource ("cluster", path, cluster, cluster, NULL, -1,
+                                uuid, 1);
     resrc->phys_tree = resrc_tree_new (NULL, resrc);
     free (path);
     return resrc;

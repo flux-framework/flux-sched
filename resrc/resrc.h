@@ -36,6 +36,11 @@ char *resrc_type (resrc_t *resrc);
 char *resrc_path (resrc_t *resrc);
 
 /*
+ * Return the basename of the resouce
+ */
+char *resrc_basename (resrc_t *resrc);
+
+/*
  * Return the name of the resouce
  */
 char *resrc_name (resrc_t *resrc);
@@ -88,8 +93,9 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
  * Create a new resource object
  */
 resrc_t *resrc_new_resource (const char *type, const char *path,
-                             const char *name, const char *sig,
-                             int64_t id, uuid_t uuid, size_t size);
+                             const char *basename, const char *name,
+                             const char *sig, int64_t id, uuid_t uuid,
+                             size_t size);
 
 /*
  * Create a copy of a resource object

@@ -26,18 +26,21 @@ uses "Socket"
 
 Node = Resource:subclass ('Node')
 function Node:initialize (arg)
-    local basename = arg.name or arg.basename
-    assert (basename, "Required Node arg `name' missing")
+    local basename = arg.basename
+    assert (basename, "Required Node arg `basename' missing")
 
     local id = arg.id
     assert (arg.sockets, "Required Node arg `sockets' missing")
     assert (type (arg.sockets) == "table",
             "Node argument sockets must be a table of core ids")
 
+    local name = arg.name or string.format ("%s%s", basename, id or "")
+
     Resource.initialize (self,
         { "node",
+          basename = basename,
           id = id,
-          name = basename,
+          name = name,
           properties = arg.properties or {},
           tags = arg.tags or {}
         }

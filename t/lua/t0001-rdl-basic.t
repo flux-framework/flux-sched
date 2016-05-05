@@ -9,7 +9,7 @@ t:say ("Load a very simple RDL Hierarchy:\n")
 
 local rdl, err = RDL.eval ([[
  Hierarchy "default" {
-   Resource{ "foo", name = "bar", id = 0, tags = { "test_tag" } }
+   Resource{ "foo", basename = "bar", id = 0, tags = { "test_tag" } }
  }
 ]])
 

@@ -60,9 +60,8 @@ local function copy_list_from_args (arg, name)
 end
 
 function ResourceData:__tostring()
-    local name = rawget (self, "name") or rawget (self, "type")
-    local id = rawget (self, "id") or ""
-    return string.format ("%s%s", name, id)
+    local name = rawget (self, "name") or error ("Resource name not assigned!")
+    return name
 end
 
 function ResourceData:create (args)
@@ -70,17 +69,20 @@ function ResourceData:create (args)
     -- Type given as { type = <t>, ... } or { <t>, ...}
     local t = args.type or args[1]
 
-    -- Name given as { name = <n>, ... } or { <t>, <n>, ... }
-    local name = args.name or args[2] or t
-
-    -- Type is required, if no resource name, then name = type
+    -- Type is required
     if not t then return nil, "Resource type required" end
+
+    -- Basename given as { basename = <n>, ... } or { <t>, <n>, ... }
+    -- If no resource basename, then basename = type
+    local basename = args.basename or args[2] or t
+    local id = args.id
 
     local R = {
         type = t,
         uuid = args.uuid or require 'RDL.uuid'(),
-        name = name,
-        id = args.id or nil,
+        basename = basename,
+        id = id,
+        name = args.name or string.format ("%s%s", basename, id or ""),
         properties = copy_list_from_args (args, "properties"),
         tags = copy_list_from_args (args, "tags"),
 

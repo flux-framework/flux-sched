@@ -54,7 +54,7 @@ end
 
 function test_rdl()
     local rdl = RDL.eval([[
-Hierarchy "default" { Resource {"node", name="foo", id=0, tags = { "bar" } }}
+Hierarchy "default" { Resource {"node", basename="foo", id=0, tags = { "bar" } }}
 ]])
     assert_not_nil (rdl)
     assert_true (is_table (rdl))
@@ -102,7 +102,7 @@ function test_children()
     local rdl = RDL.eval([[
 uses "Socket"
 Hierarchy "default" {
-  Resource {"node", name="foo", id=0,
+  Resource {"node", basename="foo", id=0,
    children = {
       Socket { id=0, cpus="0-3" },
       Socket { id=1, cpus="4-7" }
@@ -191,7 +191,7 @@ function test_copy ()
     local rdl = RDL.eval([[
 uses "Socket"
 Hierarchy "default" {
-  Resource {"node", name="foo", id=0,
+  Resource {"node", basename="foo", id=0,
    children = {
       Socket { id=0, cpus="0-3" },
       Socket { id=1, cpus="4-7" }
@@ -352,7 +352,7 @@ Hierarchy "default" {
     Resource{
         "foo",
         children = { ListOf{ Node, ids="0-10",
-                             args = { name="bar",
+                             args = { basename="bar",
                                       sockets = { "0-7", "8-16"}
                                     }
                            }
@@ -448,7 +448,7 @@ Hierarchy "default" {
     Resource{
         "foo",
         children = { ListOf{ Node, ids="0-10",
-                             args = { name="bar",
+                             args = { basename="bar",
                                       sockets = { "0-7", "8-16"}
                                     }
                            }
@@ -494,11 +494,11 @@ function test_conf()
     local rdl = assert (RDL.eval ([[
 uses "Node"
 Hierarchy "default" {
-    Resource{ "foo", children = { Node{ name="bar", id=0, sockets={ "0-1" }}}}
+    Resource{ "foo", children = { Node{ basename="bar", id=0, sockets={ "0-1" }}}}
 }
 
 Hierarchy "default:/foo" {
-    Node{ name="bar", id=1, sockets={ "0-1" }}
+    Node{ basename="bar", id=1, sockets={ "0-1" }}
 }
 Hierarchy "default:/foo/bar0" { Resource{ "gpu", id=0 } }
 ]]))
@@ -513,7 +513,7 @@ function test_pool ()
 uses "Node"
 Hierarchy "default" {
     Resource{ "foo",
-        children = { Node{ name="bar", id=0, sockets={ "0-1", "2-3" } } }
+        children = { Node{ basename="bar", id=0, sockets={ "0-1", "2-3" } } }
     }
 }
 Hierarchy "default:/foo/bar0/socket0" { Resource{ "memory", count = 1024}}
@@ -551,7 +551,7 @@ Hierarchy "default:/foo/bar0/socket1" { Resource{ "memory", count = 1024}}
     -- Now ensure this socket is not found with rdl_find("available")
     r:alloc()
     assert (r.available == 0)
-    
+
     local rdl2 = assert (rdl:find{ available=true })
     assert (nil == rdl2:resource ("default:/foo/bar0/socket0"))
     r:free()

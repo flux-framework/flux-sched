@@ -235,7 +235,7 @@ end
 function MemStore:resource_name (id)
     local r = self:get (id)
     if not r then return nil end
-    return r.name .. (r.id or "")
+    return r.name
 end
 
 function MemStore:ids ()
@@ -1016,7 +1016,10 @@ local function resource_proxy_create (store, res)
         if index == "name" then
             return store:resource_name (res.id)
         elseif index == "basename" then
-            return resource.name or resource.type
+            return resource.basename or resource.type
+        elseif index == "name" then
+            return resource.name or string.format ("%s%s", resource.basename,
+             resource.id or "")
         elseif index == "tags" then
             return deepcopy_no_metatable (resource.tags)
         elseif index == "type" then
