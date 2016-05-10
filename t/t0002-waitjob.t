@@ -14,7 +14,7 @@ test_under_flux 4
 
 test_expect_success  'waitjob: works when the job has not started' '
     adjust_session_info 1 &&
-    flux module load sched rdl-conf=${RDL_CONF_DEFAULT} &&
+    flux module load sched &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
     timed_sync_wait_job 5

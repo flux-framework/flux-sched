@@ -31,7 +31,7 @@ $tr8"
 
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
     adjust_session_info 1 && 
-    flux module load sched rdl-conf=${RDL_CONF_DEFAULT} &&
+    flux module load sched &&
     p=$(timed_run_flux_jstat output) &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&

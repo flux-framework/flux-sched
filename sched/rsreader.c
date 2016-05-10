@@ -196,10 +196,11 @@ done:
     return rc;
 }
 
-int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc)
+int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc, char **err_str)
 {
     int rc = -1;
     size_t ncnt = 0;
+    char *e_str = NULL;
     resrc_tree_t *rt = NULL;
     int nsocks = 0, ncs = 0;
     const char *digest = NULL;
@@ -216,12 +217,19 @@ int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc)
          */
         digest = rs2rank_tab_eq_by_count (machs, resrc_name (resrc_tree_resrc (rt)),
                                           nsocks, ncs);
-        if (!digest)
+        if (!digest) {
+            e_str = xasprintf ("%s: Can't find a matching resrc for <%s,%d,%d>",
+                __FUNCTION__, resrc_name (resrc_tree_resrc (rt)), nsocks, ncs);
             goto done;
+        }
         resrc_set_digest (resrc_tree_resrc (rt), xasprintf ("%s", digest));
     }
     rc = 0;
 done:
+    if (err_str)
+        *err_str = e_str;
+    else
+        free (e_str);
     return rc;
 }
 

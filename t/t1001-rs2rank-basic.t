@@ -75,17 +75,6 @@ test_expect_success 'rs2rank: each manages a node exclusively' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
-test_expect_success 'rs2rank: works with a matched RDL' '
-    adjust_session_info 4 &&
-    flux module remove sched &&
-    flux hwloc reload ${excl_4N4B} &&
-    flux module load sched rdl-conf=${excl_4N4B_m_RDL} sched-once=true &&
-    timed_wait_job 5 &&
-    submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
-    timed_sync_wait_job 10 &&
-    verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
-'
-
 test_expect_success 'rs2rank: works with an inconsistent RDL (fewer cores)' '
     adjust_session_info 4 &&
     flux module remove sched &&
@@ -102,6 +91,17 @@ test_expect_success 'rs2rank: works with an inconsistent RDL (fewer nodes)' '
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
     flux module load sched rdl-conf=${excl_4N4B_um_RDL2} sched-once=true &&
+    timed_wait_job 5 &&
+    submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
+    timed_sync_wait_job 10 &&
+    verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
+'
+
+test_expect_success 'rs2rank: works with a matched RDL' '
+    adjust_session_info 4 &&
+    flux module remove sched &&
+    flux hwloc reload ${excl_4N4B} &&
+    flux module load sched rdl-conf=${excl_4N4B_m_RDL} sched-once=true fail-on-error=true &&
     timed_wait_job 5 &&
     submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
     timed_sync_wait_job 10 &&

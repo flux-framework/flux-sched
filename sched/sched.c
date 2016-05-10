@@ -101,6 +101,7 @@ typedef struct {
     char         *userplugin;
     bool          sim;
     bool          schedonce;          /* Use resources only once */
+    bool          fail_on_error;      /* Fail immediately on error */
     int           verbosity;
     rsreader_t    r_mode;
 } ssrvarg_t;
@@ -131,6 +132,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->userplugin = NULL;
     arg->sim = false;
     arg->schedonce = false;
+    arg->fail_on_error = false;
     arg->verbosity = 0;
 }
 
@@ -148,6 +150,7 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
 {
     int i = 0, rc = 0;
     char *schedonce = NULL;
+    char *immediate = NULL;
     char *vlevel= NULL;
     char *sim = NULL;
     for (i = 0; i < argc; i++) {
@@ -155,6 +158,9 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             a->path = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("sched-once=", argv[i], sizeof ("sched-once"))) {
             schedonce = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("fail-on-error=", argv[i],
+                    sizeof ("fail-on-error"))) {
+            immediate = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("verbosity=", argv[i], sizeof ("verbosity"))) {
             vlevel = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
@@ -180,6 +186,10 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     if (schedonce && !strncmp (schedonce, "true", sizeof ("true"))) {
         a->schedonce = true;
         free (schedonce);
+    }
+    if (immediate && !strncmp (immediate, "true", sizeof ("true"))) {
+        a->fail_on_error = true;
+        free (immediate);
     }
     if (vlevel) {
          a->verbosity = strtol(vlevel, (char **)NULL, 10);
@@ -488,6 +498,7 @@ static void dump_resrc_state (flux_t h, resrc_tree_t *rt)
 static int load_resources (ssrvctx_t *ctx)
 {
     int rc = -1;
+    char *e_str = NULL;
     char *turi = NULL;
     resrc_t *tres = NULL;
     char *path = ctx->arg.path;
@@ -526,8 +537,14 @@ static int load_resources (ssrvctx_t *ctx)
             flux_log (ctx->h, LOG_INFO, "resrc state after resrc read");
             dump_resrc_state (ctx->h, resrc_phys_tree (tres));
         }
-        if (rsreader_link2rank (ctx->machs, tres) != 0) {
-            flux_log (ctx->h, LOG_ERR, "RDL(%s) inconsistent w/ hwloc!", path);
+        if (rsreader_link2rank (ctx->machs, tres, &e_str) != 0) {
+            flux_log (ctx->h, LOG_INFO, "RDL(%s) inconsistent w/ hwloc!", path);
+            if (e_str) {
+                flux_log (ctx->h, LOG_INFO, "%s", e_str);
+                free (e_str);
+            }
+            if (ctx->arg.fail_on_error)
+                goto done;
             flux_log (ctx->h, LOG_INFO, "rebuild resrc using hwloc");
             if (turi)
                 free (turi);
