@@ -215,7 +215,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
     // Then craft a "job.create" from the job_t and wait for jobid in response
     job = zlist_pop (jobs);
     if (job == NULL) {
-        flux_log (h, LOG_ERR, "no more jobs to submit");
+        flux_log (h, LOG_DEBUG, "no more jobs to submit");
         return -1;
     }
     req_json = Jnew ();
