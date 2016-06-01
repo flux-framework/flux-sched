@@ -862,6 +862,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
             obj_ptr = xasprintf ("%p", obj);
             zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
             /* do not call the zhash_freefn() for the *resrc */
+            free (obj_ptr);
         } else {
             str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
                              __FUNCTION__);
@@ -890,6 +891,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
                 obj_ptr = xasprintf ("%p", obj);
                 zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
                 /* do not call the zhash_freefn() for the *resrc */
+                free (obj_ptr);
             } else {
                 str = xasprintf ("%s: Failed to create resrc from hwloc depth "
                                  "%u", __FUNCTION__, depth);
