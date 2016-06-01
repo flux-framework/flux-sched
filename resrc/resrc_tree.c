@@ -150,24 +150,15 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
 
 int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
 {
-    JSON co = Jnew ();
     int rc = -1;
 
     if (o && resrc_tree) {
-        rc = resrc_to_json (co, resrc_tree->resrc);
-        json_object_array_add (o, co);
-        if (!rc) {
-            if (resrc_tree_num_children (resrc_tree)) {
-                JSON ja = Jnew_ar ();
-                resrc_tree_t *child;
+        rc = resrc_to_json (o, resrc_tree->resrc);
+        if (!rc && resrc_tree_num_children (resrc_tree)) {
+            JSON ja = Jnew_ar ();
 
-                json_object_object_add (co, "children", ja);
-                child = resrc_tree_list_first (resrc_tree->children);
-                while (!rc && child) {
-                    rc = resrc_tree_serialize (ja, child);
-                    child = resrc_tree_list_next (resrc_tree->children);
-                }
-            }
+            if (!(rc = resrc_tree_list_serialize (ja, resrc_tree->children)))
+                json_object_object_add (o, "children", ja);
         }
     }
     return rc;
@@ -336,8 +327,11 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (rt) {
-            if ((rc = resrc_tree_serialize (o, rt)))
+            JSON co = Jnew ();
+
+            if ((rc = resrc_tree_serialize (co, rt)))
                 break;
+            json_object_array_add (o, co);
             rt = resrc_tree_list_next (rtl);
         }
     }

@@ -134,7 +134,7 @@ void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list);
 void resrc_tree_list_destroy (resrc_tree_list_t *rtl, bool destroy_resrc);
 
 /*
- * Add the input list of resource trees to the json object
+ * Add the input list of resource trees to the json array object
  */
 int resrc_tree_list_serialize (json_object *o, resrc_tree_list_t *rtl);
 
