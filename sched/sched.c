@@ -211,7 +211,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->c_queue));
     rs2rank_tab_destroy (ctx->machs);
     ssrvarg_free (&(ctx->arg));
-    resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
+    resrc_resource_destroy (ctx->rctx.root_resrc);
     free (ctx->rctx.root_uri);
     free (ctx->sctx.sim_state);
     if (ctx->sctx.res_queue)
@@ -549,7 +549,7 @@ static int load_resources (ssrvctx_t *ctx)
             if (turi)
                 free (turi);
             if (tres)
-                resrc_tree_destroy (resrc_phys_tree (tres), true);
+                resrc_resource_destroy (tres);
             r_mode = RSREADER_HWLOC;
             /* deliberate fall-through to RSREADER_HWLOC! */
         } else {

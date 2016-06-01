@@ -43,11 +43,6 @@ resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc);
 resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree);
 
 /*
- * Free a resrc_tree_t object
- */
-void resrc_tree_free (resrc_tree_t *resrc_tree, bool destroy_resrc);
-
-/*
  * Destroy an entire tree of resrc_tree_t objects
  */
 void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc);

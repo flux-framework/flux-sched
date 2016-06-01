@@ -533,9 +533,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->name);
         if (resrc->digest)
             free (resrc->digest);
-        /* Don't worry about freeing resrc->phys_tree.  It will be
-         * freed by resrc_tree_free()
-         */
+        if (resrc->phys_tree)
+            resrc_tree_destroy (resrc->phys_tree, false);
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);

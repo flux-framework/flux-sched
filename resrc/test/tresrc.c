@@ -406,7 +406,6 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     resrc_reqst_destroy (resrc_reqst);
     resrc_tree_list_destroy (deserialized_trees, true);
     resrc_tree_list_destroy (found_trees, false);
-    resrc_tree_destroy (resrc_tree, true);
     printf ("        destroy took: %lf\n", ((double)get_time ())/1000000);
 ret:
     return rc;
@@ -439,8 +438,10 @@ int main (int argc, char *argv[])
         resrc = resrc_generate_rdl_resources (filename, "default");
         ok ((resrc != NULL), "resource generation from config file took: %lf",
             ((double)get_time())/1000000);
-        if (resrc)
+        if (resrc) {
             rc1 = test_a_resrc (resrc, true);
+            resrc_resource_destroy (resrc);
+        }
     }
 
     init_time();
@@ -454,8 +455,10 @@ int main (int argc, char *argv[])
         "resource generation from hwloc took: %lf",
         ((double)get_time())/1000000);
     hwloc_topology_destroy (topology);
-    if (resrc)
+    if (resrc) {
         rc2 = test_a_resrc (resrc, false);
+        resrc_resource_destroy (resrc);
+    }
 
     done_testing ();
     return (rc1 | rc2);
