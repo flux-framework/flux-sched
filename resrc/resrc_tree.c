@@ -206,13 +206,9 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
     if (resrc_tree) {
         rc = resrc_allocate_resource (resrc_tree->resrc, job_id,
                                       starttime, endtime);
-        if (resrc_tree_num_children (resrc_tree)) {
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (!rc && child) {
-                rc = resrc_tree_allocate (child, job_id, starttime, endtime);
-                child = resrc_tree_list_next (resrc_tree->children);
-            }
-        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_allocate (resrc_tree->children, job_id,
+                                           starttime, endtime);
     }
     return rc;
 }
@@ -224,13 +220,9 @@ int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
     if (resrc_tree) {
         rc = resrc_reserve_resource (resrc_tree->resrc, job_id,
                                      starttime, endtime);
-        if (resrc_tree_num_children (resrc_tree)) {
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (!rc && child) {
-                rc = resrc_tree_reserve (child, job_id, starttime, endtime);
-                child = resrc_tree_list_next (resrc_tree->children);
-            }
-        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_reserve (resrc_tree->children, job_id,
+                                          starttime, endtime);
     }
     return rc;
 }
@@ -240,13 +232,8 @@ int resrc_tree_release (resrc_tree_t *resrc_tree, int64_t job_id)
     int rc = -1;
     if (resrc_tree) {
         rc = resrc_release_allocation (resrc_tree->resrc, job_id);
-        if (resrc_tree_num_children (resrc_tree)) {
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (!rc && child) {
-                rc = resrc_tree_release (child, job_id);
-                child = resrc_tree_list_next (resrc_tree->children);
-            }
-        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_release (resrc_tree->children, job_id);
     }
     return rc;
 }
@@ -256,13 +243,8 @@ int resrc_tree_release_all_reservations (resrc_tree_t *resrc_tree)
     int rc = -1;
     if (resrc_tree) {
         rc = resrc_release_all_reservations (resrc_tree->resrc);
-        if (resrc_tree_num_children (resrc_tree)) {
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (!rc && child) {
-                rc = resrc_tree_release_all_reservations (child);
-                child = resrc_tree_list_next (resrc_tree->children);
-            }
-        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_release_all_reservations (resrc_tree->children);
     }
     return rc;
 }
@@ -271,13 +253,8 @@ void resrc_tree_unstage_resources (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree) {
         resrc_stage_resrc (resrc_tree->resrc, 0);
-        if (resrc_tree_num_children (resrc_tree)) {
-            resrc_tree_t *child = resrc_tree_list_first (resrc_tree->children);
-            while (child) {
-                resrc_tree_unstage_resources (child);
-                child = resrc_tree_list_next (resrc_tree->children);
-            }
-        }
+        if (resrc_tree_num_children (resrc_tree))
+            resrc_tree_list_unstage_resources (resrc_tree->children);
     }
 }
 
