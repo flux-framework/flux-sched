@@ -533,9 +533,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->name);
         if (resrc->digest)
             free (resrc->digest);
-        /* Don't worry about freeing resrc->phys_tree.  It will be
-         * freed by resrc_tree_free()
-         */
+        if (resrc->phys_tree)
+            resrc_tree_destroy (resrc->phys_tree, false);
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
@@ -862,6 +861,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
             obj_ptr = xasprintf ("%p", obj);
             zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
             /* do not call the zhash_freefn() for the *resrc */
+            free (obj_ptr);
         } else {
             str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
                              __FUNCTION__);
@@ -890,6 +890,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
                 obj_ptr = xasprintf ("%p", obj);
                 zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
                 /* do not call the zhash_freefn() for the *resrc */
+                free (obj_ptr);
             } else {
                 str = xasprintf ("%s: Failed to create resrc from hwloc depth "
                                  "%u", __FUNCTION__, depth);
