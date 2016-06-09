@@ -7,25 +7,7 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 CONF = $(top_srcdir)/conf/hype.lua
 JOBDATA=job_data/hype.csv
 
-TESTS = tsched_lib
-
-TESTS_ENVIRONMENT = \
-    TESTSIM_INPUT_FILE="$(abs_top_srcdir)/conf/hype-io.lua" \
-    LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    LUA_CPATH="$(abs_top_builddir)/rdl/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
-
-check_PROGRAMS = $(TESTS)
-tsched_lib_SOURCES = test/tsched_lib.c scheduler.c
-tsched_lib_CFLAGS = $(AM_CFLAGS) $(FLUX_CORE_CFLAGS) -I$(top_srcdir) \
-    -I$(top_srcdir)/rdl
-tsched_lib_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
-    $(top_builddir)/simulator/libflux-sim.la \
-    $(top_builddir)/src/common/libtap/libtap.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
-    $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-
 noinst_LTLIBRARIES = libflux-sim.la \
-    sim_sched_fcfs.la sim_sched_fcfs_aware.la sim_sched_easy.la \
     simsrv.la sim_execsrv.la submitsrv.la
 
 noinst_HEADERS = simulator.h
@@ -55,30 +37,5 @@ submitsrv_la_CFLAGS = $(AM_CFLAGS)
 submitsrv_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 submitsrv_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module -rpath /nowhere
-
-sim_sched_fcfs_la_SOURCES = sim_sched_fcfs.c scheduler.c scheduler.h
-sim_sched_fcfs_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
-sim_sched_fcfs_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
-    $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-sim_sched_fcfs_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
-    -rpath /nowhere
-
-sim_sched_fcfs_aware_la_SOURCES = sim_sched_fcfs_aware.c scheduler.c \
-    scheduler.h
-sim_sched_fcfs_aware_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
-sim_sched_fcfs_aware_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
-    $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-sim_sched_fcfs_aware_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
-    -rpath /nowhere
-
-sim_sched_easy_la_SOURCES = sim_sched_easy.c scheduler.c scheduler.h
-sim_sched_easy_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
-sim_sched_easy_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
-    $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
-    $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
-sim_sched_easy_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module \
-    -rpath /nowhere
 
 EXTRA_DIST = sim_version.map
