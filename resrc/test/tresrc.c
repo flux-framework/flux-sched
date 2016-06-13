@@ -440,7 +440,7 @@ int main (int argc, char *argv[])
             ((double)get_time())/1000000);
         if (resrc) {
             rc1 = test_a_resrc (resrc, true);
-            resrc_resource_destroy (resrc);
+            resrc_tree_destroy (resrc_phys_tree (resrc), true);
         }
     }
 
@@ -457,7 +457,7 @@ int main (int argc, char *argv[])
     hwloc_topology_destroy (topology);
     if (resrc) {
         rc2 = test_a_resrc (resrc, false);
-        resrc_resource_destroy (resrc);
+        resrc_tree_destroy (resrc_phys_tree (resrc), true);
     }
 
     done_testing ();

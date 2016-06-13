@@ -124,11 +124,7 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc)
             resrc_tree->children = NULL;
         }
 
-        /*
-         * Destroying a resource from a tree that is not the physical
-         * tree would corrupt the physical tree.
-         */
-        if (destroy_resrc && (resrc_tree == phys_tree))
+        if (destroy_resrc)
             resrc_resource_destroy (resrc_tree->resrc);
         free (resrc_tree);
     }
