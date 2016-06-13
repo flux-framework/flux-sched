@@ -170,6 +170,29 @@ int resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst)
     return -1;
 }
 
+bool resrc_reqst_all_found (resrc_reqst_t *resrc_reqst)
+{
+    bool all_found = false;
+
+    if (resrc_reqst) {
+        if (resrc_reqst_nfound (resrc_reqst) >=
+            resrc_reqst_reqrd_qty (resrc_reqst))
+            all_found = true;
+
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            resrc_reqst_t *child = resrc_reqst_list_first(resrc_reqst->children);
+            while (child) {
+                if (!resrc_reqst_all_found (child)) {
+                    all_found = false;
+                    break;
+                }
+                child = resrc_reqst_list_next (resrc_reqst->children);
+            }
+        }
+    }
+    return all_found;
+}
+
 size_t resrc_reqst_num_children (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst)

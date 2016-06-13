@@ -71,6 +71,12 @@ int64_t resrc_reqst_add_found (resrc_reqst_t *resrc_reqst, int64_t nfound);
 int resrc_reqst_clear_found (resrc_reqst_t *resrc_reqst);
 
 /*
+ * Return true if the required number of resources were found for the
+ * resource request and all its children
+ */
+bool resrc_reqst_all_found (resrc_reqst_t *resrc_reqst);
+
+/*
  * Return the number of children in the resource request
  */
 size_t resrc_reqst_num_children (resrc_reqst_t *resrc_reqst);
