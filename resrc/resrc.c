@@ -981,7 +981,7 @@ char *resrc_to_string (resrc_t *resrc)
         }
     }
     if (zhash_size (resrc->reservtns)) {
-        fprintf (ss, ", reserved jobs");
+        fprintf (ss, ", reserved");
         size_ptr = zhash_first (resrc->reservtns);
         while (size_ptr) {
             fprintf (ss, ", %s: %"PRIu64"",
