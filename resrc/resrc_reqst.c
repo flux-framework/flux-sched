@@ -268,10 +268,16 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
      */
     Jget_bool (o, "exclusive", &exclusive);
 
+    /*
+     * We use the request's start time to determine whether to request
+     * resources that are available now or in the future.  A zero
+     * starttime conveys a request for resources that are available
+     * now.
+     */
     if (parent)
         starttime = parent->starttime;
     else if (!(Jget_int64 (o, "starttime", &starttime)))
-        starttime = time (NULL);
+        starttime = 0;
 
     if (parent)
         endtime = parent->endtime;
