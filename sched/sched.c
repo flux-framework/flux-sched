@@ -1042,10 +1042,10 @@ static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, resrc_t *r,
         rc = rs2rank_tab_query_by_none (ctx->machs, resrc_digest (r),
                                         false, rank);
     } else {
-        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s\n", resrc_name (r),
+        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s", resrc_name (r),
                                      resrc_digest (r));
-        rc = rs2rank_tab_query_by_sign (ctx->machs, resrc_name (r), resrc_digest (r),
-                                        false, rank);
+        rc = rs2rank_tab_query_by_sign (ctx->machs, resrc_name (r),
+                                        resrc_digest (r), false, rank);
     }
     if (rc == 0)
         flux_log (ctx->h, LOG_INFO, "broker found, rank: %"PRIu32, *rank);
