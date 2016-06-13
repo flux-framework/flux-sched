@@ -281,31 +281,14 @@ ret:
     return resrc_reqst;
 }
 
-void resrc_reqst_free (resrc_reqst_t *resrc_reqst)
-{
-    if (resrc_reqst) {
-        zlist_destroy (&(resrc_reqst->children->list));
-        free (resrc_reqst->children);
-        resrc_reqst->children = NULL;
-        resrc_resource_destroy (resrc_reqst->resrc);
-        free (resrc_reqst);
-    }
-}
-
 void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst) {
         if (resrc_reqst->parent)
             resrc_reqst_list_remove (resrc_reqst->parent->children, resrc_reqst);
-        if (resrc_reqst_num_children (resrc_reqst)) {
-            resrc_reqst_t *child = resrc_reqst_list_first
-                (resrc_reqst->children);
-            while (child) {
-                resrc_reqst_destroy (child);
-                child = resrc_reqst_list_next (resrc_reqst->children);
-            }
-        }
-        resrc_reqst_free (resrc_reqst);
+        resrc_reqst_list_destroy (resrc_reqst->children);
+        resrc_resource_destroy (resrc_reqst->resrc);
+        free (resrc_reqst);
     }
 }
 

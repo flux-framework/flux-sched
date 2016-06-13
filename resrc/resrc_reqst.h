@@ -98,11 +98,6 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
 resrc_reqst_t *resrc_reqst_from_json (json_object *o, resrc_reqst_t *parent);
 
 /*
- * Free a resrc_reqst_t object
- */
-void resrc_reqst_free (resrc_reqst_t *resrc_reqst);
-
-/*
  * Destroy a resrc_reqst_t object
  */
 void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst);
