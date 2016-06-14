@@ -90,44 +90,43 @@ static inline void create_req4allcores (JSON reqobj)
     Jadd_int (reqobj, "req_qty", 1);
 }
 
-static int find_all_nodes (resrc_tree_t *root,
-                           resrc_tree_list_t **ot, size_t *size)
+static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
 {
     JSON reqobj = NULL;
+    int64_t size = 0;
     resrc_reqst_t *req = NULL;
 
     reqobj = Jnew ();
     create_req4allnodes (reqobj);
     req = resrc_reqst_from_json (reqobj, NULL);
-    *ot = resrc_tree_list_new ();
-    *size = resrc_tree_search (resrc_tree_children (root), req, *ot, false);
+    size = resrc_tree_search (root, req, ot, false);
     resrc_reqst_destroy (req);
     Jput (reqobj);
 
-    return (*size > 0) ? 0 : -1;
+    return (size > 0) ? 0 : -1;
 }
 
-static int find_all_sockets_cores (resrc_tree_t *node, int *nsocks, int *ncs)
+static int find_all_sockets_cores (resrc_t *node, int *nsocks, int *ncs)
 {
     JSON reqobj= NULL;
     resrc_reqst_t *req = NULL;
-    resrc_tree_list_t *st = NULL;
-    resrc_tree_list_t *ct = NULL;
+    resrc_tree_t *st = NULL;
+    resrc_tree_t *ct = NULL;
 
     reqobj = Jnew ();
     create_req4allsocks (reqobj);
     req = resrc_reqst_from_json (reqobj, NULL);
-    st = resrc_tree_list_new ();
-    *nsocks = resrc_tree_search (resrc_tree_children (node), req, st, false);
+    *nsocks = resrc_tree_search (node, req, &st, false);
     resrc_reqst_destroy (req);
+    resrc_tree_destroy (st, false);
     Jput (reqobj);
 
     reqobj = Jnew ();
     create_req4allcores (reqobj);
     req = resrc_reqst_from_json (reqobj, NULL);
-    ct = resrc_tree_list_new ();
-    *ncs = resrc_tree_search (resrc_tree_children (node), req, ct, false);
+    *ncs = resrc_tree_search (node, req, &ct, false);
     resrc_reqst_destroy (req);
+    resrc_tree_destroy (ct, false);
     Jput (reqobj);
 
     return (*nsocks > 0 && *ncs > 0) ? 0 : -1;
@@ -196,60 +195,115 @@ done:
     return rc;
 }
 
-int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc, char **err_str)
+static int rsreader_set_granular_digest (machs_t *machs, resrc_tree_t *rt,
+                                   char **err_str)
 {
-    int rc = -1;
-    size_t ncnt = 0;
     char *e_str = NULL;
-    resrc_tree_t *rt = NULL;
-    int nsocks = 0, ncs = 0;
     const char *digest = NULL;
-    resrc_tree_list_t *nl = NULL; /* node list */
+    int nsocks = 0, ncs = 0;
+    int rc = -1;
+    resrc_t *r = NULL;
 
-    if (find_all_nodes (resrc_phys_tree (r_resrc), &nl, &ncnt) != 0)
-        goto done;
-    for (rt = resrc_tree_list_first (nl); rt; rt = resrc_tree_list_next (nl)) {
-        if (find_all_sockets_cores (rt, &nsocks, &ncs) != 0)
-            goto done;
-        /* matches based on the hostname, number of sockets and cores
-         * this linking isn't used by hwloc reader so count-based matching
-         * is okay
-         */
-        digest = rs2rank_tab_eq_by_count (machs, resrc_name (resrc_tree_resrc (rt)),
-                                          nsocks, ncs);
-        if (!digest) {
-            e_str = xasprintf ("%s: Can't find a matching resrc for <%s,%d,%d>",
-                __FUNCTION__, resrc_name (resrc_tree_resrc (rt)), nsocks, ncs);
-            goto done;
+    if (rt) {
+        r = resrc_tree_resrc (rt);
+        if (strcmp (resrc_type (r), "node")) {
+            if (resrc_tree_num_children (rt)) {
+                resrc_tree_list_t *children = resrc_tree_children (rt);
+                if (children) {
+                    resrc_tree_t *child = resrc_tree_list_first (children);
+
+                    while (child) {
+                        rc = rsreader_set_granular_digest (machs, child, err_str);
+                        if (rc)
+                            break;
+                        child = resrc_tree_list_next (children);
+                    }
+                }
+            }
+        } else if (!find_all_sockets_cores (r, &nsocks, &ncs)) {
+            /* matches based on the hostname, number of sockets and
+             * cores.  This linking isn't used by hwloc reader so
+             * count-based matching is okay
+             */
+            digest = rs2rank_tab_eq_by_count(machs, resrc_name (r), nsocks, ncs);
+            if (digest) {
+                (void) resrc_set_digest (r, xasprintf ("%s", digest));
+                rc = 0;
+            } else
+                e_str = xasprintf ("%s: Can't find a matching resrc for "
+                                   "<%s,%d,%d>", __FUNCTION__, resrc_name (r),
+                                   nsocks, ncs);
         }
-        resrc_set_digest (resrc_tree_resrc (rt), xasprintf ("%s", digest));
     }
-    rc = 0;
-done:
+
     if (err_str)
         *err_str = e_str;
     else
         free (e_str);
+
+    return rc;
+}
+
+int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc, char **err_str)
+{
+    int rc = -1;
+    resrc_tree_t *rt = NULL;
+
+    if (!find_all_nodes (r_resrc, &rt))
+        rc = rsreader_set_granular_digest (machs, rt, err_str);
+    if (rt)
+        resrc_tree_destroy (rt, false);
+
+    return rc;
+}
+
+static int rsreader_set_node_digest (machs_t *machs, resrc_tree_t *rt)
+{
+    const char *digest = NULL;
+    int rc = -1;
+    resrc_t *r = NULL;
+
+    if (rt) {
+        r = resrc_tree_resrc (rt);
+        if (strcmp (resrc_type (r), "node")) {
+            if (resrc_tree_num_children (rt)) {
+                resrc_tree_list_t *children = resrc_tree_children (rt);
+                if (children) {
+                    resrc_tree_t *child = resrc_tree_list_first (children);
+
+                    while (child) {
+                        rc = rsreader_set_node_digest (machs, child);
+                        if (rc)
+                            break;
+                        child = resrc_tree_list_next (children);
+                    }
+                }
+            }
+        } else {
+            /* Use the digest from the first resource partition of
+             * the first node in the machine table
+             */
+            digest = rs2rank_tab_eq_by_none (machs);
+            if (digest) {
+                (void) resrc_set_digest (r, xasprintf ("%s", digest));
+                rc = 0;
+            }
+        }
+    }
+
     return rc;
 }
 
 int rsreader_force_link2rank (machs_t *machs, resrc_t *r_resrc)
 {
     int rc = -1;
-    size_t ncnt = 0;
     resrc_tree_t *rt = NULL;
-    const char *digest = NULL;
-    resrc_tree_list_t *nl = NULL; /* node list */
 
-    if (find_all_nodes (resrc_phys_tree (r_resrc), &nl, &ncnt) != 0)
-        goto done;
-    for (rt = resrc_tree_list_first (nl); rt; rt = resrc_tree_list_next (nl)) {
-        if (!(digest = rs2rank_tab_eq_by_none (machs)))
-            goto done;
-        resrc_set_digest (resrc_tree_resrc (rt), xasprintf ("%s", digest));
-    }
-    rc = 0;
-done:
+    if (!find_all_nodes (r_resrc, &rt))
+        rc = rsreader_set_node_digest (machs, rt);
+    if (rt)
+        resrc_tree_destroy (rt, false);
+
     return rc;
 }
 

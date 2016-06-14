@@ -55,7 +55,7 @@ struct resrc_reqst {
 
 static bool match_children (resrc_tree_list_t *r_trees,
                             resrc_reqst_list_t *req_trees,
-                            resrc_tree_t *parent_tree, bool available);
+                            resrc_tree_t *found_parent, bool available);
 
 /***********************************************************************
  * Resource request
@@ -399,81 +399,45 @@ void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
     }
 }
 
-
-static bool match_child (resrc_tree_list_t *r_trees, resrc_reqst_t *resrc_reqst,
-                         resrc_tree_t *parent_tree, bool available)
+/*
+ * cycles through all of the resource children and returns the number of
+ * requested resources found
+ */
+static int64_t match_child (resrc_tree_list_t *r_trees,
+                            resrc_reqst_t *resrc_reqst,
+                            resrc_tree_t *found_parent, bool available)
 {
+    int64_t nfound = 0;
+    resrc_t *resrc = NULL;
     resrc_tree_t *resrc_tree = NULL;
-    resrc_tree_t *child_tree = NULL;
-    bool found = false;
-    bool success = false;
 
     resrc_tree = resrc_tree_list_first (r_trees);
     while (resrc_tree) {
-        found = false;
-        if (resrc_match_resource (resrc_tree_resrc (resrc_tree), resrc_reqst,
-                                  available)) {
-            if (resrc_reqst_num_children (resrc_reqst)) {
-                if (resrc_tree_num_children (resrc_tree)) {
-                    child_tree = resrc_tree_new (parent_tree,
-                                                 resrc_tree_resrc (resrc_tree));
-                    if (match_children (resrc_tree_children (resrc_tree),
-                                        resrc_reqst_children (resrc_reqst),
-                                        child_tree, available)) {
-                        resrc_reqst->nfound++;
-                        found = true;
-                        success = true;
-                    } else {
-                        resrc_tree_destroy (child_tree, false);
-                    }
-                }
-            } else {
-                (void) resrc_tree_new (parent_tree,
-                                       resrc_tree_resrc (resrc_tree));
-                resrc_reqst->nfound++;
-                found = true;
-                success = true;
-            }
-        }
-        /*
-         * The following clause allows the resource request to be
-         * sparsely defined.  E.g., it might only stipulate a node
-         * with 4 cores and omit the intervening socket.
-         */
-        if (!found) {
-            if (resrc_tree_num_children (resrc_tree)) {
-                child_tree = resrc_tree_new (parent_tree,
-                                             resrc_tree_resrc (resrc_tree));
-                if (match_child (resrc_tree_children (resrc_tree), resrc_reqst,
-                                 child_tree, available)) {
-                    success = true;
-                } else {
-                    resrc_tree_destroy (child_tree, false);
-                }
-            }
-        }
+        resrc = resrc_tree_resrc (resrc_tree);
+        nfound += resrc_tree_search (resrc, resrc_reqst, &found_parent,
+                                     available);
         resrc_tree = resrc_tree_list_next (r_trees);
     }
 
-    return success;
+    return nfound;
 }
 
 /*
- * cycles through all of the resource children and returns true if all
+ * cycles through all of the resource requests and returns true if all
  * of the requested children were found
  */
 static bool match_children (resrc_tree_list_t *r_trees,
                             resrc_reqst_list_t *req_trees,
-                            resrc_tree_t *parent_tree, bool available)
+                            resrc_tree_t *found_parent, bool available)
 {
-    resrc_reqst_t *resrc_reqst = resrc_reqst_list_first (req_trees);
     bool found = false;
+    resrc_reqst_t *resrc_reqst = resrc_reqst_list_first (req_trees);
 
     while (resrc_reqst) {
         resrc_reqst->nfound = 0;
         found = false;
 
-        if (match_child (r_trees, resrc_reqst, parent_tree, available)) {
+        if (match_child (r_trees, resrc_reqst, found_parent, available)) {
             if (resrc_reqst->nfound >= resrc_reqst->reqrd_qty)
                 found = true;
         }
@@ -486,45 +450,61 @@ static bool match_children (resrc_tree_list_t *r_trees,
     return found;
 }
 
-/* returns the number of composites found */
-int resrc_tree_search (resrc_tree_list_t *resrcs_in, resrc_reqst_t *resrc_reqst,
-                       resrc_tree_list_t *found_trees, bool available)
+/* returns the number of resource or resource composites found */
+int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
+                           resrc_tree_t **found_tree, bool available)
 {
     int64_t nfound = 0;
+    resrc_tree_list_t *children = NULL;
+    resrc_tree_t *child_tree;
     resrc_tree_t *new_tree = NULL;
-    resrc_tree_t *resrc_tree;
 
-    if (!resrcs_in || !found_trees || !resrc_reqst) {
+    if (!resrc_in || !found_tree || !resrc_reqst) {
         goto ret;
     }
 
-    resrc_tree = resrc_tree_list_first (resrcs_in);
-    while (resrc_tree) {
-        if (resrc_match_resource (resrc_tree_resrc (resrc_tree), resrc_reqst,
-                                  available)) {
-            if (resrc_reqst_num_children (resrc_reqst)) {
-                if (resrc_tree_num_children (resrc_tree)) {
-                    new_tree = resrc_tree_new (NULL,
-                                               resrc_tree_resrc (resrc_tree));
-                    if (match_children (resrc_tree_children (resrc_tree),
-                                        resrc_reqst->children, new_tree,
-                                        available)) {
-                        resrc_tree_list_append (found_trees, new_tree);
-                        nfound++;
-                    } else {
-                        resrc_tree_destroy (new_tree, false);
-                    }
+    if (resrc_match_resource (resrc_in, resrc_reqst, available)) {
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
+                new_tree = resrc_tree_new (*found_tree, resrc_in);
+                children = resrc_tree_children (resrc_phys_tree (resrc_in));
+                if (match_children (children, resrc_reqst->children, new_tree,
+                                    available)) {
+                    nfound = 1;
+                    resrc_reqst->nfound++;
+                } else {
+                    resrc_tree_destroy (new_tree, false);
                 }
-            } else {
-                new_tree = resrc_tree_new (NULL, resrc_tree_resrc (resrc_tree));
-                resrc_tree_list_append (found_trees, new_tree);
-                nfound++;
             }
-        } else if (resrc_tree_num_children (resrc_tree)) {
-            nfound += resrc_tree_search (resrc_tree_children (resrc_tree),
-                                         resrc_reqst, found_trees, available);
+        } else {
+            (void) resrc_tree_new (*found_tree, resrc_in);
+            nfound = 1;
+            resrc_reqst->nfound++;
         }
-        resrc_tree = resrc_tree_list_next (resrcs_in);
+    } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
+        /*
+         * This clause visits the children of the current resource
+         * searching for a match to the resource request.  The found
+         * tree must be extended to include this intermediate
+         * resource.
+         *
+         * This also allows the resource request to be sparsely
+         * defined.  E.g., it might only stipulate a node with 4 cores
+         * and omit the intervening socket.
+         */
+        if (*found_tree)
+            new_tree = resrc_tree_new (*found_tree, resrc_in);
+        else {
+            new_tree = resrc_tree_new (NULL, resrc_in);
+            *found_tree = new_tree;
+        }
+        children = resrc_tree_children (resrc_phys_tree (resrc_in));
+        child_tree = resrc_tree_list_first (children);
+        while (child_tree) {
+            nfound += resrc_tree_search (resrc_tree_resrc (child_tree),
+                                         resrc_reqst, &new_tree, available);
+            child_tree = resrc_tree_list_next (children);
+        }
     }
 ret:
     return nfound;

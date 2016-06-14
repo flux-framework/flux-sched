@@ -153,17 +153,16 @@ void resrc_reqst_list_destroy (resrc_reqst_list_t *rrl);
 
 /*
  * Search a list of resource trees for a specific, composite resource
- * Inputs:  resrc_trees - the list of resource trees to search
- *          found       - running list of keys to previously found resources
- *          sample_tree - the resource tree to search for
+ * Inputs:  resrc_in    - the resource at the head of the tree
+ *          resrc_reqst - the requested resource or resource composite
+ *          found_tree  - the tree that will contain found resources
  *          available   - when true, consider only idle resources
  *                        otherwise find all possible resources matching type
  * Returns: the number of matching resource composites found
- *          found       - any resources found are added to this list
+ *          found_tree  - any resources found are added to this tree
  */
-int resrc_tree_search (resrc_tree_list_t *resrc_trees,
-                       resrc_reqst_t *sample_tree,
-                       resrc_tree_list_t *found_trees, bool available);
+int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
+                           resrc_tree_t **found_tree, bool available);
 
 
 #endif /* !FLUX_RESRC_REQST_H */
