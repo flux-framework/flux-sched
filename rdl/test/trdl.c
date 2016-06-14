@@ -74,16 +74,16 @@ int main (int argc, char *argv[])
     rdllib_set_default_errf (NULL, &perr);
 
     if (!(l = rdllib_open ()))
-        err_exit ("rdllib_open");
+        log_err_exit ("rdllib_open");
 
     if (filename == NULL || *filename == '\0')
         filename = getenv ("TESTRDL_INPUT_FILE");
 
     if (!(rdl1 = rdl_loadfile (l, filename)))
-        err_exit ("loadfile: %s", filename);
+        log_err_exit ("loadfile: %s", filename);
 
     if (!(rdl2 = rdl_copy (rdl1)))
-        err_exit ("copy");
+        log_err_exit ("copy");
 
     r = rdl_resource_get (rdl1, "default");
     if (rdl_resource_set_int (r, "test-tag", 5959) < 0)
@@ -112,7 +112,7 @@ int main (int argc, char *argv[])
     Jadd_int (args, "id", 300);
     rdl2 = rdl_find (rdl1, args);
     if (rdl2 == NULL)
-        err_exit ("rdl_find");
+        log_err_exit ("rdl_find");
     json_object_put (args);
     r = rdl_resource_get (rdl2, "default");
     if (r == NULL)

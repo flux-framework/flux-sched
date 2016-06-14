@@ -387,7 +387,7 @@ static void reply_cb (flux_t h,
     if (handle_next_event (ctx) < 0) {
         flux_log (h, LOG_DEBUG, "No events remaining");
         if (ctx->exit_on_complete) {
-            msg_exit ("exit_on_complete is set. Exiting now.");
+            log_msg_exit ("exit_on_complete is set. Exiting now.");
         } else {
             send_complete_event (h);
         }
