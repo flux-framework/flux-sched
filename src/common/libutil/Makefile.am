@@ -12,4 +12,5 @@ libutil_la_SOURCES = \
 	xzmalloc.h \
 	log.c \
 	log.h \
+	oom.h \
 	shortjson.h

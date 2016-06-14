@@ -246,9 +246,9 @@ int main (int argc, char *argv[])
 
     jobid = strtol (argv[optind], NULL, 10);
     if (jobid <= 0)
-        err_exit ("jobid must be a positive number");
+        log_err_exit ("jobid must be a positive number");
     else if (!(h = flux_open  (NULL, 0)))
-        err_exit ("flux_open");
+        log_err_exit ("flux_open");
 
     ctx = getctx (h);
     if (sfn)
@@ -257,7 +257,7 @@ int main (int argc, char *argv[])
         ctx->complete = cfn;
     ctx->jobid = jobid;
 
-    flux_log_set_facility (h, "waitjob");
+    flux_log_set_appname (h, "waitjob");
     wait_job_complete (h);
 
     flux_close (h);

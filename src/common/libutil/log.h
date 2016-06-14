@@ -5,40 +5,22 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-void log_init (char *p);
+void log_init (char *cmd_name);
 void log_fini (void);
-void log_set_dest (char *dest);
-char *log_get_dest (void);
-void log_msg (const char *fmt, va_list ap);
 
-void err_exit (const char *fmt, ...)
+void log_err_exit (const char *fmt, ...)
         __attribute__ ((format (printf, 1, 2), noreturn));
-void err (const char *fmt, ...)
+void log_err (const char *fmt, ...)
         __attribute__ ((format (printf, 1, 2)));
-void errn_exit (int errnum, const char *fmt, ...)
+void log_errn_exit (int errnum, const char *fmt, ...)
         __attribute__ ((format (printf, 2, 3), noreturn));
-void errn (int errnum, const char *fmt, ...)
+void log_errn (int errnum, const char *fmt, ...)
         __attribute__ ((format (printf, 2, 3)));
-void msg_exit (const char *fmt, ...)
+void log_msg_exit (const char *fmt, ...)
         __attribute__ ((format (printf, 1, 2), noreturn));
-void msg (const char *fmt, ...)
+void log_msg (const char *fmt, ...)
         __attribute__ ((format (printf, 1, 2)));
 
-int check_int (int res,
-               const char *fmt,
-               ...  )
-__attribute__ ((format (printf, 2, 3)));
-void *check_ptr (void *res,
-                 const char *fmt,
-                 ... )
-__attribute__ ((format (printf, 2, 3)));
-
-#define oom() do { \
-  errn_exit (ENOMEM, "%s::%s(), line %d", __FILE__, __FUNCTION__, __LINE__); \
-} while (0)
-
-const char *log_leveltostr (int level);
-int log_strtolevel (const char *s);
 
 #endif /* !_UTIL_LOG_H */
 
