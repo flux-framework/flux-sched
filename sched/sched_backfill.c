@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <argz.h>
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
@@ -41,8 +42,8 @@
 #include "resrc_reqst.h"
 #include "scheduler.h"
 
-#define EASY_BACKFILL 1
 
+static bool easy_backfill = false;
 static bool first_time_backfill = true;
 static zlist_t *completion_times = NULL;
 
@@ -308,7 +309,7 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
     resrc_tree_list_t *selected_trees = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    if (EASY_BACKFILL && !first_time_backfill) {
+    if (easy_backfill && !first_time_backfill) {
         goto ret;
     } else if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
@@ -358,6 +359,35 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
         resrc_tree_list_destroy (found_trees, false);
     }
 ret:
+    return rc;
+}
+
+int process_args (flux_t h, char *argz, size_t argz_len)
+{
+    int rc = 0;
+    char *easy_backfill_str = NULL;
+    char *entry = NULL;
+
+    for (entry = argz;
+         entry;
+         entry = argz_next (argz, argz_len, entry)) {
+
+        if (!strncmp ("easy-backfill=", entry, sizeof ("easy-backfill"))) {
+            easy_backfill_str = entry;
+        } else {
+            rc = -1;
+            errno = EINVAL;
+            goto done;
+        }
+    }
+
+    if (easy_backfill_str) {
+        easy_backfill = !strncmp (easy_backfill_str, "true", sizeof ("true"));
+    } else {
+        easy_backfill = false;
+    }
+
+ done:
     return rc;
 }
 

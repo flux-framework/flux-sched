@@ -87,6 +87,11 @@ static struct sched_plugin *plugin_create (flux_t h, void *dso)
         flux_log (h, LOG_ERR, "can't load reserve_resources: %s", dlerror ());
         goto error;
     }
+    plugin->process_args = dlsym (dso, "process_args");
+    if (!plugin->process_args || !*plugin->process_args) {
+        flux_log (h, LOG_ERR, "can't load process_args: %s", dlerror ());
+        goto error;
+    }
     plugin->dso = dso;
     return plugin;
 error:
@@ -213,7 +218,12 @@ static void insmod_cb (flux_t h, flux_msg_handler_t *w,
     }
     if (sched_plugin_load (sploader, path) < 0)
         goto done;
+
+    if (sploader->plugin->process_args (sploader->h, argz, argz_len) < 0) {
+        goto done;
+    }
     rc = 0;
+
 done:
     if (flux_respond (h, msg, rc < 0 ? errno : 0, NULL) < 0)
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);

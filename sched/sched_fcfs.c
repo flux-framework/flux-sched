@@ -283,6 +283,11 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
 }
 
 
+int process_args (flux_t h, char *argz, size_t argz_len)
+{
+    return 0;
+}
+
 MOD_NAME ("sched.fcfs");
 
 

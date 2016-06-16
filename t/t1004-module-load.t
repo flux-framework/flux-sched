@@ -51,8 +51,23 @@ test_expect_success 'module-load: sched unloads the fcfs plugin' '
     flux module list sched
 '
 
-test_expect_success 'module-load: sched loads the bacfill plugin' '
-    flux module load sched.backfill sched-once=true &&
+test_expect_success 'module-load: sched loads the backfill plugin' '
+    flux module load sched.backfill &&
+    flux module list sched
+'
+
+test_expect_success 'module-load: sched unloads the backfill plugin' '
+    flux module remove sched.backfill &&
+    flux module list sched
+'
+
+test_expect_success 'module-load: sched loads the backfill plugin with an argument meant for sched' '
+    test_must_fail flux module load sched.backfill sched-once=true &&
+    flux module remove sched.backfill
+'
+
+test_expect_success 'module-load: sched loads the backfill plugin with arguments' '
+    flux module load sched.backfill easy-backfill=true &&
     flux module list sched
 '
 
