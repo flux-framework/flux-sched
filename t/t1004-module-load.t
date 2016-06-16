@@ -67,7 +67,7 @@ test_expect_success 'module-load: sched loads the backfill plugin with an argume
 '
 
 test_expect_success 'module-load: sched loads the backfill plugin with arguments' '
-    flux module load sched.backfill easy-backfill=true &&
+    flux module load sched.backfill reserve-depth=-1 &&
     flux module list sched
 '
 
