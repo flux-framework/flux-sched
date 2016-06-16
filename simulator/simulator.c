@@ -54,8 +54,6 @@ void free_simstate (sim_state_t *sim_state)
             zhash_destroy (&(sim_state->timers));
         }
         free (sim_state);
-    } else {
-        fprintf (stderr, "free_simstate called on a NULL pointer\n");
     }
 }
 
@@ -124,7 +122,6 @@ void free_job (job_t *job)
     free (job->user);
     free (job->jobname);
     free (job->account);
-    kvsdir_destroy (job->kvs_dir);
     free (job);
 }
 
