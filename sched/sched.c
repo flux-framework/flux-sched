@@ -213,7 +213,7 @@ static void freectx (void *arg)
     ssrvarg_free (&(ctx->arg));
     resrc_resource_destroy (ctx->rctx.root_resrc);
     free (ctx->rctx.root_uri);
-    free (ctx->sctx.sim_state);
+    free_simstate (ctx->sctx.sim_state);
     if (ctx->sctx.res_queue)
         zlist_destroy (&(ctx->sctx.res_queue));
     if (ctx->sctx.jsc_queue)
