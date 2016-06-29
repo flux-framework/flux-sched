@@ -56,40 +56,50 @@ static void plugin_destroy (struct sched_plugin *plugin)
 static struct sched_plugin *plugin_create (flux_t h, void *dso)
 {
     int saved_errno;
+    char *strerr = NULL;
     struct sched_plugin *plugin = malloc (sizeof (*plugin));
+
     if (!plugin) {
         errno = ENOMEM;
         goto error;
     }
     memset (plugin, 0, sizeof (*plugin));
+    dlerror (); // Clear old dlerrors
+
     plugin->sched_loop_setup = dlsym (dso, "sched_loop_setup");
-    if (!plugin->sched_loop_setup || !*plugin->sched_loop_setup) {
-        flux_log (h, LOG_ERR, "can't load sched_loop_setup: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->sched_loop_setup || !*plugin->sched_loop_setup) {
+        flux_log (h, LOG_ERR, "can't load sched_loop_setup: %s", strerr);
         goto error;
     }
     plugin->find_resources = dlsym (dso, "find_resources");
-    if (!plugin->find_resources || !*plugin->find_resources) {
-        flux_log (h, LOG_ERR, "can't load find_resources: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->find_resources || !*plugin->find_resources) {
+        flux_log (h, LOG_ERR, "can't load find_resources: %s", strerr);
         goto error;
     }
     plugin->select_resources = dlsym (dso, "select_resources");
-    if (!plugin->select_resources || !*plugin->select_resources) {
-        flux_log (h, LOG_ERR, "can't load select_resources: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->select_resources || !*plugin->select_resources) {
+        flux_log (h, LOG_ERR, "can't load select_resources: %s", strerr);
         goto error;
     }
     plugin->allocate_resources = dlsym (dso, "allocate_resources");
-    if (!plugin->allocate_resources || !*plugin->allocate_resources) {
-        flux_log (h, LOG_ERR, "can't load allocate_resources: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->allocate_resources || !*plugin->allocate_resources) {
+        flux_log (h, LOG_ERR, "can't load allocate_resources: %s", strerr);
         goto error;
     }
     plugin->reserve_resources = dlsym (dso, "reserve_resources");
-    if (!plugin->reserve_resources || !*plugin->reserve_resources) {
-        flux_log (h, LOG_ERR, "can't load reserve_resources: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->reserve_resources || !*plugin->reserve_resources) {
+        flux_log (h, LOG_ERR, "can't load reserve_resources: %s", strerr);
         goto error;
     }
     plugin->process_args = dlsym (dso, "process_args");
-    if (!plugin->process_args || !*plugin->process_args) {
-        flux_log (h, LOG_ERR, "can't load process_args: %s", dlerror ());
+    strerr = dlerror();
+    if (strerr || !plugin->process_args || !*plugin->process_args) {
+        flux_log (h, LOG_ERR, "can't load process_args: %s", strerr);
         goto error;
     }
     plugin->dso = dso;
