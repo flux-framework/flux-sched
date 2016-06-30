@@ -1,6 +1,10 @@
 #ifndef _FLUX_SCHED_PLUGIN_H
 #define _FLUX_SCHED_PLUGIN_H
 
+#include "resrc.h"
+#include "resrc_tree.h"
+#include "resrc_reqst.h"
+
 struct sched_plugin {
     void         *dso;                /* Scheduler plug-in DSO handle */
     char         *name;               /* Name of plugin */
@@ -29,6 +33,10 @@ struct sched_plugin {
                                               int64_t walltime,
                                               resrc_t *resrc,
                                               resrc_reqst_t *resrc_reqst);
+
+    int                  (*process_args)(flux_t h,
+                                         char *argz,
+                                         size_t argz_len);
 };
 
 /* Create/destroy the plugin loader apparatus.

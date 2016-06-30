@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <argz.h>
 #include <errno.h>
 #include <libgen.h>
 #include <czmq.h>
@@ -41,9 +42,14 @@
 #include "resrc_reqst.h"
 #include "scheduler.h"
 
-#define EASY_BACKFILL 1
+// Reservation Depth Guide:
+//     0 = All backfilling (no reservations)
+//     1 = EASY Backfill
+//    >1 = Hybrid Backfill
+//    <0 = Conservative Backfill
 
-static bool first_time_backfill = true;
+static int reservation_depth = 1;
+static int curr_reservation_depth = 0;
 static zlist_t *completion_times = NULL;
 
 #if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
@@ -70,7 +76,7 @@ static bool select_children (flux_t h, resrc_tree_list_t *found_children,
 
 int sched_loop_setup (void)
 {
-    first_time_backfill = true;
+    curr_reservation_depth = 0;
     if (!completion_times)
         completion_times = zlist_new ();
     return 0;
@@ -308,7 +314,7 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
     resrc_tree_list_t *selected_trees = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
-    if (EASY_BACKFILL && !first_time_backfill) {
+    if (reservation_depth > 0 && (curr_reservation_depth >= reservation_depth)) {
         goto ret;
     } else if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
@@ -346,7 +352,7 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
                 rc = resrc_tree_list_reserve (selected_trees, job_id,
                                               *completion_time + 1,
                                               *completion_time + 1 + walltime);
-                first_time_backfill = false;
+                curr_reservation_depth++;
                 flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
                           "%"PRId64" from %"PRId64" to %"PRId64"",
                           resrc_reqst_reqrd_qty (resrc_reqst), job_id,
@@ -358,6 +364,36 @@ int reserve_resources (flux_t h, resrc_tree_list_t *rtl, int64_t job_id,
         resrc_tree_list_destroy (found_trees, false);
     }
 ret:
+    return rc;
+}
+
+int process_args (flux_t h, char *argz, size_t argz_len)
+{
+    int rc = 0;
+    char *reserve_depth_str = NULL;
+    char *entry = NULL;
+
+    for (entry = argz;
+         entry;
+         entry = argz_next (argz, argz_len, entry)) {
+
+        if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
+            reserve_depth_str = strstr (entry, "=") + 1;
+        } else {
+            rc = -1;
+            errno = EINVAL;
+            goto done;
+        }
+    }
+
+    if (reserve_depth_str) {
+        // If atoi fails, it defaults to 0, which is fine for us
+        reservation_depth = atoi(reserve_depth_str);
+    } else {
+        reservation_depth = 0;
+    }
+
+ done:
     return rc;
 }
 
