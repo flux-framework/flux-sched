@@ -53,47 +53,38 @@ u_int64_t get_time() {
         + (t.tv_usec - start_time.tv_usec);
 }
 
-static void test_select_children (resrc_tree_t *rt)
+/*
+ * Select some resources from the found tree
+ * frt is found resource tree
+ * prt is selected resource tree parent
+ */
+static resrc_tree_t *test_select_resources (resrc_tree_t *frt, resrc_tree_t *prt,
+                                            int select)
 {
-    if (rt) {
-        resrc_t *resrc = resrc_tree_resrc (rt);
-        if (strcmp (resrc_type(resrc), "memory")) {
-            resrc_stage_resrc (resrc, 1);
-        } else {
+    resrc_tree_t *selected_res = NULL;
+
+    if (frt) {
+        resrc_t *resrc = resrc_tree_resrc (frt);
+
+        if (!strcmp (resrc_type(resrc), "core")) {
+            if (resrc_id (resrc) == select)
+                resrc_stage_resrc (resrc, 1);
+            else
+                goto ret;
+        } else if (!strcmp (resrc_type(resrc), "memory"))
             resrc_stage_resrc (resrc, 100);
-        }
-        if (resrc_tree_num_children (rt)) {
+
+        selected_res = resrc_tree_new (prt, resrc);
+        if (resrc_tree_num_children (frt)) {
             resrc_tree_t *child = resrc_tree_list_first (
-                resrc_tree_children (rt));
+                resrc_tree_children (frt));
             while (child) {
-                test_select_children (child);
-                child = resrc_tree_list_next (resrc_tree_children (rt));
+                (void) test_select_resources (child, selected_res, select);
+                child = resrc_tree_list_next (resrc_tree_children (frt));
             }
         }
     }
-}
-
-/*
- * Select some resources from the found trees
- */
-static resrc_tree_list_t *test_select_resources (resrc_tree_list_t *found_trees,
-                                                 int select)
-{
-    resrc_tree_list_t *selected_res = resrc_tree_list_new ();
-    resrc_tree_t *rt;
-    int count = 1;
-
-    rt = resrc_tree_list_first (found_trees);
-    while (rt) {
-        if (count == select) {
-            test_select_children (rt);
-            resrc_tree_list_append (selected_res, rt);
-            break;
-        }
-        count++;
-        rt = resrc_tree_list_next (found_trees);
-    }
-
+ret:
     return selected_res;
 }
 
@@ -243,16 +234,13 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     int rc = 0;
     int verbose = 0;
     int64_t nowtime = epochtime ();
-    JSON child_core = NULL;
     JSON o = NULL;
     JSON req_res = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
-    resrc_tree_list_t *deserialized_trees = NULL;
-    resrc_tree_list_t *found_trees = resrc_tree_list_new ();
-    resrc_tree_list_t *selected_trees;
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *resrc_tree = NULL;
+    resrc_tree_t *selected_tree = NULL;
 
     resrc_tree = resrc_phys_tree (resrc);
     ok ((resrc_tree != NULL), "resource tree valid");
@@ -271,12 +259,10 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
      *  from the sample RDL file or from the hwloc.  The hwloc request
      *  does not span multiple nodes or contain the localid property.
      */
-    child_core = Jnew ();
-    Jadd_str (child_core, "type", "core");
     req_res = Jnew ();
-    Jadd_str (req_res, "type", "node");
 
     if (rdl) {
+        JSON child_core = Jnew ();
         JSON child_sock = Jnew ();
         JSON ja = Jnew_ar ();
         JSON jpropo = Jnew (); /* json property object */
@@ -291,7 +277,9 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         Jadd_int (memory, "size", 100);
         json_object_array_add (ja, memory);
 
+        Jadd_str (child_core, "type", "core");
         Jadd_int (child_core, "req_qty", 6);
+        Jadd_bool (child_core, "exclusive", true);
         Jadd_int (jpropo, "localid", 1);
         json_object_object_add (child_core, "properties", jpropo);
         json_object_array_add (ja, child_core);
@@ -300,13 +288,15 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         Jadd_int (child_sock, "req_qty", 2);
         json_object_object_add (child_sock, "req_children", ja);
 
+        Jadd_str (req_res, "type", "node");
         Jadd_int (req_res, "req_qty", 2);
+        Jadd_int64 (req_res, "starttime", nowtime);
         /* json_object_object_add (req_res, "tags", jtago); */
         json_object_object_add (req_res, "req_child", child_sock);
     } else {
-        Jadd_int (child_core, "req_qty", 2);
-        Jadd_int (req_res, "req_qty", 1);
-        json_object_object_add (req_res, "req_child", child_core);
+        Jadd_str (req_res, "type", "core");
+        Jadd_int (req_res, "req_qty", 2);
+        Jadd_bool (req_res, "exclusive", true);
     }
 
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
@@ -322,27 +312,22 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     }
 
     init_time ();
-    found = resrc_tree_search (resrc_tree_children (resrc_tree), resrc_reqst,
-                               found_trees, false);
+    found = resrc_tree_search (resrc, resrc_reqst, &found_tree, true);
 
-    ok (found, "found %d composite resources in %lf", found,
+    ok (found, "found %d requested resources in %lf", found,
         ((double)get_time ())/1000000);
     if (!found)
         goto ret;
 
     if (verbose) {
-        printf ("Listing found trees\n");
-        found_tree = resrc_tree_list_first (found_trees);
-        while (found_tree) {
-            resrc_tree_print (found_tree);
-            found_tree = resrc_tree_list_next (found_trees);
-        }
-        printf ("End of found trees\n");
+        printf ("Listing found tree\n");
+        resrc_tree_print (found_tree);
+        printf ("End of found tree\n");
     }
 
-    o = Jnew_ar ();
+    o = Jnew ();
     init_time ();
-    rc = resrc_tree_list_serialize (o, found_trees);
+    rc = resrc_tree_serialize (o, found_tree);
     ok (!rc, "found resource serialization took: %lf",
         ((double)get_time ())/1000000);
 
@@ -350,39 +335,51 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         printf ("The found resources serialized: %s\n", Jtostr (o));
     }
 
-    deserialized_trees = resrc_tree_list_deserialize (o);
+    deserialized_tree = resrc_tree_deserialize (o, NULL);
     if (verbose) {
-        printf ("Listing deserialized trees\n");
-        deserialized_tree = resrc_tree_list_first (deserialized_trees);
-        while (deserialized_tree) {
-            resrc_tree_print (deserialized_tree);
-            deserialized_tree = resrc_tree_list_next (deserialized_trees);
-       }
-        printf ("End of deserialized trees\n");
+        printf ("Listing deserialized tree\n");
+        resrc_tree_print (deserialized_tree);
+        printf ("End of deserialized tree\n");
     }
     Jput (o);
 
     init_time ();
 
-    selected_trees = test_select_resources (found_trees, 1);
-    rc = resrc_tree_list_allocate (selected_trees, 1, nowtime, nowtime + 3600);
+    /*
+     * Exercise time-based allocations for the rdl case and
+     * now-based allocations for the hwloc case
+     */
+    selected_tree = test_select_resources (found_tree, NULL, 1);
+    if (rdl)
+        rc = resrc_tree_allocate (selected_tree, 1, nowtime, nowtime + 3600);
+    else
+        rc = resrc_tree_allocate (selected_tree, 1, 0, 0);
     ok (!rc, "successfully allocated resources for job 1");
-    resrc_tree_list_free (selected_trees);
+    resrc_tree_destroy (selected_tree, false);
 
-    selected_trees = test_select_resources (found_trees, 2);
-    rc = resrc_tree_list_allocate (selected_trees, 2, nowtime, nowtime + 3600);
+    selected_tree = test_select_resources (found_tree, NULL, 2);
+    if (rdl)
+        rc = resrc_tree_allocate (selected_tree, 2, nowtime, nowtime + 3600);
+    else
+        rc = resrc_tree_allocate (selected_tree, 2, 0, 0);
     ok (!rc, "successfully allocated resources for job 2");
-    resrc_tree_list_free (selected_trees);
+    resrc_tree_destroy (selected_tree, false);
 
-    selected_trees = test_select_resources (found_trees, 3);
-    rc = resrc_tree_list_allocate (selected_trees, 3, nowtime, nowtime + 3600);
+    selected_tree = test_select_resources (found_tree, NULL, 3);
+    if (rdl)
+        rc = resrc_tree_allocate (selected_tree, 3, nowtime, nowtime + 3600);
+    else
+        rc = resrc_tree_allocate (selected_tree, 3, 0, 0);
     ok (!rc, "successfully allocated resources for job 3");
-    resrc_tree_list_free (selected_trees);
+    resrc_tree_destroy (selected_tree, false);
 
-    selected_trees = test_select_resources (found_trees, 4);
-    rc = resrc_tree_list_reserve (selected_trees, 4, nowtime, nowtime + 3600);
+    selected_tree = test_select_resources (found_tree, NULL, 4);
+    if (rdl)
+        rc = resrc_tree_reserve (selected_tree, 4, nowtime, nowtime + 3600);
+    else
+        rc = resrc_tree_reserve (selected_tree, 4, 0, 0);
     ok (!rc, "successfully reserved resources for job 4");
-    resrc_tree_list_free (selected_trees);
+    resrc_tree_destroy (selected_tree, false);
 
     printf ("        allocate and reserve took: %lf\n",
             ((double)get_time ())/1000000);
@@ -393,7 +390,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     }
 
     init_time ();
-    rc = resrc_tree_list_release (found_trees, 1);
+    rc = resrc_tree_release (found_tree, 1);
     ok (!rc, "resource release of job 1 took: %lf",
         ((double)get_time ())/1000000);
 
@@ -404,8 +401,8 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
 
     init_time ();
     resrc_reqst_destroy (resrc_reqst);
-    resrc_tree_list_destroy (deserialized_trees, true);
-    resrc_tree_list_destroy (found_trees, false);
+    resrc_tree_destroy (deserialized_tree, true);
+    resrc_tree_destroy (found_tree, false);
     printf ("        destroy took: %lf\n", ((double)get_time ())/1000000);
 ret:
     return rc;
@@ -440,7 +437,7 @@ int main (int argc, char *argv[])
             ((double)get_time())/1000000);
         if (resrc) {
             rc1 = test_a_resrc (resrc, true);
-            resrc_resource_destroy (resrc);
+            resrc_tree_destroy (resrc_phys_tree (resrc), true);
         }
     }
 
@@ -457,7 +454,7 @@ int main (int argc, char *argv[])
     hwloc_topology_destroy (topology);
     if (resrc) {
         rc2 = test_a_resrc (resrc, false);
-        resrc_resource_destroy (resrc);
+        resrc_tree_destroy (resrc_phys_tree (resrc), true);
     }
 
     done_testing ();

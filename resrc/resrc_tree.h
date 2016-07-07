@@ -123,12 +123,6 @@ size_t resrc_tree_list_size (resrc_tree_list_t *rtl);
 void resrc_tree_list_remove (resrc_tree_list_t *rtl, resrc_tree_t *rt);
 
 /*
- * Free memory of a resrc_tree_list_t object
- * Does not recursively free
- */
-void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list);
-
-/*
  * Destroy a resrc_tree_list_t object including all children
  */
 void resrc_tree_list_destroy (resrc_tree_list_t *rtl, bool destroy_resrc);

@@ -59,7 +59,7 @@ typedef struct {
     int64_t     lwj_id;  /*!< LWJ id */
     job_state_t state;   /*!< current job state */
     flux_res_t *req;     /*!< resources requested by this LWJ */
-    resrc_tree_list_t *resrc_trees; /*!< resources allocated to this LWJ */
+    resrc_tree_t *resrc_tree; /*!< resources allocated to this LWJ */
     int64_t starttime;
 } flux_lwj_t;
 

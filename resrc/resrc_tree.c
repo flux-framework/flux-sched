@@ -124,11 +124,7 @@ void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc)
             resrc_tree->children = NULL;
         }
 
-        /*
-         * Destroying a resource from a tree that is not the physical
-         * tree would corrupt the physical tree.
-         */
-        if (destroy_resrc && (resrc_tree == phys_tree))
+        if (destroy_resrc)
             resrc_resource_destroy (resrc_tree->resrc);
         free (resrc_tree);
     }
@@ -293,16 +289,6 @@ void resrc_tree_list_remove (resrc_tree_list_t *rtl, resrc_tree_t *rt)
     zlist_remove (rtl->list, rt);
 }
 
-void resrc_tree_list_free (resrc_tree_list_t *resrc_tree_list)
-{
-    if (resrc_tree_list) {
-        if (resrc_tree_list->list) {
-            zlist_destroy (&(resrc_tree_list->list));
-        }
-        free (resrc_tree_list);
-    }
-}
-
 void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list,
                               bool destroy_resrc)
 {
@@ -314,7 +300,10 @@ void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list,
                 child = resrc_tree_list_next (resrc_tree_list);
             }
         }
-        resrc_tree_list_free (resrc_tree_list);
+        if (resrc_tree_list->list) {
+            zlist_destroy (&(resrc_tree_list->list));
+        }
+        free (resrc_tree_list);
     }
 }
 

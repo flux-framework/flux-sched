@@ -533,8 +533,8 @@ void resrc_resource_destroy (void *object)
             free (resrc->name);
         if (resrc->digest)
             free (resrc->digest);
-        if (resrc->phys_tree)
-            resrc_tree_destroy (resrc->phys_tree, false);
+        /* Use resrc_tree_destroy() to destroy this resource along
+         * with its physical tree */
         if (resrc->graphs)
             zlist_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
@@ -981,7 +981,7 @@ char *resrc_to_string (resrc_t *resrc)
         }
     }
     if (zhash_size (resrc->reservtns)) {
-        fprintf (ss, ", reserved jobs");
+        fprintf (ss, ", reserved");
         size_ptr = zhash_first (resrc->reservtns);
         while (size_ptr) {
             fprintf (ss, ", %s: %"PRIu64"",

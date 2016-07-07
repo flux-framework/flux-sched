@@ -218,7 +218,7 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->c_queue));
     rs2rank_tab_destroy (ctx->machs);
     ssrvarg_free (&(ctx->arg));
-    resrc_resource_destroy (ctx->rctx.root_resrc);
+    resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
     free (ctx->rctx.root_uri);
     free_simstate (ctx->sctx.sim_state);
     if (ctx->sctx.res_queue)
@@ -579,7 +579,7 @@ static int load_resources (ssrvctx_t *ctx)
             if (turi)
                 free (turi);
             if (tres)
-                resrc_resource_destroy (tres);
+                resrc_tree_destroy (resrc_phys_tree (tres), true);
             r_mode = RSREADER_HWLOC;
             /* deliberate fall-through to RSREADER_HWLOC! */
         } else {
@@ -1042,10 +1042,10 @@ static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, resrc_t *r,
         rc = rs2rank_tab_query_by_none (ctx->machs, resrc_digest (r),
                                         false, rank);
     } else {
-        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s\n", resrc_name (r),
+        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s", resrc_name (r),
                                      resrc_digest (r));
-        rc = rs2rank_tab_query_by_sign (ctx->machs, resrc_name (r), resrc_digest (r),
-                                        false, rank);
+        rc = rs2rank_tab_query_by_sign (ctx->machs, resrc_name (r),
+                                        resrc_digest (r), false, rank);
     }
     if (rc == 0)
         flux_log (ctx->h, LOG_INFO, "broker found, rank: %"PRIu32, *rank);
@@ -1075,21 +1075,32 @@ static void inline build_contain_1node_req (int64_t nc, int64_t rank, JSON rarr)
  * Because the job's rdl should only contain what's allocated to the job,
  * we traverse the entire tree in the post-order walk fashion
  */
-static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, JSON arr)
+static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
+                              JSON arr)
 {
     int rc = -1;
     uint32_t rank = 0;
-    resrc_tree_t *nd = NULL;
     resrc_t *r = NULL;
 
-    for (nd = resrc_tree_list_first (job->resrc_trees); nd;
-            nd = resrc_tree_list_next (job->resrc_trees)) {
-        r = resrc_tree_resrc (nd);
-        if (strcmp (resrc_type (r), "node") != 0
-            || bridge_rs2rank_tab_query (ctx, r, &rank) != 0)
-            goto done;
-
-        build_contain_1node_req (job->req->corespernode, rank, arr);
+    if (rt) {
+        r = resrc_tree_resrc (rt);
+        if (strcmp (resrc_type (r), "node")) {
+            if (resrc_tree_num_children (rt)) {
+                resrc_tree_list_t *children = resrc_tree_children (rt);
+                if (children) {
+                    resrc_tree_t *child = resrc_tree_list_first (children);
+                    while (child) {
+                        build_contain_req (ctx, job, child, arr);
+                        child = resrc_tree_list_next (children);
+                    }
+                }
+            }
+        } else {
+            if (bridge_rs2rank_tab_query (ctx, r, &rank))
+                goto done;
+            else
+                build_contain_1node_req (job->req->corespernode, rank, arr);
+        }
     }
     rc = 0;
 done:
@@ -1108,10 +1119,10 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     int rc = -1;
     flux_t h = ctx->h;
     JSON jcb = Jnew ();
-    JSON ro = Jnew_ar ();
+    JSON ro = Jnew ();
     JSON arr = Jnew_ar ();
 
-    if (resrc_tree_list_serialize (ro, job->resrc_trees)) {
+    if (resrc_tree_serialize (ro, job->resrc_tree)) {
         flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
                   job->lwj_id, strerror (errno));
         goto done;
@@ -1125,7 +1136,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     }
     Jput (jcb);
     jcb = Jnew ();
-    if (build_contain_req (ctx, job, arr) != 0) {
+    if (build_contain_req (ctx, job, job->resrc_tree, arr) != 0) {
         flux_log (h, LOG_ERR, "error requesting containment for job");
         goto done;
     }
@@ -1135,7 +1146,6 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
-    Jput (arr);
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
@@ -1226,14 +1236,14 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  */
 int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 {
-    JSON child_core = NULL;
     JSON req_res = NULL;
     flux_t h = ctx->h;
     int rc = -1;
-    int64_t nnodes = 0;
+    int64_t nfound = 0;
+    int64_t nreqrd = 0;
     resrc_reqst_t *resrc_reqst = NULL;
-    resrc_tree_list_t *found_trees = NULL;
-    resrc_tree_list_t *selected_trees = NULL;
+    resrc_tree_t *found_tree = NULL;
+    resrc_tree_t *selected_tree = NULL;
     struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
 
     if (!plugin)
@@ -1242,78 +1252,115 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     /*
      * Require at least one task per node, and
      * Assume (for now) one task per core.
+     *
+     * At this point, our flux_lwj_t structure supplies a simple count
+     * of nodes and cores.  This is a short term solution that
+     * supports the typical request.  Until a more complex model is
+     * available, we will have to interpret the request along these
+     * most likely scenarios:
+     *
+     * - If only cores are requested, the number of nodes we find to
+     *   supply the requested cores does not matter to the user.
+     *
+     * - If only nodes are requested, we will return only nodes whose
+     *   cores are all idle.
+     *
+     * - If nodes and cores are requested, we will return the
+     *   requested number of nodes with at least the requested number
+     *   of cores on each node.  We will not attempt to provide a
+     *   balanced number of cores per node.
      */
-    job->req->nnodes = (job->req->nnodes ? job->req->nnodes : 1);
-    if (job->req->ncores < job->req->nnodes)
-        job->req->ncores = job->req->nnodes;
-    job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
-        job->req->nnodes;
-
-    child_core = Jnew ();
-    Jadd_str (child_core, "type", "core");
-    Jadd_int64 (child_core, "req_qty", job->req->corespernode);
-    /* setting size == 1 devotes (all of) the core to the job */
-    Jadd_int64 (child_core, "req_size", 1);
-    /* setting exclusive to true prevents multiple jobs per core */
-    Jadd_bool (child_core, "exclusive", true);
-    Jadd_int64 (child_core, "starttime", starttime);
-    Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
-
     req_res = Jnew ();
-    Jadd_str (req_res, "type", "node");
-    Jadd_int64 (req_res, "req_qty", job->req->nnodes);
-    if (job->req->node_exclusive) {
+    if (job->req->nnodes > 0) {
+        JSON child_core = Jnew ();
+
+        Jadd_str (req_res, "type", "node");
+        Jadd_int64 (req_res, "req_qty", job->req->nnodes);
+        nreqrd = job->req->nnodes;
+
+        /* Since nodes are requested, make sure we look for at
+         * least one core on each node */
+        if (job->req->ncores < job->req->nnodes)
+            job->req->ncores = job->req->nnodes;
+        job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
+            job->req->nnodes;
+        if (job->req->node_exclusive) {
+            Jadd_int64 (req_res, "req_size", 1);
+            Jadd_bool (req_res, "exclusive", true);
+        } else {
+            Jadd_int64 (req_res, "req_size", 0);
+            Jadd_bool (req_res, "exclusive", false);
+        }
+
+        Jadd_str (child_core, "type", "core");
+        Jadd_int64 (child_core, "req_qty", job->req->corespernode);
+        /* setting size == 1 devotes (all of) the core to the job */
+        Jadd_int64 (child_core, "req_size", 1);
+        /* setting exclusive to true prevents multiple jobs per core */
+        Jadd_bool (child_core, "exclusive", true);
+        Jadd_int64 (child_core, "starttime", starttime);
+        Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
+        json_object_object_add (req_res, "req_child", child_core);
+    } else if (job->req->ncores > 0) {
+        Jadd_str (req_res, "type", "core");
+        Jadd_int (req_res, "req_qty", job->req->ncores);
+        nreqrd = job->req->ncores;
+
         Jadd_int64 (req_res, "req_size", 1);
+        /* setting exclusive to true prevents multiple jobs per core */
         Jadd_bool (req_res, "exclusive", true);
-    } else {
-        Jadd_int64 (req_res, "req_size", 0);
-        Jadd_bool (req_res, "exclusive", false);
-    }
+    } else
+        goto done;
+
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
-
-    json_object_object_add (req_res, "req_child", child_core);
-
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
     Jput (req_res);
     if (!resrc_reqst)
         goto done;
 
-    if ((found_trees = plugin->find_resources (h, ctx->rctx.root_resrc,
-                                               resrc_reqst))) {
-        nnodes = resrc_tree_list_size (found_trees);
-        flux_log (h, LOG_DEBUG, "%"PRId64" nodes found for job %"PRId64", "
-                  "reqrd_qty: %"PRId64"", nnodes, job->lwj_id, job->req->nnodes);
+    if ((nfound = plugin->find_resources (h, ctx->rctx.root_resrc,
+                                          resrc_reqst, &found_tree))) {
+        flux_log (h, LOG_DEBUG, "Found %"PRId64" %s(s) for job %"PRId64", "
+                  "required: %"PRId64"", nfound,
+                  resrc_type (resrc_reqst_resrc (resrc_reqst)), job->lwj_id,
+                  nreqrd);
 
-        resrc_tree_list_unstage_resources (found_trees);
-        if ((selected_trees = plugin->select_resources (h, found_trees,
-                                                        resrc_reqst))) {
-            nnodes = resrc_tree_list_size (selected_trees);
-            if (nnodes == job->req->nnodes) {
-                plugin->allocate_resources (h, selected_trees, job->lwj_id,
+        resrc_tree_unstage_resources (found_tree);
+        resrc_reqst_clear_found (resrc_reqst);
+        if ((selected_tree = plugin->select_resources (h, found_tree,
+                                                       resrc_reqst, NULL))) {
+            if (resrc_reqst_all_found (resrc_reqst)) {
+                plugin->allocate_resources (h, selected_tree, job->lwj_id,
                                             starttime, starttime +
                                             job->req->walltime);
                 /* Scheduler specific job transition */
                 // TODO: handle this some other way (JSC?)
                 job->starttime = starttime;
                 job->state = J_SELECTED;
-                job->resrc_trees = selected_trees;
+                job->resrc_tree = selected_tree;
                 if (req_tpexec_allocate (ctx, job) != 0) {
                     flux_log (h, LOG_ERR,
                               "failed to request allocate for job %"PRId64"",
                               job->lwj_id);
-                    resrc_tree_list_destroy (job->resrc_trees, false);
-                    job->resrc_trees = NULL;
+                    resrc_tree_destroy (job->resrc_tree, false);
+                    job->resrc_tree = NULL;
                     goto done;
                 }
-                flux_log (h, LOG_DEBUG, "Allocated %"PRId64" nodes for job "
-                          "%"PRId64", reqrd_qty: %"PRId64"", nnodes, job->lwj_id,
-                          job->req->nnodes);
+                flux_log (h, LOG_DEBUG, "Allocated %"PRId64" %s(s) for job "
+                          "%"PRId64"", nreqrd,
+                          resrc_type (resrc_reqst_resrc (resrc_reqst)),
+                          job->lwj_id);
             } else {
-                plugin->reserve_resources (h, selected_trees, job->lwj_id,
-                                           starttime, job->req->walltime,
-                                           ctx->rctx.root_resrc,
-                                           resrc_reqst);
+                rc = plugin->reserve_resources (h, &selected_tree, job->lwj_id,
+                                                starttime, job->req->walltime,
+                                                ctx->rctx.root_resrc,
+                                                resrc_reqst);
+                if (rc) {
+                    resrc_tree_destroy (selected_tree, false);
+                    job->resrc_tree = NULL;
+                } else
+                    job->resrc_tree = selected_tree;
             }
         }
     }
@@ -1321,8 +1368,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 done:
     if (resrc_reqst)
         resrc_reqst_destroy (resrc_reqst);
-    if (found_trees)
-        resrc_tree_list_destroy (found_trees, false);
+    if (found_tree)
+        resrc_tree_destroy (found_tree, false);
 
     return rc;
 }
@@ -1429,7 +1476,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         q_move_to_cqueue (ctx, job);
         if (!ctx->arg.schedonce) {
             /* support testing by actually not releasing the resrc */
-            if (resrc_tree_list_release (job->resrc_trees, job->lwj_id)) {
+            if (resrc_tree_release (job->resrc_tree, job->lwj_id)) {
             flux_log (h, LOG_ERR, "%s: failed to release resources for job "
                       "%"PRId64"", __FUNCTION__, job->lwj_id);
             }
@@ -1449,6 +1496,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         zlist_remove (ctx->c_queue, job);
         if (job->req)
             free (job->req);
+        resrc_tree_destroy (job->resrc_tree, false);
         free (job);
         break;
     case J_COMPLETE:
@@ -1456,6 +1504,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         zlist_remove (ctx->c_queue, job);
         if (job->req)
             free (job->req);
+        resrc_tree_destroy (job->resrc_tree, false);
         free (job);
         break;
     case J_REAPED:
