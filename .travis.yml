@@ -82,3 +82,24 @@ after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
 
+before_deploy:
+  # Get anchor (formatted properly) and base URI for latest tag in NEWS file
+  - export ANCHOR=$(sed -n '/^flux-sched version/{s/\.//g; s/\s/-/gp;Q}' NEWS.md)
+  - export TAG_URI="https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}"
+  - export TARBALL=$(echo flux-sched*.tar.gz)
+  - ls -l $TARBALL
+  - echo "Deploying tag ${TRAVIS_TAG} as $TARBALL"
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  file: $TARBALL
+  prerelease: true
+  body: "View [Release Notes](${TAG_URI}/NEWS.md#${ANCHOR}) for flux-sched ${TRAVIS_TAG}."
+  api_key:
+    secure: h+xiQ6lg0SNrHor+cwSKFCUBDk51maSQILAhLYZXWB8LvAib7TQ17ZCUiwYZ8Pwt6aacrqshWuYapbm7PzTv2kfQqtuVgPh0ILphXGXyokhv1PpIlz3bePKfa/cNwPr1GAHtAxqsZndqvRMKeAmkfH00iezGzK72xwhslnbqVfE=
+  on:
+    # Only deploy from first job in build matrix
+    condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
+    tags: true
+    repo: flux-framework/flux-sched
