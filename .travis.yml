@@ -12,6 +12,8 @@ matrix:
       env: COVERAGE=t
     - compiler: gcc
       env: TEST_INSTALL=t
+    - compiler: clang
+      env: CC=clang-3.8 CXX=clang++-3.8
 
 cache:
   directories:
