@@ -5,8 +5,13 @@ sudo: false
 compiler:
   - gcc
   - clang
-  - gcc+coverage
-  - gcc+install
+
+matrix:
+  include:
+    - compiler: gcc
+      env: COVERAGE=t
+    - compiler: gcc
+      env: TEST_INSTALL=t
 
 cache:
   directories:
@@ -18,7 +23,15 @@ cache:
 addons:
   apt:
     sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
+      - george-edison55-precise-backports # CMake 3.0
     packages:
+      - cmake
+      - cmake-data
+      - clang-3.8
+      - gcc-4.9
+      - g++-4.9
       - lua5.1
       - liblua5.1-0-dev
       - luarocks
@@ -32,12 +45,6 @@ addons:
       - lcov
 
 before_install:
-  # If CC has "+coverage" appended then turn on code coverage for this build
-  - case "$CC" in *+coverage) CC=${CC//+*}; export COVERAGE=t;; esac
-
-  # If CC has "+install" appended then test "make install"
-  - case "$CC" in *+install)  CC=${CC//+*}; export TEST_INSTALL=t;; esac
-
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - eval $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
