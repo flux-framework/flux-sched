@@ -83,7 +83,7 @@ script:
               .";
    fi
 
- - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
+ - autoreconf -i && ./configure ${ARGS} && echo $MAKECMDS && eval ${MAKECMDS}
 
 after_success:
  - ccache -s
