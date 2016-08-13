@@ -14,7 +14,8 @@ matrix:
       env: TEST_INSTALL=t
     - compiler: clang
       env: CC=clang-3.8 CXX=clang++-3.8
-
+    - compiler: clang
+      env: CPPCHECK=t
 cache:
   directories:
     - $HOME/local
@@ -72,6 +73,15 @@ script:
  
  # Use "make install" and set FLUX_SCHED_TEST_INSTALLED in environment for installed testing:
  - if test "$TEST_INSTALL" = "t"; then ARGS=--prefix=$HOME/local2; MAKECMDS="make && make install && FLUX_SCHED_TEST_INSTALLED=t make check"; fi
+
+ # cppcheck instead of make
+ - >
+   if test "$CPPCHECK" = "t"; then
+     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --quiet
+             --error-exitcode=1
+             -i src/common/libtap
+              .";
+   fi
 
  - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
 
