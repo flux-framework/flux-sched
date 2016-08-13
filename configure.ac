@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 AC_INIT([flux-sched],
-        m4_esyscmd([git describe --always | awk '/.*/ {printf "%s",$1; exit}']))
+        m4_esyscmd([git describe --always | awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']))
 AC_CONFIG_SRCDIR([NEWS])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
