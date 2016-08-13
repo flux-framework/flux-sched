@@ -617,6 +617,7 @@ static void run_cb (flux_t h,
 
     if (flux_msg_get_topic (msg, &topic) < 0) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
+        free (jobid);
         return;
     }
 
