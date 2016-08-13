@@ -87,7 +87,7 @@ script:
 
 after_success:
  - ccache -s
- - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info; fi
+ - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info;  bash <(curl -s https://codecov.io/bash); fi
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
