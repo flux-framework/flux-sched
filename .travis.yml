@@ -5,9 +5,17 @@ sudo: false
 compiler:
   - gcc
   - clang
-  - gcc+coverage
-  - gcc+install
 
+matrix:
+  include:
+    - compiler: gcc
+      env: COVERAGE=t
+    - compiler: gcc
+      env: TEST_INSTALL=t
+    - compiler: clang
+      env: CC=clang-3.8 CXX=clang++-3.8
+    - compiler: clang
+      env: CPPCHECK=t
 cache:
   directories:
     - $HOME/local
@@ -18,7 +26,15 @@ cache:
 addons:
   apt:
     sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
+      - george-edison55-precise-backports # CMake 3.0
     packages:
+      - cmake
+      - cmake-data
+      - clang-3.8
+      - gcc-4.9
+      - g++-4.9
       - lua5.1
       - liblua5.1-0-dev
       - luarocks
@@ -32,18 +48,13 @@ addons:
       - lcov
 
 before_install:
-  # If CC has "+coverage" appended then turn on code coverage for this build
-  - case "$CC" in *+coverage) CC=${CC//+*}; export COVERAGE=t;; esac
-
-  # If CC has "+install" appended then test "make install"
-  - case "$CC" in *+install)  CC=${CC//+*}; export TEST_INSTALL=t;; esac
-
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - eval $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
   - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
   - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
-  - bash ./travis-dep-builder.sh --cachedir=$HOME/local/.cache
+  - depbuilder=$(pwd)/travis-dep-builder.sh
+  - (mkdir -p ../depbuild && cd ../depbuild && bash ${depbuilder} --cachedir=$HOME/local/.cache)
 
   # coveralls-lcov required only for coveralls.io upload:
   - if test "$COVERAGE" = "t"; then gem install coveralls-lcov; fi
@@ -64,12 +75,42 @@ script:
  # Use "make install" and set FLUX_SCHED_TEST_INSTALLED in environment for installed testing:
  - if test "$TEST_INSTALL" = "t"; then ARGS=--prefix=$HOME/local2; MAKECMDS="make && make install && FLUX_SCHED_TEST_INSTALLED=t make check"; fi
 
- - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
+ # cppcheck instead of make
+ - >
+   if test "$CPPCHECK" = "t"; then
+     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --quiet
+             --error-exitcode=1
+             -i src/common/libtap
+              .";
+   fi
+
+ - autoreconf -i && ./configure ${ARGS} && echo $MAKECMDS && eval ${MAKECMDS}
 
 after_success:
- - ccacche -s
- - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info; fi
+ - ccache -s
+ - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info;  bash <(curl -s https://codecov.io/bash); fi
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
 
+before_deploy:
+  # Get anchor (formatted properly) and base URI for latest tag in NEWS file
+  - export ANCHOR=$(sed -n '/^flux-sched version/{s/\.//g; s/\s/-/gp;Q}' NEWS.md)
+  - export TAG_URI="https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}"
+  - export TARBALL=$(echo flux-sched*.tar.gz)
+  - ls -l $TARBALL
+  - echo "Deploying tag ${TRAVIS_TAG} as $TARBALL"
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  file: $TARBALL
+  prerelease: true
+  body: "View [Release Notes](${TAG_URI}/NEWS.md#${ANCHOR}) for flux-sched ${TRAVIS_TAG}."
+  api_key:
+    secure: h+xiQ6lg0SNrHor+cwSKFCUBDk51maSQILAhLYZXWB8LvAib7TQ17ZCUiwYZ8Pwt6aacrqshWuYapbm7PzTv2kfQqtuVgPh0ILphXGXyokhv1PpIlz3bePKfa/cNwPr1GAHtAxqsZndqvRMKeAmkfH00iezGzK72xwhslnbqVfE=
+  on:
+    # Only deploy from first job in build matrix
+    condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
+    tags: true
+    repo: flux-framework/flux-sched

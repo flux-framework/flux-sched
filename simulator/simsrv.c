@@ -225,15 +225,13 @@ static void join_cb (flux_t h,
         || !Jget_int (request, "rank", &mod_rank)
         || !Jget_double (request, "next_event", next_event)) {
         flux_log (h, LOG_ERR, "%s: bad join message", __FUNCTION__);
-        Jput (request);
-        return;
+        goto out;
     }
     if (flux_get_size (h, &size) < 0)
-        return;
+        goto out;
     if (mod_rank < 0 || mod_rank >= size) {
-        Jput (request);
         flux_log (h, LOG_ERR, "%s: bad rank in join message", __FUNCTION__);
-        return;
+        goto out;
     }
 
     flux_log (h,
@@ -251,8 +249,10 @@ static void join_cb (flux_t h,
                   "duplicate join request from %s, module already exists in "
                   "sim_state",
                   mod_name);
-        return;
+        goto out;
     }
+    // clear next event so it is not freed below
+    next_event = NULL;
 
     // TODO: this is horribly hackish, improve the handshake to avoid
     // this hardcoded # of modules. maybe use a timeout?  ZMQ provides
@@ -266,7 +266,9 @@ static void join_cb (flux_t h,
         }
     }
 
+out:
     Jput (request);
+    free (next_event);
 }
 
 // Based on the simulation time, the previous timer value, and the
