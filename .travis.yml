@@ -86,7 +86,7 @@ script:
  - autoreconf -i && ./configure ${ARGS} && eval ${MAKECMDS}
 
 after_success:
- - ccacche -s
+ - ccache -s
  - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info; fi
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
