@@ -1044,36 +1044,36 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
                            bool available)
 {
     bool rc = false;
-    char *rproperty = NULL;     /* request property */
-    char *rtag = NULL;          /* request tag */
+    char *rproperty = NULL;                             /* request property */
+    char *rtag = NULL;                                  /* request tag */
+    resrc_t *reqst_resrc = resrc_reqst_resrc (request); /* request's resrc */
 
-    if (!strcmp (resrc->type, resrc_reqst_resrc (request)->type)) {
-        if (zhash_size (resrc_reqst_resrc (request)->properties)) {
+    if (reqst_resrc && !strcmp (resrc->type, reqst_resrc->type)) {
+        if (zhash_size (reqst_resrc->properties)) {
             if (!zhash_size (resrc->properties)) {
                 goto ret;
             }
             /* be sure the resource has all the requested properties */
             /* TODO: validate the value of each property */
-            zhash_first (resrc_reqst_resrc (request)->properties);
+            zhash_first (reqst_resrc->properties);
             do {
-                rproperty = (char *)zhash_cursor (
-                    resrc_reqst_resrc (request)->properties);
+                rproperty = (char *)zhash_cursor (reqst_resrc->properties);
                 if (!zhash_lookup (resrc->properties, rproperty))
                     goto ret;
-            } while (zhash_next (resrc_reqst_resrc (request)->properties));
+            } while (zhash_next (reqst_resrc->properties));
         }
 
-        if (zhash_size (resrc_reqst_resrc (request)->tags)) {
+        if (zhash_size (reqst_resrc->tags)) {
             if (!zhash_size (resrc->tags)) {
                 goto ret;
             }
             /* be sure the resource has all the requested tags */
-            zhash_first (resrc_reqst_resrc (request)->tags);
+            zhash_first (reqst_resrc->tags);
             do {
-                rtag = (char *)zhash_cursor (resrc_reqst_resrc (request)->tags);
+                rtag = (char *)zhash_cursor (reqst_resrc->tags);
                 if (!zhash_lookup (resrc->tags, rtag))
                     goto ret;
-            } while (zhash_next (resrc_reqst_resrc (request)->tags));
+            } while (zhash_next (reqst_resrc->tags));
         }
 
         if (available) {
