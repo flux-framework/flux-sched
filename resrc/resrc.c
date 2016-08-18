@@ -53,7 +53,7 @@ struct resrc {
     size_t staged;
     resource_state_t state;
     resrc_tree_t *phys_tree;
-    zlist_t *graphs;
+    zhash_t *graphs;
     zhash_t *properties;
     zhash_t *tags;
     zhash_t *allocs;
@@ -480,7 +480,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->staged = 0;
         resrc->state = RESOURCE_INVALID;
         resrc->phys_tree = NULL;
-        resrc->graphs = NULL;
+        resrc->graphs = zhash_new ();
         resrc->allocs = zhash_new ();
         resrc->reservtns = zhash_new ();
         resrc->properties = zhash_new ();
@@ -506,7 +506,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
         new_resrc->phys_tree = resrc_tree_copy (resrc->phys_tree);
-        new_resrc->graphs = zlist_dup (resrc->graphs);
+        new_resrc->graphs = zhash_dup (resrc->graphs);
         new_resrc->allocs = zhash_dup (resrc->allocs);
         new_resrc->reservtns = zhash_dup (resrc->reservtns);
         new_resrc->properties = zhash_dup (resrc->properties);
@@ -537,8 +537,7 @@ void resrc_resource_destroy (void *object)
             free (resrc->digest);
         /* Use resrc_tree_destroy() to destroy this resource along
          * with its physical tree */
-        if (resrc->graphs)
-            zlist_destroy (&resrc->graphs);
+        zhash_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
         zhash_destroy (&resrc->reservtns);
         zhash_destroy (&resrc->properties);
