@@ -125,6 +125,13 @@ size_t resrc_size (resrc_t *resrc)
     return 0;
 }
 
+size_t resrc_available (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->available;
+    return 0;
+}
+
 size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 {
     int64_t starttime = 0;
@@ -443,6 +450,20 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
     if (resrc)
         return resrc->phys_tree;
     return NULL;
+}
+
+size_t resrc_size_allocs (resrc_t *resrc)
+{
+    if (resrc)
+        return zhash_size (resrc->allocs);
+    return 0;
+}
+
+size_t resrc_size_reservtns (resrc_t *resrc)
+{
+    if (resrc)
+        return zhash_size (resrc->reservtns);
+    return 0;
 }
 
 resrc_t *resrc_new_resource (const char *type, const char *path,

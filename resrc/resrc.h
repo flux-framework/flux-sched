@@ -68,6 +68,11 @@ int64_t resrc_id (resrc_t *resrc);
 size_t resrc_size (resrc_t *resrc);
 
 /*
+ * Return the quantity of available units
+ */
+size_t resrc_available (resrc_t *resrc);
+
+/*
  * Return the amount of the resource available at the given time
  */
 size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
@@ -88,6 +93,16 @@ char* resrc_state (resrc_t *resrc);
  * Return the physical tree for the resouce
  */
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
+
+/*
+ * Return the number of jobs allocated to this resource
+ */
+size_t resrc_size_allocs (resrc_t *resrc);
+
+/*
+ * Return the number of jobs reserved for this resource
+ */
+size_t resrc_size_reservtns (resrc_t *resrc);
 
 /*
  * Create a new resource object
