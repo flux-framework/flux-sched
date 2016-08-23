@@ -112,6 +112,7 @@ typedef struct {
 /* TODO: Implement prioritization function for p_queue */
 typedef struct {
     flux_t        h;
+    zhash_t      *job_index;          /* For fast job lookup for all queues*/
     zlist_t      *p_queue;            /* Pending job priority queue */
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
@@ -258,6 +259,7 @@ done:
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
+    zhash_destroy (&(ctx->job_index));
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
@@ -283,6 +285,8 @@ static ssrvctx_t *getctx (flux_t h)
     if (!ctx) {
         ctx = xzmalloc (sizeof (*ctx));
         ctx->h = h;
+        if (!(ctx->job_index = zhash_new ()))
+            oom ();
         if (!(ctx->p_queue = zlist_new ()))
             oom ();
         if (!(ctx->r_queue = zlist_new ()))
@@ -413,6 +417,7 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
     int rc = -1;
     int64_t jid = -1;
+    char *key = NULL;
     flux_lwj_t *job = NULL;
 
     get_jobid (jcb, &jid);
@@ -425,27 +430,27 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
         flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
         goto done;
     }
+    key = xasprintf ("%"PRId64"", jid);
+    if (zhash_insert(ctx->job_index, key, job) != 0) {
+        flux_log (ctx->h, LOG_ERR, "failed to index a job.");
+        goto done;
+    }
+    /* please don't free the job using job_index; this is just a lookup table */
     rc = 0;
 done:
+    if (key)
+        free (key);
     return rc;
 }
 
 static flux_lwj_t *q_find_job (ssrvctx_t *ctx, int64_t id)
 {
     flux_lwj_t *j = NULL;
-    /* NOTE: performance issue when we have
-     * large numbers of jobs in the system?
-     */
-    for (j = zlist_first (ctx->p_queue); j; j = zlist_next (ctx->p_queue))
-        if (j->lwj_id == id)
-            return j;
-    for (j = zlist_first (ctx->r_queue); j; j = zlist_next (ctx->r_queue))
-        if (j->lwj_id == id)
-            return j;
-    for (j = zlist_first (ctx->c_queue); j; j = zlist_next (ctx->c_queue))
-        if (j->lwj_id == id)
-            return j;
-    return NULL;
+    char *key = NULL;
+    key = xasprintf ("%"PRId64"", id);
+    j = zhash_lookup (ctx->job_index, key);
+    free (key);
+    return j;
 }
 
 static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
@@ -1555,6 +1560,10 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         break;
     case J_REAPED:
     default:
+        /* TODO: when reap functionality is implemented
+           not only remove the job from ctx->c_queue but also
+           remove it from ctx->job_index.
+         */
         VERIFY (false);
         break;
     }
