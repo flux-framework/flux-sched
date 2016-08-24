@@ -266,6 +266,7 @@ static void freectx (void *arg)
     rs2rank_tab_destroy (ctx->machs);
     ssrvarg_free (&(ctx->arg));
     resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
+    resrc_fini ();
     free (ctx->rctx.root_uri);
     free_simstate (ctx->sctx.sim_state);
     if (ctx->sctx.res_queue)
@@ -296,6 +297,7 @@ static ssrvctx_t *getctx (flux_t h)
         if (!(ctx->machs = rs2rank_tab_new ()))
             oom ();
         ssrvarg_init (&(ctx->arg));
+        resrc_init ();
         ctx->rctx.root_resrc = NULL;
         ctx->rctx.root_uri = NULL;
         ctx->sctx.in_sim = false;

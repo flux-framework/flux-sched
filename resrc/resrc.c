@@ -61,10 +61,23 @@ struct resrc {
     zhash_t *twindow;
 };
 
+static zhash_t *resrc_hash = NULL;
 
 /***************************************************************************
  *  API
  ***************************************************************************/
+
+void resrc_init (void)
+{
+    if (!resrc_hash)
+        resrc_hash = zhash_new ();
+}
+
+void resrc_fini (void)
+{
+    if (resrc_hash)
+        zhash_destroy (&resrc_hash);
+}
 
 char *resrc_type (resrc_t *resrc)
 {
@@ -466,6 +479,13 @@ size_t resrc_size_reservtns (resrc_t *resrc)
     return 0;
 }
 
+resrc_t *resrc_lookup (const char *path)
+{
+    if (resrc_hash && path)
+        return ((resrc_t *)zhash_lookup (resrc_hash, path));
+    return NULL;
+}
+
 resrc_t *resrc_new_resource (const char *type, const char *path,
                              const char *basename, const char *name,
                              const char *sig, int64_t id, uuid_t uuid,
@@ -488,6 +508,11 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
                 resrc->name = xstrdup (resrc->basename);
             else
                 resrc->name = xasprintf ("%s%"PRId64"", resrc->basename, id);
+        }
+        if (!strncmp (type, "node", 5)) {
+            /* Add this new resource to the resource hash table.
+             * Do not supply a zhash_freefn() */
+            zhash_insert (resrc_hash, resrc->name, (void *)resrc);
         }
         resrc->digest = NULL;
         if (sig)
@@ -548,8 +573,11 @@ void resrc_resource_destroy (void *object)
     if (resrc) {
         if (resrc->type)
             free (resrc->type);
-        if (resrc->path)
+        if (resrc->path) {
+            if (resrc_hash)
+                zhash_delete (resrc_hash, resrc->path);
             free (resrc->path);
+        }
         if (resrc->basename)
             free (resrc->basename);
         if (resrc->name)
@@ -602,6 +630,12 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     if (!Jget_str (o, "path", &path)) {
         if ((jhierarchyo = Jobj_get (o, "hierarchy")))
             Jget_str (jhierarchyo, "default", &path);
+    }
+    if (!path) {
+        if (parent)
+            path = xasprintf ("%s/%s", parent->path, name);
+        else
+            path = xasprintf ("/%s", name);
     }
 
     resrc = resrc_new_resource (type, path, basename, name, NULL, id, uuid,

@@ -432,16 +432,19 @@ int main (int argc, char *argv[])
         ok ((access (filename, R_OK) == 0), "resource file readable");
 
         init_time();
+        resrc_init ();
         resrc = resrc_generate_rdl_resources (filename, "default");
         ok ((resrc != NULL), "resource generation from config file took: %lf",
             ((double)get_time())/1000000);
         if (resrc) {
             rc1 = test_a_resrc (resrc, true);
             resrc_tree_destroy (resrc_phys_tree (resrc), true);
+            resrc_fini ();
         }
     }
 
     init_time();
+    resrc_init ();
     ok ((hwloc_topology_init (&topology) == 0),
         "hwloc topology init succeeded");
     ok ((hwloc_topology_load (topology) == 0),
@@ -455,6 +458,7 @@ int main (int argc, char *argv[])
     if (resrc) {
         rc2 = test_a_resrc (resrc, false);
         resrc_tree_destroy (resrc_phys_tree (resrc), true);
+        resrc_fini ();
     }
 
     done_testing ();

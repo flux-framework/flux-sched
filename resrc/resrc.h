@@ -26,6 +26,16 @@ typedef enum {
 
 
 /*
+ * Initialize necessary components of the resource library
+ */
+void resrc_init (void);
+
+/*
+ * Destroy all internal components of the resource library
+ */
+void resrc_fini (void);
+
+/*
  * Return the type of the resouce
  */
 char *resrc_type (resrc_t *resrc);
@@ -103,6 +113,11 @@ size_t resrc_size_allocs (resrc_t *resrc);
  * Return the number of jobs reserved for this resource
  */
 size_t resrc_size_reservtns (resrc_t *resrc);
+
+/*
+ * Return the pointer to the resource with the given path
+ */
+resrc_t *resrc_lookup (const char *path);
 
 /*
  * Create a new resource object
