@@ -479,6 +479,13 @@ size_t resrc_size_reservtns (resrc_t *resrc)
     return 0;
 }
 
+int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item)
+{
+    int rc = zhash_insert (resrc->twindow, key, item);
+    zhash_freefn (resrc->twindow, key, free);
+    return rc;
+}
+
 resrc_t *resrc_lookup (const char *path)
 {
     if (resrc_hash && path)
@@ -669,8 +676,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
                 Jadd_int64 (w, "endtime", endtime);
 
                 json_str = xstrdup (Jtostr (w));
-                zhash_insert (resrc->twindow, "0", (void *) json_str);
-                zhash_freefn (resrc->twindow, "0", free);
+                resrc_twindow_insert (resrc, "0", (void *) json_str);
                 Jput (w);
             }
         }
@@ -846,8 +852,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
             Jadd_int64 (w, "starttime", epochtime ());
             Jadd_int64 (w, "endtime", TIME_MAX);
             char *json_str = xstrdup (Jtostr (w));
-            zhash_insert (resrc->twindow, "0", (void *) json_str);
-            zhash_freefn (resrc->twindow, "0", free);
+            resrc_twindow_insert (resrc, "0", (void *) json_str);
             Jput (w);
         }
     }
@@ -1225,8 +1230,7 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
         Jadd_int64 (j, "starttime", starttime);
         Jadd_int64 (j, "endtime", endtime);
         json_str = xstrdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
-        zhash_freefn (resrc->twindow, id_ptr, free);
+        resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
         Jput (j);
 
         rc = 0;
@@ -1314,8 +1318,7 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
         Jadd_int64 (j, "starttime", starttime);
         Jadd_int64 (j, "endtime", endtime);
         json_str = xstrdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
-        zhash_freefn (resrc->twindow, id_ptr, free);
+        resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
         Jput (j);
 
         rc = 0;

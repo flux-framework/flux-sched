@@ -115,6 +115,13 @@ size_t resrc_size_allocs (resrc_t *resrc);
 size_t resrc_size_reservtns (resrc_t *resrc);
 
 /*
+ *  Insert item into twindow hash table with specified key and item.
+ *  If key is already present returns -1 and leaves existing item
+ *  unchanged.  Returns 0 on success.
+ */
+int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item);
+
+/*
  * Return the pointer to the resource with the given path
  */
 resrc_t *resrc_lookup (const char *path);
