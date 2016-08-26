@@ -127,8 +127,8 @@ size_t resrc_size (resrc_t *resrc)
 
 size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 {
-    int64_t starttime;
-    int64_t endtime;
+    int64_t starttime = 0;
+    int64_t endtime = 0;
 
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
@@ -207,7 +207,8 @@ static bool compare_windows_starttime (void *item1, void *item2)
 #else
 static int compare_windows_starttime (void *item1, void *item2)
 {
-    int64_t starttime1, starttime2;
+    int64_t starttime1 = 0;
+    int64_t starttime2 = 0;
     JSON json1 = (JSON) item1;
     JSON json2 = (JSON) item2;
 
@@ -234,7 +235,8 @@ static bool compare_windows_endtime (void *item1, void *item2)
 #else
 static int compare_windows_endtime (void *item1, void *item2)
 {
-    int64_t endtime1, endtime2;
+    int64_t endtime1 = 0;
+    int64_t endtime2 = 0;
     JSON json1 = (JSON) item1;
     JSON json2 = (JSON) item2;
 
@@ -258,9 +260,9 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     JSON window_json = NULL;
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
-    int64_t  curr_endtime;
-    int64_t  curr_starttime;
-    size_t   curr_available;
+    int64_t  curr_endtime = 0;
+    int64_t  curr_starttime = 0;
+    size_t   curr_available = 0;
     size_t   min_available = 0;
     size_t  *alloc_ptr = NULL;
     size_t  *reservtn_ptr = NULL;
@@ -688,18 +690,6 @@ ret:
     return resrc;
 }
 
-static char *lowercase (char *str)
-{
-    if (str) {
-        int i = 0;
-        while (str[i]) {
-            str[i] = tolower((int) str[i]);
-            i++;
-        }
-    }
-    return str;
-}
-
 static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
                                           const char *sig)
 {
@@ -1024,7 +1014,7 @@ static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
     bool rc = false;
     char *json_str_window = NULL;
     int64_t endtime = resrc_reqst_endtime (request);
-    int64_t lendtime; // Resource lifetime end time
+    int64_t lendtime = 0; // Resource lifetime end time
     int64_t starttime = resrc_reqst_starttime (request);
     size_t available = 0;
 

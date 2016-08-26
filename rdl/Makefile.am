@@ -33,18 +33,20 @@ fluxluaexec_LTLIBRARIES = \
 fluxschedinclude_HEADERS = rdl.h
 
 flux_cpuset_la_SOURCES = lua-cpuset.c cpuset-str.c cpuset-str.h
-flux_cpuset_la_CFLAGS = $(LUA_INCLUDE)
+flux_cpuset_la_CFLAGS = $(LUA_INCLUDE) $(AM_CFLAGS)
 flux_cpuset_la_LIBADD = $(LUA_LIB)
 flux_cpuset_la_LDFLAGS = \
     $(luamod_ldflags) \
-    -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset
+    -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset \
+    $(AM_LDFLAGS)
 
 libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
     $(top_builddir)/src/common/liblsd/liblsd.la \
     $(top_builddir)/src/common/libutil/libutil.la
 libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
-    -Wl,--version-script=$(srcdir)/rdl_version.map
+    -Wl,--version-script=$(srcdir)/rdl_version.map \
+    $(AM_LDFLAGS)
 
 fluxcmd_PROGRAMS = flux-rdltool
 flux_rdltool_SOURCES = flux-rdltool.c
