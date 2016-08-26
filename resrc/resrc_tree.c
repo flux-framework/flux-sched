@@ -115,8 +115,6 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
 void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc)
 {
     if (resrc_tree) {
-        resrc_tree_t *phys_tree = resrc_phys_tree (resrc_tree->resrc);
-
         if (resrc_tree->parent)
             resrc_tree_list_remove (resrc_tree->parent->children, resrc_tree);
         if (resrc_tree->children) {
