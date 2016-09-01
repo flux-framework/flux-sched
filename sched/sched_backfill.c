@@ -201,7 +201,8 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
                                      resrc_reqst_children (resrc_reqst),
                                      selected_tree)) {
                     resrc_stage_resrc (resrc,
-                                       resrc_reqst_reqrd_size (resrc_reqst));
+                                       resrc_reqst_reqrd_size (resrc_reqst),
+                                       resrc_reqst_graph_reqs (resrc_reqst));
                     resrc_reqst_add_found (resrc_reqst, 1);
                     flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
                 } else {
@@ -210,7 +211,8 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
             }
         } else {
             selected_tree = resrc_tree_new (selected_parent, resrc);
-            resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst));
+            resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst),
+                                       resrc_reqst_graph_reqs (resrc_reqst));
             resrc_reqst_add_found (resrc_reqst, 1);
             flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
         }

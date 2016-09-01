@@ -37,6 +37,7 @@
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_flow.h"
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
 
@@ -483,6 +484,13 @@ int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item)
 {
     int rc = zhash_insert (resrc->twindow, key, item);
     zhash_freefn (resrc->twindow, key, free);
+    return rc;
+}
+
+int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
+{
+    int rc = zhash_insert (resrc->graphs, name, flow);
+    /* Do not supply a zhash_freefn() */
     return rc;
 }
 
@@ -1107,6 +1115,7 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
     char *rproperty = NULL;                             /* request property */
     char *rtag = NULL;                                  /* request tag */
     resrc_t *reqst_resrc = resrc_reqst_resrc (request); /* request's resrc */
+    resrc_graph_req_t *graph_req = NULL;
 
     if (reqst_resrc && !strcmp (resrc->type, reqst_resrc->type)) {
         if (zhash_size (reqst_resrc->properties)) {
@@ -1136,6 +1145,26 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             } while (zhash_next (reqst_resrc->tags));
         }
 
+        graph_req = resrc_reqst_graph_reqs (request);
+        if (graph_req) {
+            resrc_flow_t *resrc_flow;
+
+            if (!zhash_size (resrc->graphs))
+                goto ret;
+            /*
+             * Support only flow graphs right now.  When other graph
+             * types are added, a switch will need to be added to
+             * handle the appropriate graph type.
+             */
+            while (graph_req->name) {
+                resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
+                if (!resrc_flow ||
+                    !resrc_flow_available (resrc_flow, graph_req->size, request))
+                    goto ret;
+                graph_req++;
+            }
+        }
+
         if (available) {
             /*
              * We use the request's start time to determine whether to
@@ -1161,14 +1190,35 @@ ret:
     return rc;
 }
 
-int resrc_stage_resrc (resrc_t *resrc, size_t size)
+int resrc_stage_resrc (resrc_t *resrc, size_t size, resrc_graph_req_t *graph_req)
 {
     int rc = -1;
 
-    if (resrc) {
+    if (resrc)
         resrc->staged += size;
+    else
+        goto ret;
+
+    if (graph_req) {
+        resrc_flow_t *resrc_flow;
+
+        if (!zhash_size (resrc->graphs))
+            goto ret;
+
+        /* Stage the required quantities of each of the requested graphs */
+        while (graph_req->name) {
+            resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
+            if (resrc_flow)
+                rc = resrc_flow_stage_resources (resrc_flow, graph_req->size);
+            else {
+                rc = -1;
+                goto ret;
+            }
+            graph_req++;
+        };
+    } else
         rc = 0;
-    }
+
 ret:
     return rc;
 }
@@ -1177,10 +1227,19 @@ int resrc_unstage_resrc (resrc_t *resrc)
 {
     int rc = -1;
 
-    if (resrc) {
+    if (resrc)
         resrc->staged = 0;
+    else
+        goto ret;
+
+    if (zhash_size (resrc->graphs)) {
+        resrc_flow_t *resrc_flow = zhash_first (resrc->graphs);
+        do {
+            if ((rc = resrc_flow_unstage_resources (resrc_flow)))
+                goto ret;
+        } while ((resrc_flow = zhash_next (resrc->graphs)));
+    } else
         rc = 0;
-    }
 ret:
     return rc;
 }
@@ -1258,15 +1317,40 @@ ret:
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                              int64_t endtime)
 {
+    resrc_flow_t *resrc_flow;
     int rc = -1;
 
     if (!resrc || !job_id)
         goto ret;
+    else if (!resrc->staged) {
+        /*
+         * A resource with a staged value of 0 is ok and will
+         * occur with flow graph parents.
+         */
+        rc = 0;
+        goto ret;
+    }
 
     if (starttime)
         rc = resrc_allocate_resource_in_time (resrc, job_id, starttime, endtime);
     else
         rc = resrc_allocate_resource_now (resrc, job_id);
+
+    if (rc || !zhash_size (resrc->graphs))
+        goto ret;
+
+    /*
+     * Allocate specific resources from each of the associated graphs.
+     *
+     * Support only flow graphs right now.  When other graph types
+     * are added, a switch will need to be added to handle the
+     * appropriate graph type.
+     */
+    resrc_flow = zhash_first (resrc->graphs);
+    do {
+        if ((rc = resrc_flow_allocate (resrc_flow, job_id, starttime, endtime)))
+            goto ret;
+    } while ((resrc_flow = zhash_next (resrc->graphs)));
 
 ret:
     return rc;
@@ -1345,15 +1429,40 @@ ret:
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                             int64_t endtime)
 {
+    resrc_flow_t *resrc_flow;
     int rc = -1;
 
     if (!resrc || !job_id)
         goto ret;
+    else if (!resrc->staged) {
+        /*
+         * A resource with a staged value of 0 is ok and will
+         * occur with flow graph parents.
+         */
+        rc = 0;
+        goto ret;
+    }
 
     if (starttime)
         rc = resrc_reserve_resource_in_time (resrc, job_id, starttime, endtime);
     else
         rc = resrc_reserve_resource_now (resrc, job_id);
+
+    if (rc || !zhash_size (resrc->graphs))
+        goto ret;
+
+    /*
+     * Reserve specific resources from each of the associated graphs.
+     *
+     * Support only flow graphs right now.  When other graph types
+     * are added, a switch will need to be added to handle the
+     * appropriate graph type.
+     */
+    resrc_flow = zhash_first (resrc->graphs);
+    do {
+        if ((rc = resrc_flow_reserve (resrc_flow, job_id, starttime, endtime)))
+            goto ret;
+    } while ((resrc_flow = zhash_next (resrc->graphs)));
 
 ret:
     return rc;
