@@ -185,6 +185,13 @@ void resrc_print_resource (resrc_t *resrc);
 resrc_t *resrc_create_cluster (char *cluster);
 
 /*
+ * Finds if a resource request matches the specified resource over a period
+ * defined by the start and end times.
+ */
+bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
+                           size_t reqrd_size);
+
+/*
  * Determine whether a specific resource has the required characteristics
  * Inputs:  resrc     - the specific resource under evaluation
  *          request   - resource request with the required characteristics

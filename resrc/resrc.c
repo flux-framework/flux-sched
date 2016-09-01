@@ -1068,7 +1068,8 @@ resrc_t *resrc_create_cluster (char *cluster)
  * Finds if a resource request matches the specified resource over a period
  * defined by the start and end times.
  */
-static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
+bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
+                           size_t reqrd_size)
 {
     bool rc = false;
     char *json_str_window = NULL;
@@ -1094,7 +1095,7 @@ static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
     available = resrc_available_during_range (resrc, starttime, endtime,
                                               resrc_reqst_exclusive (request));
 
-    rc = (available >= resrc_reqst_reqrd_size (request));
+    rc = (available >= reqrd_size);
 
     return rc;
 }
@@ -1143,7 +1144,8 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
              * expensive.
              */
             if (resrc_reqst_starttime (request))
-                rc = resrc_walltime_match (resrc, request);
+                rc = resrc_walltime_match (resrc, request,
+                                           resrc_reqst_reqrd_size (request));
             else {
                 rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
                 if (rc && resrc_reqst_exclusive (request)) {
