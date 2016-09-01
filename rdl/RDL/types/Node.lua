@@ -41,6 +41,7 @@ function Node:initialize (arg)
           basename = basename,
           id = id,
           name = name,
+          size = arg.size,
           properties = arg.properties or {},
           tags = arg.tags or {}
         }
