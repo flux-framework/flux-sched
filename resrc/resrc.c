@@ -1159,10 +1159,28 @@ ret:
     return rc;
 }
 
-void resrc_stage_resrc (resrc_t *resrc, size_t size)
+int resrc_stage_resrc (resrc_t *resrc, size_t size)
 {
-    if (resrc)
-        resrc->staged = size;
+    int rc = -1;
+
+    if (resrc) {
+        resrc->staged += size;
+        rc = 0;
+    }
+ret:
+    return rc;
+}
+
+int resrc_unstage_resrc (resrc_t *resrc)
+{
+    int rc = -1;
+
+    if (resrc) {
+        resrc->staged = 0;
+        rc = 0;
+    }
+ret:
+    return rc;
 }
 
 /*

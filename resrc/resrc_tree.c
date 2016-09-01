@@ -237,7 +237,7 @@ int resrc_tree_release_all_reservations (resrc_tree_t *resrc_tree)
 void resrc_tree_unstage_resources (resrc_tree_t *resrc_tree)
 {
     if (resrc_tree) {
-        resrc_stage_resrc (resrc_tree->resrc, 0);
+        resrc_unstage_resrc (resrc_tree->resrc);
         if (resrc_tree_num_children (resrc_tree))
             resrc_tree_list_unstage_resources (resrc_tree->children);
     }

@@ -356,6 +356,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 1, 0, 0);
     ok (!rc, "successfully allocated resources for job 1");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 2);
     if (rdl)
@@ -364,6 +365,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 2, 0, 0);
     ok (!rc, "successfully allocated resources for job 2");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 3);
     if (rdl)
@@ -372,6 +374,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 3, 0, 0);
     ok (!rc, "successfully allocated resources for job 3");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 4);
     if (rdl)
@@ -380,6 +383,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_reserve (selected_tree, 4, 0, 0);
     ok (!rc, "successfully reserved resources for job 4");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     printf ("        allocate and reserve took: %lf\n",
             ((double)get_time ())/1000000);

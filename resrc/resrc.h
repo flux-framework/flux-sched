@@ -198,7 +198,12 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
 /*
  * Stage size elements of a resource
  */
-void resrc_stage_resrc(resrc_t *resrc, size_t size);
+int resrc_stage_resrc(resrc_t *resrc, size_t size);
+
+/*
+ * Zero-out all the staged elements of a resource
+ */
+int resrc_unstage_resrc (resrc_t *resrc);
 
 /*
  * Allocate a resource to a job
