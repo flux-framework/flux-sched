@@ -1193,21 +1193,19 @@ static int resrc_allocate_resource_now (resrc_t *resrc, int64_t job_id)
     size_t *size_ptr;
     int rc = -1;
 
-    if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
-            goto ret;
+    if (resrc->staged > resrc->available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->allocs, id_ptr, size_ptr);
-        zhash_freefn (resrc->allocs, id_ptr, free);
-        resrc->available -= resrc->staged;
-        resrc->staged = 0;
-        resrc->state = RESOURCE_ALLOCATED;
-        rc = 0;
-        free (id_ptr);
-    }
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->allocs, id_ptr, size_ptr);
+    zhash_freefn (resrc->allocs, id_ptr, free);
+    resrc->available -= resrc->staged;
+    resrc->staged = 0;
+    resrc->state = RESOURCE_ALLOCATED;
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1226,34 +1224,31 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t *size_ptr;
     size_t available;
 
-    if (resrc && job_id) {
-        /* Don't bother going through the exclusivity checks.  We will
-         * save cycles and assume the selected resources are
-         * exclusively available if that was the criteria of the
-         * search. */
-        available = resrc_available_during_range (resrc, starttime, endtime,
-                                                  false);
-        if (resrc->staged > available)
-            goto ret;
+    /* Don't bother going through the exclusivity checks.  We will
+     * save cycles and assume the selected resources are
+     * exclusively available if that was the criteria of the
+     * search. */
+    available = resrc_available_during_range (resrc, starttime, endtime, false);
+    if (resrc->staged > available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->allocs, id_ptr, size_ptr);
-        zhash_freefn (resrc->allocs, id_ptr, free);
-        resrc->staged = 0;
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->allocs, id_ptr, size_ptr);
+    zhash_freefn (resrc->allocs, id_ptr, free);
+    resrc->staged = 0;
 
-        /* add walltime */
-        j = Jnew ();
-        Jadd_int64 (j, "starttime", starttime);
-        Jadd_int64 (j, "endtime", endtime);
-        json_str = xstrdup (Jtostr (j));
-        resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
-        Jput (j);
+    /* add walltime */
+    j = Jnew ();
+    Jadd_int64 (j, "starttime", starttime);
+    Jadd_int64 (j, "endtime", endtime);
+    json_str = xstrdup (Jtostr (j));
+    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
+    Jput (j);
 
-        rc = 0;
-        free (id_ptr);
-    }
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1261,13 +1256,17 @@ ret:
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                              int64_t endtime)
 {
-    int rc;
+    int rc = -1;
+
+    if (!resrc || !job_id)
+        goto ret;
 
     if (starttime)
         rc = resrc_allocate_resource_in_time (resrc, job_id, starttime, endtime);
     else
         rc = resrc_allocate_resource_now (resrc, job_id);
 
+ret:
     return rc;
 }
 
@@ -1281,22 +1280,20 @@ static int resrc_reserve_resource_now (resrc_t *resrc, int64_t job_id)
     size_t *size_ptr;
     int rc = -1;
 
-    if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
-            goto ret;
+    if (resrc->staged > resrc->available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->reservtns, id_ptr, size_ptr);
-        zhash_freefn (resrc->reservtns, id_ptr, free);
-        resrc->available -= resrc->staged;
-        resrc->staged = 0;
-        if (resrc->state != RESOURCE_ALLOCATED)
-            resrc->state = RESOURCE_RESERVED;
-        rc = 0;
-        free (id_ptr);
-    }
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+    zhash_freefn (resrc->reservtns, id_ptr, free);
+    resrc->available -= resrc->staged;
+    resrc->staged = 0;
+    if (resrc->state != RESOURCE_ALLOCATED)
+        resrc->state = RESOURCE_RESERVED;
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1314,34 +1311,31 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t *size_ptr;
     size_t available;
 
-    if (resrc && job_id) {
-        /* Don't bother going through the exclusivity checks.  We will
-         * save cycles and assume the selected resources are
-         * exclusively available if that was the criteria of the
-         * search. */
-        available = resrc_available_during_range (resrc, starttime, endtime,
-                                                  false);
-        if (resrc->staged > available)
-            goto ret;
+    /* Don't bother going through the exclusivity checks.  We will
+     * save cycles and assume the selected resources are
+     * exclusively available if that was the criteria of the
+     * search. */
+    available = resrc_available_during_range (resrc, starttime, endtime, false);
+    if (resrc->staged > available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->reservtns, id_ptr, size_ptr);
-        zhash_freefn (resrc->reservtns, id_ptr, free);
-        resrc->staged = 0;
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+    zhash_freefn (resrc->reservtns, id_ptr, free);
+    resrc->staged = 0;
 
-        /* add walltime */
-        j = Jnew ();
-        Jadd_int64 (j, "starttime", starttime);
-        Jadd_int64 (j, "endtime", endtime);
-        json_str = xstrdup (Jtostr (j));
-        resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
-        Jput (j);
+    /* add walltime */
+    j = Jnew ();
+    Jadd_int64 (j, "starttime", starttime);
+    Jadd_int64 (j, "endtime", endtime);
+    json_str = xstrdup (Jtostr (j));
+    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
+    Jput (j);
 
-        rc = 0;
-        free (id_ptr);
-    }
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1349,13 +1343,17 @@ ret:
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                             int64_t endtime)
 {
-    int rc;
+    int rc = -1;
+
+    if (!resrc || !job_id)
+        goto ret;
 
     if (starttime)
-        rc =resrc_reserve_resource_in_time (resrc, job_id, starttime, endtime);
+        rc = resrc_reserve_resource_in_time (resrc, job_id, starttime, endtime);
     else
-        rc =resrc_reserve_resource_now (resrc, job_id);
+        rc = resrc_reserve_resource_now (resrc, job_id);
 
+ret:
     return rc;
 }
 
