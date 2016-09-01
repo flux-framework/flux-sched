@@ -41,6 +41,7 @@
 
 
 static struct timeval start_time;
+int verbose = 0;
 
 void init_time() {
     gettimeofday(&start_time, NULL);
@@ -232,7 +233,6 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
 {
     int found = 0;
     int rc = 0;
-    int verbose = 0;
     int64_t nowtime = epochtime ();
     JSON o = NULL;
     JSON req_res = NULL;
