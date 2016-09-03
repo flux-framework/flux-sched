@@ -23,11 +23,8 @@
  \*****************************************************************************/
 
 /*
- * scheduler.h - common data structure for scheduler framework and plugins
- *
- * Update Log:
- *       Apr 08 2015 DHA: Code refactoring w/ JSC API
- * 	     May 24 2014 DHA: File created.
+ * scheduler.h - common data structure and macroes
+ *    for scheduler framework and plugins
  */
 
 #ifndef SCHEDULER_H
@@ -62,6 +59,27 @@ typedef struct {
     resrc_tree_t *resrc_tree; /*!< resources allocated to this LWJ */
     int64_t starttime;
 } flux_lwj_t;
+
+
+/**
+ *  Defines parameters that control scheduling optimization
+ */
+typedef struct {
+    long queue_depth;        /* max njobs to consider per sched event */
+} sched_params_t;
+
+
+/*
+ * The following defines the default values for all of the scheduling
+ * parameters and should be used by both scheduler framework service
+ * comms module and the scheduling plug-ins. If the default values
+ * are overriden via other mechanisms (e.g., sched load options), the
+ * new values also need to be passed down to the scheduling
+ * plug-ins.
+ */
+#define SCHED_PARAM_Q_DEPTH_DEFAULT 1024
+
+const sched_params_t *sched_params_get (flux_t h);
 
 #endif /* SCHEDULER_H */
 

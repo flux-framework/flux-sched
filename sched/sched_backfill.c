@@ -78,7 +78,7 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
-int sched_loop_setup (void)
+int sched_loop_setup (flux_t h)
 {
     curr_reservation_depth = 0;
     if (!completion_times)
@@ -339,7 +339,7 @@ ret:
     return rc;
 }
 
-int process_args (flux_t h, char *argz, size_t argz_len)
+int process_args (flux_t h, char *argz, size_t argz_len, const sched_params_t *sp)
 {
     int rc = 0;
     char *reserve_depth_str = NULL;
@@ -360,9 +360,24 @@ int process_args (flux_t h, char *argz, size_t argz_len)
 
     if (reserve_depth_str) {
         // If atoi fails, it defaults to 0, which is fine for us
-        reservation_depth = atoi(reserve_depth_str);
+        reservation_depth = atoi (reserve_depth_str);
     } else {
         reservation_depth = 0;
+    }
+
+    if (!sp) {
+        flux_log (h, LOG_ERR, "scheduling parameters unavailable");
+        rc = -1;
+        errno = EINVAL;
+    } else if (reservation_depth > sp->queue_depth) {
+        /* Conservative backfill (-1) will still be limited by the queue-depth
+         * but we just treat queue-depth as the limit for it
+         */
+        flux_log (h, LOG_ERR,
+                  "reserve-depth value (%d) - greater than queue-depth (%ld)",
+                  reservation_depth, sp->queue_depth);
+        rc = -1;
+        errno = EINVAL;
     }
 
  done:

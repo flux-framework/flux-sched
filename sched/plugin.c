@@ -30,9 +30,7 @@
 #include <czmq.h>
 
 #include "src/common/libutil/shortjson.h"
-#include "resrc.h"
-#include "resrc_tree.h"
-#include "resrc_reqst.h"
+#include "scheduler.h"
 #include "plugin.h"
 
 struct sched_plugin_loader {
@@ -212,6 +210,7 @@ static void insmod_cb (flux_t h, flux_msg_handler_t *w,
 {
     struct sched_plugin_loader *sploader = arg;
     struct sched_plugin *plugin = sched_plugin_get (sploader);
+    const sched_params_t *sp = sched_params_get (h);
     const char *json_str;
     char *path = NULL;
     char *argz = NULL;
@@ -229,7 +228,7 @@ static void insmod_cb (flux_t h, flux_msg_handler_t *w,
     if (sched_plugin_load (sploader, path) < 0)
         goto done;
 
-    if (sploader->plugin->process_args (sploader->h, argz, argz_len) < 0) {
+    if (sploader->plugin->process_args (sploader->h, argz, argz_len, sp) < 0) {
         goto done;
     }
     rc = 0;
