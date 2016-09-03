@@ -19,20 +19,20 @@ schedplugin_LTLIBRARIES = sched_fcfs.la \
 
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h
 
-sched_la_SOURCES = sched.c rs2rank.c rsreader.c plugin.c plugin.h
+sched_la_SOURCES = sched.c scheduler.h rs2rank.c rsreader.c plugin.c plugin.h
 sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 sched_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS) \
     $(top_builddir)/simulator/libflux-sim.la
 sched_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module
 
-sched_fcfs_la_SOURCES = sched_fcfs.c
+sched_fcfs_la_SOURCES = sched_fcfs.c scheduler.h
 sched_fcfs_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 sched_fcfs_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
 sched_fcfs_la_LDFLAGS = $(AM_LDFLAGS) $(schedplugin_ldflags)
 
-sched_backfill_la_SOURCES = sched_backfill.c
+sched_backfill_la_SOURCES = sched_backfill.c scheduler.h
 sched_backfill_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
 sched_backfill_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(JSON_LIBS) $(CZMQ_LIBS)
