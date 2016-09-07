@@ -61,6 +61,10 @@
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t h, void *arg);
 #endif
+static void ev_prep_cb (flux_reactor_t *r, flux_watcher_t *w,
+                        int revents, void *arg);
+static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w,
+                         int revents, void *arg);
 static void res_event_cb (flux_t h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
@@ -114,6 +118,7 @@ typedef struct {
     flux_t        h;
     zhash_t      *job_index;          /* For fast job lookup for all queues*/
     zlist_t      *p_queue;            /* Pending job priority queue */
+    bool          pq_state;           /* schedulable state change in p_queue */
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
     machs_t      *machs;              /* Helps resolve resources to ranks */
@@ -121,6 +126,9 @@ typedef struct {
     rdlctx_t      rctx;               /* RDL context */
     simctx_t      sctx;               /* simulator context */
     struct sched_plugin_loader *loader; /* plugin loader */
+    flux_watcher_t *before;
+    flux_watcher_t *after;
+    flux_watcher_t *idle;
 } ssrvctx_t;
 
 
@@ -133,6 +141,7 @@ typedef struct {
 static inline void sched_params_default (sched_params_t *params)
 {
     params->queue_depth = SCHED_PARAM_Q_DEPTH_DEFAULT;
+    params->delay_sched = SCHED_PARAM_DELAY_DEFAULT;
     /* set other scheduling parameters to their default values here */
 }
 
@@ -142,17 +151,28 @@ static inline int sched_params_args (char *arg, sched_params_t *params)
     char *argz = NULL;
     size_t argz_len = 0;
     const char *e = NULL;
+    char *o_arg = NULL;
+    long val = 0;
 
     argz_create_sep (arg, ',', &argz, &argz_len);
     while ((e = argz_next (argz, argz_len, e))) {
         if (!strncmp ("queue-depth=", e, sizeof ("queue-depth"))) {
-            char *o_arg = strstr(e, "=") + 1;
-            long val = strtol(o_arg, (char **) NULL, 10);
+            o_arg = strstr(e, "=") + 1;
+            val = strtol(o_arg, (char **) NULL, 10);
             if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
                    || (errno != 0 && val == 0))
                 rc = -1;
             else
                 params->queue_depth = val;
+        } else if (!strncmp ("delay-sched=", e, sizeof ("delay-sched"))) {
+            if (!strncmp ((strstr(e, "=") + 1), "true", sizeof ("true")))
+                params->delay_sched = true;
+            else if (!strncmp ((strstr(e, "=") + 1), "false", sizeof ("false")))
+                params->delay_sched = false;
+            else {
+                errno = EINVAL;
+                rc = -1;
+            }
         } else {
            errno = EINVAL;
            rc = -1;
@@ -256,6 +276,37 @@ done:
     return rc;
 }
 
+static int adjust_for_sched_params (ssrvctx_t *ctx)
+{
+    flux_reactor_t *r = NULL;
+    int rc = 0;
+    if (ctx->arg.s_params.delay_sched && !ctx->sctx.in_sim) {
+        if (!(r = flux_get_reactor (ctx->h))) {
+            rc = -1;
+            goto done;
+        }
+        if (!(ctx->before = flux_prepare_watcher_create (r, ev_prep_cb, ctx))) {
+            rc = -1;
+            goto done;
+        }
+        if (!(ctx->after = flux_check_watcher_create (r, ev_check_cb, ctx))) {
+            rc = -1;
+            goto done;
+        }
+        /* idle watcher makes sure the check watcher (after) is called
+           even with no external events delivered */
+        if (!(ctx->idle = flux_idle_watcher_create (r, NULL, NULL))) {
+            rc = -1;
+            goto done;
+        }
+        flux_watcher_start (ctx->before);
+        flux_watcher_start (ctx->after);
+    }
+done:
+    return rc;
+}
+
+
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
@@ -277,6 +328,12 @@ static void freectx (void *arg)
         zlist_destroy (&(ctx->sctx.timer_queue));
     if (ctx->loader)
         sched_plugin_loader_destroy (ctx->loader);
+    if (ctx->before)
+        flux_watcher_destroy (ctx->before);
+    if (ctx->after)
+        flux_watcher_destroy (ctx->after);
+    if (ctx->idle)
+        flux_watcher_destroy (ctx->idle);
     free (ctx);
 }
 
@@ -290,6 +347,7 @@ static ssrvctx_t *getctx (flux_t h)
             oom ();
         if (!(ctx->p_queue = zlist_new ()))
             oom ();
+        ctx->pq_state = false;
         if (!(ctx->r_queue = zlist_new ()))
             oom ();
         if (!(ctx->c_queue = zlist_new ()))
@@ -306,6 +364,9 @@ static ssrvctx_t *getctx (flux_t h)
         ctx->sctx.jsc_queue = NULL;
         ctx->sctx.timer_queue = NULL;
         ctx->loader = NULL;
+        ctx->before = NULL;
+        ctx->after = NULL;
+        ctx->idle = NULL;
         flux_aux_set (h, "sched", ctx, freectx);
     }
     return ctx;
@@ -415,7 +476,7 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
  *                                                                              *
  *******************************************************************************/
 
-static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
+static int q_enqueue_into_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
     int rc = -1;
     int64_t jid = -1;
@@ -432,6 +493,7 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
         flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
         goto done;
     }
+    job->enqueue_pos = (int64_t)zlist_size (ctx->p_queue);
     key = xasprintf ("%"PRId64"", jid);
     if (zhash_insert(ctx->job_index, key, job) != 0) {
         flux_log (ctx->h, LOG_ERR, "failed to index a job.");
@@ -455,9 +517,22 @@ static flux_lwj_t *q_find_job (ssrvctx_t *ctx, int64_t id)
     return j;
 }
 
+static int q_mark_schedulability (ssrvctx_t *ctx, flux_lwj_t *job)
+{
+    if (ctx->pq_state == false
+        && job->enqueue_pos <= ctx->arg.s_params.queue_depth) {
+        ctx->pq_state = true;
+        return 0;
+    }
+    return -1;
+}
+
 static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 {
     zlist_remove (ctx->p_queue, j);
+    /* dequeue operation should always be a schedulable queue operation */
+    if (ctx->pq_state == false)
+        ctx->pq_state = true;
     return zlist_append (ctx->r_queue, j);
 }
 
@@ -467,6 +542,8 @@ static int q_move_to_cqueue (ssrvctx_t *ctx, flux_lwj_t *j)
     // FIXME: no transition from pending queue to cqueue yet
     //zlist_remove (ctx->p_queue, j);
     zlist_remove (ctx->r_queue, j);
+    if (ctx->pq_state == false)
+        ctx->pq_state = true;
     return zlist_append (ctx->c_queue, j);
 }
 
@@ -842,6 +919,7 @@ static void trigger_cb (flux_t h,
 
     flux_log (h, LOG_DEBUG, "Setting sim_state to new values");
     ctx->sctx.sim_state = json_to_sim_state (o);
+    ev_prep_cb (NULL, NULL, 0, ctx);
 
     start = clock ();
 
@@ -864,6 +942,7 @@ static void trigger_cb (flux_t h,
                   seconds);
     }
 
+    ev_check_cb (NULL, NULL, 0, ctx);
     handle_timer_queue (ctx, ctx->sctx.sim_state);
 
     send_reply_request (h, "sched", ctx->sctx.sim_state);
@@ -1502,7 +1581,10 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         /* fall through for implicit event generation */
     case J_PENDING:
         VERIFY (trans (J_SCHEDREQ, J_SCHEDREQ, &(job->state)));
-        schedule_jobs (ctx); /* includes request allocate if successful */
+        if (!ctx->arg.s_params.delay_sched)
+            schedule_jobs (ctx);
+        else
+            q_mark_schedulability (ctx, job);
         break;
     case J_SCHEDREQ:
         /* A schedule reqeusted should not get an event. */
@@ -1530,18 +1612,20 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         if (!ctx->arg.schedonce) {
             /* support testing by actually not releasing the resrc */
             if (resrc_tree_release (job->resrc_tree, job->lwj_id)) {
-            flux_log (h, LOG_ERR, "%s: failed to release resources for job "
+                flux_log (h, LOG_ERR, "%s: failed to release resources for job "
                       "%"PRId64"", __FUNCTION__, job->lwj_id);
             }
         }
-        flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
-        if (!msg || flux_send (h, msg, 0) < 0) {
-            flux_log (h, LOG_ERR, "%s: error sending event: %s",
-                      __FUNCTION__, strerror (errno));
-        } else {
-            flux_msg_destroy (msg);
-            flux_log (h, LOG_DEBUG, "Released resources for job %"PRId64"",
-                      job->lwj_id);
+        if (!ctx->arg.s_params.delay_sched) {
+            flux_msg_t *msg = flux_event_encode ("sched.res.freed", NULL);
+            if (!msg || flux_send (h, msg, 0) < 0) {
+                flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                          __FUNCTION__, strerror (errno));
+            } else {
+                flux_msg_destroy (msg);
+                flux_log (h, LOG_DEBUG, "Released resources for job %"PRId64"",
+                          job->lwj_id);
+            }
         }
         break;
     case J_CANCELLED:
@@ -1614,7 +1698,7 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
         return -1;
     }
     if (is_newjob (jcb))
-        append_to_pqueue (ctx, jcb);
+        q_enqueue_into_pqueue (ctx, jcb);
     if ((j = fetch_job_and_event (ctx, jcb, &ns)) == NULL) {
         flux_log (ctx->h, LOG_ERR, "error fetching job and event");
         return -1;
@@ -1622,6 +1706,26 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
     Jput (jcb);
     return action (ctx, j, ns);
 }
+
+static void ev_prep_cb (flux_reactor_t *r, flux_watcher_t *w, int ev, void *a)
+{
+    ssrvctx_t *ctx = (ssrvctx_t *)a;
+    if (ctx->pq_state && ctx->idle)
+        flux_watcher_start (ctx->idle);
+}
+
+static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w, int ev, void *a)
+{
+    ssrvctx_t *ctx = (ssrvctx_t *)a;
+    if (ctx->idle)
+        flux_watcher_stop (ctx->idle);
+    if (ctx->pq_state) {
+        flux_log (ctx->h, LOG_DEBUG, "check callback about to schedule jobs.");
+        ctx->pq_state = false;
+        schedule_jobs (ctx);
+    }
+}
+
 
 /******************************************************************************
  *                                                                            *
@@ -1662,6 +1766,14 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "can't process module args");
         goto done;
     }
+    if (bridge_set_execmode (ctx) != 0) {
+        flux_log (h, LOG_ERR, "failed to setup execution mode");
+        goto done;
+    }
+    if (adjust_for_sched_params (ctx) != 0) {
+        flux_log (h, LOG_ERR, "can't adjust for schedule parameters");
+        goto done;
+    }
     flux_log (h, LOG_INFO, "sched comms module starting");
     if (!(ctx->loader = sched_plugin_loader_create (h))) {
         flux_log_error (h, "failed to initialize plugin loader");
@@ -1677,10 +1789,6 @@ int mod_main (flux_t h, int argc, char **argv)
             goto done;
         }
         flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
-    }
-    if (bridge_set_execmode (ctx) != 0) {
-        flux_log (h, LOG_ERR, "failed to setup execution mode");
-        goto done;
     }
     if (load_resources (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to load resources");

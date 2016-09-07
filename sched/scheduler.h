@@ -58,6 +58,7 @@ typedef struct {
     flux_res_t *req;     /*!< resources requested by this LWJ */
     resrc_tree_t *resrc_tree; /*!< resources allocated to this LWJ */
     int64_t starttime;
+    int64_t enqueue_pos; /*!< the initial enqueue position */
 } flux_lwj_t;
 
 
@@ -66,6 +67,7 @@ typedef struct {
  */
 typedef struct {
     long queue_depth;        /* max njobs to consider per sched event */
+    bool delay_sched;        /* delay scheduling on individual job event */
 } sched_params_t;
 
 
@@ -78,6 +80,7 @@ typedef struct {
  * plug-ins.
  */
 #define SCHED_PARAM_Q_DEPTH_DEFAULT 1024
+#define SCHED_PARAM_DELAY_DEFAULT true
 
 const sched_params_t *sched_params_get (flux_t h);
 
