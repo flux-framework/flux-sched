@@ -106,11 +106,13 @@ typedef struct {
     bool          fail_on_error;      /* Fail immediately on error */
     int           verbosity;
     rsreader_t    r_mode;
+    sched_params_t s_params;
 } ssrvarg_t;
 
 /* TODO: Implement prioritization function for p_queue */
 typedef struct {
     flux_t        h;
+    zhash_t      *job_index;          /* For fast job lookup for all queues*/
     zlist_t      *p_queue;            /* Pending job priority queue */
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
@@ -121,11 +123,49 @@ typedef struct {
     struct sched_plugin_loader *loader; /* plugin loader */
 } ssrvctx_t;
 
+
 /******************************************************************************
  *                                                                            *
  *                                 Utilities                                  *
  *                                                                            *
  ******************************************************************************/
+
+static inline void sched_params_default (sched_params_t *params)
+{
+    params->queue_depth = SCHED_PARAM_Q_DEPTH_DEFAULT;
+    /* set other scheduling parameters to their default values here */
+}
+
+static inline int sched_params_args (char *arg, sched_params_t *params)
+{
+    int rc = 0;
+    char *argz = NULL;
+    size_t argz_len = 0;
+    const char *e = NULL;
+
+    argz_create_sep (arg, ',', &argz, &argz_len);
+    while ((e = argz_next (argz, argz_len, e))) {
+        if (!strncmp ("queue-depth=", e, sizeof ("queue-depth"))) {
+            char *o_arg = strstr(e, "=") + 1;
+            long val = strtol(o_arg, (char **) NULL, 10);
+            if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
+                   || (errno != 0 && val == 0))
+                rc = -1;
+            else
+                params->queue_depth = val;
+        } else {
+           errno = EINVAL;
+           rc = -1;
+        }
+
+        if (rc != 0)
+            break;
+    }
+
+    if (argz)
+        free (argz);
+    return rc;
+}
 
 static inline void ssrvarg_init (ssrvarg_t *arg)
 {
@@ -137,6 +177,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->schedonce = false;
     arg->fail_on_error = false;
     arg->verbosity = 0;
+    sched_params_default (&(arg->s_params));
 }
 
 static inline void ssrvarg_free (ssrvarg_t *arg)
@@ -158,6 +199,7 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     char *immediate = NULL;
     char *vlevel= NULL;
     char *sim = NULL;
+    char *sprms = NULL;
     for (i = 0; i < argc; i++) {
         if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
             a->path = xstrdup (strstr (argv[i], "=") + 1);
@@ -176,6 +218,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             a->userplugin = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("plugin-opts=", argv[i], sizeof ("plugin-opts"))) {
             a->userplugin_opts = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("sched-params=", argv[i], sizeof ("sched-params"))) {
+            sprms = xstrdup (strstr (argv[i], "=") + 1);
         } else {
             rc = -1;
             errno = EINVAL;
@@ -206,6 +250,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
         a->r_mode = (a->sim)? RSREADER_RESRC_EMUL : RSREADER_RESRC;
     else
         a->r_mode = RSREADER_HWLOC;
+    if (sprms)
+        rc = sched_params_args (sprms, &(a->s_params));
 done:
     return rc;
 }
@@ -213,6 +259,7 @@ done:
 static void freectx (void *arg)
 {
     ssrvctx_t *ctx = arg;
+    zhash_destroy (&(ctx->job_index));
     zlist_destroy (&(ctx->p_queue));
     zlist_destroy (&(ctx->r_queue));
     zlist_destroy (&(ctx->c_queue));
@@ -238,6 +285,8 @@ static ssrvctx_t *getctx (flux_t h)
     if (!ctx) {
         ctx = xzmalloc (sizeof (*ctx));
         ctx->h = h;
+        if (!(ctx->job_index = zhash_new ()))
+            oom ();
         if (!(ctx->p_queue = zlist_new ()))
             oom ();
         if (!(ctx->r_queue = zlist_new ()))
@@ -341,14 +390,13 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
     char *argz = NULL;
     size_t argz_len = 0;
     struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
+    const sched_params_t *sp = &(ctx->arg.s_params);
 
-    if (userplugin_opts) {
+    if (userplugin_opts)
         argz_create_sep (userplugin_opts, ',', &argz, &argz_len);
+    if (plugin->process_args (ctx->h, argz, argz_len, sp) < 0)
+        goto done;
 
-        if (plugin->process_args (ctx->h, argz, argz_len) < 0) {
-            goto done;
-        }
-    }
     rc = 0;
 
  done:
@@ -369,6 +417,7 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
 {
     int rc = -1;
     int64_t jid = -1;
+    char *key = NULL;
     flux_lwj_t *job = NULL;
 
     get_jobid (jcb, &jid);
@@ -381,27 +430,27 @@ static int append_to_pqueue (ssrvctx_t *ctx, JSON jcb)
         flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
         goto done;
     }
+    key = xasprintf ("%"PRId64"", jid);
+    if (zhash_insert(ctx->job_index, key, job) != 0) {
+        flux_log (ctx->h, LOG_ERR, "failed to index a job.");
+        goto done;
+    }
+    /* please don't free the job using job_index; this is just a lookup table */
     rc = 0;
 done:
+    if (key)
+        free (key);
     return rc;
 }
 
 static flux_lwj_t *q_find_job (ssrvctx_t *ctx, int64_t id)
 {
     flux_lwj_t *j = NULL;
-    /* NOTE: performance issue when we have
-     * large numbers of jobs in the system?
-     */
-    for (j = zlist_first (ctx->p_queue); j; j = zlist_next (ctx->p_queue))
-        if (j->lwj_id == id)
-            return j;
-    for (j = zlist_first (ctx->r_queue); j; j = zlist_next (ctx->r_queue))
-        if (j->lwj_id == id)
-            return j;
-    for (j = zlist_first (ctx->c_queue); j; j = zlist_next (ctx->c_queue))
-        if (j->lwj_id == id)
-            return j;
-    return NULL;
+    char *key = NULL;
+    key = xasprintf ("%"PRId64"", id);
+    j = zhash_lookup (ctx->job_index, key);
+    free (key);
+    return j;
 }
 
 static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
@@ -1377,6 +1426,7 @@ done:
 static int schedule_jobs (ssrvctx_t *ctx)
 {
     int rc = 0;
+    int qdepth = 0;
     flux_lwj_t *job = NULL;
     struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
     /* Prioritizing the job queue is left to an external agent.  In
@@ -1394,11 +1444,12 @@ static int schedule_jobs (ssrvctx_t *ctx)
         return -1;
     rc = plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
-    while (!rc && job) {
+    while (!rc && job && (qdepth < ctx->arg.s_params.queue_depth)) {
         if (job->state == J_SCHEDREQ) {
             rc = schedule_job (ctx, job, starttime);
         }
         job = (flux_lwj_t*)zlist_next (jobs);
+        qdepth++;
     }
 
     return rc;
@@ -1509,6 +1560,10 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         break;
     case J_REAPED:
     default:
+        /* TODO: when reap functionality is implemented
+           not only remove the job from ctx->c_queue but also
+           remove it from ctx->job_index.
+         */
         VERIFY (false);
         break;
     }
@@ -1572,6 +1627,18 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
  *                                                                            *
  ******************************************************************************/
 
+const sched_params_t *sched_params_get (flux_t h)
+{
+    const sched_params_t *rp = NULL;
+    ssrvctx_t *ctx = NULL;
+    if (!(ctx = getctx (h))) {
+        flux_log (h, LOG_ERR, "can't find or allocate the context");
+        goto done;
+    }
+    rp = (const sched_params_t *) &(ctx->arg.s_params);
+done:
+    return rp;
+}
 
 int mod_main (flux_t h, int argc, char **argv)
 {

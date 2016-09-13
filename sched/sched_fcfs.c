@@ -50,7 +50,7 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
-int sched_loop_setup (void)
+int sched_loop_setup (flux_t h)
 {
     return 0;
 }
