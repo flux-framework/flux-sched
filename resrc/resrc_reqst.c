@@ -51,6 +51,7 @@ struct resrc_reqst {
     int64_t reqrd_size;
     int64_t nfound;
     resrc_reqst_list_t *children;
+    resrc_graph_req_t *g_reqs;
 };
 
 static bool match_children (resrc_tree_list_t *r_trees,
@@ -61,10 +62,23 @@ static bool match_children (resrc_tree_list_t *r_trees,
  * Resource request
  ***********************************************************************/
 
+void resrc_graph_req_destroy (resrc_graph_req_t *g_reqs)
+{
+    if (g_reqs)
+        free (g_reqs);
+}
+
 resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst)
         return resrc_reqst->resrc;
+    return NULL;
+}
+
+resrc_graph_req_t *resrc_reqst_graph_reqs (resrc_reqst_t *resrc_reqst)
+{
+    if (resrc_reqst)
+        return resrc_reqst->g_reqs;
     return NULL;
 }
 
@@ -232,10 +246,42 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
         resrc_reqst->reqrd_qty = qty;
         resrc_reqst->reqrd_size = size;
         resrc_reqst->nfound = 0;
+        resrc_reqst->g_reqs = NULL;
         resrc_reqst->children = resrc_reqst_list_new ();
     }
 
     return resrc_reqst;
+}
+
+static resrc_graph_req_t *resrc_graph_req_from_json (JSON ga)
+{
+    JSON go = NULL;     /* graph json object */
+    const char *name = NULL;
+    int i, ngraphs = 0;
+    int64_t ssize;
+    resrc_graph_req_t *resrc_graph_req = NULL;
+
+    if (Jget_ar_len (ga, &ngraphs)) {
+        resrc_graph_req = xzmalloc ((ngraphs + 1) * sizeof (resrc_graph_req_t));
+        for (i=0; i < ngraphs; i++) {
+            Jget_ar_obj (ga, i, &go);
+            if (Jget_str (go, "name", &name))
+                resrc_graph_req[i].name = xstrdup (name);
+            else
+                goto fail;
+            if (Jget_int64 (go, "size", &ssize))
+                resrc_graph_req[i].size = (size_t) ssize;
+            else
+                goto fail;
+        }
+        /* end of the line */
+        resrc_graph_req[i].name = NULL;
+    }
+
+    return resrc_graph_req;
+fail:
+    free (resrc_graph_req);
+    return NULL;
 }
 
 resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
@@ -243,6 +289,7 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
     bool exclusive = false;
     JSON ca = NULL;     /* array of child json objects */
     JSON co = NULL;     /* child json object */
+    JSON ga = NULL;     /* array of graph json objects */
     int64_t endtime;
     int64_t qty = 0;
     int64_t size = 0;
@@ -289,6 +336,9 @@ resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
         resrc_reqst = resrc_reqst_new (resrc, qty, size, starttime, endtime,
                                        exclusive);
 
+        if ((ga = Jobj_get (o, "graphs")))
+            resrc_reqst->g_reqs = resrc_graph_req_from_json (ga);
+
         if ((co = Jobj_get (o, "req_child"))) {
             child_reqst = resrc_reqst_from_json (co, resrc_reqst);
             if (child_reqst)
@@ -317,7 +367,21 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
             resrc_reqst_list_remove (resrc_reqst->parent->children, resrc_reqst);
         resrc_reqst_list_destroy (resrc_reqst->children);
         resrc_resource_destroy (resrc_reqst->resrc);
+        resrc_graph_req_destroy (resrc_reqst->g_reqs);
         free (resrc_reqst);
+    }
+}
+
+void resrc_graph_req_print (resrc_graph_req_t *graph_reqst)
+{
+    if (graph_reqst) {
+        printf ("       requestng graphs of:");
+        while (graph_reqst->name) {
+            printf (" name: %s: size: %ld,", graph_reqst->name,
+                    graph_reqst->size);
+            graph_reqst++;
+        }
+        printf ("\n");
     }
 }
 
@@ -329,6 +393,7 @@ void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
         printf ("%"PRId64" of %"PRId64" %s ", resrc_reqst->nfound,
                 resrc_reqst->reqrd_qty, shared);
         resrc_print_resource (resrc_reqst->resrc);
+        resrc_graph_req_print (resrc_reqst->g_reqs);
         if (resrc_reqst_num_children (resrc_reqst)) {
             resrc_reqst_t *child = resrc_reqst_list_first
                 (resrc_reqst->children);

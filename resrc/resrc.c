@@ -37,6 +37,7 @@
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
+#include "resrc_flow.h"
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
 
@@ -53,7 +54,7 @@ struct resrc {
     size_t staged;
     resource_state_t state;
     resrc_tree_t *phys_tree;
-    zlist_t *graphs;
+    zhash_t *graphs;
     zhash_t *properties;
     zhash_t *tags;
     zhash_t *allocs;
@@ -61,10 +62,23 @@ struct resrc {
     zhash_t *twindow;
 };
 
+static zhash_t *resrc_hash = NULL;
 
 /***************************************************************************
  *  API
  ***************************************************************************/
+
+void resrc_init (void)
+{
+    if (!resrc_hash)
+        resrc_hash = zhash_new ();
+}
+
+void resrc_fini (void)
+{
+    if (resrc_hash)
+        zhash_destroy (&resrc_hash);
+}
 
 char *resrc_type (resrc_t *resrc)
 {
@@ -122,6 +136,13 @@ size_t resrc_size (resrc_t *resrc)
 {
     if (resrc)
         return resrc->size;
+    return 0;
+}
+
+size_t resrc_available (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->available;
     return 0;
 }
 
@@ -445,6 +466,41 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
     return NULL;
 }
 
+size_t resrc_size_allocs (resrc_t *resrc)
+{
+    if (resrc)
+        return zhash_size (resrc->allocs);
+    return 0;
+}
+
+size_t resrc_size_reservtns (resrc_t *resrc)
+{
+    if (resrc)
+        return zhash_size (resrc->reservtns);
+    return 0;
+}
+
+int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item)
+{
+    int rc = zhash_insert (resrc->twindow, key, item);
+    zhash_freefn (resrc->twindow, key, free);
+    return rc;
+}
+
+int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
+{
+    int rc = zhash_insert (resrc->graphs, name, flow);
+    /* Do not supply a zhash_freefn() */
+    return rc;
+}
+
+resrc_t *resrc_lookup (const char *path)
+{
+    if (resrc_hash && path)
+        return ((resrc_t *)zhash_lookup (resrc_hash, path));
+    return NULL;
+}
+
 resrc_t *resrc_new_resource (const char *type, const char *path,
                              const char *basename, const char *name,
                              const char *sig, int64_t id, uuid_t uuid,
@@ -468,6 +524,11 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
             else
                 resrc->name = xasprintf ("%s%"PRId64"", resrc->basename, id);
         }
+        if (!strncmp (type, "node", 5)) {
+            /* Add this new resource to the resource hash table.
+             * Do not supply a zhash_freefn() */
+            zhash_insert (resrc_hash, resrc->name, (void *)resrc);
+        }
         resrc->digest = NULL;
         if (sig)
             resrc->digest = xstrdup (sig);
@@ -480,7 +541,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->staged = 0;
         resrc->state = RESOURCE_INVALID;
         resrc->phys_tree = NULL;
-        resrc->graphs = NULL;
+        resrc->graphs = zhash_new ();
         resrc->allocs = zhash_new ();
         resrc->reservtns = zhash_new ();
         resrc->properties = zhash_new ();
@@ -506,7 +567,7 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         uuid_copy (new_resrc->uuid, resrc->uuid);
         new_resrc->state = resrc->state;
         new_resrc->phys_tree = resrc_tree_copy (resrc->phys_tree);
-        new_resrc->graphs = zlist_dup (resrc->graphs);
+        new_resrc->graphs = zhash_dup (resrc->graphs);
         new_resrc->allocs = zhash_dup (resrc->allocs);
         new_resrc->reservtns = zhash_dup (resrc->reservtns);
         new_resrc->properties = zhash_dup (resrc->properties);
@@ -527,8 +588,11 @@ void resrc_resource_destroy (void *object)
     if (resrc) {
         if (resrc->type)
             free (resrc->type);
-        if (resrc->path)
+        if (resrc->path) {
+            if (resrc_hash)
+                zhash_delete (resrc_hash, resrc->path);
             free (resrc->path);
+        }
         if (resrc->basename)
             free (resrc->basename);
         if (resrc->name)
@@ -537,8 +601,7 @@ void resrc_resource_destroy (void *object)
             free (resrc->digest);
         /* Use resrc_tree_destroy() to destroy this resource along
          * with its physical tree */
-        if (resrc->graphs)
-            zlist_destroy (&resrc->graphs);
+        zhash_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
         zhash_destroy (&resrc->reservtns);
         zhash_destroy (&resrc->properties);
@@ -583,6 +646,12 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
         if ((jhierarchyo = Jobj_get (o, "hierarchy")))
             Jget_str (jhierarchyo, "default", &path);
     }
+    if (!path) {
+        if (parent)
+            path = xasprintf ("%s/%s", parent->path, name);
+        else
+            path = xasprintf ("/%s", name);
+    }
 
     resrc = resrc_new_resource (type, path, basename, name, NULL, id, uuid,
                                 size);
@@ -615,8 +684,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
                 Jadd_int64 (w, "endtime", endtime);
 
                 json_str = xstrdup (Jtostr (w));
-                zhash_insert (resrc->twindow, "0", (void *) json_str);
-                zhash_freefn (resrc->twindow, "0", free);
+                resrc_twindow_insert (resrc, "0", (void *) json_str);
                 Jput (w);
             }
         }
@@ -792,8 +860,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
             Jadd_int64 (w, "starttime", epochtime ());
             Jadd_int64 (w, "endtime", TIME_MAX);
             char *json_str = xstrdup (Jtostr (w));
-            zhash_insert (resrc->twindow, "0", (void *) json_str);
-            zhash_freefn (resrc->twindow, "0", free);
+            resrc_twindow_insert (resrc, "0", (void *) json_str);
             Jput (w);
         }
     }
@@ -1009,7 +1076,8 @@ resrc_t *resrc_create_cluster (char *cluster)
  * Finds if a resource request matches the specified resource over a period
  * defined by the start and end times.
  */
-static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
+bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
+                           size_t reqrd_size)
 {
     bool rc = false;
     char *json_str_window = NULL;
@@ -1035,7 +1103,7 @@ static bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request)
     available = resrc_available_during_range (resrc, starttime, endtime,
                                               resrc_reqst_exclusive (request));
 
-    rc = (available >= resrc_reqst_reqrd_size (request));
+    rc = (available >= reqrd_size);
 
     return rc;
 }
@@ -1044,36 +1112,57 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
                            bool available)
 {
     bool rc = false;
-    char *rproperty = NULL;     /* request property */
-    char *rtag = NULL;          /* request tag */
+    char *rproperty = NULL;                             /* request property */
+    char *rtag = NULL;                                  /* request tag */
+    resrc_t *reqst_resrc = resrc_reqst_resrc (request); /* request's resrc */
+    resrc_graph_req_t *graph_req = NULL;
 
-    if (!strcmp (resrc->type, resrc_reqst_resrc (request)->type)) {
-        if (zhash_size (resrc_reqst_resrc (request)->properties)) {
+    if (reqst_resrc && !strcmp (resrc->type, reqst_resrc->type)) {
+        if (zhash_size (reqst_resrc->properties)) {
             if (!zhash_size (resrc->properties)) {
                 goto ret;
             }
             /* be sure the resource has all the requested properties */
             /* TODO: validate the value of each property */
-            zhash_first (resrc_reqst_resrc (request)->properties);
+            zhash_first (reqst_resrc->properties);
             do {
-                rproperty = (char *)zhash_cursor (
-                    resrc_reqst_resrc (request)->properties);
+                rproperty = (char *)zhash_cursor (reqst_resrc->properties);
                 if (!zhash_lookup (resrc->properties, rproperty))
                     goto ret;
-            } while (zhash_next (resrc_reqst_resrc (request)->properties));
+            } while (zhash_next (reqst_resrc->properties));
         }
 
-        if (zhash_size (resrc_reqst_resrc (request)->tags)) {
+        if (zhash_size (reqst_resrc->tags)) {
             if (!zhash_size (resrc->tags)) {
                 goto ret;
             }
             /* be sure the resource has all the requested tags */
-            zhash_first (resrc_reqst_resrc (request)->tags);
+            zhash_first (reqst_resrc->tags);
             do {
-                rtag = (char *)zhash_cursor (resrc_reqst_resrc (request)->tags);
+                rtag = (char *)zhash_cursor (reqst_resrc->tags);
                 if (!zhash_lookup (resrc->tags, rtag))
                     goto ret;
-            } while (zhash_next (resrc_reqst_resrc (request)->tags));
+            } while (zhash_next (reqst_resrc->tags));
+        }
+
+        graph_req = resrc_reqst_graph_reqs (request);
+        if (graph_req) {
+            resrc_flow_t *resrc_flow;
+
+            if (!zhash_size (resrc->graphs))
+                goto ret;
+            /*
+             * Support only flow graphs right now.  When other graph
+             * types are added, a switch will need to be added to
+             * handle the appropriate graph type.
+             */
+            while (graph_req->name) {
+                resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
+                if (!resrc_flow ||
+                    !resrc_flow_available (resrc_flow, graph_req->size, request))
+                    goto ret;
+                graph_req++;
+            }
         }
 
         if (available) {
@@ -1084,7 +1173,8 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
              * expensive.
              */
             if (resrc_reqst_starttime (request))
-                rc = resrc_walltime_match (resrc, request);
+                rc = resrc_walltime_match (resrc, request,
+                                           resrc_reqst_reqrd_size (request));
             else {
                 rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
                 if (rc && resrc_reqst_exclusive (request)) {
@@ -1100,10 +1190,58 @@ ret:
     return rc;
 }
 
-void resrc_stage_resrc (resrc_t *resrc, size_t size)
+int resrc_stage_resrc (resrc_t *resrc, size_t size, resrc_graph_req_t *graph_req)
 {
+    int rc = -1;
+
     if (resrc)
-        resrc->staged = size;
+        resrc->staged += size;
+    else
+        goto ret;
+
+    if (graph_req) {
+        resrc_flow_t *resrc_flow;
+
+        if (!zhash_size (resrc->graphs))
+            goto ret;
+
+        /* Stage the required quantities of each of the requested graphs */
+        while (graph_req->name) {
+            resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
+            if (resrc_flow)
+                rc = resrc_flow_stage_resources (resrc_flow, graph_req->size);
+            else {
+                rc = -1;
+                goto ret;
+            }
+            graph_req++;
+        };
+    } else
+        rc = 0;
+
+ret:
+    return rc;
+}
+
+int resrc_unstage_resrc (resrc_t *resrc)
+{
+    int rc = -1;
+
+    if (resrc)
+        resrc->staged = 0;
+    else
+        goto ret;
+
+    if (zhash_size (resrc->graphs)) {
+        resrc_flow_t *resrc_flow = zhash_first (resrc->graphs);
+        do {
+            if ((rc = resrc_flow_unstage_resources (resrc_flow)))
+                goto ret;
+        } while ((resrc_flow = zhash_next (resrc->graphs)));
+    } else
+        rc = 0;
+ret:
+    return rc;
 }
 
 /*
@@ -1116,21 +1254,19 @@ static int resrc_allocate_resource_now (resrc_t *resrc, int64_t job_id)
     size_t *size_ptr;
     int rc = -1;
 
-    if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
-            goto ret;
+    if (resrc->staged > resrc->available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->allocs, id_ptr, size_ptr);
-        zhash_freefn (resrc->allocs, id_ptr, free);
-        resrc->available -= resrc->staged;
-        resrc->staged = 0;
-        resrc->state = RESOURCE_ALLOCATED;
-        rc = 0;
-        free (id_ptr);
-    }
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->allocs, id_ptr, size_ptr);
+    zhash_freefn (resrc->allocs, id_ptr, free);
+    resrc->available -= resrc->staged;
+    resrc->staged = 0;
+    resrc->state = RESOURCE_ALLOCATED;
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1149,35 +1285,31 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t *size_ptr;
     size_t available;
 
-    if (resrc && job_id) {
-        /* Don't bother going through the exclusivity checks.  We will
-         * save cycles and assume the selected resources are
-         * exclusively available if that was the criteria of the
-         * search. */
-        available = resrc_available_during_range (resrc, starttime, endtime,
-                                                  false);
-        if (resrc->staged > available)
-            goto ret;
+    /* Don't bother going through the exclusivity checks.  We will
+     * save cycles and assume the selected resources are
+     * exclusively available if that was the criteria of the
+     * search. */
+    available = resrc_available_during_range (resrc, starttime, endtime, false);
+    if (resrc->staged > available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->allocs, id_ptr, size_ptr);
-        zhash_freefn (resrc->allocs, id_ptr, free);
-        resrc->staged = 0;
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->allocs, id_ptr, size_ptr);
+    zhash_freefn (resrc->allocs, id_ptr, free);
+    resrc->staged = 0;
 
-        /* add walltime */
-        j = Jnew ();
-        Jadd_int64 (j, "starttime", starttime);
-        Jadd_int64 (j, "endtime", endtime);
-        json_str = xstrdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
-        zhash_freefn (resrc->twindow, id_ptr, free);
-        Jput (j);
+    /* add walltime */
+    j = Jnew ();
+    Jadd_int64 (j, "starttime", starttime);
+    Jadd_int64 (j, "endtime", endtime);
+    json_str = xstrdup (Jtostr (j));
+    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
+    Jput (j);
 
-        rc = 0;
-        free (id_ptr);
-    }
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1185,13 +1317,42 @@ ret:
 int resrc_allocate_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                              int64_t endtime)
 {
-    int rc;
+    resrc_flow_t *resrc_flow;
+    int rc = -1;
+
+    if (!resrc || !job_id)
+        goto ret;
+    else if (!resrc->staged) {
+        /*
+         * A resource with a staged value of 0 is ok and will
+         * occur with flow graph parents.
+         */
+        rc = 0;
+        goto ret;
+    }
 
     if (starttime)
         rc = resrc_allocate_resource_in_time (resrc, job_id, starttime, endtime);
     else
         rc = resrc_allocate_resource_now (resrc, job_id);
 
+    if (rc || !zhash_size (resrc->graphs))
+        goto ret;
+
+    /*
+     * Allocate specific resources from each of the associated graphs.
+     *
+     * Support only flow graphs right now.  When other graph types
+     * are added, a switch will need to be added to handle the
+     * appropriate graph type.
+     */
+    resrc_flow = zhash_first (resrc->graphs);
+    do {
+        if ((rc = resrc_flow_allocate (resrc_flow, job_id, starttime, endtime)))
+            goto ret;
+    } while ((resrc_flow = zhash_next (resrc->graphs)));
+
+ret:
     return rc;
 }
 
@@ -1205,22 +1366,20 @@ static int resrc_reserve_resource_now (resrc_t *resrc, int64_t job_id)
     size_t *size_ptr;
     int rc = -1;
 
-    if (resrc && job_id) {
-        if (resrc->staged > resrc->available)
-            goto ret;
+    if (resrc->staged > resrc->available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->reservtns, id_ptr, size_ptr);
-        zhash_freefn (resrc->reservtns, id_ptr, free);
-        resrc->available -= resrc->staged;
-        resrc->staged = 0;
-        if (resrc->state != RESOURCE_ALLOCATED)
-            resrc->state = RESOURCE_RESERVED;
-        rc = 0;
-        free (id_ptr);
-    }
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+    zhash_freefn (resrc->reservtns, id_ptr, free);
+    resrc->available -= resrc->staged;
+    resrc->staged = 0;
+    if (resrc->state != RESOURCE_ALLOCATED)
+        resrc->state = RESOURCE_RESERVED;
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1238,35 +1397,31 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     size_t *size_ptr;
     size_t available;
 
-    if (resrc && job_id) {
-        /* Don't bother going through the exclusivity checks.  We will
-         * save cycles and assume the selected resources are
-         * exclusively available if that was the criteria of the
-         * search. */
-        available = resrc_available_during_range (resrc, starttime, endtime,
-                                                  false);
-        if (resrc->staged > available)
-            goto ret;
+    /* Don't bother going through the exclusivity checks.  We will
+     * save cycles and assume the selected resources are
+     * exclusively available if that was the criteria of the
+     * search. */
+    available = resrc_available_during_range (resrc, starttime, endtime, false);
+    if (resrc->staged > available)
+        goto ret;
 
-        id_ptr = xasprintf ("%"PRId64"", job_id);
-        size_ptr = xzmalloc (sizeof (size_t));
-        *size_ptr = resrc->staged;
-        zhash_insert (resrc->reservtns, id_ptr, size_ptr);
-        zhash_freefn (resrc->reservtns, id_ptr, free);
-        resrc->staged = 0;
+    id_ptr = xasprintf ("%"PRId64"", job_id);
+    size_ptr = xzmalloc (sizeof (size_t));
+    *size_ptr = resrc->staged;
+    zhash_insert (resrc->reservtns, id_ptr, size_ptr);
+    zhash_freefn (resrc->reservtns, id_ptr, free);
+    resrc->staged = 0;
 
-        /* add walltime */
-        j = Jnew ();
-        Jadd_int64 (j, "starttime", starttime);
-        Jadd_int64 (j, "endtime", endtime);
-        json_str = xstrdup (Jtostr (j));
-        zhash_insert (resrc->twindow, id_ptr, (void *) json_str);
-        zhash_freefn (resrc->twindow, id_ptr, free);
-        Jput (j);
+    /* add walltime */
+    j = Jnew ();
+    Jadd_int64 (j, "starttime", starttime);
+    Jadd_int64 (j, "endtime", endtime);
+    json_str = xstrdup (Jtostr (j));
+    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
+    Jput (j);
 
-        rc = 0;
-        free (id_ptr);
-    }
+    rc = 0;
+    free (id_ptr);
 ret:
     return rc;
 }
@@ -1274,13 +1429,42 @@ ret:
 int resrc_reserve_resource (resrc_t *resrc, int64_t job_id, int64_t starttime,
                             int64_t endtime)
 {
-    int rc;
+    resrc_flow_t *resrc_flow;
+    int rc = -1;
+
+    if (!resrc || !job_id)
+        goto ret;
+    else if (!resrc->staged) {
+        /*
+         * A resource with a staged value of 0 is ok and will
+         * occur with flow graph parents.
+         */
+        rc = 0;
+        goto ret;
+    }
 
     if (starttime)
-        rc =resrc_reserve_resource_in_time (resrc, job_id, starttime, endtime);
+        rc = resrc_reserve_resource_in_time (resrc, job_id, starttime, endtime);
     else
-        rc =resrc_reserve_resource_now (resrc, job_id);
+        rc = resrc_reserve_resource_now (resrc, job_id);
 
+    if (rc || !zhash_size (resrc->graphs))
+        goto ret;
+
+    /*
+     * Reserve specific resources from each of the associated graphs.
+     *
+     * Support only flow graphs right now.  When other graph types
+     * are added, a switch will need to be added to handle the
+     * appropriate graph type.
+     */
+    resrc_flow = zhash_first (resrc->graphs);
+    do {
+        if ((rc = resrc_flow_reserve (resrc_flow, job_id, starttime, endtime)))
+            goto ret;
+    } while ((resrc_flow = zhash_next (resrc->graphs)));
+
+ret:
     return rc;
 }
 

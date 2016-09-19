@@ -21,6 +21,12 @@ typedef struct resrc_reqst_list resrc_reqst_list_t;
 resrc_t *resrc_reqst_resrc (resrc_reqst_t *resrc_reqst);
 
 /*
+ * Return the array of graph names:sizes associated with this resource
+ * request
+ */
+resrc_graph_req_t *resrc_reqst_graph_reqs (resrc_reqst_t *resrc_reqst);
+
+/*
  * Return the start time of this request
  */
 int64_t resrc_reqst_starttime (resrc_reqst_t *resrc_reqst);

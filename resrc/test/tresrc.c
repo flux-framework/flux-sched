@@ -36,11 +36,13 @@
 #include "src/common/libutil/shortjson.h"
 #include "../resrc.h"
 #include "../resrc_tree.h"
+#include "../resrc_flow.h"
 #include "../resrc_reqst.h"
 #include "src/common/libtap/tap.h"
 
 
 static struct timeval start_time;
+int verbose = 0;
 
 void init_time() {
     gettimeofday(&start_time, NULL);
@@ -68,11 +70,11 @@ static resrc_tree_t *test_select_resources (resrc_tree_t *frt, resrc_tree_t *prt
 
         if (!strcmp (resrc_type(resrc), "core")) {
             if (resrc_id (resrc) == select)
-                resrc_stage_resrc (resrc, 1);
+                resrc_stage_resrc (resrc, 1, NULL);
             else
                 goto ret;
         } else if (!strcmp (resrc_type(resrc), "memory"))
-            resrc_stage_resrc (resrc, 100);
+            resrc_stage_resrc (resrc, 100, NULL);
 
         selected_res = resrc_tree_new (prt, resrc);
         if (resrc_tree_num_children (frt)) {
@@ -104,9 +106,9 @@ static void test_temporal_allocation ()
     ok (!rc, "resrc_available...(time/range) on unallocated resource work");
 
     // Setup the resource allocations for the rest of the tests
-    resrc_stage_resrc (resource, 5);
+    resrc_stage_resrc (resource, 5, NULL);
     rc = (rc || resrc_allocate_resource (resource, 1, 1, 1000));
-    resrc_stage_resrc (resource, 10);
+    resrc_stage_resrc (resource, 10, NULL);
     rc = (rc || resrc_allocate_resource (resource, 2, 2000, 3000));
     ok (!rc, "Temporal allocation setup works");
     if (rc) {
@@ -114,7 +116,7 @@ static void test_temporal_allocation ()
     }
 
     // Start the actual testing
-    resrc_stage_resrc (resource, 1);
+    resrc_stage_resrc (resource, 1, NULL);
     // This should fail
     rc = (rc || !resrc_allocate_resource (resource, 3, 10, 3000));
     // This should work
@@ -232,7 +234,6 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
 {
     int found = 0;
     int rc = 0;
-    int verbose = 0;
     int64_t nowtime = epochtime ();
     JSON o = NULL;
     JSON req_res = NULL;
@@ -262,11 +263,14 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     req_res = Jnew ();
 
     if (rdl) {
+        JSON bandwidth = Jnew ();
         JSON child_core = Jnew ();
         JSON child_sock = Jnew ();
+        JSON graph_array = Jnew_ar ();
         JSON ja = Jnew_ar ();
         JSON jpropo = Jnew (); /* json property object */
         JSON memory = Jnew ();
+        JSON power = Jnew ();
 
         /* JSON jtago = Jnew ();  /\* json tag object *\/ */
         /* Jadd_bool (jtago, "maytag", true); */
@@ -288,11 +292,20 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         Jadd_int (child_sock, "req_qty", 2);
         json_object_object_add (child_sock, "req_children", ja);
 
+        Jadd_str (bandwidth, "type", "bandwidth");
+        Jadd_int (bandwidth, "size", 100);
+        json_object_array_add (graph_array, bandwidth);
+
+        Jadd_str (power, "type", "power");
+        Jadd_int (power, "size", 10);
+        json_object_array_add (graph_array, power);
+
         Jadd_str (req_res, "type", "node");
         Jadd_int (req_res, "req_qty", 2);
         Jadd_int64 (req_res, "starttime", nowtime);
         /* json_object_object_add (req_res, "tags", jtago); */
         json_object_object_add (req_res, "req_child", child_sock);
+        json_object_object_add (req_res, "graphs", graph_array);
     } else {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", 2);
@@ -356,6 +369,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 1, 0, 0);
     ok (!rc, "successfully allocated resources for job 1");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 2);
     if (rdl)
@@ -364,6 +378,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 2, 0, 0);
     ok (!rc, "successfully allocated resources for job 2");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 3);
     if (rdl)
@@ -372,6 +387,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_allocate (selected_tree, 3, 0, 0);
     ok (!rc, "successfully allocated resources for job 3");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 4);
     if (rdl)
@@ -380,6 +396,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         rc = resrc_tree_reserve (selected_tree, 4, 0, 0);
     ok (!rc, "successfully reserved resources for job 4");
     resrc_tree_destroy (selected_tree, false);
+    resrc_tree_unstage_resources (found_tree);
 
     printf ("        allocate and reserve took: %lf\n",
             ((double)get_time ())/1000000);
@@ -422,6 +439,8 @@ int main (int argc, char *argv[])
     hwloc_topology_t topology;
     int rc1 = 1, rc2 = 1;
     resrc_t *resrc = NULL;
+    resrc_flow_t *power_flow = NULL;
+    resrc_flow_t *bw_flow = NULL;
 
     plan (26 + num_temporal_allocation_tests);
     test_temporal_allocation ();
@@ -432,16 +451,40 @@ int main (int argc, char *argv[])
         ok ((access (filename, R_OK) == 0), "resource file readable");
 
         init_time();
+        resrc_init ();
         resrc = resrc_generate_rdl_resources (filename, "default");
         ok ((resrc != NULL), "resource generation from config file took: %lf",
             ((double)get_time())/1000000);
         if (resrc) {
+            power_flow = resrc_flow_generate_rdl (filename, "power");
+            if (power_flow) {
+                if (verbose) {
+                    printf ("Listing power tree\n");
+                    resrc_flow_print (power_flow);
+                    printf ("End of power tree\n");
+                }
+                bw_flow = resrc_flow_generate_rdl (filename, "bandwidth");
+                if (bw_flow) {
+                    if (verbose) {
+                        printf ("Listing bandwidth tree\n");
+                        resrc_flow_print (bw_flow);
+                        printf ("End of bandwidth tree\n");
+                    }
+                } else
+                    goto ret;
+            } else
+                goto ret;
+
             rc1 = test_a_resrc (resrc, true);
+            resrc_flow_destroy (bw_flow);
+            resrc_flow_destroy (power_flow);
             resrc_tree_destroy (resrc_phys_tree (resrc), true);
+            resrc_fini ();
         }
     }
 
     init_time();
+    resrc_init ();
     ok ((hwloc_topology_init (&topology) == 0),
         "hwloc topology init succeeded");
     ok ((hwloc_topology_load (topology) == 0),
@@ -455,8 +498,9 @@ int main (int argc, char *argv[])
     if (resrc) {
         rc2 = test_a_resrc (resrc, false);
         resrc_tree_destroy (resrc_phys_tree (resrc), true);
+        resrc_fini ();
     }
-
+ret:
     done_testing ();
     return (rc1 | rc2);
 }

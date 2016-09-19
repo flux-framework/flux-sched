@@ -13,6 +13,7 @@ typedef struct hwloc_topology * TOPOLOGY;
 typedef struct resrc resrc_t;
 typedef struct resrc_reqst resrc_reqst_t;
 typedef struct resrc_tree resrc_tree_t;
+typedef struct resrc_flow resrc_flow_t;
 
 typedef enum {
     RESOURCE_INVALID,
@@ -24,6 +25,20 @@ typedef enum {
     RESOURCE_END
 } resource_state_t;
 
+typedef struct resrc_graph_req {
+    char   *name;
+    size_t size;
+} resrc_graph_req_t;
+
+/*
+ * Initialize necessary components of the resource library
+ */
+void resrc_init (void);
+
+/*
+ * Destroy all internal components of the resource library
+ */
+void resrc_fini (void);
 
 /*
  * Return the type of the resouce
@@ -68,6 +83,11 @@ int64_t resrc_id (resrc_t *resrc);
 size_t resrc_size (resrc_t *resrc);
 
 /*
+ * Return the quantity of available units
+ */
+size_t resrc_available (resrc_t *resrc);
+
+/*
  * Return the amount of the resource available at the given time
  */
 size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
@@ -88,6 +108,35 @@ char* resrc_state (resrc_t *resrc);
  * Return the physical tree for the resouce
  */
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
+
+/*
+ * Return the number of jobs allocated to this resource
+ */
+size_t resrc_size_allocs (resrc_t *resrc);
+
+/*
+ * Return the number of jobs reserved for this resource
+ */
+size_t resrc_size_reservtns (resrc_t *resrc);
+
+/*
+ *  Insert item into twindow hash table with specified key and item.
+ *  If key is already present returns -1 and leaves existing item
+ *  unchanged.  Returns 0 on success.
+ */
+int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item);
+
+/*
+ *  Insert a resource flow pointer into the graph table using the
+ *  specified name.  If key is already present returns -1 and leaves
+ *  existing item unchanged.  Returns 0 on success.
+ */
+int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow);
+
+/*
+ * Return the pointer to the resource with the given path
+ */
+resrc_t *resrc_lookup (const char *path);
 
 /*
  * Create a new resource object
@@ -148,6 +197,13 @@ void resrc_print_resource (resrc_t *resrc);
 resrc_t *resrc_create_cluster (char *cluster);
 
 /*
+ * Finds if a resource request matches the specified resource over a period
+ * defined by the start and end times.
+ */
+bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
+                           size_t reqrd_size);
+
+/*
  * Determine whether a specific resource has the required characteristics
  * Inputs:  resrc     - the specific resource under evaluation
  *          request   - resource request with the required characteristics
@@ -159,9 +215,16 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
                            bool available);
 
 /*
- * Stage size elements of a resource
+ * Stage size elements of a resource along with any associated graph
+ * resources
  */
-void resrc_stage_resrc(resrc_t *resrc, size_t size);
+int resrc_stage_resrc (resrc_t *resrc, size_t size,
+                       resrc_graph_req_t *graph_req);
+
+/*
+ * Zero-out all the staged elements of a resource
+ */
+int resrc_unstage_resrc (resrc_t *resrc);
 
 /*
  * Allocate a resource to a job
