@@ -38,6 +38,7 @@ TESTS = \
     lua/t0002-multilevel.t \
     lua/t0003-default-tags.t \
     lua/t0004-derived-type.t \
+    lua/t0005-multi-hierarchy.t \
     t0002-waitjob.t \
     t0003-basic-install.t \
     t1000-jsc.t \
