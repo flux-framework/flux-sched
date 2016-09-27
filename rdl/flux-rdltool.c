@@ -152,6 +152,14 @@ void aggregate (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
     return;
 }
 
+void list_hierarchies (struct prog_ctx *ctx, struct rdl *rdl)
+{
+    const char *h = NULL;
+    while ((h = rdl_next_hierarchy (rdl, h)))
+        fprintf (stdout, "%s\n", h);
+    return;
+}
+
 int main (int ac, char **av)
 {
     struct prog_ctx *ctx = prog_ctx_create (ac, av);
@@ -169,6 +177,9 @@ int main (int ac, char **av)
     }
     else if (strcmp (ctx->cmd, "aggregate") == 0) {
         aggregate (ctx, rdl, ctx->args[0]);
+    }
+    else if (strcmp (ctx->cmd, "list-hierarchies") == 0) {
+        list_hierarchies (ctx, rdl);
     }
     else
         fatal (1, "Unknown command: %s\n", ctx->cmd);
