@@ -58,7 +58,7 @@ static int parse_cmdline (struct prog_ctx *ctx, int ac, char **av)
         " resource URI\t Print resource at URI\n"
         " tree URI\t print hierarchy tree at URI\n"
         " aggregate URI\t aggregate hierarchy tree at URI\n";
-    const char *options = "+f";
+    const char *options = "+f:";
     const struct option longopts[] = {
         { "config-file", required_argument, 0, 'f' },
         { 0, 0, 0, 0 },
