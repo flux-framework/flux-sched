@@ -57,7 +57,8 @@ static int parse_cmdline (struct prog_ctx *ctx, int ac, char **av)
         "Supported CMDs include:\n"
         " resource URI\t Print resource at URI\n"
         " tree URI\t print hierarchy tree at URI\n"
-        " aggregate URI\t aggregate hierarchy tree at URI\n";
+        " aggregate URI\t aggregate hierarchy tree at URI\n"
+        " list-hierarchies\t list all hierarchies in config\n";
     const char *options = "+f:";
     const struct option longopts[] = {
         { "config-file", required_argument, 0, 'f' },
