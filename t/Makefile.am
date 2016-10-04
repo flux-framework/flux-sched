@@ -41,6 +41,7 @@ TESTS = \
     lua/t0005-multi-hierarchy.t \
     t0002-waitjob.t \
     t0003-basic-install.t \
+    t0004-rdltool.t \
     t1000-jsc.t \
     t1001-rs2rank-basic.t \
     t1002-rs2rank-64ranks.t \
