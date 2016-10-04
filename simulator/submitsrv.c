@@ -252,7 +252,6 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
     job->kvs_dir = dir;
     if (put_job_in_kvs (job) < 0)
         log_err_exit ("put_job_in_kvs");
-    kvs_commit (h);
 
     // Send "submitted" event
     event_json = Jnew();
