@@ -56,7 +56,7 @@ void resrc_flow_destroy (resrc_flow_t *resrc_flow);
 /*
  * Create a resrc_flow_t object from a json object
  */
-resrc_flow_t *resrc_flow_new_from_json (JSON o, resrc_flow_t *parent);
+resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent);
 
 /*
  * Return the head of a resource flow tree of all resources described

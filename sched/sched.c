@@ -77,7 +77,7 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum);
  ******************************************************************************/
 
 typedef struct {
-    JSON          jcb;
+    json_object  *jcb;
     void         *arg;
     int           errnum;
 } jsc_event_t;
@@ -372,14 +372,14 @@ static ssrvctx_t *getctx (flux_t h)
     return ctx;
 }
 
-static inline void get_jobid (JSON jcb, int64_t *jid)
+static inline void get_jobid (json_object *jcb, int64_t *jid)
 {
     Jget_int64 (jcb, JSC_JOBID, jid);
 }
 
-static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
+static inline void get_states (json_object *jcb, int64_t *os, int64_t *ns)
 {
-    JSON o = NULL;
+    json_object *o = NULL;
     Jget_obj (jcb, JSC_STATE_PAIR, &o);
     Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
@@ -392,8 +392,8 @@ static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
     int64_t nn = 0;
     int64_t nc = 0;
     int64_t walltime = 0;
-    JSON jcb = NULL;
-    JSON o = NULL;
+    json_object *jcb = NULL;
+    json_object *o = NULL;
 
     if (!j) goto done;
 
@@ -428,8 +428,8 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
 {
     const char *jcbstr = NULL;
     int rc = -1;
-    JSON jcb = Jnew ();
-    JSON o = Jnew ();
+    json_object *jcb = Jnew ();
+    json_object *o = Jnew ();
     Jadd_int64 (o, JSC_STATE_PAIR_OSTATE, (int64_t) os);
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE , (int64_t) ns);
     /* don't want to use Jadd_obj because I want to transfer the ownership */
@@ -440,7 +440,7 @@ static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
     return rc;
 }
 
-static inline bool is_newjob (JSON jcb)
+static inline bool is_newjob (json_object *jcb)
 {
     int64_t os = J_NULL, ns = J_NULL;
     get_states (jcb, &os, &ns);
@@ -476,7 +476,7 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
  *                                                                              *
  *******************************************************************************/
 
-static int q_enqueue_into_pqueue (ssrvctx_t *ctx, JSON jcb)
+static int q_enqueue_into_pqueue (ssrvctx_t *ctx, json_object *jcb)
 {
     int rc = -1;
     int64_t jid = -1;
@@ -547,7 +547,7 @@ static int q_move_to_cqueue (ssrvctx_t *ctx, flux_lwj_t *j)
     return zlist_append (ctx->c_queue, j);
 }
 
-static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, JSON jcb,
+static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, json_object *jcb,
                                         job_state_t *ns)
 {
     int64_t jid = -1, os64 = 0, ns64 = 0;
@@ -858,7 +858,7 @@ static void start_cb (flux_t h,
 
 static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
-    JSON jcb = NULL;
+    json_object *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t)arg);
     jsc_event_t *event = (jsc_event_t*) xzmalloc (sizeof (jsc_event_t));
 
@@ -907,7 +907,7 @@ static void trigger_cb (flux_t h,
     double seconds;
     bool sched_loop;
     const char *json_str = NULL;
-    JSON o = NULL;
+    json_object *o = NULL;
     ssrvctx_t *ctx = getctx (h);
 
     if (flux_request_decode (msg, NULL, &json_str) < 0 || json_str == NULL
@@ -1191,10 +1191,11 @@ static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, resrc_t *r,
  *                                                                              *
  *******************************************************************************/
 
-static void inline build_contain_1node_req (int64_t nc, int64_t rank, JSON rarr)
+static void inline build_contain_1node_req (int64_t nc, int64_t rank,
+					    json_object *rarr)
 {
-    JSON e = Jnew ();
-    JSON o = Jnew ();
+    json_object *e = Jnew ();
+    json_object *o = Jnew ();
     Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINING_RANK, rank);
     Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NCORES, nc);
     json_object_object_add (e, JSC_RDL_ALLOC_CONTAINED, o);
@@ -1206,7 +1207,7 @@ static void inline build_contain_1node_req (int64_t nc, int64_t rank, JSON rarr)
  * we traverse the entire tree in the post-order walk fashion
  */
 static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
-                              JSON arr)
+                              json_object *arr)
 {
     int rc = -1;
     uint32_t rank = 0;
@@ -1248,9 +1249,9 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     const char *jcbstr = NULL;
     int rc = -1;
     flux_t h = ctx->h;
-    JSON jcb = Jnew ();
-    JSON ro = Jnew ();
-    JSON arr = Jnew_ar ();
+    json_object *jcb = Jnew ();
+    json_object *ro = Jnew ();
+    json_object *arr = Jnew_ar ();
 
     if (resrc_tree_serialize (ro, job->resrc_tree)) {
         flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
@@ -1366,7 +1367,7 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
  */
 int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 {
-    JSON req_res = NULL;
+    json_object *req_res = NULL;
     flux_t h = ctx->h;
     int rc = -1;
     int64_t nfound = 0;
@@ -1402,7 +1403,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
      */
     req_res = Jnew ();
     if (job->req->nnodes > 0) {
-        JSON child_core = Jnew ();
+        json_object *child_core = Jnew ();
 
         Jadd_str (req_res, "type", "node");
         Jadd_int64 (req_res, "req_qty", job->req->nnodes);
@@ -1684,7 +1685,7 @@ static int timer_event_cb (flux_t h, void *arg)
 
 static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
-    JSON jcb = NULL;
+    json_object *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t)arg);
     flux_lwj_t *j = NULL;
     job_state_t ns = J_FOR_RENT;

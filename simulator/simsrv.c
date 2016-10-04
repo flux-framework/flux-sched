@@ -76,7 +76,7 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
-    JSON o = NULL;
+    json_object *o = NULL;
     char *topic = NULL;
 
     o = sim_state_to_json (sim_state);
@@ -106,7 +106,7 @@ int send_start_event (flux_t h)
     if (flux_get_rank (h, &rank) < 0)
         return -1;
 
-    JSON o = Jnew ();
+    json_object *o = Jnew ();
     Jadd_str (o, "mod_name", "sim");
     Jadd_int (o, "rank", rank);
     Jadd_int (o, "sim_time", 0);
@@ -212,7 +212,7 @@ static void join_cb (flux_t h,
                      void *arg)
 {
     int mod_rank;
-    JSON request = NULL;
+    json_object *request = NULL;
     const char *mod_name = NULL, *json_str = NULL;
     double *next_event = (double *)malloc (sizeof (double));
     ctx_t *ctx = arg;
@@ -342,7 +342,7 @@ static void rdl_update_cb (flux_t h,
                            const flux_msg_t *msg,
                            void *arg)
 {
-    JSON o = NULL;
+    json_object *o = NULL;
     const char *json_str = NULL, *rdl_str = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
@@ -370,7 +370,7 @@ static void reply_cb (flux_t h,
                       void *arg)
 {
     const char *json_str = NULL;
-    JSON request = NULL;
+    json_object *request = NULL;
     ctx_t *ctx = arg;
     sim_state_t *curr_sim_state = ctx->sim_state;
     sim_state_t *reply_sim_state;

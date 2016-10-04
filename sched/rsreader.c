@@ -58,9 +58,10 @@ static inline const char *get_hn (hwloc_topology_t topo)
     return hn;
 }
 
-static inline void create_req4allnodes (JSON reqobj)
+static inline void create_req4allnodes (json_object *reqobj)
 {
-    JSON req1, req2;
+    json_object *req1;
+    json_object *req2;
     Jadd_str (reqobj, "type", "node");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
@@ -73,9 +74,9 @@ static inline void create_req4allnodes (JSON reqobj)
     json_object_object_add (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allsocks (JSON reqobj)
+static inline void create_req4allsocks (json_object *reqobj)
 {
-    JSON req1;
+    json_object *req1;
     Jadd_str (reqobj, "type", "socket");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
@@ -84,7 +85,7 @@ static inline void create_req4allsocks (JSON reqobj)
     json_object_object_add (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allcores (JSON reqobj)
+static inline void create_req4allcores (json_object *reqobj)
 {
     Jadd_str (reqobj, "type", "core");
     Jadd_int (reqobj, "req_qty", 1);
@@ -92,7 +93,7 @@ static inline void create_req4allcores (JSON reqobj)
 
 static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
 {
-    JSON reqobj = NULL;
+    json_object *reqobj = NULL;
     int64_t size = 0;
     resrc_reqst_t *req = NULL;
 
@@ -108,7 +109,7 @@ static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
 
 static int find_all_sockets_cores (resrc_t *node, int *nsocks, int *ncs)
 {
-    JSON reqobj= NULL;
+    json_object *reqobj= NULL;
     resrc_reqst_t *req = NULL;
     resrc_tree_t *st = NULL;
     resrc_tree_t *ct = NULL;

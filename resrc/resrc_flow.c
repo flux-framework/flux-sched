@@ -163,9 +163,9 @@ void resrc_flow_destroy (resrc_flow_t *resrc_flow)
     }
 }
 
-resrc_flow_t *resrc_flow_new_from_json (JSON o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent)
 {
-    JSON jhierarchyo = NULL; /* json hierarchy object */
+    json_object *jhierarchyo = NULL; /* json hierarchy object */
     const char *basename = NULL;
     const char *name = NULL;
     const char *hierarchy = NULL;
@@ -225,7 +225,7 @@ resrc_flow_t *resrc_flow_new_from_json (JSON o, resrc_flow_t *parent)
         /* add time window if we are given a start time */
         int64_t starttime;
         if (Jget_int64 (o, "starttime", &starttime)) {
-            JSON    w = Jnew ();
+            json_object *   w = Jnew ();
             char    *json_str;
             int64_t endtime;
             int64_t wall_time;
@@ -256,7 +256,7 @@ ret:
 static resrc_flow_t *resrc_flow_add_rdl (resrc_flow_t *parent,
                                          struct resource *r)
 {
-    JSON o = NULL;
+    json_object *o = NULL;
     resrc_flow_t *resrc_flow = NULL;
     struct resource *c;
 
@@ -305,14 +305,14 @@ void resrc_flow_print (resrc_flow_t *resrc_flow)
     }
 }
 
-int resrc_flow_serialize (JSON o, resrc_flow_t *resrc_flow)
+int resrc_flow_serialize (json_object *o, resrc_flow_t *resrc_flow)
 {
     int rc = -1;
 
     if (o && resrc_flow) {
         rc = resrc_to_json (o, resrc_flow->flow_resrc);
         if (!rc && resrc_flow_num_children (resrc_flow)) {
-            JSON ja = Jnew_ar ();
+            json_object *ja = Jnew_ar ();
 
             if (!(rc = resrc_flow_list_serialize (ja, resrc_flow->children)))
                 json_object_object_add (o, "children", ja);
@@ -321,10 +321,10 @@ int resrc_flow_serialize (JSON o, resrc_flow_t *resrc_flow)
     return rc;
 }
 
-resrc_flow_t *resrc_flow_deserialize (JSON o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_deserialize (json_object *o, resrc_flow_t *parent)
 {
-    JSON ca = NULL;     /* array of child json objects */
-    JSON co = NULL;     /* child json object */
+    json_object *ca = NULL;     /* array of child json objects */
+    json_object *co = NULL;     /* child json object */
     resrc_t *resrc = NULL;
     resrc_flow_t *resrc_flow = NULL;
 
@@ -509,7 +509,7 @@ void resrc_flow_list_destroy (resrc_flow_list_t *resrc_flow_list)
     }
 }
 
-int resrc_flow_list_serialize (JSON o, resrc_flow_list_t *rfl)
+int resrc_flow_list_serialize (json_object *o, resrc_flow_list_t *rfl)
 {
     resrc_flow_t *rf;
     int rc = -1;
@@ -518,7 +518,7 @@ int resrc_flow_list_serialize (JSON o, resrc_flow_list_t *rfl)
         rc = 0;
         rf = resrc_flow_list_first (rfl);
         while (rf) {
-            JSON co = Jnew ();
+            json_object *co = Jnew ();
 
             if ((rc = resrc_flow_serialize (co, rf)))
                 break;
@@ -530,9 +530,9 @@ int resrc_flow_list_serialize (JSON o, resrc_flow_list_t *rfl)
     return rc;
 }
 
-resrc_flow_list_t *resrc_flow_list_deserialize (JSON o)
+resrc_flow_list_t *resrc_flow_list_deserialize (json_object *o)
 {
-    JSON ca = NULL;     /* array of child json objects */
+    json_object *ca = NULL;     /* array of child json objects */
     int i, nchildren = 0;
     resrc_flow_t *rf = NULL;
     resrc_flow_list_t *rfl = resrc_flow_list_new ();
