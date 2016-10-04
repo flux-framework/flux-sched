@@ -172,13 +172,12 @@ int put_job_in_kvs (job_t *job)
 
     // TODO: Check to see if this is necessary, i assume the kvsdir becomes
     // stale after a commit
-    char *dir_key;
-    dir_key = xasprintf ("%s", kvsdir_key (job->kvs_dir));
-    kvsdir_destroy (job->kvs_dir);
-    kvs_get_dir (h, &job->kvs_dir, dir_key);
-    free (dir_key);
-
-    return 0;
+    kvsdir_t *tmp = job->kvs_dir;
+    int rc = kvs_get_dir (h, &job->kvs_dir, "%s", kvsdir_key (tmp));
+    kvsdir_destroy (tmp);
+    if (rc < 0)
+        flux_log_error (h, "put_job_in_kvs: kvs_get_dir");
+    return (rc);
 }
 
 job_t *pull_job_from_kvs (kvsdir_t *kvsdir)

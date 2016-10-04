@@ -250,8 +250,8 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
         log_err_exit ("kvs_get_dir (id=%lu)", new_jobid);
     kvsdir_put_string (dir, "state", "submitted");
     job->kvs_dir = dir;
-    put_job_in_kvs (job);
-    kvs_commit (h);
+    if (put_job_in_kvs (job) < 0)
+        log_err_exit ("put_job_in_kvs");
 
     // Send "submitted" event
     event_json = Jnew();
