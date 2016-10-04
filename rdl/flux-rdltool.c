@@ -57,8 +57,9 @@ static int parse_cmdline (struct prog_ctx *ctx, int ac, char **av)
         "Supported CMDs include:\n"
         " resource URI\t Print resource at URI\n"
         " tree URI\t print hierarchy tree at URI\n"
-        " aggregate URI\t aggregate hierarchy tree at URI\n";
-    const char *options = "+f";
+        " aggregate URI\t aggregate hierarchy tree at URI\n"
+        " list-hierarchies\t list all hierarchies in config\n";
+    const char *options = "+f:";
     const struct option longopts[] = {
         { "config-file", required_argument, 0, 'f' },
         { 0, 0, 0, 0 },
@@ -152,13 +153,23 @@ void aggregate (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
     return;
 }
 
+void list_hierarchies (struct prog_ctx *ctx, struct rdl *rdl)
+{
+    const char *h = NULL;
+    while ((h = rdl_next_hierarchy (rdl, h)))
+        fprintf (stdout, "%s\n", h);
+    return;
+}
+
 int main (int ac, char **av)
 {
     struct prog_ctx *ctx = prog_ctx_create (ac, av);
     struct rdllib *l = rdllib_open ();
+    struct rdl *rdl;
 
-    struct rdl *rdl = rdl_loadfile (l, ctx->filename);
-    if (!rdl)
+    if (!l)
+        fatal (1, "Failed to load rdllib\n");
+    if (!(rdl = rdl_loadfile (l, ctx->filename)))
         fatal (1, "Failed to load config file: %s\n", ctx->filename);
 
     if (strcmp (ctx->cmd, "resource") == 0) {
@@ -169,6 +180,9 @@ int main (int ac, char **av)
     }
     else if (strcmp (ctx->cmd, "aggregate") == 0) {
         aggregate (ctx, rdl, ctx->args[0]);
+    }
+    else if (strcmp (ctx->cmd, "list-hierarchies") == 0) {
+        list_hierarchies (ctx, rdl);
     }
     else
         fatal (1, "Unknown command: %s\n", ctx->cmd);

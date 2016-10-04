@@ -67,6 +67,7 @@ int main (int argc, char *argv[])
     struct rdl_accumulator *a;
     struct resource *r, *c;
     int64_t val;
+    const char *h = NULL;
 
     const char *filename = argv[1];
 
@@ -81,6 +82,9 @@ int main (int argc, char *argv[])
 
     if (!(rdl1 = rdl_loadfile (l, filename)))
         log_err_exit ("loadfile: %s", filename);
+
+    while ((h = rdl_next_hierarchy (rdl1, h)))
+        fprintf (stderr, "%s\n", h);
 
     if (!(rdl2 = rdl_copy (rdl1)))
         log_err_exit ("copy");

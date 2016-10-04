@@ -109,6 +109,14 @@ char *rdl_serialize (struct rdl *rdl);
 
 
 /*
+ *  Get next hierarchy name from internal list of hierarchies in rdl.
+ *   Start iteration with [last] == NULL, and pass previous result
+ *   to get next value. Returns NULL after last hierarchy name is returned.
+ */
+const char *rdl_next_hierarchy (struct rdl *rdl, const char *last);
+
+
+/*
  *   RDL Resource methods:
  */
 

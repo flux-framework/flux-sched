@@ -537,6 +537,28 @@ static int lua_rdl_method_push (struct rdl *rdl, const char *name)
     return (0);
 }
 
+const char *rdl_next_hierarchy (struct rdl *rdl, const char *last)
+{
+    lua_rdl_method_push (rdl, "hierarchy_next");
+
+    if (last)
+        lua_pushstring (rdl->L, last);
+    else
+        lua_pushnil (rdl->L);
+
+    /* stack: [ Method, object, last ] */
+    if (lua_pcall (rdl->L, 2, LUA_MULTRET, 0)) {
+        VERR (rdl->rl, "next_hierarchy: %s\n", lua_tostring (rdl->L, -1));
+        return (NULL);
+    }
+    if (lua_isnil (rdl->L, -1)) {
+        /* End of child list is indicated by nil return */
+        return (NULL);
+    }
+    return (lua_tostring (rdl->L, -1));
+}
+
+
 struct rdl * rdl_find (struct rdl *rdl, json_object *args)
 {
     lua_rdl_method_push (rdl, "find");

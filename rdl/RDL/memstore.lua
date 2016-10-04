@@ -1108,6 +1108,11 @@ function MemStore:serialize ()
     return serialize (self)
 end
 
+function MemStore:hierarchy_next (last)
+    local x,y,z = next (self.__hierarchy, last)
+    return x
+end
+
 local function bless_memstore (t)
     if not t.__resources or not t.__hierarchy or not t.__types then
         return nil, "Doesn't appear to be a memstore table"
