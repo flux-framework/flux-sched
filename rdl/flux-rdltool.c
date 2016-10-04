@@ -164,9 +164,11 @@ int main (int ac, char **av)
 {
     struct prog_ctx *ctx = prog_ctx_create (ac, av);
     struct rdllib *l = rdllib_open ();
+    struct rdl *rdl;
 
-    struct rdl *rdl = rdl_loadfile (l, ctx->filename);
-    if (!rdl)
+    if (!l)
+        fatal (1, "Failed to load rdllib\n");
+    if (!(rdl = rdl_loadfile (l, ctx->filename)))
         fatal (1, "Failed to load config file: %s\n", ctx->filename);
 
     if (strcmp (ctx->cmd, "resource") == 0) {
