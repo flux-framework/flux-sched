@@ -153,7 +153,7 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
-    JSON window_json = NULL;
+    json_object *window_json = NULL;
     zlist_t *window_keys = NULL;
     size_t *size_ptr = NULL;
 
@@ -217,8 +217,8 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 static bool compare_windows_starttime (void *item1, void *item2)
 {
     int64_t starttime1, starttime2;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
+    json_object *json1 = (json_object *) item1;
+    json_object *json2 = (json_object *) item2;
 
     Jget_int64 (json1, "starttime", &starttime1);
     Jget_int64 (json2, "starttime", &starttime2);
@@ -230,8 +230,8 @@ static int compare_windows_starttime (void *item1, void *item2)
 {
     int64_t starttime1 = 0;
     int64_t starttime2 = 0;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
+    json_object *json1 = (json_object *) item1;
+    json_object *json2 = (json_object *) item2;
 
     Jget_int64 (json1, "starttime", &starttime1);
     Jget_int64 (json2, "starttime", &starttime2);
@@ -245,8 +245,8 @@ static int compare_windows_starttime (void *item1, void *item2)
 static bool compare_windows_endtime (void *item1, void *item2)
 {
     int64_t endtime1, endtime2;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
+    json_object *json1 = (json_object *) item1;
+    json_object *json2 = (json_object *) item2;
 
     Jget_int64 (json1, "endtime", &endtime1);
     Jget_int64 (json2, "endtime", &endtime2);
@@ -258,8 +258,8 @@ static int compare_windows_endtime (void *item1, void *item2)
 {
     int64_t endtime1 = 0;
     int64_t endtime2 = 0;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
+    json_object *json1 = (json_object *) item1;
+    json_object *json2 = (json_object *) item2;
 
     Jget_int64 (json1, "endtime", &endtime1);
     Jget_int64 (json2, "endtime", &endtime2);
@@ -272,13 +272,13 @@ static __inline__ void
 myJput (void* o)
 {
     if (o)
-        json_object_put ((JSON)o);
+        json_object_put ((json_object *)o);
 }
 
 size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
                                      int64_t range_endtime, bool exclusive)
 {
-    JSON window_json = NULL;
+    json_object *window_json = NULL;
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
     int64_t  curr_endtime = 0;
@@ -365,8 +365,8 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     zlist_sort (start_windows, compare_windows_starttime);
     zlist_sort (end_windows, compare_windows_endtime);
 
-    JSON curr_start_window = zlist_first (start_windows);
-    JSON curr_end_window = zlist_first (end_windows);
+    json_object *curr_start_window = zlist_first (start_windows);
+    json_object *curr_end_window = zlist_first (end_windows);
 
     Jget_int64 (curr_start_window, "starttime", &curr_starttime);
     Jget_int64 (curr_end_window, "endtime", &curr_endtime);
@@ -612,11 +612,11 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
+resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
 {
-    JSON jhierarchyo = NULL; /* json hierarchy object */
-    JSON jpropso = NULL; /* json properties object */
-    JSON jtagso = NULL;  /* json tags object */
+    json_object *jhierarchyo = NULL; /* json hierarchy object */
+    json_object *jpropso = NULL; /* json properties object */
+    json_object *jtagso = NULL;  /* json tags object */
     const char *basename = NULL;
     const char *name = NULL;
     const char *path = NULL;
@@ -668,7 +668,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             /* add time window if we are given a start time */
             int64_t starttime;
             if (Jget_int64 (o, "starttime", &starttime)) {
-                JSON    w = Jnew ();
+                json_object *   w = Jnew ();
                 char    *json_str;
                 int64_t endtime;
                 int64_t wall_time;
@@ -691,7 +691,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
         jpropso = Jobj_get (o, "properties");
         if (jpropso) {
-            JSON jpropo;        /* json property object */
+            json_object *jpropo;        /* json property object */
             char *property;
 
             json_object_object_foreachC (jpropso, iter) {
@@ -705,7 +705,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
 
         jtagso = Jobj_get (o, "tags");
         if (jtagso) {
-            JSON jtago;        /* json tag object */
+            json_object *jtago;        /* json tag object */
             char *tag;
 
             json_object_object_foreachC (jtagso, iter) {
@@ -723,7 +723,7 @@ ret:
 
 static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
 {
-    JSON o = NULL;
+    json_object *o = NULL;
     resrc_t *resrc = NULL;
     struct resource *c;
 
@@ -856,7 +856,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
 
         /* add twindow */
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
-            JSON w = Jnew ();
+            json_object *w = Jnew ();
             Jadd_int64 (w, "starttime", epochtime ());
             Jadd_int64 (w, "endtime", TIME_MAX);
             char *json_str = xstrdup (Jtostr (w));
@@ -970,7 +970,7 @@ ret:
     return resrc;
 }
 
-int resrc_to_json (JSON o, resrc_t *resrc)
+int resrc_to_json (json_object *o, resrc_t *resrc)
 {
     char uuid[40];
     int rc = -1;
@@ -1090,7 +1090,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
        resource, then return false */
     json_str_window = zhash_lookup (resrc->twindow, "0");
     if (json_str_window) {
-        JSON lt = Jfromstr (json_str_window);
+        json_object *lt = Jfromstr (json_str_window);
         Jget_int64 (lt, "endtime", &lendtime);
         Jput (lt);
         if (endtime > (lendtime - 10)) {
@@ -1278,7 +1278,7 @@ ret:
 static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
                                             int64_t starttime, int64_t endtime)
 {
-    JSON j;
+    json_object *j;
     char *id_ptr = NULL;
     char *json_str = NULL;
     int rc = -1;
@@ -1390,7 +1390,7 @@ ret:
 static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
                                            int64_t starttime, int64_t endtime)
 {
-    JSON j;
+    json_object *j;
     char *id_ptr = NULL;
     char *json_str = NULL;
     int rc = -1;

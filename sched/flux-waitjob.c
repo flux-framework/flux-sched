@@ -110,14 +110,14 @@ static void touch_outfile (const char *fn)
     fclose (fp);
 }
 
-static inline void get_jobid (JSON jcb, int64_t *j)
+static inline void get_jobid (json_object *jcb, int64_t *j)
 {
     Jget_int64 (jcb, JSC_JOBID, j);
 }
 
-static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
+static inline void get_states (json_object *jcb, int64_t *os, int64_t *ns)
 {
-    JSON o = NULL;
+    json_object *o = NULL;
     Jget_obj (jcb, JSC_STATE_PAIR, &o);
     Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
@@ -125,8 +125,8 @@ static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
 
 static bool complete_job (wjctx_t *ctx)
 {
-    JSON jcb = NULL;
-    JSON o = NULL;
+    json_object *jcb = NULL;
+    json_object *o = NULL;
     bool rc = false;
     char *json_str = NULL;
     int64_t state = J_NULL;
@@ -149,7 +149,7 @@ static bool complete_job (wjctx_t *ctx)
 
 static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
 {
-    JSON jcb = NULL;
+    json_object *jcb = NULL;
     int64_t os = 0, ns = 0, j = 0;
     flux_t h = (flux_t)arg;
     wjctx_t *ctx = getctx (h);

@@ -253,9 +253,9 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
     return resrc_reqst;
 }
 
-static resrc_graph_req_t *resrc_graph_req_from_json (JSON ga)
+static resrc_graph_req_t *resrc_graph_req_from_json (json_object *ga)
 {
-    JSON go = NULL;     /* graph json object */
+    json_object *go = NULL;     /* graph json object */
     const char *name = NULL;
     int i, ngraphs = 0;
     int64_t ssize;
@@ -284,12 +284,12 @@ fail:
     return NULL;
 }
 
-resrc_reqst_t *resrc_reqst_from_json (JSON o, resrc_reqst_t *parent)
+resrc_reqst_t *resrc_reqst_from_json (json_object *o, resrc_reqst_t *parent)
 {
     bool exclusive = false;
-    JSON ca = NULL;     /* array of child json objects */
-    JSON co = NULL;     /* child json object */
-    JSON ga = NULL;     /* array of graph json objects */
+    json_object *ca = NULL;     /* array of child json objects */
+    json_object *co = NULL;     /* child json object */
+    json_object *ga = NULL;     /* array of graph json objects */
     int64_t endtime;
     int64_t qty = 0;
     int64_t size = 0;

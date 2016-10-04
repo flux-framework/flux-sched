@@ -235,8 +235,8 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     int found = 0;
     int rc = 0;
     int64_t nowtime = epochtime ();
-    JSON o = NULL;
-    JSON req_res = NULL;
+    json_object *o = NULL;
+    json_object *req_res = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
@@ -263,16 +263,16 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     req_res = Jnew ();
 
     if (rdl) {
-        JSON bandwidth = Jnew ();
-        JSON child_core = Jnew ();
-        JSON child_sock = Jnew ();
-        JSON graph_array = Jnew_ar ();
-        JSON ja = Jnew_ar ();
-        JSON jpropo = Jnew (); /* json property object */
-        JSON memory = Jnew ();
-        JSON power = Jnew ();
+        json_object *bandwidth = Jnew ();
+        json_object *child_core = Jnew ();
+        json_object *child_sock = Jnew ();
+        json_object *graph_array = Jnew_ar ();
+        json_object *ja = Jnew_ar ();
+        json_object *jpropo = Jnew (); /* json property object */
+        json_object *memory = Jnew ();
+        json_object *power = Jnew ();
 
-        /* JSON jtago = Jnew ();  /\* json tag object *\/ */
+        /* json_object *jtago = Jnew ();  /\* json tag object *\/ */
         /* Jadd_bool (jtago, "maytag", true); */
         /* Jadd_bool (jtago, "yourtag", true); */
 

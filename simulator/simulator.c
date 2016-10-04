@@ -59,7 +59,7 @@ void free_simstate (sim_state_t *sim_state)
 
 static int add_timers_to_json (const char *key, void *item, void *argument)
 {
-    JSON o = argument;
+    json_object *o = argument;
     double *event_time = (double *)item;
 
     if (event_time != NULL)
@@ -69,10 +69,10 @@ static int add_timers_to_json (const char *key, void *item, void *argument)
     return 0;
 }
 
-JSON sim_state_to_json (sim_state_t *sim_state)
+json_object *sim_state_to_json (sim_state_t *sim_state)
 {
-    JSON o = Jnew ();
-    JSON event_timers = Jnew ();
+    json_object *o = Jnew ();
+    json_object *event_timers = Jnew ();
 
     zhash_foreach (sim_state->timers, add_timers_to_json, event_timers);
 
@@ -84,9 +84,9 @@ JSON sim_state_to_json (sim_state_t *sim_state)
     return o;
 }
 
-static void add_timers_to_hash (JSON o, zhash_t *hash)
+static void add_timers_to_hash (json_object *o, zhash_t *hash)
 {
-    JSON value;
+    json_object *value;
     const char *key;
     double *event_time;
     struct json_object_iterator iter = json_object_iter_begin (o);
@@ -104,10 +104,10 @@ static void add_timers_to_hash (JSON o, zhash_t *hash)
     }
 }
 
-sim_state_t *json_to_sim_state (JSON o)
+sim_state_t *json_to_sim_state (json_object *o)
 {
     sim_state_t *sim_state = new_simstate ();
-    JSON event_timers;
+    json_object *event_timers;
 
     Jget_double (o, "sim_time", &sim_state->sim_time);
     if (Jget_obj (o, "event_timers", &event_timers)) {
@@ -209,7 +209,7 @@ int send_alive_request (flux_t h, const char *module_name)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
-    JSON o = Jnew ();
+    json_object *o = Jnew ();
     uint32_t rank;
 
     if (flux_get_rank (h, &rank) < 0)
@@ -236,7 +236,7 @@ int send_reply_request (flux_t h,
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
-    JSON o = NULL;
+    json_object *o = NULL;
 
     o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
@@ -258,7 +258,7 @@ int send_join_request (flux_t h, const char *module_name, double next_event)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
-    JSON o = Jnew ();
+    json_object *o = Jnew ();
     uint32_t rank;
 
     if (flux_get_rank (h, &rank) < 0)

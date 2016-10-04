@@ -142,14 +142,14 @@ void resrc_tree_print (resrc_tree_t *resrc_tree)
     }
 }
 
-int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
+int resrc_tree_serialize (json_object *o, resrc_tree_t *resrc_tree)
 {
     int rc = -1;
 
     if (o && resrc_tree) {
         rc = resrc_to_json (o, resrc_tree->resrc);
         if (!rc && resrc_tree_num_children (resrc_tree)) {
-            JSON ja = Jnew_ar ();
+            json_object *ja = Jnew_ar ();
 
             if (!(rc = resrc_tree_list_serialize (ja, resrc_tree->children)))
                 json_object_object_add (o, "children", ja);
@@ -158,10 +158,10 @@ int resrc_tree_serialize (JSON o, resrc_tree_t *resrc_tree)
     return rc;
 }
 
-resrc_tree_t *resrc_tree_deserialize (JSON o, resrc_tree_t *parent)
+resrc_tree_t *resrc_tree_deserialize (json_object *o, resrc_tree_t *parent)
 {
-    JSON ca = NULL;     /* array of child json objects */
-    JSON co = NULL;     /* child json object */
+    json_object *ca = NULL;     /* array of child json objects */
+    json_object *co = NULL;     /* child json object */
     resrc_t *resrc = NULL;
     resrc_tree_t *resrc_tree = NULL;
 
@@ -305,7 +305,7 @@ void resrc_tree_list_destroy (resrc_tree_list_t *resrc_tree_list,
     }
 }
 
-int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
+int resrc_tree_list_serialize (json_object *o, resrc_tree_list_t *rtl)
 {
     resrc_tree_t *rt;
     int rc = -1;
@@ -314,7 +314,7 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
         rc = 0;
         rt = resrc_tree_list_first (rtl);
         while (rt) {
-            JSON co = Jnew ();
+            json_object *co = Jnew ();
 
             if ((rc = resrc_tree_serialize (co, rt)))
                 break;
@@ -326,9 +326,9 @@ int resrc_tree_list_serialize (JSON o, resrc_tree_list_t *rtl)
     return rc;
 }
 
-resrc_tree_list_t *resrc_tree_list_deserialize (JSON o)
+resrc_tree_list_t *resrc_tree_list_deserialize (json_object *o)
 {
-    JSON ca = NULL;     /* array of child json objects */
+    json_object *ca = NULL;     /* array of child json objects */
     int i, nchildren = 0;
     resrc_tree_t *rt = NULL;
     resrc_tree_list_t *rtl = resrc_tree_list_new ();
