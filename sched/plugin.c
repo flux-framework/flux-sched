@@ -247,7 +247,7 @@ static void lsmod_cb (flux_t h, flux_msg_handler_t *w,
 {
     struct sched_plugin_loader *sploader = arg;
     struct sched_plugin *plugin = sched_plugin_get (sploader);
-    flux_modlist_t mods = NULL;
+    flux_modlist_t *mods = NULL;
     zfile_t *zf = NULL;
     char *json_str = NULL;
     struct stat sb;
