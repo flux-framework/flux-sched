@@ -167,7 +167,7 @@ int put_job_in_kvs (job_t *job)
     if (!kvsdir_exists (job->kvs_dir, "io_rate"))
         kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate);
 
-    flux_t h = kvsdir_handle (job->kvs_dir);
+    flux_t *h = kvsdir_handle (job->kvs_dir);
     kvs_commit (h);
 
     // TODO: Check to see if this is necessary, i assume the kvsdir becomes
@@ -205,7 +205,7 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
     return job;
 }
 
-int send_alive_request (flux_t h, const char *module_name)
+int send_alive_request (flux_t *h, const char *module_name)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
@@ -230,7 +230,7 @@ int send_alive_request (flux_t h, const char *module_name)
 }
 
 // Reply back to the sim module with the updated sim state (in JSON form)
-int send_reply_request (flux_t h,
+int send_reply_request (flux_t *h,
                         const char *module_name,
                         sim_state_t *sim_state)
 {
@@ -254,7 +254,7 @@ int send_reply_request (flux_t h,
 }
 
 // Request to join the simulation
-int send_join_request (flux_t h, const char *module_name, double next_event)
+int send_join_request (flux_t *h, const char *module_name, double next_event)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;

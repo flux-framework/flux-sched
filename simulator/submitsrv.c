@@ -134,7 +134,7 @@ int populate_header (char *header_line, zlist_t *header_list)
 
 // Populate a list of jobs using the data contained in the csv
 // TODO: breakup this function into several smaller functions
-int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
+int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 {
     const int MAX_LINE_LEN = 500;  // sort of arbitrary, works for my data
     char curr_line[MAX_LINE_LEN];  // current line of the input file
@@ -198,7 +198,7 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
 // Based on the sim_time, schedule any jobs that need to be scheduled
 // Next, add an event timer for the scheduler to the sim_state
 // Finally, updated the submit event timer with the next submit time
-int schedule_next_job (flux_t h, sim_state_t *sim_state)
+int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
     const char *resp_json_str = NULL;
     json_object *req_json = NULL;
@@ -290,7 +290,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 }
 
 // Received an event that a simulation is starting
-static void start_cb (flux_t h,
+static void start_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -312,7 +312,7 @@ static void start_cb (flux_t h,
 }
 
 // Handle trigger requests from the sim module ("submit.trigger")
-static void trigger_cb (flux_t h,
+static void trigger_cb (flux_t *h,
                         flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
@@ -350,7 +350,7 @@ static struct flux_msg_handler_spec htab[] = {
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     zhash_t *args = zhash_fromargv (argc, argv);
     if (!args)

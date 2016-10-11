@@ -36,13 +36,13 @@
 #include "src/common/libutil/xzmalloc.h"
 
 typedef struct {
-    flux_t h;
+    flux_t *h;
     int64_t jobid;
     char *start;
     char *complete;
 } wjctx_t;
 
-static flux_t sig_flux_h;
+static flux_t *sig_flux_h;
 
 #define OPTIONS "+hc:s:"
 static const struct option longopts[] = {
@@ -76,7 +76,7 @@ static void freectx (void *arg)
     ctx = NULL;
 }
 
-static wjctx_t *getctx (flux_t h)
+static wjctx_t *getctx (flux_t *h)
 {
     wjctx_t *ctx = (wjctx_t *)flux_aux_get (h, "waitjob");
     if (!ctx) {
@@ -151,7 +151,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
 {
     json_object *jcb = NULL;
     int64_t os = 0, ns = 0, j = 0;
-    flux_t h = (flux_t)arg;
+    flux_t *h = (flux_t *)arg;
     wjctx_t *ctx = getctx (h);
 
     if (errnum > 0) {
@@ -176,7 +176,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     return 0;
 }
 
-static int wait_job_complete (flux_t h)
+static int wait_job_complete (flux_t *h)
 {
     int rc = -1;
     sig_flux_h = h;
@@ -217,7 +217,7 @@ done:
 
 int main (int argc, char *argv[])
 {
-    flux_t h;
+    flux_t *h;
     int ch = 0;
     int64_t jobid = -1;
     char *sfn = NULL;

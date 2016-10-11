@@ -59,13 +59,13 @@
 #define SCHED_UNIMPL -1
 
 #if ENABLE_TIMER_EVENT
-static int timer_event_cb (flux_t h, void *arg);
+static int timer_event_cb (flux_t *h, void *arg);
 #endif
 static void ev_prep_cb (flux_reactor_t *r, flux_watcher_t *w,
                         int revents, void *arg);
 static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w,
                          int revents, void *arg);
-static void res_event_cb (flux_t h, flux_msg_handler_t *w,
+static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
@@ -83,7 +83,7 @@ typedef struct {
 } jsc_event_t;
 
 typedef struct {
-    flux_t        h;
+    flux_t       *h;
     void         *arg;
 } res_event_t;
 
@@ -115,7 +115,7 @@ typedef struct {
 
 /* TODO: Implement prioritization function for p_queue */
 typedef struct {
-    flux_t        h;
+    flux_t       *h;
     zhash_t      *job_index;          /* For fast job lookup for all queues*/
     zlist_t      *p_queue;            /* Pending job priority queue */
     bool          pq_state;           /* schedulable state change in p_queue */
@@ -337,7 +337,7 @@ static void freectx (void *arg)
     free (ctx);
 }
 
-static ssrvctx_t *getctx (flux_t h)
+static ssrvctx_t *getctx (flux_t *h)
 {
     ssrvctx_t *ctx = (ssrvctx_t *)flux_aux_get (h, "sched");
     if (!ctx) {
@@ -385,7 +385,7 @@ static inline void get_states (json_object *jcb, int64_t *os, int64_t *ns)
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
 }
 
-static inline int fill_resource_req (flux_t h, flux_lwj_t *j)
+static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
 {
     char *jcbstr = NULL;
     int rc = -1;
@@ -424,7 +424,7 @@ done:
     return rc;
 }
 
-static int update_state (flux_t h, uint64_t jid, job_state_t os, job_state_t ns)
+static int update_state (flux_t *h, uint64_t jid, job_state_t os, job_state_t ns)
 {
     const char *jcbstr = NULL;
     int rc = -1;
@@ -563,7 +563,7 @@ static flux_lwj_t *fetch_job_and_event (ssrvctx_t *ctx, json_object *jcb,
  *                                                                            *
  ******************************************************************************/
 
-static void setup_rdl_lua (flux_t h)
+static void setup_rdl_lua (flux_t *h)
 {
     flux_log (h, LOG_DEBUG, "LUA_PATH %s", getenv ("LUA_PATH"));
     flux_log (h, LOG_DEBUG, "LUA_CPATH %s", getenv ("LUA_CPATH"));
@@ -573,7 +573,7 @@ static void setup_rdl_lua (flux_t h)
  * It is an EPROTO error if value is type other than json_type_string.
  * On success returns value, otherwise NULL with errno set.
  */
-static json_object *get_string_blocking (flux_t h, const char *key)
+static json_object *get_string_blocking (flux_t *h, const char *key)
 {
     char *json_str = NULL; /* initial value for watch */
     json_object *o = NULL;
@@ -635,7 +635,7 @@ done:
     return rc;
 }
 
-static void dump_resrc_state (flux_t h, resrc_tree_t *rt)
+static void dump_resrc_state (flux_t *h, resrc_tree_t *rt)
 {
     char *str;
     if (!rt)
@@ -832,7 +832,7 @@ static void handle_res_queue (ssrvctx_t *ctx)
 /*
  * Simulator Callbacks
  */
-static void start_cb (flux_t h,
+static void start_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -859,7 +859,7 @@ static void start_cb (flux_t h,
 static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
     json_object *jcb = NULL;
-    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
     jsc_event_t *event = (jsc_event_t*) xzmalloc (sizeof (jsc_event_t));
 
     if (!(jcb = Jfromstr (jcbstr))) {
@@ -881,9 +881,9 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
     return 0;
 }
 
-static void sim_res_event_cb (flux_t h, flux_msg_handler_t *w,
+static void sim_res_event_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg) {
-    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
     res_event_t *event = (res_event_t*) xzmalloc (sizeof (res_event_t));
     const char *topic = NULL;
 
@@ -898,7 +898,7 @@ static void sim_res_event_cb (flux_t h, flux_msg_handler_t *w,
     zlist_append (ctx->sctx.res_queue, event);
 }
 
-static void trigger_cb (flux_t h,
+static void trigger_cb (flux_t *h,
                         flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
@@ -971,7 +971,7 @@ static struct flux_msg_handler_spec sim_htab[] = {
 static int reg_sim_events (ssrvctx_t *ctx)
 {
     int rc = -1;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
 
     if (flux_event_subscribe (ctx->h, "sim.start") < 0) {
         flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
@@ -1038,7 +1038,7 @@ static struct flux_msg_handler_spec htab[] = {
 static int inline reg_events (ssrvctx_t *ctx)
 {
     int rc = 0;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
 
     if (flux_event_subscribe (h, "sched.res.") < 0) {
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
@@ -1118,7 +1118,7 @@ done:
 static inline int bridge_send_runrequest (ssrvctx_t *ctx, flux_lwj_t *job)
 {
     int rc = -1;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
     char *topic = NULL;
     flux_msg_t *msg = NULL;
 
@@ -1248,7 +1248,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 {
     const char *jcbstr = NULL;
     int rc = -1;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
     json_object *jcb = Jnew ();
     json_object *ro = Jnew ();
     json_object *arr = Jnew_ar ();
@@ -1291,7 +1291,7 @@ done:
 }
 
 #if DYNAMIC_SCHEDULING
-static int req_tpexec_grow (flux_t h, flux_lwj_t *job)
+static int req_tpexec_grow (flux_t *h, flux_lwj_t *job)
 {
     /* TODO: NOT IMPLEMENTED */
     /* This runtime grow service will grow the resource set of the job.
@@ -1301,13 +1301,13 @@ static int req_tpexec_grow (flux_t h, flux_lwj_t *job)
     return SCHED_UNIMPL;
 }
 
-static int req_tpexec_shrink (flux_t h, flux_lwj_t *job)
+static int req_tpexec_shrink (flux_t *h, flux_lwj_t *job)
 {
     /* TODO: NOT IMPLEMENTED */
     return SCHED_UNIMPL;
 }
 
-static int req_tpexec_map (flux_t h, flux_lwj_t *job)
+static int req_tpexec_map (flux_t *h, flux_lwj_t *job)
 {
     /* TODO: NOT IMPLEMENTED */
     /* This runtime grow service will grow the resource set of the job.
@@ -1318,7 +1318,7 @@ static int req_tpexec_map (flux_t h, flux_lwj_t *job)
 }
 #endif
 
-static int req_tpexec_exec (flux_t h, flux_lwj_t *job)
+static int req_tpexec_exec (flux_t *h, flux_lwj_t *job)
 {
     ssrvctx_t *ctx = getctx (h);
     int rc = -1;
@@ -1337,7 +1337,7 @@ done:
     return rc;
 }
 
-static int req_tpexec_run (flux_t h, flux_lwj_t *job)
+static int req_tpexec_run (flux_t *h, flux_lwj_t *job)
 {
     /* TODO: wreckrun does not provide grow and map yet
      *   we will switch to the following sequence under the TP exec service
@@ -1368,7 +1368,7 @@ static int req_tpexec_run (flux_t h, flux_lwj_t *job)
 int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 {
     json_object *req_res = NULL;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
     int rc = -1;
     int64_t nfound = 0;
     int64_t nreqrd = 0;
@@ -1561,7 +1561,7 @@ static inline bool trans (job_state_t ex, job_state_t n, job_state_t *o)
  */
 static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
 {
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
     job_state_t oldstate = job->state;
 
     flux_log (h, LOG_DEBUG, "attempting job %"PRId64" state change from "
@@ -1667,18 +1667,18 @@ bad_transition:
  * For now, the only resource event is raised when a job releases its
  * RDL allocation.
  */
-static void res_event_cb (flux_t h, flux_msg_handler_t *w,
+static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg)
 {
-    schedule_jobs (getctx ((flux_t)arg));
+    schedule_jobs (getctx ((flux_t *)arg));
     return;
 }
 
 #if ENABLE_TIMER_EVENT
-static int timer_event_cb (flux_t h, void *arg)
+static int timer_event_cb (flux_t *h, void *arg)
 {
     //flux_log (h, LOG_ERR, "TIMER CALLED");
-    schedule_jobs (getctx ((flux_t)arg));
+    schedule_jobs (getctx ((flux_t *)arg));
     return 0;
 }
 #endif
@@ -1686,7 +1686,7 @@ static int timer_event_cb (flux_t h, void *arg)
 static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
     json_object *jcb = NULL;
-    ssrvctx_t *ctx = getctx ((flux_t)arg);
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
     flux_lwj_t *j = NULL;
     job_state_t ns = J_FOR_RENT;
 
@@ -1734,7 +1734,7 @@ static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w, int ev, void *a)
  *                                                                            *
  ******************************************************************************/
 
-const sched_params_t *sched_params_get (flux_t h)
+const sched_params_t *sched_params_get (flux_t *h)
 {
     const sched_params_t *rp = NULL;
     ssrvctx_t *ctx = NULL;
@@ -1747,7 +1747,7 @@ done:
     return rp;
 }
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     int rc = -1;
     ssrvctx_t *ctx = NULL;

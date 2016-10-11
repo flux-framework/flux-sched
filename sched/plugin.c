@@ -34,7 +34,7 @@
 #include "plugin.h"
 
 struct sched_plugin_loader {
-    flux_t h;
+    flux_t *h;
     struct sched_plugin *plugin;
 };
 
@@ -51,7 +51,7 @@ static void plugin_destroy (struct sched_plugin *plugin)
     }
 }
 
-static struct sched_plugin *plugin_create (flux_t h, void *dso)
+static struct sched_plugin *plugin_create (flux_t *h, void *dso)
 {
     int saved_errno;
     char *strerr = NULL;
@@ -178,7 +178,7 @@ struct sched_plugin *sched_plugin_get (struct sched_plugin_loader *sploader)
     return sploader->plugin;
 }
 
-static void rmmod_cb (flux_t h, flux_msg_handler_t *w,
+static void rmmod_cb (flux_t *h, flux_msg_handler_t *w,
                       const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
@@ -205,7 +205,7 @@ done:
         free (name);
 }
 
-static void insmod_cb (flux_t h, flux_msg_handler_t *w,
+static void insmod_cb (flux_t *h, flux_msg_handler_t *w,
                        const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
@@ -242,7 +242,7 @@ done:
         free (argz);
 }
 
-static void lsmod_cb (flux_t h, flux_msg_handler_t *w,
+static void lsmod_cb (flux_t *h, flux_msg_handler_t *w,
                       const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
@@ -289,7 +289,7 @@ static struct flux_msg_handler_spec plugin_htab[] = {
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-struct sched_plugin_loader *sched_plugin_loader_create (flux_t h)
+struct sched_plugin_loader *sched_plugin_loader_create (flux_t *h)
 {
     struct sched_plugin_loader *sploader = malloc (sizeof (*sploader));
     if (!sploader) {

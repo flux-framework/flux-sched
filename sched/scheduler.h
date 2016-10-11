@@ -82,7 +82,7 @@ typedef struct {
 #define SCHED_PARAM_Q_DEPTH_DEFAULT 1024
 #define SCHED_PARAM_DELAY_DEFAULT true
 
-const sched_params_t *sched_params_get (flux_t h);
+const sched_params_t *sched_params_get (flux_t *h);
 
 #endif /* SCHEDULER_H */
 

@@ -39,7 +39,7 @@
 
 typedef struct {
     sim_state_t *sim_state;
-    flux_t h;
+    flux_t *h;
     bool rdl_changed;
     char *rdl_string;
     bool exit_on_complete;
@@ -53,7 +53,7 @@ static void freectx (void *arg)
     free (ctx);
 }
 
-static ctx_t *getctx (flux_t h, bool exit_on_complete)
+static ctx_t *getctx (flux_t *h, bool exit_on_complete)
 {
     ctx_t *ctx = (ctx_t *)flux_aux_get (h, "simsrv");
 
@@ -72,7 +72,7 @@ static ctx_t *getctx (flux_t h, bool exit_on_complete)
 
 // builds the trigger request and sends it to "mod_name"
 // converts sim_state to JSON, formats request tag based on "mod_name"
-static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
+static int send_trigger (flux_t *h, char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
@@ -97,7 +97,7 @@ static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
 
 // Send out a call to all modules that the simulation is starting
 // and that they should join
-int send_start_event (flux_t h)
+int send_start_event (flux_t *h)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
@@ -122,7 +122,7 @@ int send_start_event (flux_t h)
 }
 
 // Send an event to all modules that the simulation has completed
-int send_complete_event (flux_t h)
+int send_complete_event (flux_t *h)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
@@ -206,7 +206,7 @@ static int handle_next_event (ctx_t *ctx)
 }
 
 // Recevied a request to join the simulation ("sim.join")
-static void join_cb (flux_t h,
+static void join_cb (flux_t *h,
                      flux_msg_handler_t *w,
                      const flux_msg_t *msg,
                      void *arg)
@@ -337,7 +337,7 @@ static void copy_new_state_data (ctx_t *ctx,
     zhash_foreach (reply_sim_state->timers, check_for_new_timers, ctx);
 }
 
-static void rdl_update_cb (flux_t h,
+static void rdl_update_cb (flux_t *h,
                            flux_msg_handler_t *w,
                            const flux_msg_t *msg,
                            void *arg)
@@ -364,7 +364,7 @@ static void rdl_update_cb (flux_t h,
 }
 
 // Recevied a reply to a trigger ("sim.reply")
-static void reply_cb (flux_t h,
+static void reply_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -399,7 +399,7 @@ static void reply_cb (flux_t h,
     Jput (request);
 }
 
-static void alive_cb (flux_t h,
+static void alive_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -429,7 +429,7 @@ static struct flux_msg_handler_spec htab[] = {
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     zhash_t *args = zhash_fromargv (argc, argv);
     ctx_t *ctx;
