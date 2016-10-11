@@ -231,7 +231,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_get (rpc, NULL, &resp_json_str) < 0) {
+    if (flux_rpc_get (rpc, &resp_json_str) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
     }
     if (resp_json_str == NULL
