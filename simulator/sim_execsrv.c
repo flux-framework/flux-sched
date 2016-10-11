@@ -44,7 +44,7 @@ typedef struct {
     sim_state_t *sim_state;
     zlist_t *queued_events;  // holds int *
     zlist_t *running_jobs;  // holds job_t *
-    flux_t h;
+    flux_t *h;
     double prev_sim_time;
     struct rdllib *rdllib;
     struct rdl *rdl;
@@ -73,7 +73,7 @@ static void freectx (void *arg)
     free (ctx);
 }
 
-static ctx_t *getctx (flux_t h)
+static ctx_t *getctx (flux_t *h)
 {
     ctx_t *ctx = (ctx_t *)flux_aux_get (h, "sim_exec");
 
@@ -194,7 +194,7 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 // Also change the state of the job in the KVS
 static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
 {
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
 
     flux_log (h, LOG_INFO, "Job %d completed", job->id);
 
@@ -508,7 +508,7 @@ static int handle_queued_events (ctx_t *ctx)
     job_t *job = NULL;
     int *jobid = NULL;
     kvsdir_t *kvs_dir;
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
     zlist_t *queued_events = ctx->queued_events;
     zlist_t *running_jobs = ctx->running_jobs;
     double sim_time = ctx->sim_state->sim_time;
@@ -544,7 +544,7 @@ static int handle_queued_events (ctx_t *ctx)
 }
 
 // Received an event that a simulation is starting
-static void start_cb (flux_t h,
+static void start_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -564,7 +564,7 @@ static void start_cb (flux_t h,
 }
 
 // Handle trigger requests from the sim module ("sim_exec.trigger")
-static void trigger_cb (flux_t h,
+static void trigger_cb (flux_t *h,
                         flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
@@ -606,7 +606,7 @@ static void trigger_cb (flux_t h,
     zhash_destroy (&job_hash);
 }
 
-static void run_cb (flux_t h,
+static void run_cb (flux_t *h,
                     flux_msg_handler_t *w,
                     const flux_msg_t *msg,
                     void *arg)
@@ -637,7 +637,7 @@ static struct flux_msg_handler_spec htab[] = {
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     ctx_t *ctx = getctx (h);
     uint32_t rank;

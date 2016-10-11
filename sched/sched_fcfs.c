@@ -42,15 +42,15 @@
 #include "scheduler.h"
 
 
-static bool select_children (flux_t h, resrc_tree_list_t *children,
+static bool select_children (flux_t *h, resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
                              resrc_tree_t *selected_parent);
 
-resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
+resrc_tree_t *select_resources (flux_t *h, resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
-int sched_loop_setup (flux_t h)
+int sched_loop_setup (flux_t *h)
 {
     return 0;
 }
@@ -67,7 +67,7 @@ int sched_loop_setup (flux_t h)
  *          found_tree  - a resource tree containing resources that satisfy the
  *                        job's request or NULL if none are found
  */
-int64_t find_resources (flux_t h, resrc_t *resrc, resrc_reqst_t *resrc_reqst,
+int64_t find_resources (flux_t *h, resrc_t *resrc, resrc_reqst_t *resrc_reqst,
                         resrc_tree_t **found_tree)
 {
     int64_t nfound = 0;
@@ -99,7 +99,7 @@ ret:
  * cycles through all of the resource children and returns true when
  * the requested quantity of resources have been selected.
  */
-static bool select_child (flux_t h, resrc_tree_list_t *children,
+static bool select_child (flux_t *h, resrc_tree_list_t *children,
                           resrc_reqst_t *child_reqst,
                           resrc_tree_t *selected_parent)
 {
@@ -124,7 +124,7 @@ static bool select_child (flux_t h, resrc_tree_list_t *children,
  * cycles through all of the resource requests and returns true if all
  * of the requested children were selected
  */
-static bool select_children (flux_t h, resrc_tree_list_t *children,
+static bool select_children (flux_t *h, resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
                              resrc_tree_t *selected_parent)
 {
@@ -154,7 +154,7 @@ static bool select_children (flux_t h, resrc_tree_list_t *children,
  *          selected_parent - parent of the selected resource tree
  * Returns: a resource tree of however many resources were selected
  */
-resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
+resrc_tree_t *select_resources (flux_t *h, resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent)
 {
@@ -226,7 +226,7 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
     return selected_tree;
 }
 
-int allocate_resources (flux_t h, resrc_tree_t *selected_tree, int64_t job_id,
+int allocate_resources (flux_t *h, resrc_tree_t *selected_tree, int64_t job_id,
                         int64_t starttime, int64_t endtime)
 {
     int rc = -1;
@@ -236,7 +236,7 @@ int allocate_resources (flux_t h, resrc_tree_t *selected_tree, int64_t job_id,
     return rc;
 }
 
-int reserve_resources (flux_t h, resrc_tree_t **selected_tree, int64_t job_id,
+int reserve_resources (flux_t *h, resrc_tree_t **selected_tree, int64_t job_id,
                        int64_t starttime, int64_t walltime, resrc_t *resrc,
                        resrc_reqst_t *resrc_reqst)
 {
@@ -248,7 +248,7 @@ int reserve_resources (flux_t h, resrc_tree_t **selected_tree, int64_t job_id,
 }
 
 
-int process_args (flux_t h, char *argz, size_t argz_len)
+int process_args (flux_t *h, char *argz, size_t argz_len)
 {
     return 0;
 }
