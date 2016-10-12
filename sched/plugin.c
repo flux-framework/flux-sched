@@ -152,7 +152,7 @@ int sched_plugin_load (struct sched_plugin_loader *sploader, const char *s)
         if (!(name = flux_modname (path)))
             goto error;
     }
-    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
+    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND))) {
         flux_log (sploader->h, LOG_ERR, "failed to open sched plugin: %s",
                   dlerror ());
         goto error;
