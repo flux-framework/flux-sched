@@ -38,10 +38,13 @@ addons:
       - lua5.1
       - liblua5.1-0-dev
       - luarocks
+      - libjansson-dev
       - uuid-dev
       - aspell
       - libopenmpi-dev
       - ccache
+      - apport # for coredumps
+      - gdb
       - libhwloc-dev
       - libmunge-dev
       - munge
@@ -60,6 +63,7 @@ before_install:
   - if test "$COVERAGE" = "t"; then gem install coveralls-lcov; fi
 
 script:
+ - ulimit -c unlimited
  - export CC="ccache $CC"
  - export MAKECMDS="make distcheck"
  - export FLUX_TESTS_LOGFILE=t
@@ -67,6 +71,7 @@ script:
  - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
  - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local2 && make -j 2 && make install)
  - (rm -fr $HOME/flux-core)
+ - (find $HOME/local2/lib -name \*.la | xargs rm -f)
  - ($HOME/local2/bin/flux keygen)
 
  # Enable coverage for $CC+coverage build
@@ -92,6 +97,7 @@ after_success:
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
+ - src/test/backtrace-all.sh
 
 before_deploy:
   # Get anchor (formatted properly) and base URI for latest tag in NEWS file
