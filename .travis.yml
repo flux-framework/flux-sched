@@ -71,6 +71,7 @@ script:
  - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
  - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local2 && make -j 2 && make install)
  - (rm -fr $HOME/flux-core)
+ - (find $HOME/local2/lib -name \*.la | xargs rm -f)
  - ($HOME/local2/bin/flux keygen)
 
  # Enable coverage for $CC+coverage build
