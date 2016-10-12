@@ -38,6 +38,7 @@ addons:
       - lua5.1
       - liblua5.1-0-dev
       - luarocks
+      - libjansson-dev
       - uuid-dev
       - aspell
       - libopenmpi-dev
