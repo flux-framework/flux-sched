@@ -691,29 +691,31 @@ resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
 
         jpropso = Jobj_get (o, "properties");
         if (jpropso) {
-            json_object *jpropo;        /* json property object */
+            const char *val;
             char *property;
 
             json_object_object_foreachC (jpropso, iter) {
-                jpropo = Jget (iter.val);
-                property = xstrdup (json_object_get_string (jpropo));
-                zhash_insert (resrc->properties, iter.key, property);
-                zhash_freefn (resrc->properties, iter.key, free);
-                Jput (jpropo);
+                val = json_object_get_string (iter.val);
+                if (val) {
+                    property = xstrdup (val);
+                    zhash_insert (resrc->properties, iter.key, property);
+                    zhash_freefn (resrc->properties, iter.key, free);
+                }
             }
         }
 
         jtagso = Jobj_get (o, "tags");
         if (jtagso) {
-            json_object *jtago;        /* json tag object */
+            const char *val;
             char *tag;
 
             json_object_object_foreachC (jtagso, iter) {
-                jtago = Jget (iter.val);
-                tag = xstrdup (json_object_get_string (jtago));
-                zhash_insert (resrc->tags, iter.key, tag);
-                zhash_freefn (resrc->tags, iter.key, free);
-                Jput (jtago);
+                val = json_object_get_string (iter.val);
+                if (val) {
+                    tag = xstrdup (val);
+                    zhash_insert (resrc->tags, iter.key, tag);
+                    zhash_freefn (resrc->tags, iter.key, free);
+                }
             }
         }
     }
