@@ -34,9 +34,9 @@ test_expect_success 'loading sched works' '
 	flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.backfill plugin-opts=reserve-depth=1
 '
 
-while flux kvs get lwj.12.complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done
+while flux kvs get $(job_kvs_path 12).complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done
 sleep 0.5
-for x in $(seq 1 12); do echo "$x $(flux kvs get lwj.$x.starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
+for x in $(seq 1 12); do echo "$x $(flux kvs get $(job_kvs_path $x).starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
 
 # XXX disabled temporarily - see #212
 #test_expect_success 'jobs scheduled in correct order' '
