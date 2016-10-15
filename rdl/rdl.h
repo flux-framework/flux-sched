@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <jansson.h>
 
 /*
  *  Forward declarations:
@@ -93,7 +94,7 @@ struct rdl * rdl_copy (struct rdl *rdl);
  *    'tags'     : [ TAGS ]  - list of tags to match
  *  }
  */
-struct rdl * rdl_find (struct rdl *rdl, json_object *args);
+struct rdl * rdl_find (struct rdl *rdl, json_t *args);
 
 /*
  *  Destroy and deallocate an rdl handle
@@ -190,14 +191,14 @@ void rdl_resource_delete_tag (struct resource *r, const char *tag);
  *      tags: {list of values},
  *    }
  */
-json_object *rdl_resource_json (struct resource *r);
+json_t *rdl_resource_json (struct resource *r);
 
 /*
  *  Aggregate all properties, tags, values and types from
  *   the resource hierarchy starting at [r]. Returns a json object
  *   reprenting the aggregation.
  */
-json_object * rdl_resource_aggregate_json (struct resource *r);
+json_t * rdl_resource_aggregate_json (struct resource *r);
 
 /*
  *  Iterate over child resources in resource [r].

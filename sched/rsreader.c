@@ -34,7 +34,7 @@
 #include <hwloc.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
@@ -58,10 +58,10 @@ static inline const char *get_hn (hwloc_topology_t topo)
     return hn;
 }
 
-static inline void create_req4allnodes (json_object *reqobj)
+static inline void create_req4allnodes (json_t *reqobj)
 {
-    json_object *req1;
-    json_object *req2;
+    json_t *req1;
+    json_t *req2;
     Jadd_str (reqobj, "type", "node");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
@@ -70,22 +70,22 @@ static inline void create_req4allnodes (json_object *reqobj)
     req2 = Jnew ();
     Jadd_str (req2, "type", "core");
     Jadd_int (req2, "req_qty", 1);
-    json_object_object_add (req1, "req_child", req2);
-    json_object_object_add (reqobj, "req_child", req1);
+    json_object_set_new (req1, "req_child", req2);
+    json_object_set_new (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allsocks (json_object *reqobj)
+static inline void create_req4allsocks (json_t *reqobj)
 {
-    json_object *req1;
+    json_t *req1;
     Jadd_str (reqobj, "type", "socket");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
     Jadd_str (req1, "type", "core");
     Jadd_int (req1, "req_qty", 1);
-    json_object_object_add (reqobj, "req_child", req1);
+    json_object_set_new (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allcores (json_object *reqobj)
+static inline void create_req4allcores (json_t *reqobj)
 {
     Jadd_str (reqobj, "type", "core");
     Jadd_int (reqobj, "req_qty", 1);
@@ -93,7 +93,7 @@ static inline void create_req4allcores (json_object *reqobj)
 
 static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
 {
-    json_object *reqobj = NULL;
+    json_t *reqobj = NULL;
     int64_t size = 0;
     resrc_reqst_t *req = NULL;
 
@@ -109,7 +109,7 @@ static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
 
 static int find_all_sockets_cores (resrc_t *node, int *nsocks, int *ncs)
 {
-    json_object *reqobj= NULL;
+    json_t *reqobj= NULL;
     resrc_reqst_t *req = NULL;
     resrc_tree_t *st = NULL;
     resrc_tree_t *ct = NULL;

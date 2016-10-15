@@ -46,7 +46,7 @@ test_expect_success  'flux-rdltool aggregate works' '
 	$rdltool -f $conf aggregate default:// >output.aggregate &&
 	cat >expected.aggregate <<-EOF &&
 	default://:
-	{ "core": 2464, "socket": 308, "cluster": 1, "node": 154, "memory": 4620000 }
+	{"core": 2464, "socket": 308, "cluster": 1, "node": 154, "memory": 4620000}
 	EOF
 	test_cmp expected.aggregate output.aggregate
 '

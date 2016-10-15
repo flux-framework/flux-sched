@@ -33,7 +33,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
@@ -201,9 +201,9 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
     const char *resp_json_str = NULL;
-    json_object *req_json = NULL;
-    json_object *resp_json = NULL;
-    json_object *event_json = NULL;
+    json_t *req_json = NULL;
+    json_t *resp_json = NULL;
+    json_t *event_json = NULL;
     flux_rpc_t *rpc = NULL;
     flux_msg_t *msg = NULL;
     kvsdir_t *dir = NULL;
@@ -317,7 +317,7 @@ static void trigger_cb (flux_t *h,
                         const flux_msg_t *msg,
                         void *arg)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL;
     sim_state_t *sim_state = NULL;
 

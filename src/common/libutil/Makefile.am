@@ -16,4 +16,4 @@ libutil_la_SOURCES = \
 	log.c \
 	log.h \
 	oom.h \
-	shortjson.h
+	shortjansson.h

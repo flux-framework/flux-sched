@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 
-#include <json.h>
+#include <jansson.h>
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -39,8 +39,9 @@
 #include "rdl.h"
 #include "src/common/liblsd/list.h"
 #include "src/common/libutil/xzmalloc.h"
+#include "src/common/libutil/shortjansson.h"
 
-#include "json-lua.h"
+#include "jansson-lua.h"
 
 #define VERR(r,args...) (*((r)->errf)) ((r)->errctx, args)
 
@@ -559,7 +560,7 @@ const char *rdl_next_hierarchy (struct rdl *rdl, const char *last)
 }
 
 
-struct rdl * rdl_find (struct rdl *rdl, json_object *args)
+struct rdl * rdl_find (struct rdl *rdl, json_t *args)
 {
     lua_rdl_method_push (rdl, "find");
 
@@ -572,7 +573,7 @@ struct rdl * rdl_find (struct rdl *rdl, json_object *args)
      */
     if (lua_pcall (rdl->L, 2, LUA_MULTRET, 0) || lua_isnoneornil (rdl->L, 1)) {
         VERR (rdl->rl, "find(%s): %s\n",
-                json_object_to_json_string (args),
+                Jtostr (args),
                 lua_tostring (rdl->L, -1));
         return (NULL);
     }
@@ -848,10 +849,10 @@ int rdl_resource_unlink_child (struct resource *r, const char *name)
  *  Call [method] on resource [r] and return resulting Lua table
  *   as a json-c json_object.
  */
-static json_object *
+static json_t *
 rdl_resource_method_to_json (struct resource *r, const char *method)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     lua_State *L = r->rdl->L;
 
     if (lua_rdl_resource_method_call (r,  method)) {
@@ -872,12 +873,12 @@ rdl_resource_method_to_json (struct resource *r, const char *method)
     return (o);
 }
 
-json_object * rdl_resource_json (struct resource *r)
+json_t * rdl_resource_json (struct resource *r)
 {
     return rdl_resource_method_to_json (r, "tabulate");
 }
 
-json_object * rdl_resource_aggregate_json (struct resource *r)
+json_t * rdl_resource_aggregate_json (struct resource *r)
 {
     return rdl_resource_method_to_json (r, "aggregate");
 }
