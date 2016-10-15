@@ -5,6 +5,14 @@
 #include <stdbool.h>
 #include "oom.h"
 
+#if JANSSON_VERSION_HEX <= 0x020300
+#define json_object_foreach(x, k, v) \
+    for(void *__json_iterator__ = json_object_iter(x); \
+        __json_iterator__ && \
+        (k = json_object_iter_key(__json_iterator__), v = json_object_iter_value(__json_iterator__), 1); \
+        __json_iterator__ = json_object_iter_next(x, __json_iterator__))
+#endif
+
 /* Creates JSON object with refcount of 1.
  */
 static __inline__ json_t *

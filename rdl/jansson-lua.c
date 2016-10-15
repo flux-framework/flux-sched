@@ -30,6 +30,14 @@
 #include <lauxlib.h>
 #include <jansson.h>
 
+#if JANSSON_VERSION_HEX <= 0x020300
+#define json_object_foreach(x, k, v) \
+    for(void *__json_iterator__ = json_object_iter(x); \
+        __json_iterator__ && \
+        (k = json_object_iter_key(__json_iterator__), v = json_object_iter_value(__json_iterator__), 1); \
+        __json_iterator__ = json_object_iter_next(x, __json_iterator__))
+#endif
+
 static void * json_nullptr;
 
 static int json_object_to_lua_table (lua_State *L, json_t *o);
