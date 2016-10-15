@@ -174,7 +174,7 @@ int put_job_in_kvs (job_t *job)
     return (rc);
 }
 
-job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
+job_t *pull_job_from_kvs (int id, kvsdir_t *kvsdir)
 {
     if (kvsdir == NULL)
         return NULL;
@@ -182,8 +182,8 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
+    job->id = id;
 
-    sscanf (kvsdir_key (job->kvs_dir), "lwj.%d", &job->id);
     kvsdir_get_string (job->kvs_dir, "user", &job->user);
     kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
     kvsdir_get_string (job->kvs_dir, "account", &job->account);
