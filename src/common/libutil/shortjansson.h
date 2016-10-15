@@ -259,9 +259,29 @@ static __inline__ json_t *
 Jfromstr (const char *s)
 {
     json_error_t err;
+#if JANSSON_VERSION_HEX >= 0x020300
     json_t *o = json_loads (s, JSON_DECODE_ANY, &err);
-    if (o == NULL)
-        fprintf (stderr, "Jfromstr: %s:pos %d: %s\n", err.source, err.position, err.text);
+#else /* Jansson < 2.3, no JSON_DECODE_ANY */
+    json_t *o = json_loads (s, 0, &err);
+    if (o == NULL) {
+        /* Jansson < 2.3 will only decode full JSON object or array,
+         *  try wrapping s in {}, then extract inner object.
+         */
+        char *p;
+        if (asprintf (&p, "{\"foo\": %s}", s) >= 0) {
+            json_t *x = json_loads (p, 0, &err);
+            if (x != NULL) {
+                o = json_incref (json_object_get (x, "foo"));
+                json_decref (x);
+            }
+            else
+                fprintf (stderr, "json_loads: %s:%d: %s\n",
+                    err.source, err.position, err.text);
+            free (p);
+        }
+    }
+#endif
+    /* XXX: what to do with error object? */
     return (o);
 }
 
