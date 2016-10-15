@@ -134,7 +134,7 @@ int lua_value_to_json (lua_State *L, int i, json_t **valp)
             o = json_integer (lua_tointeger (L, index));
             break;
         case LUA_TBOOLEAN:
-            o = json_boolean (lua_toboolean (L, index));
+            o = lua_toboolean (L, index) ? json_true () : json_false ();
             break;
         case LUA_TSTRING:
             o = json_string (lua_tostring (L, index));

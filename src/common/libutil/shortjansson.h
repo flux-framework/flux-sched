@@ -45,7 +45,7 @@ Jput (json_t *o)
 static __inline__ void
 Jadd_bool (json_t *o, const char *name, bool b)
 {
-    json_t *n = json_boolean (b);
+    json_t *n = b ? json_true () : json_false ();
     if (!n)
         oom ();
     json_object_set_new (o, name, n);
