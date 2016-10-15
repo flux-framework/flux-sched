@@ -515,8 +515,8 @@ static int handle_queued_events (ctx_t *ctx)
 
     while (zlist_size (queued_events) > 0) {
         jobid = zlist_pop (queued_events);
-        if (kvs_get_dir (h, &kvs_dir, "lwj.%d", *jobid) < 0)
-            log_err_exit ("kvs_get_dir (id=%d)", *jobid);
+        if (!(kvs_dir = job_kvsdir (ctx->h, *jobid)))
+            log_err_exit ("job_kvsdir (id=%d)", *jobid);
         job = pull_job_from_kvs (*jobid, kvs_dir);
         if (update_job_state (ctx, *jobid, kvs_dir, J_STARTING, sim_time) < 0) {
             flux_log (h,
