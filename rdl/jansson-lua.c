@@ -193,14 +193,14 @@ static json_t * lua_table_to_json_array (lua_State *L, int index)
     json_t *o = json_array ();
     lua_pushnil (L);
     while ((rc = lua_next (L, index))) {
-        int i = lua_tointeger (L, -2);
         json_t *val;
 
         if (lua_value_to_json (L, -1, &val) < 0) {
             json_decref (o);
             return (NULL);
         }
-        json_array_set_new (o, i-1, val);
+        if (json_array_append_new (o, val) < 0)
+            fprintf (stderr, "json_array_append_new failed!\n");
         lua_pop (L, 1);
     }
     return (o);
