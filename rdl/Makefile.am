@@ -26,6 +26,7 @@ nobase_dist_lua_SCRIPTS = \
 	RDL/uri.lua \
 	RDL/uuid.lua
 
+noinst_LTLIBRARIES = libjansson-lua.la
 lib_LTLIBRARIES = libflux-rdl.la
 fluxluaexec_LTLIBRARIES = \
     flux/cpuset.la
@@ -40,8 +41,13 @@ flux_cpuset_la_LDFLAGS = \
     -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset \
     $(AM_LDFLAGS)
 
-libflux_rdl_la_SOURCES = rdl.c jansson-lua.c jansson-lua.h
+
+libjansson_lua_la_SOURCES = jansson-lua.c jansson-lua.h
+libjansson_lua_la_LIBADD = $(LUA_LIB) $(JANSSON_LIBS)
+
+libflux_rdl_la_SOURCES = rdl.c
 libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(CZMQ_LIBS) $(JANSSON_LIBS) \
+    libjansson-lua.la \
     $(top_builddir)/src/common/liblsd/liblsd.la \
     $(top_builddir)/src/common/libutil/libutil.la
 libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
