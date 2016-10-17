@@ -56,7 +56,7 @@ void resrc_flow_destroy (resrc_flow_t *resrc_flow);
 /*
  * Create a resrc_flow_t object from a json object
  */
-resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent);
+resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent);
 
 /*
  * Return the head of a resource flow tree of all resources described
@@ -72,7 +72,7 @@ void resrc_flow_print (resrc_flow_t *resrc_flow);
 /*
  * Add the input resource flow to the json object
  */
-int resrc_flow_serialize (json_object *o, resrc_flow_t *resrc_flow);
+int resrc_flow_serialize (json_t *o, resrc_flow_t *resrc_flow);
 
 /*
  * Allocate all the resources in a resource flow
@@ -109,7 +109,7 @@ int resrc_flow_unstage_resources (resrc_flow_t *resrc_flow);
 /*
  * Create a resource flow from a json object
  */
-resrc_flow_t *resrc_flow_deserialize (json_object *o, resrc_flow_t *parent);
+resrc_flow_t *resrc_flow_deserialize (json_t *o, resrc_flow_t *parent);
 
 /*
  * We rely on the available value of this node in the flow graph being
@@ -160,12 +160,12 @@ void resrc_flow_list_destroy (resrc_flow_list_t *rfl);
 /*
  * Add the input list of resource flows to the json array object
  */
-int resrc_flow_list_serialize (json_object *o, resrc_flow_list_t *rfl);
+int resrc_flow_list_serialize (json_t *o, resrc_flow_list_t *rfl);
 
 /*
  * Create a resource flow list from a json object
  */
-resrc_flow_list_t *resrc_flow_list_deserialize (json_object *o);
+resrc_flow_list_t *resrc_flow_list_deserialize (json_t *o);
 
 /*
  * Allocate all the resources in a list of resource flows

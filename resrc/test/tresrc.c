@@ -33,7 +33,7 @@
 #include <czmq.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "../resrc.h"
 #include "../resrc_tree.h"
 #include "../resrc_flow.h"
@@ -235,8 +235,8 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     int found = 0;
     int rc = 0;
     int64_t nowtime = epochtime ();
-    json_object *o = NULL;
-    json_object *req_res = NULL;
+    json_t *o = NULL;
+    json_t *req_res = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
@@ -263,49 +263,49 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     req_res = Jnew ();
 
     if (rdl) {
-        json_object *bandwidth = Jnew ();
-        json_object *child_core = Jnew ();
-        json_object *child_sock = Jnew ();
-        json_object *graph_array = Jnew_ar ();
-        json_object *ja = Jnew_ar ();
-        json_object *jpropo = Jnew (); /* json property object */
-        json_object *memory = Jnew ();
-        json_object *power = Jnew ();
+        json_t *bandwidth = Jnew ();
+        json_t *child_core = Jnew ();
+        json_t *child_sock = Jnew ();
+        json_t *graph_array = Jnew_ar ();
+        json_t *ja = Jnew_ar ();
+        json_t *jpropo = Jnew (); /* json property object */
+        json_t *memory = Jnew ();
+        json_t *power = Jnew ();
 
-        /* json_object *jtago = Jnew ();  /\* json tag object *\/ */
+        /* json_t *jtago = Jnew ();  /\* json tag object *\/ */
         /* Jadd_bool (jtago, "maytag", true); */
         /* Jadd_bool (jtago, "yourtag", true); */
 
         Jadd_str (memory, "type", "memory");
         Jadd_int (memory, "req_qty", 1);
         Jadd_int (memory, "size", 100);
-        json_object_array_add (ja, memory);
+        json_array_append_new (ja, memory);
 
         Jadd_str (child_core, "type", "core");
         Jadd_int (child_core, "req_qty", 6);
         Jadd_bool (child_core, "exclusive", true);
         Jadd_int (jpropo, "localid", 1);
-        json_object_object_add (child_core, "properties", jpropo);
-        json_object_array_add (ja, child_core);
+        json_object_set_new (child_core, "properties", jpropo);
+        json_array_append_new (ja, child_core);
 
         Jadd_str (child_sock, "type", "socket");
         Jadd_int (child_sock, "req_qty", 2);
-        json_object_object_add (child_sock, "req_children", ja);
+        json_object_set_new (child_sock, "req_children", ja);
 
         Jadd_str (bandwidth, "type", "bandwidth");
         Jadd_int (bandwidth, "size", 100);
-        json_object_array_add (graph_array, bandwidth);
+        json_array_append_new (graph_array, bandwidth);
 
         Jadd_str (power, "type", "power");
         Jadd_int (power, "size", 10);
-        json_object_array_add (graph_array, power);
+        json_array_append_new (graph_array, power);
 
         Jadd_str (req_res, "type", "node");
         Jadd_int (req_res, "req_qty", 2);
         Jadd_int64 (req_res, "starttime", nowtime);
         /* json_object_object_add (req_res, "tags", jtago); */
-        json_object_object_add (req_res, "req_child", child_sock);
-        json_object_object_add (req_res, "graphs", graph_array);
+        json_object_set_new (req_res, "req_child", child_sock);
+        json_object_set_new (req_res, "graphs", graph_array);
     } else {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", 2);

@@ -22,53 +22,51 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef SIMULATOR_H
-#define SIMULATOR_H 1
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <lua.h>
+#include <lauxlib.h>
 
-#include <jansson.h>
-#include <czmq.h>
-#include <flux/core.h>
+#include "rdl/jansson-lua.h"
 
-typedef struct {
-    double sim_time;
-    zhash_t *timers;
-} sim_state_t;
+void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
+    luaL_checkstack(L, nup+1, "too many upvalues");
+    for (; l->name != NULL; l++) {  /* fill the table with given functions */
+        int i;
+        lua_pushstring(L, l->name);
+        for (i = 0; i < nup; i++)  /* copy upvalues to the top */
+            lua_pushvalue(L, -(nup+1));
+        lua_pushcclosure(L, l->func, nup);  /* closure with those upvalues */
+        lua_settable(L, -(nup + 3));
+    }
+    lua_pop(L, nup);  /* remove upvalues */
+}
 
-typedef struct {
-    int id;
-    char *user;
-    char *jobname;
-    char *account;
-    double submit_time;
-    double start_time;
-    double execution_time;
-    double io_time;
-    double time_limit;
-    int nnodes;
-    int ncpus;
-    int64_t io_rate;
-    kvsdir_t *kvs_dir;
-} job_t;
 
-sim_state_t *new_simstate ();
-void free_simstate (sim_state_t *sim_state);
-json_t *sim_state_to_json (sim_state_t *state);
-sim_state_t *json_to_sim_state (json_t *o);
+static int l_json_test (lua_State *L)
+{
+	int rc;
+	json_t *o;
+	if (lua_value_to_json (L, -1, &o) < 0) {
+		lua_pushnil (L);
+		lua_pushstring (L, "lua_value_to_json failure");
+		return (2);
+	}
 
-int put_job_in_kvs (job_t *job);
-job_t *pull_job_from_kvs (kvsdir_t *kvs_dir);
-void free_job (job_t *job);
-job_t *blank_job ();
-int send_alive_request (flux_t *h, const char *module_name);
-int send_reply_request (flux_t *h,
-                        const char *module_name,
-                        sim_state_t *sim_state);
-int send_join_request (flux_t *h, const char *module_name, double next_event);
+	rc = json_object_to_lua (L, o);
+	json_decref (o);
+	return (rc);
+}
 
-zhash_t *zhash_fromargv (int argc, char **argv);
+static const struct luaL_Reg json_test_functions [] = {
+	{ "runtest",   l_json_test },
+	{ NULL,        NULL        }
+};
 
-/*
-struct rdl *get_rdl (flux_t *h, char *path);
-void close_rdl ();
-*/
-#endif /* SIMULATOR_H */
+int luaopen_janssontest (lua_State *L)
+{
+	lua_newtable (L);
+	luaL_setfuncs (L, json_test_functions, 0);
+	return (1);
+}

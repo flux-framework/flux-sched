@@ -33,7 +33,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 #include "rdl.h"
@@ -113,8 +113,8 @@ static int update_job_state (ctx_t *ctx,
         return -1;
     }
 
-    json_object *jcb = Jnew ();
-    json_object *o = Jnew ();
+    json_t *jcb = Jnew ();
+    json_t *o = Jnew ();
 
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE, (int64_t) new_state);
     Jadd_obj (jcb, JSC_STATE_PAIR, o);
@@ -314,7 +314,7 @@ static void determine_all_min_bandwidth_helper (struct resource *r,
     double total_requested_bandwidth, curr_average_bandwidth,
         child_alloc_bandwidth, total_used_bandwidth, this_max_bandwidth,
         num_children, this_alloc_bandwidth;
-    json_object *o;
+    json_t *o;
     zlist_t *child_list;
     const char *type = NULL;
 
@@ -569,7 +569,7 @@ static void trigger_cb (flux_t *h,
                         const flux_msg_t *msg,
                         void *arg)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL;
     double next_termination = -1;
     zhash_t *job_hash = NULL;

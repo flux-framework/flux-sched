@@ -29,7 +29,7 @@
 #include <flux/core.h>
 #include <czmq.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "scheduler.h"
 #include "plugin.h"
 

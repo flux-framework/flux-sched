@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <czmq.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
 #include "resrc_flow.h"
 #include "resrc_reqst.h"
@@ -163,9 +163,9 @@ void resrc_flow_destroy (resrc_flow_t *resrc_flow)
     }
 }
 
-resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
 {
-    json_object *jhierarchyo = NULL; /* json hierarchy object */
+    json_t *jhierarchyo = NULL; /* json hierarchy object */
     const char *basename = NULL;
     const char *name = NULL;
     const char *hierarchy = NULL;
@@ -194,13 +194,11 @@ resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent)
     if (Jget_int64 (o, "size", &ssize))
         size = (size_t) ssize;
     if ((jhierarchyo = Jobj_get (o, "hierarchy"))) {
-        struct json_object *val = NULL;
-        struct lh_entry *entry = json_object_get_object (jhierarchyo)->head;
-
-        if (entry) {
-            hierarchy = (char*)entry->k;
-            val = (struct json_object*)entry->v;
-            hierarchy_path = json_object_get_string (val);
+        /* Get first key and value from hierarchy object */
+        const char *key = json_object_iter_key (json_object_iter (jhierarchyo));
+        if (key) {
+            hierarchy = key;
+            Jget_str (jhierarchyo, key, &hierarchy_path);
         }
     }
     if (!Jget_str (o, "path", &path)) {
@@ -225,7 +223,7 @@ resrc_flow_t *resrc_flow_new_from_json (json_object *o, resrc_flow_t *parent)
         /* add time window if we are given a start time */
         int64_t starttime;
         if (Jget_int64 (o, "starttime", &starttime)) {
-            json_object *   w = Jnew ();
+            json_t *   w = Jnew ();
             char    *json_str;
             int64_t endtime;
             int64_t wall_time;
@@ -256,7 +254,7 @@ ret:
 static resrc_flow_t *resrc_flow_add_rdl (resrc_flow_t *parent,
                                          struct resource *r)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     resrc_flow_t *resrc_flow = NULL;
     struct resource *c;
 
@@ -305,26 +303,26 @@ void resrc_flow_print (resrc_flow_t *resrc_flow)
     }
 }
 
-int resrc_flow_serialize (json_object *o, resrc_flow_t *resrc_flow)
+int resrc_flow_serialize (json_t *o, resrc_flow_t *resrc_flow)
 {
     int rc = -1;
 
     if (o && resrc_flow) {
         rc = resrc_to_json (o, resrc_flow->flow_resrc);
         if (!rc && resrc_flow_num_children (resrc_flow)) {
-            json_object *ja = Jnew_ar ();
+            json_t *ja = Jnew_ar ();
 
             if (!(rc = resrc_flow_list_serialize (ja, resrc_flow->children)))
-                json_object_object_add (o, "children", ja);
+                json_object_set_new (o, "children", ja);
         }
     }
     return rc;
 }
 
-resrc_flow_t *resrc_flow_deserialize (json_object *o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_deserialize (json_t *o, resrc_flow_t *parent)
 {
-    json_object *ca = NULL;     /* array of child json objects */
-    json_object *co = NULL;     /* child json object */
+    json_t *ca = NULL;     /* array of child json objects */
+    json_t *co = NULL;     /* child json object */
     resrc_t *resrc = NULL;
     resrc_flow_t *resrc_flow = NULL;
 
@@ -509,7 +507,7 @@ void resrc_flow_list_destroy (resrc_flow_list_t *resrc_flow_list)
     }
 }
 
-int resrc_flow_list_serialize (json_object *o, resrc_flow_list_t *rfl)
+int resrc_flow_list_serialize (json_t *o, resrc_flow_list_t *rfl)
 {
     resrc_flow_t *rf;
     int rc = -1;
@@ -518,11 +516,11 @@ int resrc_flow_list_serialize (json_object *o, resrc_flow_list_t *rfl)
         rc = 0;
         rf = resrc_flow_list_first (rfl);
         while (rf) {
-            json_object *co = Jnew ();
+            json_t *co = Jnew ();
 
             if ((rc = resrc_flow_serialize (co, rf)))
                 break;
-            json_object_array_add (o, co);
+            json_array_append_new (o, co);
             rf = resrc_flow_list_next (rfl);
         }
     }
@@ -530,9 +528,9 @@ int resrc_flow_list_serialize (json_object *o, resrc_flow_list_t *rfl)
     return rc;
 }
 
-resrc_flow_list_t *resrc_flow_list_deserialize (json_object *o)
+resrc_flow_list_t *resrc_flow_list_deserialize (json_t *o)
 {
-    json_object *ca = NULL;     /* array of child json objects */
+    json_t *ca = NULL;     /* array of child json objects */
     int i, nchildren = 0;
     resrc_flow_t *rf = NULL;
     resrc_flow_list_t *rfl = resrc_flow_list_new ();

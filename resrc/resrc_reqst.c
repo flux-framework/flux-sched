@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <czmq.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
@@ -253,9 +253,9 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
     return resrc_reqst;
 }
 
-static resrc_graph_req_t *resrc_graph_req_from_json (json_object *ga)
+static resrc_graph_req_t *resrc_graph_req_from_json (json_t *ga)
 {
-    json_object *go = NULL;     /* graph json object */
+    json_t *go = NULL;     /* graph json object */
     const char *name = NULL;
     int i, ngraphs = 0;
     int64_t ssize;
@@ -284,12 +284,12 @@ fail:
     return NULL;
 }
 
-resrc_reqst_t *resrc_reqst_from_json (json_object *o, resrc_reqst_t *parent)
+resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
 {
     bool exclusive = false;
-    json_object *ca = NULL;     /* array of child json objects */
-    json_object *co = NULL;     /* child json object */
-    json_object *ga = NULL;     /* array of graph json objects */
+    json_t *ca = NULL;     /* array of child json objects */
+    json_t *co = NULL;     /* child json object */
+    json_t *ga = NULL;     /* array of graph json objects */
     int64_t endtime;
     int64_t qty = 0;
     int64_t size = 0;

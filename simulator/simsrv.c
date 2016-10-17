@@ -33,7 +33,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
@@ -76,7 +76,7 @@ static int send_trigger (flux_t *h, char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
-    json_object *o = NULL;
+    json_t *o = NULL;
     char *topic = NULL;
 
     o = sim_state_to_json (sim_state);
@@ -106,7 +106,7 @@ int send_start_event (flux_t *h)
     if (flux_get_rank (h, &rank) < 0)
         return -1;
 
-    json_object *o = Jnew ();
+    json_t *o = Jnew ();
     Jadd_str (o, "mod_name", "sim");
     Jadd_int (o, "rank", rank);
     Jadd_int (o, "sim_time", 0);
@@ -212,7 +212,7 @@ static void join_cb (flux_t *h,
                      void *arg)
 {
     int mod_rank;
-    json_object *request = NULL;
+    json_t *request = NULL;
     const char *mod_name = NULL, *json_str = NULL;
     double *next_event = (double *)malloc (sizeof (double));
     ctx_t *ctx = arg;
@@ -342,7 +342,7 @@ static void rdl_update_cb (flux_t *h,
                            const flux_msg_t *msg,
                            void *arg)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL, *rdl_str = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
@@ -370,7 +370,7 @@ static void reply_cb (flux_t *h,
                       void *arg)
 {
     const char *json_str = NULL;
-    json_object *request = NULL;
+    json_t *request = NULL;
     ctx_t *ctx = arg;
     sim_state_t *curr_sim_state = ctx->sim_state;
     sim_state_t *reply_sim_state;

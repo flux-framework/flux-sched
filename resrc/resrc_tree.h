@@ -55,12 +55,12 @@ void resrc_tree_print (resrc_tree_t *resrc_tree);
 /*
  * Add the input resource tree to the json object
  */
-int resrc_tree_serialize (json_object *o, resrc_tree_t *resrc_tree);
+int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree);
 
 /*
  * Create a resource tree from a json object
  */
-resrc_tree_t *resrc_tree_deserialize (json_object *o, resrc_tree_t *parent);
+resrc_tree_t *resrc_tree_deserialize (json_t *o, resrc_tree_t *parent);
 
 /*
  * Allocate all the resources in a resource tree
@@ -130,12 +130,12 @@ void resrc_tree_list_destroy (resrc_tree_list_t *rtl, bool destroy_resrc);
 /*
  * Add the input list of resource trees to the json array object
  */
-int resrc_tree_list_serialize (json_object *o, resrc_tree_list_t *rtl);
+int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl);
 
 /*
  * Create a resource tree list from a json object
  */
-resrc_tree_list_t *resrc_tree_list_deserialize (json_object *o);
+resrc_tree_list_t *resrc_tree_list_deserialize (json_t *o);
 
 /*
  * Allocate all the resources in a list of resource trees

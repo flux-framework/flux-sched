@@ -32,8 +32,7 @@ PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([CZMQ], [libczmq >= 3.0.0])
 AC_CHECK_LIB([dl], [dlerror])
 AC_CHECK_LIB([hwloc], [hwloc_topology_init])
-PKG_CHECK_MODULES([JSON], [json], [],
-  [PKG_CHECK_MODULES([JSON], [json-c])])
+PKG_CHECK_MODULES([JANSSON], [jansson], [], [])
 PKG_CHECK_MODULES([XML2], [libxml-2.0])
 AX_PROG_LUA([5.1],[5.3])
 AX_LUA_HEADERS

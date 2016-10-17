@@ -32,7 +32,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <getopt.h>
-#include <json.h>
+#include <jansson.h>
 
 #include "rdl.h"
 
@@ -105,14 +105,14 @@ struct prog_ctx *prog_ctx_create (int ac, char **av)
 
 void output_resource (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
 {
-    json_object *o;
+    json_t *o;
     struct resource *r = rdl_resource_get (rdl, uri);
     if (r == NULL)
         fatal (1, "Failed to find resource `%s'\n", uri);
 
     o = rdl_resource_json (r);
-    fprintf (stdout, "%s:\n%s\n", uri, json_object_to_json_string (o));
-    json_object_put (o);
+    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_PRESERVE_ORDER));
+    json_decref (o);
     rdl_resource_destroy (r);
     return;
 }
@@ -141,14 +141,14 @@ void output_tree (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
 
 void aggregate (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
 {
-    json_object *o;
+    json_t *o;
     struct resource *r = rdl_resource_get (rdl, uri);
     if (r == NULL)
         fatal (1, "Failed to find resource `%s'\n", uri);
 
     o = rdl_resource_aggregate_json (r);
-    fprintf (stdout, "%s:\n%s\n", uri, json_object_to_json_string (o));
-    json_object_put (o);
+    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_PRESERVE_ORDER));
+    json_decref (o);
     rdl_resource_destroy (r);
     return;
 }

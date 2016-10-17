@@ -33,7 +33,7 @@
 #include <czmq.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
 #include "resrc.h"
 #include "resrc_tree.h"
@@ -153,7 +153,7 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
-    json_object *window_json = NULL;
+    json_t *window_json = NULL;
     zlist_t *window_keys = NULL;
     size_t *size_ptr = NULL;
 
@@ -217,8 +217,8 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 static bool compare_windows_starttime (void *item1, void *item2)
 {
     int64_t starttime1, starttime2;
-    json_object *json1 = (json_object *) item1;
-    json_object *json2 = (json_object *) item2;
+    json_t *json1 = (json_t *) item1;
+    json_t *json2 = (json_t *) item2;
 
     Jget_int64 (json1, "starttime", &starttime1);
     Jget_int64 (json2, "starttime", &starttime2);
@@ -230,8 +230,8 @@ static int compare_windows_starttime (void *item1, void *item2)
 {
     int64_t starttime1 = 0;
     int64_t starttime2 = 0;
-    json_object *json1 = (json_object *) item1;
-    json_object *json2 = (json_object *) item2;
+    json_t *json1 = (json_t *) item1;
+    json_t *json2 = (json_t *) item2;
 
     Jget_int64 (json1, "starttime", &starttime1);
     Jget_int64 (json2, "starttime", &starttime2);
@@ -245,8 +245,8 @@ static int compare_windows_starttime (void *item1, void *item2)
 static bool compare_windows_endtime (void *item1, void *item2)
 {
     int64_t endtime1, endtime2;
-    json_object *json1 = (json_object *) item1;
-    json_object *json2 = (json_object *) item2;
+    json_t *json1 = (json_t *) item1;
+    json_t *json2 = (json_t *) item2;
 
     Jget_int64 (json1, "endtime", &endtime1);
     Jget_int64 (json2, "endtime", &endtime2);
@@ -258,8 +258,8 @@ static int compare_windows_endtime (void *item1, void *item2)
 {
     int64_t endtime1 = 0;
     int64_t endtime2 = 0;
-    json_object *json1 = (json_object *) item1;
-    json_object *json2 = (json_object *) item2;
+    json_t *json1 = (json_t *) item1;
+    json_t *json2 = (json_t *) item2;
 
     Jget_int64 (json1, "endtime", &endtime1);
     Jget_int64 (json2, "endtime", &endtime2);
@@ -272,13 +272,13 @@ static __inline__ void
 myJput (void* o)
 {
     if (o)
-        json_object_put ((json_object *)o);
+        Jput ((json_t *)o);
 }
 
 size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
                                      int64_t range_endtime, bool exclusive)
 {
-    json_object *window_json = NULL;
+    json_t *window_json = NULL;
     const char *id_ptr = NULL;
     const char *window_json_str = NULL;
     int64_t  curr_endtime = 0;
@@ -365,8 +365,8 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     zlist_sort (start_windows, compare_windows_starttime);
     zlist_sort (end_windows, compare_windows_endtime);
 
-    json_object *curr_start_window = zlist_first (start_windows);
-    json_object *curr_end_window = zlist_first (end_windows);
+    json_t *curr_start_window = zlist_first (start_windows);
+    json_t *curr_end_window = zlist_first (end_windows);
 
     Jget_int64 (curr_start_window, "starttime", &curr_starttime);
     Jget_int64 (curr_end_window, "endtime", &curr_endtime);
@@ -612,11 +612,34 @@ void resrc_resource_destroy (void *object)
     }
 }
 
-resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
+/*
+ *  Create a string of either a JSON_STRING or JSON_NUMBER object
+ *  Caller must free result.
+ */
+static char *json_create_string (json_t *o)
 {
-    json_object *jhierarchyo = NULL; /* json hierarchy object */
-    json_object *jpropso = NULL; /* json properties object */
-    json_object *jtagso = NULL;  /* json tags object */
+    char *result = NULL;
+    switch (json_typeof (o)) {
+        case JSON_STRING:
+            result = strdup (json_string_value (o));
+            break;
+        case JSON_INTEGER:
+            result = xasprintf ("%ju", (uintmax_t) json_integer_value (o));
+            break;
+        case JSON_REAL:
+            result = xasprintf ("%f", json_real_value (o));
+            break;
+        default:
+            break;
+    }
+    return (result);
+}
+
+resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
+{
+    json_t *jhierarchyo = NULL; /* json hierarchy object */
+    json_t *jpropso = NULL; /* json properties object */
+    json_t *jtagso = NULL;  /* json tags object */
     const char *basename = NULL;
     const char *name = NULL;
     const char *path = NULL;
@@ -624,7 +647,6 @@ resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
     const char *type = NULL;
     int64_t id;
     int64_t ssize;
-    json_object_iter iter;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     size_t size = 1;
@@ -668,7 +690,7 @@ resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
             /* add time window if we are given a start time */
             int64_t starttime;
             if (Jget_int64 (o, "starttime", &starttime)) {
-                json_object *   w = Jnew ();
+                json_t *   w = Jnew ();
                 char    *json_str;
                 int64_t endtime;
                 int64_t wall_time;
@@ -691,30 +713,28 @@ resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical)
 
         jpropso = Jobj_get (o, "properties");
         if (jpropso) {
-            const char *val;
+            json_t *jpropo;        /* json property object */
             char *property;
+            const char *key;
 
-            json_object_object_foreachC (jpropso, iter) {
-                val = json_object_get_string (iter.val);
-                if (val) {
-                    property = xstrdup (val);
-                    zhash_insert (resrc->properties, iter.key, property);
-                    zhash_freefn (resrc->properties, iter.key, free);
+            json_object_foreach (jpropso, key, jpropo) {
+                if ((property = json_create_string (jpropo))) {
+                    zhash_insert (resrc->properties, key, property);
+                    zhash_freefn (resrc->properties, key, free);
                 }
             }
         }
 
         jtagso = Jobj_get (o, "tags");
         if (jtagso) {
-            const char *val;
-            char *tag;
+            json_t *jtago;        /* json tag object */
+            const char *key = NULL;
+            char *tag = NULL;
 
-            json_object_object_foreachC (jtagso, iter) {
-                val = json_object_get_string (iter.val);
-                if (val) {
-                    tag = xstrdup (val);
-                    zhash_insert (resrc->tags, iter.key, tag);
-                    zhash_freefn (resrc->tags, iter.key, free);
+            json_object_foreach (jtagso, key, jtago) {
+                if ((tag = json_create_string (jtago))) {
+                    zhash_insert (resrc->tags, key, tag);
+                    zhash_freefn (resrc->tags, key, free);
                 }
             }
         }
@@ -725,7 +745,7 @@ ret:
 
 static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
 {
-    json_object *o = NULL;
+    json_t *o = NULL;
     resrc_t *resrc = NULL;
     struct resource *c;
 
@@ -858,7 +878,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
 
         /* add twindow */
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
-            json_object *w = Jnew ();
+            json_t *w = Jnew ();
             Jadd_int64 (w, "starttime", epochtime ());
             Jadd_int64 (w, "endtime", TIME_MAX);
             char *json_str = xstrdup (Jtostr (w));
@@ -972,7 +992,7 @@ ret:
     return resrc;
 }
 
-int resrc_to_json (json_object *o, resrc_t *resrc)
+int resrc_to_json (json_t *o, resrc_t *resrc)
 {
     char uuid[40];
     int rc = -1;
@@ -1092,7 +1112,7 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
        resource, then return false */
     json_str_window = zhash_lookup (resrc->twindow, "0");
     if (json_str_window) {
-        json_object *lt = Jfromstr (json_str_window);
+        json_t *lt = Jfromstr (json_str_window);
         Jget_int64 (lt, "endtime", &lendtime);
         Jput (lt);
         if (endtime > (lendtime - 10)) {
@@ -1280,7 +1300,7 @@ ret:
 static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
                                             int64_t starttime, int64_t endtime)
 {
-    json_object *j;
+    json_t *j;
     char *id_ptr = NULL;
     char *json_str = NULL;
     int rc = -1;
@@ -1392,7 +1412,7 @@ ret:
 static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
                                            int64_t starttime, int64_t endtime)
 {
-    json_object *j;
+    json_t *j;
     char *id_ptr = NULL;
     char *json_str = NULL;
     int rc = -1;
