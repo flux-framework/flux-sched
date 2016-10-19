@@ -174,7 +174,7 @@ int put_job_in_kvs (job_t *job)
     return (rc);
 }
 
-job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
+job_t *pull_job_from_kvs (int id, kvsdir_t *kvsdir)
 {
     if (kvsdir == NULL)
         return NULL;
@@ -182,8 +182,8 @@ job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
+    job->id = id;
 
-    sscanf (kvsdir_key (job->kvs_dir), "lwj.%d", &job->id);
     kvsdir_get_string (job->kvs_dir, "user", &job->user);
     kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
     kvsdir_get_string (job->kvs_dir, "account", &job->account);
@@ -291,4 +291,29 @@ zhash_t *zhash_fromargv (int argc, char **argv)
         }
     }
     return args;
+}
+
+// Get a kvsdir handle to jobid [jobid] using job.kvspath service.
+//  If service doesn't answer, fall back to `lwj.%d`
+kvsdir_t *job_kvsdir (flux_t *h, int jobid)
+{
+    flux_rpc_t *rpc;
+    const char *kvs_path;
+    kvsdir_t *d = NULL;
+
+    rpc = flux_rpcf (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+                    "{s:[i]}", "ids", jobid);
+    if (!rpc) {
+        flux_log_error (h, "flux_rpcf");
+        return (NULL);
+    }
+    if (flux_rpc_getf (rpc, "{s:[s]}", "paths", &kvs_path) < 0) {
+        // Fall back to lwj.%d:
+        if (kvs_get_dir (h, &d, "lwj.%d", jobid))
+            flux_log_error (h, "kvs_get_dir (lwj.%d)", jobid);
+    }
+    else if (kvs_get_dir (h, &d, "%s", kvs_path) < 0)
+        flux_log_error (h, "kvs_get_dir");
+    flux_rpc_destroy (rpc);
+    return (d);
 }
