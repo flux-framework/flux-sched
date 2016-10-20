@@ -575,7 +575,7 @@ static void trigger_cb (flux_t *h,
     zhash_t *job_hash = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         return;
