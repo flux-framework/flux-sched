@@ -84,7 +84,7 @@ static int send_trigger (flux_t *h, char *mod_name, sim_state_t *sim_state)
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     topic = xasprintf ("%s.trigger", mod_name);
     flux_msg_set_topic (msg, topic);
-    flux_msg_set_payload_json (msg, Jtostr (o));
+    flux_msg_set_json (msg, Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
         rc = -1;
@@ -219,7 +219,7 @@ static void join_cb (flux_t *h,
     sim_state_t *sim_state = ctx->sim_state;
     uint32_t size;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL
         || !(request = Jfromstr (json_str))
         || !Jget_str (request, "mod_name", &mod_name)
         || !Jget_int (request, "rank", &mod_rank)
@@ -346,7 +346,7 @@ static void rdl_update_cb (flux_t *h,
     const char *json_str = NULL, *rdl_str = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         Jput (o);
@@ -375,7 +375,7 @@ static void reply_cb (flux_t *h,
     sim_state_t *curr_sim_state = ctx->sim_state;
     sim_state_t *reply_sim_state;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL
         || !(request = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
         Jput (request);
@@ -406,7 +406,7 @@ static void alive_cb (flux_t *h,
 {
     const char *json_str;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL) {
+    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL) {
         flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
         return;
     }

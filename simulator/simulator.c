@@ -214,7 +214,7 @@ int send_alive_request (flux_t *h, const char *module_name)
 
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     flux_msg_set_topic (msg, "sim.alive");
-    flux_msg_set_payload_json (msg, Jtostr (o));
+    flux_msg_set_json (msg, Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
@@ -237,7 +237,7 @@ int send_reply_request (flux_t *h,
 
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     flux_msg_set_topic (msg, "sim.reply");
-    flux_msg_set_payload_json (msg, Jtostr (o));
+    flux_msg_set_json (msg, Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
@@ -264,7 +264,7 @@ int send_join_request (flux_t *h, const char *module_name, double next_event)
 
     msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     flux_msg_set_topic (msg, "sim.join");
-    flux_msg_set_payload_json (msg, Jtostr (o));
+    flux_msg_set_json (msg, Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
