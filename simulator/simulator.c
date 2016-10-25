@@ -139,38 +139,47 @@ job_t *blank_job ()
 
 int put_job_in_kvs (job_t *job)
 {
-    if (job->kvs_dir == NULL)
-        return -1;
+    int rc = -1;
 
-    if (!kvsdir_exists (job->kvs_dir, "user"))
-        kvsdir_put_string (job->kvs_dir, "user", job->user);
-    if (!kvsdir_exists (job->kvs_dir, "jobname"))
-        kvsdir_put_string (job->kvs_dir, "jobname", job->jobname);
-    if (!kvsdir_exists (job->kvs_dir, "account"))
-        kvsdir_put_string (job->kvs_dir, "account", job->account);
-    if (!kvsdir_exists (job->kvs_dir, "submit_time"))
-        kvsdir_put_double (job->kvs_dir, "submit_time", job->submit_time);
-    if (!kvsdir_exists (job->kvs_dir, "execution_time"))
-        kvsdir_put_double (job->kvs_dir, "execution_time", job->execution_time);
-    if (!kvsdir_exists (job->kvs_dir, "time_limit"))
-        kvsdir_put_double (job->kvs_dir, "time_limit", job->time_limit);
-    if (!kvsdir_exists (job->kvs_dir, "nnodes"))
-        kvsdir_put_int (job->kvs_dir, "nnodes", job->nnodes);
-    if (!kvsdir_exists (job->kvs_dir, "ncpus"))
-        kvsdir_put_int (job->kvs_dir, "ncpus", job->ncpus);
-    if (!kvsdir_exists (job->kvs_dir, "io_rate"))
-        kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate);
+    if (job->kvs_dir == NULL)
+        goto ret;
 
     flux_t *h = kvsdir_handle (job->kvs_dir);
-    kvs_commit (h);
 
-    // TODO: Check to see if this is necessary, i assume the kvsdir becomes
-    // stale after a commit
-    kvsdir_t *tmp = job->kvs_dir;
-    int rc = kvs_get_dir (h, &job->kvs_dir, "%s", kvsdir_key (tmp));
-    kvsdir_destroy (tmp);
-    if (rc < 0)
-        flux_log_error (h, "put_job_in_kvs: kvs_get_dir");
+    if (kvsdir_put_string (job->kvs_dir, "user", job->user) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'user'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_string (job->kvs_dir, "jobname", job->jobname) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'jobname'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_string (job->kvs_dir, "account", job->account) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'account'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_double (job->kvs_dir, "submit_time", job->submit_time) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'submit_time'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_double (job->kvs_dir, "execution_time", job->execution_time) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'execution_time'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_double (job->kvs_dir, "time_limit", job->time_limit) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'time_limit'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_int (job->kvs_dir, "nnodes", job->nnodes) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'nnodes'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_int (job->kvs_dir, "ncpus", job->ncpus) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'ncpus'", __FUNCTION__);
+        goto ret;
+    } else if (kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to put 'io_rate'", __FUNCTION__);
+        goto ret;
+    } else if (kvs_commit (h) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to commit information for job %d", __FUNCTION__, job->id);
+        goto ret;
+    }
+
+    rc = 0;
+ ret:
     return (rc);
 }
 
@@ -179,22 +188,41 @@ job_t *pull_job_from_kvs (int id, kvsdir_t *kvsdir)
     if (kvsdir == NULL)
         return NULL;
 
+    flux_t *h = kvsdir_handle (kvsdir);
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
     job->id = id;
 
-    kvsdir_get_string (job->kvs_dir, "user", &job->user);
-    kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
-    kvsdir_get_string (job->kvs_dir, "account", &job->account);
-    kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time);
+    if (kvsdir_get_string (job->kvs_dir, "user", &job->user) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'user' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'jobname' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_string (job->kvs_dir, "account", &job->account) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'account' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'submit_time' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'execution_time' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'time_limit' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'nnodes' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'ncpus' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
+    if (kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get 'io_rate' in %s", __FUNCTION__, kvsdir_key (job->kvs_dir));
+    }
     kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
-    kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time);
     kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
-    kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
-    kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
-    kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
-    kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
 
     return job;
 }
@@ -308,6 +336,7 @@ kvsdir_t *job_kvsdir (flux_t *h, int jobid)
         return (NULL);
     }
     if (flux_rpc_getf (rpc, "{s:[s]}", "paths", &kvs_path) < 0) {
+        flux_log (h, LOG_DEBUG, "%s: failed to resolve job directory, falling back to lwj.%d", __FUNCTION__, jobid);
         // Fall back to lwj.%d:
         if (kvs_get_dir (h, &d, "lwj.%d", jobid))
             flux_log_error (h, "kvs_get_dir (lwj.%d)", jobid);
