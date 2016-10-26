@@ -178,6 +178,14 @@ int put_job_in_kvs (job_t *job)
         goto ret;
     }
 
+    kvsdir_t *tmp = job->kvs_dir;
+    if (kvs_get_dir (h, &job->kvs_dir, "%s", kvsdir_key (tmp)) < 0) {
+        flux_log_error (h, "%s: kvs_get_dir", __FUNCTION__);
+        job->kvs_dir = tmp; // restore last known good kvs_dir
+        goto ret;
+    }
+    kvsdir_destroy (tmp);
+
     rc = 0;
  ret:
     return (rc);
