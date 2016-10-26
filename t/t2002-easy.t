@@ -36,11 +36,11 @@ test_expect_success 'loading sched works' '
 
 while flux kvs get $(job_kvs_path 12).complete_time 2>&1 | grep -q "No such file"; do sleep 0.5; done
 sleep 0.5
+for x in $(seq 1 12); do echo "$x $(flux kvs get $(job_kvs_path $x).submit_time)"; done | sort -k 2n -k 1n
 for x in $(seq 1 12); do echo "$x $(flux kvs get $(job_kvs_path $x).starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
 
-# XXX disabled temporarily - see #212
-#test_expect_success 'jobs scheduled in correct order' '
-#    diff -u ${expected_order} ./actual
-#'
+test_expect_success 'jobs scheduled in correct order' '
+   diff -u ${expected_order} ./actual
+'
 
 test_done
