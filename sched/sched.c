@@ -1203,6 +1203,32 @@ static void inline build_contain_1node_req (int64_t nc, int64_t rank,
     json_array_append_new (rarr, e);
 }
 
+static int n_resources_of_type (resrc_tree_t *rt, const char *type)
+{
+    int n = 0;
+    resrc_t *r = NULL;
+
+    if (rt) {
+        r = resrc_tree_resrc (rt);
+        if (! strcmp (resrc_type (r), type)) {
+            return 1;
+        } else {
+            if (resrc_tree_num_children (rt)) {
+                resrc_tree_list_t *children = resrc_tree_children (rt);
+                if (children) {
+                    resrc_tree_t *child = resrc_tree_list_first (children);
+                    while (child) {
+                        n += n_resources_of_type(child, type);
+                        child = resrc_tree_list_next (children);
+                    }
+                }
+            }
+        }
+    }
+    return n;
+}
+
+
 /*
  * Because the job's rdl should only contain what's allocated to the job,
  * we traverse the entire tree in the post-order walk fashion
@@ -1230,8 +1256,11 @@ static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
         } else {
             if (bridge_rs2rank_tab_query (ctx, r, &rank))
                 goto done;
-            else
-                build_contain_1node_req (job->req->corespernode, rank, arr);
+            else {
+                int cores = job->req->corespernode ? job->req->corespernode :
+                    n_resources_of_type(rt, "core");
+                build_contain_1node_req (cores, rank, arr);
+            }
         }
     }
     rc = 0;
