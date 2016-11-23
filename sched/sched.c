@@ -411,7 +411,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
     if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
     j->req->nnodes = (uint64_t) nn;
     j->req->ncores = (uint64_t) nc;
-    if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime)) {
+    if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
         j->req->walltime = (uint64_t) walltime;
