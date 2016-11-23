@@ -182,6 +182,12 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
     window_keys = zhash_keys (resrc->twindow);
     id_ptr = zlist_next (window_keys);
     while (id_ptr) {
+        if (!strcmp (id_ptr, "0")) {
+            /* This is the resource lifetime entry and should not be
+             * evaluated as an allocation or reservation entry */
+            id_ptr = zlist_next (window_keys);
+            continue;
+        }
         window_json_str = (const char*) zhash_lookup (resrc->twindow, id_ptr);
         window_json = Jfromstr (window_json_str);
         if (window_json == NULL) {
@@ -321,6 +327,12 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     window_keys = zhash_keys (resrc->twindow);
     id_ptr = (const char *) zlist_next (window_keys);
     while (id_ptr) {
+        if (!strcmp (id_ptr, "0")) {
+            /* This is the resource lifetime entry and should not be
+             * evaluated as an allocation or reservation entry */
+            id_ptr = zlist_next (window_keys);
+            continue;
+        }
         window_json_str = (const char*) zhash_lookup (resrc->twindow, id_ptr);
         window_json = Jfromstr (window_json_str);
         if (window_json == NULL) {
