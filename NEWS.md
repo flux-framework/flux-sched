@@ -26,7 +26,7 @@ flux-sched version 0.3.0 - 2016-10-28
  * Update JSON handling to libjansson (#215, #220)
 
  * Simulator updates and cleanup (#203, 218, #219)
- 
+
  * RDL enhancements for multi-hierarchy support (#196)
 
  * Do not assume kvs path to jobid is in lwj.jobid (#216)
@@ -41,7 +41,8 @@ flux-sched version 0.2.0 - 2016-08-13
    with tree searches.
 
  * Runtime selection of backfill algorithm (#159).
-   Examples of selecting various algorithms are:
+   Examples of selecting various algorithms are
+   (first remove any loaded sched plugin, e.g., flux module remove sched.fcfs):
 
   - *Conservative* : `flux module load sched.backfill reserve-depth=-1`
   - *EASY*         : `flux module load sched.backfill reserve-depth=1`
