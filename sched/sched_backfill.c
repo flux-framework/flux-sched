@@ -42,12 +42,6 @@
 #include "resrc_reqst.h"
 #include "scheduler.h"
 
-// Reservation Depth Guide:
-//     0 = All backfilling (no reservations)
-//     1 = EASY Backfill
-//    >1 = Hybrid Backfill
-//    <0 = Conservative Backfill
-
 static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
 static zlist_t *completion_times = NULL;
@@ -281,12 +275,22 @@ int reserve_resources (flux_t *h, resrc_tree_t **selected_tree, int64_t job_id,
     int64_t prev_completion_time = -1;
     resrc_tree_t *found_tree = NULL;
 
-    if (reservation_depth > 0 && (curr_reservation_depth >= reservation_depth)) {
-        goto ret;
-    } else if (!resrc || !resrc_reqst) {
+    if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
         goto ret;
     }
+    if (!reservation_depth)
+        /* All backfilling (no reservations).  Return success to
+         * backfill all jobs remaining in the queue */
+        return 0;
+    else if (reservation_depth == 1) {
+        if (curr_reservation_depth)
+            /* EASY Backfill.  Top priority job is reserved, so return
+             * success to backfill all jobs remaining in the queue */
+            return 0;
+    } else if (curr_reservation_depth >= reservation_depth)
+        /* Stop reserving and return -1 to stop scheduling any more jobs */
+        goto ret;
 
     if (*selected_tree) {
         resrc_tree_destroy (*selected_tree, false);
@@ -341,6 +345,11 @@ ret:
     return rc;
 }
 
+// Reservation Depth Guide:
+//     0 = All backfilling (no reservations)
+//     1 = EASY Backfill
+//    >1 = Hybrid Backfill
+//    <0 = Conservative Backfill
 int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *sp)
 {
     int rc = 0;
@@ -371,10 +380,12 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         flux_log (h, LOG_ERR, "scheduling parameters unavailable");
         rc = -1;
         errno = EINVAL;
-    } else if (reservation_depth > sp->queue_depth) {
+    } else if (reservation_depth == -1) {
         /* Conservative backfill (-1) will still be limited by the queue-depth
          * but we just treat queue-depth as the limit for it
          */
+        reservation_depth = sp->queue_depth;
+    } else if (reservation_depth > sp->queue_depth) {
         flux_log (h, LOG_ERR,
                   "reserve-depth value (%d) - greater than queue-depth (%ld)",
                   reservation_depth, sp->queue_depth);
