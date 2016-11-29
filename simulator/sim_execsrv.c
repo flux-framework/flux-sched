@@ -86,7 +86,7 @@ static ctx_t *getctx (flux_t *h)
         ctx->prev_sim_time = 0;
         ctx->rdllib = rdllib_open ();
         ctx->rdl = NULL;
-        flux_aux_set (h, "simsrv", ctx, freectx);
+        flux_aux_set  (h, "sim_exec", ctx, freectx);
     }
 
     return ctx;
