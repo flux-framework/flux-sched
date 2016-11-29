@@ -124,7 +124,7 @@ size_t resrc_size_reservtns (resrc_t *resrc);
  *  If key is already present returns -1 and leaves existing item
  *  unchanged.  Returns 0 on success.
  */
-int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item);
+int resrc_twindow_insert (resrc_t *resrc, const char *key, int64_t starttime, int64_t endtime);
 
 /*
  *  Insert a resource flow pointer into the graph table using the

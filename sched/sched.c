@@ -1259,7 +1259,9 @@ static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
             else {
                 int cores = job->req->corespernode ? job->req->corespernode :
                     n_resources_of_type(rt, "core");
-                build_contain_1node_req (cores, rank, arr);
+                if (cores) {
+                    build_contain_1node_req (cores, rank, arr);
+                }
             }
         }
     }
