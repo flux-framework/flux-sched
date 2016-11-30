@@ -244,13 +244,6 @@ static int compare_windows_endtime (const void *item1, const void *item2)
     return 1;
 }
 
-static __inline__ void
-myJput (void* o)
-{
-    if (o)
-        Jput ((json_t *)o);
-}
-
 size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
                                      int64_t range_endtime, bool exclusive)
 {
@@ -639,9 +632,13 @@ resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
     if (Jget_int64 (o, "size", &ssize))
         size = (size_t) ssize;
     if (!Jget_str (o, "path", &path)) {
-        if ((jhierarchyo = Jobj_get (o, "hierarchy")))
+        if ((jhierarchyo = Jobj_get (o, "hierarchy"))) {
             Jget_str (jhierarchyo, "default", &path);
+        }
     }
+    // Duplicate unowned json string
+    if (path)
+        path = xstrdup (path);
     if (!path) {
         if (parent)
             path = xasprintf ("%s/%s", parent->path, name);
@@ -707,6 +704,7 @@ resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
         }
     }
 ret:
+    free ((void*)path);
     return resrc;
 }
 

@@ -240,6 +240,7 @@ resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
     if (resrc)
         resrc_graph_insert (resrc, hierarchy, resrc_flow);
 ret:
+    free ((void*)path);
     return resrc_flow;
 }
 
