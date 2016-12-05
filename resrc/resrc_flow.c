@@ -223,12 +223,8 @@ resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
         /* add time window if we are given a start time */
         int64_t starttime;
         if (Jget_int64 (o, "starttime", &starttime)) {
-            json_t *   w = Jnew ();
-            char    *json_str;
             int64_t endtime;
             int64_t wall_time;
-
-            Jadd_int64 (w, "starttime", starttime);
 
             if (!Jget_int64 (o, "endtime", &endtime)) {
                 if (Jget_int64 (o, "walltime", &wall_time))
@@ -236,17 +232,15 @@ resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
                 else
                     endtime = TIME_MAX;
             }
-            Jadd_int64 (w, "endtime", endtime);
 
-            json_str = xstrdup (Jtostr (w));
             resrc_twindow_insert (resrc_flow->flow_resrc, "0",
-                                  (void *) json_str);
-            Jput (w);
+                                  starttime, endtime);
         }
     }
     if (resrc)
         resrc_graph_insert (resrc, hierarchy, resrc_flow);
 ret:
+    free ((void*)path);
     return resrc_flow;
 }
 
