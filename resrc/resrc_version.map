@@ -1,5 +1,6 @@
 { global:
     resrc_*;
+    planner_*;
     local: *;
 };
 
