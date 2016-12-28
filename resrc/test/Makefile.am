@@ -8,7 +8,7 @@ TESTS_ENVIRONMENT = \
     LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
     LUA_CPATH="$(abs_top_builddir)/rdl/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(LUA_CPATH);;"
 
-TESTS = tresrc
+TESTS = tresrc tplanner
 
 check_PROGRAMS = $(TESTS)
 tresrc_SOURCES = tresrc.c
@@ -18,3 +18,12 @@ tresrc_LDADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(top_builddir)/src/common/libutil/libutil.la \
     $(top_builddir)/src/common/libtap/libtap.la \
     $(LUA_LIB) $(JANSSON_LIBS) $(CZMQ_LIBS)
+
+tplanner_SOURCES = tplanner.c
+tplanner_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+tplanner_LDADD = $(top_builddir)/resrc/libflux-resrc.la \
+    $(top_builddir)/src/common/liblsd/liblsd.la \
+    $(top_builddir)/src/common/libutil/libutil.la \
+    $(top_builddir)/src/common/libtap/libtap.la \
+    $(LUA_LIB) $(JANSSON_LIBS) $(CZMQ_LIBS)
+
