@@ -6,8 +6,9 @@
  */
 
 #include <uuid/uuid.h>
+#include "planner.h"
 
-#define TIME_MAX INT64_MAX
+#define TIME_MAX INT64_MAX - 10
 
 typedef struct hwloc_topology * TOPOLOGY;
 typedef struct resrc resrc_t;
@@ -88,21 +89,27 @@ size_t resrc_size (resrc_t *resrc);
 size_t resrc_available (resrc_t *resrc);
 
 /*
- * Return the amount of the resource available at the given time
+ * Return 0 if the required amount of the resource is available at the given time;
+ * otehr -1.
  */
-size_t resrc_available_at_time (resrc_t *resrc, int64_t time);
+int resrc_available_at_time (resrc_t *resrc, int64_t time, size_t reqrd_size);
 
 /*
- * Return the least amount of the resource available during the time
+ * Return 0 if the required amount of the resource is available during the time
  * range
  */
-size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
-                                     int64_t range_endtime, bool exclusive);
+int resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
+        int64_t range_endtime, size_t reqrd_size, bool exclusive);
 
 /*
  * Return the resource state as a string
  */
 char* resrc_state (resrc_t *resrc);
+
+/*
+ * Return twindow of planner_t type
+ */
+planner_t *resrc_twindow (resrc_t *resrc);
 
 /*
  * Return the physical tree for the resouce

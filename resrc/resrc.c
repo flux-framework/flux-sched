@@ -42,33 +42,6 @@
 #include "src/common/libutil/xzmalloc.h"
 
 
-
-typedef struct window {
-    int64_t starttime;
-    int64_t endtime;
-    const char *job_id;
-} window_t;
-
-/* static window_t * window_new (int64_t starttime, int64_t endtime) { */
-/*     window_t *ret = malloc (sizeof *ret); */
-/*     ret->starttime = starttime; */
-/*     ret->endtime = endtime; */
-/*     return ret; */
-/* } */
-
-static void window_destructor (void **window_v) {
-    if (window_v) {
-        free(*window_v);
-        *window_v = NULL;
-    }
-}
-
-static void *window_dup (const void *window) {
-    window_t * ret = malloc(sizeof *ret);
-    memcpy(ret, window, sizeof *ret);
-    return ret;
-}
-
 struct resrc {
     char *type;
     char *path;
@@ -87,10 +60,46 @@ struct resrc {
     zhash_t *tags;
     zhash_t *allocs;
     zhash_t *reservtns;
-    zhashx_t *twindow;
+    planner_t *twindow;
 };
 
 static zhash_t *resrc_hash = NULL;
+
+static inline plan_t *plan_new (int64_t job_id, int64_t start, uint64_t duration,
+                          int exclusive, size_t len, ...)
+{
+    plan_t *plan = NULL;
+    int i = 0;
+
+    va_list ap;
+    va_start(ap, len);
+    plan = xzmalloc (sizeof (*plan));
+    plan->id = job_id;
+    plan->start = start;
+    plan->req = xzmalloc (sizeof (*(plan->req)));
+    plan->req->resrc_vector = xzmalloc (len * sizeof (*(plan->req->resrc_vector)));
+    plan->req->vector_dim = len;
+    for (i=0; i < len; ++i)
+        plan->req->resrc_vector[i] = (uint64_t)va_arg(ap, int);
+    plan->req->duration = duration;
+    plan->req->exclusive = exclusive;
+    va_end(ap);
+    return plan;
+}
+
+static inline void plan_destroy (plan_t **plan_p)
+{
+    if (plan_p && *plan_p) {
+        if ((*plan_p)->req) {
+            if ((*plan_p)->req->resrc_vector)
+                free ((*plan_p)->req->resrc_vector);
+            free ((*plan_p)->req);
+        }
+        free (*plan_p);
+        *plan_p = NULL;
+    }
+}
+
 
 /***************************************************************************
  *  API
@@ -174,228 +183,30 @@ size_t resrc_available (resrc_t *resrc)
     return 0;
 }
 
-size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
+/* Note: I think quantities should be changed to either unsigned int or int64_t */
+int resrc_available_at_time (resrc_t *resrc, int64_t time, size_t reqrd_size)
 {
-    const char *id_ptr = NULL;
-    window_t *window = NULL;
-    size_t *size_ptr = NULL;
-
-    size_t available = resrc->size;
-
-    if (time < 0) {
-        time = epochtime();
-    }
-
-    // Check that the time is during the resource lifetime
-    window = zhashx_lookup (resrc->twindow, "0");
-    if (window && (time < window->starttime || time > window->endtime)) {
-        return 0;
-    }
-
-    // Iterate over all allocation windows in resrc.  We iterate using
-    // the hash to avoid copying the entire hash every time, using
-    // zhashx_cursor to retrieve the key to lookup the size in resrc->allocs.
-    window = zhashx_first (resrc->twindow);
-    while (window) {
-        id_ptr = zhashx_cursor(resrc->twindow);
-        if (!strcmp (id_ptr, "0")) {
-            /* This is the resource lifetime entry and should not be
-             * evaluated as an allocation or reservation entry */
-            window = zhashx_next (resrc->twindow);
-            continue;
-        }
-
-        // Does time intersect with window?
-        if (time >= window->starttime && time <= window->endtime) {
-            // Decrement available by allocation and/or reservation size
-            size_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
-            if (size_ptr) {
-                available -= *size_ptr;
-            }
-            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
-            if (size_ptr) {
-                available -= *size_ptr;
-            }
-        }
-
-        window = zhashx_next (resrc->twindow);
-    }
-
-    return available;
+    req_t req;
+    planner_t *pl = resrc->twindow;
+    int64_t start = time;
+    req.duration = 1;
+    req.resrc_vector = (uint64_t *)&reqrd_size;
+    req.vector_dim = 1;
+    req.exclusive = 0;
+    return planner_avail_resources_at (pl, start, &req);
 }
 
-static int compare_windows_starttime (const void *item1, const void *item2)
+int resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
+        int64_t range_endtime, size_t reqrd_size, bool exclusive)
 {
-    const window_t * lhs = item1, *rhs = item2;
-    if (lhs->starttime < rhs->starttime)
-        return -1;
-    if (lhs->starttime == rhs->starttime)
-        return 0;
-    return 1;
-}
-
-static int compare_windows_endtime (const void *item1, const void *item2)
-{
-    const window_t * lhs = item1, *rhs = item2;
-    if (lhs->endtime < rhs->endtime)
-        return -1;
-    if (lhs->endtime == rhs->endtime)
-        return 0;
-    return 1;
-}
-
-size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
-                                     int64_t range_endtime, bool exclusive)
-{
-    window_t *window = NULL;
-    const char *id_ptr = NULL;
-    int64_t  curr_endtime = 0;
-    int64_t  curr_starttime = 0;
-    size_t   curr_available = 0;
-    size_t   min_available = 0;
-    size_t  *alloc_ptr = NULL;
-    size_t  *reservtn_ptr = NULL;
-    size_t  *size_ptr = NULL;
-    zlistx_t *matching_windows = NULL;
-
-    if (range_starttime == range_endtime) {
-        return resrc_available_at_time (resrc, range_starttime);
-    }
-
-    matching_windows = zlistx_new ();
-    /* zlistx_set_duplicator(matching_windows, window_dup); */
-    zlistx_set_destructor(matching_windows, window_destructor);
-
-    // Check that the time is during the resource lifetime
-    window =  zhashx_lookup (resrc->twindow, "0");
-    if (window) {
-        curr_starttime = window->starttime;
-        curr_endtime = window->endtime;
-        if ( (range_starttime < curr_starttime) ||
-                (range_endtime > curr_endtime) ) {
-            return 0;
-        }
-    }
-
-    // Map allocation window strings to JSON objects.  Filter out
-    // windows that don't overlap with the input range. Then add the
-    // job id to the JSON obj and insert the JSON obj into the
-    // "matching windows" list.
-    window = zhashx_first (resrc->twindow);
-    while (window) {
-        id_ptr = zhashx_cursor(resrc->twindow);
-        if (!strcmp (id_ptr, "0")) {
-            /* This is the resource lifetime entry and should not be
-             * evaluated as an allocation or reservation entry */
-            window = zhashx_next (resrc->twindow);
-            continue;
-        }
-        curr_starttime = window->starttime;
-        curr_endtime = window->endtime;
-
-        // Does input range intersect with window?
-        if ( !((curr_starttime < range_starttime &&
-                curr_endtime < range_starttime) ||
-               (curr_starttime > range_endtime &&
-                curr_endtime > range_endtime)) ) {
-
-            /* If the sample requires exclusive access and we are
-             * here, then we now know that exclusivity cannot be
-             * granted over the requested range.  Leave now. */
-            if (exclusive)
-                goto ret;
-
-            alloc_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
-            reservtn_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
-            if (alloc_ptr || reservtn_ptr) {
-                // Add the window key and insert JSON obj into the
-                // "matching windows" list
-                window_t * new_window = window_dup (window);
-                new_window->job_id = id_ptr;
-                zlistx_add_end (matching_windows, new_window);
-            }
-        }
-
-        window = zhashx_next (resrc->twindow);
-    }
-
-    // Duplicate the "matching windows" list and then sort the 2 lists
-    // based on start and end times.  We will walk through these lists
-    // in order to find the minimum available during the input range
-    zlistx_t *start_windows = matching_windows;
-    zlistx_set_comparator(start_windows, compare_windows_starttime);
-    zlistx_t *end_windows = zlistx_dup (start_windows);
-    // Do not free items in this list, they are owned by the start_windows
-    // list
-    zlistx_set_destructor(end_windows, NULL);
-    zlistx_set_comparator(end_windows, compare_windows_endtime);
-    zlistx_sort (start_windows);
-    zlistx_sort (end_windows);
-
-    window_t *curr_start_window = zlistx_first (start_windows);
-    window_t *curr_end_window = zlistx_first (end_windows);
-
-    min_available = resrc->size;
-    curr_available = resrc->size;
-
-    // Start iterating over the windows and calculating the min
-    // available
-    //
-    // OPTIMIZE: stop iterating when curr_start_window == NULL Once we
-    // run out of start windows, curr available cannot get any
-    // smaller; we have hit our min.  Just need to test to verify that
-    // this optimziation is correct/safe.
-    while (curr_start_window) {
-        curr_starttime = curr_start_window->starttime;
-        curr_endtime = curr_end_window->endtime;
-
-        if ((curr_start_window) &&
-            (curr_starttime < curr_endtime)) {
-            // New range is starting, get its size and subtract it
-            // from current available
-            size_ptr = (size_t*)zhash_lookup (resrc->allocs, curr_start_window->job_id);
-            if (size_ptr)
-                curr_available -= *size_ptr;
-            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, curr_start_window->job_id);
-            if (size_ptr)
-                curr_available -= *size_ptr;
-            curr_start_window = zlistx_next (start_windows);
-            if (curr_start_window) {
-                curr_starttime = curr_start_window->starttime;
-            } else {
-                curr_starttime = TIME_MAX;
-            }
-        } else if ((curr_end_window) &&
-                   (curr_endtime < curr_starttime)) {
-            // A range just ended, get its size and add it back into
-            // current available
-            id_ptr = curr_end_window->job_id;
-            size_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
-            if (size_ptr)
-                curr_available += *size_ptr;
-            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
-            if (size_ptr)
-                curr_available += *size_ptr;
-            curr_end_window = zlistx_next (end_windows);
-            if (curr_end_window) {
-                curr_endtime = curr_end_window->endtime;
-            } else {
-                curr_endtime = TIME_MAX;
-            }
-        } else {
-            fprintf (stderr,
-                     "%s - ERR: Both start/end windows are empty\n",
-                     __FUNCTION__);
-        }
-        min_available = (curr_available < min_available) ? curr_available :
-            min_available;
-    }
-
-    zlistx_destroy (&end_windows);
-ret:
-    zlistx_destroy (&matching_windows);
-
-    return min_available;
+    req_t req;
+    planner_t *pl = resrc->twindow;
+    int64_t start = range_starttime;
+    req.duration = (uint64_t)(range_endtime - range_starttime + 1);
+    req.resrc_vector = (uint64_t *)&reqrd_size;
+    req.vector_dim = 1;
+    req.exclusive = exclusive? 1 : 0;
+    return planner_avail_resources_at (pl, start, &req);
 }
 
 char* resrc_state (resrc_t *resrc)
@@ -424,6 +235,13 @@ char* resrc_state (resrc_t *resrc)
     return str;
 }
 
+planner_t *resrc_twindow (resrc_t *resrc)
+{
+    if (resrc)
+        return resrc->twindow;
+    return NULL;
+}
+
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
 {
     if (resrc)
@@ -443,13 +261,6 @@ size_t resrc_size_reservtns (resrc_t *resrc)
     if (resrc)
         return zhash_size (resrc->reservtns);
     return 0;
-}
-
-int resrc_twindow_insert (resrc_t *resrc, const char *key, int64_t starttime, int64_t endtime)
-{
-    const window_t w = {.starttime = starttime, .endtime = endtime};
-    int rc = zhashx_insert (resrc->twindow, key, (void *)&w);
-    return rc;
 }
 
 int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
@@ -511,9 +322,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->reservtns = zhash_new ();
         resrc->properties = zhash_new ();
         resrc->tags = zhash_new ();
-        resrc->twindow = zhashx_new ();
-        zhashx_set_destructor(resrc->twindow, window_destructor);
-        zhashx_set_duplicator(resrc->twindow, window_dup);
+        resrc->twindow = planner_new (0, TIME_MAX, (uint64_t *)&size, 1);
     }
 
     return resrc;
@@ -539,10 +348,11 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         new_resrc->reservtns = zhash_dup (resrc->reservtns);
         new_resrc->properties = zhash_dup (resrc->properties);
         new_resrc->tags = zhash_dup (resrc->tags);
-        if (resrc->twindow)
-            new_resrc->twindow = zhashx_dup (resrc->twindow);
-        else
-            new_resrc->twindow = NULL;
+        /* Note: we don't make a deep copy of twindow in this copy constructor yet
+         * @lipari and @dongahn want to see user cases of this constructor
+         * before deciding the semantics of member copies.
+         */
+        new_resrc->twindow = NULL;
     }
 
     return new_resrc;
@@ -574,7 +384,7 @@ void resrc_resource_destroy (void *object)
         zhash_destroy (&resrc->properties);
         zhash_destroy (&resrc->tags);
         if (resrc->twindow)
-            zhashx_destroy (&resrc->twindow);
+            planner_destroy (&(resrc->twindow));
         free (resrc);
     }
 }
@@ -670,8 +480,8 @@ resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
                     else
                         endtime = TIME_MAX;
                 }
-
-                resrc_twindow_insert (resrc, "0", starttime, endtime);
+                int64_t d = endtime - starttime + 1;
+                planner_reset (resrc->twindow, starttime, d, NULL, 0);
             }
         }
 
@@ -843,7 +653,8 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
 
         /* add twindow */
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
-            resrc_twindow_insert (resrc, "0", epochtime (), TIME_MAX);
+            int64_t e = epochtime ();
+            planner_reset (resrc->twindow, e, TIME_MAX - e, NULL, 0);
         }
     }
 ret:
@@ -1061,29 +872,15 @@ resrc_t *resrc_create_cluster (char *cluster)
 bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
                            size_t reqrd_size)
 {
-    bool rc = false;
-    window_t *window = NULL;
-    int64_t endtime = resrc_reqst_endtime (request);
-    int64_t starttime = resrc_reqst_starttime (request);
-    size_t available = 0;
-
-    /* If request endtime is greater than the lifetime of the
-       resource, then return false */
-    window = zhashx_lookup (resrc->twindow, "0");
-    if (window) {
-        if (endtime > (window->endtime - 10)) {
-            return false;
-        }
-    }
-
-    /* find the minimum available resources during the requested time
-     * range */
-    available = resrc_available_during_range (resrc, starttime, endtime,
-                                              resrc_reqst_exclusive (request));
-
-    rc = (available >= reqrd_size);
-
-    return rc;
+    req_t req;
+    planner_t *pl = resrc->twindow;
+    int64_t start = resrc_reqst_starttime (request);
+    req.duration = (uint64_t)(resrc_reqst_endtime (request) - start);
+    uint64_t sz = (uint64_t)reqrd_size;
+    req.resrc_vector = &sz;
+    req.vector_dim = 1;
+    req.exclusive = resrc_reqst_exclusive (request)? 1: 0;
+    return (planner_avail_resources_at (pl, start, &req) == 0);
 }
 
 bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
@@ -1259,14 +1056,16 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     char *id_ptr = NULL;
     int rc = -1;
     size_t *size_ptr;
-    size_t available;
+    plan_t *pin = NULL;
+    uint64_t d = (uint64_t)(endtime - starttime + 1);
+
+    pin = plan_new (job_id, starttime, d, 0,  1, resrc->staged);
 
     /* Don't bother going through the exclusivity checks.  We will
      * save cycles and assume the selected resources are
      * exclusively available if that was the criteria of the
      * search. */
-    available = resrc_available_during_range (resrc, starttime, endtime, false);
-    if (resrc->staged > available)
+    if (planner_avail_resources_at (resrc->twindow, starttime, pin->req) != 0)
         goto ret;
 
     id_ptr = xasprintf ("%"PRId64"", job_id);
@@ -1277,11 +1076,16 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     resrc->staged = 0;
 
     /* add walltime */
-    resrc_twindow_insert (resrc, id_ptr, starttime, endtime);
-
-    rc = 0;
+    reservation_t *rsv = NULL;
+    if (!(rsv = planner_reservation_new (resrc->twindow, pin)))
+        goto ret;
+    else if ((rc = planner_add_reservation (resrc->twindow, rsv, 0)) == -1)
+        goto ret;
     free (id_ptr);
+
 ret:
+    if (pin)
+        plan_destroy (&pin);
     return rc;
 }
 
@@ -1364,14 +1168,16 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     char *id_ptr = NULL;
     int rc = -1;
     size_t *size_ptr;
-    size_t available;
+    plan_t *pin = NULL;
+    reservation_t *rsv = NULL;
+    uint64_t d = (uint64_t)(endtime - starttime + 1);
 
     /* Don't bother going through the exclusivity checks.  We will
      * save cycles and assume the selected resources are
      * exclusively available if that was the criteria of the
      * search. */
-    available = resrc_available_during_range (resrc, starttime, endtime, false);
-    if (resrc->staged > available)
+    pin = plan_new (job_id, starttime, d, 0,  1, resrc->staged);
+    if (planner_avail_resources_at (resrc->twindow, starttime, pin->req) != 0)
         goto ret;
 
     id_ptr = xasprintf ("%"PRId64"", job_id);
@@ -1382,11 +1188,15 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     resrc->staged = 0;
 
     /* add walltime */
-    resrc_twindow_insert (resrc, id_ptr, starttime, endtime);
-
-    rc = 0;
+    if (!(rsv = planner_reservation_new (resrc->twindow, pin)))
+        goto ret;
+    else if ((rc = planner_add_reservation (resrc->twindow, rsv, 0)) == -1)
+        goto ret;
     free (id_ptr);
+
 ret:
+    if (pin)
+        plan_destroy (&pin);
     return rc;
 }
 
@@ -1455,8 +1265,11 @@ int resrc_release_allocation (resrc_t *resrc, int64_t rel_job)
     if (size_ptr) {
         if (resrc->state == RESOURCE_ALLOCATED)
             resrc->available += *size_ptr;
-        else
-            zhashx_delete (resrc->twindow, id_ptr);
+        else {
+            reservation_t *rsv = planner_reservation_by_id_str (resrc->twindow,
+                                     (const char*)id_ptr);
+            planner_reservation_destroy (resrc->twindow, &rsv);
+        }
 
         zhash_delete (resrc->allocs, id_ptr);
         if ((resrc->state != RESOURCE_INVALID) && !zhash_size (resrc->allocs)) {
@@ -1498,7 +1311,9 @@ int resrc_release_all_reservations (resrc_t *resrc)
                 resrc->available += *size_ptr;
             else {
                 id_ptr = (char *)zhash_cursor (resrc->reservtns);
-                zhashx_delete (resrc->twindow, id_ptr);
+                reservation_t *rsv = planner_reservation_by_id_str (resrc->twindow,
+                                         (const char*)id_ptr);
+                planner_reservation_destroy (resrc->twindow, &rsv);
             }
             size_ptr = zhash_next (resrc->reservtns);
         }
