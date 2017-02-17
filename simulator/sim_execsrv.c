@@ -121,7 +121,7 @@ static int update_job_state (ctx_t *ctx,
     jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
 
     kvsdir_put_double (kvs_dir, timer_key, update_time);
-    kvs_commit (ctx->h);
+    kvs_commit (ctx->h, 0);
 
     Jput (jcb);
     Jput (o);
@@ -203,7 +203,7 @@ static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
     kvsdir_put_double (job->kvs_dir, "complete_time", completion_time);
     kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
 
-    kvs_commit (h);
+    kvs_commit (h, 0);
     free_job (job);
 
     return 0;

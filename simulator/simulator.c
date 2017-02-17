@@ -173,7 +173,7 @@ int put_job_in_kvs (job_t *job)
     } else if (kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'io_rate'", __FUNCTION__);
         goto ret;
-    } else if (kvs_commit (h) < 0) {
+    } else if (kvs_commit (h, 0) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to commit information for job %d", __FUNCTION__, job->id);
         goto ret;
     }
