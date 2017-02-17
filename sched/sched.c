@@ -1389,28 +1389,11 @@ static int req_tpexec_run (flux_t *h, flux_lwj_t *job)
  *                                                                              *
  *******************************************************************************/
 
-/*
- * schedule_job() searches through all of the idle resources to
- * satisfy a job's requirements.  If enough resources are found, it
- * proceeds to allocate those resources and update the kvs's lwj entry
- * in preparation for job execution.  If less resources
- * are found than the job requires, and if the job asks to reserve
- * resources, then those resources will be reserved.
- */
-int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
+static resrc_reqst_t *get_resrc_reqst (flux_lwj_t *job, int64_t starttime,
+                          int64_t *nreqrd)
 {
     json_t *req_res = NULL;
-    flux_t *h = ctx->h;
-    int rc = -1;
-    int64_t nfound = 0;
-    int64_t nreqrd = 0;
     resrc_reqst_t *resrc_reqst = NULL;
-    resrc_tree_t *found_tree = NULL;
-    resrc_tree_t *selected_tree = NULL;
-    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
-
-    if (!plugin)
-        return rc;
 
     /*
      * Require at least one task per node, and
@@ -1439,7 +1422,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 
         Jadd_str (req_res, "type", "node");
         Jadd_int64 (req_res, "req_qty", job->req->nnodes);
-        nreqrd = job->req->nnodes;
+        *nreqrd = job->req->nnodes;
 
         /* Since nodes are requested, make sure we look for at
          * least one core on each node */
@@ -1467,7 +1450,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     } else if (job->req->ncores > 0) {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", job->req->ncores);
-        nreqrd = job->req->ncores;
+        *nreqrd = job->req->ncores;
 
         Jadd_int64 (req_res, "req_size", 1);
         /* setting exclusive to true prevents multiple jobs per core */
@@ -1478,8 +1461,36 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
     resrc_reqst = resrc_reqst_from_json (req_res, NULL);
-    Jput (req_res);
-    if (!resrc_reqst)
+
+done:
+    if (req_res)
+        Jput (req_res);
+    return resrc_reqst;
+}
+
+/*
+ * schedule_job() searches through all of the idle resources to
+ * satisfy a job's requirements.  If enough resources are found, it
+ * proceeds to allocate those resources and update the kvs's lwj entry
+ * in preparation for job execution.  If less resources
+ * are found than the job requires, and if the job asks to reserve
+ * resources, then those resources will be reserved.
+ */
+int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
+{
+    flux_t *h = ctx->h;
+    int rc = -1;
+    int64_t nfound = 0;
+    int64_t nreqrd = 0;
+    resrc_reqst_t *resrc_reqst = NULL;
+    resrc_tree_t *found_tree = NULL;
+    resrc_tree_t *selected_tree = NULL;
+    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
+
+    if (!plugin)
+        return rc;
+
+    if (!(resrc_reqst = get_resrc_reqst (job, starttime, &nreqrd)))
         goto done;
 
     if ((nfound = plugin->find_resources (h, ctx->rctx.root_resrc,
