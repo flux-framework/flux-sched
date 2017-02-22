@@ -41,6 +41,11 @@ struct resrc_reqst_list {
     zlist_t *list;
 };
 
+struct subresrc_aggregate {
+    const char *type;
+    int64_t qty;
+};
+
 struct resrc_reqst {
     resrc_reqst_t *parent;
     resrc_t *resrc;
@@ -50,6 +55,7 @@ struct resrc_reqst {
     int64_t reqrd_qty;
     int64_t reqrd_size;
     int64_t nfound;
+    zlist_t *subresrcs;
     resrc_reqst_list_t *children;
     resrc_graph_req_t *g_reqs;
 };
@@ -246,6 +252,7 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
         resrc_reqst->reqrd_qty = qty;
         resrc_reqst->reqrd_size = size;
         resrc_reqst->nfound = 0;
+        resrc_reqst->subresrcs = NULL;
         resrc_reqst->g_reqs = NULL;
         resrc_reqst->children = resrc_reqst_list_new ();
     }
@@ -282,6 +289,35 @@ static resrc_graph_req_t *resrc_graph_req_from_json (json_t *ga)
 fail:
     free (resrc_graph_req);
     return NULL;
+}
+
+static zlist_t *subresrc_aggregates_from_json (json_t *o)
+{
+    int64_t agg = -1;
+    zlist_t *zl = NULL;
+    struct subresrc_aggregate *subresrc = NULL;
+
+    /* when other other resource types need to be supported
+     * the following needs to be extended
+     */
+    if (Jget_int64 (o, "aggr_qty_node", &agg)) {
+        subresrc = xzmalloc (sizeof (*subresrc));
+        subresrc->type = "node";
+        subresrc->qty = agg;
+        zl = zlist_new ();
+        zlist_append (zl, subresrc);
+        zlist_freefn (zl, subresrc, free, false);
+    }
+    if (Jget_int64 (o, "aggr_qty_core", &agg)) {
+        subresrc = xzmalloc (sizeof (*subresrc));
+        subresrc->type = "core";
+        subresrc->qty = agg;
+        if (!zl)
+             zl = zlist_new ();
+        zlist_append (zl, subresrc);
+        zlist_freefn (zl, subresrc, free, false);
+    }
+    return zl;
 }
 
 resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
@@ -336,6 +372,8 @@ resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
         resrc_reqst = resrc_reqst_new (resrc, qty, size, starttime, endtime,
                                        exclusive);
 
+        resrc_reqst->subresrcs = subresrc_aggregates_from_json (o);
+
         if ((ga = Jobj_get (o, "graphs")))
             resrc_reqst->g_reqs = resrc_graph_req_from_json (ga);
 
@@ -365,6 +403,8 @@ void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
     if (resrc_reqst) {
         if (resrc_reqst->parent)
             resrc_reqst_list_remove (resrc_reqst->parent->children, resrc_reqst);
+        if (resrc_reqst->subresrcs)
+            zlist_destroy (&(resrc_reqst->subresrcs));
         resrc_reqst_list_destroy (resrc_reqst->children);
         resrc_resource_destroy (resrc_reqst->resrc);
         resrc_graph_req_destroy (resrc_reqst->g_reqs);

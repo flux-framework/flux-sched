@@ -60,7 +60,7 @@ struct resrc_flow_list {
  *  size_t staged;
  *  zhash_t *allocs;
  *  zhash_t *reservtns;
- *  zhash_t *twindow;
+ *  planner_t *twindow;
  *
  * The resrc_flow structure therefore includes a flow_resrc resource,
  * independent from the associated resource, to hold all these values
@@ -233,8 +233,8 @@ resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
                     endtime = TIME_MAX;
             }
 
-            resrc_twindow_insert (resrc_flow->flow_resrc, "0",
-                                  starttime, endtime);
+            planner_reset (resrc_twindow (resrc_flow->flow_resrc), starttime,
+                endtime - starttime, NULL, 0);
         }
     }
     if (resrc)
