@@ -54,7 +54,7 @@ struct resrc_reqst {
     resrc_graph_req_t *g_reqs;
 };
 
-static bool match_children (resrc_tree_list_t *r_trees,
+static bool match_children (resrc_api_ctx_t *ctx, resrc_tree_list_t *r_trees,
                             resrc_reqst_list_t *req_trees,
                             resrc_tree_t *found_parent, bool available);
 
@@ -62,7 +62,7 @@ static bool match_children (resrc_tree_list_t *r_trees,
  * Resource request
  ***********************************************************************/
 
-void resrc_graph_req_destroy (resrc_graph_req_t *g_reqs)
+void resrc_graph_req_destroy (resrc_api_ctx_t *ctx, resrc_graph_req_t *g_reqs)
 {
     if (g_reqs)
         free (g_reqs);
@@ -284,7 +284,8 @@ fail:
     return NULL;
 }
 
-resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
+resrc_reqst_t *resrc_reqst_from_json (resrc_api_ctx_t *ctx,
+                                      json_t *o, resrc_reqst_t *parent)
 {
     bool exclusive = false;
     json_t *ca = NULL;     /* array of child json objects */
@@ -331,7 +332,7 @@ resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
     else if (!(Jget_int64 (o, "endtime", &endtime)))
         endtime = TIME_MAX;
 
-    resrc = resrc_new_from_json (o, NULL, false);
+    resrc = resrc_new_from_json (ctx, o, NULL, false);
     if (resrc) {
         resrc_reqst = resrc_reqst_new (resrc, qty, size, starttime, endtime,
                                        exclusive);
@@ -340,7 +341,7 @@ resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
             resrc_reqst->g_reqs = resrc_graph_req_from_json (ga);
 
         if ((co = Jobj_get (o, "req_child"))) {
-            child_reqst = resrc_reqst_from_json (co, resrc_reqst);
+            child_reqst = resrc_reqst_from_json (ctx, co, resrc_reqst);
             if (child_reqst)
                 resrc_reqst_add_child (resrc_reqst, child_reqst);
         } else if ((ca = Jobj_get (o, "req_children"))) {
@@ -349,7 +350,7 @@ resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent)
             if (Jget_ar_len (ca, &nchildren)) {
                 for (i=0; i < nchildren; i++) {
                     Jget_ar_obj (ca, i, &co);
-                    child_reqst = resrc_reqst_from_json (co, resrc_reqst);
+                    child_reqst = resrc_reqst_from_json (ctx, co, resrc_reqst);
                     if (child_reqst)
                         resrc_reqst_add_child (resrc_reqst, child_reqst);
                 }
@@ -360,14 +361,14 @@ ret:
     return resrc_reqst;
 }
 
-void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst)
+void resrc_reqst_destroy (resrc_api_ctx_t *ctx, resrc_reqst_t *resrc_reqst)
 {
     if (resrc_reqst) {
         if (resrc_reqst->parent)
             resrc_reqst_list_remove (resrc_reqst->parent->children, resrc_reqst);
-        resrc_reqst_list_destroy (resrc_reqst->children);
-        resrc_resource_destroy (resrc_reqst->resrc);
-        resrc_graph_req_destroy (resrc_reqst->g_reqs);
+        resrc_reqst_list_destroy (ctx, resrc_reqst->children);
+        resrc_resource_destroy (ctx, resrc_reqst->resrc);
+        resrc_graph_req_destroy (ctx, resrc_reqst->g_reqs);
         free (resrc_reqst);
     }
 }
@@ -449,13 +450,14 @@ void resrc_reqst_list_remove (resrc_reqst_list_t *rrl, resrc_reqst_t *rr)
     zlist_remove (rrl->list, rr);
 }
 
-void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
+void resrc_reqst_list_destroy (resrc_api_ctx_t *ctx,
+                               resrc_reqst_list_t *resrc_reqst_list)
 {
     if (resrc_reqst_list) {
         if (resrc_reqst_list_size (resrc_reqst_list)) {
             resrc_reqst_t *child = resrc_reqst_list_first (resrc_reqst_list);
             while (child) {
-                resrc_reqst_destroy (child);
+                resrc_reqst_destroy (ctx, child);
                 child = resrc_reqst_list_next (resrc_reqst_list);
             }
         }
@@ -468,7 +470,8 @@ void resrc_reqst_list_destroy (resrc_reqst_list_t *resrc_reqst_list)
  * cycles through all of the resource children and returns the number of
  * requested resources found
  */
-static int64_t match_child (resrc_tree_list_t *r_trees,
+static int64_t match_child (resrc_api_ctx_t *ctx,
+                            resrc_tree_list_t *r_trees,
                             resrc_reqst_t *resrc_reqst,
                             resrc_tree_t *found_parent, bool available)
 {
@@ -479,7 +482,7 @@ static int64_t match_child (resrc_tree_list_t *r_trees,
     resrc_tree = resrc_tree_list_first (r_trees);
     while (resrc_tree) {
         resrc = resrc_tree_resrc (resrc_tree);
-        nfound += resrc_tree_search (resrc, resrc_reqst, &found_parent,
+        nfound += resrc_tree_search (ctx, resrc, resrc_reqst, &found_parent,
                                      available);
         resrc_tree = resrc_tree_list_next (r_trees);
     }
@@ -491,7 +494,8 @@ static int64_t match_child (resrc_tree_list_t *r_trees,
  * cycles through all of the resource requests and returns true if all
  * of the requested children were found
  */
-static bool match_children (resrc_tree_list_t *r_trees,
+static bool match_children (resrc_api_ctx_t *ctx,
+                            resrc_tree_list_t *r_trees,
                             resrc_reqst_list_t *req_trees,
                             resrc_tree_t *found_parent, bool available)
 {
@@ -502,7 +506,7 @@ static bool match_children (resrc_tree_list_t *r_trees,
         resrc_reqst->nfound = 0;
         found = false;
 
-        if (match_child (r_trees, resrc_reqst, found_parent, available)) {
+        if (match_child (ctx, r_trees, resrc_reqst, found_parent, available)) {
             if (resrc_reqst->nfound >= resrc_reqst->reqrd_qty)
                 found = true;
         }
@@ -516,7 +520,8 @@ static bool match_children (resrc_tree_list_t *r_trees,
 }
 
 /* returns the number of resource or resource composites found */
-int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
+int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
+                           resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
                            resrc_tree_t **found_tree, bool available)
 {
     int64_t nfound = 0;
@@ -533,12 +538,12 @@ int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
             if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
                 new_tree = resrc_tree_new (*found_tree, resrc_in);
                 children = resrc_tree_children (resrc_phys_tree (resrc_in));
-                if (match_children (children, resrc_reqst->children, new_tree,
+                if (match_children (ctx, children, resrc_reqst->children, new_tree,
                                     available)) {
                     nfound = 1;
                     resrc_reqst->nfound++;
                 } else {
-                    resrc_tree_destroy (new_tree, false);
+                    resrc_tree_destroy (ctx, new_tree, false, false);
                 }
             }
         } else {
@@ -566,7 +571,7 @@ int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
         children = resrc_tree_children (resrc_phys_tree (resrc_in));
         child_tree = resrc_tree_list_first (children);
         while (child_tree) {
-            nfound += resrc_tree_search (resrc_tree_resrc (child_tree),
+            nfound += resrc_tree_search (ctx, resrc_tree_resrc (child_tree),
                                          resrc_reqst, &new_tree, available);
             child_tree = resrc_tree_list_next (children);
         }

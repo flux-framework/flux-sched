@@ -57,6 +57,7 @@
 #define DYNAMIC_SCHEDULING 0
 #define ENABLE_TIMER_EVENT 0
 #define SCHED_UNIMPL -1
+#define GET_ROOT_RESRC(rsapi) resrc_tree_resrc (resrc_tree_root ((rsapi)))
 
 #if ENABLE_TIMER_EVENT
 static int timer_event_cb (flux_t *h, void *arg);
@@ -96,11 +97,6 @@ typedef struct {
 } simctx_t;
 
 typedef struct {
-    resrc_t      *root_resrc;         /* resrc object pointing to the root */
-    char         *root_uri;           /* Name of the root of the RDL hierachy */
-} rdlctx_t;
-
-typedef struct {
     char         *path;
     char         *uri;
     char         *userplugin;
@@ -123,8 +119,8 @@ typedef struct {
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
     machs_t      *machs;              /* Helps resolve resources to ranks */
     ssrvarg_t     arg;                /* args passed to this module */
-    rdlctx_t      rctx;               /* RDL context */
     simctx_t      sctx;               /* simulator context */
+    resrc_api_ctx_t *rsapi;           /* resrc_api handle */
     struct sched_plugin_loader *loader; /* plugin loader */
     flux_watcher_t *before;
     flux_watcher_t *after;
@@ -316,9 +312,8 @@ static void freectx (void *arg)
     zlist_destroy (&(ctx->c_queue));
     rs2rank_tab_destroy (ctx->machs);
     ssrvarg_free (&(ctx->arg));
-    resrc_tree_destroy (resrc_phys_tree (ctx->rctx.root_resrc), true);
-    resrc_fini ();
-    free (ctx->rctx.root_uri);
+    resrc_tree_destroy (ctx->rsapi, resrc_tree_root (ctx->rsapi), true, true);
+    resrc_api_fini (ctx->rsapi);
     free_simstate (ctx->sctx.sim_state);
     if (ctx->sctx.res_queue)
         zlist_destroy (&(ctx->sctx.res_queue));
@@ -355,9 +350,7 @@ static ssrvctx_t *getctx (flux_t *h)
         if (!(ctx->machs = rs2rank_tab_new ()))
             oom ();
         ssrvarg_init (&(ctx->arg));
-        resrc_init ();
-        ctx->rctx.root_resrc = NULL;
-        ctx->rctx.root_uri = NULL;
+        ctx->rsapi = resrc_api_init ();
         ctx->sctx.in_sim = false;
         ctx->sctx.sim_state = NULL;
         ctx->sctx.res_queue = NULL;
@@ -621,8 +614,8 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
         const char *s = json_string_value (o);
         char *err_str = NULL;
         size_t len = strlen (s);
-        if (rsreader_hwloc_load (s, len, rank, r_mode, &(ctx->rctx.root_resrc),
-                                 ctx->machs, &err_str)) {
+        if (rsreader_hwloc_load (ctx->rsapi, s, len, rank, r_mode, ctx->machs,
+                                 &err_str)) {
             Jput (o);
             flux_log_error (ctx->h, "can't load hwloc data: %s", err_str);
             free (err_str);
@@ -658,8 +651,6 @@ static int load_resources (ssrvctx_t *ctx)
 {
     int rc = -1;
     char *e_str = NULL;
-    char *turi = NULL;
-    resrc_t *tres = NULL;
     char *path = ctx->arg.path;
     char *uri = ctx->arg.uri;
     rsreader_t r_mode = ctx->arg.r_mode;
@@ -668,24 +659,22 @@ static int load_resources (ssrvctx_t *ctx)
 
     switch (r_mode) {
     case RSREADER_RESRC_EMUL:
-        if (rsreader_resrc_bulkload (path, uri, &turi, &tres) != 0) {
+        if (rsreader_resrc_bulkload (ctx->rsapi, path, uri) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc");
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
             goto done;
-        } else if (rsreader_force_link2rank (ctx->machs, tres) != 0) {
+        } else if (rsreader_force_link2rank (ctx->rsapi, ctx->machs) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to force a link to a rank");
             goto done;
         }
-        ctx->rctx.root_uri = turi;
-        ctx->rctx.root_resrc = tres;
         flux_log (ctx->h, LOG_INFO, "loaded resrc");
         rc = 0;
         break;
 
     case RSREADER_RESRC:
-        if (rsreader_resrc_bulkload (path, uri, &turi, &tres) != 0) {
+        if (rsreader_resrc_bulkload (ctx->rsapi, path, uri) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc");
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
@@ -694,9 +683,9 @@ static int load_resources (ssrvctx_t *ctx)
         }
         if (ctx->arg.verbosity > 0) {
             flux_log (ctx->h, LOG_INFO, "resrc state after resrc read");
-            dump_resrc_state (ctx->h, resrc_phys_tree (tres));
+            dump_resrc_state (ctx->h, resrc_tree_root (ctx->rsapi));
         }
-        if (rsreader_link2rank (ctx->machs, tres, &e_str) != 0) {
+        if (rsreader_link2rank (ctx->rsapi, ctx->machs, &e_str) != 0) {
             flux_log (ctx->h, LOG_INFO, "RDL(%s) inconsistent w/ hwloc!", path);
             if (e_str) {
                 flux_log (ctx->h, LOG_INFO, "%s", e_str);
@@ -705,32 +694,26 @@ static int load_resources (ssrvctx_t *ctx)
             if (ctx->arg.fail_on_error)
                 goto done;
             flux_log (ctx->h, LOG_INFO, "rebuild resrc using hwloc");
-            if (turi)
-                free (turi);
-            if (tres)
-                resrc_tree_destroy (resrc_phys_tree (tres), true);
+            resrc_tree_t *mismatch_root = resrc_tree_root (ctx->rsapi);
+            if (mismatch_root)
+                resrc_tree_destroy (ctx->rsapi, mismatch_root, true, true);
             r_mode = RSREADER_HWLOC;
             /* deliberate fall-through to RSREADER_HWLOC! */
         } else {
-            ctx->rctx.root_uri = turi;
-            ctx->rctx.root_resrc = tres;
             flux_log (ctx->h, LOG_INFO, "loaded resrc");
             rc = 0;
             break;
         }
 
     case RSREADER_HWLOC:
-        if (!(ctx->rctx.root_resrc = resrc_create_cluster ("cluster"))) {
-            flux_log (ctx->h, LOG_ERR, "failed to create cluster resrc");
-            goto done;
-        } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
+        if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc using hwloc");
             goto done;
         }
         /* linking has already been done by build_hwloc_rs2rank above */
         if (ctx->arg.verbosity > 0) {
             flux_log (ctx->h, LOG_INFO, "resrc state after hwloc read");
-            dump_resrc_state (ctx->h, resrc_phys_tree (ctx->rctx.root_resrc));
+            dump_resrc_state (ctx->h, resrc_tree_root (ctx->rsapi));
         }
         rc = 0;
         break;
@@ -1389,8 +1372,8 @@ static int req_tpexec_run (flux_t *h, flux_lwj_t *job)
  *                                                                              *
  *******************************************************************************/
 
-static resrc_reqst_t *get_resrc_reqst (flux_lwj_t *job, int64_t starttime,
-                          int64_t *nreqrd)
+static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
+                          int64_t starttime, int64_t *nreqrd)
 {
     json_t *req_res = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
@@ -1460,7 +1443,7 @@ static resrc_reqst_t *get_resrc_reqst (flux_lwj_t *job, int64_t starttime,
 
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
-    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
+    resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
 
 done:
     if (req_res)
@@ -1490,10 +1473,11 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     if (!plugin)
         return rc;
 
-    if (!(resrc_reqst = get_resrc_reqst (job, starttime, &nreqrd)))
+    if (!(resrc_reqst = get_resrc_reqst (ctx, job, starttime, &nreqrd)))
         goto done;
 
-    if ((nfound = plugin->find_resources (h, ctx->rctx.root_resrc,
+    if ((nfound = plugin->find_resources (h, ctx->rsapi,
+                                          GET_ROOT_RESRC(ctx->rsapi),
                                           resrc_reqst, &found_tree))) {
         flux_log (h, LOG_DEBUG, "Found %"PRId64" %s(s) for job %"PRId64", "
                   "required: %"PRId64"", nfound,
@@ -1502,10 +1486,11 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
 
         resrc_tree_unstage_resources (found_tree);
         resrc_reqst_clear_found (resrc_reqst);
-        if ((selected_tree = plugin->select_resources (h, found_tree,
+        if ((selected_tree = plugin->select_resources (h, ctx->rsapi, found_tree,
                                                        resrc_reqst, NULL))) {
             if (resrc_reqst_all_found (resrc_reqst)) {
-                plugin->allocate_resources (h, selected_tree, job->lwj_id,
+                plugin->allocate_resources (h, ctx->rsapi,
+                                            selected_tree, job->lwj_id,
                                             starttime, starttime +
                                             job->req->walltime);
                 /* Scheduler specific job transition */
@@ -1517,7 +1502,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                     flux_log (h, LOG_ERR,
                               "failed to request allocate for job %"PRId64"",
                               job->lwj_id);
-                    resrc_tree_destroy (job->resrc_tree, false);
+                    resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false,false);
                     job->resrc_tree = NULL;
                     goto done;
                 }
@@ -1526,12 +1511,13 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                           resrc_type (resrc_reqst_resrc (resrc_reqst)),
                           job->lwj_id);
             } else {
-                rc = plugin->reserve_resources (h, &selected_tree, job->lwj_id,
+                rc = plugin->reserve_resources (h, ctx->rsapi,
+                                                &selected_tree, job->lwj_id,
                                                 starttime, job->req->walltime,
-                                                ctx->rctx.root_resrc,
+                                                GET_ROOT_RESRC(ctx->rsapi),
                                                 resrc_reqst);
                 if (rc) {
-                    resrc_tree_destroy (selected_tree, false);
+                    resrc_tree_destroy (ctx->rsapi, selected_tree, false, false);
                     job->resrc_tree = NULL;
                 } else
                     job->resrc_tree = selected_tree;
@@ -1541,9 +1527,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     rc = 0;
 done:
     if (resrc_reqst)
-        resrc_reqst_destroy (resrc_reqst);
+        resrc_reqst_destroy (ctx->rsapi, resrc_reqst);
     if (found_tree)
-        resrc_tree_destroy (found_tree, false);
+        resrc_tree_destroy (ctx->rsapi, found_tree, false, false);
 
     return rc;
 }
@@ -1564,7 +1550,8 @@ static int schedule_jobs (ssrvctx_t *ctx)
     int64_t starttime = (ctx->sctx.in_sim) ?
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
-    resrc_tree_release_all_reservations (resrc_phys_tree (ctx->rctx.root_resrc));
+    resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
+
     if (!plugin)
         return -1;
     rc = plugin->sched_loop_setup (ctx->h);
@@ -1677,7 +1664,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         zlist_remove (ctx->c_queue, job);
         if (job->req)
             free (job->req);
-        resrc_tree_destroy (job->resrc_tree, false);
+        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
         free (job);
         break;
     case J_COMPLETE:
@@ -1685,7 +1672,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         zlist_remove (ctx->c_queue, job);
         if (job->req)
             free (job->req);
-        resrc_tree_destroy (job->resrc_tree, false);
+        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
         free (job);
         break;
     case J_REAPED:

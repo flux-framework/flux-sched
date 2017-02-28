@@ -18,6 +18,16 @@ typedef struct resrc_tree_list resrc_tree_list_t;
 resrc_t *resrc_tree_resrc (resrc_tree_t *resrc_tree);
 
 /*
+ * Return the root node of this tree
+ */
+resrc_tree_t *resrc_tree_root (resrc_api_ctx_t *ctx);
+
+/*
+ * Return the name of this tree
+ */
+const char *resrc_tree_name (resrc_api_ctx_t *ctx);
+
+/*
  * Return the number of children in the resource tree
  */
 size_t resrc_tree_num_children (resrc_tree_t *resrc_tree);
@@ -45,7 +55,8 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree);
 /*
  * Destroy an entire tree of resrc_tree_t objects
  */
-void resrc_tree_destroy (resrc_tree_t *resrc_tree, bool destroy_resrc);
+void resrc_tree_destroy (resrc_api_ctx_t *ctx, resrc_tree_t *resrc_tree,
+                         bool is_root, bool destroy_resrc);
 
 /*
  * Print the resources in a resrc_tree_t object
@@ -60,7 +71,8 @@ int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree);
 /*
  * Create a resource tree from a json object
  */
-resrc_tree_t *resrc_tree_deserialize (json_t *o, resrc_tree_t *parent);
+resrc_tree_t *resrc_tree_deserialize (resrc_api_ctx_t *ctx,
+                                      json_t *o, resrc_tree_t *parent);
 
 /*
  * Allocate all the resources in a resource tree
@@ -125,7 +137,8 @@ void resrc_tree_list_remove (resrc_tree_list_t *rtl, resrc_tree_t *rt);
 /*
  * Destroy a resrc_tree_list_t object including all children
  */
-void resrc_tree_list_destroy (resrc_tree_list_t *rtl, bool destroy_resrc);
+void resrc_tree_list_destroy (resrc_api_ctx_t *ctx, resrc_tree_list_t *rtl,
+                              bool destroy_resrc);
 
 /*
  * Add the input list of resource trees to the json array object
@@ -135,7 +148,7 @@ int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl);
 /*
  * Create a resource tree list from a json object
  */
-resrc_tree_list_t *resrc_tree_list_deserialize (json_t *o);
+resrc_tree_list_t *resrc_tree_list_deserialize (resrc_api_ctx_t *ctx, json_t *o);
 
 /*
  * Allocate all the resources in a list of resource trees
@@ -166,3 +179,7 @@ void resrc_tree_list_unstage_resources (resrc_tree_list_t *rtl);
 
 
 #endif /* !FLUX_RESRC_TREE_H */
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

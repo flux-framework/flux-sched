@@ -36,6 +36,7 @@
 #include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
 #include "resrc.h"
+#include "resrc_api_internal.h"
 #include "resrc_tree.h"
 #include "resrc_flow.h"
 #include "resrc_reqst.h"
@@ -90,22 +91,37 @@ struct resrc {
     zhashx_t *twindow;
 };
 
-static zhash_t *resrc_hash = NULL;
-
 /***************************************************************************
  *  API
  ***************************************************************************/
 
-void resrc_init (void)
+resrc_api_ctx_t *resrc_api_init (void)
 {
-    if (!resrc_hash)
-        resrc_hash = zhash_new ();
+    resrc_api_ctx_t *ctx = xzmalloc (sizeof (*ctx));
+    ctx->resrc_hash = zhash_new ();
+    ctx->hwloc_cluster = NULL;
+    ctx->tree_name = NULL;
+    ctx->tree_root = NULL;
+    ctx->flow_names = NULL;
+    ctx->flow_roots = zhash_new ();
+    return ctx;
 }
 
-void resrc_fini (void)
+void resrc_api_fini (resrc_api_ctx_t *ctx)
 {
-    if (resrc_hash)
-        zhash_destroy (&resrc_hash);
+    if (!ctx) {
+        errno = EINVAL;
+        return;
+    }
+    if (ctx->resrc_hash)
+        zhash_destroy (&(ctx->resrc_hash));
+    if (ctx->tree_name)
+        free (ctx->tree_name);
+    if (ctx->flow_roots)
+        zhash_destroy (&(ctx->flow_roots));
+    if (ctx->flow_names)
+        zlist_destroy (&(ctx->flow_names));
+    /* tree_root_resrc should already have been destroyed */
 }
 
 char *resrc_type (resrc_t *resrc)
@@ -459,14 +475,14 @@ int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
     return rc;
 }
 
-resrc_t *resrc_lookup (const char *path)
+resrc_t *resrc_lookup (resrc_api_ctx_t *ctx, const char *path)
 {
-    if (resrc_hash && path)
-        return ((resrc_t *)zhash_lookup (resrc_hash, path));
-    return NULL;
+    if (!ctx || !(ctx->resrc_hash) || !path)
+        return NULL;
+    return (resrc_t *)zhash_lookup (ctx->resrc_hash, path);
 }
 
-resrc_t *resrc_new_resource (const char *type, const char *path,
+resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx, const char *type, const char *path,
                              const char *basename, const char *name,
                              const char *sig, int64_t id, uuid_t uuid,
                              size_t size)
@@ -492,7 +508,7 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         if (!strncmp (type, "node", 5)) {
             /* Add this new resource to the resource hash table.
              * Do not supply a zhash_freefn() */
-            zhash_insert (resrc_hash, resrc->name, (void *)resrc);
+            zhash_insert (ctx->resrc_hash, resrc->name, (void *)resrc);
         }
         resrc->digest = NULL;
         if (sig)
@@ -519,6 +535,12 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
     return resrc;
 }
 
+/*
+ * NOTE: until resrc_t can be refactor to contain only the base data
+ * model of a resource, this copy constructor will find little use.
+ * remove it for now.
+ */
+#if 0
 resrc_t *resrc_copy_resource (resrc_t *resrc)
 {
     resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
@@ -547,8 +569,9 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
 
     return new_resrc;
 }
+#endif
 
-void resrc_resource_destroy (void *object)
+void resrc_resource_destroy (resrc_api_ctx_t *ctx, void *object)
 {
     resrc_t *resrc = (resrc_t *) object;
 
@@ -556,8 +579,8 @@ void resrc_resource_destroy (void *object)
         if (resrc->type)
             free (resrc->type);
         if (resrc->path) {
-            if (resrc_hash)
-                zhash_delete (resrc_hash, resrc->path);
+            if (ctx->resrc_hash)
+                zhash_delete (ctx->resrc_hash, resrc->path);
             free (resrc->path);
         }
         if (resrc->basename)
@@ -602,7 +625,8 @@ static char *json_create_string (json_t *o)
     return (result);
 }
 
-resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
+resrc_t *resrc_new_from_json (resrc_api_ctx_t *ctx, json_t *o, resrc_t *parent,
+                              bool physical)
 {
     json_t *jhierarchyo = NULL; /* json hierarchy object */
     json_t *jpropso = NULL; /* json properties object */
@@ -646,7 +670,7 @@ resrc_t *resrc_new_from_json (json_t *o, resrc_t *parent, bool physical)
             path = xasprintf ("/%s", name);
     }
 
-    resrc = resrc_new_resource (type, path, basename, name, NULL, id, uuid,
+    resrc = resrc_new_resource (ctx, type, path, basename, name, NULL, id, uuid,
                                 size);
     if (resrc) {
         /*
@@ -708,17 +732,18 @@ ret:
     return resrc;
 }
 
-static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
+static resrc_t *resrc_add_rdl_resource (resrc_api_ctx_t *ctx, resrc_t *parent,
+                                        struct resource *r)
 {
     json_t *o = NULL;
     resrc_t *resrc = NULL;
     struct resource *c;
 
     o = rdl_resource_json (r);
-    resrc = resrc_new_from_json (o, parent, true);
+    resrc = resrc_new_from_json (ctx, o, parent, true);
 
     while ((c = rdl_resource_next_child (r))) {
-        (void) resrc_add_rdl_resource (resrc, c);
+        (void) resrc_add_rdl_resource (ctx, resrc, c);
         rdl_resource_destroy (c);
     }
 
@@ -726,7 +751,8 @@ static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
     return resrc;
 }
 
-resrc_t *resrc_generate_rdl_resources (const char *path, char *resource)
+resrc_t *resrc_generate_rdl_resources (resrc_api_ctx_t *ctx, const char *path,
+                                       char *resource)
 {
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
@@ -737,16 +763,18 @@ resrc_t *resrc_generate_rdl_resources (const char *path, char *resource)
         goto ret;
 
     if ((r = rdl_resource_get (rdl, resource)))
-        resrc = resrc_add_rdl_resource (NULL, r);
+        resrc = resrc_add_rdl_resource (ctx, NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
+    ctx->tree_name = xstrdup (resource);
+    ctx->tree_root = resrc_phys_tree (resrc);
 ret:
     return resrc;
 }
 
-static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
-                                          const char *sig)
+static resrc_t *resrc_new_from_hwloc_obj (resrc_api_ctx_t *ctx, hwloc_obj_t obj,
+                                          resrc_t *parent, const char *sig)
 {
     const char *hwloc_name = NULL;
     char *basename = NULL;
@@ -819,8 +847,8 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
     else
         path = xasprintf ("/%s", name);
 
-    resrc = resrc_new_resource (type, path, basename, name, signature, id, uuid,
-                                size);
+    resrc = resrc_new_resource (ctx, type, path, basename, name, signature, id,
+                                uuid, size);
     if (resrc) {
         if (parent)
             parent_tree = parent->phys_tree;
@@ -835,7 +863,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
              */
             size = obj->memory.local_memory / 1024;
             uuid_generate (uuid);
-            mem_resrc = resrc_new_resource ("memory", mempath, "memory",
+            mem_resrc = resrc_new_resource (ctx, "memory", mempath, "memory",
                                             "memory0", signature, 0, uuid, size);
             mem_resrc->phys_tree = resrc_tree_new (resrc->phys_tree, mem_resrc);
             free (mempath);
@@ -856,9 +884,27 @@ ret:
     return resrc;
 }
 
-resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
-                                         hwloc_topology_t topo, const char *sig,
-                                         char **err_str)
+/* Make this function internal. This is a special constructor only needed
+ * by hwloc reader. As the tree root query is a part of the API, this
+ * does not need to be exported.
+ */
+static resrc_t *resrc_create_cluster (resrc_api_ctx_t *ctx, char *cluster)
+{
+    resrc_t *resrc = NULL;
+    uuid_t uuid;
+    char *path = xasprintf ("/%s", cluster);
+
+    uuid_generate (uuid);
+    resrc = resrc_new_resource (ctx, "cluster", path, cluster, cluster, NULL, -1,
+                                uuid, 1);
+    resrc->phys_tree = resrc_tree_new (NULL, resrc);
+    free (path);
+    return resrc;
+}
+
+/* Generate with HWLOC reader */
+resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx,
+             hwloc_topology_t topo, const char *sig, char **err_str)
 {
     char *obj_ptr = NULL;
     char *str = NULL;
@@ -872,9 +918,16 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
     uint32_t topodepth;
     zhash_t *resrc_objs = zhash_new ();
 
-    if (!cluster_resrc) {
-        str = xasprintf ("%s: cluster_resrc is null", __FUNCTION__);
-        goto ret;
+    if (!(ctx->hwloc_cluster)) {
+        /* Note: Put them here to make this generator method somewhat
+         * parallel to other generators. Hwloc-based generator
+         * has individual load semantics whereas other generators
+         * have bulk load semantics. So, we may need a higher-level method
+         * with bulk load semantics, though.
+         */
+        ctx->hwloc_cluster = resrc_create_cluster (ctx, "cluster");
+        ctx->tree_root = resrc_phys_tree (ctx->hwloc_cluster);
+        ctx->tree_name = xstrdup ("default");
     }
 
     hwloc_version = hwloc_get_api_version();
@@ -886,7 +939,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
     }
 
     topodepth = hwloc_topology_get_depth (topo);
-    parent = cluster_resrc;
+    parent = ctx->hwloc_cluster;
     level_size = hwloc_get_nbobjs_by_depth (topo, 0);
     for (size = 0; size < level_size; size++) {
         obj = hwloc_get_obj_by_depth (topo, 0, size);
@@ -895,7 +948,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
                              __FUNCTION__);
             goto ret;
         }
-        resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
+        resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig);
         if (resrc) {
             obj_ptr = xasprintf ("%p", obj);
             zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
@@ -924,7 +977,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
                                  __FUNCTION__, depth);
                 goto ret;
             }
-            resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
+            resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig);
             if (resrc) {
                 obj_ptr = xasprintf ("%p", obj);
                 zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
@@ -937,7 +990,7 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
             }
         }
     }
-    resrc = cluster_resrc;
+    resrc = ctx->hwloc_cluster;
 ret:
     zhash_destroy (&resrc_objs);
     if (str) {
@@ -951,6 +1004,7 @@ ret:
 
     return resrc;
 }
+
 
 int resrc_to_json (json_t *o, resrc_t *resrc)
 {
@@ -1038,20 +1092,6 @@ void resrc_print_resource (resrc_t *resrc)
     if (resrc)
         printf ("%s\n", buffer);
     free (buffer);
-}
-
-resrc_t *resrc_create_cluster (char *cluster)
-{
-    resrc_t *resrc = NULL;
-    uuid_t uuid;
-    char *path = xasprintf ("/%s", cluster);
-
-    uuid_generate (uuid);
-    resrc = resrc_new_resource ("cluster", path, cluster, cluster, NULL, -1,
-                                uuid, 1);
-    resrc->phys_tree = resrc_tree_new (NULL, resrc);
-    free (path);
-    return resrc;
 }
 
 /*

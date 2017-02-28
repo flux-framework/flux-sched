@@ -107,12 +107,13 @@ resrc_reqst_t *resrc_reqst_new (resrc_t *resrc, int64_t qty, int64_t size,
 /*
  * Create a resrc_reqst_t object from a json object
  */
-resrc_reqst_t *resrc_reqst_from_json (json_t *o, resrc_reqst_t *parent);
+resrc_reqst_t *resrc_reqst_from_json (resrc_api_ctx_t *ctx,
+                                      json_t *o, resrc_reqst_t *parent);
 
 /*
  * Destroy a resrc_reqst_t object
  */
-void resrc_reqst_destroy (resrc_reqst_t *resrc_reqst);
+void resrc_reqst_destroy (resrc_api_ctx_t *ctx, resrc_reqst_t *resrc_reqst);
 
 /*
  * Print the resources in a resrc_reqst_t object
@@ -155,11 +156,12 @@ void resrc_reqst_list_remove (resrc_reqst_list_t *rrl, resrc_reqst_t *rr);
 /*
  * Destroy a resrc_reqst_list_t object
  */
-void resrc_reqst_list_destroy (resrc_reqst_list_t *rrl);
+void resrc_reqst_list_destroy (resrc_api_ctx_t *ctx, resrc_reqst_list_t *rrl);
 
 /*
  * Search a list of resource trees for a specific, composite resource
- * Inputs:  resrc_in    - the resource at the head of the tree
+ * Inputs:  ctx         - the resrc_api context where this search acts on
+ *          resrc_in    - the resource at the head of the tree
  *          resrc_reqst - the requested resource or resource composite
  *          found_tree  - the tree that will contain found resources
  *          available   - when true, consider only idle resources
@@ -167,8 +169,14 @@ void resrc_reqst_list_destroy (resrc_reqst_list_t *rrl);
  * Returns: the number of matching resource composites found
  *          found_tree  - any resources found are added to this tree
  */
-int64_t resrc_tree_search (resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
+int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
+                           resrc_t *resrc_in, resrc_reqst_t *resrc_reqst,
                            resrc_tree_t **found_tree, bool available);
 
 
 #endif /* !FLUX_RESRC_REQST_H */
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
+

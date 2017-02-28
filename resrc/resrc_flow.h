@@ -18,6 +18,19 @@ typedef struct resrc_flow_list resrc_flow_list_t;
 resrc_t *resrc_flow_resrc (resrc_flow_t *resrc_flow);
 
 /*
+ * Return the root vertex of the flow tree
+ */
+resrc_flow_t *resrc_flow_root (resrc_api_ctx_t *ctx, const char *name);
+
+/*
+ * Return the names of flow hierarchies -- NULL when all
+ * names are returned
+ */
+const char *resrc_flow_name_first (resrc_api_ctx_t *ctx);
+const char *resrc_flow_name_next (resrc_api_ctx_t *ctx);
+
+
+/*
  * Return the resrc_t containing the flow information
  */
 resrc_t *resrc_flow_flow_resrc (resrc_flow_t *resrc_flow);
@@ -40,7 +53,8 @@ int resrc_flow_add_child (resrc_flow_t *parent, resrc_flow_t *child);
 /*
  * Create a new resrc_flow_t object
  */
-resrc_flow_t *resrc_flow_new (resrc_flow_t *parent, resrc_t *flow_resrc,
+resrc_flow_t *resrc_flow_new (resrc_api_ctx_t *ctx,
+                              resrc_flow_t *parent, resrc_t *flow_resrc,
                               resrc_t *resrc);
 
 /*
@@ -51,18 +65,21 @@ resrc_flow_t *resrc_flow_copy (resrc_flow_t *resrc_flow);
 /*
  * Destroy an entire flow of resrc_flow_t objects
  */
-void resrc_flow_destroy (resrc_flow_t *resrc_flow);
+void resrc_flow_destroy (resrc_api_ctx_t *ctx, resrc_flow_t *resrc_flow,
+                         bool is_root);
 
 /*
  * Create a resrc_flow_t object from a json object
  */
-resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent);
+resrc_flow_t *resrc_flow_new_from_json (resrc_api_ctx_t *ctx,
+                                        json_t *o, resrc_flow_t *parent);
 
 /*
  * Return the head of a resource flow tree of all resources described
  * by an rdl-formatted configuration file
  */
-resrc_flow_t *resrc_flow_generate_rdl (const char *path, char *uri);
+resrc_flow_t *resrc_flow_generate_rdl (resrc_api_ctx_t *ctx,
+                                       const char *path, char *uri);
 
 /*
  * Print the resources in a resrc_flow_t object
@@ -109,7 +126,8 @@ int resrc_flow_unstage_resources (resrc_flow_t *resrc_flow);
 /*
  * Create a resource flow from a json object
  */
-resrc_flow_t *resrc_flow_deserialize (json_t *o, resrc_flow_t *parent);
+resrc_flow_t *resrc_flow_deserialize (resrc_api_ctx_t *ctx,
+                                      json_t *o, resrc_flow_t *parent);
 
 /*
  * We rely on the available value of this node in the flow graph being
@@ -155,7 +173,7 @@ void resrc_flow_list_remove (resrc_flow_list_t *rfl, resrc_flow_t *rf);
 /*
  * Destroy a resrc_flow_list_t object including all children
  */
-void resrc_flow_list_destroy (resrc_flow_list_t *rfl);
+void resrc_flow_list_destroy (resrc_api_ctx_t *ctx, resrc_flow_list_t *rfl);
 
 /*
  * Add the input list of resource flows to the json array object
@@ -165,7 +183,7 @@ int resrc_flow_list_serialize (json_t *o, resrc_flow_list_t *rfl);
 /*
  * Create a resource flow list from a json object
  */
-resrc_flow_list_t *resrc_flow_list_deserialize (json_t *o);
+resrc_flow_list_t *resrc_flow_list_deserialize (resrc_api_ctx_t *ctx, json_t *o);
 
 /*
  * Allocate all the resources in a list of resource flows
@@ -196,3 +214,8 @@ void resrc_flow_list_unstage_resources (resrc_flow_list_t *rtl);
 
 
 #endif /* !FLUX_RESRC_FLOW_H */
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
+

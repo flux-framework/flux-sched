@@ -34,6 +34,8 @@
 
 #include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
+#include "resrc.h"
+#include "resrc_api_internal.h"
 #include "resrc_flow.h"
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
@@ -85,6 +87,28 @@ resrc_t *resrc_flow_resrc (resrc_flow_t *resrc_flow)
     return NULL;
 }
 
+resrc_flow_t *resrc_flow_root (resrc_api_ctx_t *ctx, const char *name)
+{
+    if (!ctx || !name)
+        return NULL;
+    return zhash_lookup (ctx->flow_roots, name);
+}
+
+const char *resrc_flow_name_first (resrc_api_ctx_t *ctx)
+{
+    if (!ctx)
+        return NULL;
+    ctx->flow_names = zhash_keys (ctx->flow_roots);
+    return zlist_first (ctx->flow_names);
+}
+
+const char *resrc_flow_name_next (resrc_api_ctx_t *ctx)
+{
+    if (!ctx || (ctx && !(ctx->flow_names)))
+        return NULL;
+    return zlist_next (ctx->flow_names);
+}
+
 resrc_t *resrc_flow_flow_resrc (resrc_flow_t *resrc_flow)
 {
     if (resrc_flow)
@@ -117,7 +141,8 @@ int resrc_flow_add_child (resrc_flow_t *parent, resrc_flow_t *child)
     return rc;
 }
 
-resrc_flow_t *resrc_flow_new (resrc_flow_t *parent, resrc_t *flow_resrc,
+resrc_flow_t *resrc_flow_new (resrc_api_ctx_t *ctx,
+                              resrc_flow_t *parent, resrc_t *flow_resrc,
                               resrc_t *resrc)
 {
     resrc_flow_t *resrc_flow = xzmalloc (sizeof (resrc_flow_t));
@@ -149,21 +174,34 @@ resrc_flow_t *resrc_flow_copy (resrc_flow_t *resrc_flow)
     return new_resrc_flow;
 }
 
-void resrc_flow_destroy (resrc_flow_t *resrc_flow)
+void resrc_flow_destroy (resrc_api_ctx_t *ctx, resrc_flow_t *resrc_flow,
+                         bool is_root)
 {
     if (resrc_flow) {
         if (resrc_flow->parent)
             resrc_flow_list_remove (resrc_flow->parent->children, resrc_flow);
         if (resrc_flow->children) {
-            resrc_flow_list_destroy (resrc_flow->children);
+            resrc_flow_list_destroy (ctx, resrc_flow->children);
             resrc_flow->children = NULL;
         }
-        resrc_resource_destroy (resrc_flow->flow_resrc);
+        if (is_root) {
+            zlist_t *keys = zhash_keys (ctx->flow_roots);
+            const char *k = NULL;
+            for (k = zlist_first (keys); k; k = zlist_next (keys)) {
+                if (resrc_flow == zhash_lookup (ctx->flow_roots, k)) {
+                    zhash_delete (ctx->flow_roots, k);
+                    break;
+                }
+            }
+            zlist_destroy (&keys);
+        }
+        resrc_resource_destroy (ctx, resrc_flow->flow_resrc);
         free (resrc_flow);
     }
 }
 
-resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_new_from_json (resrc_api_ctx_t *ctx,
+                                        json_t *o, resrc_flow_t *parent)
 {
     json_t *jhierarchyo = NULL; /* json hierarchy object */
     const char *basename = NULL;
@@ -212,14 +250,14 @@ resrc_flow_t *resrc_flow_new_from_json (json_t *o, resrc_flow_t *parent)
             path = xasprintf ("/%s", name);
     }
 
-    if (!(flow_resrc = resrc_new_resource (type, path, basename, name, NULL, id,
-                                           uuid, size)))
+    if (!(flow_resrc = resrc_new_resource (ctx, type, path, basename, name, NULL,
+                                           id, uuid, size)))
         goto ret;
 
     if (!strncmp (type, "node", 5)) {
-        resrc = resrc_lookup (name);
+        resrc = resrc_lookup (ctx, name);
     }
-    if ((resrc_flow = resrc_flow_new (parent, flow_resrc, resrc))) {
+    if ((resrc_flow = resrc_flow_new (ctx, parent, flow_resrc, resrc))) {
         /* add time window if we are given a start time */
         int64_t starttime;
         if (Jget_int64 (o, "starttime", &starttime)) {
@@ -245,7 +283,7 @@ ret:
 }
 
 
-static resrc_flow_t *resrc_flow_add_rdl (resrc_flow_t *parent,
+static resrc_flow_t *resrc_flow_add_rdl (resrc_api_ctx_t *ctx, resrc_flow_t *parent,
                                          struct resource *r)
 {
     json_t *o = NULL;
@@ -253,10 +291,10 @@ static resrc_flow_t *resrc_flow_add_rdl (resrc_flow_t *parent,
     struct resource *c;
 
     o = rdl_resource_json (r);
-    resrc_flow = resrc_flow_new_from_json (o, parent);
+    resrc_flow = resrc_flow_new_from_json (ctx, o, parent);
 
     while ((c = rdl_resource_next_child (r))) {
-        (void) resrc_flow_add_rdl (resrc_flow, c);
+        (void) resrc_flow_add_rdl (ctx, resrc_flow, c);
         rdl_resource_destroy (c);
     }
 
@@ -264,7 +302,8 @@ static resrc_flow_t *resrc_flow_add_rdl (resrc_flow_t *parent,
     return resrc_flow;
 }
 
-resrc_flow_t *resrc_flow_generate_rdl (const char *path, char *uri)
+resrc_flow_t *resrc_flow_generate_rdl (resrc_api_ctx_t *ctx,
+                                       const char *path, char *uri)
 {
     resrc_flow_t *flow = NULL;
     struct rdl *rdl = NULL;
@@ -275,10 +314,11 @@ resrc_flow_t *resrc_flow_generate_rdl (const char *path, char *uri)
         goto ret;
 
     if ((r = rdl_resource_get (rdl, uri)))
-        flow = resrc_flow_add_rdl (NULL, r);
+        flow = resrc_flow_add_rdl (ctx, NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
+    zhash_insert (ctx->flow_roots, uri, flow);
 ret:
     return flow;
 }
@@ -313,16 +353,17 @@ int resrc_flow_serialize (json_t *o, resrc_flow_t *resrc_flow)
     return rc;
 }
 
-resrc_flow_t *resrc_flow_deserialize (json_t *o, resrc_flow_t *parent)
+resrc_flow_t *resrc_flow_deserialize (resrc_api_ctx_t *ctx, json_t *o,
+                                      resrc_flow_t *parent)
 {
     json_t *ca = NULL;     /* array of child json objects */
     json_t *co = NULL;     /* child json object */
     resrc_t *resrc = NULL;
     resrc_flow_t *resrc_flow = NULL;
 
-    resrc = resrc_new_from_json (o, NULL, false);
+    resrc = resrc_new_from_json (ctx, o, NULL, false);
     if (resrc) {
-        resrc_flow = resrc_flow_new (parent, resrc, NULL);
+        resrc_flow = resrc_flow_new (ctx, parent, resrc, NULL);
 
         if ((ca = Jobj_get (o, "children"))) {
             int i, nchildren = 0;
@@ -330,7 +371,7 @@ resrc_flow_t *resrc_flow_deserialize (json_t *o, resrc_flow_t *parent)
             if (Jget_ar_len (ca, &nchildren)) {
                 for (i=0; i < nchildren; i++) {
                     Jget_ar_obj (ca, i, &co);
-                    (void) resrc_flow_deserialize (co, resrc_flow);
+                    (void) resrc_flow_deserialize (ctx, co, resrc_flow);
                 }
             }
         }
@@ -484,13 +525,13 @@ void resrc_flow_list_remove (resrc_flow_list_t *rfl, resrc_flow_t *rf)
     zlist_remove (rfl->list, rf);
 }
 
-void resrc_flow_list_destroy (resrc_flow_list_t *resrc_flow_list)
+void resrc_flow_list_destroy (resrc_api_ctx_t *ctx, resrc_flow_list_t *resrc_flow_list)
 {
     if (resrc_flow_list) {
         if (resrc_flow_list_size (resrc_flow_list)) {
             resrc_flow_t *child = resrc_flow_list_first (resrc_flow_list);
             while (child) {
-                resrc_flow_destroy (child);
+                resrc_flow_destroy (ctx, child, false);
                 child = resrc_flow_list_next (resrc_flow_list);
             }
         }
@@ -522,7 +563,7 @@ int resrc_flow_list_serialize (json_t *o, resrc_flow_list_t *rfl)
     return rc;
 }
 
-resrc_flow_list_t *resrc_flow_list_deserialize (json_t *o)
+resrc_flow_list_t *resrc_flow_list_deserialize (resrc_api_ctx_t *ctx, json_t *o)
 {
     json_t *ca = NULL;     /* array of child json objects */
     int i, nchildren = 0;
@@ -533,7 +574,7 @@ resrc_flow_list_t *resrc_flow_list_deserialize (json_t *o)
         if (Jget_ar_len (o, &nchildren)) {
             for (i=0; i < nchildren; i++) {
                 Jget_ar_obj (o, i, &ca);
-                rf = resrc_flow_deserialize (ca, NULL);
+                rf = resrc_flow_deserialize (ctx, ca, NULL);
                 if (!rf || resrc_flow_list_append (rfl, rf))
                     break;
             }

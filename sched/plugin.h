@@ -11,22 +11,26 @@ struct sched_plugin {
     int                  (*sched_loop_setup)(flux_t *h);
 
     int64_t              (*find_resources)(flux_t *h,
+                                           resrc_api_ctx_t *rsapi,
                                            resrc_t *resrc,
                                            resrc_reqst_t *resrc_reqst,
                                            resrc_tree_t **found_tree);
 
     resrc_tree_t *       (*select_resources)(flux_t *h,
+                                             resrc_api_ctx_t *rsapi,
                                              resrc_tree_t *found_tree,
                                              resrc_reqst_t *resrc_reqst,
                                              resrc_tree_t *selected_parent);
 
     int                  (*allocate_resources)(flux_t *h,
+                                               resrc_api_ctx_t *rsapi,
                                                resrc_tree_t *rt,
                                                int64_t job_id,
                                                int64_t starttime,
                                                int64_t endtime);
 
     int                  (*reserve_resources)(flux_t *h,
+                                              resrc_api_ctx_t *rsapi,
                                               resrc_tree_t **selected_tree,
                                               int64_t job_id,
                                               int64_t starttime,
