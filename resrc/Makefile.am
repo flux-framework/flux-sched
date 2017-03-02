@@ -8,7 +8,8 @@ SUBDIRS = . test
 
 noinst_LTLIBRARIES = libflux-resrc.la
 
-noinst_HEADERS = resrc.h resrc_tree.h resrc_flow.h resrc_reqst.h
+noinst_HEADERS = resrc_api.h resrc_api_internal.h \
+                 resrc.h resrc_tree.h resrc_flow.h resrc_reqst.h
 
 libflux_resrc_la_SOURCES = resrc.c resrc_tree.c resrc_flow.c resrc_reqst.c
 libflux_resrc_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
