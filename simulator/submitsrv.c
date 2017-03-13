@@ -200,10 +200,6 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 // Finally, updated the submit event timer with the next submit time
 int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
-    const char *resp_json_str = NULL;
-    json_t *req_json = NULL;
-    json_t *resp_json = NULL;
-    json_t *event_json = NULL;
     flux_rpc_t *rpc = NULL;
     flux_msg_t *msg = NULL;
     kvsdir_t *dir = NULL;
@@ -220,32 +216,20 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         flux_log (h, LOG_DEBUG, "no more jobs to submit");
         return -1;
     }
-    req_json = Jnew ();
-    Jadd_int (req_json, "nnodes", job->nnodes);
-    Jadd_int (req_json, "ntasks", job->ncpus);
-    Jadd_int64 (req_json, "walltime", job->time_limit);
 
-    rpc = flux_rpc (h, "job.create", Jtostr (req_json), FLUX_NODEID_ANY, 0);
-    Jput (req_json);
+    rpc = flux_rpcf (h, "job.create", FLUX_NODEID_ANY, 0,
+                     "{ s:i s:i s:I }",
+                     "nnodes", job->nnodes,
+                     "ntasks", job->ncpus,
+                     "walltime", (int64_t)job->time_limit);
     if (rpc == NULL) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_get (rpc, &resp_json_str) < 0) {
+    if (flux_rpc_getf (rpc, "{ s:I }", "jobid", &new_jobid) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
-    }
-    if (resp_json_str == NULL
-        || !(resp_json = Jfromstr (resp_json_str))) {
-        flux_log (h,
-                  LOG_ERR,
-                  "%s: improper response from job.create",
-                  __FUNCTION__);
-        Jput (resp_json);
         return -1;
     }
-
-    Jget_int64 (resp_json, "jobid", &new_jobid);
-    Jput (resp_json);
 
     // Update lwj.%jobid%'s state in the kvs to "submitted"
     if (!(dir = job_kvsdir (h, new_jobid)))
@@ -256,13 +240,11 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         log_err_exit ("put_job_in_kvs");
 
     // Send "submitted" event
-    event_json = Jnew();
-    Jadd_int64 (event_json, "lwj", new_jobid);
-    if (!(msg = flux_event_encode ("wreck.state.submitted", Jtostr (event_json)))
+    if (!(msg = flux_event_encodef ("wreck.state.submitted",
+                                    "{ s:I }", "lwj", new_jobid))
         || flux_send (h, msg, 0) < 0) {
         return -1;
     }
-    Jput (event_json);
     flux_msg_destroy (msg);
 
     // Update event timers in reply (submit and sched)
