@@ -106,17 +106,14 @@ int send_start_event (flux_t *h)
     if (flux_get_rank (h, &rank) < 0)
         return -1;
 
-    json_t *o = Jnew ();
-    Jadd_str (o, "mod_name", "sim");
-    Jadd_int (o, "rank", rank);
-    Jadd_int (o, "sim_time", 0);
-
-    if (!(msg = flux_event_encode ("sim.start", Jtostr (o)))
+    if (!(msg = flux_event_encodef ("sim.start", "{ s:s s:i s:i }",
+                                    "mod_name", "sim",
+                                    "rank", rank,
+                                    "sim_time", 0))
         || flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
 
-    Jput (o);
     flux_msg_destroy (msg);
     return rc;
 }
