@@ -932,6 +932,7 @@ static void trigger_cb (flux_t *h,
     send_reply_request (h, "sched", ctx->sctx.sim_state);
 
     free_simstate (ctx->sctx.sim_state);
+    ctx->sctx.sim_state = NULL;
     Jput (o);
 }
 
