@@ -602,6 +602,7 @@ static void trigger_cb (flux_t *h,
 
     // Cleanup
     free_simstate (ctx->sim_state);
+    ctx->sim_state = NULL;
     Jput (o);
     zhash_destroy (&job_hash);
 }
