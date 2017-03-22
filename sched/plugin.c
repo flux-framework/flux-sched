@@ -189,6 +189,10 @@ static void rmmod_cb (flux_t *h, flux_msg_handler_t *w,
 
     if (flux_request_decode (msg, NULL, &json_str) < 0)
         goto done;
+    if (!json_str) {
+        errno = EPROTO;
+        goto done;
+    }
     if (flux_rmmod_json_decode (json_str, &name) < 0)
         goto done;
     if (!plugin || strcmp (name, plugin->name) != 0) {
@@ -219,6 +223,10 @@ static void insmod_cb (flux_t *h, flux_msg_handler_t *w,
 
     if (flux_request_decode (msg, NULL, &json_str) < 0)
         goto done;
+    if (!json_str) {
+        errno = EPROTO;
+        goto done;
+    }
     if (flux_insmod_json_decode (json_str, &path, &argz, &argz_len) < 0)
         goto done;
     if (plugin) {
