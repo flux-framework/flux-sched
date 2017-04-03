@@ -90,17 +90,6 @@ static wjctx_t *getctx (flux_t *h)
     return ctx;
 }
 
-static void sig_handler (int s)
-{
-    if (s == SIGINT) {
-        fprintf (stdout, "Exit on INT\n\n");
-        /* this will call freectx */
-        flux_close (sig_flux_h);
-        log_fini ();
-        exit (0);
-    }
-}
-
 static void touch_outfile (const char *fn)
 {
     FILE *fp = NULL;
@@ -170,7 +159,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
         if (ctx->complete)
             touch_outfile (ctx->complete);
         flux_log (ctx->h, LOG_INFO, "waitjob_cb: completion notified");
-        raise (SIGINT);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
     }
 
     return 0;
@@ -181,9 +170,6 @@ static int wait_job_complete (flux_t *h)
     int rc = -1;
     sig_flux_h = h;
     wjctx_t *ctx = getctx (h);
-
-    if (signal (SIGINT, sig_handler) == SIG_ERR)
-        goto done;
 
     if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "failed to register a waitjob CB");
