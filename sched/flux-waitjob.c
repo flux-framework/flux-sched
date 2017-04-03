@@ -126,10 +126,10 @@ static bool complete_job (wjctx_t *ctx)
         Jget_int64 (o, JSC_STATE_PAIR_NSTATE, &state);
         Jput (jcb);
         free (json_str);
-        flux_log (ctx->h, LOG_INFO, "%"PRId64" already started (%s)",
-                     ctx->jobid, jsc_job_num2state (state));
+        log_msg ("%"PRId64" already started (%s)",
+                 ctx->jobid, jsc_job_num2state (state));
         if (state == J_COMPLETE) {
-            flux_log (ctx->h, LOG_INFO, "%"PRId64" already completed", ctx->jobid);
+            log_msg ("%"PRId64" already completed", ctx->jobid);
             rc = true;
         }
     }
@@ -144,12 +144,12 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     wjctx_t *ctx = getctx (h);
 
     if (errnum > 0) {
-        flux_log (ctx->h, LOG_ERR, "waitjob_cb: errnum passed in");
+        log_errn (errnum, "waitjob_cb: jsc error");
         return -1;
     }
 
     if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (ctx->h, LOG_ERR, "waitjob_cb: error parsing JSON string");
+        log_msg ("waitjob_cb: error parsing JSON string");
         return -1;
     }
     get_jobid (jcb, &j);
@@ -158,7 +158,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     if ((j == ctx->jobid) && (ns == J_COMPLETE)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        flux_log (ctx->h, LOG_INFO, "waitjob_cb: completion notified");
+        log_msg ("waitjob_cb: completion notified");
         flux_reactor_stop (flux_get_reactor (ctx->h));
     }
 
@@ -172,7 +172,7 @@ static int wait_job_complete (flux_t *h)
     wjctx_t *ctx = getctx (h);
 
     if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
-        flux_log (h, LOG_ERR, "failed to register a waitjob CB");
+        log_err ("failed to register a waitjob CB");
         goto done;
     }
     /* once jsc_notify_status is returned, all of JSC events
@@ -185,11 +185,11 @@ static int wait_job_complete (flux_t *h)
     if (complete_job (ctx)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        flux_log (ctx->h, LOG_INFO, "wait_job_complete: completion detected");
+        log_msg ("wait_job_complete: completion detected");
         goto done;
     }
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
-        flux_log (h, LOG_ERR, "error in flux_reactor_run");
+        log_err ("error in flux_reactor_run");
         goto done;
     }
     rc = 0;
@@ -245,7 +245,6 @@ int main (int argc, char *argv[])
         ctx->complete = cfn;
     ctx->jobid = jobid;
 
-    flux_log_set_appname (h, "waitjob");
     wait_job_complete (h);
 
     flux_close (h);
