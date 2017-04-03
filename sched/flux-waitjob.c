@@ -173,6 +173,7 @@ static int wait_job_complete (flux_t *h)
 
     if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
         flux_log (h, LOG_ERR, "failed to register a waitjob CB");
+        goto done;
     }
     /* once jsc_notify_status is returned, all of JSC events
      * will be queued and delivered. It is safe to signal
@@ -185,6 +186,7 @@ static int wait_job_complete (flux_t *h)
         if (ctx->complete)
             touch_outfile (ctx->complete);
         flux_log (ctx->h, LOG_INFO, "wait_job_complete: completion detected");
+        goto done;
     }
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "error in flux_reactor_run");
