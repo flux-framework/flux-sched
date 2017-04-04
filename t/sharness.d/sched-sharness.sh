@@ -224,11 +224,11 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
-    flux waitjob -s wo.st.$sched_test_session \
-         -c wo.end.$sched_test_session $sched_end_jobid &
-    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
-        wo.st.$sched_test_session >&2
-    return $?
+    local sfile=wo.st.$sched_test_session
+    local cfile=wo.end.$sched_test_session
+    rm -f ${sfile} ${cfile}
+    flux waitjob -s ${sfile} -c ${cfile} $sched_end_jobid &
+    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} ${sfile} >&2
 }
 
 # PUBLIC:
@@ -237,9 +237,8 @@ timed_wait_job () {
 #
 timed_sync_wait_job () {
     local tout=$1
-    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
-        wo.end.$sched_test_session >&2
-    return $?
+    local cfile=wo.end.$sched_test_session
+    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} ${cfile} >&2
 }
 
 # PUBLIC: 

@@ -12,9 +12,12 @@ Ensure flux-waitjob works as expected.
 #
 test_under_flux 4
 
+test_expect_success  'waitjob: load sched module' '
+    flux module load sched
+'
+
 test_expect_success  'waitjob: works when the job has not started' '
     adjust_session_info 1 &&
-    flux module load sched &&
     timed_wait_job 5 &&
     flux submit -N 4 -n 4 hostname &&
     timed_sync_wait_job 5
@@ -30,6 +33,10 @@ test_expect_success 'waitjob: works when the job started but has not completed' 
     flux submit -N 4 -n 4 sleep 2 &&
     timed_wait_job 3 &&
     timed_sync_wait_job 3
+'
+
+test_expect_success  'waitjob: remove sched module' '
+    flux module remove sched
 '
 
 test_done
