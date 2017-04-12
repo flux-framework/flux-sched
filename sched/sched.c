@@ -947,9 +947,9 @@ static void trigger_cb (flux_t *h,
  * Simulator Initialization Functions
  */
 static struct flux_msg_handler_spec sim_htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb},
-    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb},
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb, 0, NULL},
+    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb, 0, NULL},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -1008,7 +1008,7 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
  ******************************************************************************/
 
 static struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb},
+    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0, NULL},
     FLUX_MSGHANDLER_TABLE_END
 };
 

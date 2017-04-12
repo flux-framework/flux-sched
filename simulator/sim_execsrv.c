@@ -632,9 +632,9 @@ static void run_cb (flux_t *h,
 }
 
 static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb},
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb, 0, NULL},
     FLUX_MSGHANDLER_TABLE_END,
 };
 

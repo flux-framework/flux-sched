@@ -24,7 +24,7 @@ AC_PROG_MAKE_SET
 AM_PROG_CC_C_O
 AX_CODE_COVERAGE
 
-GCCWARN="-Wall -Werror -Wno-error=deprecated-declarations"
+GCCWARN="-Wall -Werror -Werror=missing-field-initializers -Wno-error=deprecated-declarations"
 AC_SUBST([GCCWARN])
 
 # Checks for libraries.
