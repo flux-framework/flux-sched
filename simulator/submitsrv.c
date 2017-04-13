@@ -327,8 +327,8 @@ static void trigger_cb (flux_t *h,
 }
 
 static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb},
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb, 0, NULL},
     FLUX_MSGHANDLER_TABLE_END,
 };
 

@@ -418,10 +418,10 @@ static void alive_cb (flux_t *h,
 }
 
 static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb},
-    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb},
+    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb, 0, NULL},
+    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb, 0, NULL},
+    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb, 0, NULL},
     FLUX_MSGHANDLER_TABLE_END,
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);

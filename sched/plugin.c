@@ -291,9 +291,9 @@ done:
 
 
 static struct flux_msg_handler_spec plugin_htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb },
-    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb },
-    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb },
+    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb, 0, NULL },
+    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb, 0, NULL },
+    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb, 0, NULL },
     FLUX_MSGHANDLER_TABLE_END,
 };
 
