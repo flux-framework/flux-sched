@@ -278,12 +278,11 @@ out:
 // those cases are checked for and logged.
 
 // TODO: verify all of this logic is correct, bugs could easily creep up here
-static int check_for_new_timers (const char *key, void *item, void *argument)
+static int check_for_new_timers (const char *key, double *reply_event_time,
+		                 ctx_t *ctx)
 {
-    ctx_t *ctx = (ctx_t *)argument;
     sim_state_t *curr_sim_state = ctx->sim_state;
     double sim_time = curr_sim_state->sim_time;
-    double *reply_event_time = (double *)item;
     double *curr_event_time =
         (double *)zhash_lookup (curr_sim_state->timers, key);
 
@@ -331,7 +330,11 @@ static void copy_new_state_data (ctx_t *ctx,
         curr_sim_state->sim_time = reply_sim_state->sim_time;
     }
 
-    zhash_foreach (reply_sim_state->timers, check_for_new_timers, ctx);
+    void *item = zhash_first (reply_sim_state->timers);
+    while (item) {
+        check_for_new_timers (zhash_cursor (item), item, ctx);
+        item = zhash_next (reply_sim_state->timers);
+    }
 }
 
 static void rdl_update_cb (flux_t *h,
