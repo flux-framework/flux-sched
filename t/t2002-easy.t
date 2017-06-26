@@ -15,6 +15,9 @@ expected_order=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/emulator-data/easy_ex
 
 FLUX_MODULE_PATH_PREPEND="$FLUX_MODULE_PATH_PREPEND:$(sched_build_path simulator/.libs)"
 
+skip_all="disabled pending resolution of issue 249"
+test_done
+
 
 #
 # print only with --debug

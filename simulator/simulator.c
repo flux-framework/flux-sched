@@ -57,11 +57,8 @@ void free_simstate (sim_state_t *sim_state)
     }
 }
 
-static int add_timers_to_json (const char *key, void *item, void *argument)
+static int add_timers_to_json (const char *key, double *event_time, json_t *o)
 {
-    json_t *o = argument;
-    double *event_time = (double *)item;
-
     if (event_time != NULL)
         Jadd_double (o, key, *event_time);
     else
@@ -74,7 +71,11 @@ json_t *sim_state_to_json (sim_state_t *sim_state)
     json_t *o = Jnew ();
     json_t *event_timers = Jnew ();
 
-    zhash_foreach (sim_state->timers, add_timers_to_json, event_timers);
+    void *item = zhash_first (sim_state->timers);
+    while (item) {
+        add_timers_to_json (zhash_cursor (item), item, event_timers);
+        item = zhash_next (sim_state->timers);
+    }
 
     // build the main json obg
     Jadd_double (o, "sim_time", sim_state->sim_time);
@@ -333,17 +334,17 @@ zhash_t *zhash_fromargv (int argc, char **argv)
 //  If service doesn't answer, fall back to `lwj.%d`
 kvsdir_t *job_kvsdir (flux_t *h, int jobid)
 {
-    flux_rpc_t *rpc;
+    flux_future_t *f;
     const char *kvs_path;
     kvsdir_t *d = NULL;
 
-    rpc = flux_rpcf (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+    f = flux_rpcf (h, "job.kvspath", FLUX_NODEID_ANY, 0,
                     "{s:[i]}", "ids", jobid);
-    if (!rpc) {
+    if (!f) {
         flux_log_error (h, "flux_rpcf");
         return (NULL);
     }
-    if (flux_rpc_getf (rpc, "{s:[s]}", "paths", &kvs_path) < 0) {
+    if (flux_rpc_getf (f, "{s:[s]}", "paths", &kvs_path) < 0) {
         flux_log (h, LOG_DEBUG, "%s: failed to resolve job directory, falling back to lwj.%d", __FUNCTION__, jobid);
         // Fall back to lwj.%d:
         if (kvs_get_dir (h, &d, "lwj.%d", jobid))
@@ -351,6 +352,6 @@ kvsdir_t *job_kvsdir (flux_t *h, int jobid)
     }
     else if (kvs_get_dir (h, &d, "%s", kvs_path) < 0)
         flux_log_error (h, "kvs_get_dir");
-    flux_rpc_destroy (rpc);
+    flux_future_destroy (f);
     return (d);
 }

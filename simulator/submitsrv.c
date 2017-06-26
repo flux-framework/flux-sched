@@ -200,7 +200,7 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 // Finally, updated the submit event timer with the next submit time
 int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
-    flux_rpc_t *rpc = NULL;
+    flux_future_t *f = NULL;
     flux_msg_t *msg = NULL;
     kvsdir_t *dir = NULL;
     job_t *job = NULL;
@@ -217,19 +217,21 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         return -1;
     }
 
-    rpc = flux_rpcf (h, "job.create", FLUX_NODEID_ANY, 0,
+    f = flux_rpcf (h, "job.create", FLUX_NODEID_ANY, 0,
                      "{ s:i s:i s:I }",
                      "nnodes", job->nnodes,
                      "ntasks", job->ncpus,
                      "walltime", (int64_t)job->time_limit);
-    if (rpc == NULL) {
+    if (f == NULL) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_getf (rpc, "{ s:I }", "jobid", &new_jobid) < 0) {
+    if (flux_rpc_getf (f, "{ s:I }", "jobid", &new_jobid) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
+	flux_future_destroy (f);
         return -1;
     }
+    flux_future_destroy (f);
 
     // Update lwj.%jobid%'s state in the kvs to "submitted"
     if (!(dir = job_kvsdir (h, new_jobid)))
