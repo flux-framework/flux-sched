@@ -14,6 +14,9 @@ rdlconf=$(readlink -e "${SHARNESS_TEST_SRCDIR}/../conf/hype-io.lua")
 jobdata=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/job-traces/hype-test.csv")
 expected_order=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/emulator-data/fcfs_expected")
 
+skip_all="disabled pending resolution of issue 249"
+test_done
+
 
 #
 # print only with --debug
