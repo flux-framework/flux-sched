@@ -75,7 +75,7 @@ static ctx_t *getctx (flux_t *h, bool exit_on_complete)
 static int send_trigger (flux_t *h, const char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
     json_t *o = NULL;
     char *topic = NULL;
 
@@ -86,14 +86,15 @@ static int send_trigger (flux_t *h, const char *mod_name, sim_state_t *sim_state
     o = sim_state_to_json (sim_state);
 
     topic = xasprintf ("%s.trigger", mod_name);
-    msg = flux_request_encode (topic, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, topic, Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
         rc = -1;
     }
 
     Jput (o);
     free (topic);
+    flux_future_destroy (future);
     return rc;
 }
 
@@ -124,14 +125,14 @@ int send_start_event (flux_t *h)
 int send_complete_event (flux_t *h)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
 
-    if (!(msg = flux_event_encode ("sim.complete", NULL))
-        || flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.complete", NULL, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
-    flux_msg_destroy (msg);
+    flux_future_destroy (future);
     return rc;
 }
 
