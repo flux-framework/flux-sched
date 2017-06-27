@@ -81,10 +81,8 @@ static int send_trigger (flux_t *h, char *mod_name, sim_state_t *sim_state)
 
     o = sim_state_to_json (sim_state);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     topic = xasprintf ("%s.trigger", mod_name);
-    flux_msg_set_topic (msg, topic);
-    flux_msg_set_json (msg, Jtostr (o));
+    msg = flux_request_encode (topic, Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
         rc = -1;

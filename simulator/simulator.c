@@ -249,9 +249,7 @@ int send_alive_request (flux_t *h, const char *module_name)
     Jadd_str (o, "mod_name", module_name);
     Jadd_int (o, "rank", rank);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.alive");
-    flux_msg_set_json (msg, Jtostr (o));
+    msg = flux_request_encode ("sim.alive", Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
@@ -272,9 +270,7 @@ int send_reply_request (flux_t *h,
     o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.reply");
-    flux_msg_set_json (msg, Jtostr (o));
+    msg = flux_request_encode ("sim.reply", Jtostr (o));
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
@@ -299,9 +295,8 @@ int send_join_request (flux_t *h, const char *module_name, double next_event)
     Jadd_int (o, "rank", rank);
     Jadd_double (o, "next_event", next_event);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.join");
-    flux_msg_set_json (msg, Jtostr (o));
+    msg = flux_request_encode("sim.join", Jtostr(o));
+
     if (flux_send (h, msg, 0) < 0) {
         rc = -1;
     }

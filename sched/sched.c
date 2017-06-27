@@ -1112,8 +1112,7 @@ static inline int bridge_send_runrequest (ssrvctx_t *ctx, flux_lwj_t *job)
         if (asprintf (&topic, "sim_exec.run.%"PRId64"", job->lwj_id) < 0) {
             flux_log (h, LOG_ERR, "%s: topic create failed: %s",
                       __FUNCTION__, strerror (errno));
-        } else if (!(msg = flux_msg_create (FLUX_MSGTYPE_REQUEST))
-                   || flux_msg_set_topic (msg, topic) < 0
+        } else if (!(msg = flux_request_encode (topic, NULL))
                    || flux_send (h, msg, 0) < 0) {
             flux_log (h, LOG_ERR, "%s: request create failed: %s",
                       __FUNCTION__, strerror (errno));
