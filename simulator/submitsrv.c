@@ -214,6 +214,8 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     job = zlist_pop (jobs);
     if (job == NULL) {
         flux_log (h, LOG_DEBUG, "no more jobs to submit");
+        new_submit_mod_time = (double *)zhash_lookup (timers, module_name);
+        *new_submit_mod_time = -1;
         return -1;
     }
 
