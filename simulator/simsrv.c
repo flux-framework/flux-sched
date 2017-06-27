@@ -72,12 +72,16 @@ static ctx_t *getctx (flux_t *h, bool exit_on_complete)
 
 // builds the trigger request and sends it to "mod_name"
 // converts sim_state to JSON, formats request tag based on "mod_name"
-static int send_trigger (flux_t *h, char *mod_name, sim_state_t *sim_state)
+static int send_trigger (flux_t *h, const char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
     json_t *o = NULL;
     char *topic = NULL;
+
+    // Reset the next timer for "mod_name" to -1 before we trigger
+    double *next_time = zhash_lookup (sim_state->timers, mod_name);
+    *next_time = -1;
 
     o = sim_state_to_json (sim_state);
 
@@ -135,7 +139,6 @@ int send_complete_event (flux_t *h)
 static int handle_next_event (ctx_t *ctx)
 {
     zhash_t *timers;
-    zlist_t *keys;
     sim_state_t *sim_state = ctx->sim_state;
     int rc = 0;
 
@@ -145,42 +148,36 @@ static int handle_next_event (ctx_t *ctx)
         flux_log (ctx->h, LOG_ERR, "timer hashtable has no elements");
         return -1;
     }
-    keys = zhash_keys (timers);
 
     // Get the next occuring event time/module
-    double *min_event_time = NULL, *curr_event_time = NULL;
-    char *mod_name = NULL, *curr_name = NULL;
+    double min_event_time = -1;
+    double *curr_event_time = NULL;
+    const char *mod_name = NULL, *curr_name = NULL;
 
-    while (min_event_time == NULL && zlist_size (keys) > 0) {
-        mod_name = zlist_pop (keys);
-        min_event_time = (double *)zhash_lookup (timers, mod_name);
-        if (*min_event_time < 0) {
-            min_event_time = NULL;
-            free (mod_name);
-        }
-    }
-    if (min_event_time == NULL) {
-        return -1;
-    }
-    while (zlist_size (keys) > 0) {
-        curr_name = zlist_pop (keys);
-        curr_event_time = (double *)zhash_lookup (timers, curr_name);
-        if (*curr_event_time > 0
-            && ((*curr_event_time < *min_event_time)
-                || (*curr_event_time == *min_event_time
-                    && !strcmp (curr_name, "sched")))) {
-            free (mod_name);
+    for (curr_event_time = zhash_first (timers);
+         curr_event_time;
+         curr_event_time = zhash_next (timers)) {
+        curr_name = zhash_cursor (timers);
+        if (min_event_time < 0 ||
+            (*curr_event_time >= 0 && *curr_event_time < min_event_time) ||
+            // sched get precedence in case of ties
+            ((*curr_event_time == min_event_time
+              && !strcmp (curr_name, "sched")))) {
+            min_event_time = *curr_event_time;
             mod_name = curr_name;
-            min_event_time = curr_event_time;
         }
+    }
+
+    if (min_event_time < 0) {
+        return -1;
     }
 
     // advance time then send the trigger to the module with the next event
-    if (*min_event_time > sim_state->sim_time) {
+    if (min_event_time > sim_state->sim_time) {
         // flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %f to %f while
         // triggering the next event for %s",
         //		  sim_state->sim_time, *min_event_time, mod_name);
-        sim_state->sim_time = *min_event_time;
+        sim_state->sim_time = min_event_time;
     } else {
         // flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering
         // the next event for %s", mod_name);
@@ -191,12 +188,8 @@ static int handle_next_event (ctx_t *ctx)
               mod_name,
               sim_state->sim_time);
 
-    *min_event_time = -1;
     rc = send_trigger (ctx->h, mod_name, sim_state);
 
-    // clean up
-    free (mod_name);
-    zlist_destroy (&keys);
     return rc;
 }
 
