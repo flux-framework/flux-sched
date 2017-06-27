@@ -135,6 +135,20 @@ int send_complete_event (flux_t *h)
     return rc;
 }
 
+static inline bool occurs_before (double curr_event_time,
+                                  double min_event_time)
+{
+    return (curr_event_time >=0) && (curr_event_time < min_event_time);
+}
+static inline bool breaks_tie (double curr_event_time,
+                              double min_event_time,
+                              const char *curr_mod_name)
+{
+    // sched get precedence in case of ties
+    return (curr_event_time == min_event_time)
+        && (!strcmp (curr_mod_name, "sched"));
+}
+
 // Looks at the current state and launches the next trigger
 static int handle_next_event (ctx_t *ctx)
 {
@@ -159,10 +173,8 @@ static int handle_next_event (ctx_t *ctx)
          curr_event_time = zhash_next (timers)) {
         curr_name = zhash_cursor (timers);
         if (min_event_time < 0 ||
-            (*curr_event_time >= 0 && *curr_event_time < min_event_time) ||
-            // sched get precedence in case of ties
-            ((*curr_event_time == min_event_time
-              && !strcmp (curr_name, "sched")))) {
+            occurs_before (*curr_event_time, min_event_time) ||
+            breaks_tie (*curr_event_time, min_event_time, curr_name)) {
             min_event_time = *curr_event_time;
             mod_name = curr_name;
         }
