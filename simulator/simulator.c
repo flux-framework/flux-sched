@@ -71,10 +71,13 @@ json_t *sim_state_to_json (sim_state_t *sim_state)
     json_t *o = Jnew ();
     json_t *event_timers = Jnew ();
 
-    void *item = zhash_first (sim_state->timers);
-    while (item) {
-        add_timers_to_json (zhash_cursor (item), item, event_timers);
-        item = zhash_next (sim_state->timers);
+    void *item = NULL;
+    const char *key = NULL;
+    for (item = zhash_first (sim_state->timers);
+         item;
+         item = zhash_next (sim_state->timers)) {
+        key = zhash_cursor (sim_state->timers);
+        add_timers_to_json (key, item, event_timers);
     }
 
     // build the main json obg
@@ -239,7 +242,7 @@ job_t *pull_job_from_kvs (int id, kvsdir_t *kvsdir)
 int send_alive_request (flux_t *h, const char *module_name)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
     json_t *o = Jnew ();
     uint32_t rank;
 
@@ -249,14 +252,14 @@ int send_alive_request (flux_t *h, const char *module_name)
     Jadd_str (o, "mod_name", module_name);
     Jadd_int (o, "rank", rank);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.alive");
-    flux_msg_set_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.alive", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
     Jput (o);
+    flux_future_destroy (future);
+
     return rc;
 }
 
@@ -266,21 +269,20 @@ int send_reply_request (flux_t *h,
                         sim_state_t *sim_state)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
     json_t *o = NULL;
 
     o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.reply");
-    flux_msg_set_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.reply", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
     flux_log (h, LOG_DEBUG, "sent a reply request: %s", Jtostr (o));
     Jput (o);
+    flux_future_destroy(future);
     return rc;
 }
 
@@ -288,7 +290,7 @@ int send_reply_request (flux_t *h,
 int send_join_request (flux_t *h, const char *module_name, double next_event)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
     json_t *o = Jnew ();
     uint32_t rank;
 
@@ -299,14 +301,13 @@ int send_join_request (flux_t *h, const char *module_name, double next_event)
     Jadd_int (o, "rank", rank);
     Jadd_double (o, "next_event", next_event);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.join");
-    flux_msg_set_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.join", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
     Jput (o);
+    flux_future_destroy (future);
     return rc;
 }
 
