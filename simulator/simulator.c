@@ -71,10 +71,13 @@ json_t *sim_state_to_json (sim_state_t *sim_state)
     json_t *o = Jnew ();
     json_t *event_timers = Jnew ();
 
-    void *item = zhash_first (sim_state->timers);
-    while (item) {
-        add_timers_to_json (zhash_cursor (item), item, event_timers);
-        item = zhash_next (sim_state->timers);
+    void *item = NULL;
+    const char *key = NULL;
+    for (item = zhash_first (sim_state->timers);
+         item;
+         item = zhash_next (sim_state->timers)) {
+        key = zhash_cursor (sim_state->timers);
+        add_timers_to_json (key, item, event_timers);
     }
 
     // build the main json obg

@@ -328,10 +328,13 @@ static void copy_new_state_data (ctx_t *ctx,
         curr_sim_state->sim_time = reply_sim_state->sim_time;
     }
 
-    void *item = zhash_first (reply_sim_state->timers);
-    while (item) {
-        check_for_new_timers (zhash_cursor (item), item, ctx);
-        item = zhash_next (reply_sim_state->timers);
+    void *item = NULL;
+    const char *key = NULL;
+    for (item = zhash_first (reply_sim_state->timers);
+         item;
+         item = zhash_next (reply_sim_state->timers)) {
+        key = zhash_cursor (reply_sim_state->timers);
+        check_for_new_timers (key, item, ctx);
     }
 }
 
