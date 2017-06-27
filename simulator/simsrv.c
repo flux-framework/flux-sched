@@ -290,37 +290,37 @@ static int check_for_new_timers (const char *key, double *reply_event_time,
         (double *)zhash_lookup (curr_sim_state->timers, key);
 
     if (*curr_event_time < 0 && *reply_event_time < 0) {
-        // flux_log (ctx->h, LOG_DEBUG, "no timers found for %s, doing nothing",
-        // key);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - no timers found for %s, doing nothing", __FUNCTION__,
+        //           key);
         return 0;
     } else if (*curr_event_time < 0) {
         if (*reply_event_time >= sim_time) {
             *curr_event_time = *reply_event_time;
-            // flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s",
-            // key);
+            // flux_log (ctx->h, LOG_DEBUG, "%s - change in timer accepted for %s", __FUNCTION__,
+            //           key);
             return 0;
         } else {
-            flux_log (ctx->h, LOG_ERR, "bad reply timer for %s", key);
+            flux_log (ctx->h, LOG_ERR, "%s - bad reply timer for %s", __FUNCTION__, key);
             return -1;
         }
     } else if (*reply_event_time < 0) {
-        flux_log (ctx->h, LOG_ERR, "event timer deleted from %s", key);
+        flux_log (ctx->h, LOG_ERR, "%s - event timer deleted from %s", __FUNCTION__, key);
         return -1;
     } else if (*reply_event_time < sim_time
                && *curr_event_time != *reply_event_time) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "incoming modified time is before sim time for %s",
+                  "%s - incoming modified time is before sim time for %s", __FUNCTION__,
                   key);
         return -1;
     } else if (*reply_event_time >= sim_time
                && *reply_event_time < *curr_event_time) {
         *curr_event_time = *reply_event_time;
-        // flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - change in timer accepted for %s", __FUNCTION__, key);
         return 0;
     } else {
-        // flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time:
-        // %f\t reply_time: %f", key, *curr_event_time, *reply_event_time);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - no changes made to %s timer, curr_time:"
+        //           "%f\t reply_time: %f", __FUNCTION__, key, *curr_event_time, *reply_event_time);
         return 0;
     }
 }
