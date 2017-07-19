@@ -109,7 +109,7 @@ int send_start_event (flux_t *h)
     if (flux_get_rank (h, &rank) < 0)
         return -1;
 
-    if (!(msg = flux_event_encodef ("sim.start", "{ s:s s:i s:i }",
+    if (!(msg = flux_event_pack ("sim.start", "{ s:s s:i s:i }",
                                     "mod_name", "sim",
                                     "rank", rank,
                                     "sim_time", 0))

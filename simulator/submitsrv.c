@@ -219,7 +219,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         return -1;
     }
 
-    f = flux_rpcf (h, "job.create", FLUX_NODEID_ANY, 0,
+    f = flux_rpc_pack (h, "job.create", FLUX_NODEID_ANY, 0,
                      "{ s:i s:i s:I }",
                      "nnodes", job->nnodes,
                      "ntasks", job->ncpus,
@@ -228,7 +228,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_getf (f, "{ s:I }", "jobid", &new_jobid) < 0) {
+    if (flux_rpc_get_unpack (f, "{ s:I }", "jobid", &new_jobid) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
 	flux_future_destroy (f);
         return -1;
@@ -244,7 +244,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         log_err_exit ("put_job_in_kvs");
 
     // Send "submitted" event
-    if (!(msg = flux_event_encodef ("wreck.state.submitted",
+    if (!(msg = flux_event_pack ("wreck.state.submitted",
                                     "{ s:I }", "lwj", new_jobid))
         || flux_send (h, msg, 0) < 0) {
         return -1;
