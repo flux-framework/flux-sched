@@ -206,7 +206,7 @@ int kvsdir_get_double (kvsdir_t *dir, const char *name, double *valp)
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_getf (f, "F", valp) < 0)
+    if (flux_kvs_lookup_get_unpack (f, "F", valp) < 0)
         goto done;
     rc = 0;
 done:
@@ -229,7 +229,7 @@ int kvsdir_get_int (kvsdir_t *dir, const char *name, int *valp)
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_getf (f, "i", valp) < 0)
+    if (flux_kvs_lookup_get_unpack (f, "i", valp) < 0)
         goto done;
     rc = 0;
 done:
@@ -252,7 +252,7 @@ int kvsdir_get_int64 (kvsdir_t *dir, const char *name, int64_t *valp)
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_getf (f, "I", valp) < 0)
+    if (flux_kvs_lookup_get_unpack (f, "I", valp) < 0)
         goto done;
     rc = 0;
 done:
@@ -276,7 +276,7 @@ int kvsdir_get_string (kvsdir_t *dir, const char *name, char **valp)
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_getf (f, "s", &s) < 0)
+    if (flux_kvs_lookup_get_unpack (f, "s", &s) < 0)
         goto done;
     if (!(*valp = strdup (s))) {
         errno = ENOMEM;
@@ -417,13 +417,13 @@ kvsdir_t *job_kvsdir (flux_t *h, int jobid)
     const char *kvs_path;
     kvsdir_t *d = NULL;
 
-    f = flux_rpcf (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+    f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
                     "{s:[i]}", "ids", jobid);
     if (!f) {
-        flux_log_error (h, "flux_rpcf");
+        flux_log_error (h, "flux_rpc_pack");
         return (NULL);
     }
-    if (flux_rpc_getf (f, "{s:[s]}", "paths", &kvs_path) < 0) {
+    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &kvs_path) < 0) {
         flux_log (h, LOG_DEBUG, "%s: failed to resolve job directory, falling back to lwj.%d", __FUNCTION__, jobid);
         // Fall back to lwj.%d:
         if (kvs_get_dir (h, &d, "lwj.%d", jobid))
