@@ -206,7 +206,7 @@ int kvsdir_get_double (kvsdir_t *dir, const char *name, double *valp)
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_get_unpack (f, "F", valp) < 0)
+    if (flux_kvs_lookup_get_unpack (f, "f", valp) < 0)
         goto done;
     rc = 0;
 done:
@@ -311,9 +311,12 @@ job_t *pull_job_from_kvs (int id, kvsdir_t *kvsdir)
     kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
     kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
     kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
-    kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
-    kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
-
+    if (kvsdir_exists(job->kvs_dir, "starting_time")) {
+        kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
+    }
+    if (kvsdir_exists(job->kvs_dir, "io_time")) {
+        kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
+    }
     return job;
 }
 
