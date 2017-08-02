@@ -92,6 +92,12 @@ double convert_time_to_sec (char *time)
 // Populate a field in the job_t based off a value extracted from the csv
 int insert_into_job (job_t *job, char *column_name, char *value)
 {
+    // Strip newline off the end, if it exists
+    int last_char_index = strlen(column_name) - 1;
+    if (column_name[last_char_index] == '\n') {
+        column_name[last_char_index] = '\0';
+    }
+
     if (!strcmp (column_name, "JobID")) {
         job->id = atoi (value);
     } else if (!strcmp (column_name, "User")) {
@@ -110,9 +116,7 @@ int insert_into_job (job_t *job, char *column_name, char *value)
         job->submit_time = atof (value);
     } else if (!strcmp (column_name, "Elapsed")) {
         job->execution_time = convert_time_to_sec (value);
-    } else if (!strncmp (column_name,
-                         "IORate(MB)",
-                         10)) {  // ignore the \n at the end using strncmp
+    } else if (!strncmp (column_name, "IORate(MB)")) {
         job->io_rate = atol (value);
     }
     return 0;
