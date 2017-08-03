@@ -107,7 +107,21 @@ int insert_into_job (job_t *job, char *column_name, char *value)
     } else if (!strcmp (column_name, "Timelimit")) {
         job->time_limit = convert_time_to_sec (value);
     } else if (!strcmp (column_name, "Submit")) {
-        job->submit_time = atof (value);
+        char *endptr;
+        struct tm tm_spec; 
+        double stime = strtod(value, &endptr);
+        // If this fails then try to parse the string
+        if (endptr != NULL && endptr != value) {
+            endptr = strptime(value, "%Y-%m-%dT%H:%M:%S", &tm_spec);
+            if (endptr == NULL) {
+                // flux_log (h, LOG_WARNING, "Incorrect Submit fmt, expects %s",
+                //         "%Y-%m-%dT%H:%M:%S or seconds since epoch");
+                stime = atof(value);
+            } else {
+                stime = (double) mktime(&tm_spec);
+            }
+        }
+        job->submit_time = stime;
     } else if (!strcmp (column_name, "Elapsed")) {
         job->execution_time = convert_time_to_sec (value);
     } else if (!strncmp (column_name,
