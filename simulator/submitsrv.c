@@ -90,7 +90,7 @@ double convert_time_to_sec (char *time)
 }
 
 // Populate a field in the job_t based off a value extracted from the csv
-int insert_into_job (job_t *job, char *column_name, char *value)
+int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
 {
     if (!strcmp (column_name, "JobID")) {
         job->id = atoi (value);
@@ -107,7 +107,25 @@ int insert_into_job (job_t *job, char *column_name, char *value)
     } else if (!strcmp (column_name, "Timelimit")) {
         job->time_limit = convert_time_to_sec (value);
     } else if (!strcmp (column_name, "Submit")) {
-        job->submit_time = atof (value);
+        char *endptr;
+        struct tm tm_spec; 
+        double stime = strtod(value, &endptr);
+        // Check if you parsed only a bit of the string (e.g. the year)
+        // Trailing whitespace is allowed too.
+        if (*endptr != '\0' && *endptr != ' ' && *endptr != '\t') {
+            endptr = strptime(value, "%Y-%m-%dT%H:%M:%S", &tm_spec);
+            if (endptr == NULL) {
+                endptr = value;
+            } else {
+                stime = (double) mktime(&tm_spec);
+            }
+        }
+        if (endptr == value) {
+            flux_log (h, LOG_WARNING, "Incorrect Submit fmt, expects %s"
+                        " or seconds since epoch; replacing '%s' with %f",
+                        "%Y-%m-%dT%H:%M:%S", value, stime);
+        }
+        job->submit_time = stime;
     } else if (!strcmp (column_name, "Elapsed")) {
         job->execution_time = convert_time_to_sec (value);
     } else if (!strncmp (column_name,
@@ -171,7 +189,7 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
                 flux_log (h, LOG_ERR, "column name is NULL");
                 return -1;
             }
-            insert_into_job (curr_job, curr_column, token);
+            insert_into_job (h, curr_job, curr_column, token);
             token = strtok (NULL, ",");
             curr_column = zlist_next (header);
         }
