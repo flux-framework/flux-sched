@@ -17,7 +17,7 @@ fluxmod_LTLIBRARIES = sched.la
 schedplugin_LTLIBRARIES = sched_fcfs.la \
                   sched_backfill.la \
                   sched_topo.la \
-				  sched_fast_backfill.la
+                  sched_fast_backfill.la
 
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h plugin.h
 

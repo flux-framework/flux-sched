@@ -48,6 +48,11 @@ static zlist_t *allocation_completion_times = NULL;
 static zlist_t *all_completion_times = NULL;
 static int64_t current_time = -1;
 
+/* Topo-specific Includes */
+#include "resrc_api.h" /* resrc_api_ctx_t  */
+#include "rsreader.h" /* rsreader_resrc_bulkload XXX: This isn't linking */
+resrc_api_ctx_t *rsapi;
+
 #if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
 static bool compare_int64_ascending (void *item1, void *item2)
 {
@@ -421,6 +426,9 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     int rc = 0;
     char *reserve_depth_str = NULL;
     char *entry = NULL;
+    char *topo_filename = NULL;
+    rsapi = resrc_api_init ();
+    // void resrc_api_fini (rsapi); /* TODO: Call this at the end */
 
     for (entry = argz;
          entry;
@@ -428,6 +436,8 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 
         if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
             reserve_depth_str = strstr (entry, "=") + 1;
+        } else if (!strncmp ("topo-file=", entry, sizeof("topo-file"))) {
+            topo_filename = strstr (entry, "=") + 1;
         } else {
             rc = -1;
             errno = EINVAL;
@@ -441,6 +451,8 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     } else {
         reservation_depth = 0;
     }
+
+    rc = rsreader_resrc_bulkload (rsapi, topo_filename, NULL);
 
     if (!sp) {
         flux_log (h, LOG_ERR, "scheduling parameters unavailable");
