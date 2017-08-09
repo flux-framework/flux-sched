@@ -110,8 +110,8 @@ int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
         char *endptr;
         struct tm tm_spec; 
         double stime = strtod(value, &endptr);
-        // Check if you parsed only a bit of the string (e.g. the year)
-        // Trailing whitespace is allowed too.
+        // Check if you parsed only a bit of the string (e.g. just the year)
+        // Trailing whitespace is not an error.
         if (*endptr != '\0' && *endptr != ' ' && *endptr != '\t') {
             endptr = strptime(value, "%Y-%m-%dT%H:%M:%S", &tm_spec);
             if (endptr == NULL) {
@@ -120,10 +120,12 @@ int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
                 stime = (double) mktime(&tm_spec);
             }
         }
+        // endptr gets set by strtod or by strptime
         if (endptr == value) {
-            flux_log (h, LOG_WARNING, "Incorrect Submit fmt, expects %s"
+            flux_log (h, LOG_WARNING, "Incorrect Submit format, expects %s"
                         " or seconds since epoch; replacing '%s' with %f",
-                        "%Y-%m-%dT%H:%M:%S", value, stime);
+                        "%Y-%m-%dT%H:%M:%S (yyyy-mm-ddThh:mm:ss)",
+                        value, stime);
         }
         job->submit_time = stime;
     } else if (!strcmp (column_name, "Elapsed")) {
