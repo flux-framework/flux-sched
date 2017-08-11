@@ -13,6 +13,7 @@ LUA_PATH = $(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$${LUA
 LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 
 fluxmod_LTLIBRARIES = sched.la
+noinst_LTLIBRARIES = libsched-util.la
 
 schedplugin_LTLIBRARIES = sched_fcfs.la \
                   sched_backfill.la \
@@ -21,11 +22,16 @@ schedplugin_LTLIBRARIES = sched_fcfs.la \
 
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h plugin.h
 
-sched_la_SOURCES = sched.c rs2rank.c rsreader.c plugin.c
+libsched_util_la_SOURCES = rsreader.c rs2rank.c                      
+libsched_util_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc        
+libsched_util_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \  
+   $(FLUX_CORE_LIBS) $(JANSSON_LIBS) $(CZMQ_LIBS) \                
+   $(top_builddir)/simulator/libflux-sim.la                        
+libsched_util_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags)
+
+sched_la_SOURCES = sched.c plugin.c
 sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
-sched_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
-    $(FLUX_CORE_LIBS) $(JANSSON_LIBS) $(CZMQ_LIBS) \
-    $(top_builddir)/simulator/libflux-sim.la
+sched_la_LIBADD = libsched-util.la
 sched_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module
 
 sched_fcfs_la_SOURCES = sched_fcfs.c
@@ -42,8 +48,7 @@ sched_backfill_la_LDFLAGS = $(AM_LDFLAGS) $(schedplugin_ldflags)
 
 sched_topo_la_SOURCES = sched_topo.c
 sched_topo_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
-sched_topo_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
-    $(FLUX_CORE_LIBS) $(JANSSON_LIBS) $(CZMQ_LIBS)
+sched_topo_la_LIBADD  = libsched-util.la
 sched_topo_la_LDFLAGS = $(AM_LDFLAGS) $(schedplugin_ldflags)
 
 sched_fast_backfill_la_SOURCES = sched_fast_backfill.c
