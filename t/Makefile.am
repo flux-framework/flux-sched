@@ -50,7 +50,9 @@ TESTS = \
     t1005-sched-params.t \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
-    t2002-easy.t
+    t2002-easy.t \
+    t2003-fast_backfill.t \
+	t2004-topo.t
 
 check_SCRIPTS = $(TESTS)
 

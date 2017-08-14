@@ -33,6 +33,8 @@
 #include <libgen.h>
 #include <czmq.h>
 #include <flux/core.h>
+#include <unistd.h> // getcwd
+#include <limits.h> // PATH_MAX
 
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/shortjansson.h"
@@ -51,7 +53,7 @@ static int64_t current_time = -1;
 /* Topo-specific Includes */
 #include "resrc_api.h" /* resrc_api_ctx_t  */
 #include "rsreader.h" /* rsreader_resrc_bulkload XXX: This isn't linking */
-resrc_api_ctx_t *rsapi;
+static resrc_api_ctx_t *rsapi;
 
 #if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
 static bool compare_int64_ascending (void *item1, void *item2)
@@ -426,9 +428,12 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     int rc = 0;
     char *reserve_depth_str = NULL;
     char *entry = NULL;
-    char *topo_filename = NULL;
+    char topo_filename[PATH_MAX];
+    strcpy (topo_filename, "topo.lua");
+    /* "Sensible" default. But what's the cwd? */
+    /* TODO: Add getcwd to it. But where would cwd be with flux? */
     rsapi = resrc_api_init ();
-    // void resrc_api_fini (rsapi); /* TODO: Call this at the end */
+    // resrc_api_fini (rsapi); /* TODO: Call this at the end */
 
     for (entry = argz;
          entry;
@@ -436,9 +441,10 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 
         if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
             reserve_depth_str = strstr (entry, "=") + 1;
-        } else if (!strncmp ("topo-file=", entry, sizeof("topo-file"))) {
-            topo_filename = strstr (entry, "=") + 1;
+        } else if (!strncmp ("rdl-topology=", entry, sizeof("rdl-topology"))) {
+            strncpy (topo_filename, strstr (entry, "=") + 1, PATH_MAX);
         } else {
+            flux_log(h, LOG_ERR, "Invalid argument %s", entry);
             rc = -1;
             errno = EINVAL;
             goto done;
@@ -452,7 +458,12 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         reservation_depth = 0;
     }
 
-    rc = rsreader_resrc_bulkload (rsapi, topo_filename, NULL);
+    if (rsreader_resrc_bulkload (rsapi, topo_filename, NULL)) {
+        flux_log (h, LOG_ERR, "Unable to read rdl-topology file '%s'",
+                topo_filename);
+        rc = -1;
+        goto done;
+    }
 
     if (!sp) {
         flux_log (h, LOG_ERR, "scheduling parameters unavailable");
