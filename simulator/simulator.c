@@ -210,9 +210,10 @@ int kvsdir_get_double (kvsdir_t *dir, const char *name, double *valp)
         goto done;
     rc = 0;
 done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, kvsdir_key (dir));
+    // FIXME: This is happening more than it should
+    // if (rc < 0)
+    //     flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
+    //                     name, kvsdir_key (dir));
     free (key);
     flux_future_destroy (f);
     return rc;
