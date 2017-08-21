@@ -449,6 +449,21 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
     const sched_params_t *sp = &(ctx->arg.s_params);
 
     if (userplugin_opts)
+        // if (strncmp (plugin->name, "sched.topo", 10) == 0) {
+        //     char *appended_path_opts; = xzmalloc (
+        //             strlen (ctx->arg->path) + strlen (userplogin_opts) +
+        //             + strlen ("rdl-topology=") + 1 + 1);
+        //     strcpy (appended_path_opts, "rdl-topology=");
+        //     strcat (appended_path_opts, ctx->arg->path);
+        //     strcat (appended_path_opts, ",");
+        //     strcat (appended_path_opts, userplugin_opts);
+        //     // Then add the uri as a command line argument
+        //     // strcat (appended_path_opts, ctx->arg->uri)
+        //     argz_create_sep (appended_path_opts, ',', &argz, &argz_len);
+        //     free (appended_path_opts);
+        // } else {
+        //     argz_create_sep (userplugin_opts, ',', &argz, &argz_len);
+        // }
         argz_create_sep (userplugin_opts, ',', &argz, &argz_len);
     if (plugin->process_args (ctx->h, argz, argz_len, sp) < 0)
         goto done;
@@ -1554,7 +1569,7 @@ static int schedule_jobs (ssrvctx_t *ctx)
 
     if (!plugin)
         return -1;
-    rc = plugin->sched_loop_setup (ctx->h);
+    rc = plugin->sched_loop_setup (ctx->h, ctx->rsapi);
     job = zlist_first (jobs);
     while (!rc && job && (qdepth < ctx->arg.s_params.queue_depth)) {
         if (job->state == J_SCHEDREQ) {
