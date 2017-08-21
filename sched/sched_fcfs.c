@@ -52,7 +52,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
-int sched_loop_setup (flux_t *h)
+int sched_loop_setup (flux_t *h, resrc_api_ctx_t *rsapi)
 {
     return 0;
 }
