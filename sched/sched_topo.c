@@ -129,8 +129,8 @@
  * If you can place the job, break. Then we have from T_f + job's walltime
  *
  * Unresolved issues:
- * Convert from this new tree data structure back into a found_tree for select
- * May want to keep a map from node ID -> pointer to tree.
+ * Can the plugin assume it is loaded when no jobs are running?
+ * If not, then we need to set the tiers upon initialization
  */
 
 #if HAVE_CONFIG_H
@@ -180,10 +180,17 @@ static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
 static zlist_t *all_completion_times = NULL;
 /* Topology-specific data structures and types */
+typedef struct { /* Count the number of jobs in your children at each tier */
+    int64_t T1;  /* No propagation of T1 jobs (they don't interfere) */
+    int64_t T2;  /* We propagate T2 values up one level */
+    int64_t T3;  /* We propagate T3 values up two levels */
+} tier_count_t;
+
+/* From a topological standpoint we only care about these types of resources. */
 typedef enum {CLUSTER, POD, SWITCH, NODE, UNKNOWN} resrc_enum_t;
 typedef struct topo_tree_ {
-    resrc_tree_t *ct;      /* The corresponding tree */
-    int tier;              /* T1, T2, T3 (See Overview) */
+    resrc_tree_t *ct;      /* The corresponding resource tree */
+    tier_count_t tier;     /* Tier of running job T1, T2, T3 (See Overview) */
     resrc_enum_t type;
     struct topo_tree_ *parent;
     zlist_t *children;
@@ -191,6 +198,7 @@ typedef struct topo_tree_ {
 
 static topo_tree_t *topo_tree;
 static resrc_api_ctx_t *topo_rsapi;
+static zhash_t *node2topo_hash;
 static int tree_depth;
 /* levels[0] is the highest level (e.g. pods), levels[tree_depth-1] are nodes */
 static int64_t *levels;
@@ -207,28 +215,40 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 
 static int allocate_topo_structures (flux_t *h);
 
-resrc_enum_t resrc_enum_from_name (char *name)
+static inline resrc_enum_t resrc_enum_from_type (char *r_t)
 {
-    if (strcmp (name, "cluster")) {
+    if (strcmp (r_t, "cluster") == 0) {
         return CLUSTER;
-    } else if (strcmp (name, "pod")) {
+    } else if (strcmp (r_t, "pod") == 0) {
         return POD;
-    } else if (strcmp (name, "switch")) {
+    } else if (strcmp (r_t, "switch") == 0) {
         return SWITCH;
-    } else if (strcmp (name, "node")) {
+    } else if (strcmp (r_t, "node") == 0) {
         return NODE;
     } else {
         return UNKNOWN;
     }
 }
 
-/* Creates a topo_tree which is a copy of a rsapi tree */
+/* Initialize the number of jobs of each tier for a given resource. Assumes
+ * the scheduler plugin is loaded when no jobs are running.
+ * Note: This should be updated if someone decided the sched.topo plugin may
+ *       be hot-loaded (that is, the scheduler is in the middle of running jobs)
+ */
+static tier_count_t initialize_tier_counts (resrc_tree_t *tree)
+{
+    return (tier_count_t) { .T1 = 0, .T2 = 0, .T3 = 0 };
+}
+
+/* Creates a topo_tree which mirrors the rsapi tree.
+ * Also creates a hash for fast lookup from resrc name -> topo */
 static topo_tree_t *create_topo_tree (
         flux_t *h, resrc_tree_t *tree, topo_tree_t *parent)
 {
+    int rc;
     topo_tree_t *new_tree;
-    resrc_enum_t r_e = resrc_enum_from_name (
-            resrc_name (resrc_tree_resrc (tree)));
+    char *r_t = resrc_type (resrc_tree_resrc (tree));
+    resrc_enum_t r_e = resrc_enum_from_type (r_t);
 
     int lvl = -1;
     switch (r_e) {
@@ -236,17 +256,30 @@ static topo_tree_t *create_topo_tree (
     case POD:     lvl = 1;  break;
     case SWITCH:  lvl = 2;  break;
     case NODE:    lvl = 3;  break;
-    case UNKNOWN: lvl = -1; break;
+    case UNKNOWN: lvl = -1; return NULL;
     }
+    // printf("Resource type is '%s'\n", r_t); // TEST
 
     new_tree = xzmalloc (sizeof(topo_tree_t));
     new_tree->ct = tree;
     new_tree->type = r_e;
+    new_tree->tier = initialize_tier_counts (tree);
     new_tree->parent = parent;
     new_tree->children = NULL;
+    
+    if (strcmp (r_t, "node") == 0) {
+        rc = zhash_insert (node2topo_hash,
+                           resrc_name (resrc_tree_resrc (tree)),
+                           new_tree);
+        if (rc) {
+            flux_log (h, LOG_ERR, "Error adding '%s' to hash\n",
+                    resrc_name (resrc_tree_resrc (tree)));
+            return NULL;
+        }
+        printf ("added '%s' to hash\n", resrc_name (resrc_tree_resrc (tree))); // TEST
+    }
 
-    /* Loop over all children and only add the non-null ones */
-    int rc;
+    /* Loop over all children and only add the non-unknown ones */
     topo_tree_t *topo_child;
     resrc_tree_list_t *children = resrc_tree_children (tree);
     resrc_tree_t *child = resrc_tree_list_first (children);
@@ -268,25 +301,69 @@ static topo_tree_t *create_topo_tree (
     return new_tree;
 }
 
+/* Update the topology tree with the current state of the resource tree.
+ * This will only remove the tiers off the topology tree, not add them. For if
+ * we see a job going from allocated -> idle, the resrc_t does not tell us the
+ * size of the original request.
+ * Returns 0 if okay, -1 if something bad happened.
+ * TODO: Add error checking
+ */
+static int update_idle ()
+{
+    int rc = 0;
+    topo_tree_t *tt = zhash_first (node2topo_hash);
+    resrc_t *resrc;
+    while (tt != NULL) {
+        resrc = resrc_tree_resrc (tt->ct);
+        if (strcmp (resrc_state (resrc), "idle") == 0) {
+            if (tt->tier.T1 > 0) {
+                tt->tier.T1--;
+                printf ("A T1 job completed on node '%s'\n",
+                       resrc_name (resrc)); // TEST
+            } else if (tt->tier.T2 > 0) {
+                tt->tier.T2--;
+                tt->parent->tier.T2--;
+                printf ("A T2 job completed on node '%s'\n",
+                       resrc_name (resrc)); // TEST
+            } else if (tt->tier.T3 > 0) {
+                tt->tier.T3--;
+                tt->parent->tier.T3--;
+                tt->parent->parent->tier.T3--;
+                printf ("A T3 job completed on node '%s'\n",
+                       resrc_name (resrc)); // TEST
+            }
+        }
+        tt = zhash_next (node2topo_hash);
+    }
+    return rc;
+}
+
 /* Called at the beginning of each schedule_jobs.
  * All reservations are released before this.
  * Update internal data structures to match the ones from sched.c
  */
 int sched_loop_setup (flux_t *h, resrc_api_ctx_t *rsapi)
 {
+    int rc = 0;
     curr_reservation_depth = 0;
     if (!all_completion_times)
         all_completion_times = zlist_new ();
 
     if (topo_tree == NULL) {
         if (rsapi->tree_root != NULL) {
+            node2topo_hash = zhash_new ();
             topo_tree = create_topo_tree (h, rsapi->tree_root, NULL);
         } else {
-            flux_log(h, LOG_ERR, "rsapi->tree_root is NULL");
+            flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
             return -1;
         }
+    } else {
+        rc = update_idle (topo_tree);
+        if (rc) {
+            flux_log (h, LOG_ERR, "Error synchronizing");
+            return rc;
+        }
     }
-
     return 0;
 }
 
@@ -482,6 +559,20 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     return selected_tree;
 }
 
+/* Marks the topology tree by tiers for each resource in the selected_tree
+ * This counts the number of nodes requested in the selected tree then
+ * increments based on the following logic:
+ * T1: Increment just that node
+ * T2: Increment that node and its parent (switch)
+ * T3: Increment that node, its parent (switch), and its parent's parent (pod)
+ */
+/* TODO: Add error checking */
+void mark_topo_tree (resrc_tree_t *selected_tree)
+{
+    // resrc_tree_print (selected_tree); // TEST
+    return;
+}
+
 /* Once the resources have been found and selected, mark them in the selected
  * tree as allocated
  */
@@ -492,8 +583,8 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     int rc = -1;
     if (selected_tree) {
         rc = resrc_tree_allocate (selected_tree, job_id, starttime, endtime);
-
         if (!rc) {
+            mark_topo_tree (selected_tree);
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = endtime;
             rc = zlist_append (all_completion_times, completion_time);
@@ -575,6 +666,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 rc = resrc_tree_reserve (*selected_tree, job_id,
                                          *completion_time + 1,
                                          *completion_time + 1 + walltime);
+                mark_topo_tree (*selected_tree);
                 if (rc) {
                     resrc_tree_destroy (rsapi, *selected_tree, false, false);
                     *selected_tree = NULL;
@@ -732,11 +824,14 @@ static int allocate_topo_structures (flux_t *h)
     return 0;
 }
 
-// Destructor of sorts; releases all the data structures we used
+// /* Destructor of sorts; releases all the data structures we used
+//  * TODO: Call this at the end */
 // int finalize (flux_t *h)
 // {
-//     resrc_api_fini (topo_rsapi); /* TODO: Call this at the end */
+//     resrc_api_fini (topo_rsapi);
 //     free(levels);
+//     topo_tree_destroy (topo_tree); // UNIMPLEMENTED
+//     zhash_destroy (&node2topo_hash);
 // }
 
 MOD_NAME ("sched.topo");
