@@ -276,7 +276,7 @@ static topo_tree_t *create_topo_tree (
                     resrc_name (resrc_tree_resrc (tree)));
             return NULL;
         }
-        printf ("added '%s' to hash\n", resrc_name (resrc_tree_resrc (tree))); // TEST
+        // printf ("added '%s' to hash\n", resrc_name (resrc_tree_resrc (tree))); // TEST
     }
 
     /* Loop over all children and only add the non-unknown ones */
@@ -559,6 +559,27 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     return selected_tree;
 }
 
+/* Find the nodes (physical compute nodes) of a tree.
+ * Expects an initial argument of an empty list and the root of the tree you
+ * wish to build. Don't forget to call resrc_tree_list_shallow_destroy once
+ * you're done with this.
+ */
+static void find_nodes (resrc_tree_t *r_tree, resrc_tree_list_t *rtl)
+{
+    resrc_t *resrc = resrc_tree_resrc (r_tree);
+    if (strcmp (resrc_type (resrc), "node") == 0) {
+        // printf ("found node '%s'\n", resrc_name (resrc)); // TEST
+        resrc_tree_list_append (rtl, r_tree);
+    } else {
+        resrc_tree_list_t *children = resrc_tree_children (r_tree);
+        resrc_tree_t *child = resrc_tree_list_first (children);
+        while (child != NULL) {
+            find_nodes (child, rtl);
+            child = resrc_tree_list_next (children);
+        }
+    }
+}
+
 /* Marks the topology tree by tiers for each resource in the selected_tree
  * This counts the number of nodes requested in the selected tree then
  * increments based on the following logic:
@@ -567,10 +588,24 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
  * T3: Increment that node, its parent (switch), and its parent's parent (pod)
  */
 /* TODO: Add error checking */
-void mark_topo_tree (resrc_tree_t *selected_tree)
+static void mark_topo_tree (resrc_tree_t *selected_tree)
 {
     // resrc_tree_print (selected_tree); // TEST
-    return;
+    /* 1. Count number of nodes to determine tier of job */
+    resrc_tree_list_t *node_list = resrc_tree_list_new ();
+    find_nodes (selected_tree, node_list);
+    /* 2. Look up the nodes in the hash table and propagate tiers upward */
+    int64_t n_nodes = resrc_tree_list_size (node_list);
+    int tier;
+    if (n_nodes <= levels[tree_depth-1]) {
+        tier = 1;
+    } else if (n_nodes < levels[tree_depth-1] * levels[tree_depth-2]) {
+        tier = 2;
+    } else {
+        tier = 3;
+    }
+    printf ("Found %"PRId64" nodes, it's a T%d job\n", n_nodes, tier);
+    resrc_tree_list_shallow_destroy (node_list);
 }
 
 /* Once the resources have been found and selected, mark them in the selected

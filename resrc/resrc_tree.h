@@ -141,6 +141,11 @@ void resrc_tree_list_destroy (resrc_api_ctx_t *ctx, resrc_tree_list_t *rtl,
                               bool destroy_resrc);
 
 /*
+ * Desroy just the resrc_tree_list and not their children
+ */
+void resrc_tree_list_shallow_destroy (resrc_tree_list_t *rtl);
+
+/*
  * Add the input list of resource trees to the json array object
  */
 int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl);

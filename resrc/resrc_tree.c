@@ -331,6 +331,16 @@ void resrc_tree_list_destroy (resrc_api_ctx_t *ctx,
     }
 }
 
+void resrc_tree_list_shallow_destroy (resrc_tree_list_t *resrc_tree_list)
+{
+    if (resrc_tree_list) {
+        if (resrc_tree_list->list) {
+            zlist_destroy (&(resrc_tree_list->list));
+        }
+        free (resrc_tree_list);
+    }
+}
+
 int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl)
 {
     resrc_tree_t *rt;
