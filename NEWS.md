@@ -1,3 +1,22 @@
+flux-sched version 0.4.0 - 2017-08-24
+-------------------------------------
+
+### Fixes
+ * Fix allocation of cores unevenly across nodes (#226)
+ * Fixes and updates to track latest libflux-core API changes
+   (#255, #253, #246, #238, #234)
+ * simulator: fix and re-enable sim integration tests (#250)
+ * Fix autoreconf when using side-installed autotools (#243)
+ * flux-waitjob: fixes to avoid flux-core issue #1027 (#244)
+ * Other fixes (#227, #231)
+
+#### New features
+ * simulator: add ISO time parsing to job traces (#260)
+ * resrc: add resource API context support (#236)
+
+#### Cleanup
+ * simulator: refactor, cleanup, and ensure proper initialization.
+   (#240, #250)
 
 flux-sched version 0.3.0 - 2016-10-28
 -------------------------------------
