@@ -180,6 +180,7 @@ static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
 static zlist_t *allocation_completion_times = NULL;
 static zlist_t *all_completion_times = NULL;
+// static zlist_t *node_selection = NULL; /* May be an allocation or reservation */
 static int64_t current_time = -1;
 /* Topology-specific data structures and types */
 typedef enum {RESERVE, ALLOCATE} mark_enum_t;
@@ -269,13 +270,16 @@ static inline resrc_enum_t resrc_enum_from_type (char *r_t)
 }
 
 /* Creates a topo_tree which mirrors the rsapi tree.
- * Also creates a hash for fast lookup from resrc name -> topo */
+ * Also populates a hash for fast lookup from resrc name -> topo,
+ * This assumes you have already initialized the hash table
+ */
 static topo_tree_t *create_topo_tree (
-        flux_t *h, resrc_tree_t *tree, topo_tree_t *parent)
+        flux_t *h, zhash_t *node_hash, resrc_tree_t *tree, topo_tree_t *parent)
 {
     int rc;
     topo_tree_t *new_tree;
     char *r_t = resrc_type (resrc_tree_resrc (tree));
+    char *r_n;
     resrc_enum_t r_e = resrc_enum_from_type (r_t);
 
     int lvl;
@@ -298,9 +302,10 @@ static topo_tree_t *create_topo_tree (
     new_tree->children = NULL;
     
     if (strcmp (r_t, "node") == 0) {
-        rc = zhash_insert (node2topo_hash,
-                           resrc_name (resrc_tree_resrc (tree)),
-                           new_tree);
+        r_n = resrc_name (resrc_tree_resrc (tree));
+        rc = zhash_insert (node_hash, r_n, new_tree);
+        /* We don't need a freefn because topo_tree_destroy frees the nodes */
+        (void) zhash_freefn (node_hash, r_n, NULL); 
         if (rc) {
             flux_log (h, LOG_ERR, "Error adding '%s' to hash\n",
                     resrc_name (resrc_tree_resrc (tree)));
@@ -314,12 +319,13 @@ static topo_tree_t *create_topo_tree (
     resrc_tree_list_t *children = resrc_tree_children (tree);
     resrc_tree_t *child = resrc_tree_list_first (children);
     while (child != NULL) {
-        topo_child = create_topo_tree (h, child, new_tree);
+        topo_child = create_topo_tree (h, node_hash, child, new_tree);
         if (topo_child != NULL) {
             if (new_tree->children == NULL) {
                 new_tree->children = zlist_new ();
             }
             rc = zlist_append (new_tree->children, topo_child);
+            (void) zlist_freefn (new_tree->children, topo_child, free, true);
             // printf("Added at level %d\n", lvl); // TEST
             if (rc) {
                 flux_log (h, LOG_ERR, "Unable to create topology tree");
@@ -329,6 +335,22 @@ static topo_tree_t *create_topo_tree (
         child = resrc_tree_list_next (children);
     }
     return new_tree;
+}
+
+void topo_tree_destroy (topo_tree_t *tt)
+{
+    if (tt == NULL) {
+        return;
+    }
+    if (tt->children != NULL) {
+        topo_tree_t *child = zlist_pop (tt->children);
+        while (child != NULL) {
+            topo_tree_destroy (child);
+            child = zlist_pop (tt->children);
+        }
+        zlist_destroy (&(tt->children));
+    }
+    free (tt);
 }
 
 /* Removes all existing reservations (r_tier) from the topology tree */
@@ -402,8 +424,7 @@ static int synchronize (resrc_tree_t *found_tree)
  * resources being used. Removes all the completion times of allocations which
  * have finished since the last scheduling loop.
  */
-int sched_loop_setup (flux_t *h, resrc_api_ctx_t *rsapi)
-{
+int sched_loop_setup (flux_t *h) {
     curr_reservation_depth = 0;
     if (!allocation_completion_times) {
         allocation_completion_times = zlist_new ();
@@ -425,14 +446,7 @@ int sched_loop_setup (flux_t *h, resrc_api_ctx_t *rsapi)
     }
 
     if (topo_tree == NULL) {
-        resrc_tree_t *root = resrc_tree_root (rsapi);
-        if (root) {
-            node2topo_hash = zhash_new ();
-            topo_tree = create_topo_tree (h, root, NULL);
-        } else {
-            flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
-            return -1;
-        }
+        // Do nothing. The topology tree will be created in find_resources.
     } else {
         purge_reservations (topo_tree);
     }
@@ -484,10 +498,21 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                         resrc_tree_t **found_tree)
 {
     int64_t nfound = 0;
+    if (topo_tree == NULL) {
+        if (resrc_tree_root (rsapi)) {
+            node2topo_hash = zhash_new ();
+            topo_tree = create_topo_tree (
+                    h, node2topo_hash, resrc_tree_root (rsapi), NULL);
+        } else {
+            flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
+            return -1;
+        }
+    }
     if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
         return 0;
     }
+
     /* TODO: May want to update from resrc_tree_search to our own, more
      * efficient function */
     /* Find all available resources so we can update the topo_tree */
@@ -1016,7 +1041,7 @@ static int allocate_topo_structures (flux_t *h)
 // {
 //     resrc_api_fini (topo_rsapi);
 //     free(levels);
-//     topo_tree_destroy (topo_tree); // UNIMPLEMENTED
+//     topo_tree_destroy (topo_tree);
 //     zhash_destroy (&node2topo_hash);
 // }
 

@@ -1569,7 +1569,7 @@ static int schedule_jobs (ssrvctx_t *ctx)
 
     if (!plugin)
         return -1;
-    rc = plugin->sched_loop_setup (ctx->h, ctx->rsapi);
+    rc = plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
     while (!rc && job && (qdepth < ctx->arg.s_params.queue_depth)) {
         if (job->state == J_SCHEDREQ) {

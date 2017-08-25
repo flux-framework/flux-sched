@@ -8,8 +8,7 @@ struct sched_plugin {
     char         *name;               /* Name of plugin */
     char         *path;               /* Path to plugin dso */
 
-    int                  (*sched_loop_setup)(flux_t *h,
-                                             resrc_api_ctx_t *rsapi);
+    int                  (*sched_loop_setup)(flux_t *h);
 
     int64_t              (*find_resources)(flux_t *h,
                                            resrc_api_ctx_t *rsapi,
