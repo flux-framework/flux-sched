@@ -278,7 +278,7 @@ static topo_tree_t *create_topo_tree (
     char *r_t = resrc_type (resrc_tree_resrc (tree));
     resrc_enum_t r_e = resrc_enum_from_type (r_t);
 
-    int lvl = -1;
+    int lvl;
     switch (r_e) {
     case CLUSTER: lvl = 0;  break;
     case POD:     lvl = 1;  break;
@@ -309,7 +309,7 @@ static topo_tree_t *create_topo_tree (
         // printf ("added '%s' to hash\n", resrc_name (resrc_tree_resrc (tree))); // TEST
     }
 
-    /* Loop over all children and only add the non-unknown ones */
+    /* Loop over all children and only add the non-UNKNOWN ones */
     topo_tree_t *topo_child;
     resrc_tree_list_t *children = resrc_tree_children (tree);
     resrc_tree_t *child = resrc_tree_list_first (children);
@@ -319,7 +319,7 @@ static topo_tree_t *create_topo_tree (
             if (new_tree->children == NULL) {
                 new_tree->children = zlist_new ();
             }
-            rc = zlist_append (new_tree->children, new_tree);
+            rc = zlist_append (new_tree->children, topo_child);
             // printf("Added at level %d\n", lvl); // TEST
             if (rc) {
                 flux_log (h, LOG_ERR, "Unable to create topology tree");
@@ -334,20 +334,18 @@ static topo_tree_t *create_topo_tree (
 /* Removes all existing reservations (r_tier) from the topology tree */
 static void purge_reservations (topo_tree_t *tt)
 {
-    return;
-    // if (tt == NULL) {
-    //     return;
-    // }
-    // tt->r_tier = initialize_tier_counts ();
-    // zlist_t *children = tt->children;
-    // if (children == NULL)
-    //     return;
-    // topo_tree_t *child = zlist_first (children);
-    // while (child != NULL) {
-    //     resrc_name (resrc_tree_resrc (tt->ct)); // TEST
-    //     purge_reservations (child);
-    //     child = zlist_next (children);
-    // }
+    if (tt == NULL) {
+        return;
+    }
+    tt->r_tier = initialize_tier_counts ();
+    zlist_t *children = tt->children;
+    if (children == NULL)
+        return;
+    topo_tree_t *child = zlist_first (children);
+    while (child != NULL) {
+        purge_reservations (child);
+        child = zlist_next (children);
+    }
 }
 
 /* Update the topology tree with the current state of the resource tree.
@@ -647,7 +645,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         resrc_tree_unstage_resources (root);
         prev_c_time = *c_time;
     }
-    flux_log (h, LOG_ERR, "This request can never be satisfied");
+    flux_log (h, LOG_DEBUG, "This request can never be satisfied");
     return NULL;
 }
 
@@ -817,8 +815,9 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             mark_topo_tree (h, selected_tree, ALLOCATE);
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = endtime;
-            rc = zlist_append (all_completion_times, completion_time);
-            zlist_freefn (all_completion_times, completion_time, free, true);
+            rc = zlist_append (allocation_completion_times, completion_time);
+            zlist_freefn (allocation_completion_times, completion_time, free, true);
+            rc |= zlist_append (all_completion_times, completion_time);
             flux_log (h, LOG_DEBUG, "Allocated job %"PRId64" from %"PRId64" to "
                       "%"PRId64"", job_id, starttime, *completion_time);
             /* TODO: Add a vector of the selected nodes to our data structure */
@@ -830,7 +829,7 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 /*
  * reserve_resources() reserves resources for the specified job id.
  * Reservation is using EASY backfill; only the first job in the queue will
- * get a reservation.
+ * get a reservation. This assumes the selected tree is correct if non-null.
  * Unused: starttime (the more updated one is in resrc_reqst)
  *         resrc
  */
@@ -857,16 +856,18 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             flux_log (h, LOG_ERR, "Reservation for job %"PRId64" failed", job_id);
         } else {
             /* TODO: Add vector to data structure indexed by job_id */
-            mark_topo_tree (h, *selected_tree, RESERVE);
+            mark_topo_tree (h, *selected_tree, RESERVE); // TODO: Not working
             curr_reservation_depth++;
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = reservation_completion_time;
             rc = zlist_append (all_completion_times, completion_time);
-            flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
+            flux_log (h, LOG_ERR, "Reserved %"PRId64" nodes for job "
                       "%"PRId64" from %"PRId64" to %"PRId64"",
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
                       reservation_starttime + 1,
                       reservation_starttime + 1 + walltime);
+            printf ("resrc_reqst has %"PRId64" reserved resources\n",
+                    resrc_reqst_nfound (resrc_reqst)); // TEST
         }
     }
     return rc;
