@@ -178,7 +178,9 @@ static int compare_int64_ascending (void *item1, void *item2)
 
 static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
+static zlist_t *allocation_completion_times = NULL;
 static zlist_t *all_completion_times = NULL;
+static int64_t current_time = -1;
 /* Topology-specific data structures and types */
 typedef enum {RESERVE, ALLOCATE} mark_enum_t;
 typedef struct { /* Count the number of jobs in your children at each tier */
@@ -195,6 +197,7 @@ typedef struct topo_tree_ {
     tier_count_t a_tier;     /* Tier of running job T1, T2, T3 (See Overview) */
     tier_count_t r_tier;
     struct topo_tree_ *parent;
+    int64_t job_id;
     zlist_t *children;
 } topo_tree_t;
 
@@ -214,6 +217,15 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
+
+/* Select the resources either now (allocate) or in the future (reserve)
+ * This is the main logic for the scheduler.
+ */
+static resrc_tree_t *select_resources_in_time (flux_t *h,
+                                               resrc_api_ctx_t *rsapi,
+                                               resrc_tree_t *candidate_tree,
+                                               resrc_reqst_t *resrc_reqst,
+                                               resrc_tree_t *selected_parent);
 
 static int allocate_topo_structures (flux_t *h);
 
@@ -281,6 +293,7 @@ static topo_tree_t *create_topo_tree (
     new_tree->type = r_e;
     new_tree->a_tier = initialize_tier_counts ();
     new_tree->r_tier = initialize_tier_counts ();
+    new_tree->job_id = -1;
     new_tree->parent = parent;
     new_tree->children = NULL;
     
@@ -321,24 +334,36 @@ static topo_tree_t *create_topo_tree (
 /* Removes all existing reservations (r_tier) from the topology tree */
 static void purge_reservations (topo_tree_t *tt)
 {
-    if (tt == NULL) {
-        return;
-    }
-   tt->r_tier = initialize_tier_counts ();
-   // zlist_t *children = topo_tree->children;
-   // if (children == NULL)
-   //     return;
-   // topo_tree_t *child = zlist_first (children);
-   // while (child != NULL) {
-   //     purge_reservations (child);
-   //     child = zlist_next (children);
-   // }
+    return;
+    // if (tt == NULL) {
+    //     return;
+    // }
+    // tt->r_tier = initialize_tier_counts ();
+    // zlist_t *children = tt->children;
+    // if (children == NULL)
+    //     return;
+    // topo_tree_t *child = zlist_first (children);
+    // while (child != NULL) {
+    //     resrc_name (resrc_tree_resrc (tt->ct)); // TEST
+    //     purge_reservations (child);
+    //     child = zlist_next (children);
+    // }
 }
 
 /* Update the topology tree with the current state of the resource tree.
  * This will only decrement tier counters in the topology tree, not increment
  * them. Incrementing is done by mark_topo_tree.
+ * found_tree: The tree of available resources from resrc_tree_search
  * Returns 0 if okay, -1 if something bad happened.
+ */
+/* XXX: Keep in mind that resrc_tree_search will only match resources
+ * with the same properties and tags, but there may be resources which
+ * are different enough to not match but still can affect the job from
+ * an interference perspective.
+ * At least in simulation, resrc_tree_allocate only calls
+ * resrc_tree_allocate_in_time, which never sets the resrc state
+ */
+/* TODO: Free the node vector for each job when you see a job has completed
  */
 static int synchronize (resrc_tree_t *found_tree)
 {
@@ -375,13 +400,31 @@ static int synchronize (resrc_tree_t *found_tree)
 }
 
 /* Called at the beginning of each schedule_jobs. All reservations are released 
- * before this. Allocates structures assuming no nodes are allocated.
+ * before this. This assumes the first time the plugin is loaded there are no
+ * resources being used. Removes all the completion times of allocations which
+ * have finished since the last scheduling loop.
  */
 int sched_loop_setup (flux_t *h, resrc_api_ctx_t *rsapi)
 {
     curr_reservation_depth = 0;
-    if (!all_completion_times)
+    if (!allocation_completion_times) {
+        allocation_completion_times = zlist_new ();
+    }
+    if (!all_completion_times) {
         all_completion_times = zlist_new ();
+    } else {
+        int64_t *curr_ctime;
+        zlist_purge (all_completion_times);
+        for (curr_ctime = zlist_first (allocation_completion_times);
+             curr_ctime;
+             curr_ctime = zlist_next (allocation_completion_times)) {
+            if (current_time >= 0 && *curr_ctime < current_time) {
+                zlist_remove (allocation_completion_times, curr_ctime);
+            } else {
+                zlist_append (all_completion_times, curr_ctime);
+            }
+        }
+    }
 
     if (topo_tree == NULL) {
         resrc_tree_t *root = resrc_tree_root (rsapi);
@@ -424,12 +467,15 @@ int get_job_tier (flux_t *h, resrc_reqst_t *rr)
 
 
 /*
- * find_resources() identifies the all of the resource candidates for
- * the job.  The set of resources returned could be more than the job
- * requires.  A later call to select_resources() will cull this list
- * down to the most appropriate set for the job.
- *
- * Inputs:  rsapi       - Contains the root of the resource tree
+ * find_resources() counts the number of resources currently available for the
+ * job, makes a tree enumerating these resources, and synchronizes the internal
+ * data structures with the resource tree. If there are are no resources or
+ * there can be no reservations (for whatever reason) this will return 0.
+ * As it stands these topological data structures assume homogeneity. For
+ * example, a job requesting a "large" node when none are available will still
+ * find 0 and no following "small" nodes can be backfilled. For an explanation
+ * of this issue see https://github.com/flux-framework/flux-sched/issues/197
+ * Inputs:  rsapi       - Contains the root of the physical resource tree
  *          resrc_reqst - the resources the job requests
  * Returns: nfound      - the number of resources found
  *          found_tree  - a resource tree containing resources that satisfy the
@@ -440,47 +486,37 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                         resrc_tree_t **found_tree)
 {
     int64_t nfound = 0;
-
     if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
         return 0;
     }
-    
-    /* A resource request's starttime is the most current time */
-    int64_t current_time = resrc_reqst_starttime (resrc_reqst);
-    if (current_time < 0) {
-        printf ("Current time = %"PRId64"\n", current_time); // TEST
-    }
-    *found_tree = NULL;
+    /* TODO: May want to update from resrc_tree_search to our own, more
+     * efficient function */
+    /* Find all available resources so we can update the topo_tree */
     nfound = resrc_tree_search (rsapi, resrc, resrc_reqst, found_tree, true);
-
-    if (!nfound && *found_tree) {
+    printf ("%"PRId64" nodes available\n", nfound); // TEST
+    if (synchronize (*found_tree)) {
+        flux_log (h, LOG_ERR, "Error synchronizing");
         resrc_tree_destroy (rsapi, *found_tree, false, false);
         *found_tree = NULL;
-    } else {
-        /* Only synchronize if we found some resources available */
-        /* TODO: Keep in mind that resrc_tree_search will only match resources
-         * with the same properties and tags, but there may be resources which
-         * are different enough to not match but still can affect the job from
-         * an interference perspective.
-         * At least in simulation, resrc_tree_allocate only calls
-         * resrc_tree_allocate_in_time, which never sets the resrc state
-         */
-        printf ("%"PRId64" nodes available\n", nfound); // TEST
-        if (synchronize (*found_tree)) {
-            flux_log (h, LOG_ERR, "Error synchronizing");
+        return 0;
+    }
+
+    /* A resource request's starttime is the most current time */
+    /* We can't satisfy the request now */
+    if (nfound < resrc_reqst_reqrd_qty (resrc_reqst)) {
+        // A little time saver; if you're not going to reserve, don't bother
+        // trying and failing to select_resources
+        if (reservation_depth == 0 ||
+                curr_reservation_depth >= reservation_depth ||
+                nfound == 0) {
+            resrc_tree_destroy (rsapi, *found_tree, false, false);
+            *found_tree = NULL;
             return 0;
         }
     }
-
-    // A little time saver; if you're not going to reserve, don't bother
-    // trying and failing to select_resources
-    if (reservation_depth == 0 || curr_reservation_depth >= reservation_depth) {
-        return 0;
-    }
     return nfound;
 }
-
 
 /*
  * cycles through all of the resource children and returns true when
@@ -496,7 +532,7 @@ static bool select_child (flux_t *h, resrc_api_ctx_t *rsapi,
 
     child_tree = resrc_tree_list_first (children);
     while (child_tree) {
-        if (select_resources (h, rsapi, child_tree,
+        if (select_resources_in_time (h, rsapi, child_tree,
                 child_reqst, selected_parent) &&
             (resrc_reqst_nfound (child_reqst) >=
              resrc_reqst_reqrd_qty (child_reqst))) {
@@ -536,11 +572,13 @@ static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
 }
 
 /*
- * select_resources() selects from the set of resource candidates the
- * best resources for the job.
+ * select_resources() selects from the set of resource candidates the best
+ * resources for the job. If the resources cannot be found now, then look into
+ * the future using each job completion time to see if you can reserve the job.
  *
- * Inputs:  found_tree      - tree of resource tree candidates
- *          resrc_reqst     - the resources the job requests
+ * Inputs:  found_tree      - tree of potential resources
+ *          resrc_reqst     - the resources the job requests. This function may
+ *                            change the requests n_found, start, and end times.
  *          selected_parent - parent of the selected resource tree
  * Returns: a resource tree of however many resources were selected
  */
@@ -548,6 +586,78 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent)
+{
+    if (!resrc_reqst) {
+        flux_log (h, LOG_ERR, "%s: called with empty request", __FUNCTION__);
+        return NULL;
+    }
+    resrc_tree_t *selected_tree;
+    /* XXX: Do I want resrc_phys_tree or found_tree? */
+    resrc_tree_t *root = resrc_phys_tree (resrc_tree_resrc (found_tree));
+    int64_t current_time = resrc_reqst_starttime (resrc_reqst);
+    int64_t req_walltime = resrc_reqst_endtime (resrc_reqst) - current_time;
+
+    /* Search for resources now */
+    selected_tree = select_resources_in_time (
+            h, rsapi, root, resrc_reqst, NULL);
+    if (resrc_reqst_all_found (resrc_reqst)) {
+        flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
+                "%"PRId64")", __FUNCTION__, current_time);
+        return selected_tree;
+    }
+    /* Reset any partial selections we made looking at the current time */
+    resrc_reqst_clear_found (resrc_reqst);
+    resrc_tree_unstage_resources (root);
+
+    /* Search for resources in the future */
+    int64_t *c_time = NULL;
+    int64_t prev_c_time = -1;
+    zlist_sort (all_completion_times, compare_int64_ascending);
+    for (c_time = zlist_first (all_completion_times);
+         c_time;
+         c_time = zlist_next (all_completion_times)) {
+        /* Purge past times from consideration */
+        if (*c_time < current_time) {
+            zlist_remove (all_completion_times, c_time);
+            continue;
+        }
+        /* Don't test the same time multiple times */
+        if (prev_c_time == *c_time)
+            continue;
+
+        resrc_reqst_set_starttime (resrc_reqst, *c_time + 1);
+        resrc_reqst_set_endtime (resrc_reqst, *c_time + 1 + req_walltime);
+        flux_log (h, LOG_DEBUG, "Attempting to find %"PRId64" nodes "
+                  "at time %"PRId64"",
+                  resrc_reqst_reqrd_qty (resrc_reqst),
+                  *c_time + 1);
+        selected_tree = select_resources_in_time (
+                h, rsapi, root, resrc_reqst, NULL);
+        /* If you found them all, great! But it's in the future, so you have to
+         * clear all found resources to ensure reserve_resources is called */
+        if (resrc_reqst_all_found (resrc_reqst)) {
+            resrc_reqst_clear_found (resrc_reqst);
+            resrc_tree_unstage_resources (root);
+            return selected_tree;
+        }
+        /* Otherwise, just wipe out the treea and clear the incomplete set of
+         * resources we may have found and start over at a later time. */
+        resrc_tree_destroy (rsapi, selected_tree, false, false);
+        resrc_reqst_clear_found (resrc_reqst);
+        resrc_tree_unstage_resources (root);
+        prev_c_time = *c_time;
+    }
+    flux_log (h, LOG_ERR, "This request can never be satisfied");
+    return NULL;
+}
+
+/* This will select some resources for a given job, either now or in the future
+ */
+static resrc_tree_t *select_resources_in_time (flux_t *h,
+                                               resrc_api_ctx_t *rsapi,
+                                               resrc_tree_t *candidate_tree,
+                                               resrc_reqst_t *resrc_reqst,
+                                               resrc_tree_t *selected_parent)
 {
     resrc_t *resrc;
     resrc_tree_list_t *children = NULL;
@@ -559,28 +669,18 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         return NULL;
     }
 
-    /* TODO: Need a way to go up. What's happening is you go from
-     * pod -> switch -> node, then reserve, but you only get one then you have
-     * to do it over again. You're updating the resrc_reqst but not
-     * selected_tree.
-     */
-    // size_t n_required = resrc_reqst_reqrd_qty (resrc_reqst);
-    // int tier = calculate_tier (n_required);
-    // printf ("You're trying to select a T%d job\n", tier); // Gets called lots
-
-    resrc = resrc_tree_resrc (found_tree);
-    if (resrc_match_resource (resrc, resrc_reqst, true)) { /* If correct type */
-        if (resrc_reqst_num_children (resrc_reqst)) { /* And has children */
-            if (resrc_tree_num_children (found_tree)) {
+    resrc = resrc_tree_resrc (candidate_tree);
+    if (resrc_match_resource (resrc, resrc_reqst, true)) {
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            if (resrc_tree_num_children (candidate_tree)) {
                 selected_tree = resrc_tree_new (selected_parent, resrc);
-                if (select_children (h, rsapi, resrc_tree_children (found_tree),
+                if (select_children (h, rsapi, resrc_tree_children (candidate_tree),
                                      resrc_reqst_children (resrc_reqst),
                                      selected_tree)) {
                     resrc_stage_resrc (resrc,
                                        resrc_reqst_reqrd_size (resrc_reqst),
                                        resrc_reqst_graph_reqs (resrc_reqst));
                     resrc_reqst_add_found (resrc_reqst, 1);
-                    flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
                 } else {
                     resrc_tree_destroy (rsapi, selected_tree, false, false);
                 }
@@ -590,9 +690,8 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst),
                                        resrc_reqst_graph_reqs (resrc_reqst));
             resrc_reqst_add_found (resrc_reqst, 1);
-            flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
         }
-    } else if (resrc_tree_num_children (found_tree)) {
+    } else if (resrc_tree_num_children (candidate_tree)) {
         /*
          * This clause visits the children of the current resource
          * searching for a match to the resource request.  The selected
@@ -604,10 +703,10 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
          * and omit the intervening socket.
          */
         selected_tree = resrc_tree_new (selected_parent, resrc);
-        children = resrc_tree_children (found_tree);
+        children = resrc_tree_children (candidate_tree);
         child_tree = resrc_tree_list_first (children);
         while (child_tree) {
-            if (select_resources (h, rsapi, child_tree,
+            if (select_resources_in_time (h, rsapi, child_tree,
                     resrc_reqst, selected_tree) &&
                 resrc_reqst_nfound (resrc_reqst) >=
                 resrc_reqst_reqrd_qty (resrc_reqst))
@@ -705,7 +804,7 @@ static void mark_topo_tree (
 }
 
 /* Once the resources have been found and selected, mark them in the selected
- * tree as allocated
+ * tree as allocated.
  */
 int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                         resrc_tree_t *selected_tree, int64_t job_id,
@@ -722,6 +821,7 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             zlist_freefn (all_completion_times, completion_time, free, true);
             flux_log (h, LOG_DEBUG, "Allocated job %"PRId64" from %"PRId64" to "
                       "%"PRId64"", job_id, starttime, *completion_time);
+            /* TODO: Add a vector of the selected nodes to our data structure */
         }
     }
     return rc;
@@ -729,11 +829,10 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 
 /*
  * reserve_resources() reserves resources for the specified job id.
- * Unlike the FCFS version where selected_tree provides the tree of
- * resources to reserve, this backfill version will search into the
- * future to find a time window when all of the required resources are
- * available, reserve those, and return the pointer to the selected
- * tree.
+ * Reservation is using EASY backfill; only the first job in the queue will
+ * get a reservation.
+ * Unused: starttime (the more updated one is in resrc_reqst)
+ *         resrc
  */
 int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                        resrc_tree_t **selected_tree, int64_t job_id,
@@ -741,80 +840,35 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                        resrc_reqst_t *resrc_reqst)
 {
     int rc = -1;
-    int64_t *completion_time = NULL;
-    int64_t nfound = 0;
-    int64_t prev_completion_time = -1;
-    resrc_tree_t *found_tree = NULL;
+    int64_t reservation_starttime = resrc_reqst_starttime (resrc_reqst);
+    int64_t reservation_completion_time = reservation_starttime + 1 + walltime;
 
     if (!resrc || !resrc_reqst) {
         flux_log (h, LOG_ERR, "%s: invalid arguments", __FUNCTION__);
-        goto ret;
+        return rc;
     }
-    if (!reservation_depth)
-        /* All backfilling (no reservations).  Return success to
-         * backfill all jobs remaining in the queue */
-        return 0;
-    else if (reservation_depth == 1) {
-        if (curr_reservation_depth)
-            /* EASY Backfill.  Top priority job is reserved, so return
-             * success to backfill all jobs remaining in the queue */
-            return 0;
-    } else if (curr_reservation_depth >= reservation_depth)
-        /* Stop reserving and return -1 to stop scheduling any more jobs */
-        goto ret;
-
     if (*selected_tree) {
-        resrc_tree_destroy (rsapi, *selected_tree, false, false);
-        *selected_tree = NULL;
-    }
-    zlist_sort (all_completion_times, compare_int64_ascending);
-
-    for (completion_time = zlist_first (all_completion_times);
-         completion_time;
-         completion_time = zlist_next (all_completion_times)) {
-        /* Purge past times from consideration */
-        if (*completion_time < starttime) {
-            zlist_remove (all_completion_times, completion_time);
-            continue;
+        rc = resrc_tree_reserve (*selected_tree, job_id,
+                                 reservation_starttime + 1,
+                                 reservation_completion_time);
+        if (rc) {
+            resrc_tree_destroy (rsapi, *selected_tree, false, false);
+            *selected_tree = NULL;
+            flux_log (h, LOG_ERR, "Reservation for job %"PRId64" failed", job_id);
+        } else {
+            /* TODO: Add vector to data structure indexed by job_id */
+            mark_topo_tree (h, *selected_tree, RESERVE);
+            curr_reservation_depth++;
+            int64_t *completion_time = xzmalloc (sizeof(int64_t));
+            *completion_time = reservation_completion_time;
+            rc = zlist_append (all_completion_times, completion_time);
+            flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
+                      "%"PRId64" from %"PRId64" to %"PRId64"",
+                      resrc_reqst_reqrd_qty (resrc_reqst), job_id,
+                      reservation_starttime + 1,
+                      reservation_starttime + 1 + walltime);
         }
-        /* Don't test the same time multiple times */
-        if (prev_completion_time == *completion_time)
-            continue;
-
-        resrc_reqst_set_starttime (resrc_reqst, *completion_time + 1);
-        resrc_reqst_set_endtime (resrc_reqst, *completion_time + 1 + walltime);
-        flux_log (h, LOG_DEBUG, "Attempting to reserve %"PRId64" nodes for job "
-                  "%"PRId64" at time %"PRId64"",
-                  resrc_reqst_reqrd_qty (resrc_reqst), job_id,
-                  *completion_time + 1);
-
-        nfound = resrc_tree_search (rsapi, resrc, resrc_reqst, &found_tree, true);
-        if (nfound >= resrc_reqst_reqrd_qty (resrc_reqst)) {
-            *selected_tree = select_resources (h, rsapi,
-                                 found_tree, resrc_reqst, NULL);
-            resrc_tree_destroy (rsapi, found_tree, false, false);
-            if (*selected_tree) {
-                rc = resrc_tree_reserve (*selected_tree, job_id,
-                                         *completion_time + 1,
-                                         *completion_time + 1 + walltime);
-                if (rc) {
-                    resrc_tree_destroy (rsapi, *selected_tree, false, false);
-                    *selected_tree = NULL;
-                } else {
-                    mark_topo_tree (h, *selected_tree, RESERVE);
-                    curr_reservation_depth++;
-                    flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
-                              "%"PRId64" from %"PRId64" to %"PRId64"",
-                              resrc_reqst_reqrd_qty (resrc_reqst), job_id,
-                              *completion_time + 1,
-                              *completion_time + 1 + walltime);
-                }
-                break;
-            }
-        }
-        prev_completion_time = *completion_time;
     }
-ret:
     return rc;
 }
 
