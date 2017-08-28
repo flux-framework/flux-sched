@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-/* Overview
+/* Overview:
  * This plugin implements a topologically-aware scheduler which supports the
  * same backfilling options as sched.backfill based on the reservation_depth but
  * with additional restrictions on job placement to avoid inter-job interference
@@ -40,62 +40,34 @@
  * trees which have at most three levels from the pod down to the node. Children
  * of "node" are allowed but this plugin only searches down to "node."
  *
- * We distinguish between three types of jobs. Let
+ * We distinguish between three tiers of jobs. Let
  *   N = number of nodes requested
  *   levels[i] be the number of children of a vertex at level Li
- * T1: (N < levels[2]) A job fitting within a single L2 tree ("switch")
- * T2: (levels[1] < N <= levels[1]*levels[2]) A job spanning multiple L2
- *      trees but still within one L1 tree ("pod")
- * T3: (N > levels[1]*levels[2]) A job spanning multiple L1 trees ("pods")
+ *   T1: (N < levels[2]) A job fitting within a single L2 tree ("switch")
+ *   T2: (levels[1] < N <= levels[1]*levels[2]) A job spanning multiple L2
+ *        trees but still within one L1 tree ("pod")
+ *   T3: (N > levels[1]*levels[2]) A job spanning multiple L1 trees ("pods")
  * 
- * Without topology-aware scheduling, effectively every job is treated as
- * a T1 job; they may coexist in any way. Thus we do not need to use auxiliary
- * data structures for T1 jobs and can bypass the topology-specific checks.
+ * Scheduler Overview and Explanation:
+ * The scheduler in sched.c does the following (the schedule_jobs function)
  *
- * Larger jobs pose more challenges; we must keep track of which L2 and L1
- * trees are currently occupied or reserved, and by which type of job.
+ * sched_loop_setup                   // Clear all previous reservations
+ * for (job in Queue)                 // Queue is not handled by plugin
+ *   if (find_resources > 0)          (1)
+ *     if (select_resources != NULL)  (2)
+ *       if (resrc_request_all_found) // select_resources deals with this
+ *         allocate_resources         // Add allocation counters to topo_tree
+ *       else
+ *         reserve_resources          // Add reservation counters to topo_tree
  *
- * Best-fit:
- * Another improvement over the existing backfill algorithm is including a best-
- * fit algorithm; while find_resources may return 100 nodes for a 5 node job,
- * sched.topo will find the 5 nodes which leave the least amount of surrounding
- * space.
- *
- * Best-fit details:
- * The best-fit will, like SLURM's topology/tree plugin, find
- * the lowest level which can accommodate the job and then attempt to place it.
- * One important difference is sched.topo will not split a T1 job across
- * multiple L2 trees, nor will it place a T2 job multiple L1 trees.
- *
- * Some Complications:
- * Suppose there is a cluster with 8 pods with 72 nodes per
- * pod, and a T3 job which requires 200 nodes. Which of these 8 pods do we
- * select? We may only pick pods without other T3 jobs, but beyond that we
- * preferentially pick the emptiest pods first up until we have <72 nodes to
- * select. This minimizes the total number of pods occupied at the T3 level. For
- * the remainder, we use best-fit; which partial pod can we partially fill such
- * that the number of unallocated nodes within it is minimized.
- * Idea: maybe this can recurse? Minimize unallocated pods -> switches -> nodes
- *
- * Assumptions:
- * A sibling at each level is symmetric; that is, if one vertex has K children,
- * then it is expected that every other vertex at that level has K children.
+ *  (1) Synchronize topo_tree with resrc_tree and return all the resources
+ *      available now. Note that if find_resources returns 0 there is no point
+ *      trying to reserve since nothing can happen until a job completes anyway.
+ *  (2) Here we select nodes either now or future. Returns a resource_tree that
+ *      contains exactly the number of nodes allocate or reserve_resources needs
  * 
- * Auxiliary Data Structures and notes from meeting:
- * Tree which gets updated upon each job completing each job--hack sched.c
- * to call plugin->job_completed.
- * This will be a tree with the following structs
- * struct {
- *      ptr to resource tree
- *      job_type (0 - avail, 1,2,3 -> T1,T2,T3)
- *      children (ptr to list of topotree)
- *      resrc_t  (node, switch, pod, cluster)
- * } topotree;
- *
- * Then the algorithm, where
- * L = least, A = available, P = pod, S = switch, N = number of nodes in a job
- *
- * count = 0
+ * Overview of Algorithm:
+ * Let L = least, A = available, P = pod, S = switch, N = # of nodes in a job
  * switch (job type)
  * case t1:
  *      from (LAP:MAP such that N_avail >= N)
@@ -128,9 +100,37 @@
  * Try to search and place the job again
  * If you can place the job, break. Then we have from T_f + job's walltime
  *
- * Unresolved issues:
- * Can the plugin assume it is loaded when no jobs are running?
- * If not, then we need to set the tiers upon initialization
+ * Details:
+ * We ensure a job will never be "upgraded". For example, a T1 job will always
+ * be scheduled on a single switch and T2 on a single pod.
+ * Q: Do we allow a T2/3 job which may only need 2 switches/pods to take up 3?
+ * A: As of now, no.
+ * 
+ * Best-fit:
+ * Another improvement over the existing backfill algorithm is including a best-
+ * fit algorithm; while find_resources may return 100 nodes for a 5 node job,
+ * sched.topo will find the 5 nodes which leave the least amount of surrounding
+ * space.
+ *
+ * Best-fit details:
+ * The best-fit will, like SLURM's topology/tree plugin, find
+ * the lowest level which can accommodate the job and then attempt to place it.
+ * One important difference is sched.topo will not split a T1 job across
+ * multiple L2 trees, nor will it place a T2 job multiple L1 trees.
+ *
+ * Some Complications:
+ * Suppose there is a cluster with 8 pods with 72 nodes per
+ * pod, and a T3 job which requires 200 nodes. Which of these 8 pods do we
+ * select? We may only pick pods without other T3 jobs, but beyond that we
+ * preferentially pick the emptiest pods first up until we have <72 nodes to
+ * select. This minimizes the total number of pods occupied at the T3 level. For
+ * the remainder, we use best-fit; which partial pod can we partially fill such
+ * that the number of unallocated nodes within it is minimized.
+ * Idea: maybe this can recurse? Minimize unallocated pods -> switches -> nodes
+ *
+ * Assumptions:
+ * A sibling at each level is symmetric; that is, if one vertex has K children,
+ * then it is expected that every other vertex at that level has K children.
  */
 
 #if HAVE_CONFIG_H
@@ -180,7 +180,9 @@ static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
 static zlist_t *allocation_completion_times = NULL;
 static zlist_t *all_completion_times = NULL;
-// static zlist_t *node_selection = NULL; /* May be an allocation or reservation */
+/* Selected nodes may be an allocation or reservation; this is created in
+ * select_resources then saved off in allocate/reserve_resources */
+static zlist_t *selected_nodes = NULL;
 static int64_t current_time = -1;
 /* Topology-specific data structures and types */
 typedef enum {RESERVE, ALLOCATE} mark_enum_t;
@@ -273,7 +275,7 @@ static inline resrc_enum_t resrc_enum_from_type (char *r_t)
  * Also populates a hash for fast lookup from resrc name -> topo,
  * This assumes you have already initialized the hash table
  */
-static topo_tree_t *create_topo_tree (
+static topo_tree_t *topo_tree_create (
         flux_t *h, zhash_t *node_hash, resrc_tree_t *tree, topo_tree_t *parent)
 {
     int rc;
@@ -319,7 +321,7 @@ static topo_tree_t *create_topo_tree (
     resrc_tree_list_t *children = resrc_tree_children (tree);
     resrc_tree_t *child = resrc_tree_list_first (children);
     while (child != NULL) {
-        topo_child = create_topo_tree (h, node_hash, child, new_tree);
+        topo_child = topo_tree_create (h, node_hash, child, new_tree);
         if (topo_child != NULL) {
             if (new_tree->children == NULL) {
                 new_tree->children = zlist_new ();
@@ -335,6 +337,45 @@ static topo_tree_t *create_topo_tree (
         child = resrc_tree_list_next (children);
     }
     return new_tree;
+}
+
+static inline char *str_from_resrc_enum (resrc_enum_t r_e)
+{
+    switch (r_e) {
+    case CLUSTER:
+        return "cluster";
+    case POD:
+        return "| pod";
+    case SWITCH:
+        return "| | switch";
+    case NODE:
+        return "| | | node";
+    case UNKNOWN:
+        return "unknown";
+    }
+    return "unreachable but this satisfies the compiler";
+}
+
+void topo_tree_print (topo_tree_t *tt)
+{
+    if (tt == NULL) {
+        return;
+    }
+    char *tt_type = str_from_resrc_enum (tt->type);
+    printf ("%s -> %s, Alloc T1: %"PRId64", T2: %"PRId64", T3: %"PRId64"; "
+            "Reserv T1: %"PRId64", T2: %"PRId64", T3: %"PRId64"\n",
+            tt_type, resrc_name (resrc_tree_resrc (tt->ct)),
+            tt->a_tier.T1, tt->a_tier.T2, tt->a_tier.T3,
+            tt->r_tier.T1, tt->r_tier.T2, tt->r_tier.T3);
+    zlist_t *children = tt->children;
+    if (children == NULL) {
+        return;
+    }
+    topo_tree_t *child = zlist_first (children);
+    while (child != NULL) {
+        topo_tree_print (child);
+        child = zlist_next (children);
+    }
 }
 
 void topo_tree_destroy (topo_tree_t *tt)
@@ -397,10 +438,13 @@ static int synchronize (resrc_tree_t *found_tree)
         /* Mark the resource as available */
         if (tt->a_tier.T1 > 0) {
             tt->a_tier.T1--;
+            tt->parent->a_tier.T1--;
+            tt->parent->parent->a_tier.T1--;
             // printf ("A T1 job completed on node '%s'\n", node_name); // TEST
         } else if (tt->a_tier.T2 > 0) {
             tt->a_tier.T2--;
             tt->parent->a_tier.T2--;
+            tt->parent->parent->a_tier.T2--;
             // printf ("A T2 job completed on node '%s'\n", node_name); // TEST
         } else if (tt->a_tier.T3 > 0) {
             tt->a_tier.T3--;
@@ -408,7 +452,7 @@ static int synchronize (resrc_tree_t *found_tree)
             tt->parent->parent->a_tier.T3--;
             // printf ("A T3 job completed on node '%s'\n", node_name); // TEST
         }
-    } else { /* Recurse */
+    } else { /* We're not at the "node" level, Recurse */
         resrc_tree_list_t *children = resrc_tree_children (found_tree);
         resrc_tree_t *child = resrc_tree_list_first (children);
         while (child != NULL) {
@@ -477,7 +521,6 @@ int get_job_tier (flux_t *h, resrc_reqst_t *rr)
     return tier;
 }
 
-
 /*
  * find_resources() counts the number of resources currently available for the
  * job, makes a tree enumerating these resources, and synchronizes the internal
@@ -501,7 +544,7 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     if (topo_tree == NULL) {
         if (resrc_tree_root (rsapi)) {
             node2topo_hash = zhash_new ();
-            topo_tree = create_topo_tree (
+            topo_tree = topo_tree_create (
                     h, node2topo_hash, resrc_tree_root (rsapi), NULL);
         } else {
             flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
@@ -528,8 +571,9 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     /* A resource request's starttime is the most current time */
     /* We can't satisfy the request now */
     if (nfound < resrc_reqst_reqrd_qty (resrc_reqst)) {
-        // A little time saver; if you're not going to reserve, don't bother
-        // trying and failing to select_resources
+        /* A little time saver; if you're not going to reserve, don't bother
+         * trying and failing to select_resources
+         */
         if (reservation_depth == 0 ||
                 curr_reservation_depth >= reservation_depth ||
                 nfound == 0) {
@@ -537,6 +581,8 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             *found_tree = NULL;
             return 0;
         }
+        /* TODO: Also set a flag that select_resources can see so it doesn't try
+         * to place the job now; it will only try to make a reservation */
     }
     return nfound;
 }
@@ -594,6 +640,218 @@ static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
     return selected;
 }
 
+static int sort_ascending (void *key1, void *key2)
+{
+    return strcmp ((const char *)key1, (const char *)key2);
+}
+
+//static int sort_descending (void *key1, void *key2)
+//{
+//    return -1 * strcmp ((const char *)key1, (const char *)key2);
+//}
+
+/* Get switches with at least n_nodes available. Adds to a hash table with the
+ * following format for keys <nodes_available><switch_name> e.g. 0015l2_switch4
+ * This is done so they can be sorted by available nodes. If no such switches
+ * are available, returns NULL. Assumes the input tree is rooted at a pod.
+ */
+zhash_t *get_switches (topo_tree_t *tt_pod, int64_t nodes_requested)
+{
+    int64_t nodes_avail;
+    zhash_t *switch_h = zhash_new ();
+    zlist_t *switches = tt_pod->children;
+    topo_tree_t *sw = zlist_first (switches);
+    char *key;
+    while (sw != NULL) {
+        nodes_avail = (levels[tree_depth-1]) -
+                (sw->a_tier.T1 + sw->r_tier.T1 +
+                 sw->a_tier.T2 + sw->r_tier.T2 +
+                 sw->a_tier.T3 + sw->r_tier.T3);
+        if (nodes_avail >= nodes_requested) {
+            key = xasprintf ("%020"PRId64"%s",
+                    nodes_avail, resrc_name (resrc_tree_resrc (sw->ct)));
+            zhash_insert (switch_h, key, sw);
+            zhash_freefn (switch_h, key, NULL); // We don't want to free tt_pod
+            printf ("Added key '%s'\n", key); // TEST
+            free (key);
+        }
+        sw = zlist_next (switches);
+    }
+    return switch_h;
+}
+
+/* Get pods with at least n_nodes available. Adds to a hash table with the
+ * following format for keys <nodes_available><switch_name> e.g. 0000315pod2
+ * This is done so they can be sorted by available nodes. If no such switches
+ * are available, returns NULL.
+ */
+zhash_t *get_pods (topo_tree_t *tt_root, int64_t nodes_requested)
+{
+    int64_t nodes_avail;
+    zhash_t *pod_h = zhash_new ();
+    zlist_t *pods = tt_root->children;
+    topo_tree_t *pd = zlist_first (pods);
+
+    char *key;
+    /* Step 1: For each pod, calculate the number of available nodes */
+    while (pd != NULL) {
+        nodes_avail = (levels[tree_depth-1] * levels[tree_depth-2]) -
+                (pd->a_tier.T1 + pd->r_tier.T1 +
+                 pd->a_tier.T2 + pd->r_tier.T2 +
+                 pd->a_tier.T3 + pd->r_tier.T3);
+        if (nodes_avail >= nodes_requested) {
+            key = xasprintf ("%020"PRId64"%s",
+                    nodes_avail, resrc_name (resrc_tree_resrc (pd->ct)));
+            zhash_insert (pod_h, key, pd);
+            zhash_freefn (pod_h, key, NULL); // We don't want to free tt_root
+            printf ("Added key '%s'\n", key);
+            free (key);
+        }
+        pd = zlist_next (pods);
+    }
+    return pod_h;
+}
+
+/* Checks if the node is available right now */
+int static inline is_available (topo_tree_t *node)
+{
+    return ! (node->a_tier.T1 | node->a_tier.T2 | node->a_tier.T3
+              | node->r_tier.T1 | node->r_tier.T2 | node->r_tier.T3);
+}
+
+/* Selects at most n_nodes in a given switch, appending them to selected_nodes.
+ * Returns the number of nodes added to the list.
+ */
+int64_t select_nodes (
+        topo_tree_t *a_switch, int64_t n_nodes, zlist_t **selected_nodes)
+{
+    if (*selected_nodes == NULL) {
+        *selected_nodes = zlist_new ();
+    }
+    int64_t nodes_added = 0;
+    zlist_t *candidate_nodes = a_switch->children;
+    topo_tree_t *node = zlist_first (candidate_nodes);
+    while (nodes_added < n_nodes && node != NULL) {
+        if (is_available (node)) {
+            zlist_append (*selected_nodes, node);
+            printf("Added node %s to selection\n",
+                    resrc_name (resrc_tree_resrc (node->ct))); // TEST
+            nodes_added++;
+        }
+        node = zlist_next (candidate_nodes);
+    }
+    return nodes_added;
+}
+
+/*
+ * case t1:
+ *      from (LAP:MAP such that N_avail >= N)
+ *          from (LAS:MAS such that N_avail >= N)
+ *              for (nd in Nodes)
+ *                  if (available) assign and update and increment nfound
+ *                  if (nfound == N) we're done
+ */
+/* Selects a set of nodes. Expects pods and switches to have at least n_nodes
+ * nodes available. The preference is the fullest switch which can still hold
+ * that job (a best-fit approach). Returns a list of n_nodes nodes.
+ */
+zlist_t *t1_job_select (topo_tree_t *tt, int64_t n_nodes)
+{
+    zhash_t *pods = get_pods (tt, n_nodes);
+    zlist_t *sorted_pod_keys = zhash_keys (pods);
+    zlist_sort (sorted_pod_keys, sort_ascending);
+
+    char *pod_key = zlist_first (sorted_pod_keys);
+    topo_tree_t *a_pod;
+
+    zhash_t *switches;
+    zlist_t *sorted_switch_keys;
+    char *switch_key;
+    topo_tree_t *a_switch;
+
+    zlist_t *selected_nodes = zlist_new ();
+
+    /* Loop over all pods */
+    while (pod_key != NULL) {
+        /*  get_switches will only return the switches with more than n_nodes
+         *  available so we don't need to loop over sorted_switch_keys. */
+        a_pod = zhash_lookup (pods, pod_key);
+        switches = get_switches (a_pod, n_nodes);
+        sorted_switch_keys = zhash_keys (switches);
+        if (zlist_size (sorted_switch_keys) == 0) {
+            pod_key = zlist_next (sorted_pod_keys);
+            continue;
+        }
+        zlist_sort (sorted_switch_keys, sort_ascending);
+        switch_key = zlist_first (sorted_switch_keys);
+        a_switch = zhash_lookup (switches, switch_key);
+        printf ("Trying with pod %s and switch %s:\n", pod_key, switch_key); // TEST
+        if (select_nodes (a_switch, n_nodes, &selected_nodes) >= n_nodes) {
+            zhash_destroy (&switches);
+            zlist_destroy (&sorted_switch_keys);
+            break;
+        } else {
+            zhash_destroy (&switches);
+            zlist_destroy (&sorted_switch_keys);
+            zlist_destroy (&selected_nodes);
+            pod_key = zlist_next (sorted_pod_keys);
+        }
+    }
+    zhash_destroy (&pods);
+    zlist_destroy (&sorted_pod_keys);
+    return selected_nodes;
+}
+
+/*
+ * case t2:
+ *      from (LAP:MAP such that N_avail >= N)
+ *          AS = {s | T(s) < T2}
+ *          from (MAS:LAS in AS)
+ *              for (nd in Nodes)
+ *                  if (available) assign and update and increment nfound
+ *                  if (nfound == N) we're done
+ */
+zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
+{
+    return NULL;
+}
+
+/*
+ * case t3:
+ *      AP = {p | T(p) < T3}
+ *      from (p = MAP:LAP in AP)
+ *          AS = {s | T(s) < T2 in p}
+ *          from (MAS:LAS in AS)
+ *              for (nd in Nodes)
+ *                  if (available) assign and update and increment nfound
+ *                  if (nfound == N) we're done
+ */
+zlist_t *t3_job_select (topo_tree_t *tt, int64_t n_nodes)
+{
+    return NULL;
+}
+
+/* Finds you n_nodes nodes, if possible, given the topology tree of available
+ * and reserved nodes. Returns a list of nodes. For a higher-level overview, see
+ * Overview
+ */
+zlist_t *topo_select_resources (topo_tree_t *tt, int64_t n_nodes)
+{
+    int tier = calculate_tier (n_nodes);
+    printf ("Searching for %"PRId64" nodes (T%d)\n", n_nodes, tier); // TEST
+    // topo_tree_print (tt); // TEST
+    switch (tier) {
+    case 1:
+        return t1_job_select (tt, n_nodes);
+    case 2:
+        return t2_job_select (tt, n_nodes);
+    case 3:
+        return t3_job_select (tt, n_nodes);
+    default:
+        return NULL; // This should never happen
+    }
+} 
+
 /*
  * select_resources() selects from the set of resource candidates the best
  * resources for the job. If the resources cannot be found now, then look into
@@ -620,9 +878,21 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     int64_t current_time = resrc_reqst_starttime (resrc_reqst);
     int64_t req_walltime = resrc_reqst_endtime (resrc_reqst) - current_time;
 
+    /* TODO: Replace this with the topo_select_resources chunk */
     /* Search for resources now */
     selected_tree = select_resources_in_time (
             h, rsapi, root, resrc_reqst, NULL);
+
+    /* The actual topology-aware scheduler */
+    if (selected_nodes != NULL) { // Last scheduling's selection
+        zlist_destroy (&selected_nodes);
+    }
+    selected_nodes = topo_select_resources (
+            topo_tree, resrc_reqst_reqrd_qty (resrc_reqst));
+    if (selected_nodes == NULL) {
+        flux_log (h, LOG_ERR, "Unable to do topology scheduling");
+    }
+
     if (resrc_reqst_all_found (resrc_reqst)) {
         flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
                 "%"PRId64")", __FUNCTION__, current_time);
@@ -796,24 +1066,30 @@ static void mark_topo_tree (
             // printf ("Reserving '%s'\n", node_name);
             if (job_tier == 1) {
                 topo_node->r_tier.T1++;
-                printf ("A T1 job r_marked on node '%s'\n", node_name); // TEST
+                topo_node->parent->r_tier.T1++;
+                topo_node->parent->parent->r_tier.T1++;
+                // printf ("A T1 job r_marked on node '%s'\n", node_name); // TEST
             } else if (job_tier == 2) {
                 topo_node->r_tier.T2++;
                 topo_node->parent->r_tier.T2++;
-                printf ("A T2 job r_marked on node '%s'\n", node_name); // TEST
+                topo_node->parent->parent->r_tier.T2++;
+                // printf ("A T2 job r_marked on node '%s'\n", node_name); // TEST
             } else { // job_tier == 3
                 topo_node->r_tier.T3++;
                 topo_node->parent->r_tier.T3++;
                 topo_node->parent->parent->r_tier.T3++;
-                printf ("A T3 job r_marked on node '%s'\n", node_name); // TEST
+                // printf ("A T3 job r_marked on node '%s'\n", node_name); // TEST
             }
         } else { // ALLOCATE
             if (job_tier == 1) {
                 topo_node->a_tier.T1++;
+                topo_node->parent->a_tier.T1++;
+                topo_node->parent->parent->a_tier.T1++;
                 // printf ("A T1 job a_marked on node '%s'\n", node_name); // TEST
             } else if (job_tier == 2) {
                 topo_node->a_tier.T2++;
                 topo_node->parent->a_tier.T2++;
+                topo_node->parent->parent->a_tier.T2++;
                 // printf ("A T2 job a_marked on node '%s'\n", node_name); // TEST
             } else { // job_tier == 3
                 topo_node->a_tier.T3++;
@@ -886,7 +1162,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = reservation_completion_time;
             rc = zlist_append (all_completion_times, completion_time);
-            flux_log (h, LOG_ERR, "Reserved %"PRId64" nodes for job "
+            flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
                       "%"PRId64" from %"PRId64" to %"PRId64"",
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
                       reservation_starttime + 1,
@@ -1040,7 +1316,7 @@ static int allocate_topo_structures (flux_t *h)
 // int finalize (flux_t *h)
 // {
 //     resrc_api_fini (topo_rsapi);
-//     free(levels);
+//     free (levels);
 //     topo_tree_destroy (topo_tree);
 //     zhash_destroy (&node2topo_hash);
 // }
