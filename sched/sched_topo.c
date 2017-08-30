@@ -67,7 +67,10 @@
  *      contains exactly the number of nodes allocate or reserve_resources needs
  * 
  * Overview of Algorithm:
- * Let L = least, A = available, P = pod, S = switch, N = # of nodes in a job
+ * Let
+ *     L = least, A = available, P = pod, S = switch, N = # of nodes in a job,
+ *     T(x) = the maximum tier of allocated jobs under that resource.
+ *
  * switch (job type)
  * case t1:
  *      from (LAP:MAP such that N_avail >= N)
@@ -158,6 +161,7 @@
 #include "resrc_api_internal.h" /* The fields of resrc_api_ctx_t */
 #include "rsreader.h" /* rsreader_resrc_bulkload */
 
+#define min(x, y) ( ((x) < (y)) ? (x) : (y) )
 static int compare_int64_ascending (void *item1, void *item2)
 {
     int64_t time1 = *((int64_t *) item1);
@@ -725,10 +729,10 @@ static int sort_ascending (void *key1, void *key2)
     return strcmp ((const char *)key1, (const char *)key2);
 }
 
-//static int sort_descending (void *key1, void *key2)
-//{
-//    return -1 * strcmp ((const char *)key1, (const char *)key2);
-//}
+static int sort_descending (void *key1, void *key2)
+{
+    return -1 * strcmp ((const char *)key1, (const char *)key2);
+}
 
 /* Get switches with at least n_nodes available. Adds to a hash table with the
  * following format for keys <nodes_available><switch_name> e.g. 0015l2_switch4
@@ -800,7 +804,8 @@ int static inline is_available (topo_tree_t *node)
 }
 
 /* Selects at most n_nodes in a given switch, appending them to selected_nodes.
- * Returns the number of nodes added to the list.
+ * Returns the number of nodes added to the list. Does not check for
+ * interference, only that the nodes are not allocated or reserved.
  */
 int64_t select_nodes (
         topo_tree_t *a_switch, int64_t n_nodes, zlist_t **selected_nodes)
@@ -862,6 +867,8 @@ zlist_t *t1_job_select (topo_tree_t *tt, int64_t n_nodes)
         sorted_switch_keys = zhash_keys (switches);
         if (zlist_size (sorted_switch_keys) == 0) {
             pod_key = zlist_next (sorted_pod_keys);
+            zhash_destroy (&switches);
+            zlist_destroy (&sorted_switch_keys); 
             continue;
         }
         zlist_sort (sorted_switch_keys, sort_ascending);
@@ -901,7 +908,73 @@ zlist_t *t1_job_select (topo_tree_t *tt, int64_t n_nodes)
  */
 zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
 {
-    return NULL;
+    int64_t nodes_found = 0;
+    int64_t nodes_on_switch;
+    zlist_t *selected_nodes = zlist_new ();
+
+    zhash_t *pods = get_pods (tt, n_nodes);
+    zlist_t *sorted_pod_keys = zhash_keys (pods);
+    zlist_sort (sorted_pod_keys, sort_ascending);
+    char *pod_key;
+    topo_tree_t *a_pod;
+
+    zhash_t *switches;
+    zlist_t *sorted_switch_keys;
+    char *switch_key;
+    topo_tree_t *a_switch;
+
+    /* Loop over all pods */
+    for (pod_key = zlist_first (sorted_pod_keys);
+         pod_key != NULL;
+         pod_key = zlist_next (sorted_pod_keys)) {
+
+        a_pod = zhash_lookup (pods, pod_key);
+        /* Since we require multiple switches, get ones with any nodes free */
+        switches = get_switches (a_pod, 1);
+        sorted_switch_keys = zhash_keys (switches);
+        /* It could be that the pod has enough nodes but spread across
+         * switches each without enough nodes */
+        if (zlist_size (sorted_switch_keys) == 0) {
+            zhash_destroy (&switches);
+            zlist_destroy (&sorted_switch_keys);
+            continue;
+        }
+        zlist_sort (sorted_switch_keys, sort_descending);
+        for (switch_key = zlist_first (sorted_switch_keys);
+             switch_key != NULL;
+             switch_key = zlist_next (sorted_switch_keys)) {
+
+            a_switch = zhash_lookup (switches, switch_key);
+            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
+                    a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
+                continue;
+            }
+            nodes_on_switch = select_nodes (
+                    a_switch, min(n_nodes, n_nodes - nodes_found),
+                    &selected_nodes);
+            nodes_found += nodes_on_switch;
+            printf("Found %"PRId64" nodes on this switch\n", nodes_on_switch); // TEST
+            if (nodes_found == n_nodes) {
+                printf ("Found nodes for a T2 job!\n"); // TEST
+                zhash_destroy (&switches);
+                zlist_destroy (&sorted_switch_keys);
+                zhash_destroy (&pods);
+                zlist_destroy (&sorted_pod_keys);
+                return selected_nodes;
+            }
+        }
+        zhash_destroy (&switches);
+        zlist_destroy (&sorted_switch_keys);
+    }
+    if (nodes_found != n_nodes) {
+        printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
+        zlist_destroy (&selected_nodes);
+        selected_nodes = NULL;
+    }
+    zhash_destroy (&pods);
+    zlist_destroy (&sorted_pod_keys);
+    return selected_nodes;
 }
 
 /*
@@ -1018,9 +1091,11 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
          alloc;
          alloc = zlist_next (job_allocation_list)) {
         if (alloc->completion_time < current_time) {
+            printf("Removed job %"PRId64" ending @ %"PRId64" from list,"
+                    " (size %ld)\n",
+                    alloc->job_id, alloc->completion_time,
+                    zlist_size (job_allocation_list) - 1); // TEST
             zlist_remove (job_allocation_list, alloc);
-            printf ("Removing job %"PRId64" from list at %"PRId64"\n",
-                    alloc->job_id, current_time); // TEST
             continue;
         }
         /* TOPODO: Do the magic */
