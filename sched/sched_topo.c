@@ -989,7 +989,77 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
  */
 zlist_t *t3_job_select (topo_tree_t *tt, int64_t n_nodes)
 {
-    return NULL;
+    int64_t nodes_found = 0;
+    int64_t nodes_on_switch;
+    zlist_t *selected_nodes = zlist_new ();
+
+    /* Since we require multiple pods, get ones with any nodes free */
+    zhash_t *pods = get_pods (tt, 1);
+    zlist_t *sorted_pod_keys = zhash_keys (pods);
+    zlist_sort (sorted_pod_keys, sort_descending);
+    char *pod_key;
+    topo_tree_t *a_pod;
+
+    zhash_t *switches;
+    zlist_t *sorted_switch_keys;
+    char *switch_key;
+    topo_tree_t *a_switch;
+
+    /* Loop over all pods */
+    for (pod_key = zlist_first (sorted_pod_keys);
+         pod_key != NULL;
+         pod_key = zlist_next (sorted_pod_keys)) {
+
+        a_pod = zhash_lookup (pods, pod_key);
+        if (a_pod->a_tier.T3 > 0 || a_pod->r_tier.T3 > 0) {
+            continue;
+        }
+        /* Since we require multiple switches, get ones with any nodes free */
+        switches = get_switches (a_pod, 1);
+        sorted_switch_keys = zhash_keys (switches);
+        /* It could be that the pod has enough nodes but spread across
+         * switches each without enough nodes */
+        if (zlist_size (sorted_switch_keys) == 0) {
+            zhash_destroy (&switches);
+            zlist_destroy (&sorted_switch_keys);
+            continue;
+        }
+        zlist_sort (sorted_switch_keys, sort_descending);
+        for (switch_key = zlist_first (sorted_switch_keys);
+             switch_key != NULL;
+             switch_key = zlist_next (sorted_switch_keys)) {
+
+            a_switch = zhash_lookup (switches, switch_key);
+            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
+                    a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
+                continue;
+            }
+            nodes_on_switch = select_nodes (
+                    a_switch, min(n_nodes, n_nodes - nodes_found),
+                    &selected_nodes);
+            nodes_found += nodes_on_switch;
+            printf("Found %"PRId64" nodes on this switch\n", nodes_on_switch); // TEST
+            if (nodes_found == n_nodes) {
+                printf ("Found nodes for a T3 job!\n"); // TEST
+                zhash_destroy (&switches);
+                zlist_destroy (&sorted_switch_keys);
+                zhash_destroy (&pods);
+                zlist_destroy (&sorted_pod_keys);
+                return selected_nodes;
+            }
+        }
+        zhash_destroy (&switches);
+        zlist_destroy (&sorted_switch_keys);
+    }
+    if (nodes_found != n_nodes) {
+        printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
+        zlist_destroy (&selected_nodes);
+        selected_nodes = NULL;
+    }
+    zhash_destroy (&pods);
+    zlist_destroy (&sorted_pod_keys);
+    return selected_nodes;
 }
 
 /* Finds you n_nodes nodes, if possible, given the topology tree of available
