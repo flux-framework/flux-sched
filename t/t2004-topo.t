@@ -35,7 +35,7 @@ test_expect_success 'sim: started successfully' '
     flux module load sim exit-on-complete=false &&
     flux module load submit job-csv=${jobdata} &&
     flux module load sim_exec &&
-    flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.topo plugin-opts=reserve-depth=1,rdl-topology=${rdlconf}
+    flux module load sched rdl-conf=${rdlconf} in-sim=true plugin=sched.topo
 '
 
 test_expect_success 'sim: scheduled and ran all jobs' '

@@ -223,7 +223,6 @@ typedef struct topo_tree_ {
 } topo_tree_t;
 
 static topo_tree_t *topo_tree;
-static resrc_api_ctx_t *topo_rsapi;
 static zhash_t *node2topo_hash; // key: node name (char *), item: topo_tree_t *
 static int tree_depth;
 /* levels[0] is the highest level (e.g. pods), levels[tree_depth-1] are nodes */
@@ -248,7 +247,7 @@ static resrc_tree_t *select_resources_in_time (flux_t *h,
                                                resrc_reqst_t *resrc_reqst,
                                                resrc_tree_t *selected_parent);
 
-static int allocate_topo_structures (flux_t *h);
+static int allocate_topo_structures (flux_t *h, resrc_tree_t *root);
 
 /* Initialize the number of jobs of each tier for a given resource. Assumes
  * the scheduler plugin is loaded when no jobs are running.
@@ -626,10 +625,11 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 {
     int64_t nfound = 0;
     if (topo_tree == NULL) {
-        if (resrc_tree_root (rsapi)) {
+        resrc_tree_t *root = resrc_tree_root (rsapi);
+        if (root) {
+            allocate_topo_structures (h, root);
             node2topo_hash = zhash_new ();
-            topo_tree = topo_tree_create (
-                    h, node2topo_hash, resrc_tree_root (rsapi), NULL);
+            topo_tree = topo_tree_create (h, node2topo_hash, root, NULL);
         } else {
             flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
             return -1;
@@ -1024,7 +1024,7 @@ zlist_t *t3_job_select (topo_tree_t *tt, int64_t n_nodes)
             zlist_destroy (&sorted_switch_keys);
             continue;
         }
-        zlist_sort (sorted_switch_keys, sort_descending);
+        zlist_sort (sorted_switch_keys, sort_ascending);
         for (switch_key = zlist_first (sorted_switch_keys);
              switch_key != NULL;
              switch_key = zlist_next (sorted_switch_keys)) {
@@ -1500,7 +1500,6 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     char *entry = NULL;
     char topo_filename[PATH_MAX];
     topo_filename[0] = '\0'; /* Copy the existing ctx by default */
-    topo_rsapi = resrc_api_init ();
 
     for (entry = argz;
          entry;
@@ -1508,8 +1507,6 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 
         if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
             reserve_depth_str = strstr (entry, "=") + 1;
-        } else if (!strncmp ("rdl-topology=", entry, sizeof("rdl-topology"))) {
-            strncpy (topo_filename, strstr (entry, "=") + 1, PATH_MAX);
         } else {
             flux_log(h, LOG_ERR, "Invalid argument %s", entry);
             rc = -1;
@@ -1522,21 +1519,13 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         // If atoi fails, it defaults to 0, which is fine for us
         reservation_depth = atoi (reserve_depth_str);
     } else {
-        reservation_depth = 0;
+        reservation_depth = 1;
     }
-
-    if (topo_filename[0] != '\0') {
-        if (rsreader_resrc_bulkload (topo_rsapi, topo_filename, NULL)) {
-            flux_log (h, LOG_ERR, "Unable to read rdl-topology file '%s'",
-                    topo_filename);
-            rc = -1;
-            goto done;
-        }
-        if (allocate_topo_structures (h)) {
-            flux_log (h, LOG_ERR, "Unable to allocate topology data structures");
-            rc = -1;
-            goto done;
-        }
+    if (reservation_depth != 1) {
+        flux_log (h, LOG_ERR, "Currently only a reservation depth of 1"
+                " is supported (EASY Backfill)");
+        rc = -1;
+        goto done;
     }
 
     if (!sp) {
@@ -1563,11 +1552,11 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 /* Go through the topology resource tree and allocate an array for each
  * level to contain which resources are allocated and when
  */
-static int allocate_topo_structures (flux_t *h)
+static int allocate_topo_structures (flux_t *h, resrc_tree_t *root)
 {
     tree_depth = 0;
     /* Pass 1: Count the depth of the tree */
-    resrc_tree_t *tree = resrc_tree_root (topo_rsapi);
+    resrc_tree_t *tree = root;
     resrc_tree_list_t *children = resrc_tree_children (tree);
     resrc_t *resrc = resrc_tree_resrc (tree);
     // resrc_tree_print (tree);
@@ -1593,7 +1582,7 @@ static int allocate_topo_structures (flux_t *h)
     /* Pass 2: Allocate availability arrays for each level */
     int d;
     int64_t t_d;
-    tree = resrc_tree_root (topo_rsapi);
+    tree = root;
     children = resrc_tree_children (tree);
     for (d = 0; d < tree_depth; d++) {
         levels[d] = resrc_tree_num_children (tree);
@@ -1604,10 +1593,7 @@ static int allocate_topo_structures (flux_t *h)
                 d, levels[d], t_d); // TEST
     }
 
-    /* XXX: If the fan-out isn't symmetric across all leaves, we should
-     * identify those that are smaller then set them as always allocated,
-     * t1 objects (can play nice with everyone) via 1 << 63
-     */
+    /* XXX: This assumes the fan-out is symmetric across all leaves */
     return 0;
 }
 
@@ -1615,7 +1601,6 @@ static int allocate_topo_structures (flux_t *h)
 //  * XXX: Call this at the end */
 // int finalize (flux_t *h)
 // {
-//     resrc_api_fini (topo_rsapi);
 //     free (levels);
 //     topo_tree_destroy (topo_tree);
 //     zhash_destroy (&node2topo_hash);
