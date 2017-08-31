@@ -199,6 +199,8 @@ static int compare_allocation_ascending (void *item1, void *item2)
     int timecmp = alloc1->completion_time - alloc2->completion_time;
     return (timecmp == 0) ? (alloc1->job_id - alloc2->job_id) : timecmp;
 }
+/* current_selected_nodes is made in select_resources, then potentially added to
+ * job_allocation_list in allocate_resources (not added if its a reservation) */
 static zlist_t *job_allocation_list;
 static zlist_t *current_selected_nodes;
 /* Topology-specific data structures and types */
@@ -528,6 +530,39 @@ static int synchronize (resrc_tree_t *found_tree)
     return rc;
 }
 
+/* Free the nodes in node_list. Expects a list of strings representing node
+ * names and a hash table whose values are pointers into a topo_tree */
+static int free_nodes (zlist_t *node_list, zhash_t *node_hash)
+{
+    int tier = calculate_tier (zlist_size (node_list)); 
+    topo_tree_t *tt;
+    char *node;
+    for (node = zlist_first (node_list);
+         node;
+         node = zlist_next (node_list)) {
+
+        // printf ("Freeing %s...\n", node); // TEST
+        tt = (topo_tree_t *) zhash_lookup (node_hash, node);
+        if (tier == 1 && tt->a_tier.T1 > 0) {
+            tt->a_tier.T1--;
+            tt->parent->a_tier.T1--;
+            tt->parent->parent->a_tier.T1--;
+        } else if (tier == 2 && tt->a_tier.T2 > 0) {
+            tt->a_tier.T2--;
+            tt->parent->a_tier.T2--;
+            tt->parent->parent->a_tier.T2--;
+        } else if (tier == 3 && tt->a_tier.T3 > 0) {
+            tt->a_tier.T3--;
+            tt->parent->a_tier.T3--;
+            tt->parent->parent->a_tier.T3--;
+        } else {
+            // Do nothing. If jobs ended earlier than their original completion
+            // time then there will be nothing to free.
+        }
+    }
+    return 0;
+}
+
 /* Called at the beginning of each schedule_jobs. All reservations are released 
  * before this. This assumes the first time the plugin is loaded there are no
  * resources being used. Removes all the completion times of allocations which
@@ -789,13 +824,16 @@ int64_t select_nodes (
         *selected_nodes = zlist_new ();
     }
     int64_t nodes_added = 0;
+    char *node_name;
     zlist_t *candidate_nodes = a_switch->children;
     topo_tree_t *node = zlist_first (candidate_nodes);
     while (nodes_added < n_nodes && node != NULL) {
         if (is_available (node)) {
-            zlist_append (*selected_nodes, node);
-            // printf("Added node %s to selection\n",
-            //         resrc_name (resrc_tree_resrc (node->ct))); // TEST
+            node_name = xasprintf ("%s",
+                    resrc_name (resrc_tree_resrc (node->ct)));
+            zlist_append (*selected_nodes, node_name);
+            zlist_freefn (*selected_nodes, node_name, free, true);
+            // printf("Added %s to selection\n", node_name); // TEST
             nodes_added++;
         }
         node = zlist_next (candidate_nodes);
@@ -1065,12 +1103,20 @@ zlist_t *topo_select_resources (topo_tree_t *tt, int64_t n_nodes)
 resrc_tree_t *convert (
         zlist_t *selected_nodes, resrc_reqst_t *resrc_reqst, resrc_enum_t which)
 {
-    if (which == ALLOCATE) {
-        /* Set resource request as found */
-    } else { /* which == RESERVE */
-        /* Clear all found */
+    resrc_tree_t *selected_tree = NULL; 
+    topo_tree_t *node;
+    for (node = zlist_first (selected_nodes);
+         node;
+         node = zlist_next (selected_nodes)) {
+
+        // Walk up the tree to the root, then create a new resrc_tree?
+        // node->ct
     }
-    return NULL;
+
+    if (which == RESERVE) {
+        resrc_reqst_clear_found (resrc_reqst);
+    }
+    return selected_tree;
 }
 
 /*
@@ -1104,7 +1150,8 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     selected_nodes = topo_select_resources (
             topo_tree, resrc_reqst_reqrd_qty (resrc_reqst));
     if (selected_nodes == NULL) {
-        flux_log (h, LOG_DEBUG, "Not enough resources available now");
+        flux_log (h, LOG_DEBUG, "%s: did not find all resources at current time"
+                "(%"PRId64")", __FUNCTION__, current_time);
     } else {
         current_selected_nodes = selected_nodes;
         selected_tree = convert (selected_nodes, resrc_reqst, ALLOCATE);
@@ -1140,17 +1187,35 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     for (alloc = zlist_first (job_allocation_list);
          alloc;
          alloc = zlist_next (job_allocation_list)) {
+
         if (alloc->completion_time < current_time) {
-            printf("Removed job %"PRId64" ending @ %"PRId64" from list,"
-                    " (size %ld)\n",
-                    alloc->job_id, alloc->completion_time,
+            printf("Removed job %"PRId64" of %"PRId64" nodes ending @ %"PRId64
+                    "from list, (size %ld)\n",
+                    alloc->job_id,
+                    zlist_size (alloc->selected_nodes),
+                    alloc->completion_time,
                     zlist_size (job_allocation_list) - 1); // TEST
             zlist_remove (job_allocation_list, alloc);
+            // free (alloc); // XXX: Is this needed?
             continue;
         }
-        /* TOPODO: Do the magic */
+        /* TOPOTODO: Uncomment when finished */
+        free_nodes (alloc->selected_nodes, future_node2topo);
+        //selected_nodes = topo_select_resources (
+        //        future_tree, resrc_reqst_reqrd_qty (resrc_reqst));
+        //if (selected_nodes == NULL) {
+        //    flux_log (h, LOG_DEBUG, "Topo could not reserve enough resources at"
+        //            " time % "PRId64"\n", *c_time + 1);
+        //} else {
+        //    current_selected_nodes = selected_nodes;
+        //    selected_tree = convert (selected_nodes, resrc_reqst, RESERVE);
+        //    zhash_destroy (&future_node2topo);
+        //    topo_tree_destroy (future_tree);
+        //    return selected_tree;
+        //}
     }
 
+    /* UNNECESSARY once topo scheduler is working */
     for (c_time = zlist_first (all_completion_times);
          c_time;
          c_time = zlist_next (all_completion_times)) {
@@ -1159,8 +1224,6 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             zlist_remove (all_completion_times, c_time);
             continue;
         }
-        /* TOPOTODO: If 2 jobs end at the same time we want to test em both, so
-         * remove this next bit. */
         /* Don't test the same time multiple times */
         if (prev_c_time == *c_time) {
             continue;
@@ -1168,9 +1231,6 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         flux_log (h, LOG_DEBUG, "Attempting to find %"PRId64" nodes "
                   "at time %"PRId64"",
                   resrc_reqst_reqrd_qty (resrc_reqst), *c_time + 1);
-        /* TOPOTODO Get the job associated with the most recent completion time */
-        /* TOPOTODO Free those nodes in the topo_tree_copy */
-        /* TOPOTODO This */
         selected_nodes = topo_select_resources (
                 future_tree, resrc_reqst_reqrd_qty (resrc_reqst));
         if (selected_nodes == NULL) {
@@ -1183,7 +1243,6 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             topo_tree_destroy (future_tree);
             return selected_tree;
         }
-        /* UNNECESSARY once topo scheduler is working */
         resrc_reqst_set_starttime (resrc_reqst, *c_time + 1);
         resrc_reqst_set_endtime (resrc_reqst, *c_time + 1 + req_walltime);
         selected_tree = select_resources_in_time (
@@ -1432,7 +1491,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         } else {
             /* TOPOTODO: Does this interfere since it's not a allocation? */
             // mark_topo_tree (h, current_selected_nodes, RESERVE);
-            mark_topo_tree (h, *selected_tree, RESERVE); // TODO: Not working
+            mark_topo_tree (h, *selected_tree, RESERVE);
             curr_reservation_depth++;
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = reservation_completion_time;
