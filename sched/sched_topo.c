@@ -69,27 +69,27 @@
  * Overview of Algorithm:
  * Let
  *     L = least, A = available, P = pod, S = switch, N = # of nodes in a job,
- *     T(x) = the maximum tier of allocated jobs under that resource.
+ *     T(x) = the maximum tier of allocated jobs under resource x.
  *
  * switch (job type)
  * case t1:
- *      from (LAP:MAP such that N_avail >= N)
- *          from (LAS:MAS such that N_avail >= N)
+ *      for (LAP:MAP such that N_avail >= N)
+ *          for (LAS:MAS such that N_avail >= N)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
  * case t2:
- *      from (LAP:MAP such that N_avail >= N)
+ *      for (LAP:MAP such that N_avail >= N)
  *          AS = {s | T(s) < T2}
- *          from (MAS:LAS in AS)
+ *          for (MAS:LAS in AS)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
  * case t3:
  *      AP = {p | T(p) < T3}
- *      from (p = MAP:LAP in AP)
+ *      for (p = MAP:LAP in AP)
  *          AS = {s | T(s) < T2 in p}
- *          from (MAS:LAS in AS)
+ *          for (MAS:LAS in AS)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
@@ -147,7 +147,6 @@
 #include <libgen.h>
 #include <czmq.h>
 #include <flux/core.h>
-#include <unistd.h> // getcwd
 #include <limits.h> // PATH_MAX
 
 #include "src/common/libutil/log.h"
@@ -492,8 +491,6 @@ static void purge_reservations (topo_tree_t *tt)
  * At least in simulation, resrc_tree_allocate only calls
  * resrc_tree_allocate_in_time, which never sets the resrc state
  */
-/* TODO: Free the node vector for each job when you see a job has completed
- */
 static int synchronize (resrc_tree_t *found_tree)
 {
     char *r_t = resrc_type (resrc_tree_resrc (found_tree));
@@ -552,6 +549,9 @@ int sched_loop_setup (flux_t *h) {
             }
         }
     }
+    if (topo_tree != NULL) {
+        purge_reservations (topo_tree);
+    } // The tree is created in find_resources because it needs resrc_api_ctx_t 
 
     /* UNNECESSARY */
     if (!allocation_completion_times) {
@@ -574,34 +574,7 @@ int sched_loop_setup (flux_t *h) {
     }
     /* End UNNECESSARY */
 
-    if (topo_tree != NULL) {
-        purge_reservations (topo_tree);
-    } // The tree is created in find_resources because it needs resrc_api_ctx_t 
     return 0;
-}
-
-/* TODO: This isn't called anywhere */
-/* Given a "sparse" resource request, ensure it requests the higher-level
- * resources given its Tier (See Overview). Make sure to destroy it once
- * you're done.
- */
-int get_job_tier (flux_t *h, resrc_reqst_t *rr)
-{
-    int64_t n_nodes = resrc_reqst_reqrd_qty (rr);
-    int lvl = tree_depth - 1;
-    int64_t node_capacity = levels[lvl];
-    int tier = 1;
-    while (n_nodes > node_capacity) {
-        if (lvl < 1) {
-            flux_log (h, LOG_ERR, "Requested %"PRId64" nodes but system has"
-                    " only %"PRId64, n_nodes, node_capacity);
-            return -1;
-        }
-        node_capacity *= levels[--lvl];
-        tier++;
-    }
-    printf("%"PRId64" node job is tier %d\n", n_nodes, tier); // TEST
-    return tier;
 }
 
 /*
@@ -632,7 +605,7 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             topo_tree = topo_tree_create (h, node2topo_hash, root, NULL);
         } else {
             flux_log (h, LOG_ERR, "rsapi->tree_root is NULL");
-            return -1;
+            return 0;
         }
     }
     if (!resrc || !resrc_reqst) {
@@ -640,7 +613,7 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         return 0;
     }
 
-    /* TODO: May want to update from resrc_tree_search to our own, more
+    /* XXX: May want to update from resrc_tree_search to our own, more
      * efficient function */
     /* Find all available resources so we can update the topo_tree */
     nfound = resrc_tree_search (rsapi, resrc, resrc_reqst, found_tree, true);
@@ -671,6 +644,7 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     return nfound;
 }
 
+/* UNNECESSARY */
 /*
  * cycles through all of the resource children and returns true when
  * the requested quantity of resources have been selected.
@@ -723,6 +697,7 @@ static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
 
     return selected;
 }
+/* End UNNECESSARY */
 
 static int sort_ascending (void *key1, void *key2)
 {
@@ -830,8 +805,8 @@ int64_t select_nodes (
 
 /*
  * case t1:
- *      from (LAP:MAP such that N_avail >= N)
- *          from (LAS:MAS such that N_avail >= N)
+ *      for (LAP:MAP such that N_avail >= N)
+ *          for (LAS:MAS such that N_avail >= N)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
@@ -899,9 +874,9 @@ zlist_t *t1_job_select (topo_tree_t *tt, int64_t n_nodes)
 
 /*
  * case t2:
- *      from (LAP:MAP such that N_avail >= N)
+ *      for (LAP:MAP such that N_avail >= N)
  *          AS = {s | T(s) < T2}
- *          from (MAS:LAS in AS)
+ *          for (MAS:LAS in AS)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
@@ -980,9 +955,9 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
 /*
  * case t3:
  *      AP = {p | T(p) < T3}
- *      from (p = MAP:LAP in AP)
+ *      for (p = MAP:LAP in AP)
  *          AS = {s | T(s) < T2 in p}
- *          from (MAS:LAS in AS)
+ *          for (MAS:LAS in AS)
  *              for (nd in Nodes)
  *                  if (available) assign and update and increment nfound
  *                  if (nfound == N) we're done
@@ -1090,6 +1065,11 @@ zlist_t *topo_select_resources (topo_tree_t *tt, int64_t n_nodes)
 resrc_tree_t *convert (
         zlist_t *selected_nodes, resrc_reqst_t *resrc_reqst, resrc_enum_t which)
 {
+    if (which == ALLOCATE) {
+        /* Set resource request as found */
+    } else { /* which == RESERVE */
+        /* Clear all found */
+    }
     return NULL;
 }
 
