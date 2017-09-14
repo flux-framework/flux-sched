@@ -127,6 +127,26 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
     return new_resrc_tree;
 }
 
+resrc_tree_t *resrc_tree_deep_copy (resrc_tree_t *resrc_tree)
+{
+    resrc_tree_t *new_resrc_tree = xzmalloc (sizeof (resrc_tree_t));
+    if (new_resrc_tree) {
+        new_resrc_tree->parent = resrc_tree->parent;
+        new_resrc_tree->resrc = resrc_tree->resrc;
+        new_resrc_tree->children = resrc_tree_list_new ();
+        resrc_tree_t *child;
+        for (child = resrc_tree_list_first (resrc_tree->children);
+             child;
+             child = resrc_tree_list_next (resrc_tree->children)) {
+
+            resrc_tree_list_append (
+                    new_resrc_tree->children, resrc_tree_deep_copy (child));
+        }
+    }
+    return new_resrc_tree;
+}
+
+
 void resrc_tree_destroy (resrc_api_ctx_t *ctx, resrc_tree_t *resrc_tree,
                          bool is_root, bool destroy_resrc)
 {

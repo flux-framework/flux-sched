@@ -48,9 +48,16 @@ int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child);
 resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc);
 
 /*
- * Return a copy of the input resource tree
+ * Return a copy of the input resource tree. This copies the resource and all 
+ * its children but not any deeper. A semi-shallow copy.
  */
 resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree);
+
+/*
+ * Return a copy of the input resource tree, also copying its children,
+ * its children's children, etc.
+ */
+resrc_tree_t *resrc_tree_deep_copy (resrc_tree_t *resrc_tree);
 
 /*
  * Destroy an entire tree of resrc_tree_t objects

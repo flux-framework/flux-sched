@@ -161,26 +161,10 @@
 #include "rsreader.h" /* rsreader_resrc_bulkload */
 
 #define min(x, y) ( ((x) < (y)) ? (x) : (y) )
-static int compare_int64_ascending (void *item1, void *item2)
-{
-    int64_t time1 = *((int64_t *) item1);
-    int64_t time2 = *((int64_t *) item2);
-
-    return time1 - time2;
-}
 
 static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
 
-/* TOPOTODO: This needs to be reworked. Alongside this
- * (allocation_completion_times and all_ will eventually be deleted), we shall
- * put just the job_allocation_list which also contains the completion times.
- * This should also be able to be sorted as usual. When we're working our way
- * through the select_resources we may delete the ones with completion_time <
- * current time just like the allocatio_c_times.
- */
-static zlist_t *allocation_completion_times = NULL;
-static zlist_t *all_completion_times = NULL;
 static int64_t current_time = -1;
 typedef enum {RESERVE, ALLOCATE} mark_enum_t;
 /* Selected nodes may be an allocation or reservation; this is created in
@@ -587,27 +571,6 @@ int sched_loop_setup (flux_t *h) {
     if (topo_tree != NULL) {
         purge_reservations (topo_tree);
     } // The tree is created in find_resources because it needs resrc_api_ctx_t 
-
-    /* UNNECESSARY */
-    if (!allocation_completion_times) {
-        allocation_completion_times = zlist_new ();
-    }
-    if (!all_completion_times) {
-        all_completion_times = zlist_new ();
-    } else {
-        int64_t *curr_ctime;
-        zlist_purge (all_completion_times);
-        for (curr_ctime = zlist_first (allocation_completion_times);
-             curr_ctime;
-             curr_ctime = zlist_next (allocation_completion_times)) {
-            if (current_time >= 0 && *curr_ctime < current_time) {
-                zlist_remove (allocation_completion_times, curr_ctime);
-            } else {
-                zlist_append (all_completion_times, curr_ctime);
-            }
-        }
-    }
-    /* End UNNECESSARY */
 
     return 0;
 }
@@ -1096,26 +1059,145 @@ zlist_t *topo_select_resources (topo_tree_t *tt, int64_t n_nodes)
     }
 } 
 
+/* Given a list of nodes indicated with a zhash, ensures the candidate tree is
+ * in sync by removing nodes which do not exist in the in_selection. If prune
+ * is true, then also delete the higher-level leaves with no children. This may
+ * need to be called up to tree_depth times (one to prune each level of the
+ * tree). Returns true if the candidate_tree was destroyed, false if not. Note
+ * that a tree can get destroyed even if prune is false (e.g. a node is removed)
+ * below_match determines whether the some ancestor of candidate_tree
+ * matched according to in_selection---we won't destroy the tree then.
+ */
+/* TODO: The sockets and cores are being deleted when they shouldn't */
+bool synchronize_list_with_tree (resrc_api_ctx_t *rsapi,
+                            resrc_tree_t *candidate_tree,
+                            resrc_reqst_t *resrc_reqst,
+                            zhash_t *in_selection,
+                            bool prune,
+                            bool below_match)
+{
+    resrc_t *resrc;
+    resrc_tree_list_t *children = NULL;
+    resrc_tree_t *child_tree;
+    bool destroyed = false;
+
+    resrc = resrc_tree_resrc (candidate_tree);
+    /* We destroy the tree if
+     * - it has no children, is not in our selection, we want to prune, and
+     *   there was no ancestor which matched up the tree, OR
+     * - we do not prune, no ancestor matched, and
+     *   the resource is not in our selection
+     */
+    bool matched_type = resrc_match_resource (resrc, resrc_reqst, false);
+    bool matched_selection =
+            (zhash_lookup (in_selection, resrc_name (resrc)) != NULL);
+    if ((prune && resrc_tree_num_children (candidate_tree) == 0 && !below_match)
+            ||
+            (!prune && matched_type && !matched_selection)) {
+            // printf ("Deleting %s of type '%s'\n",
+            //         resrc_name (resrc), resrc_type (resrc)); // TEST
+            resrc_tree_destroy (rsapi, candidate_tree, false, false);
+            destroyed = true;
+    } else if (resrc_tree_num_children (candidate_tree) > 0 && !below_match) {
+        children = resrc_tree_children (candidate_tree);
+        child_tree = resrc_tree_list_first (children);
+        while (child_tree) {
+            resrc_tree_t *tmp = resrc_tree_list_next (children);
+            //  printf ("Recursing on '%s'\n",
+            //          resrc_name (resrc_tree_resrc (child_tree))); // TEST
+
+            if (synchronize_list_with_tree (
+                    rsapi, child_tree, resrc_reqst, in_selection, prune,
+                    (below_match || matched_selection))) {
+                /* Even if you delete the vertex there's still a pointer in the
+                 * parent to that vertex */
+                resrc_tree_list_remove (children, child_tree);
+            }
+            child_tree = tmp;
+        }
+    }
+    return destroyed;
+}
+
+static void stage_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                             resrc_tree_t *candidate_tree,
+                             resrc_reqst_t *resrc_reqst)
+{
+    resrc_t *resrc;
+    resrc_tree_list_t *children = NULL;
+    resrc_tree_t *child_tree;
+
+    resrc = resrc_tree_resrc (candidate_tree);
+    if (resrc_match_resource (resrc, resrc_reqst, true)) {
+        if (resrc_reqst_num_children (resrc_reqst)) {
+            if (resrc_tree_num_children (candidate_tree)) {
+                if (select_children (h, rsapi, resrc_tree_children (candidate_tree),
+                                     resrc_reqst_children (resrc_reqst),
+                                     candidate_tree)) {
+                    resrc_stage_resrc (resrc,
+                                       resrc_reqst_reqrd_size (resrc_reqst),
+                                       resrc_reqst_graph_reqs (resrc_reqst));
+                    resrc_reqst_add_found (resrc_reqst, 1);
+                }
+            }
+        } else {
+            resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst),
+                                       resrc_reqst_graph_reqs (resrc_reqst));
+            resrc_reqst_add_found (resrc_reqst, 1);
+        }
+    } else if (resrc_tree_num_children (candidate_tree)) {
+        children = resrc_tree_children (candidate_tree);
+        child_tree = resrc_tree_list_first (children);
+        while (child_tree) {
+            stage_resources (h, rsapi, child_tree, resrc_reqst);
+            if (resrc_reqst_nfound (resrc_reqst) >=
+                resrc_reqst_reqrd_qty (resrc_reqst))
+                break;
+            child_tree = resrc_tree_list_next (children);
+        }
+    }
+
+    return;
+}
+
+
 /* Converts a list of nodes into a valid resource request fulfillment, by
  * returning a tree of selected resources and, if ALLOCATE, setting all the
  * resources in resrc_request to found.
+ * e.g. hash : "cab153" -> topo_tree_t * -> resrc_tree_t *
  */
-resrc_tree_t *convert (
-        zlist_t *selected_nodes, resrc_reqst_t *resrc_reqst, resrc_enum_t which)
+/* TODO: node_hash unused */
+resrc_tree_t *convert (flux_t *h, resrc_api_ctx_t *rsapi,
+        zlist_t *selected_nodes, resrc_reqst_t *resrc_reqst,
+        zhash_t *node_hash, resrc_tree_t *original_tree, resrc_enum_t which)
 {
-    resrc_tree_t *selected_tree = NULL; 
-    topo_tree_t *node;
+    /* Create hash for quickly checking if a node is in the selection */
+    zhash_t *in_selection = zhash_new ();
+    char *node;
     for (node = zlist_first (selected_nodes);
          node;
          node = zlist_next (selected_nodes)) {
-
-        // Walk up the tree to the root, then create a new resrc_tree?
-        // node->ct
+        zhash_insert (in_selection, node, "");
     }
+    
+    resrc_tree_t *selected_tree = resrc_tree_deep_copy (original_tree);
+    printf("Pruning nodes\n"); // TEST
+    synchronize_list_with_tree (
+            rsapi, selected_tree, resrc_reqst, in_selection, false, false);
+    // for each level 
+    int i;
+    for (i = 0; i < (tree_depth - 1); i++) {
+        synchronize_list_with_tree (
+                rsapi, selected_tree, resrc_reqst, in_selection, true, false);
+    }
+    resrc_tree_print (selected_tree); // TEST
 
+    printf("Staging Resources\n"); // TEST
+    stage_resources (h, rsapi, selected_tree, resrc_reqst);
     if (which == RESERVE) {
         resrc_reqst_clear_found (resrc_reqst);
     }
+    zhash_destroy (&in_selection);
     return selected_tree;
 }
 
@@ -1144,40 +1226,46 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     /* XXX: Do I want resrc_phys_tree or found_tree? */
     resrc_tree_t *root = resrc_phys_tree (resrc_tree_resrc (found_tree));
     int64_t current_time = resrc_reqst_starttime (resrc_reqst);
-    int64_t req_walltime = resrc_reqst_endtime (resrc_reqst) - current_time;
 
     /* Search for resources now */
     selected_nodes = topo_select_resources (
             topo_tree, resrc_reqst_reqrd_qty (resrc_reqst));
     if (selected_nodes == NULL) {
-        flux_log (h, LOG_DEBUG, "%s: did not find all resources at current time"
+        flux_log (h, LOG_ERR, "%s: did not find all resources at current time"
                 "(%"PRId64")", __FUNCTION__, current_time);
     } else {
         current_selected_nodes = selected_nodes;
-        selected_tree = convert (selected_nodes, resrc_reqst, ALLOCATE);
-        flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
-                "%"PRId64")", __FUNCTION__, current_time);
-        // return selected_tree; TOPOTODO replace UNNECESSARY with this line.
-    }
-    /* TOPOTODO: This will be UNNECESSARY once the topology scheduler is finished */
-    selected_tree = select_resources_in_time (
-         h, rsapi, root, resrc_reqst, NULL);
-
-    if (resrc_reqst_all_found (resrc_reqst)) {
-        flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
+        selected_tree = convert (
+                h, rsapi, selected_nodes, resrc_reqst,
+                node2topo_hash, root, ALLOCATE);
+        /* We stage resources */
+        // resrc_tree_print (selected_tree); // TEST
+        flux_log (h, LOG_ERR, "%s: found all resources at current time "
                 "%"PRId64")", __FUNCTION__, current_time);
         return selected_tree;
     }
-    /* Reset any partial selections we made looking at the current time */
-    resrc_reqst_clear_found (resrc_reqst);
-    resrc_tree_unstage_resources (root);
-    /* End UNNECESSARY */
+
+    bool only_now_scheduling;
+    if (reservation_depth == 0)
+        /* All backfilling (no reservations).  Return success to
+         * backfill all jobs remaining in the queue */
+        only_now_scheduling = true;
+    else if (reservation_depth < 0) {
+        // always try to find resources now and in the future
+        only_now_scheduling = false;
+    } else {
+        // only try to find resources now if we have already made all
+        // the necessary reservations
+        only_now_scheduling = (curr_reservation_depth >= reservation_depth);
+    }
+    if (only_now_scheduling) {
+        flux_log (h, LOG_DEBUG, "%s: couldn't find all resources at current time (%"PRId64"), not attempting to search into the future", __FUNCTION__, current_time);
+        return NULL;
+    }
+
+    /* Clear resource request */
 
     /* Search for resources in the future */
-    int64_t *c_time = NULL;
-    int64_t prev_c_time = -1;
-    zlist_sort (all_completion_times, compare_int64_ascending);
-    /* TOPOTODO Make a copy of the tree */
     zhash_t *future_node2topo = zhash_new ();
     topo_tree_t *future_tree = topo_tree_copy (topo_tree, future_node2topo);
     zlist_sort (job_allocation_list, &compare_allocation_ascending);
@@ -1196,71 +1284,23 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                     alloc->completion_time,
                     zlist_size (job_allocation_list) - 1); // TEST
             zlist_remove (job_allocation_list, alloc);
-            // free (alloc); // XXX: Is this needed?
+            free (alloc);
             continue;
         }
-        /* TOPOTODO: Uncomment when finished */
         free_nodes (alloc->selected_nodes, future_node2topo);
-        //selected_nodes = topo_select_resources (
-        //        future_tree, resrc_reqst_reqrd_qty (resrc_reqst));
-        //if (selected_nodes == NULL) {
-        //    flux_log (h, LOG_DEBUG, "Topo could not reserve enough resources at"
-        //            " time % "PRId64"\n", *c_time + 1);
-        //} else {
-        //    current_selected_nodes = selected_nodes;
-        //    selected_tree = convert (selected_nodes, resrc_reqst, RESERVE);
-        //    zhash_destroy (&future_node2topo);
-        //    topo_tree_destroy (future_tree);
-        //    return selected_tree;
-        //}
-    }
-
-    /* UNNECESSARY once topo scheduler is working */
-    for (c_time = zlist_first (all_completion_times);
-         c_time;
-         c_time = zlist_next (all_completion_times)) {
-        /* Purge past times from consideration */
-        if (*c_time < current_time) {
-            zlist_remove (all_completion_times, c_time);
-            continue;
-        }
-        /* Don't test the same time multiple times */
-        if (prev_c_time == *c_time) {
-            continue;
-        }
-        flux_log (h, LOG_DEBUG, "Attempting to find %"PRId64" nodes "
-                  "at time %"PRId64"",
-                  resrc_reqst_reqrd_qty (resrc_reqst), *c_time + 1);
         selected_nodes = topo_select_resources (
                 future_tree, resrc_reqst_reqrd_qty (resrc_reqst));
         if (selected_nodes == NULL) {
             flux_log (h, LOG_DEBUG, "Topo could not reserve enough resources at"
-                    " time % "PRId64"\n", *c_time + 1);
+                    " time % "PRId64"\n", alloc->completion_time + 1);
         } else {
             current_selected_nodes = selected_nodes;
-            selected_tree = convert (selected_nodes, resrc_reqst, RESERVE);
+            selected_tree = convert (h,
+                    rsapi, selected_nodes, resrc_reqst, node2topo_hash, root, RESERVE);
             zhash_destroy (&future_node2topo);
             topo_tree_destroy (future_tree);
             return selected_tree;
         }
-        resrc_reqst_set_starttime (resrc_reqst, *c_time + 1);
-        resrc_reqst_set_endtime (resrc_reqst, *c_time + 1 + req_walltime);
-        selected_tree = select_resources_in_time (
-                h, rsapi, root, resrc_reqst, NULL);
-        /* If you found them all, great! But it's in the future, so you have to
-         * clear all found resources to ensure reserve_resources is called */
-        if (resrc_reqst_all_found (resrc_reqst)) {
-            resrc_reqst_clear_found (resrc_reqst);
-            resrc_tree_unstage_resources (root);
-            return selected_tree;
-        }
-        /* Otherwise, just wipe out the treea and clear the incomplete set of
-         * resources we may have found and start over at a later time. */
-        resrc_tree_destroy (rsapi, selected_tree, false, false);
-        resrc_reqst_clear_found (resrc_reqst);
-        resrc_tree_unstage_resources (root);
-        prev_c_time = *c_time;
-        /* End UNNECESSARY */
     }
     flux_log (h, LOG_DEBUG, "This request can never be satisfied");
     return NULL;
@@ -1434,13 +1474,8 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         if (!rc) {
             // mark_topo_tree (h, current_selected_nodes, RESERVE);
             mark_topo_tree (h, selected_tree, ALLOCATE);
-            int64_t *completion_time = xzmalloc (sizeof(int64_t));
-            *completion_time = endtime;
-            rc = zlist_append (allocation_completion_times, completion_time);
-            zlist_freefn (allocation_completion_times, completion_time, free, true);
-            rc |= zlist_append (all_completion_times, completion_time);
             flux_log (h, LOG_DEBUG, "Allocated job %"PRId64" from %"PRId64" to "
-                      "%"PRId64"", job_id, starttime, *completion_time);
+                      "%"PRId64"", job_id, starttime, endtime);
             /* Save off the allocation */
             allocation_t *allocation = xzmalloc (sizeof(allocation_t));
             if (allocation == NULL) {
@@ -1493,10 +1528,6 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             // mark_topo_tree (h, current_selected_nodes, RESERVE);
             mark_topo_tree (h, *selected_tree, RESERVE);
             curr_reservation_depth++;
-            int64_t *completion_time = xzmalloc (sizeof(int64_t));
-            *completion_time = reservation_completion_time;
-            rc = zlist_append (all_completion_times, completion_time);
-            zlist_freefn (all_completion_times, completion_time, free, true);
             flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
                       "%"PRId64" from %"PRId64" to %"PRId64"",
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
@@ -1554,14 +1585,15 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         }
     }
 
+    /* TODO: Change to 1 */
     if (reserve_depth_str) {
         // If atoi fails, it defaults to 0, which is fine for us
         reservation_depth = atoi (reserve_depth_str);
     } else {
-        reservation_depth = 1;
+        reservation_depth = 0;
     }
-    if (reservation_depth != 1) {
-        flux_log (h, LOG_ERR, "Currently only a reservation depth of 1"
+    if (reservation_depth != 0) {
+        flux_log (h, LOG_ERR, "Currently only a reservation depth of 0"
                 " is supported (EASY Backfill)");
         rc = -1;
         goto done;
