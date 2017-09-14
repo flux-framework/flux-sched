@@ -1181,7 +1181,7 @@ resrc_tree_t *convert (flux_t *h, resrc_api_ctx_t *rsapi,
     }
     
     resrc_tree_t *selected_tree = resrc_tree_deep_copy (original_tree);
-    printf("Pruning nodes\n"); // TEST
+    //printf("Pruning nodes\n"); // TEST
     synchronize_list_with_tree (
             rsapi, selected_tree, resrc_reqst, in_selection, false, false);
     // for each level 
@@ -1190,9 +1190,9 @@ resrc_tree_t *convert (flux_t *h, resrc_api_ctx_t *rsapi,
         synchronize_list_with_tree (
                 rsapi, selected_tree, resrc_reqst, in_selection, true, false);
     }
-    resrc_tree_print (selected_tree); // TEST
+    // resrc_tree_print (selected_tree); // TEST
 
-    printf("Staging Resources\n"); // TEST
+    // printf("Staging Resources\n"); // TEST
     stage_resources (h, rsapi, selected_tree, resrc_reqst);
     if (which == RESERVE) {
         resrc_reqst_clear_found (resrc_reqst);
@@ -1231,7 +1231,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     selected_nodes = topo_select_resources (
             topo_tree, resrc_reqst_reqrd_qty (resrc_reqst));
     if (selected_nodes == NULL) {
-        flux_log (h, LOG_ERR, "%s: did not find all resources at current time"
+        flux_log (h, LOG_DEBUG, "%s: did not find all resources at current time"
                 "(%"PRId64")", __FUNCTION__, current_time);
     } else {
         current_selected_nodes = selected_nodes;
@@ -1240,8 +1240,8 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 node2topo_hash, root, ALLOCATE);
         /* We stage resources */
         // resrc_tree_print (selected_tree); // TEST
-        flux_log (h, LOG_ERR, "%s: found all resources at current time "
-                "%"PRId64")", __FUNCTION__, current_time);
+        flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
+                "(%"PRId64")", __FUNCTION__, current_time);
         return selected_tree;
     }
 
