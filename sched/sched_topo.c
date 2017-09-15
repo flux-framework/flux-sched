@@ -1485,11 +1485,20 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             allocation->completion_time = endtime;
             allocation->job_id = job_id;
             allocation->selected_nodes = current_selected_nodes;
-            current_selected_nodes = NULL; // So it doesn't get destroyed
             zlist_append (job_allocation_list, allocation);
             zlist_freefn (job_allocation_list, allocation, free, true);
             printf("Added job %"PRId64" ending @ %"PRId64" to list, (size %ld)\n",
                     job_id, endtime, zlist_size (job_allocation_list)); // TEST
+            // TODO: This should probably be LOG_DEBUG
+            printf ("Allocated");
+            char *node = NULL;
+            for (node = zlist_first (current_selected_nodes);
+                 node;
+                 node = zlist_next (current_selected_nodes)) {
+                printf (" %s", node);
+            }
+            printf ("\n");
+            current_selected_nodes = NULL; // So it doesn't get destroyed
         }
     }
     return rc;
