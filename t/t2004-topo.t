@@ -21,7 +21,8 @@ FLUX_MODULE_PATH_PREPEND="$FLUX_MODULE_PATH_PREPEND:$(sched_build_path simulator
 test_debug '
 	echo rdlconf=${rdlconf} &&
     echo jobdata=${jobdata} &&
-    echo expected_order=${expected_order}
+    echo expected_order=${expected_order} &&
+    flux setattr log-filename trash-directory.t2004-topo/log.out
 '
 
 #
