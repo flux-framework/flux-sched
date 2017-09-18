@@ -3,7 +3,6 @@
 
 test_description='Test topology-aware (topo) scheduler in simulator
 '
-
 # source sharness from the directore where this test
 # file resides
 #
@@ -29,9 +28,9 @@ test_debug '
 # test_under_flux is under sharness.d/
 #
 test_under_flux 1
-
+num_jobs=$(cat ${expected_order} | wc -l) &&
 test_expect_success 'sim: started successfully' '
-    adjust_session_info 12 &&
+    adjust_session_info ${num_jobs} &&
     timed_wait_job 5 &&
     flux module load sim exit-on-complete=false &&
     flux module load submit job-csv=${jobdata} &&
@@ -43,7 +42,7 @@ test_expect_success 'sim: scheduled and ran all jobs' '
     timed_sync_wait_job 60
 '
 
-for x in $(seq 1 12); do echo "$x $(flux kvs get $(job_kvs_path $x).starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
+for x in $(seq 1 ${num_jobs}); do echo "$x $(flux kvs get $(job_kvs_path $x).starting_time)"; done | sort -k 2n -k 1n | cut -d ' ' -f 1 > actual
 
 test_expect_success 'jobs scheduled in correct order' '
    diff -u ${expected_order} ./actual

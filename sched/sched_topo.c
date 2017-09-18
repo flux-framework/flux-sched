@@ -1474,8 +1474,6 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         if (!rc) {
             // mark_topo_tree (h, current_selected_nodes, RESERVE);
             mark_topo_tree (h, selected_tree, ALLOCATE);
-            flux_log (h, LOG_DEBUG, "Allocated job %"PRId64" from %"PRId64" to "
-                      "%"PRId64"", job_id, starttime, endtime);
             /* Save off the allocation */
             allocation_t *allocation = xzmalloc (sizeof(allocation_t));
             if (allocation == NULL) {
@@ -1489,7 +1487,10 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             zlist_freefn (job_allocation_list, allocation, free, true);
             printf("Added job %"PRId64" ending @ %"PRId64" to list, (size %ld)\n",
                     job_id, endtime, zlist_size (job_allocation_list)); // TEST
-            // TODO: This should probably be LOG_DEBUG
+            flux_log (h, LOG_DEBUG, "job,start,end,nodes: %"PRId64",%"PRId64","
+                      "%"PRId64",%"PRId64, job_id, starttime, endtime,
+                      zlist_size (current_selected_nodes));
+            // TODO: This should probably be removed
             printf ("Allocated");
             char *node = NULL;
             for (node = zlist_first (current_selected_nodes);
@@ -1498,6 +1499,7 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 printf (" %s", node);
             }
             printf ("\n");
+            // TODO: End removal
             current_selected_nodes = NULL; // So it doesn't get destroyed
         }
     }
