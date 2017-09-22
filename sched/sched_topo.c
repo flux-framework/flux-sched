@@ -213,6 +213,11 @@ static int tree_depth;
 /* levels[0] is the highest level (e.g. pods), levels[tree_depth-1] are nodes */
 static int64_t *levels;
 
+/* TEST - for experimentation only */
+static char *allocation_filename = "allocations.csv";
+static FILE *alloc_file = NULL;
+/* TSET */
+
 static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
                              resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
@@ -446,6 +451,30 @@ void topo_tree_destroy (topo_tree_t *tt)
     }
     free (tt);
 }
+
+/* For each node print whether the node is allocated, reserved or available.
+ * a1 means allocated with type 1, r3 means reserved with type 3, etc.
+ * The tree is traversed depth-first, only printing nodes.
+ * Returns a string. You must free this string when you're done.
+ */
+// char *topo_tree_print (topo_tree_t *tt, int64_t current_time)
+// {
+//     if (tt == NULL) {
+//         return "";
+//     } else if (strcmp (resrc_type (resrc_tree_resrc (tt->ct)), "node") == 0) {
+//         // Check allocations or reservations
+//         sprintf(",");
+//     }
+//     if (tt->children != NULL) {
+//         topo_tree_t *child = zlist_first (tt->children);
+//         while (child != NULL) {
+//             topo_tree_print (child, current_time);
+//             child = zlist_next (tt->children);
+//         }
+//         zlist_destroy (&(tt->children));
+//     }
+// }
+
 
 /* Removes all existing reservations (r_tier) from the topology tree */
 static void purge_reservations (topo_tree_t *tt)
@@ -850,7 +879,7 @@ zlist_t *t1_job_select (topo_tree_t *tt, int64_t n_nodes)
         zlist_sort (sorted_switch_keys, sort_ascending);
         switch_key = zlist_first (sorted_switch_keys);
         a_switch = zhash_lookup (switches, switch_key);
-        printf ("Trying with pod %s and switch %s:\n", pod_key, switch_key); // TEST
+        // printf ("Trying with pod %s and switch %s:\n", pod_key, switch_key); // TEST
         nodes_found = select_nodes (a_switch, n_nodes, &selected_nodes);
         if (nodes_found == n_nodes) {
             zhash_destroy (&switches);
@@ -921,7 +950,7 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
              switch_key = zlist_next (sorted_switch_keys)) {
 
             a_switch = zhash_lookup (switches, switch_key);
-            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            // printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
             if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
                     a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
                 continue;
@@ -1006,7 +1035,7 @@ zlist_t *t3_job_select (topo_tree_t *tt, int64_t n_nodes)
              switch_key = zlist_next (sorted_switch_keys)) {
 
             a_switch = zhash_lookup (switches, switch_key);
-            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            // printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
             if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
                     a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
                 continue;
@@ -1490,16 +1519,20 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             flux_log (h, LOG_DEBUG, "job,start,end,nodes: %"PRId64",%"PRId64","
                       "%"PRId64",%"PRId64, job_id, starttime, endtime,
                       zlist_size (current_selected_nodes));
-            // TODO: This should probably be removed
-            printf ("Allocated");
+            // Print to file
+            fprintf (alloc_file, "%"PRId64",%"PRId64",%"PRId64",",
+                    job_id, starttime, endtime);
             char *node = NULL;
-            for (node = zlist_first (current_selected_nodes);
-                 node;
-                 node = zlist_next (current_selected_nodes)) {
-                printf (" %s", node);
+            node = zlist_first (current_selected_nodes);
+            if (node) {
+                fprintf (alloc_file, "%s", node);
+                node = zlist_next (current_selected_nodes);
             }
-            printf ("\n");
-            // TODO: End removal
+            while (node) {
+                fprintf (alloc_file, "|%s", node);
+                node = zlist_next (current_selected_nodes);
+            }
+            fprintf (alloc_file, "\n");
             current_selected_nodes = NULL; // So it doesn't get destroyed
         }
     }
@@ -1596,7 +1629,7 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         }
     }
 
-    /* TODO: Change to 1 */
+    /* TODO: Change to 1 -- the default should be 1 */
     if (reserve_depth_str) {
         // If atoi fails, it defaults to 0, which is fine for us
         reservation_depth = atoi (reserve_depth_str);
@@ -1626,6 +1659,14 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         rc = -1;
         errno = EINVAL;
     }
+
+    alloc_file = fopen(allocation_filename, "w");
+    if (alloc_file == NULL) {
+        flux_log (h, LOG_ERR, "Unable to write to '%s'", allocation_filename);
+        rc = -1;
+        goto done;
+    }
+    fprintf(alloc_file, "jobid,time,nodelist\n");
 
  done:
     return rc;
@@ -1679,15 +1720,18 @@ static int allocate_topo_structures (flux_t *h, resrc_tree_t *root)
     return 0;
 }
 
-// /* Destructor of sorts; releases all the data structures we used
-//  * XXX: Call this at the end */
-// int finalize (flux_t *h)
-// {
-//     free (levels);
-//     topo_tree_destroy (topo_tree);
-//     zhash_destroy (&node2topo_hash);
-//     zlist_destroy (&job_allocation_list);
-// }
+/* Destructor of sorts; releases all the data structures we used
+ * TODO: Finalize is never being called */
+void finalize ()
+{
+    free (levels);
+    topo_tree_destroy (topo_tree);
+    zhash_destroy (&node2topo_hash);
+    zlist_destroy (&job_allocation_list);
+    if (alloc_file != NULL) {
+        fclose(alloc_file);
+    }
+}
 
 MOD_NAME ("sched.topo");
 
