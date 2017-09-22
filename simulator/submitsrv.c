@@ -25,6 +25,7 @@
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -158,10 +159,11 @@ int populate_header (char *header_line, zlist_t *header_list)
 
 // Populate a list of jobs using the data contained in the csv
 // TODO: breakup this function into several smaller functions
-int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
+int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs, int num_jobs)
 {
     const int MAX_LINE_LEN = 500;  // sort of arbitrary, works for my data
     char curr_line[MAX_LINE_LEN];  // current line of the input file
+    zlist_t *all_jobs = zlist_new (); // temporary list of all jobs
     zlist_t *header = NULL;  // column names
     char *fget_rc = NULL;  // stores the return code of fgets
     char *token = NULL;  // current token from the current line
@@ -189,7 +191,7 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
     while (fget_rc != NULL && feof (fp) == 0) {
         curr_job = blank_job ();
         token = strtok (curr_line, ",");
-        // Walk through even column in record and insert the data into the job
+        // Walk through every column in record and insert the data into the job
         while (token != NULL) {
             if (curr_column == NULL) {
                 flux_log (h, LOG_ERR, "column name is NULL");
@@ -199,14 +201,28 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
             token = strtok (NULL, ",");
             curr_column = zlist_next (header);
         }
-        zlist_append (jobs, curr_job);
+        zlist_append (all_jobs, curr_job);
         fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
         curr_column = zlist_first (header);
         if (curr_line[0] == '#')  // reached a comment line, stop processing
                                   // file
             break;
     }
-    zlist_sort (jobs, compare_job_t);
+    // Sort the list in order of job submission time
+    zlist_sort (all_jobs, compare_job_t);
+
+    // Keep only the first N jobs (where N == num_jobs)
+    int curr_num_job = 0;
+    for (curr_num_job = 0, curr_job = zlist_first(all_jobs);
+         curr_num_job < num_jobs && curr_job;
+         curr_num_job++, curr_job = zlist_next (all_jobs)) {
+        zlist_append (jobs, curr_job);
+    }
+    // Free all the jobs we don't end up using
+    for (; curr_job; curr_job = zlist_next (all_jobs)) {
+        free_job (curr_job);
+    }
+    zlist_destroy (&all_jobs);
 
     // Cleanup
     while (zlist_size (header) > 0)
@@ -365,7 +381,8 @@ int mod_main (flux_t *h, int argc, char **argv)
     zhash_t *args = zhash_fromargv (argc, argv);
     if (!args)
         oom ();
-    char *csv_filename;
+    char *csv_filename, *num_jobs_str;
+    int num_jobs;
     uint32_t rank;
 
     if (flux_get_rank (h, &rank) < 0)
@@ -381,8 +398,14 @@ int mod_main (flux_t *h, int argc, char **argv)
         flux_log (h, LOG_ERR, "job-csv argument is not set");
         return -1;
     }
+    if ((num_jobs_str = zhash_lookup (args, "num-jobs")) == NULL) {
+        flux_log (h, LOG_DEBUG, "num-jobs argument is not set, parsing/submitting all jobs");
+        num_jobs = INT_MAX;
+    } else {
+        num_jobs = atoi (num_jobs_str);
+    }
     jobs = zlist_new ();
-    parse_job_csv (h, csv_filename, jobs);
+    parse_job_csv (h, csv_filename, jobs, num_jobs);
     flux_log (h, LOG_INFO, "submit comms module finished parsing job data");
 
     if (flux_event_subscribe (h, "sim.start") < 0) {
