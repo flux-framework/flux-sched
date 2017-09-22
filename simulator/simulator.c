@@ -150,13 +150,13 @@ int put_job_in_kvs (job_t *job)
 
     flux_t *h = kvsdir_handle (job->kvs_dir);
 
-    if (kvsdir_put_string (job->kvs_dir, "user", job->user) < 0) {
+    if (kvsdir_put_string (job->kvs_dir, "user", job->user ? job->user : "") < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'user'", __FUNCTION__);
         goto ret;
-    } else if (kvsdir_put_string (job->kvs_dir, "jobname", job->jobname) < 0) {
+    } else if (kvsdir_put_string (job->kvs_dir, "jobname", job->jobname ? job->jobname : "") < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'jobname'", __FUNCTION__);
         goto ret;
-    } else if (kvsdir_put_string (job->kvs_dir, "account", job->account) < 0) {
+    } else if (kvsdir_put_string (job->kvs_dir, "account", job->account ? job->account : "") < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'account'", __FUNCTION__);
         goto ret;
     } else if (kvsdir_put_double (job->kvs_dir, "submit_time", job->submit_time) < 0) {

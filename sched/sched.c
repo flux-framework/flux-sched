@@ -928,7 +928,8 @@ static void trigger_cb (flux_t *h,
     sched_loop = true;
     diff = clock () - start;
     seconds = ((double)diff) / CLOCKS_PER_SEC;
-    ctx->sctx.sim_state->sim_time += seconds;
+    // ctx->sctx.sim_state->sim_time += seconds;
+    // XXX: Maybe increment to account for an imaginary, but constant loop time
     if (sched_loop) {
         flux_log (h,
                   LOG_DEBUG,
