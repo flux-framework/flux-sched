@@ -28,6 +28,10 @@ if test "$GCC" = yes; then
   WARNING_CFLAGS="-Wall -Werror -Werror=missing-field-initializers -Wno-error=deprecated-declarations"
   AC_SUBST([WARNING_CFLAGS])
 fi
+if test "$GXX" = "yes"; then
+  WARNING_CXXFLAGS=$WARNING_CFLAGS
+  AC_SUBST([WARNING_CXXFLAGS])
+fi
 
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
