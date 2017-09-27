@@ -161,6 +161,7 @@
 #include "rsreader.h" /* rsreader_resrc_bulkload */
 
 #define min(x, y) ( ((x) < (y)) ? (x) : (y) )
+#define ZEROPAD "10"
 
 static int reservation_depth = 1;
 static int curr_reservation_depth = 0;
@@ -671,7 +672,6 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     return nfound;
 }
 
-/* UNNECESSARY */
 /*
  * cycles through all of the resource children and returns true when
  * the requested quantity of resources have been selected.
@@ -724,7 +724,6 @@ static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
 
     return selected;
 }
-/* End UNNECESSARY */
 
 static int sort_ascending (void *key1, void *key2)
 {
@@ -749,15 +748,16 @@ zhash_t *get_switches (topo_tree_t *tt_pod, int64_t nodes_requested)
     topo_tree_t *sw = zlist_first (switches);
     char *key;
     while (sw != NULL) {
+        /* TODO: Cannot do a direct comparison of r_tier and a_tier */
         nodes_avail = (levels[tree_depth-1]) -
                 (sw->a_tier.T1 + sw->r_tier.T1 +
                  sw->a_tier.T2 + sw->r_tier.T2 +
                  sw->a_tier.T3 + sw->r_tier.T3);
         if (nodes_avail >= nodes_requested) {
-            key = xasprintf ("%020"PRId64"%s",
+            key = xasprintf ("%0"ZEROPAD""PRId64"%s",
                     nodes_avail, resrc_name (resrc_tree_resrc (sw->ct)));
             zhash_insert (switch_h, key, sw);
-            zhash_freefn (switch_h, key, NULL); // We don't want to free tt_pod
+            zhash_freefn (switch_h, key, NULL); // We don't want to free topo_tree
             // printf ("Added key '%s'\n", key); // TEST
             free (key);
         }
@@ -786,7 +786,7 @@ zhash_t *get_pods (topo_tree_t *tt_root, int64_t nodes_requested)
                  pd->a_tier.T2 + pd->r_tier.T2 +
                  pd->a_tier.T3 + pd->r_tier.T3);
         if (nodes_avail >= nodes_requested) {
-            key = xasprintf ("%020"PRId64"%s",
+            key = xasprintf ("%0"ZEROPAD""PRId64"%s",
                     nodes_avail, resrc_name (resrc_tree_resrc (pd->ct)));
             zhash_insert (pod_h, key, pd);
             zhash_freefn (pod_h, key, NULL); // We don't want to free tt_root
@@ -915,7 +915,7 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
 {
     int64_t nodes_found = 0;
     int64_t nodes_on_switch;
-    zlist_t *selected_nodes = zlist_new ();
+    zlist_t *selected_nodes;
 
     zhash_t *pods = get_pods (tt, n_nodes);
     zlist_t *sorted_pod_keys = zhash_keys (pods);
@@ -933,12 +933,13 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
          pod_key != NULL;
          pod_key = zlist_next (sorted_pod_keys)) {
 
+        selected_nodes = zlist_new ();
         a_pod = zhash_lookup (pods, pod_key);
         /* Since we require multiple switches, get ones with any nodes free */
         switches = get_switches (a_pod, 1);
         sorted_switch_keys = zhash_keys (switches);
         /* It could be that the pod has enough nodes but spread across
-         * switches each without enough nodes */
+         * switches each without space for tier 2 jobs. */
         if (zlist_size (sorted_switch_keys) == 0) {
             zhash_destroy (&switches);
             zlist_destroy (&sorted_switch_keys);
@@ -950,7 +951,7 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
              switch_key = zlist_next (sorted_switch_keys)) {
 
             a_switch = zhash_lookup (switches, switch_key);
-            // printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
             if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
                     a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
                 continue;
@@ -959,7 +960,8 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
                     a_switch, min(n_nodes, n_nodes - nodes_found),
                     &selected_nodes);
             nodes_found += nodes_on_switch;
-            printf("Found %"PRId64" nodes on this switch\n", nodes_on_switch); // TEST
+            printf("Found %"PRId64" nodes on switch %s\n",
+                    nodes_on_switch, switch_key); // TEST
             if (nodes_found == n_nodes) {
                 printf ("Found nodes for a T2 job!\n"); // TEST
                 zhash_destroy (&switches);
@@ -969,13 +971,16 @@ zlist_t *t2_job_select (topo_tree_t *tt, int64_t n_nodes)
                 return selected_nodes;
             }
         }
+        /* We didn't find enough on this pod; throw it all away and move on */
         zhash_destroy (&switches);
         zlist_destroy (&sorted_switch_keys);
-    }
-    if (nodes_found != n_nodes) {
-        printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
-        zlist_destroy (&selected_nodes);
-        selected_nodes = NULL;
+        if (nodes_found != n_nodes) {
+            printf("Found just %"PRId64" of %"PRId64" nodes on pod %s\n",
+                    nodes_found, n_nodes, pod_key); // TEST
+            nodes_found = 0;
+            zlist_destroy (&selected_nodes);
+            selected_nodes = NULL;
+        }
     }
     zhash_destroy (&pods);
     zlist_destroy (&sorted_pod_keys);
@@ -1058,7 +1063,8 @@ zlist_t *t3_job_select (topo_tree_t *tt, int64_t n_nodes)
         zlist_destroy (&sorted_switch_keys);
     }
     if (nodes_found != n_nodes) {
-        printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
+        printf("Found %"PRId64" of %"PRId64" nodes for T3\n",
+                nodes_found, n_nodes); // TEST
         zlist_destroy (&selected_nodes);
         selected_nodes = NULL;
     }
@@ -1261,7 +1267,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             topo_tree, resrc_reqst_reqrd_qty (resrc_reqst));
     if (selected_nodes == NULL) {
         flux_log (h, LOG_DEBUG, "%s: did not find all resources at current time"
-                "(%"PRId64")", __FUNCTION__, current_time);
+                " (%"PRId64")", __FUNCTION__, current_time);
     } else {
         current_selected_nodes = selected_nodes;
         selected_tree = convert (
@@ -1292,13 +1298,11 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         return NULL;
     }
 
-    /* Clear resource request */
-
     /* Search for resources in the future */
     zhash_t *future_node2topo = zhash_new ();
     topo_tree_t *future_tree = topo_tree_copy (topo_tree, future_node2topo);
     zlist_sort (job_allocation_list, &compare_allocation_ascending);
-    printf ("job_alloc_list has %ld elements, sorted\n",
+    flux_log (h, LOG_DEBUG, "job_alloc_list has %ld elements, sorted\n",
             zlist_size (job_allocation_list)); // TEST
     allocation_t *alloc;
     for (alloc = zlist_first (job_allocation_list);
@@ -1306,14 +1310,13 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
          alloc = zlist_next (job_allocation_list)) {
 
         if (alloc->completion_time < current_time) {
-            printf("Removed job %"PRId64" of %"PRId64" nodes ending @ %"PRId64
-                    "from list, (size %ld)\n",
+            flux_log (h, LOG_DEBUG, "Removed job %"PRId64" of %"PRId64
+                    " nodes ending @ %"PRId64" from list, (size %ld)\n",
                     alloc->job_id,
                     zlist_size (alloc->selected_nodes),
                     alloc->completion_time,
                     zlist_size (job_allocation_list) - 1); // TEST
             zlist_remove (job_allocation_list, alloc);
-            free (alloc);
             continue;
         }
         free_nodes (alloc->selected_nodes, future_node2topo);
@@ -1520,8 +1523,8 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                       "%"PRId64",%"PRId64, job_id, starttime, endtime,
                       zlist_size (current_selected_nodes));
             // Print to file
-            fprintf (alloc_file, "%"PRId64",%"PRId64",%"PRId64",",
-                    job_id, starttime, endtime);
+            fprintf (alloc_file, "%"PRId64",%"PRId64",",
+                    job_id, starttime);
             char *node = NULL;
             node = zlist_first (current_selected_nodes);
             if (node) {
@@ -1568,7 +1571,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             *selected_tree = NULL;
             flux_log (h, LOG_ERR, "Reservation for job %"PRId64" failed", job_id);
         } else {
-            /* TOPOTODO: Does this interfere since it's not a allocation? */
+            /* TOPOTODO: Does this interfere since it's not an allocation? */
             // mark_topo_tree (h, current_selected_nodes, RESERVE);
             mark_topo_tree (h, *selected_tree, RESERVE);
             curr_reservation_depth++;
@@ -1577,10 +1580,25 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
                       reservation_starttime + 1,
                       reservation_starttime + 1 + walltime);
-            printf ("resrc_reqst has %"PRId64" reserved resources\n",
-                    resrc_reqst_nfound (resrc_reqst)); // TEST
+            printf ("resrc_reqst for jobid %"PRId64" has %"PRId64" reserved resources\n",
+                    job_id, resrc_reqst_nfound (resrc_reqst)); // TEST
         }
         if (current_selected_nodes != NULL) {
+            /* TEST: Print the reserved nodes */
+            printf ("Reserved jobid %"PRId64" @ %"PRId64",", job_id, starttime);
+            char *node = NULL;
+            node = zlist_first (current_selected_nodes);
+            if (node) {
+                printf ("%s", node);
+                node = zlist_next (current_selected_nodes);
+            }
+            while (node) {
+                printf ("|%s", node);
+                node = zlist_next (current_selected_nodes);
+            }
+            printf ("\n");
+            /* END TEST */
+            current_selected_nodes = NULL; // So it doesn't get destroyed
             zlist_destroy (&current_selected_nodes);
             current_selected_nodes = NULL;
         }
@@ -1666,7 +1684,7 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         rc = -1;
         goto done;
     }
-    fprintf(alloc_file, "jobid,time,nodelist\n");
+    fprintf(alloc_file, "jobid,starttime,nodelist\n");
 
  done:
     return rc;

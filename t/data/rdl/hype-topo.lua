@@ -7,13 +7,14 @@
 -- commandArgs <- function(unused) "hype"
 -- source("gen_conf.R") # gen_conf.R can be found at
 -- # https://lc.llnl.gov/bitbucket/projects/STATE/repos/schedu-tron/browse
+-- NOTE: You should ensure you zero-pad all of your switch and pod names
 
 uses "Node"
 Hierarchy "default" {
 Resource { "cluster", name = "hype",
 children = {
 	Resource { "pod", name = "pod0", children = {
-		Resource { "switch", name = "l2_switch0", children = {
+		Resource { "switch", name = "l2_switch00", children = {
 			ListOf { Node,
 			ids = "1,2,3,4,5,6,7,8",
 			args = {
@@ -22,7 +23,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch1", children = {
+		Resource { "switch", name = "l2_switch01", children = {
 			ListOf { Node,
 			ids = "9,10,11,12,13,14,15,16",
 			args = {
@@ -31,7 +32,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch2", children = {
+		Resource { "switch", name = "l2_switch02", children = {
 			ListOf { Node,
 			ids = "17,18,19,20,21,22,23,24",
 			args = {
@@ -40,7 +41,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch3", children = {
+		Resource { "switch", name = "l2_switch03", children = {
 			ListOf { Node,
 			ids = "25,26,27,28,29,30,31,32",
 			args = {
@@ -51,7 +52,7 @@ children = {
 		}}, -- l2_switch
 	}}, -- pod
 	Resource { "pod", name = "pod1", children = {
-		Resource { "switch", name = "l2_switch4", children = {
+		Resource { "switch", name = "l2_switch04", children = {
 			ListOf { Node,
 			ids = "33,34,35,36,37,38,39,40",
 			args = {
@@ -60,7 +61,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch5", children = {
+		Resource { "switch", name = "l2_switch05", children = {
 			ListOf { Node,
 			ids = "41,42,43,44,45,46,47,48",
 			args = {
@@ -69,7 +70,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch6", children = {
+		Resource { "switch", name = "l2_switch06", children = {
 			ListOf { Node,
 			ids = "49,50,51,52,53,54,55,56",
 			args = {
@@ -78,7 +79,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch7", children = {
+		Resource { "switch", name = "l2_switch07", children = {
 			ListOf { Node,
 			ids = "57,58,59,60,61,62,63,64",
 			args = {
@@ -89,7 +90,7 @@ children = {
 		}}, -- l2_switch
 	}}, -- pod
 	Resource { "pod", name = "pod2", children = {
-		Resource { "switch", name = "l2_switch8", children = {
+		Resource { "switch", name = "l2_switch08", children = {
 			ListOf { Node,
 			ids = "65,66,67,68,69,70,71,72",
 			args = {
@@ -98,7 +99,7 @@ children = {
 				memory_per_socket = 16000
 			}} -- Node
 		}}, -- l2_switch
-		Resource { "switch", name = "l2_switch9", children = {
+		Resource { "switch", name = "l2_switch09", children = {
 			ListOf { Node,
 			ids = "73,74,75,76,77,78,79,80",
 			args = {
