@@ -482,10 +482,11 @@ static void purge_reservations (topo_tree_t *tt)
  * found_tree: The tree of available resources from resrc_tree_search
  * Returns 0 if okay, -1 if something bad happened.
  */
-/* XXX: Keep in mind that resrc_tree_search will only match resources
- * with the same properties and tags, but there may be resources which
- * are different enough to not match but still can affect the job from
- * an interference perspective.
+/* XXX: resrc_tree_search will only match resources with the same properties and
+ * tags, but there may be resources which are different enough to not match but
+ * still can affect the job from an interference perspective. This doesn't seem
+ * to be a problem but what sets these properties is unclear.
+ *
  * At least in simulation, resrc_tree_allocate only calls
  * resrc_tree_allocate_in_time, which never sets the resrc state
  */
@@ -586,8 +587,8 @@ int sched_loop_setup (flux_t *h) {
              alloc;
              alloc = zlist_next (job_allocation_list)) {
             if (current_time >= 0 && alloc->completion_time < current_time) {
-                printf ("Removing job %"PRId64" from list at %"PRId64"\n",
-                        alloc->job_id, current_time); // TEST
+                // printf ("Removing job %"PRId64" from list at %"PRId64"\n",
+                //         alloc->job_id, current_time); // TEST
                 zlist_remove (job_allocation_list, alloc);
             }
         }
@@ -641,8 +642,8 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
      * efficient function */
     /* Find all available resources so we can update the topo_tree */
     nfound = resrc_tree_search (rsapi, resrc, resrc_reqst, found_tree, true);
-    printf ("%"PRId64" nodes available\n", nfound); // TEST
-    if (synchronize (*found_tree)) { // XXX: Does this mess up r_tier counts?
+    // printf ("%"PRId64" nodes available\n", nfound); // TEST
+    if (synchronize (*found_tree)) {
         flux_log (h, LOG_ERR, "Error synchronizing");
         resrc_tree_destroy (rsapi, *found_tree, false, false);
         *found_tree = NULL;
@@ -736,34 +737,17 @@ static int sort_descending (void *key1, void *key2)
  * This is done so they can be sorted by available nodes. If no such switches
  * are available, returns NULL. Assumes the input tree is rooted at a pod.
  *
- * NOTE: This will count reserved nodes as being unavailable, even though
- * it may be the case that the reservation may not overlap with the current
- * reservation requested.
- *
- * TODO: Instead of checking the times at each level, just do a single check at
- * the beginning! We only have one reservation, after all.
- *
- * TODO: Check for reservation times here and at pods! Since we're doing
- * EASY backfill we can check if we really do want to subtract the r_tiers
- * to the nodes_avail
- *
- * TODO: Determine if we want to add a check for reservation times here;
- * This poses the complication of different nodes may have different reservation
- * times. One potential solution is for each switch and pod, when propagating
- * reservations up, conservatively update r_start and r_end to the soonest and
- * latest times, respectively.
- */
-/* Reservation logic:
+ * NOTE: Reservation logic:
  * 1. If no overlap, don't count r_tiers
  * 2. When reserving, at node level, you can increase the r_tier
- * counts as you like, but only increase r_tier counts for switches/pods
- * if the node is not allocated.
+ *    counts as you like, but only increase r_tier counts for switches/pods
+ *    if the node is not allocated.
  * 3. With 2 in place, if overlap, adding a_tier and r_tier counts are
- * all good.
+ *    all good.
  * 4. if reservation is in place, and then u end up allocating a node
- * which is reserved in future, at that time - u will need to decrease
- * r_tier counts at switch level and pods levels since those nodes will
- * start showing up in a_tier counts.
+ *    which is reserved in future, at that time - u will need to decrease
+ *    r_tier counts at switch level and pods levels since those nodes will
+ *    start showing up in a_tier counts.
  */
 zhash_t *get_switches (
         topo_tree_t *tt_pod, int64_t nodes_requested,
@@ -924,7 +908,7 @@ zlist_t *t1_job_select (
         zlist_sort (sorted_switch_keys, sort_ascending);
         switch_key = zlist_first (sorted_switch_keys);
         a_switch = zhash_lookup (switches, switch_key);
-        printf ("Trying with pod %s and switch %s:\n", pod_key, switch_key); // TEST
+        // printf ("Trying with pod %s and switch %s:\n", pod_key, switch_key); // TEST
         nodes_found = select_nodes (
                 a_switch, n_nodes, &selected_nodes, consider_reservations);
         if (nodes_found == n_nodes) {
@@ -939,13 +923,13 @@ zlist_t *t1_job_select (
         }
     }
     if (nodes_found != n_nodes) {
-        printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
+        // printf("Found %"PRId64" of %"PRId64" nodes\n", nodes_found, n_nodes); // TEST
         zlist_destroy (&selected_nodes);
         selected_nodes = NULL;
     }
     zhash_destroy (&pods);
     zlist_destroy (&sorted_pod_keys);
-    printf ("Found nodes for a T1 job!\n"); // TEST
+    // printf ("Found nodes for a T1 job!\n"); // TEST
     return selected_nodes;
 }
 
@@ -999,7 +983,7 @@ zlist_t *t2_job_select (
              switch_key = zlist_next (sorted_switch_keys)) {
 
             a_switch = zhash_lookup (switches, switch_key);
-            printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
+            // printf ("Trying with pod %s & switch %s:\n", pod_key, switch_key); // TEST
             if (a_switch->a_tier.T2 > 0 || a_switch->r_tier.T2 > 0 ||
                     a_switch->a_tier.T3 > 0 || a_switch->r_tier.T3 > 0) {
                 continue;
@@ -1008,10 +992,10 @@ zlist_t *t2_job_select (
                     a_switch, min(n_nodes, n_nodes - nodes_found),
                     &selected_nodes, consider_reservations);
             nodes_found += nodes_on_switch;
-            printf("Found %"PRId64" nodes on switch %s\n",
-                    nodes_on_switch, switch_key); // TEST
+            // printf("Found %"PRId64" nodes on switch %s\n",
+            //         nodes_on_switch, switch_key); // TEST
             if (nodes_found == n_nodes) {
-                printf ("Found nodes for a T2 job!\n"); // TEST
+                // printf ("Found nodes for a T2 job!\n"); // TEST
                 zhash_destroy (&switches);
                 zlist_destroy (&sorted_switch_keys);
                 zhash_destroy (&pods);
@@ -1023,8 +1007,8 @@ zlist_t *t2_job_select (
         zhash_destroy (&switches);
         zlist_destroy (&sorted_switch_keys);
         if (nodes_found != n_nodes) {
-            printf("Found just %"PRId64" of %"PRId64" nodes on pod %s\n",
-                    nodes_found, n_nodes, pod_key); // TEST
+            // printf("Found just %"PRId64" of %"PRId64" nodes on pod %s\n",
+            //         nodes_found, n_nodes, pod_key); // TEST
             nodes_found = 0;
             zlist_destroy (&selected_nodes);
             selected_nodes = NULL;
@@ -1071,7 +1055,7 @@ zlist_t *t3_job_select (
 
         a_pod = zhash_lookup (pods, pod_key);
         if (a_pod->a_tier.T3 > 0 || a_pod->r_tier.T3 > 0) {
-            printf ("Already a T3 job on %s, skipping\n", pod_key); // TEST
+            // printf ("Already a T3 job on %s, skipping\n", pod_key); // TEST
             continue;
         }
         /* Since we require multiple switches, get ones with any nodes free */
@@ -1099,10 +1083,10 @@ zlist_t *t3_job_select (
                     a_switch, min(n_nodes, n_nodes - nodes_found),
                     &selected_nodes, consider_reservations);
             nodes_found += nodes_on_switch;
-            printf("Found %"PRId64" nodes on this switch %s\n",
-                    nodes_on_switch, switch_key); // TEST
+            // printf("Found %"PRId64" nodes on this switch %s\n",
+            //         nodes_on_switch, switch_key); // TEST
             if (nodes_found == n_nodes) {
-                printf ("Found nodes for a T3 job!\n"); // TEST
+                // printf ("Found nodes for a T3 job!\n"); // TEST
                 zhash_destroy (&switches);
                 zlist_destroy (&sorted_switch_keys);
                 zhash_destroy (&pods);
@@ -1114,8 +1098,8 @@ zlist_t *t3_job_select (
         zlist_destroy (&sorted_switch_keys);
     }
     if (nodes_found != n_nodes) {
-        printf("Found %"PRId64" of %"PRId64" nodes for T3\n",
-                nodes_found, n_nodes); // TEST
+        // printf("Found %"PRId64" of %"PRId64" nodes for T3\n",
+        //         nodes_found, n_nodes); // TEST
         zlist_destroy (&selected_nodes);
         selected_nodes = NULL;
     }
@@ -1132,7 +1116,7 @@ zlist_t *topo_select_resources (
         topo_tree_t *tt, int64_t n_nodes, bool consider_reservations)
 {
     int tier = calculate_tier (n_nodes);
-    printf ("Searching for %"PRId64" nodes (T%d)\n", n_nodes, tier); // TEST
+    // printf ("Searching for %"PRId64" nodes (T%d)\n", n_nodes, tier); // TEST
     // topo_tree_print (tt); // TEST
     switch (tier) {
     case 1:
@@ -1204,11 +1188,13 @@ bool synchronize_list_with_tree (resrc_api_ctx_t *rsapi,
     return destroyed;
 }
 
-/* TODO: The sockets and cores are being deleted when they shouldn't */
-/* TODO: This is the problem child. Seems to be failing deleting pod0...
- * I think it has to do with resrc_deep_copy since there's an infinite recursion
- * in select_resources_in_time (which is copied directoy from
- * internal_select_resources) */
+/* Given a candidate tree of _exactly_ the resources we want to allocate
+ * or reserve, go through the tree and add stage the required resources and add
+ * them to the "found" counter in the resource request. The nfound is required
+ * for both allocations, but should be cleared for reservations (we still want
+ * the tree, and I'm not sure if we need the resources staged for reservations,
+ * but that's what the other plugins do).
+ */
 static void stage_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                              resrc_tree_t *candidate_tree,
                              resrc_reqst_t *resrc_reqst)
@@ -1218,8 +1204,6 @@ static void stage_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     resrc_tree_t *child_tree;
 
     resrc = resrc_tree_resrc (candidate_tree);
-    /* XXX: Since we are using a copy of the candidate tree, we consider
-     * */
     if (resrc_match_resource (resrc, resrc_reqst, true)) {
         if (resrc_reqst_num_children (resrc_reqst)) {
             if (resrc_tree_num_children (candidate_tree)) {
@@ -1277,19 +1261,19 @@ resrc_tree_t *convert (flux_t *h, resrc_api_ctx_t *rsapi,
     }
     
     resrc_tree_t *selected_tree = resrc_tree_deep_copy (original_tree);
-    printf("Pruning nodes\n"); // TEST
+    // printf("Pruning nodes\n"); // TEST
     synchronize_list_with_tree (
             rsapi, selected_tree, resrc_reqst, in_selection, false, false);
     // for each level 
     int i;
     for (i = 0; i < (tree_depth - 1); i++) {
-        printf("Syncing..."); // TEST
+        // printf("Syncing..."); // TEST
         synchronize_list_with_tree (
                 rsapi, selected_tree, resrc_reqst, in_selection, true, false);
     }
-    printf("\n"); // TEST
+    // printf("\n"); // TEST
 
-    printf("Staging Resources\n"); // TEST
+    // printf("Staging Resources\n"); // TEST
     // resrc_tree_print (selected_tree); // TEST
     stage_resources (h, rsapi, selected_tree, resrc_reqst);
     if (which == RESERVE) {
@@ -1324,7 +1308,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     }
     resrc_tree_t *selected_tree = NULL;
     zlist_t *selected_nodes;
-    /* XXX: Do I want resrc_phys_tree or found_tree? */
+    /* XXX: Do I want resrc_phys_tree or found_tree? I think this is ok. */
     resrc_tree_t *root = resrc_phys_tree (resrc_tree_resrc (found_tree));
 
     // Looking into the future current time changes, required walltime does not
@@ -1334,9 +1318,9 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     /* Search for resources now */
     bool consider_reservations = reservation_overlaps (
             current_time, current_time + required_walltime);
-    printf ("Job current time: %"PRId64"--%"PRId64", %s reservations, ",
-            current_time, current_time + required_walltime,
-            consider_reservations ? "with" : "without"); // TEST
+    // printf ("Job current time: %"PRId64"--%"PRId64", %s reservations, ",
+    //         current_time, current_time + required_walltime,
+    //         consider_reservations ? "with" : "without"); // TEST
     selected_nodes = topo_select_resources (
             topo_tree, resrc_reqst_reqrd_qty (resrc_reqst),
             consider_reservations);
@@ -1350,7 +1334,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 node2topo_hash, root, ALLOCATE);
         /* We stage resources */
         // resrc_tree_print (selected_tree); // TEST
-        /* flux_log (h, LOG_DEBUG, */ /* TEST */ printf("%s: found all resources at current time "
+        flux_log (h, LOG_DEBUG, "%s: found all resources at current time "
                 "(%"PRId64")", __FUNCTION__, current_time);
         return selected_tree;
     }
@@ -1365,7 +1349,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         only_now_scheduling = (curr_reservation_depth >= reservation_depth);
     }
     if (only_now_scheduling) {
-        /* flux_log (h, LOG_DEBUG, */ /* TEST */ printf("%s: couldn't find all resources at current time (%"PRId64"), not attempting to search into the future", __FUNCTION__, current_time);
+        flux_log (h, LOG_DEBUG, "%s: couldn't find all resources at current time (%"PRId64"), not attempting to search into the future", __FUNCTION__, current_time);
         return NULL;
     }
 
@@ -1377,19 +1361,19 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             topo_tree, future_node2topo, NULL);
     zlist_sort (job_allocation_list, &compare_allocation_ascending);
     flux_log (h, LOG_DEBUG, "job_alloc_list has %ld elements, sorted\n",
-            zlist_size (job_allocation_list)); // TEST
+            zlist_size (job_allocation_list));
     allocation_t *alloc;
     for (alloc = zlist_first (job_allocation_list);
          alloc;
          alloc = zlist_next (job_allocation_list)) {
 
         if (alloc->completion_time < current_time) {
-            /* flux_log (h, LOG_DEBUG, */ /* TEST */ printf("Removed job %"PRId64" of %"PRId64
+            flux_log (h, LOG_DEBUG, "Removed job %"PRId64" of %"PRId64
                     " nodes ending @ %"PRId64" from list, (size %ld)\n",
                     alloc->job_id,
                     zlist_size (alloc->selected_nodes),
                     alloc->completion_time,
-                    zlist_size (job_allocation_list) - 1); // TEST
+                    zlist_size (job_allocation_list) - 1);
             zlist_remove (job_allocation_list, alloc);
             continue;
         }
@@ -1406,9 +1390,9 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
          * reservation or we won't get to this point because reservation_depth
          * is 1 and thus only_now_scheduling will be true
          */
-        printf ("Looking ahead at time %"PRId64", %s reservations\n",
-                alloc->completion_time + 1,
-                consider_reservations ? "considering" : "ignoring"); // TEST
+        // printf ("Looking ahead at time %"PRId64", %s reservations\n",
+        //         alloc->completion_time + 1,
+        //         consider_reservations ? "considering" : "ignoring"); // TEST
         consider_reservations = reservation_overlaps (
                 alloc->completion_time + 1,
                 alloc->completion_time + 1 + required_walltime);
@@ -1416,7 +1400,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 future_tree, resrc_reqst_reqrd_qty (resrc_reqst),
                 consider_reservations);
         if (selected_nodes == NULL) {
-            /* flux_log (h, LOG_DEBUG, */ /* TEST */ printf("Topo could not reserve enough resources"
+            flux_log (h, LOG_DEBUG, "Topo could not reserve enough resources"
                     " at time % "PRId64"\n", alloc->completion_time + 1);
         } else {
             current_selected_nodes = selected_nodes;
@@ -1433,6 +1417,11 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 }
 
 /* This will select some resources for a given job, either now or in the future
+ * This is only called by stage_resources (and in indirectly, at that) and its
+ * primary purpose is to stage resources and count nfound.
+ *
+ * TODO: Find out if this is actually necessary, or if select_child should just
+ * call stage_resources instead.
  */
 static resrc_tree_t *select_resources_in_time (flux_t *h,
                                                resrc_api_ctx_t *rsapi,
@@ -1452,7 +1441,8 @@ static resrc_tree_t *select_resources_in_time (flux_t *h,
 
     resrc = resrc_tree_resrc (candidate_tree);
     /* XXX: This doesn't require the resource actually be available. Therefore,
-     * the candidate_tree must be exactly what you want.
+     * the candidate_tree must be exactly what you want. If you ever find
+     * yourself stuck in an infinite loop, this is probably why.
      */
     if (resrc_match_resource (resrc, resrc_reqst, false)) {
         if (resrc_reqst_num_children (resrc_reqst)) {
@@ -1461,14 +1451,14 @@ static resrc_tree_t *select_resources_in_time (flux_t *h,
                 if (select_children (h, rsapi, resrc_tree_children (candidate_tree),
                                      resrc_reqst_children (resrc_reqst),
                                      selected_tree)) {
-                    printf ("Staging "); resrc_print_resource (resrc); // TEST
-                    resrc_stage_resrc (resrc,
-                                       resrc_reqst_reqrd_size (resrc_reqst),
-                                       resrc_reqst_graph_reqs (resrc_reqst));
+                    // printf ("Staging "); resrc_print_resource (resrc); // TEST
+                    // resrc_stage_resrc (resrc,
+                    //                    resrc_reqst_reqrd_size (resrc_reqst),
+                    //                    resrc_reqst_graph_reqs (resrc_reqst));
                     resrc_reqst_add_found (resrc_reqst, 1);
                 } else {
-                    printf ("Destroying "); // TEST
-                    resrc_print_resource (resrc_tree_resrc (selected_tree)); // TEST
+                    // printf ("Destroying "); // TEST
+                    // resrc_print_resource (resrc_tree_resrc (selected_tree)); // TEST
 
                     resrc_tree_destroy (rsapi, selected_tree, false, false);
                 }
@@ -1494,7 +1484,6 @@ static resrc_tree_t *select_resources_in_time (flux_t *h,
         selected_tree = resrc_tree_new (selected_parent, resrc);
         children = resrc_tree_children (candidate_tree);
         child_tree = resrc_tree_list_first (children);
-        // printf ("Selecting child\n"); // TEST - STUCK HERE
         while (child_tree) {
             if (select_resources_in_time (h, rsapi, child_tree,
                     resrc_reqst, selected_tree) &&
@@ -1664,6 +1653,7 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                 node = zlist_next (current_selected_nodes);
             }
             fprintf (alloc_file, "\n");
+            // End file print
             current_selected_nodes = NULL; // So it doesn't get destroyed
         }
     }
@@ -1699,7 +1689,6 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             *selected_tree = NULL;
             flux_log (h, LOG_ERR, "Reservation for job %"PRId64" failed", job_id);
         } else {
-            /* XXX: Does this interfere since it's not an allocation? */
             mark_topo_tree (h, *selected_tree, RESERVE);
             curr_reservation_depth++;
             flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
@@ -1707,23 +1696,23 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
                       reservation_starttime + 1,
                       reservation_starttime + 1 + walltime);
-            printf ("resrc_reqst for jobid %"PRId64" has %"PRId64" reserved resources\n",
-                    job_id, resrc_reqst_reqrd_qty  (resrc_reqst)); // TEST
+            // printf ("resrc_reqst for jobid %"PRId64" has %"PRId64" reserved resources\n",
+            //         job_id, resrc_reqst_reqrd_qty  (resrc_reqst)); // TEST
         }
         if (current_selected_nodes != NULL) {
             /* TEST: Print the reserved nodes */
-            printf ("Reserved jobid %"PRId64" @ %"PRId64",", job_id, starttime);
-            char *node = NULL;
-            node = zlist_first (current_selected_nodes);
-            if (node) {
-                printf ("%s", node);
-                node = zlist_next (current_selected_nodes);
-            }
-            while (node) {
-                printf ("|%s", node);
-                node = zlist_next (current_selected_nodes);
-            }
-            printf ("\n");
+            // printf ("Reserved jobid %"PRId64" @ %"PRId64",", job_id, starttime);
+            // char *node = NULL;
+            // node = zlist_first (current_selected_nodes);
+            // if (node) {
+            //     printf ("%s", node);
+            //     node = zlist_next (current_selected_nodes);
+            // }
+            // while (node) {
+            //     printf ("|%s", node);
+            //     node = zlist_next (current_selected_nodes);
+            // }
+            // printf ("\n");
             /* END TEST */
             r_start = reservation_starttime + 1;
             r_end = reservation_starttime + 1 + walltime;
