@@ -1,5 +1,5 @@
 JobID,User,JobName,Account,Cluster,Partition,Priority,QOS,NNodes,NCPUS,Timelimit,State,Submit,Start,Elapsed,End,ExitCode,IORate(MB)
 1,50,fc,42,test,batch,100000000,normal,33,528,00:10:00,COMPLETED,1,1,00:06:00,180,0:1,0
-2,50,fc,42,test,batch,100000000,normal,33,160,16:00:00,TIMEOUT,1,1,16:00:09,57610,0:1,0
+2,50,fc,42,test,batch,100000000,normal,33,528,16:00:00,TIMEOUT,1,1,16:00:09,57610,0:1,0
 3,50,77,42,test,batch,100000000,normal,30,480,16:00:00,COMPLETED,1,181,10:35:09,38291,0:0,0
 4,50,77,42,test,batch,100000000,normal,1,16,00:01:00,COMPLETED,1,1,00:01:00,61,0:1,0
