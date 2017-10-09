@@ -208,6 +208,7 @@ typedef struct topo_tree_ {
     tier_count_t r_tier;     /* Only makes sense when paired with r_start,end */
     struct topo_tree_ *parent;
     zlist_t *children;
+    int64_t jobid;
 } topo_tree_t;
 
 static topo_tree_t *topo_tree;
@@ -309,6 +310,7 @@ static topo_tree_t *topo_tree_create (
     new_tree->type = r_e;
     new_tree->a_tier = initialize_tier_counts ();
     new_tree->r_tier = initialize_tier_counts ();
+    new_tree->jobid = -1;
     new_tree->parent = parent;
     new_tree->children = NULL;
     
@@ -409,6 +411,7 @@ topo_tree_t *topo_tree_copy (
     new_tree->type = tt->type;
     new_tree->a_tier = tt->a_tier;
     new_tree->r_tier = tt->r_tier;
+    new_tree->jobid = tt->jobid;
     new_tree->parent = parent;
     
     if (new_tree->type == NODE) {
@@ -499,6 +502,7 @@ static int synchronize (resrc_tree_t *found_tree)
     if (strcmp (r_t, "node") == 0) { /* Base case */
         node_name = resrc_name (resrc_tree_resrc (found_tree));
         tt = zhash_lookup (node2topo_hash, node_name);
+        tt->jobid = -1;
         /* Mark the resource as available */
         if (tt->a_tier.T1 > 0) {
             tt->a_tier.T1--;
@@ -529,7 +533,7 @@ static int synchronize (resrc_tree_t *found_tree)
 
 /* Free the nodes in node_list. Expects a list of strings representing node
  * names and a hash table whose values are pointers into a topo_tree */
-static int free_nodes (zlist_t *node_list, zhash_t *node_hash)
+static int free_nodes (zlist_t *node_list, zhash_t *node_hash, int64_t jobid)
 {
     int tier = calculate_tier (zlist_size (node_list)); 
     topo_tree_t *tt;
@@ -540,6 +544,8 @@ static int free_nodes (zlist_t *node_list, zhash_t *node_hash)
 
         // printf ("Freeing %s...\n", node); // TEST
         tt = (topo_tree_t *) zhash_lookup (node_hash, node);
+        if(tt->jobid != jobid) return -1;
+        tt->jobid = -1;
         if (tier == 1 && tt->a_tier.T1 > 0) {
             tt->a_tier.T1--;
             tt->parent->a_tier.T1--;
@@ -1381,10 +1387,13 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             zlist_remove (job_allocation_list, alloc);
             continue;
         }
+        if(free_nodes (alloc->selected_nodes, future_node2topo, alloc->job_id) 
+            == -1) {
+            continue;
+        }
         resrc_reqst_set_starttime (resrc_reqst, alloc->completion_time + 1);
         resrc_reqst_set_endtime (resrc_reqst,
                 alloc->completion_time + 1 + required_walltime);
-        free_nodes (alloc->selected_nodes, future_node2topo);
 
         // printf ("Tree state at future time %"PRId64"\n",
         //         alloc->completion_time + 1); // TEST
@@ -1535,7 +1544,7 @@ static void find_nodes (resrc_tree_t *r_tree, resrc_tree_list_t *rtl)
  * unless also considered with r_start and r_end.
  */
 static void mark_topo_tree (
-        flux_t *h, resrc_tree_t *selected_tree, mark_enum_t which)
+        flux_t *h, resrc_tree_t *selected_tree, mark_enum_t which, int64_t jobid)
 {
     /* 1. Count number of nodes to determine the tier of the job */
     resrc_tree_list_t *node_list = resrc_tree_list_new ();
@@ -1579,6 +1588,7 @@ static void mark_topo_tree (
                 // printf ("A T3 job r_marked on node '%s'\n", node_name); // TEST
             }
         } else { // ALLOCATE
+            topo_node->jobid = jobid;
             if (job_tier == 1) {
                 if (topo_node->r_tier.T1 > 0) {
                     topo_node->parent->r_tier.T1--;
@@ -1624,7 +1634,7 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     if (selected_tree) {
         rc = resrc_tree_allocate (selected_tree, job_id, starttime, endtime);
         if (!rc) {
-            mark_topo_tree (h, selected_tree, ALLOCATE);
+            mark_topo_tree (h, selected_tree, ALLOCATE, job_id);
             /* Save off the allocation */
             allocation_t *allocation = xzmalloc (sizeof(allocation_t));
             if (allocation == NULL) {
@@ -1696,7 +1706,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             *selected_tree = NULL;
             flux_log (h, LOG_ERR, "Reservation for job %"PRId64" failed", job_id);
         } else {
-            mark_topo_tree (h, *selected_tree, RESERVE);
+            mark_topo_tree (h, *selected_tree, RESERVE, job_id);
             curr_reservation_depth++;
             flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
                       "%"PRId64" from %"PRId64" to %"PRId64"",
