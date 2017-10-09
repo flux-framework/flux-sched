@@ -821,7 +821,9 @@ zhash_t *get_pods (
 static inline bool reservation_overlaps (int64_t start, int64_t end)
 {
     return (r_start <= start && start <= r_end) ||
-            (r_start <= end && end <= r_end);
+            (r_start <= end && end <= r_end) || 
+            (start <= r_start && r_end <= end);
+
 }
 
 /* Checks if the node is available. May or may not check reservations. */
@@ -1657,6 +1659,9 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             fprintf (alloc_file, "\n");
             // End file print
             current_selected_nodes = NULL; // So it doesn't get destroyed
+        } else {
+            flux_log (h, LOG_ERR, "Allocation failed for job %"PRId64"\n",
+                      job_id);
         }
     }
     return rc;
