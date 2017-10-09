@@ -947,7 +947,7 @@ zlist_t *t2_job_select (
 {
     int64_t nodes_found = 0;
     int64_t nodes_on_switch;
-    zlist_t *selected_nodes;
+    zlist_t *selected_nodes = NULL;
 
     zhash_t *pods = get_pods (tt, n_nodes, consider_reservations);
     zlist_t *sorted_pod_keys = zhash_keys (pods);
@@ -975,6 +975,8 @@ zlist_t *t2_job_select (
         if (zlist_size (sorted_switch_keys) == 0) {
             zhash_destroy (&switches);
             zlist_destroy (&sorted_switch_keys);
+            zlist_destroy (&selected_nodes);
+            selected_nodes = NULL;
             continue;
         }
         zlist_sort (sorted_switch_keys, sort_descending);
