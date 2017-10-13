@@ -295,14 +295,14 @@ static topo_tree_t *topo_tree_create (
     char *r_n;
     resrc_enum_t r_e = resrc_enum_from_type (r_t);
 
-    int lvl;
-    switch (r_e) {
-    case CLUSTER: lvl = 0;  break;
-    case POD:     lvl = 1;  break;
-    case SWITCH:  lvl = 2;  break;
-    case NODE:    lvl = 3;  break;
-    case UNKNOWN: lvl = -1; return NULL;
-    }
+    // int lvl;
+    // switch (r_e) {
+    // case CLUSTER: lvl = 0;  break;
+    // case POD:     lvl = 1;  break;
+    // case SWITCH:  lvl = 2;  break;
+    // case NODE:    lvl = 3;  break;
+    // case UNKNOWN: lvl = -1; return NULL;
+    // }
     // printf("Resource type is '%s'\n", r_t); // TEST
 
     new_tree = xzmalloc (sizeof(topo_tree_t));
@@ -1646,10 +1646,10 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             allocation->selected_nodes = current_selected_nodes;
             zlist_append (job_allocation_list, allocation);
             zlist_freefn (job_allocation_list, allocation, free, true);
-            printf("Added job %"PRId64" of %"PRId64" nodes ending @ %"PRId64
-                    " to list, (size %ld)\n",
-                    job_id, zlist_size (allocation->selected_nodes),
-                    endtime, zlist_size (job_allocation_list)); // TEST
+            // printf("Added job %"PRId64" of %"PRId64" nodes ending @ %"PRId64
+            //         " to list, (size %ld)\n",
+            //         job_id, zlist_size (allocation->selected_nodes),
+            //         endtime, zlist_size (job_allocation_list)); // TEST
             flux_log (h, LOG_DEBUG, "job,start,end,nodes: %"PRId64",%"PRId64","
                       "%"PRId64",%"PRId64, job_id, starttime, endtime,
                       zlist_size (current_selected_nodes));
@@ -1765,8 +1765,8 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     int rc = 0;
     char *reserve_depth_str = NULL;
     char *entry = NULL;
-    char topo_filename[PATH_MAX];
-    topo_filename[0] = '\0'; /* Copy the existing ctx by default */
+    // char topo_filename[PATH_MAX];
+    // topo_filename[0] = '\0'; /* Copy the existing ctx by default */
 
     for (entry = argz;
          entry;
