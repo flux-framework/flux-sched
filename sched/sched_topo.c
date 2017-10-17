@@ -1774,6 +1774,9 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 
         if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
             reserve_depth_str = strstr (entry, "=") + 1;
+        } else if (!strncmp ("alloc-file=", entry, sizeof ("alloc-file"))) {
+            allocation_filename = xasprintf ("%s", strstr (entry, "=") + 1);
+            // XXX: This is never freed
         } else {
             flux_log(h, LOG_ERR, "Invalid argument %s", entry);
             rc = -1;
