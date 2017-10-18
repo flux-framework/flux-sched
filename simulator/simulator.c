@@ -161,7 +161,7 @@ static int txn_dir_pack (flux_kvs_txn_t *txn, flux_kvsdir_t *dir,
     return rc;
 }
 
-int put_job_in_kvs (job_t *job)
+int put_job_in_kvs (job_t *job, const char *initial_state)
 {
     if (job->kvs_dir == NULL)
         return (-1);
@@ -192,6 +192,8 @@ int put_job_in_kvs (job_t *job)
     if (txn_dir_pack (txn, job->kvs_dir, "ncpus", "i", job->ncpus) < 0)
         goto error;
     if (txn_dir_pack (txn, job->kvs_dir, "io_rate", "I", job->io_rate) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "state", "s", initial_state) < 0)
         goto error;
     if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
         goto error;
