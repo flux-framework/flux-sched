@@ -153,31 +153,40 @@ int put_job_in_kvs (job_t *job)
     if (flux_kvsdir_pack (job->kvs_dir, "user", "s", job->user) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'user'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "jobname", "s", job->jobname) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "jobname", "s", job->jobname) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'jobname'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "account", "s", job->account) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "account", "s", job->account) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'account'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "submit_time", "f", job->submit_time) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "submit_time", "f", job->submit_time) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'submit_time'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "execution_time", "f", job->execution_time) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "execution_time", "f", job->execution_time) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'execution_time'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "time_limit", "f", job->time_limit) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "time_limit", "f", job->time_limit) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'time_limit'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "nnodes", "i", job->nnodes) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "nnodes", "i", job->nnodes) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'nnodes'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "ncpus", "i", job->ncpus) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "ncpus", "i", job->ncpus) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'ncpus'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "io_rate", "I", job->io_rate) < 0) {
+    }
+    if (flux_kvsdir_pack (job->kvs_dir, "io_rate", "I", job->io_rate) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to put 'io_rate'", __FUNCTION__);
         goto ret;
-    } else if (flux_kvs_commit_anon (h, 0) < 0) {
+    }
+    if (flux_kvs_commit_anon (h, 0) < 0) {
         flux_log (h, LOG_ERR, "%s: failed to commit information for job %d", __FUNCTION__, job->id);
         goto ret;
     }
