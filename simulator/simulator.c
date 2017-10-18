@@ -415,28 +415,54 @@ zhash_t *zhash_fromargv (int argc, char **argv)
     return args;
 }
 
+static int job_kvspath (flux_t *h, int jobid, char **path)
+{
+    flux_future_t *f;
+    const char *s;
+    char *cpy;
+    int rc = -1;
+
+    if (!(f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+                             "{s:[i]}", "ids", jobid)))
+        goto done;
+    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &s) < 0)
+        goto done;
+    if (!(cpy = strdup (s)))
+        goto done;
+    *path = cpy;
+    rc = 0;
+done:
+    flux_future_destroy (f);
+    return rc;
+}
+
 // Get a kvsdir handle to jobid [jobid] using job.kvspath service.
 //  If service doesn't answer, fall back to `lwj.%d`
 flux_kvsdir_t *job_kvsdir (flux_t *h, int jobid)
 {
-    flux_future_t *f;
-    const char *kvs_path;
-    flux_kvsdir_t *d = NULL;
+    char *path = NULL;
+    const flux_kvsdir_t *dir;
+    flux_kvsdir_t *cpy = NULL;
+    flux_future_t *f = NULL;
 
-    f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
-                    "{s:[i]}", "ids", jobid);
-    if (!f) {
-        flux_log_error (h, "flux_rpc_pack");
-        return (NULL);
+    if (job_kvspath (h, jobid, &path) < 0) {
+        if (asprintf (&path, "lwj.%d", jobid) < 0) {
+            flux_log_error (h, "%s", __FUNCTION__);
+            goto done;
+        }
+        flux_log (h, LOG_DEBUG,
+                  "%s: failed to resolve job directory, falling back to %s",
+                  __FUNCTION__, path);
     }
-    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &kvs_path) < 0) {
-        flux_log (h, LOG_DEBUG, "%s: failed to resolve job directory, falling back to lwj.%d", __FUNCTION__, jobid);
-        // Fall back to lwj.%d:
-        if (flux_kvs_get_dir (h, &d, "lwj.%d", jobid))
-            flux_log_error (h, "kvs_get_dir (lwj.%d)", jobid);
+    if (!(f = flux_kvs_lookup (h, FLUX_KVS_READDIR, path))
+		    || flux_kvs_lookup_get_dir (f, &dir) < 0) {
+        flux_log_error (h, "%s: flux_kvs_lookup %s", __FUNCTION__, path);
+	goto done;
     }
-    else if (flux_kvs_get_dir (h, &d, "%s", kvs_path) < 0)
-        flux_log_error (h, "kvs_get_dir");
+    if (!(cpy = flux_kvsdir_copy (dir)))
+        goto done;
+done:
+    free (path);
     flux_future_destroy (f);
-    return (d);
+    return cpy;
 }
