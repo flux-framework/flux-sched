@@ -141,39 +141,67 @@ job_t *blank_job ()
     return job;
 }
 
+/* Helper for put_job_in_kvs()
+ */
+static int txn_dir_pack (flux_kvs_txn_t *txn, flux_kvsdir_t *dir,
+		         const char *name, const char *fmt, ...)
+{
+    va_list ap;
+    char *key;
+    int rc;
+
+    if (!(key = flux_kvsdir_key_at (dir, name)))
+        return -1;
+
+    va_start (ap, fmt);
+    rc = flux_kvs_txn_vpack (txn, 0, key, fmt, ap);
+    va_end (ap);
+
+    free (key);
+    return rc;
+}
+
 int put_job_in_kvs (job_t *job)
 {
     if (job->kvs_dir == NULL)
         return (-1);
 
     flux_t *h = flux_kvsdir_handle (job->kvs_dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
 
-    if (flux_kvsdir_pack (job->kvs_dir, "user", "s", job->user) < 0)
+    if (!(txn = flux_kvs_txn_create ()))
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "jobname", "s", job->jobname) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "user", "s", job->user) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "account", "s", job->account) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "jobname", "s", job->jobname) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "submit_time", "f",
-                          job->submit_time) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "account", "s", job->account) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "execution_time", "f",
-                          job->execution_time) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "submit_time", "f",
+                      job->submit_time) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "time_limit", "f", job->time_limit) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "execution_time", "f",
+                      job->execution_time) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "nnodes", "i", job->nnodes) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "time_limit", "f",
+                      job->time_limit) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "ncpus", "i", job->ncpus) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "nnodes", "i", job->nnodes) < 0)
         goto error;
-    if (flux_kvsdir_pack (job->kvs_dir, "io_rate", "I", job->io_rate) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "ncpus", "i", job->ncpus) < 0)
         goto error;
-    if (flux_kvs_commit_anon (h, 0) < 0)
+    if (txn_dir_pack (txn, job->kvs_dir, "io_rate", "I", job->io_rate) < 0)
         goto error;
-
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
     return (0);
 error:
     flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
     return (-1);
 }
 
