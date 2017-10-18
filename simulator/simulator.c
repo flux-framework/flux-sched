@@ -177,81 +177,56 @@ error:
     return (-1);
 }
 
-int kvsdir_get_double (flux_kvsdir_t *dir, const char *name, double *valp)
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ * N.B. this function only works on scalar types
+ */
+static int lookup_dir_unpack (flux_kvsdir_t *dir, const char *name,
+                       const char *fmt, ...)
 {
     flux_t *h = flux_kvsdir_handle (dir);
     flux_future_t *f = NULL;
-    char *key;
+    char *key = NULL;
+    json_t *obj = NULL;
+    const char *json_str;
+    va_list ap;
     int rc = -1;
 
+    if (strchr (fmt, 's') || strchr (fmt, 'o') || strchr (fmt, 'O'))
+        goto inval;
     if (!(key = flux_kvsdir_key_at (dir, name)))
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_get_unpack (f, "F", valp) < 0)
+    if (flux_kvs_lookup_get (f, &json_str) < 0)
         goto done;
-    rc = 0;
-done:
+    if (!(obj = json_loads (json_str, JSON_DECODE_ANY, NULL)))
+        goto inval;
+    va_start (ap, fmt);
+    rc = json_vunpack_ex (obj, NULL, 0, fmt, ap);
+    va_end (ap);
     if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
+        goto inval;
+    rc = 0;
+inval:
+    errno = EINVAL;
+done:
+    json_decref (obj); // N.B. destroys any returned string, object, array
     free (key);
     flux_future_destroy (f);
     return rc;
 }
 
-int kvsdir_get_int (flux_kvsdir_t *dir, const char *name, int *valp)
-{
-    flux_t *h = flux_kvsdir_handle (dir);
-    flux_future_t *f = NULL;
-    char *key;
-    int rc = -1;
-
-    if (!(key = flux_kvsdir_key_at (dir, name)))
-        goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
-        goto done;
-    if (flux_kvs_lookup_get_unpack (f, "i", valp) < 0)
-        goto done;
-    rc = 0;
-done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
-    free (key);
-    flux_future_destroy (f);
-    return rc;
-}
-
-int kvsdir_get_int64 (flux_kvsdir_t *dir, const char *name, int64_t *valp)
-{
-    flux_t *h = flux_kvsdir_handle (dir);
-    flux_future_t *f = NULL;
-    char *key;
-    int rc = -1;
-
-    if (!(key = flux_kvsdir_key_at (dir, name)))
-        goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
-        goto done;
-    if (flux_kvs_lookup_get_unpack (f, "I", valp) < 0)
-        goto done;
-    rc = 0;
-done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
-    free (key);
-    flux_future_destroy (f);
-    return rc;
-}
-
-int kvsdir_get_string (flux_kvsdir_t *dir, const char *name, char **valp)
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ */
+static int lookup_dir_string (flux_kvsdir_t *dir, const char *name, char **valp)
 {
     flux_t *h = flux_kvsdir_handle (dir);
     flux_future_t *f = NULL;
     const char *s;
     char *key;
+    char *cpy;
     int rc = -1;
 
     if (!(key = flux_kvsdir_key_at (dir, name)))
@@ -260,15 +235,13 @@ int kvsdir_get_string (flux_kvsdir_t *dir, const char *name, char **valp)
         goto done;
     if (flux_kvs_lookup_get_unpack (f, "s", &s) < 0)
         goto done;
-    if (!(*valp = strdup (s))) {
+    if (!(cpy = strdup (s))) {
         errno = ENOMEM;
         goto done;
     }
+    *valp = cpy;
     rc = 0;
 done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
     free (key);
     flux_future_destroy (f);
     return rc;
@@ -279,24 +252,45 @@ job_t *pull_job_from_kvs (int id, flux_kvsdir_t *kvsdir)
     if (kvsdir == NULL)
         return NULL;
 
+    flux_t *h = flux_kvsdir_handle (kvsdir);
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
     job->id = id;
 
-    kvsdir_get_string (job->kvs_dir, "user", &job->user);
-    kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
-    kvsdir_get_string (job->kvs_dir, "account", &job->account);
-    kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time);
-    kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time);
-    kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
-    kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
-    kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
-    kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
-    kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
-    kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
+    if (lookup_dir_string (job->kvs_dir, "user", &job->user) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "jobname", &job->jobname) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "account", &job->account) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "submit_time", "f",
+                           &job->submit_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "execution_time", "f",
+                           &job->execution_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "time_limit", "f",
+                           &job->time_limit) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "nnodes", "i", &job->nnodes) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "ncpus", "i", &job->ncpus) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "io_rate", "I", &job->io_rate) < 0)
+        goto error;
+
+    /* Not set in put_job_in_kvs().
+     * Allow them to not be set here without error.
+     */
+    (void)lookup_dir_unpack (job->kvs_dir, "starting_time", "f",
+		             &job->start_time);
+    (void)lookup_dir_unpack (job->kvs_dir, "io_time", "f", &job->io_time);
 
     return job;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    return NULL;
 }
 
 int send_alive_request (flux_t *h, const char *module_name)
