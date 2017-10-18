@@ -100,15 +100,16 @@ static int update_job_state (ctx_t *ctx,
                              job_state_t new_state,
                              double update_time)
 {
-    char *timer_key = NULL;
+    int rc;
+    double t_starting = SIM_TIME_NONE;
+    double t_running = SIM_TIME_NONE;
+    double t_complete = SIM_TIME_NONE;
 
     switch (new_state) {
-    case J_STARTING: timer_key = "starting_time"; break;
-    case J_RUNNING: timer_key = "running_time"; break;
-    case J_COMPLETE: timer_key = "complete_time"; break;
-    default: break;
-    }
-    if (timer_key == NULL) {
+    case J_STARTING: t_starting = update_time; break;
+    case J_RUNNING: t_running = update_time; break;
+    case J_COMPLETE: t_complete = update_time;  break;
+    default:
         flux_log (ctx->h, LOG_ERR, "Unknown state %d", (int) new_state);
         return -1;
     }
@@ -120,13 +121,18 @@ static int update_job_state (ctx_t *ctx,
     Jadd_obj (jcb, JSC_STATE_PAIR, o);
     jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
 
-    flux_kvsdir_pack (kvs_dir, timer_key, "f", update_time);
-    flux_kvs_commit_anon (ctx->h, 0);
+    rc = set_job_timestamps (kvs_dir,
+                             t_starting,
+                             t_running,
+                             t_complete,
+                             SIM_TIME_NONE); // io
+    if (rc < 0)
+	flux_log_error (ctx->h, "%s: set_job_timestamps", __FUNCTION__);
 
     Jput (jcb);
     Jput (o);
 
-    return 0;
+    return rc;
 }
 
 static double calc_curr_progress (job_t *job, double sim_time)
@@ -195,18 +201,23 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
 {
     flux_t *h = ctx->h;
+    int rc;
 
     flux_log (h, LOG_INFO, "Job %d completed", job->id);
 
     update_job_state (ctx, job->id, job->kvs_dir, J_COMPLETE, completion_time);
     set_event_timer (ctx, "sched", ctx->sim_state->sim_time + .00001);
-    flux_kvsdir_pack (job->kvs_dir, "complete_time", "f", completion_time);
-    flux_kvsdir_pack (job->kvs_dir, "io_time", "f", job->io_time);
 
-    flux_kvs_commit_anon (h, 0);
+    rc = set_job_timestamps (job->kvs_dir,
+		             SIM_TIME_NONE,  // starting
+			     SIM_TIME_NONE,  // running
+			     completion_time,
+			     job->io_time);
+    if (rc < 0)
+	flux_log_error (h, "%s: set_job_timestamps", __FUNCTION__);
     free_job (job);
 
-    return 0;
+    return rc;
 }
 
 // Remove completed jobs from the list of running jobs

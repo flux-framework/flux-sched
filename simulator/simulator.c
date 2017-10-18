@@ -207,6 +207,43 @@ error:
     return (-1);
 }
 
+int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
+                        double t_running, double t_complete, double t_io)
+{
+    flux_t *h = flux_kvsdir_handle (dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
+
+    if (!(txn = flux_kvs_txn_create ()))
+        goto error;
+    if (t_starting != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "starting_time", "f", t_starting) < 0)
+	    goto error;
+    }
+    if (t_running != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "running_time", "f", t_running) < 0)
+	    goto error;
+    }
+    if (t_complete != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "complete_time", "f", t_complete) < 0)
+	    goto error;
+    }
+    if (t_io != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "io_time", "f", t_io) < 0)
+	    goto error;
+    }
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return 0;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (-1);
+}
+
 /* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
  * to flux_kvsdir_t.
  * N.B. this function only works on scalar types
