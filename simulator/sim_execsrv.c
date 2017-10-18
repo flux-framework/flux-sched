@@ -96,7 +96,7 @@ static ctx_t *getctx (flux_t *h)
 // timestamp the change
 static int update_job_state (ctx_t *ctx,
                              int64_t jobid,
-                             kvsdir_t *kvs_dir,
+                             flux_kvsdir_t *kvs_dir,
                              job_state_t new_state,
                              double update_time)
 {
@@ -120,8 +120,8 @@ static int update_job_state (ctx_t *ctx,
     Jadd_obj (jcb, JSC_STATE_PAIR, o);
     jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
 
-    kvsdir_put_double (kvs_dir, timer_key, update_time);
-    kvs_commit (ctx->h, 0);
+    flux_kvsdir_pack (kvs_dir, timer_key, "f", update_time);
+    flux_kvs_commit_anon (ctx->h, 0);
 
     Jput (jcb);
     Jput (o);
@@ -200,10 +200,10 @@ static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
 
     update_job_state (ctx, job->id, job->kvs_dir, J_COMPLETE, completion_time);
     set_event_timer (ctx, "sched", ctx->sim_state->sim_time + .00001);
-    kvsdir_put_double (job->kvs_dir, "complete_time", completion_time);
-    kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
+    flux_kvsdir_pack (job->kvs_dir, "complete_time", "f", completion_time);
+    flux_kvsdir_pack (job->kvs_dir, "io_time", "f", job->io_time);
 
-    kvs_commit (h, 0);
+    flux_kvs_commit_anon (h, 0);
     free_job (job);
 
     return 0;
@@ -507,7 +507,7 @@ static int handle_queued_events (ctx_t *ctx)
 {
     job_t *job = NULL;
     int *jobid = NULL;
-    kvsdir_t *kvs_dir;
+    flux_kvsdir_t *kvs_dir;
     flux_t *h = ctx->h;
     zlist_t *queued_events = ctx->queued_events;
     zlist_t *running_jobs = ctx->running_jobs;

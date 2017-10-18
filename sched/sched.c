@@ -572,7 +572,7 @@ static json_t *get_string_blocking (flux_t *h, const char *key)
     json_t *o = NULL;
     int saved_errno;
 
-    if (kvs_watch_once (h, key, &json_str) < 0) {
+    if (flux_kvs_watch_once (h, key, &json_str) < 0) {
         saved_errno = errno;
         goto error;
     }
