@@ -222,7 +222,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
     flux_future_t *f = NULL;
     flux_msg_t *msg = NULL;
-    kvsdir_t *dir = NULL;
+    flux_kvsdir_t *dir = NULL;
     job_t *job = NULL;
     int64_t new_jobid = -1;
     double *new_sched_mod_time = NULL, *new_submit_mod_time = NULL;
@@ -258,7 +258,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     // Update lwj.%jobid%'s state in the kvs to "submitted"
     if (!(dir = job_kvsdir (h, new_jobid)))
         log_err_exit ("kvs_get_dir (id=%lu)", new_jobid);
-    kvsdir_put_string (dir, "state", "submitted");
+    flux_kvsdir_pack (dir, "state", "s", "submitted");
     job->kvs_dir = dir;
     if (put_job_in_kvs (job) < 0)
         log_err_exit ("put_job_in_kvs");
