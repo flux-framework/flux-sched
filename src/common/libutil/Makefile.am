@@ -16,4 +16,8 @@ libutil_la_SOURCES = \
 	log.c \
 	log.h \
 	oom.h \
-	shortjansson.h
+	shortjansson.h \
+	compiler.h \
+	rbtree.c \
+	rbtree.h \
+	rbtree_augmented.h
