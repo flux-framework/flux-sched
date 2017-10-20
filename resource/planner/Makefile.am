@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 AM_LDFLAGS = \
 	$(CODE_COVERAGE_LDFLAGS)
 
-SUBDIRS = .
+SUBDIRS = . test
 
 noinst_LTLIBRARIES = libplanner.la
 noinst_HEADERS = planner.h

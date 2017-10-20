@@ -108,6 +108,7 @@ AC_CONFIG_FILES([Makefile
   resrc/test/Makefile
   resource/Makefile
   resource/planner/Makefile
+  resource/planner/test/Makefile
   sched/Makefile
   simulator/Makefile
   etc/Makefile
@@ -119,8 +120,10 @@ echo "
   Prefix...........: $prefix
   Debug Build......: $debug
   C Compiler.......: $CC
+  C++ Compiler.....: $CXX
   CFLAGS...........: $CFLAGS
   CPPFLAGS.......... $CPPFLAGS
+  CXXFLAGS.......... $CXXFLAGS
   FLUX.............: $FLUX
   FLUX_CORE_CFLAGS.: $FLUX_CORE_CFLAGS
   FLUX_CORE_LIBS...: $FLUX_CORE_LIBS
