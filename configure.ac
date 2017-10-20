@@ -106,6 +106,8 @@ AC_CONFIG_FILES([Makefile
   rdl/test/Makefile
   resrc/Makefile
   resrc/test/Makefile
+  resource/Makefile
+  resource/planner/Makefile
   sched/Makefile
   simulator/Makefile
   etc/Makefile
