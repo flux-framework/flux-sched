@@ -3,7 +3,7 @@
 
 #include "scheduler.h"
 
-struct sched_plugin {
+struct behavior_plugin {
     void         *dso;                /* Scheduler plug-in DSO handle */
     char         *name;               /* Name of plugin */
     char         *path;               /* Path to plugin dso */
@@ -44,6 +44,16 @@ struct sched_plugin {
                                          const sched_params_t *params);
 };
 
+struct priority_plugin {
+    void         *dso;                /* Scheduler plug-in DSO handle */
+    char         *name;               /* Name of plugin */
+    char         *path;               /* Path to plugin dso */
+
+    int         (*priority_setup)(flux_t *h);
+    void        (*prioritize_jobs)(flux_t *h, zlist_t *jobs);
+    int         (*record_job_usage)(flux_t *h, flux_lwj_t *job);
+};
+
 /* Create/destroy the plugin loader apparatus.
  */
 struct sched_plugin_loader;
@@ -63,7 +73,10 @@ void sched_plugin_unload (struct sched_plugin_loader *sploader);
 /* Retrieve the currently loaded plugin.
  * Return NULL if plugin is not loaded.
  */
-struct sched_plugin *sched_plugin_get (struct sched_plugin_loader *sploader);
+struct behavior_plugin *behavior_plugin_get (struct sched_plugin_loader
+                                             *sploader);
+struct priority_plugin *priority_plugin_get (struct sched_plugin_loader
+                                             *sploader);
 
 #endif /* !_FLUX_SCHED_PLUGIN_H */
 

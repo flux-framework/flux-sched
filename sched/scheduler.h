@@ -55,10 +55,16 @@ typedef struct flux_resources {
 typedef struct {
     int64_t     lwj_id;  /*!< LWJ id */
     job_state_t state;   /*!< current job state */
+    char    *user;       /*!< user name of person who submitted job */
+    char    *account;    /*!< account to charge for resource usage */
     flux_res_t *req;     /*!< resources requested by this LWJ */
     resrc_tree_t *resrc_tree; /*!< resources allocated to this LWJ */
+    int64_t submittime;
     int64_t starttime;
+    int64_t endtime;
     int64_t enqueue_pos; /*!< the initial enqueue position */
+    double user_prio;    /*!< user-requested priority */
+    double priority;     /*!< scheduling priority */
 } flux_lwj_t;
 
 

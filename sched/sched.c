@@ -101,6 +101,7 @@ typedef struct {
     char         *uri;
     char         *userplugin;
     char         *userplugin_opts;
+    char         *prio_plugin;
     bool          sim;
     bool          schedonce;          /* Use resources only once */
     bool          fail_on_error;      /* Fail immediately on error */
@@ -191,6 +192,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->uri = NULL;
     arg->userplugin = NULL;
     arg->userplugin_opts = NULL;
+    arg->prio_plugin = NULL;
     arg->sim = false;
     arg->schedonce = false;
     arg->fail_on_error = false;
@@ -208,6 +210,8 @@ static inline void ssrvarg_free (ssrvarg_t *arg)
         free (arg->userplugin);
     if (arg->userplugin_opts)
         free (arg->userplugin_opts);
+    if (arg->prio_plugin)
+        free (arg->prio_plugin);
 }
 
 static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
@@ -236,6 +240,9 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             a->userplugin = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("plugin-opts=", argv[i], sizeof ("plugin-opts"))) {
             a->userplugin_opts = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("priority-plugin=", argv[i],
+                             sizeof ("priority-plugin"))) {
+            a->prio_plugin = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("sched-params=", argv[i], sizeof ("sched-params"))) {
             sprms = xstrdup (strstr (argv[i], "=") + 1);
         } else {
@@ -405,6 +412,9 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
         flux_log (h, LOG_ERR, "fill_resource_req: error parsing JSON string");
         goto done;
     }
+    /* TODO:  add user name and charge account to info the JSC provides */
+    j->user = NULL;
+    j->account = NULL;
     if (!Jget_obj (jcb, JSC_RDESC, &o)) goto done;
     if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
     if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
@@ -451,7 +461,7 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
     int rc = -1;
     char *argz = NULL;
     size_t argz_len = 0;
-    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
+    struct behavior_plugin *plugin = behavior_plugin_get (ctx->loader);
     const sched_params_t *sp = &(ctx->arg.s_params);
 
     if (userplugin_opts)
@@ -488,6 +498,7 @@ static int q_enqueue_into_pqueue (ssrvctx_t *ctx, json_t *jcb)
 
     job->lwj_id = jid;
     job->state = J_NULL;
+    job->submittime = time (NULL);
     if (zlist_append (ctx->p_queue, job) != 0) {
         flux_log (ctx->h, LOG_ERR, "failed to append to pending job queue.");
         goto done;
@@ -1458,6 +1469,20 @@ done:
     return resrc_reqst;
 }
 
+/* Sort jobs by decreasing priority */
+static int compare_priority (void *item1, void *item2)
+{
+    int ret = 0;
+    flux_lwj_t *job1 = (flux_lwj_t*)item1;
+    flux_lwj_t *job2 = (flux_lwj_t*)item2;
+
+    if (job1->priority < job2->priority)
+        ret = 1;
+    else if (job1->priority > job2->priority)
+        ret = -1;
+    return ret;
+}
+
 /*
  * schedule_job() searches through all of the idle resources to
  * satisfy a job's requirements.  If enough resources are found, it
@@ -1475,7 +1500,7 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_t *found_tree = NULL;
     resrc_tree_t *selected_tree = NULL;
-    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
+    struct behavior_plugin *plugin = behavior_plugin_get (ctx->loader);
 
     if (!plugin)
         return rc;
@@ -1546,10 +1571,9 @@ static int schedule_jobs (ssrvctx_t *ctx)
     int rc = 0;
     int qdepth = 0;
     flux_lwj_t *job = NULL;
-    struct sched_plugin *plugin = sched_plugin_get (ctx->loader);
-    /* Prioritizing the job queue is left to an external agent.  In
-     * this way, the scheduler's activities are pared down to just
-     * scheduling activies.
+    struct behavior_plugin *behavior_plugin = behavior_plugin_get (ctx->loader);
+    struct priority_plugin *priority_plugin = priority_plugin_get (ctx->loader);
+    /*
      * TODO: when dynamic scheduling is supported, the loop should
      * traverse through running job queue as well.
      */
@@ -1557,11 +1581,16 @@ static int schedule_jobs (ssrvctx_t *ctx)
     int64_t starttime = (ctx->sctx.in_sim) ?
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
+    if (priority_plugin)
+        priority_plugin->prioritize_jobs (ctx->h, jobs);
+
+    /* Sort by decreasing priority */
+    zlist_sort (jobs, compare_priority);
     resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
 
-    if (!plugin)
+    if (!behavior_plugin)
         return -1;
-    rc = plugin->sched_loop_setup (ctx->h);
+    rc = behavior_plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
     while (!rc && job && (qdepth < ctx->arg.s_params.queue_depth)) {
         if (job->state == J_SCHEDREQ) {
@@ -1600,6 +1629,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
 {
     flux_t *h = ctx->h;
     job_state_t oldstate = job->state;
+    struct priority_plugin *priority_plugin = priority_plugin_get (ctx->loader);
 
     flux_log (h, LOG_DEBUG, "attempting job %"PRId64" state change from "
               "%s to %s", job->lwj_id, jsc_job_num2state (oldstate),
@@ -1676,6 +1706,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
         break;
     case J_COMPLETE:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));
+        if (priority_plugin)
+            priority_plugin->record_job_usage (ctx->h, job);
         zlist_remove (ctx->c_queue, job);
         if (job->req)
             free (job->req);
@@ -1823,10 +1855,28 @@ int mod_main (flux_t *h, int argc, char **argv)
             goto done;
         }
         if (plugin_process_args (ctx, ctx->arg.userplugin_opts) < 0) {
-            flux_log_error (h, "failed to process args for %s", ctx->arg.userplugin);
+            flux_log_error (h, "failed to process args for %s",
+                            ctx->arg.userplugin);
             goto done;
         }
         flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+    }
+    if (ctx->arg.prio_plugin) {
+        if (sched_plugin_load (ctx->loader, ctx->arg.prio_plugin) < 0) {
+            flux_log_error (h, "failed to load %s", ctx->arg.prio_plugin);
+            goto done;
+        }
+        flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.prio_plugin);
+        struct priority_plugin *priority_plugin = priority_plugin_get
+            (ctx->loader);
+        if (priority_plugin) {
+            if (priority_plugin->priority_setup (h))
+                flux_log (h, LOG_ERR, "failed to setup priority plugin");
+            else
+                flux_log (h, LOG_INFO, "successfully setup priority plugin");
+        } else {
+            flux_log (h, LOG_ERR, "failed to get priority plugin");
+        }
     }
     if (load_resources (ctx) != 0) {
         flux_log (h, LOG_ERR, "failed to load resources");
