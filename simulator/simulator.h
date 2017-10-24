@@ -56,8 +56,13 @@ json_t *sim_state_to_json (sim_state_t *state);
 sim_state_t *json_to_sim_state (json_t *o);
 
 flux_kvsdir_t *job_kvsdir (flux_t *h, int jobid);
-int put_job_in_kvs (job_t *job);
+int put_job_in_kvs (job_t *job, const char *initial_state);
 job_t *pull_job_from_kvs (int id, flux_kvsdir_t *kvs_dir);
+
+#define SIM_TIME_NONE (-1.) // skip setting this timestamp
+int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
+		        double t_running, double t_complete, double t_io);
+
 void free_job (job_t *job);
 job_t *blank_job ();
 int send_alive_request (flux_t *h, const char *module_name);

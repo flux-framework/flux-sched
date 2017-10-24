@@ -141,135 +141,159 @@ job_t *blank_job ()
     return job;
 }
 
-int put_job_in_kvs (job_t *job)
+/* Helper for put_job_in_kvs()
+ */
+static int txn_dir_pack (flux_kvs_txn_t *txn, flux_kvsdir_t *dir,
+		         const char *name, const char *fmt, ...)
 {
-    int rc = -1;
+    va_list ap;
+    char *key;
+    int rc;
 
+    if (!(key = flux_kvsdir_key_at (dir, name)))
+        return -1;
+
+    va_start (ap, fmt);
+    rc = flux_kvs_txn_vpack (txn, 0, key, fmt, ap);
+    va_end (ap);
+
+    free (key);
+    return rc;
+}
+
+int put_job_in_kvs (job_t *job, const char *initial_state)
+{
     if (job->kvs_dir == NULL)
-        goto ret;
+        return (-1);
 
     flux_t *h = flux_kvsdir_handle (job->kvs_dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
 
-    if (flux_kvsdir_pack (job->kvs_dir, "user", "s", job->user) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'user'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "jobname", "s", job->jobname) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'jobname'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "account", "s", job->account) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'account'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "submit_time", "f", job->submit_time) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'submit_time'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "execution_time", "f", job->execution_time) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'execution_time'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "time_limit", "f", job->time_limit) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'time_limit'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "nnodes", "i", job->nnodes) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'nnodes'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "ncpus", "i", job->ncpus) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'ncpus'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvsdir_pack (job->kvs_dir, "io_rate", "I", job->io_rate) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to put 'io_rate'", __FUNCTION__);
-        goto ret;
-    } else if (flux_kvs_commit_anon (h, 0) < 0) {
-        flux_log (h, LOG_ERR, "%s: failed to commit information for job %d", __FUNCTION__, job->id);
-        goto ret;
+    if (!(txn = flux_kvs_txn_create ()))
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "user", "s", job->user) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "jobname", "s", job->jobname) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "account", "s", job->account) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "submit_time", "f",
+                      job->submit_time) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "execution_time", "f",
+                      job->execution_time) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "time_limit", "f",
+                      job->time_limit) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "nnodes", "i", job->nnodes) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "ncpus", "i", job->ncpus) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "io_rate", "I", job->io_rate) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "state", "s", initial_state) < 0)
+        goto error;
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (0);
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (-1);
+}
+
+int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
+                        double t_running, double t_complete, double t_io)
+{
+    flux_t *h = flux_kvsdir_handle (dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
+
+    if (!(txn = flux_kvs_txn_create ()))
+        goto error;
+    if (t_starting != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "starting_time", "f", t_starting) < 0)
+	    goto error;
     }
-
-    flux_kvsdir_t *tmp = job->kvs_dir;
-    if (flux_kvs_get_dir (h, &job->kvs_dir, "%s", flux_kvsdir_key (tmp)) < 0) {
-        flux_log_error (h, "%s: kvs_get_dir", __FUNCTION__);
-        job->kvs_dir = tmp; // restore last known good kvs_dir
-        goto ret;
+    if (t_running != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "running_time", "f", t_running) < 0)
+	    goto error;
     }
-    flux_kvsdir_destroy (tmp);
-
-    rc = 0;
- ret:
-    return (rc);
+    if (t_complete != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "complete_time", "f", t_complete) < 0)
+	    goto error;
+    }
+    if (t_io != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "io_time", "f", t_io) < 0)
+	    goto error;
+    }
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return 0;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (-1);
 }
 
-int kvsdir_get_double (flux_kvsdir_t *dir, const char *name, double *valp)
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ * N.B. this function only works on scalar types
+ */
+static int lookup_dir_unpack (flux_kvsdir_t *dir, const char *name,
+                       const char *fmt, ...)
 {
     flux_t *h = flux_kvsdir_handle (dir);
     flux_future_t *f = NULL;
-    char *key;
+    char *key = NULL;
+    json_t *obj = NULL;
+    const char *json_str;
+    va_list ap;
     int rc = -1;
 
+    if (strchr (fmt, 's') || strchr (fmt, 'o') || strchr (fmt, 'O'))
+        goto inval;
     if (!(key = flux_kvsdir_key_at (dir, name)))
         goto done;
     if (!(f = flux_kvs_lookup (h, 0, key)))
         goto done;
-    if (flux_kvs_lookup_get_unpack (f, "F", valp) < 0)
+    if (flux_kvs_lookup_get (f, &json_str) < 0)
         goto done;
-    rc = 0;
-done:
+    if (!(obj = json_loads (json_str, JSON_DECODE_ANY, NULL)))
+        goto inval;
+    va_start (ap, fmt);
+    rc = json_vunpack_ex (obj, NULL, 0, fmt, ap);
+    va_end (ap);
     if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
+        goto inval;
+    rc = 0;
+inval:
+    errno = EINVAL;
+done:
+    json_decref (obj); // N.B. destroys any returned string, object, array
     free (key);
     flux_future_destroy (f);
     return rc;
 }
 
-int kvsdir_get_int (flux_kvsdir_t *dir, const char *name, int *valp)
-{
-    flux_t *h = flux_kvsdir_handle (dir);
-    flux_future_t *f = NULL;
-    char *key;
-    int rc = -1;
-
-    if (!(key = flux_kvsdir_key_at (dir, name)))
-        goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
-        goto done;
-    if (flux_kvs_lookup_get_unpack (f, "i", valp) < 0)
-        goto done;
-    rc = 0;
-done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
-    free (key);
-    flux_future_destroy (f);
-    return rc;
-}
-
-int kvsdir_get_int64 (flux_kvsdir_t *dir, const char *name, int64_t *valp)
-{
-    flux_t *h = flux_kvsdir_handle (dir);
-    flux_future_t *f = NULL;
-    char *key;
-    int rc = -1;
-
-    if (!(key = flux_kvsdir_key_at (dir, name)))
-        goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
-        goto done;
-    if (flux_kvs_lookup_get_unpack (f, "I", valp) < 0)
-        goto done;
-    rc = 0;
-done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
-    free (key);
-    flux_future_destroy (f);
-    return rc;
-}
-
-int kvsdir_get_string (flux_kvsdir_t *dir, const char *name, char **valp)
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ */
+static int lookup_dir_string (flux_kvsdir_t *dir, const char *name, char **valp)
 {
     flux_t *h = flux_kvsdir_handle (dir);
     flux_future_t *f = NULL;
     const char *s;
     char *key;
+    char *cpy;
     int rc = -1;
 
     if (!(key = flux_kvsdir_key_at (dir, name)))
@@ -278,15 +302,13 @@ int kvsdir_get_string (flux_kvsdir_t *dir, const char *name, char **valp)
         goto done;
     if (flux_kvs_lookup_get_unpack (f, "s", &s) < 0)
         goto done;
-    if (!(*valp = strdup (s))) {
+    if (!(cpy = strdup (s))) {
         errno = ENOMEM;
         goto done;
     }
+    *valp = cpy;
     rc = 0;
 done:
-    if (rc < 0)
-        flux_log_error (h, "pull_job_from_kvs: failed to get %s in %s",
-                        name, flux_kvsdir_key (dir));
     free (key);
     flux_future_destroy (f);
     return rc;
@@ -297,24 +319,45 @@ job_t *pull_job_from_kvs (int id, flux_kvsdir_t *kvsdir)
     if (kvsdir == NULL)
         return NULL;
 
+    flux_t *h = flux_kvsdir_handle (kvsdir);
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
     job->id = id;
 
-    kvsdir_get_string (job->kvs_dir, "user", &job->user);
-    kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
-    kvsdir_get_string (job->kvs_dir, "account", &job->account);
-    kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time);
-    kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time);
-    kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
-    kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
-    kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
-    kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
-    kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
-    kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
+    if (lookup_dir_string (job->kvs_dir, "user", &job->user) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "jobname", &job->jobname) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "account", &job->account) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "submit_time", "f",
+                           &job->submit_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "execution_time", "f",
+                           &job->execution_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "time_limit", "f",
+                           &job->time_limit) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "nnodes", "i", &job->nnodes) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "ncpus", "i", &job->ncpus) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "io_rate", "I", &job->io_rate) < 0)
+        goto error;
+
+    /* Not set in put_job_in_kvs().
+     * Allow them to not be set here without error.
+     */
+    (void)lookup_dir_unpack (job->kvs_dir, "starting_time", "f",
+		             &job->start_time);
+    (void)lookup_dir_unpack (job->kvs_dir, "io_time", "f", &job->io_time);
 
     return job;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    return NULL;
 }
 
 int send_alive_request (flux_t *h, const char *module_name)
@@ -409,28 +452,54 @@ zhash_t *zhash_fromargv (int argc, char **argv)
     return args;
 }
 
+static int job_kvspath (flux_t *h, int jobid, char **path)
+{
+    flux_future_t *f;
+    const char *s;
+    char *cpy;
+    int rc = -1;
+
+    if (!(f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+                             "{s:[i]}", "ids", jobid)))
+        goto done;
+    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &s) < 0)
+        goto done;
+    if (!(cpy = strdup (s)))
+        goto done;
+    *path = cpy;
+    rc = 0;
+done:
+    flux_future_destroy (f);
+    return rc;
+}
+
 // Get a kvsdir handle to jobid [jobid] using job.kvspath service.
 //  If service doesn't answer, fall back to `lwj.%d`
 flux_kvsdir_t *job_kvsdir (flux_t *h, int jobid)
 {
-    flux_future_t *f;
-    const char *kvs_path;
-    flux_kvsdir_t *d = NULL;
+    char *path = NULL;
+    const flux_kvsdir_t *dir;
+    flux_kvsdir_t *cpy = NULL;
+    flux_future_t *f = NULL;
 
-    f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
-                    "{s:[i]}", "ids", jobid);
-    if (!f) {
-        flux_log_error (h, "flux_rpc_pack");
-        return (NULL);
+    if (job_kvspath (h, jobid, &path) < 0) {
+        if (asprintf (&path, "lwj.%d", jobid) < 0) {
+            flux_log_error (h, "%s", __FUNCTION__);
+            goto done;
+        }
+        flux_log (h, LOG_DEBUG,
+                  "%s: failed to resolve job directory, falling back to %s",
+                  __FUNCTION__, path);
     }
-    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &kvs_path) < 0) {
-        flux_log (h, LOG_DEBUG, "%s: failed to resolve job directory, falling back to lwj.%d", __FUNCTION__, jobid);
-        // Fall back to lwj.%d:
-        if (flux_kvs_get_dir (h, &d, "lwj.%d", jobid))
-            flux_log_error (h, "kvs_get_dir (lwj.%d)", jobid);
+    if (!(f = flux_kvs_lookup (h, FLUX_KVS_READDIR, path))
+		    || flux_kvs_lookup_get_dir (f, &dir) < 0) {
+        flux_log_error (h, "%s: flux_kvs_lookup %s", __FUNCTION__, path);
+	goto done;
     }
-    else if (flux_kvs_get_dir (h, &d, "%s", kvs_path) < 0)
-        flux_log_error (h, "kvs_get_dir");
+    if (!(cpy = flux_kvsdir_copy (dir)))
+        goto done;
+done:
+    free (path);
     flux_future_destroy (f);
-    return (d);
+    return cpy;
 }
