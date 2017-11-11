@@ -434,7 +434,6 @@ static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
-const int htablen = sizeof (htab) / sizeof (htab[0]);
 
 int mod_main (flux_t *h, int argc, char **argv)
 {
