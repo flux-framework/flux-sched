@@ -427,11 +427,11 @@ static void alive_cb (flux_t *h,
     flux_log (h, LOG_DEBUG, "sending start event again");
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb, 0, NULL},
-    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb, 0, NULL},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb, 0},
+    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 const int htablen = sizeof (htab) / sizeof (htab[0]);
@@ -443,6 +443,8 @@ int mod_main (flux_t *h, int argc, char **argv)
     char *eoc_str;
     bool exit_on_complete;
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -470,22 +472,25 @@ int mod_main (flux_t *h, int argc, char **argv)
         return -1;
     }
 
-    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+    if (flux_msg_handler_addvec (h, htab, ctx, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
 
     if (send_start_event (h) < 0) {
         flux_log (h, LOG_ERR, "sim failed to send start event");
-        return -1;
+        goto done_delvec;
     }
     flux_log (h, LOG_DEBUG, "sim sent start event");
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
-    return 0;
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
+    return rc;
 }
 
 MOD_NAME ("sim");

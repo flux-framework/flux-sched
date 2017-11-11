@@ -349,9 +349,9 @@ static void trigger_cb (flux_t *h,
     Jput (o);
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb, 0, NULL},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -362,6 +362,8 @@ int mod_main (flux_t *h, int argc, char **argv)
         oom ();
     char *csv_filename;
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -384,7 +386,7 @@ int mod_main (flux_t *h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_handler_addvec (h, htab, NULL) < 0) {
+    if (flux_msg_handler_addvec (h, htab, NULL, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         return -1;
     }
@@ -393,10 +395,13 @@ int mod_main (flux_t *h, int argc, char **argv)
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
     zhash_destroy (&args);
-    return 0;
+    return rc;
 }
 
 MOD_NAME ("submit");
