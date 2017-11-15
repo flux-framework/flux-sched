@@ -36,6 +36,7 @@
 struct sched_plugin_loader {
     flux_t *h;
     struct sched_plugin *plugin;
+    flux_msg_handler_t **handlers;
 };
 
 static void plugin_destroy (struct sched_plugin *plugin)
@@ -290,10 +291,10 @@ done:
 }
 
 
-static struct flux_msg_handler_spec plugin_htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb, 0, NULL },
-    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb, 0, NULL },
-    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb, 0, NULL },
+static const struct flux_msg_handler_spec plugin_htab[] = {
+    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -306,7 +307,8 @@ struct sched_plugin_loader *sched_plugin_loader_create (flux_t *h)
     }
     memset (sploader, 0, sizeof (*sploader));
     sploader->h = h;
-    if (flux_msg_handler_addvec (h, plugin_htab, sploader) < 0) {
+    if (flux_msg_handler_addvec (h, plugin_htab, sploader,
+                                 &sploader->handlers) < 0) {
         flux_log_error (h, "flux_msghandler_addvec");
         free (sploader);
         return NULL;
@@ -318,7 +320,7 @@ void sched_plugin_loader_destroy (struct sched_plugin_loader *sploader)
 {
     if (sploader) {
         sched_plugin_unload (sploader);
-        flux_msg_handler_delvec (plugin_htab);
+        flux_msg_handler_delvec (sploader->handlers);
         free (sploader);
     }
 }

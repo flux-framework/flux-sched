@@ -642,10 +642,10 @@ static void run_cb (flux_t *h,
     flux_log (h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb, 0, NULL},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -653,6 +653,8 @@ int mod_main (flux_t *h, int argc, char **argv)
 {
     ctx_t *ctx = getctx (h);
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -666,7 +668,7 @@ int mod_main (flux_t *h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+    if (flux_msg_handler_addvec (h, htab, ctx, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
@@ -675,10 +677,12 @@ int mod_main (flux_t *h, int argc, char **argv)
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
-
-    return 0;
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
+    return rc;
 }
 
 MOD_NAME ("sim_exec");

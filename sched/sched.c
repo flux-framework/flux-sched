@@ -125,6 +125,8 @@ typedef struct {
     flux_watcher_t *before;
     flux_watcher_t *after;
     flux_watcher_t *idle;
+    flux_msg_handler_t **handlers;
+    flux_msg_handler_t **sim_handlers;
 } ssrvctx_t;
 
 
@@ -329,6 +331,8 @@ static void freectx (void *arg)
         flux_watcher_destroy (ctx->after);
     if (ctx->idle)
         flux_watcher_destroy (ctx->idle);
+    flux_msg_handler_delvec (ctx->handlers);
+    flux_msg_handler_delvec (ctx->sim_handlers);
     free (ctx);
 }
 
@@ -360,6 +364,8 @@ static ssrvctx_t *getctx (flux_t *h)
         ctx->before = NULL;
         ctx->after = NULL;
         ctx->idle = NULL;
+        ctx->handlers = NULL;
+        ctx->sim_handlers = NULL;
         flux_aux_set (h, "sched", ctx, freectx);
     }
     return ctx;
@@ -946,10 +952,10 @@ static void trigger_cb (flux_t *h,
 /*
  * Simulator Initialization Functions
  */
-static struct flux_msg_handler_spec sim_htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0, NULL},
-    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb, 0, NULL},
-    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb, 0, NULL},
+static const struct flux_msg_handler_spec sim_htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sched.trigger", trigger_cb, 0},
+    {FLUX_MSGTYPE_EVENT, "sched.res.*", sim_res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -966,7 +972,8 @@ static int reg_sim_events (ssrvctx_t *ctx)
         flux_log (ctx->h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         goto done;
     }
-    if (flux_msg_handler_addvec (ctx->h, sim_htab, (void *)h) < 0) {
+    if (flux_msg_handler_addvec (ctx->h, sim_htab, (void *)h,
+                                 &ctx->sim_handlers) < 0) {
         flux_log (ctx->h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         goto done;
     }
@@ -1007,8 +1014,8 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
  *                                                                            *
  ******************************************************************************/
 
-static struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0, NULL},
+static const struct flux_msg_handler_spec htab[] = {
+    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1030,7 +1037,7 @@ static int inline reg_events (ssrvctx_t *ctx)
         rc = -1;
         goto done;
     }
-    if (flux_msg_handler_addvec (h, htab, (void *)h) < 0) {
+    if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log (h, LOG_ERR,
                   "error registering resource event handler: %s",
                   strerror (errno));

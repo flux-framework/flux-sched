@@ -85,7 +85,7 @@ test_expect_success 'module-load: sched loads the backfill plugin with arguments
 test_expect_success 'module-load: no jobs are lost' '
     for i in `seq $sched_start_jobid $sched_end_jobid`
     do
-        state=$(flux kvs get $(job_kvs_path $i).state)
+        state=$(flux kvs get -j $(job_kvs_path $i).state)
         if test $state != "submitted"; then
             return 48
         fi
