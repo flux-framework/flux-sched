@@ -138,19 +138,19 @@ static struct priority_plugin *priority_plugin_create (flux_t *h, void *dso)
     memset (plugin, 0, sizeof (*plugin));
     dlerror (); // Clear old dlerrors
 
-    plugin->priority_setup = dlsym (dso, "priority_setup");
+    plugin->priority_setup = dlsym (dso, "sched_priority_setup");
     strerr = dlerror();
     if (strerr || !plugin->priority_setup || !*plugin->priority_setup) {
         flux_log (h, LOG_ERR, "can't load priority_setup: %s", strerr);
         goto error;
     }
-    plugin->prioritize_jobs = dlsym (dso, "prioritize_jobs");
+    plugin->prioritize_jobs = dlsym (dso, "sched_priority_prioritize_jobs");
     strerr = dlerror();
     if (strerr || !plugin->prioritize_jobs || !*plugin->prioritize_jobs) {
         flux_log (h, LOG_ERR, "can't load prioritize_jobs: %s", strerr);
         goto error;
     }
-    plugin->record_job_usage = dlsym (dso, "record_job_usage");
+    plugin->record_job_usage = dlsym (dso, "sched_priority_record_job_usage");
     strerr = dlerror();
     if (strerr || !plugin->record_job_usage || !*plugin->record_job_usage) {
         flux_log (h, LOG_ERR, "can't load record_job_usage: %s", strerr);
