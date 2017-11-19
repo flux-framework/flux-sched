@@ -752,9 +752,76 @@ static int test_resource_service_flow ()
     return 0;
 }
 
+static int test_more_add_remove ()
+{
+    int rc;
+    int64_t span1, span2, span3, span4, span5, span6;
+    size_t len = 4;
+    bool bo = false;
+    const uint64_t resource_totals[] = {100000, 10000, 10000, 1000};
+    const uint64_t resource1[] = {36, 0, 0, 0};
+    const uint64_t resource2[] = {3600, 0, 0, 0};
+    const uint64_t resource3[] = {1800, 0, 0, 0};
+    const uint64_t resource4[] = {1152, 0, 0, 100};
+    const uint64_t resource5[] = {2304, 0, 0, 64};
+    const uint64_t resource6[] = {468, 0, 0, 13};
+    const char *resource_types[] = {"core", "gpu", "socket", "node"};
+    planner_t *ctx = NULL;
+    std::stringstream ss;
+
+    errno = 0;
+    to_stream (0, INT64_MAX, resource_totals,
+               (const char **)resource_types, len, ss);
+    ctx = planner_new (0, INT64_MAX, resource_totals, resource_types, len);
+    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ss.str ("");
+
+    span1 = planner_add_span (ctx, 0, 600, resource1, len);
+    bo = (bo || span1 == -1);
+    span2 = planner_add_span (ctx, 0, 57600, resource2, len);
+    bo = (bo || span2 == -1);
+    span3 = planner_add_span (ctx, 57600, 57600, resource3, len);
+    bo = (bo || span3 == -1);
+    span4 = planner_add_span (ctx, 115200, 57600, resource4, len);
+    bo = (bo || span4 == -1);
+    span5 = planner_add_span (ctx, 172800, 57600, resource5, len);
+    bo = (bo || span5 == -1);
+    span6 = planner_add_span (ctx, 115200, 900, resource6, len);
+    bo = (bo || span6 == -1);
+
+    rc = planner_rem_span (ctx, span1);
+    bo = (bo || rc == -1);
+    rc = planner_rem_span (ctx, span2);
+    bo = (bo || rc == -1);
+    rc = planner_rem_span (ctx, span3);
+    bo = (bo || rc == -1);
+    rc = planner_rem_span (ctx, span4);
+    bo = (bo || rc == -1);
+    rc = planner_rem_span (ctx, span5);
+    bo = (bo || rc == -1);
+    rc = planner_rem_span (ctx, span6);
+    bo = (bo || rc == -1);
+
+    span1 = planner_add_span (ctx, 0, 600, resource1, len);
+    bo = (bo || span1 == -1);
+    span2 = planner_add_span (ctx, 0, 57600, resource2, len);
+    bo = (bo || span2 == -1);
+    span3 = planner_add_span (ctx, 57600, 57600, resource3, len);
+    bo = (bo || span3 == -1);
+    span4 = planner_add_span (ctx, 115200, 57600, resource4, len);
+    bo = (bo || span4 == -1);
+    span5 = planner_add_span (ctx, 172800, 57600, resource5, len);
+    bo = (bo || span5 == -1);
+    span6 = planner_add_span (ctx, 115200, 900, resource6, len);
+    bo = (bo || span6 == -1);
+
+    ok (!bo && !errno, "more add-remove-add test works");
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
-    plan (61);
+    plan (63);
 
     test_planner_getters ();
 
@@ -775,6 +842,8 @@ int main (int argc, char *argv[])
     test_stress_4spans_overlap ();
 
     test_resource_service_flow ();
+
+    test_more_add_remove ();
 
     done_testing ();
 
