@@ -446,7 +446,7 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
         point->at = at;
         point->in_mt_resource_tree = 0;
         point->new_point = 1;
-        point->ref_count = 1;
+        point->ref_count = 0;
         memcpy (point->scheduled, state->scheduled, sizeof (point->scheduled));
         memcpy (point->remaining, state->remaining, sizeof(point->remaining));
         scheduled_point_insert (point, spt);
@@ -476,8 +476,6 @@ static int update_points_add_span (planner_t *ctx, zlist_t *list, span_t *span)
     scheduled_point_t *point = NULL;
     for (point = zlist_first (list); point; point = zlist_next (list)) {
         int i = 0;
-        if (!(point->new_point))
-            point->ref_count++;
         for (i = 0; i < span->dimension; ++i) {
             point->scheduled[i] += span->planned[i];
             point->remaining[i] -= span->planned[i];
@@ -498,7 +496,6 @@ static int update_points_subtract_span (planner_t *ctx, zlist_t *list,
     scheduled_point_t *point = NULL;
     for (point = zlist_first (list); point; point = zlist_next (list)) {
         int i = 0;
-        point->ref_count--;
         for (i = 0; i < span->dimension; ++i) {
             point->scheduled[i] -= span->planned[i];
             point->remaining[i] += span->planned[i];
@@ -1053,7 +1050,9 @@ int64_t planner_add_span (planner_t *ctx, int64_t start_time,
     restore_track_points (ctx);
     list = zlist_new ();
     start_point = get_or_new_point (ctx, span->start);
+    start_point->ref_count++;
     last_point = get_or_new_point (ctx, span->last);
+    last_point->ref_count++;
 
     fetch_overlap_points (ctx, span->start, duration, list);
     update_points_add_span (ctx, list, span);
@@ -1061,7 +1060,6 @@ int64_t planner_add_span (planner_t *ctx, int64_t start_time,
     start_point->new_point = 0;
     span->start_p = start_point;
     last_point->new_point = 0;
-    last_point->ref_count++;
     span->last_p = last_point;
 
     update_mintime_resource_tree (ctx, list);
@@ -1094,19 +1092,26 @@ int planner_rem_span (planner_t *ctx, int64_t span_id)
     restore_track_points (ctx);
     list = zlist_new ();
     duration = span->last - span->start;
+    span->start_p->ref_count--;
+    span->last_p->ref_count--;
     fetch_overlap_points (ctx, span->start, duration, list);
     update_points_subtract_span (ctx, list, span);
     update_mintime_resource_tree (ctx, list);
     span->in_system = 0;
-    span->last_p->ref_count--;
 
     if (span->start_p->ref_count == 0) {
+        struct rb_root *mtrt = &(ctx->mt_resource_tree);
         scheduled_point_remove (span->start_p, &(ctx->sched_point_tree));
+        if (span->start_p->in_mt_resource_tree)
+            mintime_resource_remove (span->start_p, mtrt);
         free (span->start_p);
         span->start_p = NULL;
     }
     if (span->last_p->ref_count == 0) {
+        struct rb_root *mtrt = &(ctx->mt_resource_tree);
         scheduled_point_remove (span->last_p, &(ctx->sched_point_tree));
+        if (span->last_p->in_mt_resource_tree)
+            mintime_resource_remove (span->last_p, mtrt);
         free (span->last_p);
         span->last_p = NULL;
     }
