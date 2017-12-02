@@ -93,6 +93,7 @@ size_t planner_resources_len (planner_t *ctx);
 int64_t planner_resource_total_at (planner_t *ctx, unsigned int i);
 int64_t planner_resource_total_by_type (planner_t *ctx,
                                         const char *resource_type);
+const uint64_t *planner_resource_totals (planner_t *ctx);
 const char **planner_resource_types (planner_t *ctx);
 int planner_resource_index_of_type (planner_t *ctx,
                                     const char *resource_type);

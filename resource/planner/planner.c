@@ -767,7 +767,7 @@ done:
 
 int planner_reset (planner_t *ctx, int64_t base_time, uint64_t duration)
 {
-    if (duration < 1) {
+    if (!ctx || duration < 1) {
         errno = EINVAL;
         return -1;
     }
@@ -839,6 +839,15 @@ int64_t planner_resource_total_by_type (planner_t *ctx, const char *resource_typ
             break;
     }
     return (i < ctx->dimension)? ctx->total_resources[i] : -1;
+}
+
+const uint64_t *planner_resource_totals (planner_t *ctx)
+{
+    if (!ctx) {
+        errno = EINVAL;
+        return 0;
+    }
+    return (const uint64_t *) ctx->total_resources;
 }
 
 const char **planner_resource_types (planner_t *ctx)
