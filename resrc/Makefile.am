@@ -15,7 +15,7 @@ libflux_resrc_la_SOURCES = resrc.c resrc_tree.c resrc_flow.c resrc_reqst.c
 libflux_resrc_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 libflux_resrc_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
     $(top_builddir)/src/common/libutil/libutil.la \
-    $(JANSSON_LIBS) $(CZMQ_LIBS)
+    $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) $(JANSSON_LIBS) $(CZMQ_LIBS)
 libflux_resrc_la_LDFLAGS = $(AM_LDFLAGS) $(fluxlib_ldflags) \
     -Wl,--version-script=$(srcdir)/resrc_version.map
 

@@ -37,18 +37,36 @@ fi
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([CZMQ], [libczmq >= 3.0.0])
-AC_CHECK_LIB([dl], [dlerror])
-AC_CHECK_LIB([hwloc], [hwloc_topology_init])
+AC_CHECK_LIB([dl], [dlerror],
+             [AC_SUBST([DL_LIBS], ["-ldl"])
+              AC_DEFINE([HAVE_LIBDL], [1],
+                        [Define if you have libdl])],
+             [AC_MSG_ERROR([Please install dl])])
+PKG_CHECK_MODULES([HWLOC], [hwloc], [], [])
 PKG_CHECK_MODULES([JANSSON], [jansson >= 2.6], [], [])
 PKG_CHECK_MODULES([XML2], [libxml-2.0])
 AX_PROG_LUA([5.1],[5.3])
 AX_LUA_HEADERS
 AX_LUA_LIBS
-AC_CHECK_LIB([uuid], [uuid_clear])
+PKG_CHECK_MODULES([UUID], [uuid], [], [])
 AX_FLUX_CORE
+AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+AC_CHECK_LIB([boost_graph], [exit],
+             [AC_SUBST([BOOST_GRAPH_LIB], ["-lboost_graph"])
+              AC_DEFINE([HAVE_BOOST_GRRAPH], [1],
+                        [Define if you have boost_graph])],
+             [AC_MSG_ERROR([Please install Boost Graph library])])
+PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
+AC_CHECK_LIB([readline], [readline],
+             [AC_SUBST([READLINE_LIBS], ["-lreadline"])
+              AC_DEFINE([HAVE_LIBREADLINE], [1],
+                        [Define if you have libreadline])],
+             [AC_MSG_ERROR([Please install GNU readline])])
 
 # Checks for header files.
-AC_CHECK_HEADERS([inttypes.h limits.h stdint.h stdlib.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([inttypes.h limits.h stdint.h stdlib.h string.h sys/time.h unistd.h readline/readline.h readline/history.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL # in newer ac version:  AC_CHECK_HEADER_STDBOOL
