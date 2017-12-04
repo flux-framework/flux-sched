@@ -91,9 +91,9 @@ typedef property_map<resource_graph_t, pinfra_t>::type    vtx_infra_map_t;
 typedef property_map<resource_graph_t, rinfra_t>::type    edg_infra_map_t;
 typedef graph_traits<resource_graph_t>::vertex_descriptor vtx_t;
 typedef graph_traits<resource_graph_t>::edge_descriptor   edg_t;
-typedef graph_traits<resource_graph_t>::vertex_iterator   vtx_iterator;
-typedef graph_traits<resource_graph_t>::edge_iterator     edg_iterator;
-typedef graph_traits<resource_graph_t>::out_edge_iterator out_edg_iterator;
+typedef graph_traits<resource_graph_t>::vertex_iterator   vtx_iterator_t;
+typedef graph_traits<resource_graph_t>::edge_iterator     edg_iterator_t;
+typedef graph_traits<resource_graph_t>::out_edge_iterator out_edg_iterator_t;
 typedef filtered_graph<resource_graph_t,
                        subsystem_selector_t<edg_t, edg_infra_map_t>,
                        subsystem_selector_t<vtx_t, vtx_infra_map_t>>
@@ -103,8 +103,9 @@ typedef property_map<f_resource_graph_t, pinfra_t>::type  f_vtx_infra_map_t;
 typedef property_map<f_resource_graph_t, pname_t>::type   f_res_name_map_t;
 typedef property_map<f_resource_graph_t, rname_t>::type   f_rel_name_map_t;
 typedef property_map<f_resource_graph_t, pinfra_t>::type  f_vtx_infra_map_t;
-typedef graph_traits<f_resource_graph_t>::vertex_iterator f_vtx_iterator;
-typedef graph_traits<f_resource_graph_t>::edge_iterator   f_edg_iterator;
+typedef graph_traits<f_resource_graph_t>::vertex_iterator f_vtx_iterator_t;
+typedef graph_traits<f_resource_graph_t>::edge_iterator   f_edg_iterator_t;
+typedef graph_traits<f_resource_graph_t>::out_edge_iterator f_out_edg_iterator_t;
 
 /*! Resource graph data store.
  *  Adjacency_list graph, roots of this graph and various indexing.
