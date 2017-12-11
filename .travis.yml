@@ -48,6 +48,9 @@ addons:
       - libmunge-dev
       - munge
       - lcov
+      - libyaml-cpp-dev
+      - libboost-all-dev
+      - libreadline6
 
 before_install:
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
