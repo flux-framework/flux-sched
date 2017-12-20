@@ -1,0 +1,5 @@
+# 3x node[1]->slot[1]->socket[2]->core[1]:gpu[1]:memory[6]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test002.yaml
+quit

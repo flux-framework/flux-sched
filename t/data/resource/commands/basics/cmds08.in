@@ -1,0 +1,5 @@
+# 4x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[36]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml
+# 4x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[37]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test007.yaml
+quit

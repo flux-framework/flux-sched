@@ -50,13 +50,15 @@ TESTS = \
     t1005-sched-params.t \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
-    t2002-easy.t
+    t2002-easy.t \
+    t3001-resource-basic.t
 
 check_SCRIPTS = $(TESTS)
 
 EXTRA_DIST= \
 	$(check_SCRIPTS) \
 	data \
+    data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
 	sharness.d
