@@ -51,7 +51,8 @@ TESTS = \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
     t2002-easy.t \
-    t3001-resource-basic.t
+    t3001-resource-basic.t \
+    t3002-resource-prefix.t
 
 check_SCRIPTS = $(TESTS)
 
