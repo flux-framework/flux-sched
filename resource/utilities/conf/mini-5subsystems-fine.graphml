@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+        http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
+
+    <!-- resource pool vertex generation spec attributes -->
+    <key id="root" for="node" attr.name="root" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="type" for="node" attr.name="type" attr.type="string"/>
+    <key id="basename" for="node" attr.name="basename" attr.type="string"/>
+    <key id="size" for="node" attr.name="size" attr.type="long">
+        <default>1</default>
+    </key>
+    <key id="subsystem" for="node" attr.name="subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+
+    <!-- resource relationship generation attributes     -->
+    <key id="e_subsystem" for="edge" attr.name="e_subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="relation" for="edge" attr.name="relation" attr.type="string">
+        <default>contains</default>
+    </key>
+    <key id="rrelation" for="edge" attr.name="rrelation" attr.type="string">
+        <default>in</default>
+    </key>
+
+    <!-- id generation method                             -->
+    <key id="id_scope" for="edge" attr.name="id_scope" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_start" for="edge" attr.name="id_start" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_stride" for="edge" attr.name="id_stride" attr.type="int">
+        <default>1</default>
+    </key>
+
+    <!-- resource gen method: multiply or associate-in   -->
+    <key id="gen_method" for="edge" attr.name="gen_method" attr.type="string">
+        <default>MULTIPLY</default>
+    </key>
+    <!-- argument (scaling factor) for multiply method   -->
+    <key id="multi_scale" for="edge" attr.name="multi_scale" attr.type="int">
+        <default>1</default>
+    </key>
+    <!-- 3 arguments for associate-in method             -->
+    <key id="as_tgt_subsystem" for="edge" attr.name="as_tgt_subsystem"
+             attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="as_tgt_uplvl" for="edge" attr.name="as_tgt_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+    <key id="as_src_uplvl" for="edge" attr.name="as_src_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+
+
+    <!-- generation recipe for the mini cluster         -->
+    <graph id="mini_fine" edgedefault="directed">
+
+        <!-- containment subsystem generation recipe    -->
+        <node id="cluster">
+            <data key="root">1</data>
+            <data key="type">cluster</data>
+            <data key="basename">mini_fine</data>
+        </node>
+        <node id="rack">
+            <data key="type">rack</data>
+            <data key="basename">rack</data>
+        </node>
+        <node id="node">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+        </node>
+        <node id="es">
+            <data key="type">edgeswitch</data>
+            <data key="basename">edgeswitch</data>
+        </node>
+        <node id="esbw">
+            <data key="type">edgeswitchbw</data>
+            <data key="basename">edgeswitchbw</data>
+            <data key="size">72000</data>
+        </node>
+        <node id="pdu">
+            <data key="type">pdu</data>
+            <data key="basename">pdu</data>
+            <data key="size">500</data>
+        </node>
+        <node id="socket">
+            <data key="type">socket</data>
+            <data key="basename">socket</data>
+        </node>
+        <node id="core">
+            <data key="type">core</data>
+            <data key="basename">core</data>
+        </node>
+        <node id="gpu">
+            <data key="type">gpu</data>
+            <data key="basename">gpu</data>
+        </node>
+        <node id="nic">
+            <data key="type">nic</data>
+            <data key="basename">nic</data>
+        </node>
+        <node id="nicbw">
+            <data key="type">nicbw</data>
+            <data key="basename">nicbw</data>
+            <data key="size">4000</data>
+        </node>
+
+        <edge id="cluster2rack" source="cluster" target="rack"/>
+        <edge id="rack2node" source="rack" target="node"/>
+        <edge id="rack2es" source="rack" target="es"/>
+        <edge id="rack2pdu" source="rack" target="pdu"/>
+        <edge id="es2esbw" source="es" target="esbw"/>
+        <edge id="node2socket" source="node" target="socket">
+            <data key="multi_scale">2</data>
+        </edge>
+        <edge id="node2nic" source="node" target="nic"/>
+        <edge id="socket2core" source="socket" target="core">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">2</data>
+        </edge>
+        <edge id="socket2gpu" source="socket" target="gpu"/>
+        <edge id="nic2nicbw" source="nic" target="nicbw"/>
+
+        <!-- IB network subsystem generation recipe      -->
+        <node id="ibnet">
+            <data key="root">1</data>
+            <data key="type">ibnet</data>
+            <data key="basename">ibnet</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+        <node id="cs">
+            <data key="type">coreswitch</data>
+            <data key="basename">coreswitch</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+        <node id="csbw">
+            <data key="type">coreswitchbw</data>
+            <data key="basename">coreswitchbw</data>
+            <data key="size">1296000</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+        <node id="es_ibnet">
+            <data key="type">edgeswitch</data>
+            <data key="basename">edgeswitch</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+        <node id="nic_ibnet">
+            <data key="type">nic</data>
+            <data key="basename">nic</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+        <node id="node_ibnet">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+            <data key="subsystem">ibnet</data>
+        </node>
+
+        <edge id="ibnet2cs" source="ibnet" target="cs">
+            <data key="e_subsystem">ibnet</data>
+            <data key="relation">connected_down</data>
+            <data key="rrelation">connected_up</data>
+        </edge>
+        <edge id="cs2csbw" source="cs" target="csbw">
+            <data key="e_subsystem">ibnet</data>
+            <data key="relation">contains</data>
+            <data key="rrelation">in</data>
+        </edge>
+        <edge id="cs2es" source="cs" target="es_ibnet">
+            <data key="e_subsystem">ibnet</data>
+            <data key="relation">connected_down</data>
+            <data key="rrelation">connected_up</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+        </edge>
+        <edge id="es2nic" source="es_ibnet" target="nic_ibnet">
+            <data key="e_subsystem">ibnet</data>
+            <data key="relation">connected_down</data>
+            <data key="rrelation">connected_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">2</data>
+            <data key="as_src_uplvl">1</data>
+        </edge>
+        <edge id="nic2node" source="nic_ibnet" target="node_ibnet">
+            <data key="e_subsystem">ibnet</data>
+            <data key="relation">connected_down</data>
+            <data key="rrelation">connected_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">0</data>
+            <data key="as_src_uplvl">1</data>
+        </edge>
+
+        <!-- IB BW subsystem recipe                      -->
+        <node id="ibnetbw">
+            <data key="root">1</data>
+            <data key="type">ibnetbw</data>
+            <data key="basename">ibnetbw</data>
+            <data key="subsystem">ibnetbw</data>
+        </node>
+        <node id="csbw_ibnetbw">
+            <data key="type">coreswitchbw</data>
+            <data key="basename">coreswitchbw</data>
+            <data key="subsystem">ibnetbw</data>
+        </node>
+        <node id="esbw_ibnetbw">
+            <data key="type">edgeswitchbw</data>
+            <data key="basename">edgeswitchbw</data>
+            <data key="subsystem">ibnetbw</data>
+        </node>
+        <node id="nicbw_ibnetbw">
+            <data key="type">nicbw</data>
+            <data key="basename">nicbw</data>
+            <data key="subsystem">ibnetbw</data>
+        </node>
+        <node id="node_ibnetbw">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+            <data key="subsystem">ibnetbw</data>
+        </node>
+
+        <edge id="ibnetbw2csbw" source="ibnetbw" target="csbw_ibnetbw">
+            <data key="e_subsystem">ibnetbw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+            <data key="as_tgt_subsystem">ibnet</data>
+        </edge>
+        <edge id="csbw2esbw" source="csbw_ibnetbw" target="esbw_ibnetbw">
+            <data key="e_subsystem">ibnetbw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+        </edge>
+        <edge id="esbw2nicbw" source="esbw_ibnetbw" target="nicbw_ibnetbw">
+            <data key="e_subsystem">ibnetbw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">3</data>
+            <data key="as_src_uplvl">2</data>
+        </edge>
+        <edge id="nicbw2node" source="nicbw_ibnetbw" target="node_ibnetbw">
+            <data key="e_subsystem">ibnetbw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">0</data>
+            <data key="as_src_uplvl">2</data>
+        </edge>
+
+        <!-- PFS1 BW subsystem recipe                    -->
+        <node id="pfs1bw">
+            <data key="root">1</data>
+            <data key="type">pfs1bw</data>
+            <data key="basename">pfs1bw</data>
+            <data key="subsystem">pfs1bw</data>
+        </node>
+        <node id="csbw_pfs1bw">
+            <data key="type">coreswitchbw</data>
+            <data key="basename">coreswitchbw</data>
+            <data key="subsystem">pfs1bw</data>
+        </node>
+        <node id="esbw_pfs1bw">
+            <data key="type">edgeswitchbw</data>
+            <data key="basename">edgeswitchbw</data>
+            <data key="subsystem">pfs1bw</data>
+        </node>
+        <node id="nicbw_pfs1bw">
+            <data key="type">nicbw</data>
+            <data key="basename">nicbw</data>
+            <data key="subsystem">pfs1bw</data>
+        </node>
+        <node id="node_pfs1bw">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+            <data key="subsystem">pfs1bw</data>
+        </node>
+
+        <edge id="pfs1bw2csbw" source="pfs1bw" target="csbw_pfs1bw">
+            <data key="e_subsystem">pfs1bw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+            <data key="as_tgt_subsystem">ibnetbw</data>
+        </edge>
+        <edge id="csbw2esbw_pfs1bw" source="csbw_pfs1bw" target="esbw_pfs1bw">
+            <data key="e_subsystem">pfs1bw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+        </edge>
+        <edge id="esbw2nicbw_pfs1bw" source="esbw_pfs1bw" target="nicbw_pfs1bw">
+            <data key="e_subsystem">pfs1bw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">3</data>
+            <data key="as_src_uplvl">2</data>
+        </edge>
+        <edge id="nicbw2node_pfs1bw" source="nicbw_pfs1bw" target="node_pfs1bw">
+            <data key="e_subsystem">pfs1bw</data>
+            <data key="relation">flows_down</data>
+            <data key="rrelation">flows_up</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">0</data>
+            <data key="as_src_uplvl">2</data>
+        </edge>
+
+        <!-- power subsystem generation recipe           -->
+        <node id="powerpanel">
+            <data key="root">1</data>
+            <data key="type">powerpanel</data>
+            <data key="basename">powerpanel</data>
+            <data key="subsystem">power</data>
+        </node>
+        <node id="pdu_power">
+            <data key="type">pdu</data>
+            <data key="basename">pdu</data>
+            <data key="subsystem">power</data>
+        </node>
+        <node id="node_power">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+            <data key="subsystem">power</data>
+        </node>
+
+        <edge id="powerpanel2pdu" source="powerpanel" target="pdu_power">
+            <data key="e_subsystem">power</data>
+            <data key="relation">supplies_to</data>
+            <data key="rrelation">draws_from</data>
+            <data key="gen_method">ASSOCIATE_IN</data>
+        </edge>
+        <edge id="pdu2node" source="pdu_power" target="node_power">
+            <data key="e_subsystem">power</data>
+            <data key="relation">supplies_to</data>
+            <data key="rrelation">draws_from</data>
+            <data key="gen_method">ASSOCIATE_BY_PATH_IN</data>
+            <data key="as_tgt_uplvl">1</data>
+            <data key="as_src_uplvl">1</data>
+        </edge>
+    </graph>
+</graphml>
+
