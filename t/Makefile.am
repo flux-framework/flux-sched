@@ -57,7 +57,8 @@ TESTS = \
     t3004-resource-excl.t \
     t3005-resource-rsv.t \
     t3006-resource-advanced.t \
-    t3007-resource-iobw.t
+    t3007-resource-iobw.t \
+    t3008-resource-cancel.t
 
 check_SCRIPTS = $(TESTS)
 

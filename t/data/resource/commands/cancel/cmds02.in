@@ -1,0 +1,52 @@
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test002.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test003.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test004.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test005.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test006.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test007.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test008.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test010.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test011.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test012.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test013.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test014.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test015.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test016.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test017.yaml
+cancel 1
+cancel 2
+cancel 3
+cancel 4
+cancel 5
+cancel 6 
+cancel 7
+cancel 8
+cancel 9
+cancel 10
+cancel 11
+cancel 12 
+cancel 13
+cancel 14
+cancel 15
+cancel 16
+cancel 17
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test002.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test003.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test004.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test005.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test006.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test007.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test008.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test010.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test011.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test012.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test013.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test014.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test015.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test016.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test017.yaml
+quit
