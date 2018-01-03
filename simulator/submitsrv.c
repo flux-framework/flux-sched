@@ -113,6 +113,9 @@ int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
         job->ncpus = atoi (value);
     } else if (!strcmp (column_name, "Timelimit")) {
         job->time_limit = convert_time_to_sec (value);
+        if(job->time_limit < job->execution_time) {
+          job->execution_time = job->time_limit;
+        }
     } else if (!strcmp (column_name, "Submit")) {
         char *endptr;
         struct tm tm_spec; 
@@ -136,7 +139,11 @@ int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
         }
         job->submit_time = stime;
     } else if (!strcmp (column_name, "Elapsed")) {
-        job->execution_time = convert_time_to_sec (value);
+        if(convert_time_to_sec (value) > job->time_limit) {
+          job->execution_time = job->time_limit;
+        } else {
+          job->execution_time = convert_time_to_sec (value);
+        }
     } else if (!strcmp (column_name, "IORate(MB)")) {
         job->io_rate = atol (value);
     }
