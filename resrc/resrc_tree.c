@@ -243,6 +243,25 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
     return rc;
 }
 
+
+/* Allocate the resource and print to file if it's a node */
+int resrc_tree_allocate_print (resrc_tree_t *resrc_tree, int64_t job_id,
+                               int64_t starttime, int64_t endtime, FILE *alloc_file)
+{
+    int rc = -1;
+    if (resrc_tree) {
+        rc = resrc_allocate_resource (resrc_tree->resrc, job_id,
+                                      starttime, endtime);
+        if (strcmp (resrc_type (resrc_tree->resrc), "node") == 0) {
+            fprintf (alloc_file, "%s|", resrc_name (resrc_tree->resrc));
+        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_allocate_print (resrc_tree->children, job_id,
+                                                 starttime, endtime, alloc_file);
+    }
+    return rc;
+}
+
 int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
                         int64_t starttime, int64_t endtime)
 {
@@ -414,6 +433,24 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
             rc = resrc_tree_allocate (rt, job_id, starttime, endtime);
+            rt = resrc_tree_list_next (rtl);
+        }
+    }
+
+    return rc;
+}
+
+int resrc_tree_list_allocate_print (resrc_tree_list_t *rtl, int64_t job_id,
+                                    int64_t starttime, int64_t endtime, FILE *alloc_file)
+{
+    resrc_tree_t *rt;
+    int rc = -1;
+
+    if (rtl) {
+        rc = 0;
+        rt = resrc_tree_list_first (rtl);
+        while (!rc && rt) {
+            rc = resrc_tree_allocate_print (rt, job_id, starttime, endtime, alloc_file);
             rt = resrc_tree_list_next (rtl);
         }
     }

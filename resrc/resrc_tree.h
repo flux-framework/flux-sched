@@ -88,6 +88,11 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
                          int64_t starttime, int64_t endtime);
 
 /*
+ * Allocate all the resources in a resource tree and print node list to file
+ */
+int resrc_tree_allocate_print (resrc_tree_t *resrc_tree, int64_t job_id,
+                               int64_t starttime, int64_t endtime, FILE *alloc_file);
+/*
  * Reserve all the resources in a resource tree
  */
 int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
@@ -167,6 +172,11 @@ resrc_tree_list_t *resrc_tree_list_deserialize (resrc_api_ctx_t *ctx, json_t *o)
  */
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
                               int64_t starttime, int64_t endtime);
+/*
+ * Allocate all the resources in a list of resource trees and print to a file
+ */
+int resrc_tree_list_allocate_print (resrc_tree_list_t *rtl, int64_t job_id,
+                                    int64_t starttime, int64_t endtime, FILE *alloc_file);
 
 /*
  * Reserve all the resources in a list of resource trees

@@ -66,6 +66,11 @@ static int compare_int64_ascending (void *item1, void *item2)
 }
 #endif
 
+/* TEST - for validation of correctness only */
+static char *allocation_filename = "allocations.csv";
+static FILE *alloc_file = NULL;
+/* TSET */
+
 static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
                              resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
@@ -352,8 +357,11 @@ int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     int rc = -1;
 
     if (selected_tree) {
-        rc = resrc_tree_allocate (selected_tree, job_id, starttime, endtime);
-
+        fprintf (alloc_file, "%"PRId64",%"PRId64",",
+                job_id, starttime);
+        rc = resrc_tree_allocate_print (selected_tree, job_id,
+                                        starttime, endtime, alloc_file);
+        fprintf (alloc_file, "\n");
         if (!rc) {
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = endtime;
@@ -428,6 +436,9 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
 
         if (!strncmp ("reserve-depth=", entry, sizeof ("reserve-depth"))) {
             reserve_depth_str = strstr (entry, "=") + 1;
+        } else if (!strncmp ("alloc-file=", entry, sizeof ("alloc-file"))) {
+            allocation_filename = xasprintf ("%s", strstr (entry, "=") + 1);
+            // XXX: This is never freed
         } else {
             rc = -1;
             errno = EINVAL;
@@ -458,6 +469,17 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         rc = -1;
         errno = EINVAL;
     }
+
+    alloc_file = fopen(allocation_filename, "w");
+    if (alloc_file == NULL) {
+        flux_log (h, LOG_ERR, "Unable to write to '%s'", allocation_filename);
+        rc = -1;
+        goto done;
+    } else { 
+        flux_log (h, LOG_DEBUG, "Opened log file '%s'", allocation_filename);
+    }
+    fprintf(alloc_file, "jobid,starttime,nodelist\n");
+
 
  done:
     return rc;
