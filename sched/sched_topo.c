@@ -1807,7 +1807,7 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     }
 
     flux_log (h, LOG_DEBUG, "reservation_depth = %d", reservation_depth);
-    if (reservation_depth != 1) {
+    if (reservation_depth > 1) {
         flux_log (h, LOG_ERR, "Currently only a reservation depth of 1"
                 " is supported (EASY Backfill)");
         rc = -1;

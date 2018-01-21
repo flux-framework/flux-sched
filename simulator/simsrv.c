@@ -86,11 +86,13 @@ static int send_trigger (flux_t *h, const char *mod_name, sim_state_t *sim_state
     o = sim_state_to_json (sim_state);
 
     topic = xasprintf ("%s.trigger", mod_name);
-    future = flux_rpc (h, topic, Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    const char *jcstr = Jtostr (o);
+    future = flux_rpc (h, topic, jcstr, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
     if (!future) {
         flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
         rc = -1;
     }
+    free((void*)jcstr);
 
     Jput (o);
     free (topic);
