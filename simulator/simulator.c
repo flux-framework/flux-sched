@@ -98,9 +98,8 @@ static void add_timers_to_hash (json_t *o, zhash_t *hash)
         *event_time = json_real_value (value);
 
         // Insert key,value pair into sim_state hashtable
-        if(zhash_insert (hash, key, event_time)) {
-          free((void*)event_time);
-        }
+        zhash_insert (hash, key, event_time);
+        zhash_freefn (hash, key, free);
     }
 }
 

@@ -1695,6 +1695,11 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
                           job->lwj_id);
             }
         }
+        zlist_remove (ctx->c_queue, job);
+        if (job->req)
+            free (job->req);
+        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+        free (job);
         break;
     case J_CANCELLED:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));
