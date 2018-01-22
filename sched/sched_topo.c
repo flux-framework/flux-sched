@@ -226,6 +226,9 @@ static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
                              resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
                              resrc_tree_t *selected_parent);
+static void stage_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                             resrc_tree_t *candidate_tree,
+                             resrc_reqst_t *resrc_reqst);
 
 resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_tree_t *found_tree,
@@ -235,11 +238,11 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 /* Select the resources either now (allocate) or in the future (reserve)
  * This is the main logic for the scheduler.
  */
-static resrc_tree_t *select_resources_in_time (flux_t *h,
-                                               resrc_api_ctx_t *rsapi,
-                                               resrc_tree_t *candidate_tree,
-                                               resrc_reqst_t *resrc_reqst,
-                                               resrc_tree_t *selected_parent);
+//static resrc_tree_t *select_resources_in_time (flux_t *h,
+//                                               resrc_api_ctx_t *rsapi,
+//                                               resrc_tree_t *candidate_tree,
+//                                               resrc_reqst_t *resrc_reqst,
+//                                               resrc_tree_t *selected_parent);
 
 static int allocate_topo_structures (flux_t *h, resrc_tree_t *root);
 
@@ -689,10 +692,9 @@ static bool select_child (flux_t *h, resrc_api_ctx_t *rsapi,
 
     child_tree = resrc_tree_list_first (children);
     while (child_tree) {
-        if (select_resources_in_time (h, rsapi, child_tree,
-                child_reqst, selected_parent) &&
-            (resrc_reqst_nfound (child_reqst) >=
-             resrc_reqst_reqrd_qty (child_reqst))) {
+        stage_resources (h, rsapi, child_tree, child_reqst);
+        if(resrc_reqst_nfound (child_reqst) >=
+             resrc_reqst_reqrd_qty (child_reqst)) {
             selected = true;
             break;
         }
@@ -1436,79 +1438,79 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
  * TODO: Find out if this is actually necessary, or if select_child should just
  * call stage_resources instead.
  */
-static resrc_tree_t *select_resources_in_time (flux_t *h,
-                                               resrc_api_ctx_t *rsapi,
-                                               resrc_tree_t *candidate_tree,
-                                               resrc_reqst_t *resrc_reqst,
-                                               resrc_tree_t *selected_parent)
-{
-    resrc_t *resrc;
-    resrc_tree_list_t *children = NULL;
-    resrc_tree_t *child_tree;
-    resrc_tree_t *selected_tree = NULL;
-
-    if (!resrc_reqst) {
-        flux_log (h, LOG_ERR, "%s: called with empty request", __FUNCTION__);
-        return NULL;
-    }
-
-    resrc = resrc_tree_resrc (candidate_tree);
-    /* XXX: This doesn't require the resource actually be available. Therefore,
-     * the candidate_tree must be exactly what you want. If you ever find
-     * yourself stuck in an infinite loop, this is probably why.
-     */
-    if (resrc_match_resource (resrc, resrc_reqst, false)) {
-        if (resrc_reqst_num_children (resrc_reqst)) {
-            if (resrc_tree_num_children (candidate_tree)) {
-                selected_tree = resrc_tree_new (selected_parent, resrc);
-                if (select_children (h, rsapi, resrc_tree_children (candidate_tree),
-                                     resrc_reqst_children (resrc_reqst),
-                                     selected_tree)) {
-                    // printf ("Staging "); resrc_print_resource (resrc); // TEST
-                    // resrc_stage_resrc (resrc,
-                    //                    resrc_reqst_reqrd_size (resrc_reqst),
-                    //                    resrc_reqst_graph_reqs (resrc_reqst));
-                    resrc_reqst_add_found (resrc_reqst, 1);
-                } else {
-                    // printf ("Destroying "); // TEST
-                    // resrc_print_resource (resrc_tree_resrc (selected_tree)); // TEST
-
-                    resrc_tree_destroy (rsapi, selected_tree, false, false);
-                }
-            }
-        } else {
-            // printf ("Copying\n"); // TEST
-            selected_tree = resrc_tree_new (selected_parent, resrc);
-            resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst),
-                                       resrc_reqst_graph_reqs (resrc_reqst));
-            resrc_reqst_add_found (resrc_reqst, 1);
-        }
-    } else if (resrc_tree_num_children (candidate_tree)) {
-        /*
-         * This clause visits the children of the current resource
-         * searching for a match to the resource request.  The selected
-         * tree must be extended to include this intermediate
-         * resource.
-         *
-         * This also allows the resource request to be sparsely
-         * defined.  E.g., it might only stipulate a node with 4 cores
-         * and omit the intervening socket.
-         */
-        selected_tree = resrc_tree_new (selected_parent, resrc);
-        children = resrc_tree_children (candidate_tree);
-        child_tree = resrc_tree_list_first (children);
-        while (child_tree) {
-            if (select_resources_in_time (h, rsapi, child_tree,
-                    resrc_reqst, selected_tree) &&
-                resrc_reqst_nfound (resrc_reqst) >=
-                resrc_reqst_reqrd_qty (resrc_reqst))
-                break;
-            child_tree = resrc_tree_list_next (children);
-        }
-    }
-
-    return selected_tree;
-}
+//static resrc_tree_t *select_resources_in_time (flux_t *h,
+//                                               resrc_api_ctx_t *rsapi,
+//                                               resrc_tree_t *candidate_tree,
+//                                               resrc_reqst_t *resrc_reqst,
+//                                               resrc_tree_t *selected_parent)
+//{
+//    resrc_t *resrc;
+//    resrc_tree_list_t *children = NULL;
+//    resrc_tree_t *child_tree;
+//    resrc_tree_t *selected_tree = NULL;
+//
+//    if (!resrc_reqst) {
+//        flux_log (h, LOG_ERR, "%s: called with empty request", __FUNCTION__);
+//        return NULL;
+//    }
+//
+//    resrc = resrc_tree_resrc (candidate_tree);
+//    /* XXX: This doesn't require the resource actually be available. Therefore,
+//     * the candidate_tree must be exactly what you want. If you ever find
+//     * yourself stuck in an infinite loop, this is probably why.
+//     */
+//    if (resrc_match_resource (resrc, resrc_reqst, false)) {
+//        if (resrc_reqst_num_children (resrc_reqst)) {
+//            if (resrc_tree_num_children (candidate_tree)) {
+//                selected_tree = resrc_tree_new (selected_parent, resrc);
+//                if (select_children (h, rsapi, resrc_tree_children (candidate_tree),
+//                                     resrc_reqst_children (resrc_reqst),
+//                                     selected_tree)) {
+//                    // printf ("Staging "); resrc_print_resource (resrc); // TEST
+//                    // resrc_stage_resrc (resrc,
+//                    //                    resrc_reqst_reqrd_size (resrc_reqst),
+//                    //                    resrc_reqst_graph_reqs (resrc_reqst));
+//                    resrc_reqst_add_found (resrc_reqst, 1);
+//                } else {
+//                    // printf ("Destroying "); // TEST
+//                    // resrc_print_resource (resrc_tree_resrc (selected_tree)); // TEST
+//
+//                    resrc_tree_destroy (rsapi, selected_tree, false, false);
+//                }
+//            }
+//        } else {
+//            // printf ("Copying\n"); // TEST
+//            selected_tree = resrc_tree_new (selected_parent, resrc);
+//            resrc_stage_resrc (resrc, resrc_reqst_reqrd_size (resrc_reqst),
+//                                       resrc_reqst_graph_reqs (resrc_reqst));
+//            resrc_reqst_add_found (resrc_reqst, 1);
+//        }
+//    } else if (resrc_tree_num_children (candidate_tree)) {
+//        /*
+//         * This clause visits the children of the current resource
+//         * searching for a match to the resource request.  The selected
+//         * tree must be extended to include this intermediate
+//         * resource.
+//         *
+//         * This also allows the resource request to be sparsely
+//         * defined.  E.g., it might only stipulate a node with 4 cores
+//         * and omit the intervening socket.
+//         */
+//        selected_tree = resrc_tree_new (selected_parent, resrc);
+//        children = resrc_tree_children (candidate_tree);
+//        child_tree = resrc_tree_list_first (children);
+//        while (child_tree) {
+//            if (select_resources_in_time (h, rsapi, child_tree,
+//                    resrc_reqst, selected_tree) &&
+//                resrc_reqst_nfound (resrc_reqst) >=
+//                resrc_reqst_reqrd_qty (resrc_reqst))
+//                break;
+//            child_tree = resrc_tree_list_next (children);
+//        }
+//    }
+//
+//    return selected_tree;
+//}
 
 /* Find the nodes (physical compute nodes) of a tree.
  * Expects an initial argument of an empty list and the root of the tree you
@@ -1807,7 +1809,7 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
     }
 
     flux_log (h, LOG_DEBUG, "reservation_depth = %d", reservation_depth);
-    if (reservation_depth != 1) {
+    if (reservation_depth > 1) {
         flux_log (h, LOG_ERR, "Currently only a reservation depth of 1"
                 " is supported (EASY Backfill)");
         rc = -1;
