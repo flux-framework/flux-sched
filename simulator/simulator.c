@@ -99,6 +99,7 @@ static void add_timers_to_hash (json_t *o, zhash_t *hash)
 
         // Insert key,value pair into sim_state hashtable
         zhash_insert (hash, key, event_time);
+        zhash_freefn (hash, key, free);
     }
 }
 
@@ -120,6 +121,8 @@ void free_job (job_t *job)
     free (job->user);
     free (job->jobname);
     free (job->account);
+    if(job->kvs_dir)
+      kvsdir_destroy(job->kvs_dir);
     free (job);
 }
 
@@ -354,12 +357,16 @@ int send_reply_request (flux_t *h,
     o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
 
-    future = flux_rpc (h, "sim.reply", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    const char * jcbstr = Jtostr (o);
+    future = flux_rpc (h, "sim.reply", jcbstr, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
     if (!future) {
         rc = -1;
     }
+    free((void*)jcbstr);
 
-    flux_log (h, LOG_DEBUG, "sent a reply request: %s", Jtostr (o));
+    jcbstr = Jtostr (o);
+    flux_log (h, LOG_DEBUG, "sent a reply request: %s", jcbstr);
+    free((void*)jcbstr);
     Jput (o);
     flux_future_destroy(future);
     return rc;

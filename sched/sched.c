@@ -414,6 +414,8 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
 done:
     if (jcb)
         Jput (jcb);
+    if(jcbstr)
+        free((void*)jcbstr);
     return rc;
 }
 
@@ -429,6 +431,7 @@ static int update_state (flux_t *h, uint64_t jid, job_state_t os, job_state_t ns
     json_object_set_new (jcb, JSC_STATE_PAIR, o);
     jcbstr = Jtostr (jcb);
     rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcbstr);
+    free((void*)jcbstr);
     Jput (jcb);
     return rc;
 }
@@ -802,13 +805,15 @@ static void handle_jsc_queue (ssrvctx_t *ctx)
 
     while (zlist_size (ctx->sctx.jsc_queue) > 0) {
         jsc_event = (jsc_event_t *)zlist_pop (ctx->sctx.jsc_queue);
+        const char * jcstr = Jtostr (jsc_event->jcb);
         flux_log (ctx->h,
                   LOG_DEBUG,
                   "JscEvent being handled - JSON: %s, errnum: %d",
-                  Jtostr (jsc_event->jcb),
+                  jcstr,
                   jsc_event->errnum);
-        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg,
+        job_status_cb (jcstr, jsc_event->arg,
                        jsc_event->errnum);
+        free((void*)jcstr);
         Jput (jsc_event->jcb);
         free (jsc_event);
     }
@@ -866,15 +871,18 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
         return -1;
     }
 
-    event->jcb = Jget (jcb);
+    //event->jcb = Jget (jcb);
+    event->jcb = jcb;
     event->arg = arg;
     event->errnum = errnum;
 
+    const char *jcstr = Jtostr (event->jcb);
     flux_log (ctx->h,
               LOG_DEBUG,
               "JscEvent being queued - JSON: %s, errnum: %d",
-              Jtostr (event->jcb),
+              jcstr,
               event->errnum);
+    free((void*)jcstr);
     zlist_append (ctx->sctx.jsc_queue, event);
 
     return 0;
@@ -1296,6 +1304,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
                   strerror (errno));
         goto done;
     }
+    if(jcbstr)
+        free((void*)jcbstr);
     Jput (jcb);
     jcb = Jnew ();
     if (build_contain_req (ctx, job, job->resrc_tree, arr) != 0) {
@@ -1308,6 +1318,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
+    if(jcbstr)
+        free((void*)jcbstr);
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
@@ -1513,6 +1525,10 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                 // TODO: handle this some other way (JSC?)
                 job->starttime = starttime;
                 job->state = J_SELECTED;
+                if(job->resrc_tree != NULL) {
+                    resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+                    job->resrc_tree = NULL;
+                }
                 job->resrc_tree = selected_tree;
                 if (req_tpexec_allocate (ctx, job) != 0) {
                     flux_log (h, LOG_ERR,
@@ -1535,8 +1551,13 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                 if (rc) {
                     resrc_tree_destroy (ctx->rsapi, selected_tree, false, false);
                     job->resrc_tree = NULL;
-                } else
+                } else {
+                    if(job->resrc_tree != NULL) {
+                        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+                        job->resrc_tree = NULL;
+                    }
                     job->resrc_tree = selected_tree;
+                }
             }
         }
     }
@@ -1674,6 +1695,11 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
                           job->lwj_id);
             }
         }
+        zlist_remove (ctx->c_queue, job);
+        if (job->req)
+            free (job->req);
+        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+        free (job);
         break;
     case J_CANCELLED:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));

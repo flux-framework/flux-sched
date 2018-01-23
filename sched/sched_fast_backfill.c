@@ -162,6 +162,10 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         flux_log (h, LOG_DEBUG, "%s: found all resources at current time (%"PRId64")", __FUNCTION__, current_time);
         return 1;
     }
+    resrc_tree_unstage_resources (*found_tree);
+    resrc_tree_destroy (rsapi, *found_tree, false, false);
+    *found_tree = NULL;
+
     if (only_now_scheduling) {
         flux_log (h, LOG_DEBUG, "%s: couldn't find all resources at current time (%"PRId64"), not attempting to search into the future", __FUNCTION__, current_time);
         return 0;
@@ -193,13 +197,13 @@ int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
         // found tree is the minimal subset of candidate resource that
         // satisfiy the resource request.  This WILL NOT be culled down any further
         resrc_reqst_clear_found (resrc_reqst);
-        resrc_tree_unstage_resources (resrc_phys_tree (resrc));
         *found_tree = internal_select_resources (h, rsapi, resrc_phys_tree (resrc), resrc_reqst, NULL);
         if (resrc_reqst_all_found (resrc_reqst)) {
             // return non-zero in order to continue in sched.c through
             // to the selection/allocation/reservation
             return 1;
         }
+        resrc_tree_unstage_resources (*found_tree);
         resrc_tree_destroy (rsapi, *found_tree, false, false);
         prev_completion_time = *completion_time;
     }
@@ -407,6 +411,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
             int64_t *completion_time = xzmalloc (sizeof(int64_t));
             *completion_time = reservation_completion_time;
             rc |= zlist_append (all_completion_times, completion_time);
+            zlist_freefn (all_completion_times, completion_time, free, true);
             flux_log (h, LOG_DEBUG, "Reserved %"PRId64" nodes for job "
                       "%"PRId64" from %"PRId64" to %"PRId64"",
                       resrc_reqst_reqrd_qty (resrc_reqst), job_id,
