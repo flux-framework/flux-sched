@@ -861,7 +861,7 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
         return -1;
     }
 
-    event->jcb = Jget (jcb);
+    event->jcb = jcb;
     event->arg = arg;
     event->errnum = errnum;
 
