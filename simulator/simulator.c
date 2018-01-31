@@ -99,6 +99,7 @@ static void add_timers_to_hash (json_t *o, zhash_t *hash)
 
         // Insert key,value pair into sim_state hashtable
         zhash_insert (hash, key, event_time);
+        zhash_freefn (hash, key, free);
     }
 }
 
@@ -120,6 +121,8 @@ void free_job (job_t *job)
     free (job->user);
     free (job->jobname);
     free (job->account);
+    if(job->kvs_dir)
+      kvsdir_destroy (job->kvs_dir);
     free (job);
 }
 
