@@ -420,6 +420,8 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
 done:
     if (jcb)
         Jput (jcb);
+    if(jcbstr)
+        free (jcbstr);
     return rc;
 }
 
@@ -435,6 +437,7 @@ static int update_state (flux_t *h, uint64_t jid, job_state_t os, job_state_t ns
     json_object_set_new (jcb, JSC_STATE_PAIR, o);
     jcbstr = Jtostr (jcb);
     rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcbstr);
+    free (jcbstr);
     Jput (jcb);
     return rc;
 }
@@ -793,13 +796,14 @@ static void handle_jsc_queue (ssrvctx_t *ctx)
 
     while (zlist_size (ctx->sctx.jsc_queue) > 0) {
         jsc_event = (jsc_event_t *)zlist_pop (ctx->sctx.jsc_queue);
+        const char * jcbstr = Jtostr (jsc_event->jcb);
         flux_log (ctx->h,
                   LOG_DEBUG,
                   "JscEvent being handled - JSON: %s, errnum: %d",
-                  Jtostr (jsc_event->jcb),
+                  jcbstr,
                   jsc_event->errnum);
-        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg,
-                       jsc_event->errnum);
+        job_status_cb (jcbstr, jsc_event->arg, jsc_event->errnum);
+        free (jcbstr);
         Jput (jsc_event->jcb);
         free (jsc_event);
     }
@@ -861,11 +865,13 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
     event->arg = arg;
     event->errnum = errnum;
 
+    const char *jcbstr = Jtostr (event->jcb);
     flux_log (ctx->h,
               LOG_DEBUG,
               "JscEvent being queued - JSON: %s, errnum: %d",
-              Jtostr (event->jcb),
+              jcbstr,
               event->errnum);
+    free (jcbstr);
     zlist_append (ctx->sctx.jsc_queue, event);
 
     return 0;
@@ -1287,6 +1293,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
                   strerror (errno));
         goto done;
     }
+    if (jcbstr)
+        free (jcbstr);
     Jput (jcb);
     jcb = Jnew ();
     if (build_contain_req (ctx, job, job->resrc_tree, arr) != 0) {
@@ -1309,6 +1317,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 done:
     if (jcb)
         Jput (jcb);
+    if (jcbstr)
+        free (jcbstr);
     return rc;
 }
 

@@ -237,7 +237,7 @@ Jget_ar_str (json_t *o, int n, const char **sp)
     return true;
 }
 
-/* Encode JSON to string (owned by JSON, do not free)
+/* Encode JSON to string (caller is given ownership). 
  */
 static __inline__ const char *
 Jtostr (json_t *o)
