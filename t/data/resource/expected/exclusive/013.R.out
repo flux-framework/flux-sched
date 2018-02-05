@@ -1,0 +1,30 @@
+      ---------node0[1:x]
+      ------rack0[1:x]
+      ---------node18[1:x]
+      ------rack1[1:x]
+      ---------node36[1:x]
+      ------rack2[1:x]
+      ---------node54[1:x]
+      ------rack3[1:x]
+      ---medium0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=3
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=4
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=5
+INFO: =============================

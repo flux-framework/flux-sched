@@ -1,0 +1,27 @@
+version: 1
+resources:
+  - type: slot
+    count: 2
+    label: default
+    with:
+      - type: power
+        count: 2
+        exclusive: true
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: power
+            count: 2
+            exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: default
+    count:
+      per_slot: 1
+

@@ -48,6 +48,9 @@ addons:
       - libmunge-dev
       - munge
       - lcov
+      - libyaml-cpp-dev
+      - libboost-all-dev
+      - libreadline6
 
 before_install:
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
@@ -85,7 +88,7 @@ script:
  # cppcheck instead of make
  - >
    if test "$CPPCHECK" = "t"; then
-     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --quiet
+     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --std=c++11 --quiet
              --error-exitcode=1
              -i src/common/libtap
               .";

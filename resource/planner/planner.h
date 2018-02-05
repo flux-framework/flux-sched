@@ -55,6 +55,7 @@ typedef struct planner planner_t;
  *                      must not exceed PLANNER_NUM_TYPES.
  *  \return             new planner context; NULL on an error with errno set
  *                      as follows:
+ *                      0 on success; -1 on an error with errno set:
  *                          EINVAL: invalid argument.
  *                          ERANGE: resource_totals contains an out-of-range value.
  */
@@ -64,6 +65,7 @@ planner_t *planner_new (int64_t base_time, uint64_t duration,
 
 /*! Reset the planner with a new time bound. Destroy all existing planned spans.
  *
+ *  \param ctx          opaque planner context returned from planner_new.
  *  \param base_time    earliest schedulable point expressed in integer time
  *                      (i.e., the base time of the planner to be constructed).
  *  \param duration     time span of this planner (i.e., all planned spans
@@ -91,6 +93,7 @@ size_t planner_resources_len (planner_t *ctx);
 int64_t planner_resource_total_at (planner_t *ctx, unsigned int i);
 int64_t planner_resource_total_by_type (planner_t *ctx,
                                         const char *resource_type);
+const uint64_t *planner_resource_totals (planner_t *ctx);
 const char **planner_resource_types (planner_t *ctx);
 int planner_resource_index_of_type (planner_t *ctx,
                                     const char *resource_type);
@@ -134,7 +137,7 @@ int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
  */
 int64_t planner_avail_time_next (planner_t *ctx);
 
-/*! Test if the given request can be satisfied at start_time.
+/*! Test if the given request can be satisfied at the start time.
  *  Note on semantics: Unlike planner_avail_time* functions, this function
  *  can be used to test an arbitrary time span.
  *
@@ -147,14 +150,14 @@ int64_t planner_avail_time_next (planner_t *ctx);
  *                      the requested resource counts.
  *  \param len          length of resource_counts and resource_types arrays.
  *                      must not exceed PLANNER_NUM_TYPES.
- *  \return             earliest time at which the request can be satisfied;
- *                      -1 on an error with errno set as follows:
+ *  \return             0 if the request can be satisfied; -1 if it cannot
+ *                      be satisfied or an error encountered (errno as follows):
  *                          EINVAL: invalid argument.
  *                          ERANGE: resource_counts contain an out-of-range value.
  *                          ENOTSUP: internal error encountered.
  */
 int planner_avail_during (planner_t *ctx, int64_t at, uint64_t duration,
-                      const uint64_t *resource_counts, size_t len);
+                          const uint64_t *resource_counts, size_t len);
 
 /*! Return how many ith resources are available for the duration starting from at.
  *

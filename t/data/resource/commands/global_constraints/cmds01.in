@@ -1,0 +1,4 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/global_constraints/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/global_constraints/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/global_constraints/test003.yaml
+quit

@@ -1,0 +1,11 @@
+# 9 slot[1]->core[8]:memory[2]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test004.yaml
+quit

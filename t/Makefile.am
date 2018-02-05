@@ -50,13 +50,24 @@ TESTS = \
     t1005-sched-params.t \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
-    t2002-easy.t
+    t2002-easy.t \
+    t3001-resource-basic.t \
+    t3002-resource-prefix.t \
+    t3003-resource-global.t \
+    t3004-resource-excl.t \
+    t3005-resource-rsv.t \
+    t3006-resource-advanced.t \
+    t3007-resource-iobw.t \
+    t3008-resource-cancel.t \
+    t3009-resource-minmax.t \
+    t3010-resource-power.t
 
 check_SCRIPTS = $(TESTS)
 
 EXTRA_DIST= \
 	$(check_SCRIPTS) \
 	data \
+    data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
 	sharness.d

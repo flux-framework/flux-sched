@@ -1,0 +1,33 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: rack
+        count: 1
+        exclusive: true
+        with:
+          - type: node
+            count: 18
+            with:
+              - type: socket
+                count: 2
+                with:
+                  - type: slot
+                    label: corelevel
+                    count: 4
+                    with:
+                      - type: core
+                        count: 4
+                      - type: memory
+                        count: 32
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: corelevel
+    count:
+      per_slot: 1

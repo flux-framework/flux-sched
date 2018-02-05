@@ -1,0 +1,25 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: rack
+        count: 1
+        exclusive: true
+        with:
+          - type: slot
+            label: nodelevel
+            count: 2
+            with:
+              - type: node
+                count: 1
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: nodelevel
+    count:
+      per_slot: 1

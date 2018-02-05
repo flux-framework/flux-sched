@@ -1,0 +1,10 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test003.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test006.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test007.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test008.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/omit_prefix/test009.yaml
+quit

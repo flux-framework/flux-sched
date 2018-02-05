@@ -1,0 +1,54 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: rack
+        count: 1
+        with:
+          - type: slot
+            count: 2
+            label: gpunode
+            with:
+              - type: node
+                count: 1
+                with:
+                  - type: socket
+                    count: 2
+                    with:
+                      - type: core
+                        count: 18
+                      - type: gpu
+                        count: 1
+                      - type: memory
+                        count: 32
+                  - type: bb
+                    count: 768
+
+      - type: octrack
+        count: 1
+        with:
+          - type: slot
+            count: 2
+            label: octcorenode
+            with:
+              - type: node
+                count: 1
+                with:
+                  - type: socket
+                    count: 2
+                    with:
+                      - type: core
+                        count: 8
+tasks:
+  - command: app1
+    slot: gpunode
+    count:
+      per_slot: 1
+  - command: app2
+    slot: octcorenode
+    count:
+      per_slot: 1
+attributes:
+  system:
+    duration: 3600
