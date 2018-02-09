@@ -7,6 +7,7 @@
 
 #include "resrc_api.h"
 #include <uuid/uuid.h>
+#include "src/common/libutil/shortjansson.h"
 
 #define TIME_MAX INT64_MAX
 

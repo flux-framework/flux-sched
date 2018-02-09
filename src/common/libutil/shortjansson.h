@@ -204,7 +204,7 @@ Jget_ar_obj (json_t *o, int n, json_t **op)
 {
     if (!json_is_array (o))
         return false;
-    if (n < 0 || n > json_array_size (o))
+    if (n < 0 || n > (int)json_array_size (o))
         return false;
     if (op)
         *op = json_array_get (o, n);

@@ -6,5 +6,8 @@
     select_resources;
     mod_name;
     process_args;
+    priority_setup;
+    prioritize_jobs;
+    record_job_usage;
   local: *;
 };

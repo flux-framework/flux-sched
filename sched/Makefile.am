@@ -1,7 +1,9 @@
+SUBDIRS = . priority
+
 AM_CFLAGS = $(WARNING_CFLAGS) $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS = $(CODE_COVERAGE_LIBS)
 
-AM_CPPFLAGS = -I$(top_srcdir) \
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/resrc \
     $(JANSSON_CFLAGS) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS)
 
 schedplugin_ldflags = $(fluxlib_ldflags) -avoid-version -module \
@@ -14,8 +16,9 @@ LUA_CPATH = $(abs_top_builddir)/rdl/?.so;$${LUA_CPATH};;
 
 fluxmod_LTLIBRARIES = sched.la
 
-schedplugin_LTLIBRARIES = sched_fcfs.la \
-                  sched_backfill.la
+schedplugin_LTLIBRARIES = \
+        sched_fcfs.la \
+        sched_backfill.la
 
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h plugin.h
 
@@ -50,3 +53,4 @@ flux_waitjob_LDADD = $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) \
     $(CZMQ_LIBS)
 
 EXTRA_DIST = plugin_version.map
+
