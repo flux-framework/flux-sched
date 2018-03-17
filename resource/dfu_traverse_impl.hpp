@@ -313,7 +313,7 @@ int dfu_impl_t::count (planner_t *plan, const lookup_t &lookup,
     int rc = 0;
     size_t len = planner_resources_len (plan);
     const char **resource_types = planner_resource_types (plan);
-    for (int i = 0; i < len; ++i) {
+    for (unsigned int i = 0; i < len; ++i) {
         if (lookup.find (resource_types[i]) != lookup.end ()) {
             uint64_t n = (uint64_t)lookup.at (resource_types[i]);
             resource_counts.push_back (n);
