@@ -68,6 +68,8 @@ static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w,
                          int revents, void *arg);
 static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
+static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
 
@@ -102,6 +104,7 @@ typedef struct {
     char         *userplugin;
     char         *userplugin_opts;
     char         *prio_plugin;
+    bool          reap;               /* Enable job reap support */
     bool          sim;
     bool          schedonce;          /* Use resources only once */
     bool          fail_on_error;      /* Fail immediately on error */
@@ -193,6 +196,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->userplugin = NULL;
     arg->userplugin_opts = NULL;
     arg->prio_plugin = NULL;
+    arg->reap = false;
     arg->sim = false;
     arg->schedonce = false;
     arg->fail_on_error = false;
@@ -217,6 +221,7 @@ static inline void ssrvarg_free (ssrvarg_t *arg)
 static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
 {
     int i = 0, rc = 0;
+    char *reap = NULL;
     char *schedonce = NULL;
     char *immediate = NULL;
     char *vlevel= NULL;
@@ -225,6 +230,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     for (i = 0; i < argc; i++) {
         if (!strncmp ("rdl-conf=", argv[i], sizeof ("rdl-conf"))) {
             a->path = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("reap=", argv[i], sizeof ("reap"))) {
+            a->reap = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("sched-once=", argv[i], sizeof ("sched-once"))) {
             schedonce = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("fail-on-error=", argv[i],
@@ -255,6 +262,10 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     if (!(a->userplugin))
         a->userplugin = xstrdup ("sched.fcfs");
 
+    if (reap && !strncmp (reap, "true", sizeof ("true"))) {
+        a->reap = true;
+        free (reap);
+    }
     if (sim && !strncmp (sim, "true", sizeof ("true"))) {
         a->sim = true;
         free (sim);
@@ -537,6 +548,22 @@ static int q_mark_schedulability (ssrvctx_t *ctx, flux_lwj_t *job)
     return -1;
 }
 
+static void q_rm_from_pqueue (ssrvctx_t *ctx, flux_lwj_t *j)
+{
+    zlist_remove (ctx->p_queue, j);
+    /* dequeue operation should always be a schedulable queue operation */
+    if (ctx->pq_state == false)
+        ctx->pq_state = true;
+}
+
+static void q_rm_from_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
+{
+    zlist_remove (ctx->r_queue, j);
+    /* dequeue operation should always be a schedulable queue operation */
+    if (ctx->pq_state == false)
+        ctx->pq_state = true;
+}
+
 static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 {
     zlist_remove (ctx->p_queue, j);
@@ -548,10 +575,8 @@ static int q_move_to_rqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 
 static int q_move_to_cqueue (ssrvctx_t *ctx, flux_lwj_t *j)
 {
-    /* NOTE: performance issue? */
-    // FIXME: no transition from pending queue to cqueue yet
-    //zlist_remove (ctx->p_queue, j);
     zlist_remove (ctx->r_queue, j);
+    /* dequeue operation should always be a schedulable queue operation */
     if (ctx->pq_state == false)
         ctx->pq_state = true;
     return zlist_append (ctx->c_queue, j);
@@ -1026,6 +1051,7 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
  ******************************************************************************/
 
 static const struct flux_msg_handler_spec htab[] = {
+    { FLUX_MSGTYPE_REQUEST,   "sched.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
@@ -1628,6 +1654,7 @@ static inline bool trans (job_state_t ex, job_state_t n, job_state_t *o)
 static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
 {
     flux_t *h = ctx->h;
+    char *key = NULL;
     job_state_t oldstate = job->state;
     struct priority_plugin *priority_plugin = priority_plugin_get (ctx->loader);
 
@@ -1655,9 +1682,17 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
             q_mark_schedulability (ctx, job);
         break;
     case J_SCHEDREQ:
-        /* A schedule reqeusted should not get an event. */
+        /* A schedule requested should not get an event. */
         /* SCHEDREQ -> SELECTED happens implicitly within schedule_jobs */
-        VERIFY (false);
+        VERIFY (trans (J_CANCELLED, newstate, &(job->state)));
+        if (!ctx->arg.reap) {
+            if (job->req)
+                free (job->req);
+            key = xasprintf ("%"PRId64"", job->lwj_id);
+            zhash_delete (ctx->job_index, key);
+            free (key);
+            free (job);
+        }
         break;
     case J_SELECTED:
         VERIFY (trans (J_ALLOCATED, newstate, &(job->state)));
@@ -1676,7 +1711,6 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
     case J_RUNNING:
         VERIFY (trans (J_COMPLETE, newstate, &(job->state))
                 || trans (J_CANCELLED, newstate, &(job->state)));
-        q_move_to_cqueue (ctx, job);
         if (!ctx->arg.schedonce) {
             /* support testing by actually not releasing the resrc */
             if (resrc_tree_release (job->resrc_tree, job->lwj_id)) {
@@ -1695,31 +1729,53 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
                           job->lwj_id);
             }
         }
+        if (ctx->arg.reap) {
+            /* move the job to complete queue when reap should be supported */
+            q_move_to_cqueue (ctx, job);
+        } else {
+            /* free resource here if reap is not enabled */
+            q_rm_from_rqueue (ctx, job);
+            if (job->req)
+                free (job->req);
+            resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+            key = xasprintf ("%"PRId64"", job->lwj_id);
+            zhash_delete (ctx->job_index, key);
+            free (key);
+            free (job);
+        }
         break;
     case J_CANCELLED:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));
-        zlist_remove (ctx->c_queue, job);
-        if (job->req)
-            free (job->req);
-        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
-        free (job);
+        if (ctx->arg.reap) {
+             if (job->req)
+                 free (job->req);
+             key = xasprintf ("%"PRId64"", job->lwj_id);
+             zhash_delete (ctx->job_index, key);
+             free (key);
+             free (job);
+        } else {
+            flux_log (h, LOG_ERR, "Reap support is not enabled (Use reap=true");
+        }
         break;
     case J_COMPLETE:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));
-        if (priority_plugin)
-            priority_plugin->record_job_usage (ctx->h, job);
-        zlist_remove (ctx->c_queue, job);
-        if (job->req)
-            free (job->req);
-        resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
-        free (job);
+        if (ctx->arg.reap) {
+            if (priority_plugin)
+                priority_plugin->record_job_usage (ctx->h, job);
+            zlist_remove (ctx->c_queue, job);
+            if (job->req)
+                free (job->req);
+            resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+            key = xasprintf ("%"PRId64"", job->lwj_id);
+            zhash_delete (ctx->job_index, key);
+            free (key);
+            free (job);
+        } else {
+            flux_log (h, LOG_ERR, "Reap support is not enabled (Use reap=true");
+        }
         break;
     case J_REAPED:
     default:
-        /* TODO: when reap functionality is implemented
-           not only remove the job from ctx->c_queue but also
-           remove it from ctx->job_index.
-         */
         VERIFY (false);
         break;
     }
@@ -1741,6 +1797,50 @@ static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
 {
     schedule_jobs (getctx ((flux_t *)arg));
     return;
+}
+
+static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    int64_t jobid = -1;
+    uint32_t userid = 0;
+    flux_lwj_t *job = NULL;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, "cancel requested by user (%u).", userid);
+
+    if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0) {
+        goto error;
+    } else if (!(job = q_find_job (ctx, jobid))) {
+        errno = ENOENT;
+        flux_log (h, LOG_DEBUG,
+                  "attempt to cancel nonexistent job (%"PRId64").", jobid);
+        goto error;
+    } else if (job->state != J_SCHEDREQ) {
+        errno = EINVAL;
+        flux_log (h, LOG_DEBUG, "attempt to cancel state=%s job (%"PRId64").",
+                  jsc_job_num2state (job->state), jobid);
+        goto error;
+    }
+
+    q_rm_from_pqueue (ctx, job);
+
+    if ((update_state (h, jobid, job->state, J_CANCELLED)) != 0) {
+        flux_log (h, LOG_ERR,
+                  "error updating the job (%"PRId64") state to cancelled.",
+                  jobid);
+        goto error;
+    }
+    flux_log (ctx->h, LOG_INFO, "pending job (%"PRId64") removed.", jobid);
+    if (flux_respond_pack (h, msg, "{s:I}", "jobid", jobid) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
 }
 
 #if ENABLE_TIMER_EVENT
