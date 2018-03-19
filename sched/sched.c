@@ -419,13 +419,17 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
     if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
     if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
     j->req->nnodes = (uint64_t) nn;
+    if (nn) {
+        j->req->node_exclusive = true;
+    } else {
+        j->req->node_exclusive = false;
+    }
     j->req->ncores = (uint64_t) nc;
     if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
         j->req->walltime = (uint64_t) walltime;
     }
-    j->req->node_exclusive = false;
     rc = 0;
 done:
     if (jcb)
@@ -1581,11 +1585,12 @@ static int schedule_jobs (ssrvctx_t *ctx)
     int64_t starttime = (ctx->sctx.in_sim) ?
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
-    if (priority_plugin)
+    if (priority_plugin) {
         priority_plugin->prioritize_jobs (ctx->h, jobs);
+        /* Sort by decreasing priority */
+        zlist_sort (jobs, compare_priority);
+    }
 
-    /* Sort by decreasing priority */
-    zlist_sort (jobs, compare_priority);
     resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
 
     if (!behavior_plugin)
