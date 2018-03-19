@@ -162,9 +162,9 @@ public:
             return -1;
         }
 
-        int i = 0;
-        int old = (int)m_best_k;
-        int to_be_selected = k;
+        unsigned int i = 0;
+        unsigned int old = m_best_k;
+        unsigned int to_be_selected = k;
         std::sort (m_eval_egroups.begin (), m_eval_egroups.end (), comp);
         while (to_be_selected > 0) {
             if (to_be_selected <= m_eval_egroups[i].count)
@@ -177,7 +177,7 @@ public:
         }
         m_best_k = k;
         m_best_i = i;
-        return old;
+        return (int)old;
     }
 
     template<class binary_op>
@@ -188,7 +188,7 @@ public:
             return -1;
         }
         int64_t score_accum = init;
-        for (int i = 0; i < m_best_i; i++)
+        for (unsigned int i = 0; i < m_best_i; i++)
             score_accum = accum (score_accum, m_eval_egroups[i]);
         return score_accum;
     }

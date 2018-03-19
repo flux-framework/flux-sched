@@ -68,6 +68,8 @@ static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w,
                          int revents, void *arg);
 static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
+static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
 
@@ -1030,6 +1032,7 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
  ******************************************************************************/
 
 static const struct flux_msg_handler_spec htab[] = {
+    { FLUX_MSGTYPE_REQUEST,   "sched.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
@@ -1746,6 +1749,39 @@ static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
 {
     schedule_jobs (getctx ((flux_t *)arg));
     return;
+}
+
+static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    int64_t jobid = -1;
+    flux_lwj_t *job = NULL;
+
+    flux_log (h, LOG_INFO, "cancel request callback invoked.");
+    if (flux_request_unpack (msg, NULL, "{ s:I }", "jobid", &jobid) < 0) {
+        goto error;
+    } else if (!(job = q_find_job (ctx, jobid))) {
+        errno = ENOENT;
+        flux_log (h, LOG_ERR, "couldn't find job (%"PRId64").", jobid);
+        goto error;
+    } else if (job->state != J_PENDING && job->state != J_SCHEDREQ) {
+        errno = EINVAL;
+        flux_log (h, LOG_ERR, "job state is %d.", job->state);
+        goto error;
+    }
+    zlist_remove (ctx->p_queue, job);
+    if ((update_state (h, jobid, job->state, J_CANCELLED)) != 0) {
+        flux_log (h, LOG_ERR, "couldn't update the job state.");
+        goto error;
+    }
+    flux_log (ctx->h, LOG_INFO, "pending job (%"PRId64") removed.", jobid);
+    if (flux_respond_pack (h, msg, "{ }") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
 }
 
 #if ENABLE_TIMER_EVENT
