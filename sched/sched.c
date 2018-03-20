@@ -699,6 +699,8 @@ static int load_resources (ssrvctx_t *ctx)
 
     setup_rdl_lua (ctx->h);
 
+    flux_log (ctx->h, LOG_INFO, "start to read resources");
+
     switch (r_mode) {
     case RSREADER_RESRC_EMUL:
         if (rsreader_resrc_bulkload (ctx->rsapi, path, uri) != 0) {
@@ -723,6 +725,7 @@ static int load_resources (ssrvctx_t *ctx)
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
             goto done;
         }
+        flux_log (ctx->h, LOG_INFO, "resrc constructed using RDL ");
         if (ctx->arg.verbosity > 0) {
             flux_log (ctx->h, LOG_INFO, "resrc state after resrc read");
             dump_resrc_state (ctx->h, resrc_tree_root (ctx->rsapi));
@@ -752,11 +755,13 @@ static int load_resources (ssrvctx_t *ctx)
             flux_log (ctx->h, LOG_ERR, "failed to load resrc using hwloc");
             goto done;
         }
+        flux_log (ctx->h, LOG_INFO, "resrc constructed using hwloc");
         /* linking has already been done by build_hwloc_rs2rank above */
         if (ctx->arg.verbosity > 0) {
             flux_log (ctx->h, LOG_INFO, "resrc state after hwloc read");
             dump_resrc_state (ctx->h, resrc_tree_root (ctx->rsapi));
         }
+        flux_log (ctx->h, LOG_INFO, "loaded resrc");
         rc = 0;
         break;
 
