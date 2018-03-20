@@ -705,12 +705,16 @@ static int load_resources (ssrvctx_t *ctx)
     case RSREADER_RESRC_EMUL:
         if (rsreader_resrc_bulkload (ctx->rsapi, path, uri) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc");
+            errno = EINVAL;
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
+            if (errno != 0)
+                errno = EINVAL;
             goto done;
         } else if (rsreader_force_link2rank (ctx->rsapi, ctx->machs) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to force a link to a rank");
+            errno = EINVAL;
             goto done;
         }
         flux_log (ctx->h, LOG_INFO, "loaded resrc");
@@ -720,9 +724,11 @@ static int load_resources (ssrvctx_t *ctx)
     case RSREADER_RESRC:
         if (rsreader_resrc_bulkload (ctx->rsapi, path, uri) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc");
+            errno = EINVAL;
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
+            errno = EINVAL;
             goto done;
         }
         flux_log (ctx->h, LOG_INFO, "resrc constructed using RDL ");
@@ -737,7 +743,8 @@ static int load_resources (ssrvctx_t *ctx)
                 free (e_str);
             }
             if (ctx->arg.fail_on_error)
-                goto done;
+                goto done; /* don't set errno: only needed for testing */
+
             flux_log (ctx->h, LOG_INFO, "rebuild resrc using hwloc");
             resrc_tree_t *mismatch_root = resrc_tree_root (ctx->rsapi);
             if (mismatch_root)
@@ -753,6 +760,7 @@ static int load_resources (ssrvctx_t *ctx)
     case RSREADER_HWLOC:
         if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to load resrc using hwloc");
+            errno = EINVAL;
             goto done;
         }
         flux_log (ctx->h, LOG_INFO, "resrc constructed using hwloc");
