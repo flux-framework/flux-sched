@@ -40,15 +40,17 @@ typedef struct {
     int64_t jobid;
     char *start;
     char *complete;
+    job_state_t tgt_state;
 } wjctx_t;
 
 static flux_t *sig_flux_h;
 
-#define OPTIONS "+hc:s:"
+#define OPTIONS "+hc:s:j:"
 static const struct option longopts[] = {
     {"help",          no_argument,        0, 'h'},
     {"sync-start",    required_argument,  0, 's'},
     {"sync-complete", required_argument,  0, 'c'},
+    {"job-state",     required_argument,  0, 'j'},
     { 0, 0, 0, 0 },
 };
 
@@ -59,8 +61,13 @@ static void usage (void)
 " Block waiting until the job specified by jobid completes.\n"
 " The OPTIONS are:\n"
 "  -h, --help                    Display this message\n"
-"  -s, --sync-start=filename1    Create an empty file (filename1) right after the reactor starts\n"
-"  -c, --sync-complete=filename2 Create an empty file (filename2) right after jobid completed\n"
+"  -s, --sync-start=filename1    Create an empty file (filename1) right \n"
+"                                    after the reactor starts\n"
+"  -c, --sync-complete=filename2 Create an empty file (filename2) right \n"
+"                                    after jobid reaches the target state\n"
+"  -j, --job-state=state         Wait for the job to become the target \n"
+"                                    state, e.g., submitted, allocated, \n"
+"                                    running, complete (default).\n"
 );
     exit (1);
 }
@@ -112,7 +119,7 @@ static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
 }
 
-static bool complete_job (wjctx_t *ctx)
+static bool state_reached (wjctx_t *ctx)
 {
     json_t *jcb = NULL;
     json_t *o = NULL;
@@ -128,8 +135,8 @@ static bool complete_job (wjctx_t *ctx)
         free (json_str);
         log_msg ("%"PRId64" already started (%s)",
                  ctx->jobid, jsc_job_num2state (state));
-        if (state == J_COMPLETE) {
-            log_msg ("%"PRId64" already completed", ctx->jobid);
+        if (state == ctx->tgt_state) {
+            log_msg ("%"PRId64" already reached the target state", ctx->jobid);
             rc = true;
         }
     }
@@ -155,7 +162,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     get_jobid (jcb, &j);
     get_states (jcb, &os, &ns);
     Jput (jcb);
-    if ((j == ctx->jobid) && (ns == J_COMPLETE)) {
+    if ((j == ctx->jobid) && (ns == ctx->tgt_state)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
         log_msg ("waitjob_cb: completion notified");
@@ -182,7 +189,7 @@ static int wait_job_complete (flux_t *h)
     if (ctx->start)
         touch_outfile (ctx->start);
 
-    if (complete_job (ctx)) {
+    if (state_reached (ctx)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
         log_msg ("wait_job_complete: completion detected");
@@ -210,6 +217,8 @@ int main (int argc, char *argv[])
     int64_t jobid = -1;
     char *sfn = NULL;
     char *cfn = NULL;
+    char *state = NULL;
+    int sc = -1;
     wjctx_t *ctx = NULL;
 
     log_init ("flux-waitjob");
@@ -223,6 +232,9 @@ int main (int argc, char *argv[])
                 break;
             case 'c': /* --sync-complete */
                 cfn = xstrdup (optarg);
+                break;
+            case 'j': /* --job-state */
+                state = xstrdup (optarg);
                 break;
             default:
                 usage ();
@@ -244,6 +256,14 @@ int main (int argc, char *argv[])
     if (cfn)
         ctx->complete = cfn;
     ctx->jobid = jobid;
+
+    if (state) {
+        if ((sc = jsc_job_state2num (state)) < 0)
+            log_err_exit ("unknown job state");
+        ctx->tgt_state = jsc_job_state2num (state);
+    } else {
+        ctx->tgt_state = J_COMPLETE;
+    }
 
     wait_job_complete (h);
 

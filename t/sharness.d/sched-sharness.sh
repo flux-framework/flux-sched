@@ -224,10 +224,15 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
+    local state=$2
     local sfile=wo.st.$sched_test_session
     local cfile=wo.end.$sched_test_session
     rm -f ${sfile} ${cfile}
-    flux waitjob -s ${sfile} -c ${cfile} $sched_end_jobid &
+    if [ "x${state}" = "x" ]; then
+        flux waitjob -s ${sfile} -c ${cfile} ${sched_end_jobid} &
+    else
+        flux waitjob -s ${sfile} -c ${cfile} -j ${state} ${sched_end_jobid} &
+    fi
     $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} ${sfile} >&2
 }
 
