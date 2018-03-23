@@ -122,6 +122,7 @@ typedef struct {
     zlist_t      *r_queue;            /* Running job queue */
     zlist_t      *c_queue;            /* Complete/cancelled job queue */
     machs_t      *machs;              /* Helps resolve resources to ranks */
+    bool          ooo_capable;        /* sched policy schedule jobs out of order */
     ssrvarg_t     arg;                /* args passed to this module */
     simctx_t      sctx;               /* simulator context */
     resrc_api_ctx_t *rsapi;           /* resrc_api handle */
@@ -371,6 +372,7 @@ static ssrvctx_t *getctx (flux_t *h)
             oom ();
         if (!(ctx->machs = rs2rank_tab_new ()))
             oom ();
+        ctx->ooo_capable = true;
         ssrvarg_init (&(ctx->arg));
         ctx->rsapi = resrc_api_init ();
         ctx->sctx.in_sim = false;
@@ -1622,13 +1624,13 @@ static int schedule_jobs (ssrvctx_t *ctx)
 
     if (priority_plugin)
         priority_plugin->prioritize_jobs (ctx->h, jobs);
+    if (!behavior_plugin)
+        return -1;
 
     /* Sort by decreasing priority */
     zlist_sort (jobs, compare_priority);
-    resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
-
-    if (!behavior_plugin)
-        return -1;
+    if (ctx->ooo_capable)
+        resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
     rc = behavior_plugin->sched_loop_setup (ctx->h);
     job = zlist_first (jobs);
     while (!rc && job && (qdepth < ctx->arg.s_params.queue_depth)) {
@@ -1967,12 +1969,21 @@ int mod_main (flux_t *h, int argc, char **argv)
             flux_log_error (h, "failed to load %s", ctx->arg.userplugin);
             goto done;
         }
+        flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
         if (plugin_process_args (ctx, ctx->arg.userplugin_opts) < 0) {
             flux_log_error (h, "failed to process args for %s",
                             ctx->arg.userplugin);
             goto done;
         }
-        flux_log (h, LOG_INFO, "%s plugin loaded", ctx->arg.userplugin);
+        struct sched_prop prop;
+        struct behavior_plugin *behavior_plugin = behavior_plugin_get (ctx->loader);
+        if (behavior_plugin->get_sched_properties (h, &prop) < 0) {
+            flux_log_error (h, "failed to fetch sched plugin properties for %s",
+                            ctx->arg.userplugin);
+            errno = EINVAL;
+            goto done;
+        }
+        ctx->ooo_capable = prop.out_of_order_capable;
     }
     if (ctx->arg.prio_plugin) {
         if (sched_plugin_load (ctx->loader, ctx->arg.prio_plugin) < 0) {
