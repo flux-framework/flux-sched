@@ -52,6 +52,7 @@ TESTS = \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
     t2002-easy.t \
+    t2003-fcfs-inorder.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
     t3003-resource-global.t \
