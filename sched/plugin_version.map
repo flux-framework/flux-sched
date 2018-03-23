@@ -1,4 +1,5 @@
 { global:
+    get_sched_properties;
     allocate_resources;
     find_resources;
     reserve_resources;

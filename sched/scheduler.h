@@ -67,6 +67,12 @@ typedef struct {
     double priority;     /*!< scheduling priority */
 } flux_lwj_t;
 
+/**
+ *  Defines the properties of the scheduler plugin
+ */
+struct sched_prop {
+    bool out_of_order_capable; ;   /*!< true if out of order scheduling*/
+};
 
 /**
  *  Defines parameters that control scheduling optimization
