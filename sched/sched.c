@@ -68,8 +68,6 @@ static void ev_check_cb (flux_reactor_t *r, flux_watcher_t *w,
                          int revents, void *arg);
 static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
-static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
-                               const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
 
@@ -395,47 +393,32 @@ static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
 
 static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
 {
-    char *jcbstr = NULL;
     int rc = -1;
-    int64_t nn = 0;
-    int64_t nc = 0;
     int64_t walltime = 0;
-    json_t *jcb = NULL;
-    json_t *o = NULL;
 
     if (!j) goto done;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcbstr)) != 0) {
+    int jsc_query_rdesc_efficiently (flux_t *h, int64_t j, int64_t *nnodes, int64_t *ntasks, int64_t *walltime);
+    if ((rc = jsc_query_rdesc_efficiently (h, j->lwj_id, &j->req->nnodes, &j->req->ncores, &j->req->walltime)) != 0) {
         flux_log (h, LOG_ERR, "error in jsc_query_jcb.");
-        goto done;
-    }
-    if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (h, LOG_ERR, "fill_resource_req: error parsing JSON string");
         goto done;
     }
     /* TODO:  add user name and charge account to info the JSC provides */
     j->user = NULL;
     j->account = NULL;
-    if (!Jget_obj (jcb, JSC_RDESC, &o)) goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
-    j->req->nnodes = (uint64_t) nn;
-    if (nn) {
+    if (j->req->nnodes) {
         j->req->node_exclusive = true;
     } else {
         j->req->node_exclusive = false;
     }
-    j->req->ncores = (uint64_t) nc;
-    if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
+    if (!j->req->walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
         j->req->walltime = (uint64_t) walltime;
     }
     rc = 0;
 done:
-    if (jcb)
-        Jput (jcb);
     return rc;
 }
 
@@ -1032,7 +1015,6 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
  ******************************************************************************/
 
 static const struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_REQUEST,   "sched.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
@@ -1549,7 +1531,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                           "%"PRId64"", nreqrd,
                           resrc_type (resrc_reqst_resrc (resrc_reqst)),
                           job->lwj_id);
-            } else {
+            }
+            else {
                 rc = plugin->reserve_resources (h, ctx->rsapi,
                                                 &selected_tree, job->lwj_id,
                                                 starttime, job->req->walltime,
@@ -1594,7 +1577,7 @@ static int schedule_jobs (ssrvctx_t *ctx)
         zlist_sort (jobs, compare_priority);
     }
 
-    resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
+    /* resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi)); */
 
     if (!behavior_plugin)
         return -1;
@@ -1749,39 +1732,6 @@ static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
 {
     schedule_jobs (getctx ((flux_t *)arg));
     return;
-}
-
-static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
-                               const flux_msg_t *msg, void *arg)
-{
-    ssrvctx_t *ctx = getctx ((flux_t *)arg);
-    int64_t jobid = -1;
-    flux_lwj_t *job = NULL;
-
-    flux_log (h, LOG_INFO, "cancel request callback invoked.");
-    if (flux_request_unpack (msg, NULL, "{ s:I }", "jobid", &jobid) < 0) {
-        goto error;
-    } else if (!(job = q_find_job (ctx, jobid))) {
-        errno = ENOENT;
-        flux_log (h, LOG_ERR, "couldn't find job (%"PRId64").", jobid);
-        goto error;
-    } else if (job->state != J_PENDING && job->state != J_SCHEDREQ) {
-        errno = EINVAL;
-        flux_log (h, LOG_ERR, "job state is %d.", job->state);
-        goto error;
-    }
-    zlist_remove (ctx->p_queue, job);
-    if ((update_state (h, jobid, job->state, J_CANCELLED)) != 0) {
-        flux_log (h, LOG_ERR, "couldn't update the job state.");
-        goto error;
-    }
-    flux_log (ctx->h, LOG_INFO, "pending job (%"PRId64") removed.", jobid);
-    if (flux_respond_pack (h, msg, "{ }") < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
-    return;
-error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
 }
 
 #if ENABLE_TIMER_EVENT

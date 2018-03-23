@@ -573,6 +573,7 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
         while (child_tree) {
             nfound += resrc_tree_search (ctx, resrc_tree_resrc (child_tree),
                                          resrc_reqst, &new_tree, available);
+            if (resrc_reqst->nfound >= resrc_reqst->reqrd_qty) break;
             child_tree = resrc_tree_list_next (children);
         }
     }

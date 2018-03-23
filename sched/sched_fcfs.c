@@ -250,10 +250,10 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                        int64_t starttime, int64_t walltime, resrc_t *resrc,
                        resrc_reqst_t *resrc_reqst)
 {
-    int rc = -1;
+    int rc = 0;//-1;
 
-    if (*selected_tree)
-        rc = resrc_tree_reserve (*selected_tree, job_id, 0, 0);
+    /* if (*selected_tree) */
+    /*     rc = resrc_tree_reserve (*selected_tree, job_id, 0, 0); */
     return rc;
 }
 

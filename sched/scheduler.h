@@ -41,10 +41,10 @@
  *  This needs to be expanded as Flux resources evolve.
  */
 typedef struct flux_resources {
-    uint64_t nnodes; /*!< num of nodes requested by a job */
-    uint64_t ncores; /*!< num of cores requested by a job */
-    uint64_t corespernode; /*!< num of cores per node requested by a job */
-    uint64_t walltime; /*!< walltime requested by a job */
+    int64_t nnodes; /*!< num of nodes requested by a job */
+    int64_t ncores; /*!< num of cores requested by a job */
+    int64_t corespernode; /*!< num of cores per node requested by a job */
+    int64_t walltime; /*!< walltime requested by a job */
     bool     node_exclusive; /*!< job requires exclusive use of node if true */
 } flux_res_t;
 
