@@ -163,11 +163,11 @@ public:
         }
 
         unsigned int i = 0;
-        unsigned int old = m_best_k;
-        unsigned int to_be_selected = k;
+        int old = (int)m_best_k;
+        int to_be_selected = k;
         std::sort (m_eval_egroups.begin (), m_eval_egroups.end (), comp);
         while (to_be_selected > 0) {
-            if (to_be_selected <= m_eval_egroups[i].count)
+            if (to_be_selected <= (int)m_eval_egroups[i].count)
                 m_eval_egroups[i].needs = to_be_selected;
             else
                 m_eval_egroups[i].needs = m_eval_egroups[i].count;
