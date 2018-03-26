@@ -224,6 +224,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     flux_msg_t *msg = NULL;
     flux_kvsdir_t *dir = NULL;
     job_t *job = NULL;
+    char *kvs_path = NULL;
     int64_t new_jobid = -1;
     double *new_sched_mod_time = NULL, *new_submit_mod_time = NULL;
 
@@ -248,9 +249,11 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_get_unpack (f, "{ s:I }", "jobid", &new_jobid) < 0) {
+    if (flux_rpc_get_unpack (f, "{ s:I s:s }",
+                            "jobid", &new_jobid,
+                            "kvs_path", &kvs_path) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
-	flux_future_destroy (f);
+        flux_future_destroy (f);
         return -1;
     }
     flux_future_destroy (f);
@@ -264,7 +267,12 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 
     // Send "submitted" event
     if (!(msg = flux_event_pack ("wreck.state.submitted",
-                                    "{ s:I }", "lwj", new_jobid))
+                                 "{ s:I s:s s:i s:i s:i}",
+                                 "lwj", new_jobid,
+                                 "kvs_path", kvs_path,
+                                 "nnodes", (int)job->nnodes,
+                                 "ntasks", (int)job->ncpus,
+                                 "walltime", (int)job->time_limit))
         || flux_send (h, msg, 0) < 0) {
         return -1;
     }
