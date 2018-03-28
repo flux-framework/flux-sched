@@ -109,6 +109,7 @@ typedef struct {
     bool          schedonce;          /* Use resources only once */
     bool          fail_on_error;      /* Fail immediately on error */
     int           verbosity;
+    int first_rank;
     rsreader_t    r_mode;
     sched_params_t s_params;
 } ssrvarg_t;
@@ -201,6 +202,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->schedonce = false;
     arg->fail_on_error = false;
     arg->verbosity = 0;
+    arg->first_rank = 0;
     sched_params_default (&(arg->s_params));
 }
 
@@ -239,6 +241,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             immediate = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("verbosity=", argv[i], sizeof ("verbosity"))) {
             vlevel = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("first_rank=", argv[i], sizeof ("first_rank"))) {
+            a->first_rank = atoi (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
             a->uri = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
@@ -410,8 +414,9 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
     if (!j) goto done;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    int jsc_query_rdesc_efficiently (flux_t *h, int64_t j, int64_t *nnodes, int64_t *ntasks, int64_t *walltime);
-    if ((rc = jsc_query_rdesc_efficiently (h, j->lwj_id, &j->req->nnodes, &j->req->ncores, &j->req->walltime)) != 0) {
+    int64_t ntasks;
+    int jsc_query_rdesc_efficiently (flux_t *h, int64_t j, int64_t *nnodes, int64_t *ntasks, int64_t *ncores, int64_t *walltime);
+    if ((rc = jsc_query_rdesc_efficiently (h, j->lwj_id, &j->req->nnodes, &ntasks, &j->req->ncores, &j->req->walltime)) != 0) {
         flux_log (h, LOG_ERR, "error in jsc_query_jcb.");
         goto done;
     }
@@ -633,7 +638,7 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
         flux_log_error (ctx->h, "flux_get_size");
         goto done;
     }
-    for (rank=0; rank < size; rank++) {
+    for (rank=ctx->arg.first_rank; rank < size; rank++) {
         json_t *o;
         char k[64];
         int n = snprintf (k, sizeof (k), "resource.hwloc.xml.%"PRIu32"", rank);
