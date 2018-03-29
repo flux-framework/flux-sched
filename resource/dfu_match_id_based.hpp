@@ -216,7 +216,6 @@ public:
                           const std::vector<Flux::Jobspec::Resource> &resources,
                           const f_resource_graph_t &g, scoring_api_t &dfu)
     {
-        using namespace boost;
         using namespace boost::icl;
         int score = MATCH_MET;
         fold::interval_greater comp;
@@ -230,7 +229,7 @@ public:
                 break;
             }
             dfu.transform (subsystem, type,
-                           icl::inserter (comp.ivset, comp.ivset.end ()),
+                           boost::icl::inserter (comp.ivset, comp.ivset.end ()),
                            fold::to_interval);
             dfu.choose_accum_best_k (subsystem, type, count, comp);
         }
@@ -242,7 +241,6 @@ public:
                         const std::vector<Flux::Jobspec::Resource> &resources,
                         const f_resource_graph_t &g, scoring_api_t &dfu)
     {
-        using namespace boost;
         using namespace boost::icl;
         int score = MATCH_MET;
         int64_t overall;
@@ -261,7 +259,7 @@ public:
                     break;
                 }
                 dfu.transform (subsystem, c_type,
-                               icl::inserter (comp.ivset, comp.ivset.end ()),
+                               boost::icl::inserter (comp.ivset, comp.ivset.end ()),
                                fold::to_interval);
                 dfu.choose_accum_best_k (subsystem, c_type, count, comp);
             }

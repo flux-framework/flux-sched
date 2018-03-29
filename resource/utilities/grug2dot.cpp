@@ -33,7 +33,6 @@ extern "C" {
 }
 
 using namespace std;
-using namespace boost;
 using namespace Flux::resource_model;
 
 #define OPTIONS "hm"
@@ -85,7 +84,7 @@ int main (int argc, char *argv[])
 
     resource_gen_spec_t gspec;
     string fn (argv[optind]);
-    filesystem::path path = fn;
+    boost::filesystem::path path = fn;
     string base = path.stem ().string ();
 
     if (gspec.read_graphml (fn) != 0) {

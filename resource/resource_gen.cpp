@@ -37,14 +37,13 @@ extern "C" {
 }
 
 using namespace std;
-using namespace boost;
 using namespace Flux::resource_model;
 
 /*! Note that this class must be copy-constructible
  * required by the concept of the depth first search
  * visitor. It must be lightweight.
  */
-class dfs_emitter_t : public default_dfs_visitor {
+class dfs_emitter_t : public boost::default_dfs_visitor {
 public:
     dfs_emitter_t ();
     dfs_emitter_t (resource_graph_db_t *db_p, resource_gen_spec_t *g);
@@ -184,7 +183,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
                                   vtx_t src_v, int i, int sz, int j)
 {
     resource_graph_db_t &db = *m_db_p;
-    if (src_v == graph_traits<resource_graph_t>::null_vertex())
+    if (src_v == boost::graph_traits<resource_graph_t>::null_vertex())
         if (db.roots.find (recipe[u].subsystem) != db.roots.end ())
             return db.roots[recipe[u].subsystem];
 
@@ -193,7 +192,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     string ssys = recipe[u].subsystem;
     int id = 0;
 
-    if (src_v == graph_traits<resource_graph_t>::null_vertex()) {
+    if (src_v == boost::graph_traits<resource_graph_t>::null_vertex()) {
         // ROOT!!
         db.roots[recipe[u].subsystem] = v;
         id = 0;
@@ -290,7 +289,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
     if (recipe[src_ggv].root) {
         //! ROOT
         if (m_gen_src_vtx[src_ggv].empty ()) {
-            vtx_t null_v = graph_traits<resource_graph_t>::null_vertex();
+            vtx_t null_v = boost::graph_traits<resource_graph_t>::null_vertex();
             m_gen_src_vtx[src_ggv].push_back (emit_vertex (src_ggv, e, recipe,
                                                            null_v, 0, 1, 0));
         }
@@ -453,7 +452,7 @@ int resource_generator_t::read_graphml (const string &fn, resource_graph_db_t &d
     // with emitter visitor.
     //
     dfs_emitter_t emitter (&db, &m_gspec);
-    depth_first_search (m_gspec.gen_graph (), visitor (emitter));
+    depth_first_search (m_gspec.gen_graph (), boost::visitor (emitter));
     m_err_msg += emitter.err_message ();
 
     return (m_err_msg == "")? rc : -1;
