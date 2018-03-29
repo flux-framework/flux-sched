@@ -416,7 +416,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
     int64_t ntasks;
     int jsc_query_rdesc_efficiently (flux_t *h, int64_t j, int64_t *nnodes, int64_t *ntasks, int64_t *ncores, int64_t *walltime);
-    if ((rc = jsc_query_rdesc_efficiently (h, j->lwj_id, &j->req->nnodes, &ntasks, &j->req->ncores, &j->req->walltime)) != 0) {
+    if ((rc = jsc_query_rdesc_efficiently (h, j->lwj_id, &j->req->nnodes, &j->req->ncores, &ntasks, &j->req->walltime)) != 0) {
         flux_log (h, LOG_ERR, "error in jsc_query_jcb.");
         goto done;
     }
@@ -1621,7 +1621,7 @@ static int schedule_jobs (ssrvctx_t *ctx)
         zlist_sort (jobs, compare_priority);
     }
 
-    /* resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi)); */
+    resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
 
     if (!behavior_plugin)
         return -1;
