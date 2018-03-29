@@ -54,6 +54,7 @@ AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
+AX_BOOST_REGEX
 PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])

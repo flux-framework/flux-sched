@@ -30,7 +30,8 @@ utilities_grug2dot_CXXFLAGS = \
 utilities_grug2dot_LDADD = \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
-    $(BOOST_GRAPH_LIB)
+    $(BOOST_GRAPH_LIB) \
+    $(BOOST_REGEX_LIB)
 
 #.
 # resource-query
@@ -64,5 +65,6 @@ utilities_resource_query_LDADD = \
     $(READLINE_LIBS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
-    $(BOOST_GRAPH_LIB)
+    $(BOOST_GRAPH_LIB) \
+    $(BOOST_REGEX_LIB)
 
