@@ -42,7 +42,6 @@ struct resrc_tree_list {
     zlist_t *list;
 };
 
-
 struct resrc_tree {
     resrc_tree_t *parent;
     resrc_t *resrc;
@@ -179,6 +178,56 @@ int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree)
                 json_object_set_new (o, "children", ja);
         }
     }
+    return rc;
+}
+
+int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
+                               resrc_tree_t *resrc_tree,
+                               resrc_api_map_t *gather_m,
+                               resrc_api_map_t *reduce_m)
+{
+    int rc = 0;
+    void *val = NULL;
+    json_t *m_o = NULL;
+    json_t *m_gather = gather;
+    json_t *m_reduce = reduce;
+    const char *type = NULL;
+    bool reduce_under_me = false;
+
+    if (!resrc_tree)
+        return -1;
+
+    type = resrc_type (resrc_tree->resrc);
+    if ((val = resrc_api_map_get (reduce_m, type))) {
+        /* once the resource is reduced, please stop descending */
+        return resrc_to_json_lite (reduce, resrc_tree->resrc, true);
+    } else if ((val = resrc_api_map_get (gather_m, type))) {
+        m_o = Jnew ();
+        /* gather types require new json to accumulate the subtree */
+        reduce_under_me = ((intptr_t)val == REDUCE_UNDER_ME);
+        m_reduce = (reduce_under_me)? Jnew () : reduce;
+        m_gather = (!reduce_under_me)? Jnew_ar () : gather;
+        rc = resrc_to_json_lite (m_o, resrc_tree->resrc, false);
+    }
+
+    if (resrc_tree_num_children (resrc_tree)) {
+        resrc_tree_t *r = NULL;
+        resrc_tree_list_t *rl = resrc_tree->children;
+        for (r = resrc_tree_list_first (rl); r; r = resrc_tree_list_next (rl))
+            rc += resrc_tree_serialize_lite (m_gather, m_reduce, r,
+                                             gather_m, reduce_m);
+
+        if (m_o) {
+            if (reduce_under_me && json_object_size (m_reduce) == 0)
+                rc += -1;
+            json_t *co = (reduce_under_me)? m_reduce : m_gather;
+            json_object_set_new (m_o, "children", co);
+        }
+    }
+
+    if (m_o)
+        json_array_append (gather, m_o);
+
     return rc;
 }
 
