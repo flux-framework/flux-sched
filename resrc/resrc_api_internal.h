@@ -15,6 +15,10 @@ struct resrc_api_ctx {
     /* additional API-level data here */
 };
 
+struct resrc_api_map {
+    zhash_t *map;
+};
+
 #endif /* !_FLUX_RESRC_API_INTERNAL_H */
 
 /*

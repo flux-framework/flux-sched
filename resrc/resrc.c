@@ -125,6 +125,44 @@ void resrc_api_fini (resrc_api_ctx_t *ctx)
     /* tree_root_resrc should already have been destroyed */
 }
 
+resrc_api_map_t *resrc_api_map_new ()
+{
+    resrc_api_map_t *o = (resrc_api_map_t *)malloc (sizeof (resrc_api_map_t));
+    o->map = zhash_new ();
+    return o;
+}
+
+void resrc_api_map_destroy (resrc_api_map_t **m)
+{
+    if (!m || !*m)
+        return;
+    if ((*m)->map)
+        zhash_destroy (&((*m)->map));
+    free (*m);
+    *m = NULL;
+}
+
+void *resrc_api_map_get (resrc_api_map_t *m, const char *key)
+{
+    if (!m || !key || !(m->map))
+        return NULL;
+    return zhash_lookup (m->map, key);
+}
+
+void resrc_api_map_put (resrc_api_map_t *m, const char *key, void *val)
+{
+    if (!m || !key || !(m->map))
+        return;
+    zhash_insert (m->map, key, (void *)val);
+}
+
+void resrc_api_map_rm (resrc_api_map_t *m, const char *key)
+{
+    if (!m || !key || !(m->map))
+        return;
+    zhash_delete (m->map, key);
+}
+
 char *resrc_type (resrc_t *resrc)
 {
     if (resrc)
