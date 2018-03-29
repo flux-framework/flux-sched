@@ -1118,7 +1118,6 @@ ret:
     return resrc;
 }
 
-
 int resrc_to_json (json_t *o, resrc_t *resrc)
 {
     char uuid[40];
@@ -1136,6 +1135,27 @@ int resrc_to_json (json_t *o, resrc_t *resrc)
         rc = 0;
     }
     return rc;
+}
+
+int resrc_to_json_lite (json_t *o, resrc_t *resrc, bool reduce)
+{
+    if (!resrc)
+        return -1;
+
+    if (!reduce) {
+        Jadd_str (o, resrc_type (resrc), resrc_name (resrc));
+        if (resrc_digest (resrc))
+            Jadd_str (o, "digest", resrc_digest (resrc));
+    } else {
+        const char *val = NULL;
+        if (Jget_str (o, resrc_type (resrc), &val))
+            Jadd_str (o, resrc_type (resrc), xasprintf ("%s,%"PRId64"",
+                                                        val, resrc_id (resrc)));
+        else
+            Jadd_str (o, resrc_type (resrc), xasprintf ("%"PRId64"",
+                                                        resrc_id (resrc)));
+    }
+    return 0;
 }
 
 char *resrc_to_string (resrc_t *resrc)

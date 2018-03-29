@@ -217,6 +217,13 @@ resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx, TOPOLOGY topo,
 int resrc_to_json (json_t *o, resrc_t *resrc);
 
 /*
+ * Add the lightweight input resource to the json object
+ * If reduce=true, only concatenate the resrc's id into
+ * o (e.g., 0,2,3,4).
+ */
+int resrc_to_json_lite (json_t *o, resrc_t *resrc, bool reduce);
+
+/*
  * Print details of a specific resource to a string buffer
  * and return to the caller. The caller must free it.
  */
