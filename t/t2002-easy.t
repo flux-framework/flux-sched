@@ -3,11 +3,15 @@
 
 test_description='Test easy scheduler in simulator
 '
-
 # source sharness from the directore where this test
 # file resides
 #
 . $(dirname $0)/sharness.sh
+
+if test -z "$FLUX_SCHED_ENABLE_SIM_TESTS"; then
+  skip_all='skipping simulator driven tests temporarily'
+  test_done
+fi
 
 rdlconf=$(sched_src_path "conf/hype-io.lua")
 jobdata=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/job-traces/hype-test.csv")
