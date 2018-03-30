@@ -404,33 +404,26 @@ static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
 }
 
-static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
+static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
 {
-    char *jcbstr = NULL;
     int rc = -1;
     int64_t nn = 0;
     int64_t nc = 0;
     int64_t walltime = 0;
-    json_t *jcb = NULL;
     json_t *o = NULL;
 
-    if (!j) goto done;
-
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
-    if ((rc = jsc_query_jcb (h, j->lwj_id, JSC_RDESC, &jcbstr)) != 0) {
-        flux_log (h, LOG_ERR, "error in jsc_query_jcb.");
-        goto done;
-    }
-    if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (h, LOG_ERR, "fill_resource_req: error parsing JSON string");
-        goto done;
-    }
     /* TODO:  add user name and charge account to info the JSC provides */
     j->user = NULL;
     j->account = NULL;
-    if (!Jget_obj (jcb, JSC_RDESC, &o)) goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn)) goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc)) goto done;
+
+    if (!Jget_obj (jcb, JSC_RDESC, &o))
+        goto done;
+    if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn))
+        goto done;
+    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc))
+        goto done;
+
     j->req->nnodes = (uint64_t) nn;
     j->req->ncores = (uint64_t) nc;
     if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
@@ -441,8 +434,6 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j)
     j->req->node_exclusive = false;
     rc = 0;
 done:
-    if (jcb)
-        Jput (jcb);
     return rc;
 }
 
@@ -466,7 +457,7 @@ static inline bool is_newjob (json_t *jcb)
 {
     int64_t os = J_NULL, ns = J_NULL;
     get_states (jcb, &os, &ns);
-    return ((os == J_NULL) && (ns == J_NULL))? true : false;
+    return ((os == J_NULL) && (ns == J_SUBMITTED))? true : false;
 }
 
 static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
@@ -903,8 +894,14 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     jsc_event_t *event = (jsc_event_t*) xzmalloc (sizeof (jsc_event_t));
 
+    if (errnum > 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: errnum passed in", __FUNCTION__);
+        return -1;
+    }
+
     if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (ctx->h, LOG_ERR, "sim_job_status_cb: error parsing JSON string");
+        flux_log (ctx->h, LOG_ERR, "%s: error parsing JSON string",
+                  __FUNCTION__);
         return -1;
     }
 
@@ -1666,7 +1663,8 @@ static inline bool trans (job_state_t ex, job_state_t n, job_state_t *o)
  * state event is delivered. But in action, certain events are also generated,
  * some events are realized by falling through some of the case statements.
  */
-static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
+static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
+                   json_t *jcb)
 {
     flux_t *h = ctx->h;
     char *key = NULL;
@@ -1679,12 +1677,8 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate)
 
     switch (oldstate) {
     case J_NULL:
-        VERIFY (trans (J_NULL, newstate, &(job->state))
-                || trans (J_RESERVED, newstate, &(job->state)));
-        break;
-    case J_RESERVED:
         VERIFY (trans (J_SUBMITTED, newstate, &(job->state)));
-        fill_resource_req (h, job);
+        fill_resource_req (h, job, jcb);
         /* fall through for implicit event generation */
     case J_SUBMITTED:
         VERIFY (trans (J_PENDING, J_PENDING, &(job->state)));
@@ -1869,27 +1863,31 @@ static int timer_event_cb (flux_t *h, void *arg)
 
 static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
+    int rc = 0;
     json_t *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     flux_lwj_t *j = NULL;
     job_state_t ns = J_FOR_RENT;
 
     if (errnum > 0) {
-        flux_log (ctx->h, LOG_ERR, "job_status_cb: errnum passed in");
+        flux_log (ctx->h, LOG_ERR, "%s: errnum passed in", __FUNCTION__);
         return -1;
     }
     if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (ctx->h, LOG_ERR, "job_status_cb: error parsing JSON string");
+        flux_log (ctx->h, LOG_ERR, "%s: error parsing JSON string",
+                  __FUNCTION__);
         return -1;
     }
     if (is_newjob (jcb))
         q_enqueue_into_pqueue (ctx, jcb);
     if ((j = fetch_job_and_event (ctx, jcb, &ns)) == NULL) {
-        flux_log (ctx->h, LOG_ERR, "error fetching job and event");
+        flux_log (ctx->h, LOG_INFO, "%s: nonexistent job", __FUNCTION__);
+        flux_log (ctx->h, LOG_INFO, "%s: directly launched job?", __FUNCTION__);
         return -1;
     }
+    rc = action (ctx, j, ns, jcb);
     Jput (jcb);
-    return action (ctx, j, ns);
+    return rc;
 }
 
 static void ev_prep_cb (flux_reactor_t *r, flux_watcher_t *w, int ev, void *a)

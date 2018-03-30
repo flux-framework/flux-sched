@@ -8,6 +8,12 @@ test_description='Test fcfs io-aware scheduler in simulator
 # file resides
 #
 . $(dirname $0)/sharness.sh
+
+if test -z "$FLUX_SCHED_ENABLE_SIM_TESTS"; then
+  skip_all='skipping simulator driven tests temporarily'
+  test_done
+fi
+
 FLUX_MODULE_PATH_PREPEND="$FLUX_MODULE_PATH_PREPEND:$(sched_build_path simulator/.libs)"
 
 rdlconf=$(readlink -e "${SHARNESS_TEST_SRCDIR}/../conf/hype-io.lua")
