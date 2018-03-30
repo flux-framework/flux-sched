@@ -1,10 +1,16 @@
 AM_CXXFLAGS = \
     $(WARNING_CXXFLAGS) \
+    -Wno-unused-local-typedefs \
+    -Wno-deprecated-declarations \
+    -Wno-unused-variable \
+    -Wno-error \
     $(CODE_COVERAGE_CXXFLAGS)
 
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS) \
+             $(BOOST_LDFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
+	      $(BOOST_CPPFLAGS)
 
 SUBDIRS = planner .
 
@@ -25,7 +31,8 @@ utilities_grug2dot_CXXFLAGS = \
 utilities_grug2dot_LDADD = \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
-    $(BOOST_GRAPH_LIB)
+    $(BOOST_GRAPH_LIB) \
+    $(BOOST_REGEX_LIB)
 
 #.
 # resource-query
@@ -59,5 +66,6 @@ utilities_resource_query_LDADD = \
     $(READLINE_LIBS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
-    $(BOOST_GRAPH_LIB)
+    $(BOOST_GRAPH_LIB) \
+    $(BOOST_REGEX_LIB)
 

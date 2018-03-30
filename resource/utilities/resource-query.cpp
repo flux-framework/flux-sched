@@ -43,7 +43,6 @@ extern "C" {
 }
 
 using namespace std;
-using namespace boost;
 using namespace Flux::resource_model;
 
 #define OPTIONS "G:S:P:g:o:t:e:h"
@@ -176,9 +175,9 @@ static void set_default_params (resource_context_t *ctx)
 static int string_to_graph_format (string st, emit_format_t &format)
 {
     int rc = 0;
-    if (iequals (st, string ("dot")))
+    if (boost::iequals (st, string ("dot")))
         format = emit_format_t::GRAPHVIZ_DOT;
-    else if (iequals (st, string ("graphml")))
+    else if (boost::iequals (st, string ("graphml")))
         format = emit_format_t::GRAPH_ML;
     else
         rc = -1;
@@ -216,57 +215,57 @@ static int set_subsystems_use (resource_context_t *ctx, string n)
     dfu_match_cb_t &matcher = *(ctx->matcher);
     const string &matcher_type = matcher.matcher_name ();
 
-    if (iequals (matcher_type, string ("CA"))) {
+    if (boost::iequals (matcher_type, string ("CA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
-    } else if (iequals (matcher_type, string ("IBA"))) {
+    } else if (boost::iequals (matcher_type, string ("IBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "*");
-    } else if (iequals (matcher_type, string ("IBBA"))) {
+    } else if (boost::iequals (matcher_type, string ("IBBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnetbw")) == 0)
             matcher.add_subsystem ("ibnetbw", "*");
-    } else if (iequals (matcher_type, string ("PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, string ("PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (iequals (matcher_type, string ("PA"))) {
+    } else if (boost::iequals (matcher_type, string ("PA"))) {
         if ( (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "*");
-    } else if (iequals (matcher_type, string ("C+PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, string ("C+PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( !rc && (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (iequals (matcher_type, string ("C+IBA"))) {
+    } else if (boost::iequals (matcher_type, string ("C+IBA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_up");
-    } else if (iequals (matcher_type, string ("C+PA"))) {
+    } else if (boost::iequals (matcher_type, string ("C+PA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "draws_from");
-    } else if (iequals (matcher_type, string ("IB+IBBA"))) {
+    } else if (boost::iequals (matcher_type, string ("IB+IBBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_down");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnetbw")) == 0)
             matcher.add_subsystem ("ibnetbw", "*");
-    } else if (iequals (matcher_type, string ("C+P+IBA"))) {
+    } else if (boost::iequals (matcher_type, string ("C+P+IBA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "draws_from");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_up");
-    } else if (iequals (matcher_type, string ("V+PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, string ("V+PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "virtual1")) == 0)
             matcher.add_subsystem ("virtual1", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (iequals (matcher_type, string ("VA"))) {
+    } else if (boost::iequals (matcher_type, string ("VA"))) {
         if ( (rc = subsystem_exist (ctx, "virtual1")) == 0)
             matcher.add_subsystem ("virtual1", "*");
-    } else if (iequals (matcher_type, string ("ALL"))) {
+    } else if (boost::iequals (matcher_type, string ("ALL"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
@@ -323,13 +322,13 @@ static void flatten (f_resource_graph_t &fg, map<vtx_t, string> &paths,
 
 static void write_to_graphml (f_resource_graph_t &fg, fstream &o)
 {
-    dynamic_properties dp;
+    boost::dynamic_properties dp;
     map<edg_t, string> esubsystems;
     map<vtx_t, string> subsystems, properties, paths;
-    associative_property_map<map<vtx_t, string>> subsystems_map (subsystems);
-    associative_property_map<map<edg_t, string>> esubsystems_map (esubsystems);
-    associative_property_map<map<vtx_t, string>> props_map (properties);
-    associative_property_map<map<vtx_t, string>> paths_map (paths);
+    boost::associative_property_map<map<vtx_t, string>> subsystems_map (subsystems);
+    boost::associative_property_map<map<edg_t, string>> esubsystems_map (esubsystems);
+    boost::associative_property_map<map<vtx_t, string>> props_map (properties);
+    boost::associative_property_map<map<vtx_t, string>> paths_map (paths);
 
     flatten (fg, paths, subsystems, esubsystems);
 
