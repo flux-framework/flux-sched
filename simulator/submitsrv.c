@@ -260,7 +260,7 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 
     // Update lwj.%jobid%'s state in the kvs to "submitted"
     if (!(dir = job_kvsdir (h, new_jobid)))
-        log_err_exit ("kvs_get_dir (id=%lu)", new_jobid);
+        log_err_exit ("kvs_get_dir (id=%"PRId64")", new_jobid);
     job->kvs_dir = dir;
     if (put_job_in_kvs (job, "submitted") < 0)
         log_err_exit ("put_job_in_kvs");
