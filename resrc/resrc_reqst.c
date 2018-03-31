@@ -378,7 +378,7 @@ void resrc_graph_req_print (resrc_graph_req_t *graph_reqst)
     if (graph_reqst) {
         printf ("       requestng graphs of:");
         while (graph_reqst->name) {
-            printf (" name: %s: size: %ld,", graph_reqst->name,
+            printf (" name: %s: size: %zd,", graph_reqst->name,
                     graph_reqst->size);
             graph_reqst++;
         }
