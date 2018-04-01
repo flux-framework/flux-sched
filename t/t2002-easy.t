@@ -8,11 +8,6 @@ test_description='Test easy scheduler in simulator
 #
 . $(dirname $0)/sharness.sh
 
-if test -z "$FLUX_SCHED_ENABLE_SIM_TESTS"; then
-  skip_all='skipping simulator driven tests temporarily'
-  test_done
-fi
-
 rdlconf=$(sched_src_path "conf/hype-io.lua")
 jobdata=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/job-traces/hype-test.csv")
 expected_order=$(readlink -e "${SHARNESS_TEST_SRCDIR}/data/emulator-data/easy_expected")
