@@ -220,11 +220,11 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 // Finally, updated the submit event timer with the next submit time
 int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
-    flux_future_t *f = NULL;
     flux_msg_t *msg = NULL;
+    flux_future_t *create_f = NULL;
     flux_kvsdir_t *dir = NULL;
     job_t *job = NULL;
-    char *kvs_path = NULL;
+    const char *kvs_path = NULL;
     int64_t new_jobid = -1;
     double *new_sched_mod_time = NULL, *new_submit_mod_time = NULL;
 
@@ -240,23 +240,23 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         return -1;
     }
 
-    f = flux_rpc_pack (h, "job.create", FLUX_NODEID_ANY, 0,
-                     "{ s:i s:i s:I }",
-                     "nnodes", job->nnodes,
-                     "ntasks", job->ncpus,
-                     "walltime", (int64_t)job->time_limit);
-    if (f == NULL) {
+    create_f = flux_rpc_pack (h, "job.create", FLUX_NODEID_ANY, 0,
+                       "{ s:i s:i s:i s:i }",
+                       "ntasks", job->ncpus,
+                       "nnodes", job->nnodes,
+                       "ncores", job->ncpus,
+                       "walltime", (int)job->time_limit);
+    if (create_f == NULL) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
         return -1;
     }
-    if (flux_rpc_get_unpack (f, "{ s:I s:s }",
+    if (flux_rpc_get_unpack (create_f, "{ s:I s:s }",
                             "jobid", &new_jobid,
-                            "kvs_path", &kvs_path) < 0) {
+                             "kvs_path", &kvs_path) < 0) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
-        flux_future_destroy (f);
+        flux_future_destroy (create_f);
         return -1;
     }
-    flux_future_destroy (f);
 
     flux_log (h, LOG_DEBUG, "%s: created job %"PRId64" at %s",
               __FUNCTION__, new_jobid, kvs_path);
@@ -280,6 +280,8 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         return -1;
     }
     flux_msg_destroy (msg);
+    // Must delay the destruction until we are done using the unpacked values
+    flux_future_destroy (create_f);
 
     flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
 
