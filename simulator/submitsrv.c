@@ -220,8 +220,7 @@ int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs)
 // Finally, updated the submit event timer with the next submit time
 int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
-    flux_msg_t *msg = NULL;
-    flux_future_t *create_f = NULL;
+    flux_future_t *create_f = NULL, *submit_f = NULL;
     flux_kvsdir_t *dir = NULL;
     job_t *job = NULL;
     const char *kvs_path = NULL;
@@ -269,17 +268,28 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
         log_err_exit ("put_job_in_kvs");
 
     // Send "submitted" event
-    if (!(msg = flux_event_pack ("wreck.state.submitted",
-                                 "{ s:I s:s s:i s:i s:i}",
-                                 "lwj", new_jobid,
-                                 "kvs_path", kvs_path,
-                                 "nnodes", (int)job->nnodes,
-                                 "ntasks", (int)job->ncpus,
-                                 "walltime", (int)job->time_limit))
-        || flux_send (h, msg, 0) < 0) {
+    submit_f = flux_rpc_pack (h, "job.submit-nocreate", FLUX_NODEID_ANY, 0,
+                              "{ s:I s:s s:i s:i s:i s:i }",
+                              "jobid", new_jobid,
+                              "kvs_path", kvs_path,
+                              "nnodes", job->nnodes,
+                              "ntasks", job->ncpus,
+                              "ncores", job->ncpus,
+                              "walltime", (int)job->time_limit);
+    if (submit_f == NULL) {
+        flux_log (h, LOG_ERR, "%s: failed to pack job.submit-nocreate: %s",
+                  __FUNCTION__, strerror (errno));
+        flux_future_destroy (submit_f);
         return -1;
     }
-    flux_msg_destroy (msg);
+    if (flux_rpc_get (submit_f, NULL) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get response for job.submit-nocreate",
+                  __FUNCTION__);
+        flux_future_destroy (submit_f);
+        return -1;
+    }
+    flux_future_destroy (submit_f);
+
     // Must delay the destruction until we are done using the unpacked values
     flux_future_destroy (create_f);
 
