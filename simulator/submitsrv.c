@@ -258,6 +258,9 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     }
     flux_future_destroy (f);
 
+    flux_log (h, LOG_DEBUG, "%s: created job %"PRId64" at %s",
+              __FUNCTION__, new_jobid, kvs_path);
+
     // Update lwj.%jobid%'s state in the kvs to "submitted"
     if (!(dir = job_kvsdir (h, new_jobid)))
         log_err_exit ("kvs_get_dir (id=%"PRId64")", new_jobid);
@@ -278,24 +281,31 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     }
     flux_msg_destroy (msg);
 
+    flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
+
     // Update event timers in reply (submit and sched)
     new_sched_mod_time = (double *)zhash_lookup (timers, "sched");
-    if (new_sched_mod_time != NULL)
+    if (new_sched_mod_time == NULL) {
+        flux_log (h, LOG_ERR, "%s: 'sched' not in timers dictionary",
+                  __FUNCTION__);
+    } else {
         *new_sched_mod_time = sim_state->sim_time + .00001;
-    flux_log (h,
-              LOG_DEBUG,
-              "added a sched timer that will occur at %f",
-              *new_sched_mod_time);
+        flux_log (h, LOG_DEBUG, "added a sched timer that will occur at %f",
+                  *new_sched_mod_time);
+    }
+
     new_submit_mod_time = (double *)zhash_lookup (timers, module_name);
-    if (get_next_submit_time () > *new_sched_mod_time)
-        *new_submit_mod_time = get_next_submit_time ();
-    else
-        *new_submit_mod_time = *new_sched_mod_time + .0001;
-    flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
-    flux_log (h,
-              LOG_DEBUG,
-              "next submit event will occur at %f",
-              *new_submit_mod_time);
+    if (new_sched_mod_time == NULL) {
+        flux_log (h, LOG_ERR, "%s: '%s' not in timers dictionary",
+                  __FUNCTION__, module_name);
+    } else {
+        if (get_next_submit_time () > *new_sched_mod_time)
+            *new_submit_mod_time = get_next_submit_time ();
+        else
+            *new_submit_mod_time = *new_sched_mod_time + .0001;
+        flux_log (h, LOG_DEBUG, "next submit event will occur at %f",
+                  *new_submit_mod_time);
+    }
 
     // Cleanup
     free_job (job);
