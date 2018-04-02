@@ -81,7 +81,7 @@ AC_DEFUN([AX_BOOST_GRAPH],
 			AC_DEFINE(HAVE_BOOST_GRAPH,,[define if the Boost::Graph library is available])
             BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
             if test "x$ax_boost_user_graph_lib" = "x"; then
-                for libextension in `ls -r $BOOSTLIBDIR/libboost_graph* 2>/dev/null | sed 's,.*/lib,,' | sed 's,\..*,,'` ; do
+                for libextension in `ls -r $BOOSTLIBDIR/libboost_graph.* 2>/dev/null | sed 's,.*/lib,,' | sed 's,\..*,,'` ; do
                      ax_lib=${libextension}
 				    AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_GRAPH_LIB="-l$ax_lib"; AC_SUBST(BOOST_GRAPH_LIB) link_graph="yes"; break],

@@ -1,5 +1,6 @@
 AM_CFLAGS = \
 	$(WARNING_CFLAGS) \
+	-Wno-parentheses \
 	$(CODE_COVERAGE_CFLAGS)
 
 AM_LDFLAGS = \

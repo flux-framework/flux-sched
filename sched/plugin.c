@@ -79,6 +79,12 @@ static struct behavior_plugin *behavior_plugin_create (flux_t *h, void *dso)
     memset (plugin, 0, sizeof (*plugin));
     dlerror (); // Clear old dlerrors
 
+    plugin->get_sched_properties = dlsym (dso, "get_sched_properties");
+    strerr = dlerror();
+    if (strerr || !plugin->get_sched_properties || !*plugin->get_sched_properties) {
+        flux_log (h, LOG_ERR, "can't load get_sched_properties: %s", strerr);
+        goto error;
+    }
     plugin->sched_loop_setup = dlsym (dso, "sched_loop_setup");
     strerr = dlerror();
     if (strerr || !plugin->sched_loop_setup || !*plugin->sched_loop_setup) {

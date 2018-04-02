@@ -8,6 +8,7 @@ test_description='Test fcfs scheduler in simulator
 # file resides
 #
 . $(dirname $0)/sharness.sh
+
 FLUX_MODULE_PATH="${SHARNESS_BUILD_DIRECTORY}/simulator/.libs:${FLUX_MODULE_PATH}"
 
 rdlconf=$(readlink -e "${SHARNESS_TEST_SRCDIR}/../conf/hype-io.lua")

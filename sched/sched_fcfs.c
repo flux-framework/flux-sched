@@ -41,6 +41,7 @@
 #include "resrc_reqst.h"
 #include "scheduler.h"
 
+static int queue_depth = SCHED_PARAM_Q_DEPTH_DEFAULT;
 
 static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
                              resrc_tree_list_t *children,
@@ -51,6 +52,15 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
+
+int get_sched_properties (flux_t *h, struct sched_prop *prop)
+{
+    if (!prop)
+        return -1;
+
+    prop->out_of_order_capable = (queue_depth > 1)? true : false;
+    return 0;
+}
 
 int sched_loop_setup (flux_t *h)
 {
@@ -252,14 +262,16 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
 {
     int rc = 0;//-1;
 
-    /* if (*selected_tree) */
-    /*     rc = resrc_tree_reserve (*selected_tree, job_id, 0, 0); */
+    /* If queue_depth is 1, this scheduler isn't out-of-order capable */
+    if (queue_depth > 1 && *selected_tree)
+        rc = resrc_tree_reserve (*selected_tree, job_id, 0, 0);
     return rc;
 }
 
 
-int process_args (flux_t *h, char *argz, size_t argz_len)
+int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *sp)
 {
+    queue_depth = sp->queue_depth;
     return 0;
 }
 

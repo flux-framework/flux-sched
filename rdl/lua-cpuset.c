@@ -41,8 +41,8 @@
 static cpu_set_t * l_cpu_set_alloc (lua_State *L)
 {
     cpu_set_t *setp = lua_newuserdata (L, sizeof (*setp));
-	luaL_getmetatable (L, "CpuSet");
-	lua_setmetatable (L, -2);
+    luaL_getmetatable (L, "CpuSet");
+    lua_setmetatable (L, -2);
     return (setp);
 }
 
@@ -120,48 +120,48 @@ static int l_cpu_set_new (lua_State *L)
 
 static int l_cpu_set_count (lua_State *L)
 {
-	int i, n;
-	cpu_set_t *setp = lua_to_cpu_setp (L, 1);
+    int i, n;
+    cpu_set_t *setp = lua_to_cpu_setp (L, 1);
 
     n = 0;
-	for (i = 0; i < CPU_SETSIZE; i++)
-		if (CPU_ISSET (i, setp)) n++;
+    for (i = 0; i < CPU_SETSIZE; i++)
+        if (CPU_ISSET (i, setp)) n++;
 
-	lua_pushnumber (L, n);
-	return (1);
+    lua_pushnumber (L, n);
+    return (1);
 }
 
 static void cpu_set_union (cpu_set_t *setp, cpu_set_t *s)
 {
-	int i;
-	for (i = 0; i < CPU_SETSIZE; i++) {
-		if (CPU_ISSET (i, s))
-			CPU_SET (i, setp);
-	}
+    int i;
+    for (i = 0; i < CPU_SETSIZE; i++) {
+        if (CPU_ISSET (i, s))
+            CPU_SET (i, setp);
+    }
 }
 
 static int l_cpu_set_union (lua_State *L)
 {
-	cpu_set_t *setp;
-	int i;
-	int nargs = lua_gettop (L);
+    cpu_set_t *setp;
+    int i;
+    int nargs = lua_gettop (L);
 
     /* Accumulate results in first cpu_set
      */
     if (!(setp = lua_to_cpu_setp (L, 1)))
         return (2);
 
-	for (i = 2; i < nargs+1; i++) {
+    for (i = 2; i < nargs+1; i++) {
         cpu_set_t *arg = lua_to_cpu_setp (L, i);
         if (arg == NULL)
             return (2);
-		cpu_set_union (setp, arg);
+        cpu_set_union (setp, arg);
     }
     /*
      *  Return first cpu_set object (set stack top to position 1):
      */
-	lua_settop (L, 1);
-	return (1);
+    lua_settop (L, 1);
+    return (1);
 }
 
 static void cpu_set_intersect (cpu_set_t *setp, cpu_set_t *s)
@@ -614,21 +614,21 @@ int lua_get_affinity (lua_State *L)
 }
 
 static const struct luaL_Reg cpu_set_functions [] = {
-	{ "new",        l_cpu_set_new       },
+    { "new",        l_cpu_set_new       },
     { "union",      l_cpu_set_union     },
     { "intersect",  l_cpu_set_intersect },
-	{ NULL,         NULL                },
+    { NULL,         NULL                },
 };
 
 static const struct luaL_Reg cpu_set_methods [] = {
     { "__eq",       l_cpu_set_equals    },
-	{ "__len",      l_cpu_set_count     },
-	{ "__add",      l_cpu_set_add       },
-	{ "__sub",      l_cpu_set_subtract  },
-	{ "__concat",   l_cpu_set_strconcat },
-	{ "__tostring", l_cpu_set_tostring  },
-	{ "__index",    l_cpu_set_index     },
-	{ "__newindex", l_cpu_set_newindex  },
+    { "__len",      l_cpu_set_count     },
+    { "__add",      l_cpu_set_add       },
+    { "__sub",      l_cpu_set_subtract  },
+    { "__concat",   l_cpu_set_strconcat },
+    { "__tostring", l_cpu_set_tostring  },
+    { "__index",    l_cpu_set_index     },
+    { "__newindex", l_cpu_set_newindex  },
     { "set",        l_cpu_set_set       },
     { "clr",        l_cpu_set_delete    },
     { "isset",      l_cpu_set_isset     },
@@ -645,13 +645,13 @@ static const struct luaL_Reg cpu_set_methods [] = {
     { "first",      l_cpu_set_first     },
     { "last",       l_cpu_set_last      },
     { "tohex",      l_cpu_set_tohex     },
-	{ NULL,         NULL                },
+    { NULL,         NULL                },
 };
 
 int luaopen_cpuset (lua_State *L)
 {
-	luaL_newmetatable (L, "CpuSet");
-	luaL_register (L, NULL, cpu_set_methods);
+    luaL_newmetatable (L, "CpuSet");
+    luaL_register (L, NULL, cpu_set_methods);
 
     luaL_register (L, "cpu_set", cpu_set_functions);
     /*

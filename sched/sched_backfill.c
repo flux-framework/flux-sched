@@ -74,6 +74,15 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
+int get_sched_properties (flux_t *h, struct sched_prop *prop)
+{
+    if (!prop)
+        return -1;
+
+    prop->out_of_order_capable = true;
+    return 0;
+}
+
 int sched_loop_setup (flux_t *h)
 {
     curr_reservation_depth = 0;

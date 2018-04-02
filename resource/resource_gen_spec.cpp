@@ -36,7 +36,6 @@ extern "C" {
 }
 
 using namespace std;
-using namespace boost;
 using namespace Flux::resource_model;
 
 struct str2enum_t
@@ -87,7 +86,7 @@ private:
  *                                                                              *
  ********************************************************************************/
 
-void resource_gen_spec_t::setup_dynamic_property (dynamic_properties &dp, gg_t &g)
+void resource_gen_spec_t::setup_dynamic_property (boost::dynamic_properties &dp, gg_t &g)
 {
     dp.property("root", get(&resource_pool_gen_t::root, g));
     dp.property("type", get(&resource_pool_gen_t::type, g));
@@ -159,7 +158,7 @@ int resource_gen_spec_t::read_graphml (const string &ifn)
 
     try {
         boost::read_graphml (in_file, g, dp);
-    } catch (graph_exception &e) {
+    } catch (boost::graph_exception &e) {
         cerr << e.what () << endl;
         rc = -1;
     }
@@ -199,7 +198,7 @@ int resource_gen_spec_t::write_graphviz (const string &ofn, bool simple)
             gg_label_writer_sim_t<edg_relation_map_t> ewr (e_rel_map);
             boost::write_graphviz (out_file, g, vwr, ewr);
         }
-    } catch (graph_exception &e) {
+    } catch (boost::graph_exception &e) {
         cerr << e.what () << endl;
         rc = -1;
     }

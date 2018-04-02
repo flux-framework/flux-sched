@@ -1047,11 +1047,11 @@ char *resrc_to_string (resrc_t *resrc)
 
     uuid_unparse (resrc->uuid, uuid);
     fprintf (ss, "resrc type: %s, path: %s, basename: %s, name: %s, digest: %s, "
-            "id: %"PRId64", state: %s, "
-            "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
-            resrc->type, resrc->path, resrc->basename, resrc->name,
-            resrc->digest, resrc->id, resrc_state (resrc),
-            uuid, resrc->size, resrc->available);
+             "id: %"PRId64", state: %s, "
+             "uuid: %s, size: %zd, avail: %zd",
+             resrc->type, resrc->path, resrc->basename, resrc->name,
+             resrc->digest, resrc->id, resrc_state (resrc),
+             uuid, resrc->size, resrc->available);
     if (zhash_size (resrc->properties)) {
         fprintf (ss, ", properties:");
         property = zhash_first (resrc->properties);
@@ -1073,7 +1073,7 @@ char *resrc_to_string (resrc_t *resrc)
         fprintf (ss, ", allocs");
         size_ptr = zhash_first (resrc->allocs);
         while (size_ptr) {
-            fprintf (ss, ", %s: %"PRIu64"",
+            fprintf (ss, ", %s: %zd",
                     (char *)zhash_cursor (resrc->allocs), *size_ptr);
             size_ptr = zhash_next (resrc->allocs);
         }
@@ -1082,7 +1082,7 @@ char *resrc_to_string (resrc_t *resrc)
         fprintf (ss, ", reserved");
         size_ptr = zhash_first (resrc->reservtns);
         while (size_ptr) {
-            fprintf (ss, ", %s: %"PRIu64"",
+            fprintf (ss, ", %s: %zd",
                     (char *)zhash_cursor (resrc->reservtns), *size_ptr);
             size_ptr = zhash_next (resrc->reservtns);
         }

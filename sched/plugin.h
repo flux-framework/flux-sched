@@ -8,6 +8,9 @@ struct behavior_plugin {
     char         *name;               /* Name of plugin */
     char         *path;               /* Path to plugin dso */
 
+    int                  (*get_sched_properties)(flux_t *h,
+                                                 struct sched_prop *prop);
+
     int                  (*sched_loop_setup)(flux_t *h);
 
     int64_t              (*find_resources)(flux_t *h,

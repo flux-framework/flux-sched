@@ -3,7 +3,6 @@
 
 test_description='Test easy scheduler in simulator
 '
-
 # source sharness from the directore where this test
 # file resides
 #

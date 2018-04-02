@@ -53,11 +53,8 @@ AX_FLUX_CORE
 AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
-AC_CHECK_LIB([boost_graph], [exit],
-             [AC_SUBST([BOOST_GRAPH_LIB], ["-lboost_graph"])
-              AC_DEFINE([HAVE_BOOST_GRRAPH], [1],
-                        [Define if you have boost_graph])],
-             [AC_MSG_ERROR([Please install Boost Graph library])])
+AX_BOOST_GRAPH
+AX_BOOST_REGEX
 PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])
