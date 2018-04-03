@@ -431,7 +431,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
         goto done;
     if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn))
         goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc))
+    if (!Jget_int64 (o, JSC_RDESC_NCORES, &nc))
         goto done;
 
     j->req->nnodes = (uint64_t) nn;
