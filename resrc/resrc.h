@@ -18,10 +18,11 @@ typedef struct resrc_tree resrc_tree_t;
 typedef struct resrc_flow resrc_flow_t;
 
 typedef enum {
-    RESOURCE_INVALID,
+    RESOURCE_INVALID = 1,
     RESOURCE_IDLE,
     RESOURCE_ALLOCATED,
     RESOURCE_RESERVED,
+    RESOURCE_EXCLUDED,
     RESOURCE_DOWN,
     RESOURCE_UNKNOWN,
     RESOURCE_END
@@ -104,7 +105,17 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
 /*
  * Return the resource state as a string
  */
-char *resrc_state (resrc_t *resrc);
+char *resrc_state_string (resrc_t *resrc);
+
+/*
+ * Return the resource state
+ */
+int resrc_state (resrc_t *resrc);
+
+/*
+ * Set the state field of resrc. This will return the old state.
+ */
+int resrc_set_state (resrc_t *resrc, int state);
 
 /*
  * Return the physical tree for the resouce
@@ -115,6 +126,16 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
  * Return the number of jobs allocated to this resource
  */
 size_t resrc_size_allocs (resrc_t *resrc);
+
+/*
+ * Return the jobid of an allocated job
+ */
+int64_t resrc_alloc_job_first (resrc_t *resrc);
+
+/*
+ * Return the jobid of the next allocated job
+ */
+int64_t resrc_alloc_job_next (resrc_t *resrc);
 
 /*
  * Return the number of jobs reserved for this resource
@@ -137,9 +158,14 @@ int resrc_twindow_insert (resrc_t *resrc, const char *key,
 int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow);
 
 /*
- * Return the pointer to the resource with the given path
+ * Return the first resrc object with the given path
  */
-resrc_t *resrc_lookup (resrc_api_ctx_t *ctx, const char *path);
+resrc_t *resrc_lookup_first (resrc_api_ctx_t *ctx, const char *path);
+
+/*
+ * Return the next resrc object with the given path
+ */
+resrc_t *resrc_lookup_next (resrc_api_ctx_t *ctx, const char *path);
 
 /*
  * Create a new resource object

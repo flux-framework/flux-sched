@@ -70,6 +70,10 @@ static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
                           const flux_msg_t *msg, void *arg);
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
+static void exclude_request_cb (flux_t *h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg);
+static void include_request_cb (flux_t *h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
 
 
@@ -1074,7 +1078,9 @@ static int setup_sim (ssrvctx_t *ctx, bool sim)
 
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,   "sched.cancel", cancel_request_cb, 0},
-    { FLUX_MSGTYPE_EVENT,     "sched.res.*", res_event_cb, 0},
+    { FLUX_MSGTYPE_REQUEST,   "sched.exclude",  exclude_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST,   "sched.include",  include_request_cb, 0},
+    { FLUX_MSGTYPE_EVENT,     "sched.res.*",  res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1857,6 +1863,144 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{s:I}", "jobid", jobid) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
     return;
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+}
+
+static int kill_jobs_on_node (flux_t *h, resrc_t *node)
+{
+   int64_t jobid = -1;
+   char *topic = NULL;
+   flux_msg_t *msg = NULL;
+
+   for (jobid = resrc_alloc_job_first (node); jobid > 0;
+        jobid = resrc_alloc_job_next (node)) {
+       if (asprintf (&topic, "wreck.%"PRId64".kill", jobid) < 0) {
+           flux_log (h, LOG_DEBUG, "%s: topic creation failed", __FUNCTION__);
+           goto error;
+       } else if (!(msg = flux_event_encode (topic, NULL))
+                  || flux_send (h, msg, 0) < 0) {
+           flux_log (h, LOG_DEBUG, "%s: event failed", __FUNCTION__);
+           goto error;
+       }
+       free (topic);
+       topic = NULL;
+       flux_msg_destroy (msg);
+       msg = NULL;
+   }
+   return 0;
+
+error:
+    if (topic)
+        free (topic);
+    if (msg)
+        flux_msg_destroy (msg);
+    return -1;
+}
+
+static void exclude_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    const char *hostname = NULL;
+    bool kill = false;
+    uint32_t userid = 0;
+    char *topic = NULL;
+    resrc_t *node = NULL;
+    flux_msg_t *msg2 = NULL;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, "node exclusion requested by user (%u).", userid);
+    if (flux_request_unpack (msg, NULL, "{s:s s:b}",
+                            "node", &hostname, "kill", &kill) < 0)
+        goto error;
+
+    node = resrc_lookup_first (ctx->rsapi, hostname);
+    do {
+        if (!node) {
+            errno = ENOENT;
+            flux_log (h, LOG_DEBUG,
+                      "attempt to exclude nonexistent node (%s).", hostname);
+            goto error;
+        }
+        resrc_set_state (node, RESOURCE_EXCLUDED);
+        if (kill) {
+            if (kill_jobs_on_node (h, node) != 0) {
+                goto error;
+            }
+        }
+    } while ((node = resrc_lookup_next (ctx->rsapi, hostname)));
+
+    flux_log (ctx->h, LOG_INFO, "%s excluded from scheduling.", hostname);
+    msg2 = flux_event_encode ("sched.res.excluded", NULL);
+    if (!msg2 || flux_send (h, msg2, 0) < 0) {
+        flux_log (h, LOG_DEBUG, "%s: error sending event", __FUNCTION__);
+        goto error;
+    }
+    flux_msg_destroy (msg2);
+
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+
+error:
+    if (topic)
+        free (topic);
+    if (msg2)
+        flux_msg_destroy (msg2);
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+}
+
+static void include_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    const char *hostname = NULL;
+    flux_msg_t *msg2 = NULL;
+    uint32_t userid = 0;
+    resrc_t *node = NULL;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, "node inclusion requested by user (%u).", userid);
+    if (flux_request_unpack (msg, NULL, "{s:s}", "node", &hostname) < 0)
+        goto error;
+
+    node = resrc_lookup_first (ctx->rsapi, hostname);
+    do {
+        if (!node) {
+            errno = ENOENT;
+            flux_log (h, LOG_DEBUG,
+                      "attempt to include nonexistent node (%s).", hostname);
+            goto error;
+        } else if (resrc_state (node) != RESOURCE_EXCLUDED
+                   && resrc_state (node) != RESOURCE_IDLE
+                   && resrc_state (node) != RESOURCE_INVALID) {
+            errno = EINVAL;
+            flux_log (h, LOG_DEBUG,
+                      "cannot include node (%s) due to state (%s).",
+                      hostname, resrc_state_string (node));
+            continue;
+        }
+        resrc_set_state (node, RESOURCE_IDLE);
+    } while ((node = resrc_lookup_next (ctx->rsapi, hostname)));
+
+    flux_log (h, LOG_DEBUG, "include node resource (%s), ", hostname);
+    msg2 = flux_event_encode ("sched.res.included", NULL);
+    if (!msg2 || flux_send (h, msg2, 0) < 0) {
+        flux_log (h, LOG_ERR, "%s: error sending event: %s",
+                  __FUNCTION__, strerror (errno));
+    }
+    flux_msg_destroy (msg2);
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+
 error:
     if (flux_respond (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s", __FUNCTION__);

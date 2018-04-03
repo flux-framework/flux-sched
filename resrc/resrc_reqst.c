@@ -553,7 +553,7 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
             resrc_reqst->nfound++;
         }
     } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))
-               && reason != DUE_TO_EXCLUSIVITY) {
+               && reason != DUE_TO_EXCLUSIVITY && reason != DUE_TO_EXCLUSION) {
 
         /*
          * This clause visits the children of the current resource

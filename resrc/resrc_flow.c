@@ -255,7 +255,7 @@ resrc_flow_t *resrc_flow_new_from_json (resrc_api_ctx_t *ctx,
         goto ret;
 
     if (!strncmp (type, "node", 5)) {
-        resrc = resrc_lookup (ctx, name);
+        resrc = resrc_lookup_first (ctx, name);
     }
     if ((resrc_flow = resrc_flow_new (ctx, parent, flow_resrc, resrc))) {
         /* add time window if we are given a start time */
