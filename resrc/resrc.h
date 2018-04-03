@@ -27,6 +27,16 @@ typedef enum {
     RESOURCE_END
 } resource_state_t;
 
+typedef enum {
+    DUE_TO_EXCLUSION = 1,
+    DUE_TO_EXCLUSIVITY,
+    DUE_TO_SIZE,
+    DUE_TO_TYPE,
+    DUE_TO_FEATURE,
+    DUE_TO_TIME,
+    REASON_NONE
+} unmatch_reason_t;
+
 typedef struct resrc_graph_req {
     char   *name;
     size_t size;
@@ -196,7 +206,7 @@ void resrc_print_resource (resrc_t *resrc);
  * defined by the start and end times.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
-                           size_t reqrd_size);
+                           size_t reqrd_size, int *reason);
 
 /*
  * Determine whether a specific resource has the required characteristics
@@ -204,10 +214,11 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
  *          request   - resource request with the required characteristics
  *          available - when true, consider only idle resources
  *                      otherwise find all possible resources matching type
+ *          reason    - unmatch reason
  * Returns: true if the input resource has the required characteristics
  */
 bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
-                           bool available);
+                           bool available, int *reason);
 
 /*
  * Stage size elements of a resource along with any associated graph

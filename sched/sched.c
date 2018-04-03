@@ -105,6 +105,7 @@ typedef struct {
     char         *userplugin_opts;
     char         *prio_plugin;
     bool          reap;               /* Enable job reap support */
+    bool          node_excl;          /* Node exclusive */
     bool          sim;
     bool          schedonce;          /* Use resources only once */
     bool          fail_on_error;      /* Fail immediately on error */
@@ -198,6 +199,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->userplugin_opts = NULL;
     arg->prio_plugin = NULL;
     arg->reap = false;
+    arg->node_excl = false;
     arg->sim = false;
     arg->schedonce = false;
     arg->fail_on_error = false;
@@ -224,6 +226,7 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     int i = 0, rc = 0;
     char *reap = NULL;
     char *schedonce = NULL;
+    char *node_excl = NULL;
     char *immediate = NULL;
     char *vlevel= NULL;
     char *sim = NULL;
@@ -233,6 +236,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             a->path = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("reap=", argv[i], sizeof ("reap"))) {
             a->reap = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("node-excl=", argv[i], sizeof ("node-excl"))) {
+            node_excl = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("sched-once=", argv[i], sizeof ("sched-once"))) {
             schedonce = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("fail-on-error=", argv[i],
@@ -270,6 +275,10 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
     if (sim && !strncmp (sim, "true", sizeof ("true"))) {
         a->sim = true;
         free (sim);
+    }
+    if (node_excl && !strncmp (node_excl, "true", sizeof ("true"))) {
+        a->node_excl = true;
+        free (node_excl);
     }
     if (schedonce && !strncmp (schedonce, "true", sizeof ("true"))) {
         a->schedonce = true;
@@ -411,6 +420,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
     int64_t nc = 0;
     int64_t walltime = 0;
     json_t *o = NULL;
+    ssrvctx_t *ctx = getctx (h);
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
     /* TODO:  add user name and charge account to info the JSC provides */
@@ -431,7 +441,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
     } else {
         j->req->walltime = (uint64_t) walltime;
     }
-    j->req->node_exclusive = false;
+    j->req->node_exclusive = ctx->arg.node_excl;
     rc = 0;
 done:
     return rc;
