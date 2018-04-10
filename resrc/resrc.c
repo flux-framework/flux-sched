@@ -796,6 +796,9 @@ static resrc_t *resrc_new_from_hwloc_obj (resrc_api_ctx_t *ctx, hwloc_obj_t obj,
         if (!hwloc_name)
             goto ret;
         name = xstrdup (hwloc_name);
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_GROUP)) {
+        type = xstrdup ("group");
+        name = xasprintf ("%s%"PRId64"", type, id);
 #if HWLOC_API_VERSION < 0x00010b00
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NODE)) {
 #else
