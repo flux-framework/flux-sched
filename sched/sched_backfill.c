@@ -192,6 +192,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent)
 {
+    int reason = REASON_NONE;
     resrc_t *resrc;
     resrc_tree_list_t *children = NULL;
     resrc_tree_t *child_tree;
@@ -203,7 +204,7 @@ resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
     }
 
     resrc = resrc_tree_resrc (found_tree);
-    if (resrc_match_resource (resrc, resrc_reqst, true)) {
+    if (resrc_match_resource (resrc, resrc_reqst, true, &reason)) {
         if (resrc_reqst_num_children (resrc_reqst)) {
             if (resrc_tree_num_children (found_tree)) {
                 selected_tree = resrc_tree_new (selected_parent, resrc);

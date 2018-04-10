@@ -525,6 +525,7 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
                            resrc_tree_t **found_tree, bool available)
 {
     int64_t nfound = 0;
+    int reason = REASON_NONE;
     resrc_tree_list_t *children = NULL;
     resrc_tree_t *child_tree;
     resrc_tree_t *new_tree = NULL;
@@ -533,7 +534,7 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
         goto ret;
     }
 
-    if (resrc_match_resource (resrc_in, resrc_reqst, available)) {
+    if (resrc_match_resource (resrc_in, resrc_reqst, available, &reason)) {
         if (resrc_reqst_num_children (resrc_reqst)) {
             if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
                 new_tree = resrc_tree_new (*found_tree, resrc_in);
@@ -551,7 +552,9 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
             nfound = 1;
             resrc_reqst->nfound++;
         }
-    } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
+    } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))
+               && reason != DUE_TO_EXCLUSIVITY && reason != DUE_TO_EXCLUSION) {
+
         /*
          * This clause visits the children of the current resource
          * searching for a match to the resource request.  The found
@@ -562,6 +565,7 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
          * defined.  E.g., it might only stipulate a node with 4 cores
          * and omit the intervening socket.
          */
+
         if (*found_tree)
             new_tree = resrc_tree_new (*found_tree, resrc_in);
         else {

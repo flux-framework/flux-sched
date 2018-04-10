@@ -255,7 +255,7 @@ resrc_flow_t *resrc_flow_new_from_json (resrc_api_ctx_t *ctx,
         goto ret;
 
     if (!strncmp (type, "node", 5)) {
-        resrc = resrc_lookup (ctx, name);
+        resrc = resrc_lookup_first (ctx, name);
     }
     if ((resrc_flow = resrc_flow_new (ctx, parent, flow_resrc, resrc))) {
         /* add time window if we are given a start time */
@@ -463,12 +463,13 @@ bool resrc_flow_available (resrc_flow_t *resrc_flow, size_t flow,
                            resrc_reqst_t *request)
 {
     bool rc = false;
+    int reason = REASON_NONE;
 
     if (resrc_flow && resrc_flow->flow_resrc) {
         resrc_t *flow_resrc = resrc_flow->flow_resrc;
 
         if (resrc_reqst_starttime (request))
-            rc = resrc_walltime_match (flow_resrc, request, flow);
+            rc = resrc_walltime_match (flow_resrc, request, flow, &reason);
         else {
             rc = flow <= resrc_available (flow_resrc);
             if (rc && resrc_reqst_exclusive (request)) {

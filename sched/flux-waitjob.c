@@ -133,10 +133,11 @@ static bool state_reached (wjctx_t *ctx)
         Jget_int64 (o, JSC_STATE_PAIR_NSTATE, &state);
         Jput (jcb);
         free (json_str);
-        log_msg ("%"PRId64" already started (%s)",
-                 ctx->jobid, jsc_job_num2state (state));
+        log_msg ("%s: %"PRId64" already started (%s)",
+                 __FUNCTION__, ctx->jobid, jsc_job_num2state (state));
         if (state == ctx->tgt_state) {
-            log_msg ("%"PRId64" already reached the target state", ctx->jobid);
+            log_msg ("%s: %"PRId64" already reached the target state",
+                     __FUNCTION__,  ctx->jobid);
             rc = true;
         }
     }
@@ -151,12 +152,12 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     wjctx_t *ctx = getctx (h);
 
     if (errnum > 0) {
-        log_errn (errnum, "waitjob_cb: jsc error");
+        log_errn (errnum, "%s: jsc error", __FUNCTION__);
         return -1;
     }
 
     if (!(jcb = Jfromstr (jcbstr))) {
-        log_msg ("waitjob_cb: error parsing JSON string");
+        log_msg ("%s: error parsing JSON string", __FUNCTION__);
         return -1;
     }
     get_jobid (jcb, &j);
@@ -165,7 +166,7 @@ static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
     if ((j == ctx->jobid) && (ns == ctx->tgt_state)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        log_msg ("waitjob_cb: completion notified");
+        log_msg ("%s: completion notified", __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h));
     }
 
@@ -179,7 +180,8 @@ static int wait_job_complete (flux_t *h)
     wjctx_t *ctx = getctx (h);
 
     if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
-        log_err ("failed to register a waitjob CB");
+        errno = EINVAL;
+        log_err ("%s: failed to register a waitjob CB", __FUNCTION__);
         goto done;
     }
     /* once jsc_notify_status is returned, all of JSC events
@@ -192,11 +194,11 @@ static int wait_job_complete (flux_t *h)
     if (state_reached (ctx)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        log_msg ("wait_job_complete: completion detected");
+        log_msg ("%s: completion detected", __FUNCTION__);
         goto done;
     }
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
-        log_err ("error in flux_reactor_run");
+        log_msg ("%s: flux_reactor_run returned", __FUNCTION__);
         goto done;
     }
     rc = 0;
