@@ -404,6 +404,7 @@ void resrc_reqst_print (resrc_reqst_t *resrc_reqst)
             }
         }
     }
+    fflush(stdout);
 }
 
 /***********************************************************************
@@ -551,7 +552,9 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
             nfound = 1;
             resrc_reqst->nfound++;
         }
-    } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))) {
+    } else if (resrc_tree_num_children (resrc_phys_tree (resrc_in))
+               && !(resrc_reqst_exclusive (resrc_reqst)
+                   && (resrc_size_allocs (resrc_in) || resrc_size_reservtns (resrc_in)))) {
         /*
          * This clause visits the children of the current resource
          * searching for a match to the resource request.  The found

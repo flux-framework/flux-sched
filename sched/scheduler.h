@@ -43,6 +43,7 @@
 typedef struct flux_resources {
     int64_t nnodes; /*!< num of nodes requested by a job */
     int64_t ncores; /*!< num of cores requested by a job */
+    int64_t ngpus; /*!< num of cores requested by a job */
     int64_t corespernode; /*!< num of cores per node requested by a job */
     int64_t walltime; /*!< walltime requested by a job */
     bool     node_exclusive; /*!< job requires exclusive use of node if true */

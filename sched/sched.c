@@ -411,7 +411,7 @@ static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
 static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
 {
     int rc = -1;
-    int64_t walltime = 0;
+    int64_t walltime = 0, nn = 0, nc = 0, gpus = 0;
     json_t *o = NULL;
 
     j->req = (flux_res_t *) xzmalloc (sizeof (flux_res_t));
@@ -423,11 +423,14 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
         goto done;
     if (!Jget_int64 (o, JSC_RDESC_NNODES, &nn))
         goto done;
-    if (!Jget_int64 (o, JSC_RDESC_NTASKS, &nc))
+    if (!Jget_int64 (o, JSC_RDESC_NCORES, &nc))
+        goto done;
+    if (!Jget_int64 (o, "gpus", &gpus))
         goto done;
 
-    j->req->nnodes = (uint64_t) nn;
-    j->req->ncores = (uint64_t) nc;
+    j->req->nnodes =  nn;
+    j->req->ncores =  nc;
+    j->req->ngpus =  gpus;
     if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
@@ -1458,8 +1461,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
      */
     req_res = Jnew ();
     if (job->req->nnodes > 0) {
-        json_t *child_core = Jnew ();
-
+        
         Jadd_str (req_res, "type", "node");
         Jadd_int64 (req_res, "req_qty", job->req->nnodes);
         *nreqrd = job->req->nnodes;
@@ -1478,6 +1480,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
             Jadd_bool (req_res, "exclusive", false);
         }
 
+        json_t *child_core = Jnew ();
         Jadd_str (child_core, "type", "core");
         Jadd_int64 (child_core, "req_qty", job->req->corespernode);
         /* setting size == 1 devotes (all of) the core to the job */
@@ -1486,7 +1489,23 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
         Jadd_bool (child_core, "exclusive", true);
         Jadd_int64 (child_core, "starttime", starttime);
         Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
-        json_object_set_new (req_res, "req_child", child_core);
+
+        json_t *children = Jnew_ar();
+        json_array_append_new (children, child_core);
+        if (job->req->ngpus) {
+            json_t *child_gpu = Jnew ();
+            // terrible, terrible lies...
+            Jadd_str (child_gpu, "type", "gpu");
+            Jadd_int64 (child_gpu, "req_qty", job->req->ngpus);
+            /* setting size == 1 devotes (all of) the core to the job */
+            Jadd_int64 (child_gpu, "req_size", 1);
+            /* setting exclusive to true prevents multiple jobs per core */
+            Jadd_bool (child_gpu, "exclusive", true);
+            Jadd_int64 (child_gpu, "starttime", starttime);
+            Jadd_int64 (child_gpu, "endtime", starttime + job->req->walltime);
+            json_array_append_new (children, child_gpu);
+        }
+        json_object_set_new (req_res, "req_children", children);
     } else if (job->req->ncores > 0) {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", job->req->ncores);
@@ -1500,7 +1519,10 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
 
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
+    json_dumpf(req_res,stderr,JSON_INDENT(4));
     resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
+
+        resrc_reqst_print(resrc_reqst);
 
 done:
     if (req_res)

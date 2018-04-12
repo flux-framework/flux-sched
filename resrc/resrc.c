@@ -959,6 +959,18 @@ resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx,
             zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
             /* do not call the zhash_freefn() for the *resrc */
             free (obj_ptr);
+            for (int i=0; i < 4; ++i) {
+                char * name = xasprintf("gpu%d", i);
+                json_t * o = json_pack("{s:s, s:s, s:s, s:i}",
+                        "type", "gpu",
+                        "basename", "gpu",
+                        "name", name,
+                        "id", i
+                        );
+                resrc_new_from_json(ctx, o, resrc, true);
+                json_decref(o);
+                free(name);
+            }
         } else {
             str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
                     __FUNCTION__);
