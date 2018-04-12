@@ -1536,10 +1536,8 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
 
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
-    json_dumpf(req_res,stderr,JSON_INDENT(4));
-    resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
 
-        resrc_reqst_print(resrc_reqst);
+    resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
 
 done:
     if (req_res)
