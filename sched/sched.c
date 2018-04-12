@@ -114,6 +114,7 @@ typedef struct {
     bool          schedonce;          /* Use resources only once */
     bool          fail_on_error;      /* Fail immediately on error */
     int           verbosity;
+    int first_rank;
     rsreader_t    r_mode;
     sched_params_t s_params;
 } ssrvarg_t;
@@ -208,6 +209,7 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
     arg->schedonce = false;
     arg->fail_on_error = false;
     arg->verbosity = 0;
+    arg->first_rank = 0;
     sched_params_default (&(arg->s_params));
 }
 
@@ -249,6 +251,8 @@ static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
             immediate = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("verbosity=", argv[i], sizeof ("verbosity"))) {
             vlevel = xstrdup (strstr (argv[i], "=") + 1);
+        } else if (!strncmp ("first_rank=", argv[i], sizeof ("first_rank"))) {
+            a->first_rank = atoi (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("rdl-resource=", argv[i], sizeof ("rdl-resource"))) {
             a->uri = xstrdup (strstr (argv[i], "=") + 1);
         } else if (!strncmp ("in-sim=", argv[i], sizeof ("in-sim"))) {
@@ -420,9 +424,7 @@ static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
 static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
 {
     int rc = -1;
-    int64_t nn = 0;
-    int64_t nc = 0;
-    int64_t walltime = 0;
+    int64_t walltime = 0, nn = 0, nc = 0, gpus = 0;
     json_t *o = NULL;
     ssrvctx_t *ctx = getctx (h);
 
@@ -437,9 +439,12 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
         goto done;
     if (!Jget_int64 (o, JSC_RDESC_NCORES, &nc))
         goto done;
+    if (!Jget_int64 (o, "gpus", &gpus))
+        goto done;
 
-    j->req->nnodes = (uint64_t) nn;
-    j->req->ncores = (uint64_t) nc;
+    j->req->nnodes =  nn;
+    j->req->ncores =  nc;
+    j->req->ngpus =  gpus;
     if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
@@ -651,7 +656,7 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
         flux_log_error (ctx->h, "flux_get_size");
         goto done;
     }
-    for (rank=0; rank < size; rank++) {
+    for (rank=ctx->arg.first_rank; rank < size; rank++) {
         json_t *o;
         char k[64];
         int n = snprintf (k, sizeof (k), "resource.hwloc.xml.%"PRIu32"", rank);
@@ -1473,8 +1478,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
      */
     req_res = Jnew ();
     if (job->req->nnodes > 0) {
-        json_t *child_core = Jnew ();
-
+        
         Jadd_str (req_res, "type", "node");
         Jadd_int64 (req_res, "req_qty", job->req->nnodes);
         *nreqrd = job->req->nnodes;
@@ -1493,6 +1497,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
             Jadd_bool (req_res, "exclusive", false);
         }
 
+        json_t *child_core = Jnew ();
         Jadd_str (child_core, "type", "core");
         Jadd_int64 (child_core, "req_qty", job->req->corespernode);
         /* setting size == 1 devotes (all of) the core to the job */
@@ -1501,7 +1506,23 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
         Jadd_bool (child_core, "exclusive", true);
         Jadd_int64 (child_core, "starttime", starttime);
         Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
-        json_object_set_new (req_res, "req_child", child_core);
+
+        json_t *children = Jnew_ar();
+        json_array_append_new (children, child_core);
+        if (job->req->ngpus) {
+            json_t *child_gpu = Jnew ();
+            // terrible, terrible lies...
+            Jadd_str (child_gpu, "type", "gpu");
+            Jadd_int64 (child_gpu, "req_qty", job->req->ngpus);
+            /* setting size == 1 devotes (all of) the core to the job */
+            Jadd_int64 (child_gpu, "req_size", 1);
+            /* setting exclusive to true prevents multiple jobs per core */
+            Jadd_bool (child_gpu, "exclusive", true);
+            Jadd_int64 (child_gpu, "starttime", starttime);
+            Jadd_int64 (child_gpu, "endtime", starttime + job->req->walltime);
+            json_array_append_new (children, child_gpu);
+        }
+        json_object_set_new (req_res, "req_children", children);
     } else if (job->req->ncores > 0) {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", job->req->ncores);
@@ -1515,6 +1536,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
 
     Jadd_int64 (req_res, "starttime", starttime);
     Jadd_int64 (req_res, "endtime", starttime + job->req->walltime);
+
     resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
 
 done:
@@ -1596,7 +1618,8 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                           "%"PRId64"", nreqrd,
                           resrc_type (resrc_reqst_resrc (resrc_reqst)),
                           job->lwj_id);
-            } else {
+            }
+            else {
                 rc = plugin->reserve_resources (h, ctx->rsapi,
                                                 &selected_tree, job->lwj_id,
                                                 starttime, job->req->walltime,
@@ -1635,13 +1658,15 @@ static int schedule_jobs (ssrvctx_t *ctx)
     int64_t starttime = (ctx->sctx.in_sim) ?
         (int64_t) ctx->sctx.sim_state->sim_time : epochtime();
 
-    if (priority_plugin)
+    if (priority_plugin) {
         priority_plugin->prioritize_jobs (ctx->h, jobs);
+        /* Sort by decreasing priority */
+        zlist_sort (jobs, compare_priority);
+    }
+
     if (!behavior_plugin)
         return -1;
 
-    /* Sort by decreasing priority */
-    zlist_sort (jobs, compare_priority);
     if (ctx->ooo_capable)
         resrc_tree_release_all_reservations (resrc_tree_root (ctx->rsapi));
     rc = behavior_plugin->sched_loop_setup (ctx->h);

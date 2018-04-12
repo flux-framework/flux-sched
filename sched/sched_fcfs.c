@@ -261,7 +261,7 @@ int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
                        int64_t starttime, int64_t walltime, resrc_t *resrc,
                        resrc_reqst_t *resrc_reqst)
 {
-    int rc = -1;
+    int rc = 0;//-1;
 
     /* If queue_depth is 1, this scheduler isn't out-of-order capable */
     if (queue_depth > 1 && *selected_tree)

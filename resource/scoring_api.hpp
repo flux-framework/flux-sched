@@ -177,7 +177,7 @@ public:
         }
         m_best_k = k;
         m_best_i = i;
-        return old;
+        return (int)old;
     }
 
     template<class binary_op>
