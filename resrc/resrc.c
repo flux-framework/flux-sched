@@ -88,6 +88,7 @@ struct resrc {
     zhash_t *tags;
     zhash_t *allocs;
     size_t n_reservtns;
+    zlist_t *alloc_keys;
     zhash_t *reservtns;
     zhashx_t *twindow;
 };
@@ -415,30 +416,49 @@ ret:
     return min_available;
 }
 
-char* resrc_state (resrc_t *resrc)
+char* resrc_state_string (resrc_t *resrc)
 {
     char* str = NULL;
 
     if (resrc) {
         switch (resrc->state) {
-            case RESOURCE_INVALID:
-                str = "invalid";    break;
-            case RESOURCE_IDLE:
-                str = "idle";       break;
-            case RESOURCE_ALLOCATED:
-                str = "allocated";  break;
-            case RESOURCE_RESERVED:
-                str = "reserved";   break;
-            case RESOURCE_DOWN:
-                str = "down";       break;
-            case RESOURCE_UNKNOWN:
-                str = "unknown";    break;
-            case RESOURCE_END:
-            default:
-                str = "n/a";        break;
+        case RESOURCE_INVALID:
+            str = "invalid";    break;
+        case RESOURCE_IDLE:
+            str = "idle";       break;
+        case RESOURCE_ALLOCATED:
+            str = "allocated";  break;
+        case RESOURCE_RESERVED:
+            str = "reserved";   break;
+        case RESOURCE_EXCLUDED:
+            str = "excluded";   break;
+        case RESOURCE_DOWN:
+            str = "down";       break;
+        case RESOURCE_UNKNOWN:
+            str = "unknown";    break;
+        case RESOURCE_END:
+        default:
+            str = "n/a";        break;
         }
     }
     return str;
+}
+
+int resrc_state (resrc_t *resrc)
+{
+    if (!resrc)
+        return -1;
+    return (int) resrc->state;
+}
+
+int resrc_set_state (resrc_t *resrc, int state)
+{
+    int oldstate = -1;
+    if (!resrc)
+        return oldstate;
+    oldstate = resrc->state;
+    resrc->state = state;
+    return oldstate;
 }
 
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
@@ -453,6 +473,27 @@ size_t resrc_size_allocs (resrc_t *resrc)
     if (resrc)
         return zhash_size (resrc->allocs);
     return 0;
+}
+
+int64_t resrc_alloc_job_first (resrc_t *resrc)
+{
+    char *jobid_str = NULL;
+    if (resrc->alloc_keys) {
+        zlist_destroy (&(resrc->alloc_keys));
+        resrc->alloc_keys = NULL;
+    }
+    resrc->alloc_keys = zhash_keys (resrc->allocs);
+    jobid_str = (char *)zlist_first (resrc->alloc_keys);
+    return (jobid_str)? (int64_t) strtol (jobid_str, NULL, 10) : -1;
+}
+
+int64_t resrc_alloc_job_next (resrc_t *resrc)
+{
+    char *jobid_str = NULL;
+    if (!resrc->alloc_keys)
+        return -1;
+    jobid_str = (char *)zlist_next (resrc->alloc_keys);
+    return (jobid_str)? (int64_t) strtol (jobid_str, NULL, 10) : -1;
 }
 
 size_t resrc_size_reservtns (resrc_t *resrc)
@@ -476,11 +517,32 @@ int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
     return rc;
 }
 
-resrc_t *resrc_lookup (resrc_api_ctx_t *ctx, const char *path)
+resrc_t *resrc_lookup_first (resrc_api_ctx_t *ctx, const char *path)
 {
+    zlist_t *l = NULL;
+    resrc_t *r = NULL;
     if (!ctx || !(ctx->resrc_hash) || !path)
         return NULL;
-    return (resrc_t *)zhash_lookup (ctx->resrc_hash, path);
+    if ((l = zhash_lookup (ctx->resrc_hash, path)))
+        r = zlist_first (l);
+    return r;
+}
+
+resrc_t *resrc_lookup_next (resrc_api_ctx_t *ctx, const char *path)
+{
+    zlist_t *l = NULL;
+    resrc_t *r = NULL;
+    if (!ctx || !(ctx->resrc_hash) || !path)
+        return NULL;
+    if ((l = zhash_lookup (ctx->resrc_hash, path)))
+        r = zlist_next (l);
+    return r;
+}
+
+static void list_free_wrap (void *data)
+{
+    zlist_t *l = (zlist_t *)data;
+    zlist_destroy (&l);
 }
 
 resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx, const char *type, const char *path,
@@ -508,8 +570,13 @@ resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx, const char *type, const char 
         }
         if (!strncmp (type, "node", 5)) {
             /* Add this new resource to the resource hash table.
-             * Do not supply a zhash_freefn() */
-            zhash_insert (ctx->resrc_hash, resrc->name, (void *)resrc);
+             * Do not supply a zlist_freefn() */
+            zlist_t *l = NULL;
+            if (!(l = zhash_lookup (ctx->resrc_hash, resrc->name)))
+                l = zlist_new ();
+            zlist_append (l, (void *)resrc);
+            zhash_insert (ctx->resrc_hash, resrc->name, (void *)l);
+            zhash_freefn (ctx->resrc_hash, resrc->name, list_free_wrap);
         }
         resrc->digest = NULL;
         if (sig)
@@ -526,6 +593,7 @@ resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx, const char *type, const char 
         resrc->graphs = zhash_new ();
         resrc->allocs = zhash_new ();
         resrc->n_reservtns = 0;
+        resrc->alloc_keys = NULL;
         resrc->reservtns = zhash_new ();
         resrc->properties = zhash_new ();
         resrc->tags = zhash_new ();
@@ -595,6 +663,10 @@ void resrc_resource_destroy (resrc_api_ctx_t *ctx, void *object)
          * with its physical tree */
         zhash_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
+        if (resrc->alloc_keys) {
+            zlist_destroy (&(resrc->alloc_keys));
+            resrc->alloc_keys = NULL;
+        }
         zhash_destroy (&resrc->reservtns);
         zhash_destroy (&resrc->properties);
         zhash_destroy (&resrc->tags);
@@ -1062,7 +1134,7 @@ char *resrc_to_string (resrc_t *resrc)
              "id: %"PRId64", state: %s, "
              "uuid: %s, size: %zd, avail: %zd",
              resrc->type, resrc->path, resrc->basename, resrc->name,
-             resrc->digest, resrc->id, resrc_state (resrc),
+             resrc->digest, resrc->id, resrc_state_string (resrc),
              uuid, resrc->size, resrc->available);
     if (zhash_size (resrc->properties)) {
         fprintf (ss, ", properties:");
@@ -1116,19 +1188,21 @@ void resrc_print_resource (resrc_t *resrc)
  * defined by the start and end times.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
-        size_t reqrd_size)
+                           size_t reqrd_size, int *reason)
 {
     bool rc = false;
     window_t *window = NULL;
     int64_t endtime = resrc_reqst_endtime (request);
     int64_t starttime = resrc_reqst_starttime (request);
     size_t available = 0;
+    *reason = REASON_NONE;
 
     /* If request endtime is greater than the lifetime of the
        resource, then return false */
     window = zhashx_lookup (resrc->twindow, "0");
     if (window) {
         if (endtime > (window->endtime - 10)) {
+            *reason = DUE_TO_TIME;
             return false;
         }
     }
@@ -1140,21 +1214,33 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
 
     rc = (available >= reqrd_size);
 
+    if (!available)
+        *reason = DUE_TO_EXCLUSIVITY;
+    else if (!rc)
+        *reason  = DUE_TO_SIZE;
+
     return rc;
 }
 
 bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
-        bool available)
+                           bool available, int *reason)
 {
     bool rc = false;
     char *rproperty = NULL;                             /* request property */
     char *rtag = NULL;                                  /* request tag */
     resrc_t *reqst_resrc = resrc_reqst_resrc (request); /* request's resrc */
     resrc_graph_req_t *graph_req = NULL;
+    *reason = REASON_NONE;
 
     if (reqst_resrc && !strcmp (resrc->type, reqst_resrc->type)) {
+        if (resrc_state (resrc) == RESOURCE_EXCLUDED) {
+            *reason = DUE_TO_EXCLUSION;
+            goto ret;
+        }
+
         if (zhash_size (reqst_resrc->properties)) {
             if (!zhash_size (resrc->properties)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
             }
             /* be sure the resource has all the requested properties */
@@ -1162,21 +1248,26 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             zhash_first (reqst_resrc->properties);
             do {
                 rproperty = (char *)zhash_cursor (reqst_resrc->properties);
-                if (!zhash_lookup (resrc->properties, rproperty))
+                if (!zhash_lookup (resrc->properties, rproperty)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
             } while (zhash_next (reqst_resrc->properties));
         }
 
         if (zhash_size (reqst_resrc->tags)) {
             if (!zhash_size (resrc->tags)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
             }
             /* be sure the resource has all the requested tags */
             zhash_first (reqst_resrc->tags);
             do {
                 rtag = (char *)zhash_cursor (reqst_resrc->tags);
-                if (!zhash_lookup (resrc->tags, rtag))
+                if (!zhash_lookup (resrc->tags, rtag)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
             } while (zhash_next (reqst_resrc->tags));
         }
 
@@ -1184,8 +1275,10 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
         if (graph_req) {
             resrc_flow_t *resrc_flow;
 
-            if (!zhash_size (resrc->graphs))
+            if (!zhash_size (resrc->graphs)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
+            }
             /*
              * Support only flow graphs right now.  When other graph
              * types are added, a switch will need to be added to
@@ -1194,8 +1287,10 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             while (graph_req->name) {
                 resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
                 if (!resrc_flow ||
-                        !resrc_flow_available (resrc_flow, graph_req->size, request))
+                        !resrc_flow_available (resrc_flow, graph_req->size, request)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
                 graph_req++;
             }
         }
@@ -1209,12 +1304,20 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
              */
             if (resrc_reqst_starttime (request))
                 rc = resrc_walltime_match (resrc, request,
-                        resrc_reqst_reqrd_size (request));
+                                           resrc_reqst_reqrd_size (request),
+                                           reason);
             else {
                 rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
+                if (!resrc->available)
+                    *reason = DUE_TO_EXCLUSIVITY;
+                else if (!rc)
+                    *reason = DUE_TO_SIZE;
+
                 if (rc && resrc_reqst_exclusive (request)) {
                     rc = !zhash_size (resrc->allocs) &&
                         !zhash_size (resrc->reservtns);
+                    if (!rc)
+                        *reason = DUE_TO_EXCLUSIVITY;
                 }
             }
         } else {
@@ -1518,7 +1621,9 @@ int resrc_release_allocation (resrc_t *resrc, int64_t rel_job)
             zhashx_delete (resrc->twindow, id_ptr);
 
         zhash_delete (resrc->allocs, id_ptr);
-        if ((resrc->state != RESOURCE_INVALID) && !zhash_size (resrc->allocs)) {
+        if (((resrc->state != RESOURCE_INVALID)
+              && (resrc->state != RESOURCE_EXCLUDED))
+            && !zhash_size (resrc->allocs)) {
             if (zhash_size (resrc->reservtns))
                 resrc->state = RESOURCE_RESERVED;
             else
@@ -1566,7 +1671,8 @@ int resrc_release_all_reservations (resrc_t *resrc)
         resrc->n_reservtns = 0;
     }
 
-    if (resrc->state != RESOURCE_INVALID) {
+    if (resrc->state != RESOURCE_INVALID
+        && resrc->state != RESOURCE_EXCLUDED) {
         if (zhash_size (resrc->allocs))
             resrc->state = RESOURCE_ALLOCATED;
         else
