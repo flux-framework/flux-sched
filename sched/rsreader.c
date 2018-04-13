@@ -256,10 +256,14 @@ int rsreader_hwloc_load (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
 {
     int rc = -1;
     rssig_t *sig = NULL;
+    char *aux = NULL;
     hwloc_topology_t topo;
 
     if (!machs)
         goto done;
+
+    if (r_mode == RSREADER_HWLOC)
+        aux = xasprintf ("%u", rank);
 
     if (hwloc_topology_init (&topo) != 0)
         goto done;
@@ -267,7 +271,7 @@ int rsreader_hwloc_load (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
         goto err;
     if (hwloc_topology_load (topo) != 0)
         goto err;
-    if (rs2rank_set_signature ((char*)buf, len, topo, &sig) != 0)
+    if (rs2rank_set_signature ((char*)buf, len, aux, topo, &sig) != 0)
         goto err;
     if (rs2rank_tab_update (machs, get_hn (topo), sig, rank) != 0)
         goto err;
@@ -276,10 +280,15 @@ int rsreader_hwloc_load (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
         const char *s = rs2rank_get_digest (sig);
         if (!resrc_generate_hwloc_resources (rsapi, topo, s, err_str))
             goto err;
+
+        free (aux);
+        aux = NULL;
     }
 
     rc = 0;
 err:
+    if (aux)
+        free (aux);
     hwloc_topology_destroy (topo);
 done:
     return rc;
