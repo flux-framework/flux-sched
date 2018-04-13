@@ -46,6 +46,7 @@ typedef struct {
     double time_limit;
     int nnodes;
     int ncpus;
+    int ngpus;
     int64_t io_rate;
     flux_kvsdir_t *kvs_dir;
 } job_t;

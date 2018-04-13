@@ -422,6 +422,7 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
     int rc = -1;
     int64_t nn = 0;
     int64_t nc = 0;
+    int64_t ngpus = 0;
     int64_t walltime = 0;
     json_t *o = NULL;
     ssrvctx_t *ctx = getctx (h);
@@ -437,9 +438,12 @@ static inline int fill_resource_req (flux_t *h, flux_lwj_t *j, json_t *jcb)
         goto done;
     if (!Jget_int64 (o, JSC_RDESC_NCORES, &nc))
         goto done;
+    if (!Jget_int64 (o, JSC_RDESC_NGPUS, &ngpus))
+        goto done;
 
     j->req->nnodes = (uint64_t) nn;
     j->req->ncores = (uint64_t) nc;
+    j->req->ngpus = (uint64_t) ngpus;
     if (!Jget_int64 (o, JSC_RDESC_WALLTIME, &walltime) || !walltime) {
         j->req->walltime = (uint64_t) 3600;
     } else {
@@ -1247,13 +1251,14 @@ static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, resrc_t *r,
  *                                                                              *
  *******************************************************************************/
 
-static void inline build_contain_1node_req (int64_t nc, int64_t rank,
+static void inline build_contain_1node_req (int64_t nc, int64_t ng, int64_t rank,
 					    json_t *rarr)
 {
     json_t *e = Jnew ();
     json_t *o = Jnew ();
     Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINING_RANK, rank);
     Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NCORES, nc);
+    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NGPUS, ng);
     json_object_set_new (e, JSC_RDL_ALLOC_CONTAINED, o);
     json_array_append_new (rarr, e);
 }
@@ -1314,8 +1319,10 @@ static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
             else {
                 int cores = job->req->corespernode ? job->req->corespernode :
                     n_resources_of_type(rt, "core");
+                int gpus = job->req->gpuspernode ? job->req->gpuspernode :
+                    n_resources_of_type(rt, "gpu");
                 if (cores) {
-                    build_contain_1node_req (cores, rank, arr);
+                    build_contain_1node_req (cores, gpus, rank, arr);
                 }
             }
         }
@@ -1473,8 +1480,6 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
      */
     req_res = Jnew ();
     if (job->req->nnodes > 0) {
-        json_t *child_core = Jnew ();
-
         Jadd_str (req_res, "type", "node");
         Jadd_int64 (req_res, "req_qty", job->req->nnodes);
         *nreqrd = job->req->nnodes;
@@ -1485,6 +1490,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
             job->req->ncores = job->req->nnodes;
         job->req->corespernode = (job->req->ncores + job->req->nnodes - 1) /
             job->req->nnodes;
+        job->req->gpuspernode = 0;
         if (job->req->node_exclusive) {
             Jadd_int64 (req_res, "req_size", 1);
             Jadd_bool (req_res, "exclusive", true);
@@ -1493,6 +1499,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
             Jadd_bool (req_res, "exclusive", false);
         }
 
+        json_t *child_core = Jnew ();
         Jadd_str (child_core, "type", "core");
         Jadd_int64 (child_core, "req_qty", job->req->corespernode);
         /* setting size == 1 devotes (all of) the core to the job */
@@ -1501,7 +1508,24 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
         Jadd_bool (child_core, "exclusive", true);
         Jadd_int64 (child_core, "starttime", starttime);
         Jadd_int64 (child_core, "endtime", starttime + job->req->walltime);
-        json_object_set_new (req_res, "req_child", child_core);
+
+        json_t *children = Jnew_ar();
+        json_array_append_new (children, child_core);
+        if (job->req->ngpus) {
+            job->req->gpuspernode = (job->req->ngpus + job->req->nnodes - 1) /
+            job->req->nnodes;
+            json_t *child_gpu = Jnew ();
+            Jadd_str (child_gpu, "type", "gpu");
+            Jadd_int64 (child_gpu, "req_qty", job->req->gpuspernode);
+            /* setting size == 1 devotes (all of) the gpu to the job */
+            Jadd_int64 (child_gpu, "req_size", 1);
+            /* setting exclusive to true prevents multiple jobs per core */
+            Jadd_bool (child_gpu, "exclusive", true);
+            Jadd_int64 (child_gpu, "starttime", starttime);
+            Jadd_int64 (child_gpu, "endtime", starttime + job->req->walltime);
+            json_array_append_new (children, child_gpu);
+        }
+        json_object_set_new (req_res, "req_children", children);
     } else if (job->req->ncores > 0) {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", job->req->ncores);

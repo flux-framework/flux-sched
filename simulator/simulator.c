@@ -137,6 +137,7 @@ job_t *blank_job ()
     job->time_limit = 0;
     job->nnodes = 0;
     job->ncpus = 0;
+    job->ngpus= 0;
     job->kvs_dir = NULL;
     return job;
 }
