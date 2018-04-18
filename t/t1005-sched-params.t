@@ -106,4 +106,9 @@ sched-params=queue-depth=2048,delay-sched=false &&
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
 '
 
+test_expect_success 'sched-params: unloaded sched module' '
+    flux module remove sched
+'
+
+
 test_done

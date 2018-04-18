@@ -104,4 +104,8 @@ EOF
     test_cmp expected4.sort output.$(get_session).cp.sort 
 '
 
+test_expect_success 'jsc: unloaded sched module' '
+    flux module remove sched
+'
+
 test_done

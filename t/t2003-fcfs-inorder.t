@@ -48,4 +48,11 @@ test_expect_success 'jobs scheduled in correct order with queue-depth=1' '
     diff -u ${expected_order} ./actual
 '
 
+test_expect_success 'sim: unloaded' '
+    flux module remove sim_exec &&
+    flux module remove submit &&
+    flux module remove sim &&
+    flux module remove sched
+'
+
 test_done

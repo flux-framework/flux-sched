@@ -123,6 +123,10 @@ test_expect_success 'rs2rank: can handle sierra nodes with group type' '
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc_sierra}
 '
 
+test_expect_success 'rs2rank: unloaded sched module' '
+    flux module remove sched
+'
+
 
 test_done
 
