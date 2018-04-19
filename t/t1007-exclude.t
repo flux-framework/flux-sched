@@ -78,15 +78,15 @@ test_expect_success 'excluding a node with reservations works' '
     adjust_session_info 4 &&
     flux module remove sched &&
     flux module load sched sched-once=true node-excl=true plugin=sched.backfill &&
-    timed_wait_job 5 submitted &&
+    timed_wait_job 5 running &&
+    flux submit -N 3 sleep 0 &&
     flux submit -N 4 sleep 0 &&
     flux submit -N 4 sleep 0 &&
-    flux submit -N 4 sleep 0 &&
-    flux submit -N 4 sleep 0 &&
+    flux submit -N 1 sleep 0 &&
     timed_sync_wait_job 10 &&
     flux wreck exclude -k cab1235 &&
-    state=$(flux kvs get -j $(job_kvs_path 7).state) &&
-    test ${state} = "complete"
+    state=$(flux kvs get -j $(job_kvs_path 8).state) &&
+    test ${state} = "submitted"
 '
 
 test_expect_success 'attempting to exclude or include an invalid node must fail' '
