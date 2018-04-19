@@ -48,6 +48,7 @@ flux-sched requires the following packages to build:
 
 ```
 libboost-dev >= 1.53
+libhwloc-dev >= 1.11.1
 ```
 
 The sched module contains

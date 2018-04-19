@@ -42,7 +42,7 @@ AC_CHECK_LIB([dl], [dlerror],
               AC_DEFINE([HAVE_LIBDL], [1],
                         [Define if you have libdl])],
              [AC_MSG_ERROR([Please install dl])])
-PKG_CHECK_MODULES([HWLOC], [hwloc], [], [])
+PKG_CHECK_MODULES([HWLOC], [hwloc >= 1.11.1], [], [])
 PKG_CHECK_MODULES([JANSSON], [jansson >= 2.6], [], [])
 PKG_CHECK_MODULES([XML2], [libxml-2.0])
 AX_PROG_LUA([5.1],[5.3])

@@ -44,7 +44,6 @@ addons:
       - ccache
       - apport # for coredumps
       - gdb
-      - libhwloc-dev
       - libmunge-dev
       - munge
       - lcov

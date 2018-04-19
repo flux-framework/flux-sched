@@ -30,4 +30,8 @@ test_expect_success 'sched: module remove/load works with installed sched' '
 	flux module load sched
 '
 
+test_expect_success 'sched: module unload' '
+	flux module remove sched
+'
+
 test_done

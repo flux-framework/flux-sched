@@ -97,4 +97,8 @@ test_expect_success 'attempting to exclude or include an invalid node must fail'
     test_must_fail flux wreck include foo
 '
 
+test_expect_success 'unloaded sched module' '
+    flux module remove sched
+'
+
 test_done
