@@ -26,6 +26,10 @@ excl_4N4B_nc=16
 excl_4N4B_sierra=$basepath/004N/exclusive/04-brokers-sierra
 excl_4N4B_nc_sierra=32
 
+excl_4N4B_butte=$basepath/004N/exclusive/04-brokers-butte
+excl_4N4B_m_butte_RDL=$basepath/004N/exclusive/butte.lua
+excl_4N4B_nc_butte=32
+
 #
 # test_under_flux is under sharness.d/
 #
@@ -121,6 +125,25 @@ test_expect_success 'rs2rank: can handle sierra nodes with group type' '
     submit_1N_nproc_sleep_jobs ${excl_4N4B_nc_sierra} 0 &&
     timed_sync_wait_job 10 &&
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc_sierra}
+'
+
+test_expect_success 'rs2rank: can schedule GPUs' '
+    adjust_session_info 6 &&
+    flux module remove sched &&
+    flux hwloc reload ${excl_4N4B_butte} &&
+    flux module load sched sched-once=true rdl-conf=${excl_4N4B_m_butte_RDL} &&
+    timed_wait_job 5 submitted && 
+    flux submit -N 1 -g 4 -c 1 sleep 0 &&
+    flux submit -N 1 -c 32 sleep 0 &&
+    flux submit -N 1 -g 4 -c 1 sleep 0 &&
+    flux submit -N 1 -c 32 sleep 0 &&
+    flux submit -N 1 -g 4 -c 1 sleep 0 &&
+    flux submit -N 1 -c 32 sleep 0 &&
+    timed_sync_wait_job 10 &&
+    state=$(flux kvs get -j $(job_kvs_path 29).state) &&
+    test ${state} = "complete" &&
+    state=$(flux kvs get -j $(job_kvs_path 33).state) &&
+    test ${state} = "submitted"
 '
 
 test_expect_success 'rs2rank: unloaded sched module' '
