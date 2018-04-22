@@ -240,10 +240,11 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
     }
 
     create_f = flux_rpc_pack (h, "job.create", FLUX_NODEID_ANY, 0,
-                       "{ s:i s:i s:i s:i }",
+                       "{ s:i s:i s:i s:i s:i }",
                        "ntasks", job->ncpus,
                        "nnodes", job->nnodes,
                        "ncores", job->ncpus,
+                       "ngpus", job->ngpus,
                        "walltime", (int)job->time_limit);
     if (create_f == NULL) {
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
@@ -269,12 +270,13 @@ int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 
     // Send "submitted" event
     submit_f = flux_rpc_pack (h, "job.submit-nocreate", FLUX_NODEID_ANY, 0,
-                              "{ s:I s:s s:i s:i s:i s:i }",
+                              "{ s:I s:s s:i s:i s:i s:i s:i }",
                               "jobid", new_jobid,
                               "kvs_path", kvs_path,
                               "nnodes", job->nnodes,
                               "ntasks", job->ncpus,
                               "ncores", job->ncpus,
+                              "ngpus", job->ngpus,
                               "walltime", (int)job->time_limit);
     if (submit_f == NULL) {
         flux_log (h, LOG_ERR, "%s: failed to pack job.submit-nocreate: %s",

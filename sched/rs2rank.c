@@ -270,17 +270,25 @@ const char *rs2rank_tab_eq_by_none (machs_t *m)
     return rdigest;
 }
 
-int rs2rank_set_signature (char *rsbuf, size_t len, hwloc_topology_t t,
-                           rssig_t **sig)
+int rs2rank_set_signature (char *rsbuf, size_t len, char *aux,
+                           hwloc_topology_t t, rssig_t **sig)
 {
     int rc = -1;
     zdigest_t *digest = NULL;
+
+    if (!rsbuf)
+        goto error;
+
     *sig = (rssig_t *) xzmalloc (sizeof (**sig)) ;
     if (!(digest = zdigest_new ()))
         oom ();
 
     zdigest_update (digest, (byte *)rsbuf, len);
-    (*sig)->digest = xasprintf ("%s", zdigest_string (digest));
+    if (!aux)
+        (*sig)->digest = xasprintf ("%s", zdigest_string (digest));
+    else
+        (*sig)->digest = xasprintf ("%s.%s", zdigest_string (digest), aux);
+
     zdigest_destroy (&(digest));
     /* FIMXE: Why HWLOC_OBJ_NUMANODE doesn't work ? */
     (*sig)->nsockets = hwloc_get_nbobjs_by_type (t, HWLOC_OBJ_SOCKET);
@@ -288,6 +296,7 @@ int rs2rank_set_signature (char *rsbuf, size_t len, hwloc_topology_t t,
     if (((*sig)->nsockets > 0) && ((*sig)->ncores > 0))
         rc = 0;
 
+error:
     return rc;
 }
 
