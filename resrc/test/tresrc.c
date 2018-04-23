@@ -355,6 +355,28 @@ static int test_a_resrc (resrc_api_ctx_t *rsapi, resrc_t *resrc, bool rdl)
         printf ("The found resources serialized: %s\n", Jtostr (o));
     }
 
+    json_t *gather = Jnew_ar ();
+    json_t *reduce = Jnew ();
+    resrc_api_map_t *gather_map = resrc_api_map_new ();
+    resrc_api_map_put (gather_map, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
+    resrc_api_map_t *reduce_map = resrc_api_map_new ();
+    resrc_api_map_put (reduce_map, "core", (void *)(intptr_t)NONE_UNDER_ME);
+
+    init_time ();
+    rc = resrc_tree_serialize_lite (gather, reduce, found_tree,
+                                    gather_map, reduce_map);
+    ok (!rc, "found resource lightweight serialization took: %lf",
+        ((double)get_time ())/1000000);
+
+    if (verbose) {
+        printf ("The lightweight serialization: %s\n",
+                json_dumps (gather, JSON_INDENT (3)));
+    }
+    Jput (gather);
+    Jput (reduce);
+    resrc_api_map_destroy (&gather_map);
+    resrc_api_map_destroy (&reduce_map);
+
     /* serialized resrcs should be deserialized into a new API instance */
     resrc_api_ctx_t *new_rsapi = resrc_api_init ();
     deserialized_tree = resrc_tree_deserialize (new_rsapi, o, NULL);
@@ -545,7 +567,7 @@ int main (int argc, char *argv[])
 {
     int rc1 = 1, rc2 = 1;
 
-    plan (25 + num_temporal_allocation_tests);
+    plan (27 + num_temporal_allocation_tests);
     test_temporal_allocation ();
     rc1 = test_using_reader_rdl ();
     rc2 = test_using_reader_hwloc ();
