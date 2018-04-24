@@ -1224,18 +1224,15 @@ static inline void bridge_update_timer (ssrvctx_t *ctx)
         queue_timer_change (ctx, "sched");
 }
 
-static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, resrc_t *r,
-                                            uint32_t *rank)
+static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, const char *name,
+                                            const char *digest, uint32_t *rank)
 {
     int rc = -1;
     if (ctx->sctx.in_sim) {
-        rc = rs2rank_tab_query_by_none (ctx->machs, resrc_digest (r),
-                                        false, rank);
+        rc = rs2rank_tab_query_by_none (ctx->machs, digest, false, rank);
     } else {
-        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s", resrc_name (r),
-                                     resrc_digest (r));
-        rc = rs2rank_tab_query_by_sign (ctx->machs, resrc_name (r),
-                                        resrc_digest (r), false, rank);
+        flux_log (ctx->h, LOG_INFO, "hostname: %s, digest: %s", name, digest);
+        rc = rs2rank_tab_query_by_sign (ctx->machs, name, digest, false, rank);
     }
     if (rc == 0)
         flux_log (ctx->h, LOG_INFO, "broker found, rank: %"PRIu32, *rank);
@@ -1314,7 +1311,7 @@ static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
                 }
             }
         } else {
-            if (bridge_rs2rank_tab_query (ctx, r, &rank))
+            if (bridge_rs2rank_tab_query (ctx, resrc_name (r), resrc_digest (r), &rank))
                 goto done;
             else {
                 int cores = job->req->corespernode ? job->req->corespernode :
@@ -1332,6 +1329,36 @@ done:
     return rc;
 }
 
+static int resolve_rank (ssrvctx_t *ctx, json_t *o)
+{
+    int rc = -1;
+    size_t index = 0;
+    json_t *value = NULL;
+
+    json_array_foreach (o, index, value) {
+        uint32_t rank = 0;
+        char *hn = NULL;
+        char *digest = NULL;
+        if (json_unpack (value, "{s:s s:s}", "node", &hn, "digest", &digest))
+            goto done;
+        if (bridge_rs2rank_tab_query (ctx, hn, digest, &rank))
+            goto done;
+
+        json_t *j_rank = json_integer ((json_int_t)rank);
+        if (json_object_del (value, "node"))
+            goto done;
+        if (json_object_del (value, "digest"))
+            goto done;
+        if (json_object_set_new (value, "rank", j_rank))
+            goto done;
+    }
+    rc = 0;
+
+done:
+    return rc;
+}
+
+
 /*
  * Once the job gets allocated to its own copy of rdl, this
  *    1) serializes the rdl and sends it to TP exec service
@@ -1344,22 +1371,32 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     int rc = -1;
     flux_t *h = ctx->h;
     json_t *jcb = Jnew ();
-    json_t *ro = Jnew ();
     json_t *arr = Jnew_ar ();
+    json_t *gat = Jnew_ar ();
+    json_t *red = Jnew ();
+    resrc_api_map_t *gmap = resrc_api_map_new ();
+    resrc_api_map_t *rmap = resrc_api_map_new ();
 
-    if (resrc_tree_serialize (ro, job->resrc_tree)) {
+    resrc_api_map_put (gmap, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
+    resrc_api_map_put (rmap, "core", (void *)(intptr_t)NONE_UNDER_ME);
+    if (resrc_tree_serialize_lite (gat, red, job->resrc_tree, gmap, rmap)) {
         flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
                   job->lwj_id, strerror (errno));
         goto done;
+    } else if (resolve_rank (ctx, gat)) {
+        flux_log (ctx->h, LOG_ERR, "resolving a hostname to rank failed");
+        goto done;
     }
-    json_object_set_new (jcb, JSC_RDL, ro);
+
+    json_object_set_new (jcb, JSC_R_LITE, gat);
     jcbstr = Jtostr (jcb);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL, jcbstr) != 0) {
+    if (jsc_update_jcb (h, job->lwj_id, JSC_R_LITE, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
         goto done;
     }
     Jput (jcb);
+
     jcb = Jnew ();
     if (build_contain_req (ctx, job, job->resrc_tree, arr) != 0) {
         flux_log (h, LOG_ERR, "error requesting containment for job");
@@ -1371,6 +1408,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
         flux_log (h, LOG_ERR, "error updating jcb");
         goto done;
     }
+
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
                   job->lwj_id);
@@ -1381,6 +1419,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 done:
     if (jcb)
         Jput (jcb);
+    if (red)
+        Jput (red);
     return rc;
 }
 
