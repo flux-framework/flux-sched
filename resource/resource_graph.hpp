@@ -37,13 +37,16 @@ namespace resource_model {
 
 enum class emit_format_t { GRAPHVIZ_DOT, GRAPH_ML, };
 
-typedef pool_infra_t resource_pool_t::* pinfra_t;
-typedef std::string resource_pool_t::* pname_t;
-typedef std::string resource_relation_t::* rname_t;
-typedef relation_infra_t resource_relation_t::* rinfra_t;
-
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, resource_pool_t,
-                       resource_relation_t, std::string>  resource_graph_t;
+using pinfra_t = pool_infra_t resource_pool_t::*;
+using pname_t  = std::string resource_pool_t::*;
+using rname_t  = std::string resource_relation_t::*;
+using rinfra_t = relation_infra_t resource_relation_t::*;
+using resource_graph_t = boost::adjacency_list<boost::vecS,
+                                               boost::vecS,
+                                               boost::directedS,
+                                               resource_pool_t,
+                                               resource_relation_t,
+                                               std::string>;
 
 /*! For each chosen subsystem, a selector has std::set<string>.
  *  If edge/vertex's member_of[subsystem] matches with one
@@ -85,25 +88,26 @@ private:
     inframap m_imap;
 };
 
-typedef boost::property_map<resource_graph_t, pinfra_t>::type    vtx_infra_map_t;
-typedef boost::property_map<resource_graph_t, rinfra_t>::type    edg_infra_map_t;
-typedef boost::graph_traits<resource_graph_t>::vertex_descriptor vtx_t;
-typedef boost::graph_traits<resource_graph_t>::edge_descriptor   edg_t;
-typedef boost::graph_traits<resource_graph_t>::vertex_iterator   vtx_iterator_t;
-typedef boost::graph_traits<resource_graph_t>::edge_iterator     edg_iterator_t;
-typedef boost::graph_traits<resource_graph_t>::out_edge_iterator out_edg_iterator_t;
-typedef boost::filtered_graph<resource_graph_t,
-                       subsystem_selector_t<edg_t, edg_infra_map_t>,
-                       subsystem_selector_t<vtx_t, vtx_infra_map_t>>
-                                                          f_resource_graph_t;
-typedef boost::property_map<f_resource_graph_t, rinfra_t>::type  f_edg_infra_map_t;
-typedef boost::property_map<f_resource_graph_t, pinfra_t>::type  f_vtx_infra_map_t;
-typedef boost::property_map<f_resource_graph_t, pname_t>::type   f_res_name_map_t;
-typedef boost::property_map<f_resource_graph_t, rname_t>::type   f_rel_name_map_t;
-typedef boost::property_map<f_resource_graph_t, pinfra_t>::type  f_vtx_infra_map_t;
-typedef boost::graph_traits<f_resource_graph_t>::vertex_iterator f_vtx_iterator_t;
-typedef boost::graph_traits<f_resource_graph_t>::edge_iterator   f_edg_iterator_t;
-typedef boost::graph_traits<f_resource_graph_t>::out_edge_iterator f_out_edg_iterator_t;
+using vtx_infra_map_t = boost::property_map<resource_graph_t, pinfra_t>::type;
+using edg_infra_map_t = boost::property_map<resource_graph_t, rinfra_t>::type;
+using vtx_t = boost::graph_traits<resource_graph_t>::vertex_descriptor;
+using edg_t = boost::graph_traits<resource_graph_t>::edge_descriptor;
+using vtx_iterator_t = boost::graph_traits<resource_graph_t>::vertex_iterator;
+using edg_iterator_t = boost::graph_traits<resource_graph_t>::edge_iterator;
+using out_edg_iterator_t = boost::graph_traits<resource_graph_t>::out_edge_iterator;
+using f_resource_graph_t = boost::filtered_graph<resource_graph_t,
+                                                 subsystem_selector_t<edg_t,
+                                                               edg_infra_map_t>,
+                                                 subsystem_selector_t<vtx_t,
+                                                               vtx_infra_map_t>>;
+using f_edg_infra_map_t = boost::property_map<f_resource_graph_t, rinfra_t>::type;
+using f_vtx_infra_map_t = boost::property_map<f_resource_graph_t, pinfra_t>::type;
+using f_res_name_map_t = boost::property_map<f_resource_graph_t, pname_t>::type;
+using f_rel_name_map_t = boost::property_map<f_resource_graph_t, rname_t>::type;
+using f_vtx_infra_map_t = boost::property_map<f_resource_graph_t, pinfra_t>::type;
+using f_vtx_iterator_t = boost::graph_traits<f_resource_graph_t>::vertex_iterator;
+using f_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::edge_iterator;
+using f_out_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::out_edge_iterator;
 
 /*! Resource graph data store.
  *  Adjacency_list graph, roots of this graph and various indexing.

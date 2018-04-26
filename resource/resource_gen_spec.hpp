@@ -64,30 +64,27 @@ struct relation_gen_t {
     int as_src_uplvl;
 };
 
-typedef boost::adjacency_list<
-    boost::vecS,
-    boost::vecS,
-    boost::directedS,
-    resource_pool_gen_t,
-    relation_gen_t
-> gg_t;
+using gg_t = boost::adjacency_list<boost::vecS,
+                                   boost::vecS,
+                                   boost::directedS,
+                                   resource_pool_gen_t,
+                                   relation_gen_t>;
+using pgen_t = std::string resource_pool_gen_t::*;
+using rgen_t = std::string relation_gen_t::*;
+using ggv_t = boost::graph_traits<gg_t>::vertex_descriptor;
+using gge_t = boost::graph_traits<gg_t>::edge_descriptor;
 
-typedef std::string resource_pool_gen_t::* pgen_t;
-typedef std::string relation_gen_t::* rgen_t;
-typedef boost::graph_traits<gg_t>::vertex_descriptor ggv_t;
-typedef boost::graph_traits<gg_t>::edge_descriptor gge_t;
-
-typedef boost::property_map<gg_t, pgen_t>::type vtx_type_map_t;
-typedef boost::property_map<gg_t, pgen_t>::type vtx_basename_map_t;
-typedef boost::property_map<gg_t, long resource_pool_gen_t::* >::type vtx_size_map_t;
-typedef boost::property_map<gg_t, pgen_t>::type vtx_unit_map_t;
-typedef boost::property_map<gg_t, pgen_t>::type vtx_subsystem_map_t;
-typedef boost::property_map<gg_t, rgen_t>::type edg_e_subsystem_map_t;
-typedef boost::property_map<gg_t, rgen_t>::type edg_relation_map_t;
-typedef boost::property_map<gg_t, rgen_t>::type edg_rrelation_map_t;
-typedef boost::property_map<gg_t, rgen_t>::type edg_gen_method_map_t;
-typedef boost::property_map<gg_t, rgen_t>::type edg_id_method_map_t;
-typedef boost::property_map<gg_t, int relation_gen_t::* >::type edg_multi_scale_map_t;
+using vtx_type_map_t = boost::property_map<gg_t, pgen_t>::type;
+using vtx_basename_map_t = boost::property_map<gg_t, pgen_t>::type;
+using vtx_size_map_t = boost::property_map<gg_t, long resource_pool_gen_t::* >::type;
+using vtx_unit_map_t = boost::property_map<gg_t, pgen_t>::type;
+using vtx_subsystem_map_t = boost::property_map<gg_t, pgen_t>::type;
+using edg_e_subsystem_map_t = boost::property_map<gg_t, rgen_t>::type;
+using edg_relation_map_t = boost::property_map<gg_t, rgen_t>::type;
+using edg_rrelation_map_t = boost::property_map<gg_t, rgen_t>::type;
+using edg_gen_method_map_t = boost::property_map<gg_t, rgen_t>::type;
+using edg_id_method_map_t = boost::property_map<gg_t, rgen_t>::type;
+using edg_multi_scale_map_t = boost::property_map<gg_t, int relation_gen_t::* >::type;
 
 class resource_gen_spec_t {
 public:

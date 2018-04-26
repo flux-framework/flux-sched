@@ -37,9 +37,9 @@ namespace resource_model {
 const char * const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
-typedef std::string subsystem_t;
-typedef std::map<subsystem_t, std::string> multi_subsystems_t;
-typedef std::map<subsystem_t, std::set<std::string>> multi_subsystemsS;
+using subsystem_t = std::string;
+using multi_subsystems_t = std::map<subsystem_t, std::string>;
+using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
 
 } // Flux
 } // Flux::resource_model
