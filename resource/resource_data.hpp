@@ -28,6 +28,7 @@
 #include <cstring>
 #include <map>
 #include <set>
+#include "color.hpp"
 #include "planner/planner.h"
 
 namespace Flux {
@@ -44,54 +45,6 @@ const int64_t X_CHECKER_NJOBS = 0x40000000;
 typedef std::string subsystem_t;
 typedef std::map<subsystem_t, std::string> multi_subsystems_t;
 typedef std::map<subsystem_t, std::set<std::string>> multi_subsystemsS;
-
-class color_t {
-public:
-    enum class color_offset_t : uint64_t {
-        WHITE_OFFSET = 0,
-        GRAY_OFFSET = 1,
-        BLACK_OFFSET = 2,
-        NEW_BASE = 3
-    };
-
-    void reset ()
-    {
-        m_color_base += static_cast<uint64_t>(color_offset_t::NEW_BASE);
-    }
-    bool is_white (uint64_t c) const
-    {
-        return c <= (m_color_base
-                     + static_cast<uint64_t>(color_offset_t::WHITE_OFFSET));
-    }
-    uint64_t white () const
-    {
-        return m_color_base
-               + static_cast<uint64_t>(color_offset_t::WHITE_OFFSET);
-    }
-    bool is_gray (uint64_t c) const
-    {
-        return c == (m_color_base
-                     + static_cast<uint64_t>(color_offset_t::GRAY_OFFSET));
-    }
-    uint64_t gray () const
-    {
-        return m_color_base
-               + static_cast<uint64_t>(color_offset_t::GRAY_OFFSET);
-    }
-    bool is_black (uint64_t c) const
-    {
-        return c == (m_color_base
-                     + static_cast<uint64_t>(color_offset_t::BLACK_OFFSET));
-    }
-    uint64_t black () const
-    {
-        return m_color_base
-               + static_cast<uint64_t>(color_offset_t::BLACK_OFFSET);
-    }
-
-private:
-    uint64_t m_color_base = 0;
-};
 
 //! Type to keep track of current schedule state
 struct schedule_t {

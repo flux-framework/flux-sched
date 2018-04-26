@@ -44,6 +44,7 @@ utilities_resource_query_SOURCES = \
     dfu_traverse_impl.cpp \
     resource_gen.cpp \
     resource_gen_spec.cpp \
+    color.cpp \
     scoring_api.cpp \
     edge_eval_api.cpp \
     utilities/command.hpp \
@@ -52,6 +53,7 @@ utilities_resource_query_SOURCES = \
     resource_data.hpp \
     resource_gen.hpp \
     resource_gen_spec.hpp \
+    color.hpp \
     dfu_traverse.hpp \
     dfu_traverse_impl.hpp \
     dfu_match_cb.hpp \
