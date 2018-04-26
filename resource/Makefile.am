@@ -44,6 +44,8 @@ utilities_resource_query_SOURCES = \
     dfu_traverse_impl.cpp \
     resource_gen.cpp \
     resource_gen_spec.cpp \
+    scoring_api.cpp \
+    edge_eval_api.cpp \
     utilities/command.hpp \
     dfu_match_id_based.hpp \
     resource_graph.hpp \
@@ -56,6 +58,8 @@ utilities_resource_query_SOURCES = \
     matcher_data.hpp \
     system_defaults.hpp \
     scoring_api.hpp \
+    edge_eval_api.hpp \
+    fold.hpp \
     planner/planner.h
 utilities_resource_query_CXXFLAGS = \
     $(AM_CXXFLAGS) \
