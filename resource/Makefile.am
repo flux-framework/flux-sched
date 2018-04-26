@@ -40,6 +40,9 @@ utilities_grug2dot_LDADD = \
 utilities_resource_query_SOURCES = \
     utilities/resource-query.cpp \
     utilities/command.cpp \
+    resource_data.cpp \
+    infra_data.cpp \
+    sched_data.cpp \
     dfu_traverse.cpp \
     dfu_traverse_impl.cpp \
     resource_gen.cpp \
@@ -50,6 +53,9 @@ utilities_resource_query_SOURCES = \
     utilities/command.hpp \
     dfu_match_id_based.hpp \
     resource_graph.hpp \
+    data_std.hpp \
+    infra_data.hpp \
+    sched_data.hpp \
     resource_data.hpp \
     resource_gen.hpp \
     resource_gen_spec.hpp \
