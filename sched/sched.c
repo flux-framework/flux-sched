@@ -1345,8 +1345,6 @@ static int resolve_rank (ssrvctx_t *ctx, json_t *o)
             goto done;
 
         json_t *j_rank = json_integer ((json_int_t)rank);
-        if (json_object_del (value, "node"))
-            goto done;
         if (json_object_del (value, "digest"))
             goto done;
         if (json_object_set_new (value, "rank", j_rank))
