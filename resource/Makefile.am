@@ -40,22 +40,34 @@ utilities_grug2dot_LDADD = \
 utilities_resource_query_SOURCES = \
     utilities/resource-query.cpp \
     utilities/command.cpp \
+    resource_data.cpp \
+    infra_data.cpp \
+    sched_data.cpp \
     dfu_traverse.cpp \
     dfu_traverse_impl.cpp \
     resource_gen.cpp \
     resource_gen_spec.cpp \
+    color.cpp \
+    scoring_api.cpp \
+    edge_eval_api.cpp \
     utilities/command.hpp \
     dfu_match_id_based.hpp \
     resource_graph.hpp \
+    data_std.hpp \
+    infra_data.hpp \
+    sched_data.hpp \
     resource_data.hpp \
     resource_gen.hpp \
     resource_gen_spec.hpp \
+    color.hpp \
     dfu_traverse.hpp \
     dfu_traverse_impl.hpp \
     dfu_match_cb.hpp \
     matcher_data.hpp \
     system_defaults.hpp \
     scoring_api.hpp \
+    edge_eval_api.hpp \
+    fold.hpp \
     planner/planner.h
 utilities_resource_query_CXXFLAGS = \
     $(AM_CXXFLAGS) \
