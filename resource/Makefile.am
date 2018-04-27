@@ -48,6 +48,7 @@ utilities_resource_query_SOURCES = \
     sched_data.cpp \
     dfu_traverse.cpp \
     dfu_traverse_impl.cpp \
+    dfu_match_cb.cpp \
     resource_gen.cpp \
     resource_gen_spec.cpp \
     color.cpp \
