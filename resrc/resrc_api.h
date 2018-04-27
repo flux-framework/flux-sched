@@ -1,8 +1,12 @@
 #ifndef _FLUX_RESRC_API_H
 #define _FLUX_RESRC_API_H
 
+#define REDUCE_UNDER_ME 1
+#define GATHER_UNDER_ME 2
+#define NONE_UNDER_ME 3
 
 typedef struct resrc_api_ctx resrc_api_ctx_t;
+typedef struct resrc_api_map resrc_api_map_t;
 
 /*
  * Create and initialize an instance of resource API and
@@ -19,7 +23,11 @@ resrc_api_ctx_t *resrc_api_init (void);
  */
 void resrc_api_fini (resrc_api_ctx_t *ctx);
 
-/* Pls add other API-level specialization functions here */
+resrc_api_map_t *resrc_api_map_new ();
+void resrc_api_map_destroy (resrc_api_map_t **m);
+void *resrc_api_map_get (resrc_api_map_t *m, const char *key);
+void resrc_api_map_put (resrc_api_map_t *m, const char *key, void *val);
+void resrc_api_map_rm (resrc_api_map_t *m, const char *key);
 
 #endif /* !_FLUX_RESRC_API_H */
 

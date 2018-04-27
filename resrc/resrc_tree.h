@@ -68,6 +68,39 @@ void resrc_tree_print (resrc_tree_t *resrc_tree);
  */
 int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree);
 
+/*!
+ * Add the lightweight, programmable resource tree to the json object.
+ * gather_m and reduce_m control what and how specific types of
+ * resources will be serialized. Resource types passed in through
+ * gather_m map will be simply gathered while types passed in
+ * through reduce_m will be reduced.
+ *
+ * Gather form: [{"node": "quartz1", "children": {...}},
+ *               {"node": "quartz2", "children":  {...}}]
+ *
+ * Reduce form: {"core": "0,1,2"}
+ *
+ * Note that once a resource is "reduced", it can no longer have children
+ * resources serialized under it.
+ *
+ * \param gather[out]   json array used for gathering resources whose type
+ *                      is contained within gather_m.
+ * \param reduce[out]   json object used for reducing resources whose type
+ *                      is contained within reduce_m.
+ * \param resrc_tree    resrc_tree object to serialize.
+ * \param gather_m      map that contains resoures types to serialize
+ *                      in the gather form. If the value of the type is
+ *                      REDUCE_UNDER_ME, the first offspring resource type
+ *                      under it will be serialized in the reduce form.
+ * \param reduce_m      map that contains resoures types to serialize
+ *                      in the reduce form.
+ *
+ */
+int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
+                               resrc_tree_t *resrc_tree,
+                               resrc_api_map_t *gather_m,
+                               resrc_api_map_t *reduce_m);
+
 /*
  * Create a resource tree from a json object
  */
