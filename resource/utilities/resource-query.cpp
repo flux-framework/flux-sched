@@ -34,7 +34,9 @@
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
 #include "resource/utilities/command.hpp"
-#include "resource/dfu_match_id_based.hpp"
+#include "resource/policies/dfu_match_high_id_first.hpp"
+#include "resource/policies/dfu_match_low_id_first.hpp"
+#include "resource/policies/dfu_match_locality.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

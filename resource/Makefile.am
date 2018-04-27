@@ -40,6 +40,9 @@ utilities_grug2dot_LDADD = \
 utilities_resource_query_SOURCES = \
     utilities/resource-query.cpp \
     utilities/command.cpp \
+    policies/dfu_match_high_id_first.cpp \
+    policies/dfu_match_low_id_first.cpp \
+    policies/dfu_match_locality.cpp \
     resource_data.cpp \
     infra_data.cpp \
     sched_data.cpp \
@@ -51,7 +54,9 @@ utilities_resource_query_SOURCES = \
     scoring_api.cpp \
     edge_eval_api.cpp \
     utilities/command.hpp \
-    dfu_match_id_based.hpp \
+    policies/dfu_match_high_id_first.hpp \
+    policies/dfu_match_low_id_first.hpp \
+    policies/dfu_match_locality.hpp \
     resource_graph.hpp \
     data_std.hpp \
     infra_data.hpp \
