@@ -32,7 +32,7 @@
 #include <iostream>
 #include <flux/jobspec.hpp>
 #include "resource_graph.hpp"
-#include "matcher_data.hpp"
+#include "matcher.hpp"
 #include "scoring_api.hpp"
 #include "planner/planner.h"
 
@@ -43,7 +43,7 @@ namespace resource_model {
  *  Define the set of visitor methods that are called
  *  back by a DFU resource-graph traverser.
  */
-class dfu_match_cb_t : public matcher_data_t
+class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t
 {
 public:
     dfu_match_cb_t ();

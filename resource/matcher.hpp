@@ -31,6 +31,7 @@
 #include <set>
 #include <map>
 #include <flux/jobspec.hpp>
+#include "data_std.hpp"
 #include "planner/planner.h"
 
 namespace Flux {
@@ -48,29 +49,11 @@ enum class match_op_t { MATCH_ALLOCATE, MATCH_ALLOCATE_ORELSE_RESERVE };
 class matcher_data_t
 {
 public:
-    matcher_data_t () : m_name ("anonymous") { }
-    matcher_data_t (const std::string &name) : m_name (name) { }
-    matcher_data_t (const matcher_data_t &o)
-    {
-       sdau_resource_types = o.sdau_resource_types;
-       m_name = o.m_name;
-       m_subsystems = o.m_subsystems;
-       m_subsystems_map = o.m_subsystems_map;
-    }
-    matcher_data_t &operator=(const matcher_data_t &o)
-    {
-       sdau_resource_types = o.sdau_resource_types;
-       m_name = o.m_name;
-       m_subsystems = o.m_subsystems;
-       m_subsystems_map = o.m_subsystems_map;
-       return *this;
-    }
-    ~matcher_data_t ()
-    {
-        sdau_resource_types.clear ();
-        m_subsystems.clear ();
-        m_subsystems_map.clear ();
-    }
+    matcher_data_t ();
+    matcher_data_t (const std::string &name);
+    matcher_data_t (const matcher_data_t &o);
+    matcher_data_t &operator=(const matcher_data_t &o);
+    ~matcher_data_t ();
 
     /*! Add a subsystem and the relationship type that this resource base
      *  matcher will use. Vertices and edges of the resource graph are
@@ -87,90 +70,23 @@ public:
      *                   pass * to select all types
      *  \return          0 on success; -1 on error
      */
-    int add_subsystem (const subsystem_t s, const std::string tf = "*")
-    {
-        if (m_subsystems_map.find (s) == m_subsystems_map.end ()) {
-            m_subsystems.push_back (s);
-            m_subsystems_map[s].insert (tf);
-            return 0;
-        }
-        return -1;
-    }
-    const std::string &matcher_name () const
-    {
-        return m_name;
-    }
-    void set_matcher_name (const std::string &name)
-    {
-        m_name = name;
-    }
-    const std::vector<subsystem_t> &subsystems () const
-    {
-        return m_subsystems;
-    }
+    int add_subsystem (const subsystem_t s, const std::string tf = "*");
+
+    const std::string &matcher_name () const;
+    void set_matcher_name (const std::string &name);
+    const std::vector<subsystem_t> &subsystems () const;
 
     /*
      * \return           return the dominant subsystem this matcher has
      *                   selected to use.
      */
-    const subsystem_t &dom_subsystem () const
-    {
-        if (m_subsystems.begin () != m_subsystems.end ())
-            return *(m_subsystems.begin());
-        else
-            return m_err_subsystem;
-    }
+    const subsystem_t &dom_subsystem () const;
 
     /*
      * \return           return the subsystem selector to be used for
      *                   graph filtering.
      */
-    const multi_subsystemsS &subsystemsS () const
-    {
-        return m_subsystems_map;
-    }
-
-    unsigned int select_count (const Flux::Jobspec::Resource &resource,
-                               unsigned int qc) const
-    {
-        if (resource.count.min > resource.count.max
-            || resource.count.min > qc)
-            return 0;
-
-        unsigned int count = 0;
-        unsigned int cur = resource.count.min;
-
-        switch (resource.count.oper) {
-        case '+':
-            while (cur <= qc && cur <= resource.count.max) {
-                count = cur;
-                cur += resource.count.operand;
-            }
-            break;
-        case '*':
-            while (cur <= qc && cur <= resource.count.max) {
-                count = cur;
-                cur *= resource.count.operand;
-            }
-            break;
-        case '^':
-            if (resource.count.operand < 2)
-                count = cur;
-            else {
-                while (cur <= qc && cur <= resource.count.max) {
-                    unsigned int base = cur;
-                    count = cur;
-                    for (int i = 1;
-                         i < resource.count.operand; i++)
-                        cur *= base;
-                }
-            }
-            break;
-        default:
-            break;
-        }
-        return count;
-    }
+    const multi_subsystemsS &subsystemsS () const;
 
     // resource types that will be used for scheduler driven aggregate updates
     std::map<subsystem_t, std::set<std::string>> sdau_resource_types;
@@ -180,6 +96,25 @@ private:
     subsystem_t m_err_subsystem = "error";
     std::vector<subsystem_t> m_subsystems;
     multi_subsystemsS m_subsystems_map;
+};
+
+
+/*! Base utility method for matchers.
+ */
+class matcher_util_api_t
+{
+public:
+
+    /*! Calculate the count that should be allocated, which is a function
+     *  of the number of qualifed available resources, minimum/maximum/operator
+     *  requirement of the jobspec.
+     *
+     *  \param resource  resource section of the jobspec.
+     *  \param qc        available qualified resources.
+     *  \return          0 when not available; count otherwise.
+     */
+    unsigned int calc_count (const Flux::Jobspec::Resource &resource,
+                             unsigned int qc) const;
 };
 
 } // namespace resource_model

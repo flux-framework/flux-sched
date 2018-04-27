@@ -63,7 +63,7 @@ int low_first_t::dom_finish_graph (
     for (auto &resource : resources) {
         const std::string &type = resource.type;
         unsigned int qc = dfu.qualified_count (subsystem, type);
-        unsigned int count = select_count (resource, qc);
+        unsigned int count = calc_count (resource, qc);
         if (count == 0) {
             score = MATCH_UNMET;
             break;
@@ -94,7 +94,7 @@ int low_first_t::dom_finish_vtx (
             // test children resource count requirements
             const std::string &c_type = c_resource.type;
             unsigned int qc = dfu.qualified_count (subsystem, c_type);
-            unsigned int count = select_count (c_resource, qc);
+            unsigned int count = calc_count (c_resource, qc);
             if (count == 0) {
                 score = MATCH_UNMET;
                 break;
