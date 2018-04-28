@@ -1419,6 +1419,8 @@ done:
         Jput (jcb);
     if (red)
         Jput (red);
+    resrc_api_map_destroy (&gmap);
+    resrc_api_map_destroy (&rmap);
     return rc;
 }
 
