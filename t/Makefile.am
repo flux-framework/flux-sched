@@ -63,7 +63,8 @@ TESTS = \
     t3007-resource-iobw.t \
     t3008-resource-cancel.t \
     t3009-resource-minmax.t \
-    t3010-resource-power.t
+    t3010-resource-power.t \
+    t5000-valgrind.t
 
 check_SCRIPTS = $(TESTS)
 
@@ -73,7 +74,8 @@ EXTRA_DIST= \
     data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
-	sharness.d
+	sharness.d \
+	valgrind
 
 clean-local:
 	rm -rf *.o test-results trash-directory*
