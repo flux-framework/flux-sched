@@ -237,9 +237,9 @@ Jget_ar_str (json_t *o, int n, const char **sp)
     return true;
 }
 
-/* Encode JSON to string (owned by JSON, do not free)
+/* Encode JSON to string
  */
-static __inline__ const char *
+static __inline__ char *
 Jtostr (json_t *o)
 {
     return o ? json_dumps (o, 0) : NULL;
