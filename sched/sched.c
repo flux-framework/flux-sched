@@ -2155,7 +2155,7 @@ static int timer_event_cb (flux_t *h, void *arg)
 
 static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
-    int rc = 0;
+    int rc = -1;
     json_t *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     flux_lwj_t *j = NULL;
@@ -2163,21 +2163,22 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 
     if (errnum > 0) {
         flux_log (ctx->h, LOG_ERR, "%s: errnum passed in", __FUNCTION__);
-        return -1;
+        goto out;
     }
     if (!(jcb = Jfromstr (jcbstr))) {
         flux_log (ctx->h, LOG_ERR, "%s: error parsing JSON string",
                   __FUNCTION__);
-        return -1;
+        goto out;
     }
     if (is_newjob (jcb))
         q_enqueue_into_pqueue (ctx, jcb);
     if ((j = fetch_job_and_event (ctx, jcb, &ns)) == NULL) {
         flux_log (ctx->h, LOG_INFO, "%s: nonexistent job", __FUNCTION__);
         flux_log (ctx->h, LOG_INFO, "%s: directly launched job?", __FUNCTION__);
-        return -1;
+        goto out;
     }
     rc = action (ctx, j, ns, jcb);
+out:
     Jput (jcb);
     return rc;
 }
