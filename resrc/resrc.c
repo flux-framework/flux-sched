@@ -123,6 +123,7 @@ void resrc_api_fini (resrc_api_ctx_t *ctx)
     if (ctx->flow_names)
         zlist_destroy (&(ctx->flow_names));
     /* tree_root_resrc should already have been destroyed */
+    free (ctx);
 }
 
 resrc_api_map_t *resrc_api_map_new ()
