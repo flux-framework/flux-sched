@@ -37,6 +37,8 @@
 namespace Flux {
 namespace resource_model {
 
+const std::string ANY_RESOURCE_TYPE = "*";
+
 enum match_score_t { MATCH_UNMET = 0, MATCH_MET = 1 };
 
 enum class match_op_t { MATCH_ALLOCATE, MATCH_ALLOCATE_ORELSE_RESERVE };
@@ -88,9 +90,6 @@ public:
      */
     const multi_subsystemsS &subsystemsS () const;
 
-    // resource types that will be used for scheduler driven aggregate updates
-    std::map<subsystem_t, std::set<std::string>> sdau_resource_types;
-
 private:
     std::string m_name;
     subsystem_t m_err_subsystem = "error";
@@ -110,11 +109,33 @@ public:
      *  requirement of the jobspec.
      *
      *  \param resource  resource section of the jobspec.
-     *  \param qc        available qualified resources.
+     *  \param qual_cnt  available qualified resources.
      *  \return          0 when not available; count otherwise.
      */
     unsigned int calc_count (const Flux::Jobspec::Resource &resource,
-                             unsigned int qc) const;
+                             unsigned int qual_cnt) const;
+
+    void set_pruning_type (const std::string &subsystem,
+                           const std::string &anchor_type,
+                           const std::string &prune_type);
+    bool is_my_pruning_type (const std::string &subsystem,
+                             const std::string &anchor_type,
+                             const std::string &prune_type);
+    bool is_pruning_type (const std::string &subsystem,
+                          const std::string &prune_type);
+
+private:
+    // resource types that will be used for scheduler driven aggregate updates
+    // Examples:
+    // m_pruning_type["containment"]["rack"] -> {"node"}
+    //     in the containment subsystem at the rack level, please
+    //     maintain an aggregate on the available nodes under it.
+    // m_pruing_type["containment"][ANY_RESOURCE_TYPE] -> {"core"}
+    //     in the containment subsystem at any level, please
+    //     maintain an aggregate on the available cores under it.
+    std::map<subsystem_t,
+             std::map<std::string, std::set<std::string>>> m_pruning_types;
+    std::map<subsystem_t, std::set<std::string>> m_total_set;
 };
 
 } // namespace resource_model

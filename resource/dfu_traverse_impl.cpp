@@ -277,8 +277,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts, map<string, int64_t> &accum)
 {
     int rc = -1;
-    if (m_match->sdau_resource_types[subsystem].find (type)
-        != m_match->sdau_resource_types[subsystem].end ()) {
+    if (m_match->is_pruning_type (subsystem, type)) {
         if (accum.find (type) == accum.end ())
             accum[type] = counts;
         else
@@ -293,8 +292,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           std::unordered_map<string, int64_t> &accum)
 {
     int rc = -1;
-    if (m_match->sdau_resource_types[subsystem].find (type)
-        != m_match->sdau_resource_types[subsystem].end ()) {
+    if (m_match->is_pruning_type (subsystem, type)) {
         if (accum.find (type) == accum.end ())
             accum[type] = counts;
         else

@@ -45,7 +45,6 @@ matcher_data_t::matcher_data_t (const std::string &name) : m_name (name)
 
 matcher_data_t::matcher_data_t (const matcher_data_t &o)
 {
-    sdau_resource_types = o.sdau_resource_types;
     m_name = o.m_name;
     m_subsystems = o.m_subsystems;
     m_subsystems_map = o.m_subsystems_map;
@@ -53,7 +52,6 @@ matcher_data_t::matcher_data_t (const matcher_data_t &o)
 
 matcher_data_t &matcher_data_t::operator=(const matcher_data_t &o)
 {
-    sdau_resource_types = o.sdau_resource_types;
     m_name = o.m_name;
     m_subsystems = o.m_subsystems;
     m_subsystems_map = o.m_subsystems_map;
@@ -62,7 +60,6 @@ matcher_data_t &matcher_data_t::operator=(const matcher_data_t &o)
 
 matcher_data_t::~matcher_data_t ()
 {
-    sdau_resource_types.clear ();
     m_subsystems.clear ();
     m_subsystems_map.clear ();
 }
@@ -153,6 +150,41 @@ unsigned int matcher_util_api_t::calc_count (
         break;
     }
     return count;
+}
+
+void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
+                                           const std::string &anchor_type,
+                                           const std::string &prune_type)
+{
+    m_pruning_types[subsystem][anchor_type].insert (prune_type);
+    m_total_set[subsystem].insert (prune_type);
+}
+
+bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
+                                             const std::string &anchor_type,
+                                             const std::string &prune_type)
+{
+    bool rc = true;
+    try {
+        auto &s = m_pruning_types.at (subsystem).at (anchor_type);
+        rc = (s.find (prune_type) != s.end ());
+    } catch (std::out_of_range &e) {
+        rc = false;
+    }
+    return rc;
+}
+
+bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
+                                          const std::string &prune_type)
+{
+    bool rc = true;
+    try {
+        auto &s = m_total_set.at (subsystem);
+        rc = (s.find (prune_type) != s.end ());
+    } catch (std::out_of_range &e) {
+        rc = false;
+    }
+    return rc;
 }
 
 } // resource_model
