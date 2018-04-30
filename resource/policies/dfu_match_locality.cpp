@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "dfu_match_locality.hpp"
+#include "policies/dfu_match_locality.hpp"
 
 namespace Flux {
 namespace resource_model {

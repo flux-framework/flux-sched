@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "matcher.hpp"
+#include "policies/base/matcher.hpp"
 
 namespace Flux {
 namespace resource_model {

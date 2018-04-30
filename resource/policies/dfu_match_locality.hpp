@@ -31,7 +31,7 @@
 #include <map>
 #include <boost/icl/interval.hpp>
 #include <boost/icl/interval_set.hpp>
-#include "dfu_match_cb.hpp"
+#include "policies/base/dfu_match_cb.hpp"
 
 namespace Flux {
 namespace resource_model {

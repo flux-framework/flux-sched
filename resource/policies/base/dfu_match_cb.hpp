@@ -31,9 +31,9 @@
 #include <cstdint>
 #include <iostream>
 #include <flux/jobspec.hpp>
-#include "resource_graph.hpp"
-#include "matcher.hpp"
-#include "scoring_api.hpp"
+#include "schema/resource_graph.hpp"
+#include "evaluators/scoring_api.hpp"
+#include "policies/base/matcher.hpp"
 #include "planner/planner.h"
 
 namespace Flux {

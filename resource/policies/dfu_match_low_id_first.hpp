@@ -29,7 +29,7 @@
 #include <vector>
 #include <numeric>
 #include <map>
-#include "dfu_match_cb.hpp"
+#include "policies/base/dfu_match_cb.hpp"
 
 namespace Flux {
 namespace resource_model {

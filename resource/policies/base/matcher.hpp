@@ -22,8 +22,8 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef MATCHER_DATA_HPP
-#define MATCHER_DATA_HPP
+#ifndef MATCHER_HPP
+#define MATCHER_HPP
 
 #include <string>
 #include <iostream>
@@ -31,7 +31,7 @@
 #include <set>
 #include <map>
 #include <flux/jobspec.hpp>
-#include "data_std.hpp"
+#include "schema/data_std.hpp"
 #include "planner/planner.h"
 
 namespace Flux {

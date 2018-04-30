@@ -20,7 +20,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "infra_data.hpp"
+#include "schema/infra_data.hpp"
 
 namespace Flux {
 namespace resource_model {

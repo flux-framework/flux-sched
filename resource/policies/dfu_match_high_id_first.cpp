@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "dfu_match_high_id_first.hpp"
+#include "policies/dfu_match_high_id_first.hpp"
 
 namespace Flux {
 namespace resource_model {

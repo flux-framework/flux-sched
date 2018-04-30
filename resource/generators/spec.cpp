@@ -27,7 +27,7 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/filesystem.hpp>
-#include "resource_gen_spec.hpp"
+#include "generators/spec.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

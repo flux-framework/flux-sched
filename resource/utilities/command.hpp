@@ -25,9 +25,9 @@
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
-#include "resource/resource_graph.hpp"
-#include "resource/resource_gen.hpp"
-#include "resource/dfu_traverse.hpp"
+#include "resource/schema/resource_graph.hpp"
+#include "resource/generators/gen.hpp"
+#include "resource/traversers/dfu.hpp"
 #include <cerrno>
 #include <vector>
 #include <map>

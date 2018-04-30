@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <getopt.h>
-#include "resource/resource_gen_spec.hpp"
+#include "resource/generators/spec.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

@@ -20,7 +20,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "sched_data.hpp"
+#include "schema/sched_data.hpp"
 
 namespace Flux {
 namespace resource_model {

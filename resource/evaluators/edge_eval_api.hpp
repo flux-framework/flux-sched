@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <string>
-#include "resource_graph.hpp"
+#include "schema/resource_graph.hpp"
 
 namespace Flux {
 namespace resource_model {

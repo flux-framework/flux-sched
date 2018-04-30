@@ -1,4 +1,6 @@
 /*****************************************************************************\
+ *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
  *  LLNL-CODE-658032 All rights reserved.
  *
  *  This file is part of the Flux resource manager framework.
@@ -18,56 +20,36 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  *  See also:  http://www.gnu.org/licenses/
-\*****************************************************************************/
+ \*****************************************************************************/
 
-#include "color.hpp"
+#ifndef GEN_HPP
+#define GEN_HPP
+
+#include <string>
+#include <boost/graph/depth_first_search.hpp>
+#include "schema/resource_graph.hpp"
+#include "generators/spec.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-void color_t::reset ()
-{
-    m_color_base += static_cast<uint64_t>(color_offset_t::NEW_BASE);
-}
+class resource_generator_t {
+public:
+    resource_generator_t ();
+    resource_generator_t (const resource_generator_t &o);
+    const resource_generator_t &operator=(const resource_generator_t &o);
+    ~resource_generator_t ();
+    int read_graphml (const std::string &f, resource_graph_db_t &db);
+    const std::string &err_message () const;
+private:
+    resource_gen_spec_t m_gspec;
+    std::string m_err_msg = "";
+};
 
-bool color_t::is_white (uint64_t c) const
-{
-    return c <= (m_color_base
-                 + static_cast<uint64_t>(color_offset_t::WHITE_OFFSET));
-}
+} // namespace resource_model
+} // namespace Flux
 
-bool color_t::is_gray (uint64_t c) const
-{
-    return c == (m_color_base
-                 + static_cast<uint64_t>(color_offset_t::GRAY_OFFSET));
-}
-
-bool color_t::is_black (uint64_t c) const
-{
-    return c == (m_color_base
-                 + static_cast<uint64_t>(color_offset_t::BLACK_OFFSET));
-}
-
-uint64_t color_t::white () const
-{
-    return m_color_base
-           + static_cast<uint64_t>(color_offset_t::WHITE_OFFSET);
-}
-
-uint64_t color_t::gray () const
-{
-    return m_color_base
-           + static_cast<uint64_t>(color_offset_t::GRAY_OFFSET);
-}
-
-uint64_t color_t::black () const
-{
-    return m_color_base
-           + static_cast<uint64_t>(color_offset_t::BLACK_OFFSET);
-}
-
-} // resource_model
-} // Flux
+#endif // GEN_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
