@@ -96,8 +96,20 @@ static void partition_tab_freefn (void *data)
 static void partition_freefn (void *data)
 {
     partition_t *o = (partition_t *)data;
-    free (o->sig->digest);
-    zlist_destroy (&(o->ranks));
+    if (o) {
+        if (o->sig) {
+            if (o->sig->digest) {
+                free (o->sig->digest);
+                o->sig->digest = NULL;
+            }
+            free (o->sig);
+            o->sig = NULL;
+        }
+        if (o->ranks)
+            zlist_destroy (&(o->ranks));
+        free (o);
+        o = NULL;
+    }
 }
 
 static inline void partition_tab_new (zhash_t *tab, const char *hn)
