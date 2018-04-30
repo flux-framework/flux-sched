@@ -123,6 +123,7 @@ void resrc_api_fini (resrc_api_ctx_t *ctx)
     if (ctx->flow_names)
         zlist_destroy (&(ctx->flow_names));
     /* tree_root_resrc should already have been destroyed */
+    free (ctx);
 }
 
 resrc_api_map_t *resrc_api_map_new ()
@@ -1148,12 +1149,13 @@ int resrc_to_json_lite (json_t *o, resrc_t *resrc, bool reduce)
             Jadd_str (o, "digest", resrc_digest (resrc));
     } else {
         const char *val = NULL;
+        char *s = NULL;
         if (Jget_str (o, resrc_type (resrc), &val))
-            Jadd_str (o, resrc_type (resrc), xasprintf ("%s,%"PRId64"",
-                                                        val, resrc_id (resrc)));
+            s = xasprintf ("%s,%"PRId64"", val, resrc_id (resrc));
         else
-            Jadd_str (o, resrc_type (resrc), xasprintf ("%"PRId64"",
-                                                        resrc_id (resrc)));
+            s = xasprintf ("%"PRId64"", resrc_id (resrc));
+        Jadd_str (o, resrc_type (resrc), s);
+        free (s);
     }
     return 0;
 }

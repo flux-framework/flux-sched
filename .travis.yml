@@ -50,6 +50,7 @@ addons:
       - libyaml-cpp-dev
       - libboost-all-dev
       - libreadline6
+      - valgrind
 
 before_install:
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh

@@ -226,7 +226,7 @@ int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
     }
 
     if (m_o)
-        json_array_append (gather, m_o);
+        json_array_append_new (gather, m_o);
 
     return rc;
 }

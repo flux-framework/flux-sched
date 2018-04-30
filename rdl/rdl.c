@@ -572,9 +572,11 @@ struct rdl * rdl_find (struct rdl *rdl, json_t *args)
      *  stack: [ Method, object, args-table ]
      */
     if (lua_pcall (rdl->L, 2, LUA_MULTRET, 0) || lua_isnoneornil (rdl->L, 1)) {
+        char *s = Jtostr (args);
         VERR (rdl->rl, "find(%s): %s\n",
-                Jtostr (args),
+                s,
                 lua_tostring (rdl->L, -1));
+        free (s);
         return (NULL);
     }
 

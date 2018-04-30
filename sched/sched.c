@@ -457,7 +457,7 @@ done:
 
 static int update_state (flux_t *h, uint64_t jid, job_state_t os, job_state_t ns)
 {
-    const char *jcbstr = NULL;
+    char *jcbstr = NULL;
     int rc = -1;
     json_t *jcb = Jnew ();
     json_t *o = Jnew ();
@@ -468,6 +468,7 @@ static int update_state (flux_t *h, uint64_t jid, job_state_t os, job_state_t ns
     jcbstr = Jtostr (jcb);
     rc = jsc_update_jcb (h, jid, JSC_STATE_PAIR, jcbstr);
     Jput (jcb);
+    free (jcbstr);
     return rc;
 }
 
@@ -852,16 +853,17 @@ static void handle_jsc_queue (ssrvctx_t *ctx)
     jsc_event_t *jsc_event = NULL;
 
     while (zlist_size (ctx->sctx.jsc_queue) > 0) {
+        char *jcbstr;
         jsc_event = (jsc_event_t *)zlist_pop (ctx->sctx.jsc_queue);
+        jcbstr = Jtostr (jsc_event->jcb);
         flux_log (ctx->h,
                   LOG_DEBUG,
                   "JscEvent being handled - JSON: %s, errnum: %d",
-                  Jtostr (jsc_event->jcb),
-                  jsc_event->errnum);
-        job_status_cb (Jtostr (jsc_event->jcb), jsc_event->arg,
-                       jsc_event->errnum);
+                  jcbstr, jsc_event->errnum);
+        job_status_cb (jcbstr, jsc_event->arg, jsc_event->errnum);
         Jput (jsc_event->jcb);
         free (jsc_event);
+        free (jcbstr);
     }
 }
 
@@ -908,6 +910,7 @@ static void start_cb (flux_t *h,
 
 static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
+    char *s;
     json_t *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     jsc_event_t *event = (jsc_event_t*) xzmalloc (sizeof (jsc_event_t));
@@ -927,13 +930,13 @@ static int sim_job_status_cb (const char *jcbstr, void *arg, int errnum)
     event->arg = arg;
     event->errnum = errnum;
 
+    s = Jtostr (event->jcb);
     flux_log (ctx->h,
               LOG_DEBUG,
               "JscEvent being queued - JSON: %s, errnum: %d",
-              Jtostr (event->jcb),
-              event->errnum);
+              s, event->errnum);
+    free (s);
     zlist_append (ctx->sctx.jsc_queue, event);
-
     return 0;
 }
 
@@ -1365,7 +1368,7 @@ done:
  */
 static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 {
-    const char *jcbstr = NULL;
+    char *jcbstr = NULL;
     int rc = -1;
     flux_t *h = ctx->h;
     json_t *jcb = Jnew ();
@@ -1391,8 +1394,10 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     if (jsc_update_jcb (h, job->lwj_id, JSC_R_LITE, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
+        free (jcbstr);
         goto done;
     }
+    free (jcbstr);
     Jput (jcb);
 
     jcb = Jnew ();
@@ -1404,8 +1409,10 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     jcbstr = Jtostr (jcb);
     if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error updating jcb");
+        free (jcbstr);
         goto done;
     }
+    free (jcbstr);
 
     if ((update_state (h, job->lwj_id, job->state, J_ALLOCATED)) != 0) {
         flux_log (h, LOG_ERR, "failed to update the state of job %"PRId64"",
@@ -1419,6 +1426,8 @@ done:
         Jput (jcb);
     if (red)
         Jput (red);
+    resrc_api_map_destroy (&gmap);
+    resrc_api_map_destroy (&rmap);
     return rc;
 }
 
@@ -2146,7 +2155,7 @@ static int timer_event_cb (flux_t *h, void *arg)
 
 static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 {
-    int rc = 0;
+    int rc = -1;
     json_t *jcb = NULL;
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     flux_lwj_t *j = NULL;
@@ -2154,21 +2163,22 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 
     if (errnum > 0) {
         flux_log (ctx->h, LOG_ERR, "%s: errnum passed in", __FUNCTION__);
-        return -1;
+        goto out;
     }
     if (!(jcb = Jfromstr (jcbstr))) {
         flux_log (ctx->h, LOG_ERR, "%s: error parsing JSON string",
                   __FUNCTION__);
-        return -1;
+        goto out;
     }
     if (is_newjob (jcb))
         q_enqueue_into_pqueue (ctx, jcb);
     if ((j = fetch_job_and_event (ctx, jcb, &ns)) == NULL) {
         flux_log (ctx->h, LOG_INFO, "%s: nonexistent job", __FUNCTION__);
         flux_log (ctx->h, LOG_INFO, "%s: directly launched job?", __FUNCTION__);
-        return -1;
+        goto out;
     }
     rc = action (ctx, j, ns, jcb);
+out:
     Jput (jcb);
     return rc;
 }
