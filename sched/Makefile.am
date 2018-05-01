@@ -23,7 +23,7 @@ schedplugin_LTLIBRARIES = \
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h plugin.h
 
 sched_la_SOURCES = sched.c rs2rank.c rsreader.c plugin.c
-sched_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+sched_la_CFLAGS = $(AM_CFLAGS) $(VALGRIND_CFLAGS) -I$(top_srcdir)/resrc
 sched_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) \
     $(JANSSON_LIBS) $(CZMQ_LIBS) \

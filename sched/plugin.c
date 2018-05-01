@@ -29,6 +29,14 @@
 #include <flux/core.h>
 #include <czmq.h>
 
+#if HAVE_VALGRIND
+# if HAVE_VALGRIND_H
+#  include <valgrind.h>
+# elif HAVE_VALGRIND_VALGRIND_H
+#  include <valgrind/valgrind.h>
+# endif
+#endif
+
 #include "src/common/libutil/shortjansson.h"
 #include "scheduler.h"
 #include "plugin.h"
@@ -432,6 +440,12 @@ void sched_plugin_loader_destroy (struct sched_plugin_loader *sploader)
         free (sploader);
     }
 }
+
+#if HAVE_VALGRIND
+/* Disable dlclose() during valgrind operation
+ */
+void I_WRAP_SONAME_FNNAME_ZZ(Za,dlclose)(void *dso) {}
+#endif
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
