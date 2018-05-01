@@ -33,6 +33,7 @@
 #include <czmq.h>
 
 #include "src/common/libutil/shortjansson.h"
+#include "src/common/libutil/nodeset.h"
 #include "rdl.h"
 #include "resrc_tree.h"
 #include "resrc_api_internal.h"
@@ -218,8 +219,22 @@ int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
                                              gather_m, reduce_m);
 
         if (m_o) {
-            if (reduce_under_me && json_object_size (m_reduce) == 0)
-                rc += -1;
+            if (reduce_under_me) {
+                if (json_object_size (m_reduce) == 0) {
+                    rc += -1;
+                } else {
+                    json_t *value = NULL;
+                    char *sp = NULL;
+                    void *i = json_object_iter (m_reduce);
+                    value = json_object_iter_value (i);
+                    json_unpack (value, "s", &sp);
+                    nodeset_t *s = nodeset_create_string (sp);
+                    nodeset_config_brackets (s, false);
+                    json_object_iter_set_new (m_reduce, i,
+                                             json_string (nodeset_string (s)));
+                    nodeset_destroy (s);
+                }
+            }
             json_t *co = (reduce_under_me)? m_reduce : m_gather;
             json_object_set_new (m_o, "children", co);
         }
