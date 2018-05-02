@@ -88,11 +88,11 @@ int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree);
  * \param reduce[out]   json object used for reducing resources whose type
  *                      is contained within reduce_m.
  * \param resrc_tree    resrc_tree object to serialize.
- * \param gather_m      map that contains resoures types to serialize
+ * \param gather_m      map that contains resoure type(s) to serialize
  *                      in the gather form. If the value of the type is
  *                      REDUCE_UNDER_ME, the first offspring resource type
  *                      under it will be serialized in the reduce form.
- * \param reduce_m      map that contains resoures types to serialize
+ * \param reduce_m      map that contains resource type(s) to serialize
  *                      in the reduce form.
  *
  */
