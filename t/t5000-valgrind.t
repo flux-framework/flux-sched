@@ -10,6 +10,19 @@ if ! which valgrind >/dev/null; then
     skip_all='skipping valgrind tests since no valgrind executable found'
     test_done
 fi
+
+# Do not run test by default unless valgrind/valgrind.h was found, since
+#  this has been known to introduce false positives (flux-core #1097).
+#  However, allow run to be forced on the cmdline with -d, --debug.
+#
+have_valgrind_h() {
+    grep -q "^#define HAVE_VALGRIND 1" ${SHARNESS_BUILD_DIRECTORY}/config.h
+}
+if ! have_valgrind_h && test "$debug" = ""; then
+    skip_all='skipping valgrind tests b/c valgrind.h not found. Use -d, --debug to force'
+    test_done
+fi
+
 export FLUX_PMI_SINGLETON=1 # avoid finding leaks in slurm libpmi.so
 
 VALGRIND=`which valgrind`
@@ -25,20 +38,6 @@ test_expect_success 'found executable flux-broker' '
 	echo "found broker at ${BROKER}" >&2 &&
 	test -x "$BROKER"
 '
-# Do not run test by default unless valgrind wrapped dlclose is found in
-#  flux-broker, since this has been known to introduce false positives
-#  (flux-framework/flux-core#1097). However, allow run to be forced on
-#  the cmdline with -d, --debug.
-#
-have_valgrind_h() {
-    nm --defined-only ${BROKER} | grep -q ZZ_Za_dlclose
-}
-if ! have_valgrind_h && test "$debug" = ""; then
-    skip_all='Skipping valgrind test because flux-broker does not wrap dlclose. Use -d to force.'
-    test_done
-fi
-
-
 test_expect_success 'valgrind reports no new errors on single broker run' '
 	flux ${VALGRIND} \
 		--tool=memcheck \

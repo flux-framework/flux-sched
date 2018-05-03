@@ -45,6 +45,7 @@ AC_CHECK_LIB([dl], [dlerror],
 PKG_CHECK_MODULES([HWLOC], [hwloc >= 1.11.1], [], [])
 PKG_CHECK_MODULES([JANSSON], [jansson >= 2.6], [], [])
 PKG_CHECK_MODULES([XML2], [libxml-2.0])
+AX_VALGRIND_H
 AX_PROG_LUA([5.1],[5.3])
 AX_LUA_HEADERS
 AX_LUA_LIBS
@@ -63,7 +64,17 @@ AC_CHECK_LIB([readline], [readline],
              [AC_MSG_ERROR([Please install GNU readline])])
 
 # Checks for header files.
-AC_CHECK_HEADERS([inttypes.h limits.h stdint.h stdlib.h string.h sys/time.h unistd.h readline/readline.h readline/history.h])
+AC_CHECK_HEADERS([\
+  inttypes.h \
+  limits.h \
+  stdint.h \
+  stdlib.h \
+  string.h \
+  sys/time.h \
+  unistd.h \
+  readline/readline.h \
+  readline/history.h \
+])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL # in newer ac version:  AC_CHECK_HEADER_STDBOOL
