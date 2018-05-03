@@ -1962,6 +1962,16 @@ static void res_event_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 }
 
+static void send_cancelled_event (flux_t *h, int64_t jobid)
+{
+    flux_msg_t *msg;
+    msg = flux_event_pack ("wreck.state.cancelled", "{s:I}",
+                            "jobid", jobid);
+    if (!msg || (flux_send (h, msg, 0) < 0))
+        flux_log (h, LOG_DEBUG, "%s: error sending event", __FUNCTION__);
+    flux_msg_destroy (msg);
+}
+
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg)
 {
@@ -2000,6 +2010,7 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
     flux_log (ctx->h, LOG_INFO, "pending job (%"PRId64") removed.", jobid);
     if (flux_respond_pack (h, msg, "{s:I}", "jobid", jobid) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
+    send_cancelled_event (h, jobid);
     return;
 error:
     if (flux_respond (h, msg, errno, NULL) < 0)
