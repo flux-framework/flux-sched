@@ -721,8 +721,7 @@ static int load_resources (ssrvctx_t *ctx)
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
-            if (errno != 0)
-                errno = EINVAL;
+            errno = EINVAL;
             goto done;
         } else if (rsreader_force_link2rank (ctx->rsapi, ctx->machs) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to force a link to a rank");
