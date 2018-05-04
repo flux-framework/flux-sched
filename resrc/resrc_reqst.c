@@ -566,18 +566,22 @@ int64_t resrc_tree_search (resrc_api_ctx_t *ctx,
          * and omit the intervening socket.
          */
 
-        if (*found_tree)
-            new_tree = resrc_tree_new (*found_tree, resrc_in);
-        else {
-            new_tree = resrc_tree_new (NULL, resrc_in);
-            *found_tree = new_tree;
-        }
+        new_tree = resrc_tree_new (NULL, resrc_in);
         children = resrc_tree_children (resrc_phys_tree (resrc_in));
         child_tree = resrc_tree_list_first (children);
         while (child_tree) {
             nfound += resrc_tree_search (ctx, resrc_tree_resrc (child_tree),
                                          resrc_reqst, &new_tree, available);
             child_tree = resrc_tree_list_next (children);
+        }
+
+        if (nfound) {
+            if (*found_tree)
+                resrc_tree_add_child (*found_tree, new_tree);
+            else
+                *found_tree = new_tree;
+        } else {
+            resrc_tree_destroy (ctx, new_tree, false, false);
         }
     }
 ret:
