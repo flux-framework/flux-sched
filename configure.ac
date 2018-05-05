@@ -57,6 +57,7 @@ AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
 AX_BOOST_REGEX
 PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
+PKG_CHECK_MODULES([IDSET], [flux-idset], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])
               AC_DEFINE([HAVE_LIBREADLINE], [1],

@@ -37,6 +37,7 @@
 #include "resrc_tree.h"
 #include "resrc_api_internal.h"
 #include "src/common/libutil/xzmalloc.h"
+#include "flux/idset.h"
 
 struct resrc_tree_list {
     zlist_t *list;
@@ -181,6 +182,42 @@ int resrc_tree_serialize (json_t *o, resrc_tree_t *resrc_tree)
     return rc;
 }
 
+static json_t *condense (json_t *m_reduce)
+{
+    char *out = NULL;
+    json_t *o = NULL;
+    json_t *v = NULL;
+    const char *k = NULL;
+    const char *sp = NULL;
+    struct idset *s = NULL;
+
+    /* An example layout of m_reduce: { "core": "0,1,3" }
+     * "core" can be any type, which depends on what input
+     * was given to the the upper layer. Further there can
+     * be multiple types.
+     */
+    json_object_foreach (m_reduce, k, v) {
+        if (!(sp = json_string_value (v)))
+            goto done;
+        if (!(s = idset_decode (sp)))
+            goto done;
+        if (!(out = idset_encode (s, IDSET_FLAG_RANGE)))
+            goto done;
+        if (!(o = json_string (out)))
+            goto done;
+        idset_destroy (s);
+        s = NULL;
+        free (out);
+        out = NULL;
+        json_object_set_new (m_reduce, k, o);
+    }
+
+done:
+    free (out);
+    idset_destroy (s);
+    return m_reduce;
+}
+
 int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
                                resrc_tree_t *resrc_tree,
                                resrc_api_map_t *gather_m,
@@ -194,40 +231,62 @@ int resrc_tree_serialize_lite (json_t *gather, json_t *reduce,
     const char *type = NULL;
     bool reduce_under_me = false;
 
-    if (!resrc_tree)
+    if (!gather || !reduce || !resrc_tree || !gather_m || !reduce_m)
         return -1;
 
+    /*
+     * Preorder
+     */
     type = resrc_type (resrc_tree->resrc);
-    if ((val = resrc_api_map_get (reduce_m, type))) {
-        /* once the resource is reduced, please stop descending */
+    if (resrc_api_map_get (reduce_m, type)) {
+        /* During recursion, if my type matches w/ one of the reduce types,
+         * serialize the resrc in the reduced form.
+         * Return right away as once the resource is reduced
+         * in this form, it makes no sense to add children under it.
+         */
         return resrc_to_json_lite (reduce, resrc_tree->resrc, true);
     } else if ((val = resrc_api_map_get (gather_m, type))) {
         m_o = Jnew ();
-        /* gather types require new json to accumulate the subtree */
+        /* During recursion, if my match matches w/ one of the gather types,
+         * create new accumulators (m_reduce and m_gather) for
+         * further subtree walks.
+         */
         reduce_under_me = ((intptr_t)val == REDUCE_UNDER_ME);
         m_reduce = (reduce_under_me)? Jnew () : reduce;
         m_gather = (!reduce_under_me)? Jnew_ar () : gather;
-        rc = resrc_to_json_lite (m_o, resrc_tree->resrc, false);
+        rc += resrc_to_json_lite (m_o, resrc_tree->resrc, false);
+        /* If I'm a gather type, I still have to descend */
     }
 
-    if (resrc_tree_num_children (resrc_tree)) {
-        resrc_tree_t *r = NULL;
-        resrc_tree_list_t *rl = resrc_tree->children;
-        for (r = resrc_tree_list_first (rl); r; r = resrc_tree_list_next (rl))
-            rc += resrc_tree_serialize_lite (m_gather, m_reduce, r,
-                                             gather_m, reduce_m);
+    if (!resrc_tree_num_children (resrc_tree))
+        goto done;
 
-        if (m_o) {
-            if (reduce_under_me && json_object_size (m_reduce) == 0)
+    /*
+     * Recurse
+     */
+    resrc_tree_t *r = NULL;
+    resrc_tree_list_t *rl = resrc_tree->children;
+    for (r = resrc_tree_list_first (rl); r; r = resrc_tree_list_next (rl))
+        rc += resrc_tree_serialize_lite (m_gather, m_reduce, r, gather_m,
+                                         reduce_m);
+    /*
+     * Postorder: Now that I have processed my subtree.
+     */
+    if (m_o) {
+        json_t *co = m_gather;
+        if (reduce_under_me) {
+            /* Assuming resrc_tree is well-formed, m_reduce
+             * accumulator cannot be empty.
+             */
+            if (!json_object_size (m_reduce))
                 rc += -1;
-            json_t *co = (reduce_under_me)? m_reduce : m_gather;
-            json_object_set_new (m_o, "children", co);
+            co = condense (m_reduce);
         }
+        json_object_set_new (m_o, "children", co);
+        json_array_append_new (gather, m_o);
     }
 
-    if (m_o)
-        json_array_append_new (gather, m_o);
-
+done:
     return rc;
 }
 

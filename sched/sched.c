@@ -721,8 +721,7 @@ static int load_resources (ssrvctx_t *ctx)
             goto done;
         } else if (build_hwloc_rs2rank (ctx, r_mode) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to build rs2rank");
-            if (errno != 0)
-                errno = EINVAL;
+            errno = EINVAL;
             goto done;
         } else if (rsreader_force_link2rank (ctx->rsapi, ctx->machs) != 0) {
             flux_log (ctx->h, LOG_ERR, "failed to force a link to a rank");
@@ -1378,11 +1377,17 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     resrc_api_map_t *gmap = resrc_api_map_new ();
     resrc_api_map_t *rmap = resrc_api_map_new ();
 
+    if (ctx->arg.verbosity > 0) {
+        flux_log (h, LOG_DEBUG, "job(%"PRId64"): selected resource tree",
+                  job->lwj_id);
+        dump_resrc_state (ctx->h, job->resrc_tree);
+    }
+
     resrc_api_map_put (gmap, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
     resrc_api_map_put (rmap, "core", (void *)(intptr_t)NONE_UNDER_ME);
     if (resrc_tree_serialize_lite (gat, red, job->resrc_tree, gmap, rmap)) {
-        flux_log (h, LOG_ERR, "%"PRId64" resource serialization failed: %s",
-                  job->lwj_id, strerror (errno));
+        flux_log (h, LOG_ERR, "job (%"PRId64") resource serialization failed",
+                  job->lwj_id);
         goto done;
     } else if (resolve_rank (ctx, gat)) {
         flux_log (ctx->h, LOG_ERR, "resolving a hostname to rank failed");
