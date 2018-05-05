@@ -1385,6 +1385,7 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
 
     resrc_api_map_put (gmap, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
     resrc_api_map_put (rmap, "core", (void *)(intptr_t)NONE_UNDER_ME);
+    resrc_api_map_put (rmap, "gpu", (void *)(intptr_t)NONE_UNDER_ME);
     if (resrc_tree_serialize_lite (gat, red, job->resrc_tree, gmap, rmap)) {
         flux_log (h, LOG_ERR, "job (%"PRId64") resource serialization failed",
                   job->lwj_id);
