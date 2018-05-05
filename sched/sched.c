@@ -1250,87 +1250,6 @@ static inline int bridge_rs2rank_tab_query (ssrvctx_t *ctx, const char *name,
  *                                                                              *
  *******************************************************************************/
 
-static void inline build_contain_1node_req (int64_t nc, int64_t ng, int64_t rank,
-					    json_t *rarr)
-{
-    json_t *e = Jnew ();
-    json_t *o = Jnew ();
-    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINING_RANK, rank);
-    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NCORES, nc);
-    Jadd_int64 (o, JSC_RDL_ALLOC_CONTAINED_NGPUS, ng);
-    json_object_set_new (e, JSC_RDL_ALLOC_CONTAINED, o);
-    json_array_append_new (rarr, e);
-}
-
-static int n_resources_of_type (resrc_tree_t *rt, const char *type)
-{
-    int n = 0;
-    resrc_t *r = NULL;
-
-    if (rt) {
-        r = resrc_tree_resrc (rt);
-        if (! strcmp (resrc_type (r), type)) {
-            return 1;
-        } else {
-            if (resrc_tree_num_children (rt)) {
-                resrc_tree_list_t *children = resrc_tree_children (rt);
-                if (children) {
-                    resrc_tree_t *child = resrc_tree_list_first (children);
-                    while (child) {
-                        n += n_resources_of_type(child, type);
-                        child = resrc_tree_list_next (children);
-                    }
-                }
-            }
-        }
-    }
-    return n;
-}
-
-
-/*
- * Because the job's rdl should only contain what's allocated to the job,
- * we traverse the entire tree in the post-order walk fashion
- */
-static int build_contain_req (ssrvctx_t *ctx, flux_lwj_t *job, resrc_tree_t *rt,
-                              json_t *arr)
-{
-    int rc = -1;
-    uint32_t rank = 0;
-    resrc_t *r = NULL;
-
-    if (rt) {
-        r = resrc_tree_resrc (rt);
-        if (strcmp (resrc_type (r), "node")) {
-            if (resrc_tree_num_children (rt)) {
-                resrc_tree_list_t *children = resrc_tree_children (rt);
-                if (children) {
-                    resrc_tree_t *child = resrc_tree_list_first (children);
-                    while (child) {
-                        build_contain_req (ctx, job, child, arr);
-                        child = resrc_tree_list_next (children);
-                    }
-                }
-            }
-        } else {
-            if (bridge_rs2rank_tab_query (ctx, resrc_name (r), resrc_digest (r), &rank))
-                goto done;
-            else {
-                int cores = job->req->corespernode ? job->req->corespernode :
-                    n_resources_of_type(rt, "core");
-                int gpus = job->req->gpuspernode ? job->req->gpuspernode :
-                    n_resources_of_type(rt, "gpu");
-                if (cores) {
-                    build_contain_1node_req (cores, gpus, rank, arr);
-                }
-            }
-        }
-    }
-    rc = 0;
-done:
-    return rc;
-}
-
 static int resolve_rank (ssrvctx_t *ctx, json_t *o)
 {
     int rc = -1;
@@ -1371,7 +1290,6 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     int rc = -1;
     flux_t *h = ctx->h;
     json_t *jcb = Jnew ();
-    json_t *arr = Jnew_ar ();
     json_t *gat = Jnew_ar ();
     json_t *red = Jnew ();
     resrc_api_map_t *gmap = resrc_api_map_new ();
@@ -1400,21 +1318,6 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     if (jsc_update_jcb (h, job->lwj_id, JSC_R_LITE, jcbstr) != 0) {
         flux_log (h, LOG_ERR, "error jsc udpate: %"PRId64" (%s)", job->lwj_id,
                   strerror (errno));
-        free (jcbstr);
-        goto done;
-    }
-    free (jcbstr);
-    Jput (jcb);
-
-    jcb = Jnew ();
-    if (build_contain_req (ctx, job, job->resrc_tree, arr) != 0) {
-        flux_log (h, LOG_ERR, "error requesting containment for job");
-        goto done;
-    }
-    json_object_set_new (jcb, JSC_RDL_ALLOC, arr);
-    jcbstr = Jtostr (jcb);
-    if (jsc_update_jcb (h, job->lwj_id, JSC_RDL_ALLOC, jcbstr) != 0) {
-        flux_log (h, LOG_ERR, "error updating jcb");
         free (jcbstr);
         goto done;
     }
