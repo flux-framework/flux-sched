@@ -124,8 +124,8 @@ verify_1N_sleep_jobs () {
     local rank=0
     for i in `seq $sched_start_jobid $sched_end_jobid`
     do
-        flux kvs get $(job_kvs_path $i).rank.$rank.cores \
-            > $sched_test_session.$i.out
+        $SHARNESS_TEST_SRCDIR/scripts/R_lite.lua ${i} ${rank} core count \
+            > ${sched_test_session}.${i}.out
         grep $cores $sched_test_session.$i.out
         if [ $? -ne 0 ]
         then

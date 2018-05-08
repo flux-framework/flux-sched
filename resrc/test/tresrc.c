@@ -361,6 +361,7 @@ static int test_a_resrc (resrc_api_ctx_t *rsapi, resrc_t *resrc, bool rdl)
     resrc_api_map_put (gather_map, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
     resrc_api_map_t *reduce_map = resrc_api_map_new ();
     resrc_api_map_put (reduce_map, "core", (void *)(intptr_t)NONE_UNDER_ME);
+    resrc_api_map_put (reduce_map, "gpu", (void *)(intptr_t)NONE_UNDER_ME);
 
     init_time ();
     rc = resrc_tree_serialize_lite (gather, reduce, found_tree,
