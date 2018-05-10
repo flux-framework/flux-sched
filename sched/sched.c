@@ -1781,6 +1781,9 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
         }
         break;
     case J_RUNNING:
+        VERIFY (trans (J_COMPLETING, newstate, &(job->state)));
+        break;
+    case J_COMPLETING:
         VERIFY (trans (J_COMPLETE, newstate, &(job->state))
                 || trans (J_CANCELLED, newstate, &(job->state)));
         if (!ctx->arg.schedonce) {

@@ -103,11 +103,13 @@ static int update_job_state (ctx_t *ctx,
     int rc;
     double t_starting = SIM_TIME_NONE;
     double t_running = SIM_TIME_NONE;
+    double t_completing = SIM_TIME_NONE;
     double t_complete = SIM_TIME_NONE;
 
     switch (new_state) {
     case J_STARTING: t_starting = update_time; break;
     case J_RUNNING: t_running = update_time; break;
+    case J_COMPLETING: t_completing = update_time; break;
     case J_COMPLETE: t_complete = update_time;  break;
     default:
         flux_log (ctx->h, LOG_ERR, "Unknown state %d", (int) new_state);
@@ -124,6 +126,7 @@ static int update_job_state (ctx_t *ctx,
     rc = set_job_timestamps (kvs_dir,
                              t_starting,
                              t_running,
+                             t_completing,
                              t_complete,
                              SIM_TIME_NONE); // io
     if (rc < 0)
@@ -209,12 +212,14 @@ static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
     set_event_timer (ctx, "sched", ctx->sim_state->sim_time + .00001);
 
     rc = set_job_timestamps (job->kvs_dir,
-		             SIM_TIME_NONE,  // starting
-			     SIM_TIME_NONE,  // running
-			     completion_time,
-			     job->io_time);
+                             SIM_TIME_NONE,  // starting
+                             SIM_TIME_NONE,  // running
+                             SIM_TIME_NONE,  // completing
+                             completion_time,
+                             job->io_time);
     if (rc < 0)
-	flux_log_error (h, "%s: set_job_timestamps", __FUNCTION__);
+        flux_log_error (h, "%s: set_job_timestamps", __FUNCTION__);
+
     free_job (job);
 
     return rc;
@@ -540,6 +545,13 @@ static int handle_queued_events (ctx_t *ctx)
             flux_log (h,
                       LOG_ERR,
                       "failed to set job %d's state to running",
+                      *jobid);
+            return -1;
+        }
+        if (update_job_state (ctx, *jobid, kvs_dir, J_COMPLETING, sim_time) < 0) {
+            flux_log (h,
+                      LOG_ERR,
+                      "failed to set job %d's state to completing",
                       *jobid);
             return -1;
         }

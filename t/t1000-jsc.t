@@ -17,13 +17,15 @@ tr2="submitted->allocated"
 tr3="allocated->runrequest"
 tr4="runrequest->starting"
 tr5="starting->running"
-tr6="running->complete"
+tr6="running->completing"
+tr7="completing->complete"
 trans="$tr1
 $tr2
 $tr3
 $tr4
 $tr5
-$tr6"
+$tr6
+$tr7"
 
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
     adjust_session_info 1 && 
