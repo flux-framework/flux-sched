@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "edge_eval_api.hpp"
+#include "evaluators/edge_eval_api.hpp"
 
 namespace Flux {
 namespace resource_model {

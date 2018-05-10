@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "dfu_traverse_impl.hpp"
+#include "traversers/dfu_impl.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -277,8 +277,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts, map<string, int64_t> &accum)
 {
     int rc = -1;
-    if (m_match->sdau_resource_types[subsystem].find (type)
-        != m_match->sdau_resource_types[subsystem].end ()) {
+    if (m_match->is_pruning_type (subsystem, type)) {
         if (accum.find (type) == accum.end ())
             accum[type] = counts;
         else
@@ -293,8 +292,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           std::unordered_map<string, int64_t> &accum)
 {
     int rc = -1;
-    if (m_match->sdau_resource_types[subsystem].find (type)
-        != m_match->sdau_resource_types[subsystem].end ()) {
+    if (m_match->is_pruning_type (subsystem, type)) {
         if (accum.find (type) == accum.end ())
             accum[type] = counts;
         else
@@ -417,7 +415,7 @@ int dfu_impl_t::cnt_slot (const vector<Resource> &slot_shape,
     qual_num_slots = UINT_MAX;
     for (auto &slot_elem : slot_shape) {
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
-        count = m_match->select_count (slot_elem, qc);
+        count = m_match->calc_count (slot_elem, qc);
         fit = (count == 0)? count : (qc / count);
         qual_num_slots = (qual_num_slots > fit)? fit : qual_num_slots;
         dfu_slot.rewind_iter_cur (dom, slot_elem.type);
@@ -448,7 +446,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
         for (auto &slot_elem : slot_shape) {
             unsigned int j = 0;
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
-            unsigned int count = m_match->select_count (slot_elem, qc);
+            unsigned int count = m_match->calc_count (slot_elem, qc);
             while (j < count) {
                 auto egroup_i = dfu_slot.iter_cur (dom, slot_elem.type);
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
@@ -530,7 +528,7 @@ int dfu_impl_t::resolve (vtx_t root, vector<Resource> &resources,
     for (auto &resource : resources) {
         if (resource.type == (*m_graph)[root].type) {
             qc = dfu.avail ();
-            if ((count = m_match->select_count (resource, qc)) == 0)
+            if ((count = m_match->calc_count (resource, qc)) == 0)
                 goto done;
             *needs = count; // if the root is specified, give that much
         }

@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "scoring_api.hpp"
+#include "evaluators/scoring_api.hpp"
 
 namespace Flux {
 namespace resource_model {

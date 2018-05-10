@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "dfu_traverse_impl.hpp"
+#include "traversers/dfu_impl.hpp"
 
 namespace Flux {
 namespace resource_model {

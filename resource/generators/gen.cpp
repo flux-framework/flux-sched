@@ -27,7 +27,7 @@
 #include <vector>
 #include <cstdint>
 #include <boost/algorithm/string.hpp>
-#include "resource_gen.hpp"
+#include "generators/gen.hpp"
 #include "planner/planner.h"
 
 extern "C" {

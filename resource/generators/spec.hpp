@@ -22,8 +22,8 @@
  *  See also:  http://www.gnu.org/licenses/
  \*****************************************************************************/
 
-#ifndef RESOURCE_GEN_SPEC_HPP
-#define RESOURCE_GEN_SPEC_HPP
+#ifndef SPEC_HPP
+#define SPEC_HPP
 
 #include <string>
 #include <boost/graph/adjacency_list.hpp>
@@ -104,7 +104,7 @@ private:
 } // namespace resource_model
 } // namespace Flux
 
-#endif // RESOURCE_GEN_SPEC_HPP
+#endif // SPEC_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

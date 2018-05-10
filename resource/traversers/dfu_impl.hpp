@@ -29,11 +29,11 @@
 #include <sstream>
 #include <cstdlib>
 #include <flux/jobspec.hpp>
-#include "system_defaults.hpp"
-#include "resource_data.hpp"
-#include "resource_graph.hpp"
-#include "dfu_match_cb.hpp"
-#include "scoring_api.hpp"
+#include "config/system_defaults.hpp"
+#include "schema/resource_data.hpp"
+#include "schema/resource_graph.hpp"
+#include "policies/base/dfu_match_cb.hpp"
+#include "evaluators/scoring_api.hpp"
 #include "planner/planner.h"
 
 namespace Flux {

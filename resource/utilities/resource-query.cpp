@@ -34,7 +34,9 @@
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
 #include "resource/utilities/command.hpp"
-#include "resource/dfu_match_id_based.hpp"
+#include "resource/policies/dfu_match_high_id_first.hpp"
+#include "resource/policies/dfu_match_low_id_first.hpp"
+#include "resource/policies/dfu_match_locality.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -403,16 +405,6 @@ static void control_loop (resource_context_t *ctx)
     }
 }
 
-static void subtree_plan_types (set<string> &aut)
-{
-    // scheduler-driven aggregate-updates optimization is configured with
-    // the following resource types.
-    // FIXME: we can only support one resource type for this scheme for now
-    // FIXME: design change is required for mintime resource search tree
-    // FIXME: within the underlying Planner API layer.
-    aut.insert ("core");
-}
-
 int main (int argc, char *argv[])
 {
     int rc, ch;
@@ -493,7 +485,7 @@ int main (int argc, char *argv[])
     ctx->resource_graph_views[ctx->params.matcher_name] = fg;
     ctx->jobid_counter = 1;
     const string &dom = ctx->matcher->dom_subsystem ();
-    subtree_plan_types (ctx->matcher->sdau_resource_types[dom]);
+    ctx->matcher->set_pruning_type (dom, ANY_RESOURCE_TYPE, "core");
 
     if (ctx->params.r_fname != "") {
         ctx->params.r_out.exceptions (std::ofstream::failbit

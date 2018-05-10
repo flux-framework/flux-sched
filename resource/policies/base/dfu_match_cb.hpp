@@ -1,4 +1,3 @@
-
 /*****************************************************************************\
  *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
  *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
@@ -32,9 +31,9 @@
 #include <cstdint>
 #include <iostream>
 #include <flux/jobspec.hpp>
-#include "resource_graph.hpp"
-#include "matcher_data.hpp"
-#include "scoring_api.hpp"
+#include "schema/resource_graph.hpp"
+#include "evaluators/scoring_api.hpp"
+#include "policies/base/matcher.hpp"
 #include "planner/planner.h"
 
 namespace Flux {
@@ -44,24 +43,14 @@ namespace resource_model {
  *  Define the set of visitor methods that are called
  *  back by a DFU resource-graph traverser.
  */
-class dfu_match_cb_t : public matcher_data_t
+class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t
 {
 public:
-    dfu_match_cb_t () : m_trav_level (0) { }
-    dfu_match_cb_t (const std::string &name)
-        : matcher_data_t (name), m_trav_level (0) { }
-    dfu_match_cb_t (const dfu_match_cb_t &o)
-        : matcher_data_t (o)
-    {
-        m_trav_level = o.m_trav_level;
-    }
-    dfu_match_cb_t &operator= (const dfu_match_cb_t &o)
-    {
-        matcher_data_t::operator= (o);
-        m_trav_level = o.m_trav_level;
-        return *this;
-    }
-    virtual ~dfu_match_cb_t () { }
+    dfu_match_cb_t ();
+    dfu_match_cb_t (const std::string &name);
+    dfu_match_cb_t (const dfu_match_cb_t &o);
+    dfu_match_cb_t &operator= (const dfu_match_cb_t &o);
+    virtual ~dfu_match_cb_t ();
 
     /*!
      *  Called back when all of the graph vertices and edges have been visited.
@@ -74,13 +63,11 @@ public:
      *  \param dfu       score interface object - See utilities/README.md
      *  \return          return 0 on success; otherwise -1.
      */
-    virtual int dom_finish_graph (const subsystem_t &subsystem, const std::vector<
-                                      Flux::Jobspec::Resource> &resources,
+    virtual int dom_finish_graph (const subsystem_t &subsystem,
+                                  const std::vector<
+                                            Flux::Jobspec::Resource> &resources,
                                   const f_resource_graph_t &g,
-                                  scoring_api_t &dfu)
-    {
-        return 0;
-    }
+                                  scoring_api_t &dfu);
 
     /*!
      * Called back on each postorder visit of a group of slot resources
@@ -88,10 +75,7 @@ public:
      * dominant subsystem.
      */
     virtual int dom_finish_slot (const subsystem_t &subsystem,
-                                 scoring_api_t &dfu)
-    {
-        return 0;
-    }
+                                 scoring_api_t &dfu);
 
     /*!
      *  Called back on each preorder visit of the dominant subsystem.
@@ -106,14 +90,11 @@ public:
      *
      *  \return          return 0 on success; otherwise -1.
      */
-    virtual int dom_discover_vtx (vtx_t u, const subsystem_t &subsystem,
+    virtual int dom_discover_vtx (vtx_t u,
+                                  const subsystem_t &subsystem,
                                   const std::vector<
-                                      Flux::Jobspec::Resource> &resources,
-                                  const f_resource_graph_t &g)
-    {
-        m_trav_level++;
-        return 0;
-    }
+                                            Flux::Jobspec::Resource> &resources,
+                                  const f_resource_graph_t &g);
 
     /*!
      *  Called back on each postorder visit of the dominant subsystem.
@@ -131,14 +112,12 @@ public:
      *
      *  \return          return 0 on success; otherwise -1
      */
-    virtual int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+    virtual int dom_finish_vtx (vtx_t u,
+                                const subsystem_t &subsystem,
                                 const std::vector<
-                                    Flux::Jobspec::Resource> &resources,
-                                const f_resource_graph_t &g, scoring_api_t &dfu)
-    {
-        m_trav_level--;
-        return 0;
-    }
+                                          Flux::Jobspec::Resource> &resources,
+                                const f_resource_graph_t &g,
+                                scoring_api_t &dfu);
 
     /*! Called back on each pre-up visit of an auxiliary subsystem.
      *  Must be overriden by a derived class if this visit event should
@@ -151,15 +130,11 @@ public:
      *
      *  \return          return 0 on success; otherwise -1
      */
-    virtual int aux_discover_vtx (vtx_t u, const subsystem_t &subsystem,
+    virtual int aux_discover_vtx (vtx_t u,
+                                  const subsystem_t &subsystem,
                                   const std::vector<
-                                      Flux::Jobspec::Resource> &resources,
-                                  const f_resource_graph_t &g)
-
-    {
-        m_trav_level++;
-        return 0;
-    }
+                                            Flux::Jobspec::Resource> &resources,
+                                  const f_resource_graph_t &g);
 
     /*
      *  Called back on each post-up visit of the auxiliary subsystem.
@@ -176,35 +151,21 @@ public:
      *
      *  \return          return 0 on success; otherwise -1
      */
-    virtual int aux_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+    virtual int aux_finish_vtx (vtx_t u,
+                                const subsystem_t &subsystem,
                                 const std::vector<
-                                    Flux::Jobspec::Resource> &resources,
-                                const f_resource_graph_t &g, scoring_api_t &dfu)
-    {
-        m_trav_level--;
-        return 0;
-    }
+                                          Flux::Jobspec::Resource> &resources,
+                                const f_resource_graph_t &g,
+                                scoring_api_t &dfu);
 
-    void incr ()
-    {
-        m_trav_level++;
-    }
-    void decr ()
-    {
-        m_trav_level--;
-    }
-    std::string level ()
-    {
-        int i;
-        std::string prefix = "";
-        for (i = 0; i < m_trav_level; ++i)
-            prefix += "----";
-        return prefix;
-    }
+    void incr ();
+    void decr ();
+    std::string level ();
 
 private:
     int m_trav_level;
 };
+
 } // namespace resource_model
 } // namespace Flux
 

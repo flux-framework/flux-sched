@@ -30,7 +30,7 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
-#include "resource_data.hpp"
+#include "schema/resource_data.hpp"
 
 namespace Flux {
 namespace resource_model {

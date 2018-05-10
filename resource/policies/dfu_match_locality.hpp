@@ -22,67 +22,46 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef FOLD_HPP
-#define FOLD_HPP
+#ifndef DFU_MATCH_LOCALITY_HPP
+#define DFU_MATCH_LOCALITY_HPP
 
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <map>
 #include <boost/icl/interval.hpp>
 #include <boost/icl/interval_set.hpp>
-#include "edge_eval_api.hpp"
+#include "policies/base/dfu_match_cb.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-namespace fold {
-struct greater {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
-    {
-        return a.score > b.score;
-    }
-};
-
-struct less {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
-    {
-        return a.score < b.score;
-    }
-};
-
-struct interval_greater {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
-    {
-        return *(ivset.find (a.score)) > *(ivset.find (b.score));
-    }
-    boost::icl::interval_set<int64_t> ivset;
-};
-
-struct interval_less {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
-    {
-        return *(ivset.find (a.score)) < *(ivset.find (b.score));
-    }
-    boost::icl::interval_set<int64_t> ivset;
-};
-
-struct plus {
-    const int64_t operator() (const int64_t result,
-                              const eval_egroup_t &a) const
-    {
-        return result + a.score;
-    }
-};
-inline boost::icl::interval_set<int64_t>::interval_type to_interval (
-                                                     const eval_egroup_t &ev)
+/*! Locality-aware policy: select resources of each type
+ *  where you have more qualified.
+ */
+struct greater_interval_first_t : public dfu_match_cb_t
 {
-    using namespace boost::icl;
-    int64_t tmp = ev.score;
-    return interval_set<int64_t>::interval_type::closed (tmp, tmp);
+    greater_interval_first_t ();
+    greater_interval_first_t (const std::string &name);
+    greater_interval_first_t (const greater_interval_first_t &o);
+    greater_interval_first_t &operator= (const greater_interval_first_t &o);
+    ~greater_interval_first_t ();
+
+    int dom_finish_graph (const subsystem_t &subsystem,
+                          const std::vector<Flux::Jobspec::Resource> &resources,
+                          const f_resource_graph_t &g, scoring_api_t &dfu);
+
+    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+                        const std::vector<Flux::Jobspec::Resource> &resources,
+                        const f_resource_graph_t &g, scoring_api_t &dfu);
+
+    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+};
+
 }
-} // namespace fold
+}
 
-} // namespace resource_model
-} // namesapce Flux
-
-#endif // FOLD_HPP
+#endif //DFU_MATCH_LOCALITY_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
