@@ -80,3 +80,7 @@ struct rdl *get_rdl (flux_t *h, char *path);
 void close_rdl ();
 */
 #endif /* SIMULATOR_H */
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

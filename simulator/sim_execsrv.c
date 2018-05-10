@@ -698,3 +698,7 @@ done_delvec:
 }
 
 MOD_NAME ("sim_exec");
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

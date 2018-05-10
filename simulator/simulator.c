@@ -509,3 +509,7 @@ done:
     flux_future_destroy (f);
     return cpy;
 }
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */
