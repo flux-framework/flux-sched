@@ -213,16 +213,11 @@ static inline void ssrvarg_init (ssrvarg_t *arg)
 
 static inline void ssrvarg_free (ssrvarg_t *arg)
 {
-    if (arg->path)
-        free (arg->path);
-    if (arg->uri)
-        free (arg->uri);
-    if (arg->userplugin)
-        free (arg->userplugin);
-    if (arg->userplugin_opts)
-        free (arg->userplugin_opts);
-    if (arg->prio_plugin)
-        free (arg->prio_plugin);
+    free (arg->path);
+    free (arg->uri);
+    free (arg->userplugin);
+    free (arg->userplugin_opts);
+    free (arg->prio_plugin);
 }
 
 static inline int ssrvarg_process_args (int argc, char **argv, ssrvarg_t *a)
@@ -495,8 +490,7 @@ static int plugin_process_args (ssrvctx_t *ctx, char *userplugin_opts)
     rc = 0;
 
  done:
-    if (argz)
-        free (argz);
+    free (argz);
 
     return rc;
 }
@@ -535,8 +529,7 @@ static int q_enqueue_into_pqueue (ssrvctx_t *ctx, json_t *jcb)
     /* please don't free the job using job_index; this is just a lookup table */
     rc = 0;
 done:
-    if (key)
-        free (key);
+    free (key);
     return rc;
 }
 
@@ -639,10 +632,8 @@ static json_t *get_string_blocking (flux_t *h, const char *key)
     free (json_str);
     return o;
 error:
-    if (json_str)
-        free (json_str);
-    if (o)
-        Jput (o);
+    free (json_str);
+    Jput (o);
     errno = saved_errno;
     return NULL;
 }
@@ -1213,10 +1204,8 @@ static inline int bridge_send_runrequest (ssrvctx_t *ctx, flux_lwj_t *job)
             rc = 0;
         }
     }
-    if (msg)
-        flux_msg_destroy (msg);
-    if (topic)
-        free (topic);
+    flux_msg_destroy (msg);
+    free (topic);
     return rc;
 }
 
@@ -1331,10 +1320,8 @@ static int req_tpexec_allocate (ssrvctx_t *ctx, flux_lwj_t *job)
     bridge_update_timer (ctx);
     rc = 0;
 done:
-    if (jcb)
-        Jput (jcb);
-    if (red)
-        Jput (red);
+    Jput (jcb);
+    Jput (red);
     resrc_api_map_destroy (&gmap);
     resrc_api_map_destroy (&rmap);
     return rc;
@@ -1498,8 +1485,7 @@ static resrc_reqst_t *get_resrc_reqst (ssrvctx_t *ctx, flux_lwj_t *job,
     resrc_reqst = resrc_reqst_from_json (ctx->rsapi, req_res, NULL);
 
 done:
-    if (req_res)
-        Jput (req_res);
+    Jput (req_res);
     return resrc_reqst;
 }
 
@@ -1732,8 +1718,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
                 q_move_to_cqueue (ctx, job);
             } else {
                 q_rm_from_pqueue (ctx, job);
-                if (job->req)
-                    free (job->req);
+                free (job->req);
                 resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
                 key = xasprintf ("%"PRId64"", job->lwj_id);
                 zhash_delete (ctx->job_index, key);
@@ -1770,8 +1755,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
                 q_move_to_cqueue (ctx, job);
             } else {
                 q_rm_from_pqueue (ctx, job);
-                if (job->req)
-                    free (job->req);
+                free (job->req);
                 resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
                 key = xasprintf ("%"PRId64"", job->lwj_id);
                 zhash_delete (ctx->job_index, key);
@@ -1809,8 +1793,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
         } else {
             /* free resource here if reap is not enabled */
             q_rm_from_rqueue (ctx, job);
-            if (job->req)
-                free (job->req);
+            free (job->req);
             resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
             key = xasprintf ("%"PRId64"", job->lwj_id);
             zhash_delete (ctx->job_index, key);
@@ -1821,8 +1804,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
     case J_CANCELLED:
         VERIFY (trans (J_REAPED, newstate, &(job->state)));
         if (ctx->arg.reap) {
-             if (job->req)
-                 free (job->req);
+             free (job->req);
              key = xasprintf ("%"PRId64"", job->lwj_id);
              zhash_delete (ctx->job_index, key);
              free (key);
@@ -1837,8 +1819,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
             if (priority_plugin)
                 priority_plugin->record_job_usage (ctx->h, job);
             zlist_remove (ctx->c_queue, job);
-            if (job->req)
-                free (job->req);
+            free (job->req);
             resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
             key = xasprintf ("%"PRId64"", job->lwj_id);
             zhash_delete (ctx->job_index, key);
@@ -1952,10 +1933,8 @@ static int kill_jobs_on_node (flux_t *h, resrc_t *node)
    return 0;
 
 error:
-    if (topic)
-        free (topic);
-    if (msg)
-        flux_msg_destroy (msg);
+    free (topic);
+    flux_msg_destroy (msg);
     return -1;
 }
 
@@ -2007,10 +1986,8 @@ static void exclude_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (topic)
-        free (topic);
-    if (msg2)
-        flux_msg_destroy (msg2);
+    free (topic);
+    flux_msg_destroy (msg2);
     if (flux_respond (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
