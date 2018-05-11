@@ -1,3 +1,29 @@
+flux-sched version 0.5.0 - 2018-05-11
+-------------------------------------
+
+### Fixes
+ * c++ configuration changes to mirror flux-core (#270)
+ * track upstream changes in flux-core APIs (#271, #272, #278)
+ * portability fixes for Ubuntu 16.04 and 17.10 (#298, #301)
+ * fixes for hwloc input xml (#310)
+
+### Features
+ * add pending job cancellation support (#291)
+ * add support for excluding resources for specific nodes (#305)
+ * support for GPU scheduling (#313)
+ * add new, more scalable resource assignment schema in kvs (R_lite) (#321)
+ * include host names in R_lite resource assignment data (#324)
+ * optimize queue-depth=1 FCFS (#294)
+ * support for enhanced wreck submitted state event (#295)
+ * support for new completing state for wreck jobs (#341)
+ * add planner and resource-query utility support (#283, #323, #325, #274, #281)
+ * initial priority plugin development (#290)
+
+### Cleanup
+ * testsuite enhancements (#316, #328, #331)
+ * drop old rank.N method for resource assignment (#339)
+
+
 flux-sched version 0.4.0 - 2017-08-24
 -------------------------------------
 
