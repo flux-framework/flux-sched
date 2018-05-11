@@ -1784,8 +1784,7 @@ static int action (ssrvctx_t *ctx, flux_lwj_t *job, job_state_t newstate,
         VERIFY (trans (J_COMPLETING, newstate, &(job->state)));
         break;
     case J_COMPLETING:
-        VERIFY (trans (J_COMPLETE, newstate, &(job->state))
-                || trans (J_CANCELLED, newstate, &(job->state)));
+        VERIFY (trans (J_COMPLETE, newstate, &(job->state)));
         if (!ctx->arg.schedonce) {
             /* support testing by actually not releasing the resrc */
             if (resrc_tree_release (job->resrc_tree, job->lwj_id)) {
