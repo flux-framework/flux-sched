@@ -209,7 +209,8 @@ error:
 }
 
 int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
-                        double t_running, double t_complete, double t_io)
+                        double t_running, double t_completing,
+                        double t_complete, double t_io)
 {
     flux_t *h = flux_kvsdir_handle (dir);
     flux_kvs_txn_t *txn;
@@ -223,6 +224,10 @@ int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
     }
     if (t_running != SIM_TIME_NONE) {
         if (txn_dir_pack (txn, dir, "running_time", "f", t_running) < 0)
+	    goto error;
+    }
+    if (t_completing != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "completing_time", "f", t_completing) < 0)
 	    goto error;
     }
     if (t_complete != SIM_TIME_NONE) {
@@ -504,3 +509,7 @@ done:
     flux_future_destroy (f);
     return cpy;
 }
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

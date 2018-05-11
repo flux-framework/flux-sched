@@ -437,3 +437,7 @@ done_delvec:
 }
 
 MOD_NAME ("submit");
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */
