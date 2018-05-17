@@ -1943,7 +1943,7 @@ static void exclude_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     ssrvctx_t *ctx = getctx ((flux_t *)arg);
     const char *hostname = NULL;
-    bool kill = false;
+    int kill = false;
     uint32_t userid = 0;
     char *topic = NULL;
     resrc_t *node = NULL;
