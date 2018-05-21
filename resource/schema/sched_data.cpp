@@ -34,25 +34,22 @@ schedule_t::schedule_t (const schedule_t &o)
 {
     int64_t base_time = 0;
     uint64_t duration = 0;
-    size_t len = 0;
 
     // copy constructor does not copy the contents
     // of the schedule tables and of the planner objects.
     if (o.plans) {
         base_time = planner_base_time (o.plans);
         duration = planner_duration (o.plans);
-        len = planner_resources_len (o.plans);
         plans = planner_new (base_time, duration,
-                             planner_resource_totals (o.plans),
-                             planner_resource_types (o.plans), len);
+                             planner_resource_total (o.plans),
+                             planner_resource_type (o.plans));
     }
     if (o.x_checker) {
         base_time = planner_base_time (o.x_checker);
         duration = planner_duration (o.x_checker);
-        len = planner_resources_len (o.x_checker);
         x_checker = planner_new (base_time, duration,
-                                 planner_resource_totals (o.x_checker),
-                                 planner_resource_types (o.x_checker), len);
+                                 planner_resource_total (o.x_checker),
+                                 planner_resource_type (o.x_checker));
     }
 }
 
@@ -67,18 +64,16 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
     if (o.plans) {
         base_time = planner_base_time (o.plans);
         duration = planner_duration (o.plans);
-        len = planner_resources_len (o.plans);
         plans = planner_new (base_time, duration,
-                             planner_resource_totals (o.plans),
-                             planner_resource_types (o.plans), len);
+                             planner_resource_total (o.plans),
+                             planner_resource_type (o.plans));
     }
     if (o.x_checker) {
         base_time = planner_base_time (o.x_checker);
         duration = planner_duration (o.x_checker);
-        len = planner_resources_len (o.x_checker);
         x_checker = planner_new (base_time, duration,
-                                 planner_resource_totals (o.x_checker),
-                                 planner_resource_types (o.x_checker), len);
+                                 planner_resource_total (o.x_checker),
+                                 planner_resource_type (o.x_checker));
     }
     return *this;
 }

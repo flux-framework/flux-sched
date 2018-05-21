@@ -206,16 +206,12 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     db.resource_graph[v].type = recipe[u].type;
     db.resource_graph[v].basename = recipe[u].basename;
     db.resource_graph[v].size = recipe[u].size;
-    const char *res_types[1] = {NULL};
-    res_types[0] = recipe[u].type.c_str ();
-    const uint64_t avail = recipe[u].size;
-    planner_t *plans = planner_new (0, INT64_MAX, &avail, res_types, 1);
-    db.resource_graph[v].schedule.plans = plans;
-
-    const char *jobs = X_CHECKER_JOBS_STR;
-    const uint64_t njobs = X_CHECKER_NJOBS;
-    planner_t *x_checker = planner_new (0, INT64_MAX, &njobs, &jobs, 1);
-    db.resource_graph[v].schedule.x_checker = x_checker;
+    db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
+                                                       recipe[u].size,
+                                                       recipe[u].type.c_str ());
+    db.resource_graph[v].schedule.x_checker = planner_new (0, INT64_MAX,
+                                                           X_CHECKER_NJOBS,
+                                                           X_CHECKER_JOBS_STR);
     db.resource_graph[v].id = id;
     db.resource_graph[v].name = recipe[u].basename + istr;
     db.resource_graph[v].paths[ssys] = pref + "/" + db.resource_graph[v].name;
