@@ -1,4 +1,4 @@
-# 4x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[1]
+# 10x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[1]
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
