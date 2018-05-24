@@ -1522,11 +1522,15 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
     resrc_tree_t *selected_tree = NULL;
     struct behavior_plugin *plugin = behavior_plugin_get (ctx->loader);
 
-    if (!plugin)
+    if (!plugin) {
+        flux_log (h, LOG_ERR, "No scheduler policy plugin has been loaded!");
         return rc;
+    }
 
-    if (!(resrc_reqst = get_resrc_reqst (ctx, job, starttime, &nreqrd)))
+    if (!(resrc_reqst = get_resrc_reqst (ctx, job, starttime, &nreqrd))) {
+        flux_log (h, LOG_ERR, "Null resource request object!");
         goto done;
+    }
 
     if ((nfound = plugin->find_resources (h, ctx->rsapi,
                                           GET_ROOT_RESRC(ctx->rsapi),
