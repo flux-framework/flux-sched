@@ -358,7 +358,7 @@ static void trigger_cb (flux_t *h,
     const char *json_str = NULL;
     sim_state_t *sim_state = NULL;
 
-    if (flux_msg_get_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         Jput (o);
