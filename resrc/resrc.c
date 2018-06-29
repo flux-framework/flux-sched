@@ -910,18 +910,10 @@ static resrc_t *resrc_new_from_hwloc_obj (resrc_api_ctx_t *ctx, hwloc_obj_t obj,
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_GROUP)) {
         type = xstrdup ("group");
         name = xasprintf ("%s%"PRId64"", type, id);
-#if HWLOC_API_VERSION < 0x00010b00
-    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NODE)) {
-#else
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NUMANODE)) {
-#endif
         type = xstrdup ("numanode");
         name = xasprintf ("%s%"PRId64"", type, id);
-#if HWLOC_API_VERSION < 0x00010b00
-    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_SOCKET)) {
-#else
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PACKAGE)) {
-#endif
         type = xstrdup ("socket");
         name = xasprintf ("%s%"PRId64"", type, id);
 #if HWLOC_API_VERSION < 0x00020000
