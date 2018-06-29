@@ -662,7 +662,7 @@ static int build_hwloc_rs2rank (ssrvctx_t *ctx, rsreader_t r_mode)
         if (rsreader_hwloc_load (ctx->rsapi, s, len, rank, r_mode, ctx->machs,
                                  &err_str)) {
             Jput (o);
-            flux_log_error (ctx->h, "can't load hwloc data: %s", err_str);
+            flux_log (ctx->h, LOG_ERR, "can't load hwloc data: %s", err_str);
             free (err_str);
             goto done;
         }
