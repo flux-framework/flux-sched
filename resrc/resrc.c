@@ -942,6 +942,19 @@ static resrc_t *resrc_new_from_hwloc_obj (resrc_api_ctx_t *ctx, hwloc_obj_t obj,
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PU)) {
         type = xstrdup ("pu");
         name = xasprintf ("%s%"PRId64"", type, id);
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_OS_DEVICE)
+               && obj->attr
+               && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+        /* hwloc doesn't provide the logical index only amongst CoProc devices
+           so we parse this info from the name until hwloc provide better
+           support.
+         */
+        if (strncmp(obj->name, "cuda", 4) == 0)
+            id = atoi (obj->name + 4);
+        else if (strncmp(obj->name, "opencl", 6) == 0)
+            id = atoi (obj->name + 6);
+        type = xstrdup ("gpu");
+        name = xasprintf ("%s%"PRId64"", type, id);
     } else {
         /* that's all we're supporting for now... */
         goto ret;
@@ -1008,20 +1021,34 @@ static resrc_t *resrc_create_cluster (resrc_api_ctx_t *ctx, char *cluster)
     return resrc;
 }
 
+static void resrc_walk_hwloc (resrc_api_ctx_t *ctx, hwloc_topology_t topo,
+                hwloc_obj_t obj, resrc_t *parent, const char *sig, int depth,
+                zhash_t *resrc_objs)
+{
+    int i = 0;
+    char *obj_ptr = NULL;
+    resrc_t *resrc = NULL;
+
+    if ((resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig))) {
+        obj_ptr = xasprintf ("%p", obj);
+        zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
+        /* do not call the zhash_freefn() for the *resrc */
+        free (obj_ptr);
+    }
+    for (i = 0; i < obj->arity; i++) {
+        resrc_walk_hwloc (ctx, topo, obj->children[i], (resrc ? resrc : parent),
+                          sig, depth + 1, resrc_objs);
+    }
+}
+
 /* Generate with HWLOC reader */
 resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx,
              hwloc_topology_t topo, const char *sig, char **err_str)
 {
-    char *obj_ptr = NULL;
     char *str = NULL;
-    hwloc_obj_t obj;
-    resrc_t *parent = NULL;
-    resrc_t *resrc = NULL;
-    uint32_t depth;
+    resrc_t *resrc_root = NULL;
+    hwloc_obj_t hwloc_root;
     uint32_t hwloc_version;
-    uint32_t level_size;
-    uint32_t size;
-    uint32_t topodepth;
     zhash_t *resrc_objs = zhash_new ();
 
     if (!(ctx->hwloc_cluster)) {
@@ -1044,59 +1071,10 @@ resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx,
         goto ret;
     }
 
-    topodepth = hwloc_topology_get_depth (topo);
-    parent = ctx->hwloc_cluster;
-    level_size = hwloc_get_nbobjs_by_depth (topo, 0);
-    for (size = 0; size < level_size; size++) {
-        obj = hwloc_get_obj_by_depth (topo, 0, size);
-        if (!obj) {
-            str = xasprintf ("%s: Failed to get hwloc obj at depth 0",
-                             __FUNCTION__);
-            goto ret;
-        }
-        resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig);
-        if (resrc) {
-            obj_ptr = xasprintf ("%p", obj);
-            zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
-            /* do not call the zhash_freefn() for the *resrc */
-            free (obj_ptr);
-        } else {
-            str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
-                             __FUNCTION__);
-            goto ret;
-        }
-    }
-    for (depth = 1; depth < topodepth; depth++) {
-        level_size = hwloc_get_nbobjs_by_depth (topo, depth);
-        for (size = 0; size < level_size; size++) {
-            obj = hwloc_get_obj_by_depth (topo, depth, size);
-            if (!obj) {
-                str = xasprintf ("%s: Failed to get hwloc obj at depth %u",
-                                 __FUNCTION__, depth);
-                goto ret;
-            }
-            obj_ptr = xasprintf ("%p", obj->parent);
-            parent = zhash_lookup (resrc_objs, obj_ptr);
-            free (obj_ptr);
-            if (!parent) {
-                str = xasprintf ("%s: Failed to find parent of obj depth %u",
-                                 __FUNCTION__, depth);
-                goto ret;
-            }
-            resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig);
-            if (resrc) {
-                obj_ptr = xasprintf ("%p", obj);
-                zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
-                /* do not call the zhash_freefn() for the *resrc */
-                free (obj_ptr);
-            } else {
-                str = xasprintf ("%s: Failed to create resrc from hwloc depth "
-                                 "%u", __FUNCTION__, depth);
-                goto ret;
-            }
-        }
-    }
-    resrc = ctx->hwloc_cluster;
+    resrc_root = ctx->hwloc_cluster;
+    hwloc_root = hwloc_get_root_obj (topo);
+    resrc_walk_hwloc (ctx, topo, hwloc_root, resrc_root, sig, 0, resrc_objs);
+
 ret:
     zhash_destroy (&resrc_objs);
     if (str) {
@@ -1108,7 +1086,7 @@ ret:
         }
     }
 
-    return resrc;
+    return resrc_root;
 }
 
 int resrc_to_json (json_t *o, resrc_t *resrc)
