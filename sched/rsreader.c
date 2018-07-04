@@ -267,6 +267,8 @@ int rsreader_hwloc_load (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
 
     if (hwloc_topology_init (&topo) != 0)
         goto done;
+    if (hwloc_topology_set_flags (topo, HWLOC_TOPOLOGY_FLAG_IO_DEVICES) != 0)
+        goto err;
     if (hwloc_topology_set_xmlbuffer (topo, buf, len) != 0)
         goto err;
     if (hwloc_topology_load (topo) != 0)
