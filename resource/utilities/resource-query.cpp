@@ -47,13 +47,14 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "G:S:P:g:o:t:e:h"
+#define OPTIONS "G:S:P:g:o:p:t:e:h"
 static const struct option longopts[] = {
     {"grug",             required_argument,  0, 'G'},
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
     {"graph-format",     required_argument,  0, 'g'},
     {"graph-output",     required_argument,  0, 'o'},
+    {"prune-filters",    required_argument,  0, 'p'},
     {"test-output",      required_argument,  0, 't'},
     {"elapse",           required_argument,  0, 'e'},
     {"help",             no_argument,        0, 'h'},
@@ -130,6 +131,18 @@ static void usage (int code)
 "                low: Select resources with low ID first\n"
 "                locality: Select contiguous resources first in their ID space\n"
 "            (default=high).\n"
+"\n"
+"    -C, --prune-filters=<[HL-resource1|]:LL-resource1[,[HL-resource2|]:LL-resource2...]...]>\n"
+"            Install a planner-based cache at each HL(High-Level)-resource,\n"
+"                vertex which maintains the state of LL(Low-Level)-resources\n"
+"                in aggregate residing under its subtree. If a spec requests\n"
+"                1 node with 4 cores, and the visiting node vertex has\n"
+"                only a total of 2 available cores in aggreate at its\n"
+"                subtree, traverse will prune the further descent from\n"
+"                this node vertex to speep up the search. Example:\n"
+"                    rack:node,node:core\n"
+"                    :core,cluster:node,rack:node\n"
+"                (default=:core).\n"
 "\n"
 "    -g, --graph-format=<dot|graphml>\n"
 "            Specify the graph format of the output file\n"

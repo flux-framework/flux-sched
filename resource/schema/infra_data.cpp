@@ -67,20 +67,20 @@ pool_infra_t::pool_infra_t ()
 
 pool_infra_t::pool_infra_t (const pool_infra_t &o): infra_base_t (o)
 {
-   // don't copy the content of infrastructure tables and subtree
-   // planner objects.
-   colors = o.colors;
-   for (auto &kv : o.subplans) {
-       planner_t *p = kv.second;
-       if (!p)
-           continue;
-       int64_t base_time = planner_base_time (p);
-       uint64_t duration = planner_duration (p);
-       size_t len = planner_resources_len (p);
-       subplans[kv.first] = planner_new (base_time, duration,
-                                planner_resource_totals (p),
-                                planner_resource_types (p), len);
-   }
+    // don't copy the content of infrastructure tables and subtree
+    // planner objects.
+    colors = o.colors;
+    for (auto &kv : o.subplans) {
+        planner_multi_t *p = kv.second;
+        if (!p)
+            continue;
+        int64_t base_time = planner_multi_base_time (p);
+        uint64_t duration = planner_multi_duration (p);
+        size_t len = planner_multi_resources_len (p);
+        subplans[kv.first] = planner_multi_new (base_time, duration,
+                                 planner_multi_resource_totals (p),
+                                 planner_multi_resource_types (p), len);
+    }
 }
 
 pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
@@ -90,15 +90,15 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
     infra_base_t::operator= (o);
     colors = o.colors;
     for (auto &kv : o.subplans) {
-        planner_t *p = kv.second;
+        planner_multi_t *p = kv.second;
         if (!p)
             continue;
-        int64_t base_time = planner_base_time (p);
-        uint64_t duration = planner_duration (p);
-        size_t len = planner_resources_len (p);
-        subplans[kv.first] = planner_new (base_time, duration,
-                                 planner_resource_totals (p),
-                                 planner_resource_types (p), len);
+        int64_t base_time = planner_multi_base_time (p);
+        uint64_t duration = planner_multi_duration (p);
+        size_t len = planner_multi_resources_len (p);
+        subplans[kv.first] = planner_multi_new (base_time, duration,
+                                 planner_multi_resource_totals (p),
+                                 planner_multi_resource_types (p), len);
     }
     return *this;
 }
@@ -106,14 +106,14 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
 pool_infra_t::~pool_infra_t ()
 {
     for (auto &kv : subplans)
-        planner_destroy (&(kv.second));
+        planner_multi_destroy (&(kv.second));
 }
 
 void pool_infra_t::scrub ()
 {
     job2span.clear ();
     for (auto &kv : subplans)
-        planner_destroy (&(kv.second));
+        planner_multi_destroy (&(kv.second));
     colors.clear ();
 }
 

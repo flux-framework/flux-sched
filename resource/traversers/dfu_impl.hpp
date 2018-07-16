@@ -138,14 +138,14 @@ public:
      *  planner-tracking resource types into resource_counts array, a form that
      *  can be used with Planner API.
      *
-     *  \param plan      planner object.
+     *  \param plan      multi-planner object.
      *  \param lookup    a map type such as std::map or unordered_map.
      *  \param[out] resource_counts
      *                   output array.
      *  \return          0 on success; -1 on error.
      */
     template <class lookup_t>
-    int count (planner_t *plan, const lookup_t &lookup,
+    int count (planner_multi_t *plan, const lookup_t &lookup,
                std::vector<uint64_t> &resource_counts);
 
     /*! Entry point for graph matching and scoring depth-first-and-up (DFU) walk.
@@ -214,8 +214,8 @@ private:
     int prune (const jobmeta_t &meta, bool excl, const std::string &subsystem,
                vtx_t u, const std::vector<Jobspec::Resource> &resources);
 
-    planner_t *subtree_plan (vtx_t u, std::vector<uint64_t> &avail,
-                             std::vector<const char *> &types);
+    planner_multi_t *subtree_plan (vtx_t u, std::vector<uint64_t> &avail,
+                                   std::vector<const char *> &types);
 
     /*! Test various matching conditions between jobspec and graph
      * including slot match
@@ -307,12 +307,12 @@ private:
 }; // the end of class dfu_impl_t
 
 template <class lookup_t>
-int dfu_impl_t::count (planner_t *plan, const lookup_t &lookup,
+int dfu_impl_t::count (planner_multi_t *plan, const lookup_t &lookup,
                        std::vector<uint64_t> &resource_counts)
 {
     int rc = 0;
-    size_t len = planner_resources_len (plan);
-    const char **resource_types = planner_resource_types (plan);
+    size_t len = planner_multi_resources_len (plan);
+    const char **resource_types = planner_multi_resource_types (plan);
     for (unsigned int i = 0; i < len; ++i) {
         if (lookup.find (resource_types[i]) != lookup.end ()) {
             uint64_t n = (uint64_t)lookup.at (resource_types[i]);

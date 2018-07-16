@@ -12,9 +12,9 @@ AM_LDFLAGS = \
 SUBDIRS = . test
 
 noinst_LTLIBRARIES = libplanner.la
-noinst_HEADERS = planner.h
+noinst_HEADERS = planner.h planner_multi.h
 
-libplanner_la_SOURCES = planner.c
+libplanner_la_SOURCES = planner.c planner_multi.c
 libplanner_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resource/planner
 libplanner_la_LIBADD = \
 	$(top_builddir)/src/common/libutil/libutil.la \
