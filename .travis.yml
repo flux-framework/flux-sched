@@ -125,3 +125,10 @@ deploy:
     condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
     tags: true
     repo: flux-framework/flux-sched
+
+notifications:
+  email:
+    recipients:
+      - flux-sched-dev@listserv.llnl.gov
+    on_success: change
+    on_failure: always
