@@ -74,7 +74,12 @@ static void exclude_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg);
 static void include_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg);
+static void sched_params_set_request_cb (flux_t *h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg);
+static void sched_params_get_request_cb (flux_t *h, flux_msg_handler_t *w,
+                              const flux_msg_t *msg, void *arg);
 static int job_status_cb (const char *jcbstr, void *arg, int errnum);
+
 
 
 /******************************************************************************
@@ -139,6 +144,7 @@ typedef struct {
     flux_msg_handler_t **sim_handlers;
 } ssrvctx_t;
 
+static int schedule_jobs (ssrvctx_t *ctx);  /* Forward declaration */
 
 /******************************************************************************
  *                                                                            *
@@ -305,28 +311,70 @@ static int adjust_for_sched_params (ssrvctx_t *ctx)
 {
     flux_reactor_t *r = NULL;
     int rc = 0;
+    flux_msg_t *msg = NULL; 
+    /* delay_sched = true. 
+    Watchers need to be created the first time delay_sched is set to true. 
+    Otherwise, start the prepare/check watchers. The idle watcher is started by the ev_prep_cb. */ 
     if (ctx->arg.s_params.delay_sched && !ctx->sctx.in_sim) {
-        if (!(r = flux_get_reactor (ctx->h))) {
-            rc = -1;
-            goto done;
+        if (ctx->before && ctx->after) {                    /* Watchers exist */ 
+            flux_watcher_start (ctx->before); 
+            flux_watcher_start (ctx->after);
         }
-        if (!(ctx->before = flux_prepare_watcher_create (r, ev_prep_cb, ctx))) {
-            rc = -1;
-            goto done;
+       
+        /* If one of the watchers is not available, send error */
+        if ((!ctx->before && ctx->after) || (!ctx->after && ctx->before)) {
+            rc = -1; 
+            errno = EINVAL;
+            goto done; 
+        } 
+ 
+        if (!ctx->before && !ctx->after) {      /* Create and start watchers */
+            if (!(r = flux_get_reactor (ctx->h))) {
+                rc = -1;
+                goto done;
+            }
+            if (!(ctx->before = flux_prepare_watcher_create (r, ev_prep_cb, ctx))) {
+                rc = -1;
+                goto done;
+            }
+            if (!(ctx->after = flux_check_watcher_create (r, ev_check_cb, ctx))) {
+                rc = -1;
+                goto done;
+            }
+            /* idle watcher makes sure the check watcher (after) is called
+            even with no external events delivered */
+            if (!(ctx->idle = flux_idle_watcher_create (r, NULL, NULL))) {
+                rc = -1;
+                goto done;
+            }
+            flux_watcher_start (ctx->before);
+            flux_watcher_start (ctx->after);
         }
-        if (!(ctx->after = flux_check_watcher_create (r, ev_check_cb, ctx))) {
-            rc = -1;
-            goto done;
+    } // End if, delay = true
+
+    /* delay_sched = false. 
+    If set at runtime, stop the watchers, call schedule_jobs */
+    if (!ctx->arg.s_params.delay_sched && !ctx->sctx.in_sim) {
+        if (ctx->before && ctx->after) {
+            flux_watcher_stop (ctx->before); 
+            flux_watcher_stop (ctx->after);
+        
+            /* Create an event to schedule_jobs */   
+            flux_log (ctx->h, LOG_DEBUG, "Update delay_sched parameter");
+            msg = flux_event_encode ("sched.res.param_update", NULL);
+            if (!msg || flux_send (ctx->h, msg, 0) < 0) {
+                flux_log (ctx->h, LOG_ERR, "%s: error sending event: %s",
+                __FUNCTION__, strerror (errno));
+            }
+            flux_msg_destroy (msg);
         }
-        /* idle watcher makes sure the check watcher (after) is called
-           even with no external events delivered */
-        if (!(ctx->idle = flux_idle_watcher_create (r, NULL, NULL))) {
+        /* If one of the watchers is not available, send error */
+        if ((!ctx->before && ctx->after) || (!ctx->after && ctx->before)) {
             rc = -1;
-            goto done;
-        }
-        flux_watcher_start (ctx->before);
-        flux_watcher_start (ctx->after);
-    }
+            errno = EINVAL;
+            goto done; 
+        } 
+    } // End if, delay = false 
 done:
     return rc;
 }
@@ -1077,6 +1125,8 @@ static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,   "sched.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST,   "sched.exclude",  exclude_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST,   "sched.include",  include_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST,   "sched.params.set", sched_params_set_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST,   "sched.params.get", sched_params_get_request_cb, 0},
     { FLUX_MSGTYPE_EVENT,     "sched.res.*",  res_event_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
@@ -2084,6 +2134,70 @@ static int job_status_cb (const char *jcbstr, void *arg, int errnum)
 out:
     Jput (jcb);
     return rc;
+}
+
+
+static void sched_params_set_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    uint32_t userid = 0;
+    char *sprms = NULL;
+    bool prev_delay_sched = ctx->arg.s_params.delay_sched;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, 
+            "sched_params change requested by user (%u).", userid);
+    
+    if (flux_request_unpack (msg, NULL, "{s:s}", "param", &sprms) < 0)
+        goto error;
+   
+    if (sched_params_args (sprms, &(ctx->arg.s_params)) != 0)
+        goto error;
+   
+    /* Only call adjust_for_sched_params if there's a state change in delay_sched, 
+    otherwise, flux_watcher_start gets called more than once */
+    if (prev_delay_sched != ctx->arg.s_params.delay_sched) {
+        if (adjust_for_sched_params (ctx) != 0) 
+            goto error;
+    }
+   
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+}
+
+
+static void sched_params_get_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg)
+{
+    ssrvctx_t *ctx = getctx ((flux_t *)arg);
+    uint32_t userid = 0;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, 
+            "sched_param values requested by user (%u).", userid);
+   
+     if (flux_request_unpack (msg, NULL, "{}") < 0)
+        goto error;
+
+    if (flux_respond_pack (h, msg, "{s:i s:i}", 
+            "queue-depth", (int)ctx->arg.s_params.queue_depth, 
+            "delay-sched", (int)ctx->arg.s_params.delay_sched) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+    return;
+
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
 }
 
 static void ev_prep_cb (flux_reactor_t *r, flux_watcher_t *w, int ev, void *a)
