@@ -48,6 +48,7 @@ TESTS = \
     t1003-stress.t \
     t1004-module-load.t \
     t1005-sched-params.t \
+    t1008-runtime-sched-params.t \
     t1006-cancel.t \
     t1007-exclude.t \
     t2000-fcfs.t \
