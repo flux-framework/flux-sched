@@ -64,7 +64,6 @@ int main (int argc, char *argv[])
 {
     struct rdllib *l;
     struct rdl *rdl1, *rdl2;
-    struct rdl_accumulator *a;
     struct resource *r, *c;
     int64_t val;
     const char *h = NULL;
@@ -89,7 +88,8 @@ int main (int argc, char *argv[])
     if (!(rdl2 = rdl_copy (rdl1)))
         log_err_exit ("copy");
 
-    r = rdl_resource_get (rdl1, "default");
+    if (!(r = rdl_resource_get (rdl1, "default")))
+        log_err_exit ("get(default)");
     if (rdl_resource_set_int (r, "test-tag", 5959) < 0)
         exit (1);
     rdl_resource_get_int (r, "test-tag", &val);
@@ -99,14 +99,9 @@ int main (int argc, char *argv[])
 
     c = rdl_resource_next_child (r);
 
-    a = rdl_accumulator_create (rdl1);
-    if (rdl_accumulator_add (a, c) < 0)
-        exit (1);
-
-    rdl2 = rdl_accumulator_copy (a);
-    rdl_accumulator_destroy (a);
-
-    print_resource (rdl_resource_get (rdl2, "default"), 0);
+    r = rdl_resource_get (rdl2, "default");
+    if (r)
+        print_resource (r, 0);
 
     /*
      *  Test find
