@@ -25,7 +25,7 @@
 Socket = Resource:subclass ('Socket')
 
 function Socket:initialize (arg)
-    local cpuset = require 'flux.cpuset'.new
+    local cpuset = require 'flux.affinity'.cpuset.new
 
     assert (tonumber(arg.id),   "Required Socket arg `id' missing")
     assert (type(arg.cpus) == "string", "Required Socket arg `cpus' missing")
@@ -44,7 +44,7 @@ function Socket:initialize (arg)
     local cset = cpuset (arg.cpus)
 
 	local num_cores = 0
-	for _ in cset:setbits() do
+	for _ in cset:iterator() do
 	   num_cores = num_cores + 1
 	end
 
@@ -53,7 +53,7 @@ function Socket:initialize (arg)
 	   bw_per_core = arg.tags.max_bw / num_cores
 	end
 
-    for core in cset:setbits() do
+    for core in cset:iterator() do
         self:add_child (
             Resource{ "core", id = core, properties = { localid = id }, tags = { ["max_bw"] = bw_per_core, ["alloc_bw"] = 0 }}
         )
