@@ -1,3 +1,23 @@
+flux-sched version 0.6.0 - 2018-08-03
+-------------------------------------
+
+### Fixes
+ * sched: fix request handler type mismatch on i386 (#346)
+ * sched: Fix a job resrc_tree memory leak (#365)
+ * sched: Print error messages when schedule_job cannot run (#348)
+ * simulator: track a flux-core API change (#351)
+
+### Features
+ * resource: Introduce planner_multi_t  (#349)
+ * Add hwloc-based GPU scheduling support (#354)
+ * add sched parameter get & set commands to wreck (#362)
+ * rdl: Lua 5.2 compatibility (#373)
+
+### Cleanup
+ * travis: change email notifications to go to the flux-sched-dev listserv
+   (#353)
+
+
 flux-sched version 0.5.0 - 2018-05-11
 -------------------------------------
 
