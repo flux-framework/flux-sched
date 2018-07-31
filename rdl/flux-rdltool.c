@@ -111,7 +111,7 @@ void output_resource (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
         fatal (1, "Failed to find resource `%s'\n", uri);
 
     o = rdl_resource_json (r);
-    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_PRESERVE_ORDER));
+    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_SORT_KEYS));
     json_decref (o);
     rdl_resource_destroy (r);
     return;
@@ -147,7 +147,7 @@ void aggregate (struct prog_ctx *ctx, struct rdl *rdl, const char *uri)
         fatal (1, "Failed to find resource `%s'\n", uri);
 
     o = rdl_resource_aggregate_json (r);
-    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_PRESERVE_ORDER));
+    fprintf (stdout, "%s:\n%s\n", uri, json_dumps (o, JSON_SORT_KEYS));
     json_decref (o);
     rdl_resource_destroy (r);
     return;
