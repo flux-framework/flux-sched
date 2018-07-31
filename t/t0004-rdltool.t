@@ -16,8 +16,8 @@ test_expect_success  'flux-rdltool resource works' '
 	$rdltool -f $conf resource default://
 '
 test_expect_success  'flux-rdltool tree works' '
-	$rdltool -f $conf tree default://hype/hype201 >output.tree &&
-	cat <<-EOF >expected.tree &&
+	$rdltool -f $conf tree default://hype/hype201 | sort >output.tree &&
+	cat <<-EOF |sort >expected.tree &&
 /hype201
  /socket0
   /core0
@@ -46,7 +46,7 @@ test_expect_success  'flux-rdltool aggregate works' '
 	$rdltool -f $conf aggregate default:// >output.aggregate &&
 	cat >expected.aggregate <<-EOF &&
 	default://:
-	{"core": 2464, "socket": 308, "cluster": 1, "node": 154, "memory": 4620000}
+	{"cluster": 1, "core": 2464, "memory": 4620000, "node": 154, "socket": 308}
 	EOF
 	test_cmp expected.aggregate output.aggregate
 '
