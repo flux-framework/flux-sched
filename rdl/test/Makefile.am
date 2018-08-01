@@ -5,7 +5,7 @@ AM_CPPFLAGS = -I$(top_srcdir) $(JANSSON_CFLAGS) $(LUA_INCLUDE)
 
 TESTS_ENVIRONMENT = \
     LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(FLUX_PREFIX)/share/lua/5.1/fluxometer/?.lua;$(LUA_PATH);;" \
-    LUA_CPATH="$(abs_top_builddir)/rdl/?.so;$(abs_top_builddir)/rdl/test/.libs/?.so;$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(FLUX_PREFIX)/lib/lua/5.1/?.so;$(LUA_CPATH);;" \
+    LUA_CPATH="$(FLUX_PREFIX)/lib64/lua/5.1/?.so;$(FLUX_PREFIX)/lib/lua/5.1/?.so;$(LUA_CPATH);;" \
     TESTRDL_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua"
 
 TESTS = trdl test-jansson.lua
