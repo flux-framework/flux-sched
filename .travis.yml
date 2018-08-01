@@ -2,24 +2,23 @@ language: c
 
 sudo: false
 
-compiler:
-  - gcc
-  - clang
-
 matrix:
   include:
     - compiler: gcc
-      env: COVERAGE=t
+      env: LUA_VERSION=5.1
+    - compiler: clang
+      env: LUA_VERSION=5.1
     - compiler: gcc
-      env: TEST_INSTALL=t
+      env: LUA_VERSION=5.1 COVERAGE=t
+    - compiler: gcc
+      env: LUA_VERSION=5.2 TEST_INSTALL=t
     - compiler: clang
-      env: CC=clang-3.8 CXX=clang++-3.8
+      env: LUA_VERSION=5.2 CC=clang-3.8 CXX=clang++-3.8
     - compiler: clang
-      env: CPPCHECK=t
+      env: LUA_VERSION=5.1 CPPCHECK=t
 cache:
   directories:
     - $HOME/local
-    - $HOME/.luarocks
     - $HOME/.ccache
     - $HOME/.local
 
@@ -35,9 +34,6 @@ addons:
       - clang-3.8
       - gcc-4.9
       - g++-4.9
-      - lua5.1
-      - liblua5.1-0-dev
-      - luarocks
       - uuid-dev
       - aspell
       - libopenmpi-dev
@@ -54,6 +50,7 @@ addons:
       - libevent-dev
 
 before_install:
+  - rm -rf $HOME/.luarocks
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - eval $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
