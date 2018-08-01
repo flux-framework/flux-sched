@@ -29,12 +29,35 @@
 --
 local hostlist = require 'flux.hostlist'
 
+local HAVE_LUA52_LOAD = pcall (load, '')
+
 --
 -- Get the base path for this module to use in searching for
 --  types in the types db
 --  (XXX: This is really a hack temporarily used for this prototype,
 --    in the future types will be loaded from system defined path)
 local basepath = debug.getinfo(1,"S").source:match[[^@?(.*[\/])[^\/]-$]]
+
+
+local function loadfile_env (filename, env)
+    if HAVE_LUA52_LOAD then
+        return loadfile (filename, "t", env)
+    else
+        local f, err = loadfile (filename)
+        if f then setfenv (f, env) end
+        return f, err
+    end
+end
+
+local function loadstring_env (s, env)
+    if HAVE_LUA52_LOAD then
+        return load (s, nil, "t", env)
+    else
+        local f, err = loadstring (s)
+        if f then setfenv (f, env) end
+        return f, err
+    end
+end
 
 -- Return an table suitable for use as RDL parse environment
 local function rdl_parse_environment ()
@@ -64,16 +87,13 @@ local function rdl_parse_environment ()
         local dir = dir or basepath .. "RDL/types"
         local filename = dir .. "/" .. t .. ".lua"
         if env[t] then return end
-        local f = assert (loadfile (filename))
+        local uses_env = setmetatable ({},
+            {
+                __index = function (t,k) return env[k] or _G[k] end
+            }
+        )
 
-        --
-        --  Extend access for system defined types. These modules
-        --   can access all globals (but only write to the local
-        --   environment)
-        --
-        setfenv (f, setmetatable ({}, {
-            __index = function (t,k) return env[k] or _G[k] end
-        }))
+        local f = assert (loadfile_env (filename, uses_env))
         local rc, r = pcall (f)
         if not rc then
             return nil, r
@@ -132,11 +152,6 @@ end
 --  "blessed" into a memstore object.
 --
 local function rdl_eval (f)
-    local env = rdl_parse_environment ()
-
-    -- Set environment for rdl chunk `f'
-    setfenv (f, env)
-
     local rc, ret = pcall (f)
     if not rc then
         return nil, "Error! " .. ret
@@ -146,8 +161,6 @@ local function rdl_eval (f)
         local memstore = require 'RDL.memstore'
         return memstore.bless (ret)
     end
-
-    return env.rdl
 end
 
 --
@@ -162,10 +175,12 @@ local function rdl_evals (s)
         return nil, "binary code prohibited"
     end
 
-    local f, err = loadstring (s)
+    local env = rdl_parse_environment ()
+    local f, err = loadstring_env (s, env)
     if not f then return nil, err end
 
-    return rdl_eval (f)
+    rdl_eval (f)
+    return env.rdl
 end
 
 --
@@ -184,10 +199,12 @@ local function rdl_evalf (filename)
         end
     end
 
-    local fn, err = loadfile (filename)
+    local env = rdl_parse_environment ()
+    local fn, err = loadfile_env (filename, env)
     if not fn then return nil, "RDL eval failed: "..err end
 
-    return rdl_eval (fn)
+    rdl_eval (fn)
+    return env.rdl
 end
 
 
