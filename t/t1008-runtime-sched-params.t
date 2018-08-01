@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 test_description='Test dynamic updation of queue depth. 
 Ensure jobs are correctly scheduled under different values of
@@ -33,8 +32,8 @@ test_debug '
     flux module load sched  sched-once=true sched-params=queue-depth=1024,delay-sched=true &&
     timed_wait_job 5 &&
     submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
-    flux wreck sched-params get > output &&
-    printf "delay-sched=true\nqueue-depth=1024\n" > expected &&
+    flux wreck sched-params get |sort > output &&
+    printf "delay-sched=true\nqueue-depth=1024\n" |sort > expected &&
     test_cmp output expected &&  
     timed_sync_wait_job 10 &&
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
@@ -72,8 +71,8 @@ test_expect_success 'sched-params: getting both params at runtime works' '
     flux module load sched sched-once=true sched-params=queue-depth=1024,delay-sched=false &&
     timed_wait_job 5 &&
     submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
-    flux wreck sched-params get queue-depth,delay-sched > output &&
-    printf "delay-sched=false\nqueue-depth=1024\n" > expected &&
+    flux wreck sched-params get queue-depth,delay-sched |sort  > output &&
+    printf "delay-sched=false\nqueue-depth=1024\n" |sort > expected &&
     test_cmp output expected &&  
     timed_sync_wait_job 10 &&
     verify_1N_nproc_sleep_jobs ${excl_4N4B_nc} 
@@ -153,15 +152,15 @@ test_expect_success 'sched-params: update to delay can be combined with a short 
     adjust_session_info 4 &&
     flux module remove sched &&
     flux hwloc reload ${excl_4N4B} &&
-    printf  "delay-sched=true\nqueue-depth=16\n" > expected1 &&
-    printf "delay-sched=true\nqueue-depth=32\n" > expected2 &&
+    printf  "delay-sched=true\nqueue-depth=16\n" |sort > expected1 &&
+    printf "delay-sched=true\nqueue-depth=32\n"  |sort > expected2 &&
     flux module load sched sched-once=true \
     sched-params=delay-sched=true,queue-depth=16 &&
     timed_wait_job 5 &&
     submit_1N_nproc_sleep_jobs ${excl_4N4B_nc} 0 &&
-    flux wreck sched-params get > output1 &&
+    flux wreck sched-params get |sort > output1 &&
     flux wreck sched-params set queue-depth=32,delay-sched=true &&
-    flux wreck sched-params get > output2 &&
+    flux wreck sched-params get |sort > output2 &&
     test_cmp output1 expected1 &&  
     test_cmp output2 expected2 &&  
     timed_sync_wait_job 10 &&
