@@ -60,8 +60,8 @@ struct rdllib {
  */
 struct rdl {
     struct rdllib *rl;     /*  Pointer back to rdllib owning instance  */
-    lua_State *L;          /*  Local Lua state                         */
-    int        lua_ref;    /*  Reference in global Lua registry        */
+    lua_State *L;          /*  Pointer back to main Lua state          */
+    int        env_ref;    /*  Env Reference in global Lua registry    */
     List       resource_list;  /*  List of active resource references  */
 };
 
@@ -113,27 +113,20 @@ void rdllib_close (struct rdllib *rl)
 
 static int rdllib_init (struct rdllib *rl)
 {
-    char *error = NULL;
+    int status;
+    lua_State *L = rl->L;
 
-    /* dlopen liblua.so to pickup symbols that will be referenced by
-     * "require" */
-    dlopen ("liblua.so", RTLD_NOW | RTLD_GLOBAL);
-    if ((error = dlerror()) != NULL)
-        dlopen ("liblua5.1.so", RTLD_NOW | RTLD_GLOBAL);
-    if ((error = dlerror()) != NULL)  {
-        VERR (rl, "dlopen(liblua.so) failed: %s\n", error);
-        return (-1);
-    }
+    lua_getglobal (L, "require");
+    lua_pushstring (L, "RDL");
 
-    /* XXX: Is there no equivalent from C? */
-    lua_getglobal (rl->L, "require");
-    lua_pushstring (rl->L, "RDL");
-    if (lua_pcall (rl->L, 1, 1, 0)) {
-        VERR (rl, "loading RDL: %s\n", lua_tostring (rl->L, -1));
-        return (-1);
-    }
-    if (!lua_istable (rl->L, -1)) {
+    status = lua_pcall (L, 1, LUA_MULTRET, 0);
+    if ((status != 0) && !lua_isnil (L, -1)) {
         VERR (rl, "Failed to load RDL: %s\n", lua_tostring (rl->L, -1));
+        return (-1);
+    }
+    if (!lua_istable (L, -1)) {
+        VERR (rl, "Failed to load RDL: %s\n", lua_tostring (rl->L, -1));
+        return (-1);
     }
     /*
      *  Assign implementation to global RDL table.
@@ -163,9 +156,9 @@ static void rdl_free (struct rdl *rdl)
         list_destroy (rdl->resource_list);
     if (rdl->L && rdl->rl && rdl->rl->L) {
         /*
-         *  unref this Lua thread state from global library Lua state
+         *  unref the globals table for this rdl
          */
-        luaL_unref (rdl->rl->L, LUA_REGISTRYINDEX, rdl->lua_ref);
+        luaL_unref (rdl->rl->L, LUA_REGISTRYINDEX, rdl->env_ref);
         lua_gc (rdl->rl->L, LUA_GCCOLLECT, 0);
 
         /*
@@ -226,6 +219,18 @@ void rdl_destroy (struct rdl *rdl)
         rdl_free (rdl);
 }
 
+int rdl_lua_setfenv (struct rdl *rdl)
+{
+    lua_rawgeti (rdl->L, LUA_REGISTRYINDEX, rdl->env_ref);
+#if LUA_VERSION_NUM >= 502
+    /* 5.2 and greater: set table as first upvalue: i.e. _ENV */
+    return (lua_setupvalue (rdl->L, -2, 1) != NULL ? 0 : -1);
+#else
+    /* 5.0, 5.1: Set table as function environment for the chunk */
+    return (lua_setfenv (rdl->L, -2) != 0 ? 0: -1);
+#endif
+}
+
 static int rdl_dostringf (struct rdl *rdl, const char *fmt, ...)
 {
     char *s;
@@ -242,40 +247,24 @@ static int rdl_dostringf (struct rdl *rdl, const char *fmt, ...)
 
     top = lua_gettop (rdl->L);
 
-    if (  luaL_loadstring (rdl->L, s)
-       || lua_pcall (rdl->L, 0, LUA_MULTRET, 0)) {
+    if (luaL_loadstring (rdl->L, s)) {
+        VERR (rdl->rl, "loadstring (%s) failed\n", s);
+        return (-1);
+    }
+
+    if (rdl_lua_setfenv (rdl)) {
+        VERR (rdl->rl, "setfenv failed\n");
+        return (-1);
+    }
+
+    if (lua_pcall (rdl->L, 0, LUA_MULTRET, 0)) {
         VERR (rdl->rl, "dostring (%s): %s\n", s, lua_tostring (rdl->L, -1));
         lua_settop (rdl->L, 0);
         free (s);
         return (-1);
     }
     free (s);
-
     return (lua_gettop (rdl->L) - top);
-}
-
-/*
- *  Create a new Lua thread of execution with its own global state,
- *   keeping the main Lua global table as read-only fallback.
- */
-static lua_State *create_thread (lua_State *globalL)
-{
-    lua_State *L = lua_newthread (globalL);
-
-    /*  Now, set up metatable where __index = globalL._G */
-    lua_newtable (L);
-    lua_newtable (L);
-    lua_pushliteral (L, "__index");
-    lua_pushvalue(L, LUA_GLOBALSINDEX);
-    lua_settable(L, -3);
-    lua_setmetatable(L, -2);
-
-    /*
-     *  Replace current thread's globals index with
-     *   newly created empty table
-     */
-    lua_replace (L, LUA_GLOBALSINDEX);
-    return (L);
 }
 
 static void rdl_resource_delete (struct rdl *rdl, struct resource *r)
@@ -288,7 +277,7 @@ static void rdl_resource_delete (struct rdl *rdl, struct resource *r)
 static void rdl_resource_destroy_nolist (struct resource *r)
 {
     if (r->rdl->L) {
-        luaL_unref (r->rdl->L, LUA_GLOBALSINDEX, r->lua_ref);
+        luaL_unref (r->rdl->L, LUA_REGISTRYINDEX, r->lua_ref);
         r->rdl = NULL;
     }
     free (r->basename);
@@ -305,6 +294,20 @@ void rdl_resource_destroy (struct resource *r)
         rdl_resource_destroy_nolist (r);
 }
 
+/* Return a reference to an empty table that shadows the lua state's
+ *  global table
+ */
+static int shadow_global_table_ref (lua_State *L)
+{
+    lua_newtable (L);
+    lua_newtable (L);
+    lua_pushstring (L, "__index");
+    lua_getglobal (L, "_G");
+    lua_rawset (L, -3);
+    lua_setmetatable (L, -2);
+    return (luaL_ref (L, LUA_REGISTRYINDEX));
+}
+
 /*
  *  Allocate a new RDL instance under library state [rl].
  */
@@ -313,19 +316,10 @@ static struct rdl * rdl_new (struct rdllib *rl)
     struct rdl * rdl = malloc (sizeof (*rdl));
     if (rdl == NULL)
         return NULL;
-    /*
-     *  Each rdl instance is a new thread in global lua state rl->L
-     */
-    rdl->L = create_thread (rl->L);
-    rdl->lua_ref = luaL_ref (rl->L, LUA_REGISTRYINDEX);
-
-    if (!rdl->L || rdl->lua_ref == LUA_NOREF) {
-        rdl_destroy (rdl);
-        return (NULL);
-    }
 
     /* Pointer back to 'library'instance */
     rdl->rl = rl;
+    rdl->L  = rl->L;
     rdl->resource_list = list_create ((ListDelF) rdl_resource_destroy_nolist);
 
     /*
@@ -333,13 +327,34 @@ static struct rdl * rdl_new (struct rdllib *rl)
      */
     list_append (rl->rdl_list, rdl);
 
-    /* Leave rdl instance on top of stack */
+    if ((rdl->env_ref = shadow_global_table_ref (rdl->L)) < 0) {
+        rdl_destroy (rdl);
+        return (NULL);
+    }
+
     return (rdl);
 }
 
+/*  set the value at the top of the stack under name in the rdl
+ *   "globals" table.
+ */
+static void lua_rdl_setglobal (struct rdl *rdl, const char *name)
+{
+    /* Push globals table: [v, t] */
+    lua_rawgeti (rdl->L, LUA_REGISTRYINDEX, rdl->env_ref);
+    /* Push key    [v, t, k]*/
+    lua_pushstring (rdl->L, name);
+    /* Push value  [v, t, k, v ]*/
+    lua_pushvalue (rdl->L, -3);
+    /* t[k] = v    [v, t] */
+    lua_rawset (rdl->L, -3);
+    /* pop table and original value [] */
+    lua_pop (rdl->L, 2);
+}
+
 /*
- *  Pop an RDL table from source lua thread in [from] and move it
- *   to a newly created lua state, returning the new RDL instance.
+ *  Set the current RDL table at top of stack as rdl
+ *   in new struct rdl.
  */
 static struct rdl * lua_pop_new_rdl (struct rdl *from)
 {
@@ -347,16 +362,15 @@ static struct rdl * lua_pop_new_rdl (struct rdl *from)
     /*
      *  Ensure item at top of stack is at least a table:
      */
-    if (lua_type (from->L, -1) != LUA_TTABLE)
+    if (lua_type (from->L, -1) != LUA_TTABLE) {
         return (NULL);
-
+    }
     /*
      *  Create a new rdl object within this library state:
      */
     to = rdl_new (from->rl);
+    lua_rdl_setglobal (to, "rdl");
 
-    lua_xmove (from->L, to->L, 1);
-    lua_setglobal (to->L, "rdl");
     return (to);
 }
 
@@ -367,33 +381,17 @@ static struct rdl * loadfn (struct rdllib *rl, const char *fn, const char *s)
     if (rdl == NULL)
         return NULL;
 
-    /*
-     *  First, get function to evaluate rdl:
-     */
-    rc = rdl_dostringf (rdl, "return require 'RDL'.%s", fn);
+    rc = rdl_dostringf (rdl, "rdl = RDL.%s ('%s'); return rdl", fn, s);
     if (rc <= 0) {
-        VERR (rl, "rdl_load: Failed to get function RDL.%s\n", fn);
+        VERR (rl, "rdl_load: Failed to get function RDL.%s: %s\n", fn, lua_tostring (rdl->L, -1));
         rdl_destroy (rdl);
         return (NULL);
     }
-
-    /*
-     *  Now push function arg `s' onto stack, and evaluate the function:
-     */
-    if (s)
-        lua_pushstring (rdl->L, s);
-    if (lua_pcall (rdl->L, s?1:0, LUA_MULTRET, 0)) {
-        VERR (rl, "rdl_load: RDL.%s: %s\n", fn, lua_tostring (rdl->L, -1));
-        rdl_destroy (rdl);
-        return (NULL);
-    }
-
     if (lua_type (rdl->L, -1) != LUA_TTABLE) {
         VERR (rl, "rdl_load: %s\n", lua_tostring (rdl->L, -1));
         rdl_destroy (rdl);
         return (NULL);
     }
-    lua_setglobal (rdl->L, "rdl");
     lua_settop (rdl->L, 0);
     return (rdl);
 }
@@ -415,11 +413,12 @@ struct rdl * rdl_copy (struct rdl *rdl)
         return (NULL);
     assert (rdl->L);
     assert (rdl->rl);
+    lua_settop (rdl->L, 0);
     /*
      *  Call memstore:dup() function to push copy of current rdl
      *   onto stack:
      */
-    rdl_dostringf (rdl, "return rdl:dup()");
+    rdl_dostringf (rdl, "return (rdl:dup())");
     return (lua_pop_new_rdl (rdl));
 }
 
@@ -433,6 +432,7 @@ static int lua_rdl_push (struct rdl *rdl)
 static int lua_rdl_method_push (struct rdl *rdl, const char *name)
 {
     lua_State *L = rdl->L;
+    lua_settop (L, 0);
     /*
      *  First push rdl object onto stack
      */
@@ -460,8 +460,7 @@ const char *rdl_next_hierarchy (struct rdl *rdl, const char *last)
     else
         lua_pushnil (rdl->L);
 
-    /* stack: [ Method, object, last ] */
-    if (lua_pcall (rdl->L, 2, LUA_MULTRET, 0)) {
+    /* stack: [ Method, object, last ] */ if (lua_pcall (rdl->L, 2, LUA_MULTRET, 0)) {
         VERR (rdl->rl, "next_hierarchy: %s\n", lua_tostring (rdl->L, -1));
         return (NULL);
     }
@@ -514,7 +513,7 @@ static struct resource * create_resource_ref (struct rdl *rdl, int index)
 {
     struct resource *r;
     r = malloc (sizeof (*r));
-    r->lua_ref = luaL_ref (rdl->L, LUA_GLOBALSINDEX);
+    r->lua_ref = luaL_ref (rdl->L, LUA_REGISTRYINDEX);
     r->rdl = rdl;
     r->path = NULL;
     r->basename = NULL;
@@ -540,7 +539,7 @@ struct resource * rdl_resource_get (struct rdl *rdl, const char *uri)
 
 static int lua_rdl_resource_push (struct resource *r)
 {
-    lua_rawgeti (r->rdl->L, LUA_GLOBALSINDEX, r->lua_ref);
+    lua_rawgeti (r->rdl->L, LUA_REGISTRYINDEX, r->lua_ref);
     return (1);
 }
 
