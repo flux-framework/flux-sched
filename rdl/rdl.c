@@ -111,10 +111,23 @@ void rdllib_close (struct rdllib *rl)
     free (rl);
 }
 
+int rtld_global_liblua (struct rdllib *rl)
+{
+    if (!dlopen (LIBLUA_SO, RTLD_NOW|RTLD_GLOBAL)) {
+        VERR (rl, "dlopen (%s) failed: %s", LIBLUA_SO, dlerror ());
+        return (-1);
+    }
+    return (0);
+}
+
 static int rdllib_init (struct rdllib *rl)
 {
     int status;
     lua_State *L = rl->L;
+
+    /* force liblua global symbols */
+    if (rtld_global_liblua (rl) < 0)
+        return (-1);
 
     lua_getglobal (L, "require");
     lua_pushstring (L, "RDL");
