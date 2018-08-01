@@ -1,6 +1,9 @@
 #!/usr/bin/env lua
 
-require 'fluxometer.Test.More'
+-- require 'fluxometer' so that we use fluxometer Test.More
+require 'fluxometer'
+require 'Test.More'
+package.cpath="./.libs/?.so;"..package.cpath
 j = require 'janssontest'
 
 local function equals(t1, t2)
