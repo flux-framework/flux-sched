@@ -49,6 +49,17 @@ AX_VALGRIND_H
 AX_PROG_LUA([5.1],[5.3])
 AX_LUA_HEADERS
 AX_LUA_LIBS
+#  Glean liblua name from LUA_LIB set by AX_LUA_LIBS
+LIBLUA_SONAME=`echo $LUA_LIB | sed 's/.*-l\(lua[[0-9.-]]*\).*/lib\1.so/'`
+AC_MSG_CHECKING([for liblua DSO name])
+AS_IF([test "x$LIBLUA_SONAME" != "x"],
+      [AC_MSG_RESULT([$LIBLUA_SONAME])],
+      [AC_MSG_RESULT([no])
+       AC_MSG_ERROR([Unable to determine name of the liblua shared library])
+      ])
+AC_DEFINE_UNQUOTED([LIBLUA_SO], ["$LIBLUA_SONAME"],
+                   [Define the liblua DSO filename])
+
 PKG_CHECK_MODULES([UUID], [uuid], [], [])
 AX_FLUX_CORE
 AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])

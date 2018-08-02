@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
-local cpuset = require 'flux.cpuset'
+local cpuset = require 'flux.affinity'.cpuset
 local id_to_kvs_path = require 'wreck'.id_to_path
 local f = assert (require 'flux'.new())
 local jobid = tonumber (arg[1])

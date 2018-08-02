@@ -28,19 +28,8 @@ nobase_dist_lua_SCRIPTS = \
 
 noinst_LTLIBRARIES = libjansson-lua.la
 lib_LTLIBRARIES = libflux-rdl.la
-fluxluaexec_LTLIBRARIES = \
-    flux/cpuset.la
 
 fluxschedinclude_HEADERS = rdl.h
-
-flux_cpuset_la_SOURCES = lua-cpuset.c cpuset-str.c cpuset-str.h
-flux_cpuset_la_CFLAGS = $(LUA_INCLUDE) $(AM_CFLAGS)
-flux_cpuset_la_LIBADD = $(LUA_LIB)
-flux_cpuset_la_LDFLAGS = \
-    $(luamod_ldflags) \
-    -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset \
-    $(AM_LDFLAGS)
-
 
 libjansson_lua_la_SOURCES = jansson-lua.c jansson-lua.h
 libjansson_lua_la_LIBADD = $(LUA_LIB) $(JANSSON_LIBS)
