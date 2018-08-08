@@ -311,23 +311,23 @@ static int adjust_for_sched_params (ssrvctx_t *ctx)
 {
     flux_reactor_t *r = NULL;
     int rc = 0;
-    flux_msg_t *msg = NULL; 
-    /* delay_sched = true. 
-    Watchers need to be created the first time delay_sched is set to true. 
-    Otherwise, start the prepare/check watchers. The idle watcher is started by the ev_prep_cb. */ 
+    flux_msg_t *msg = NULL;
+    /* delay_sched = true.
+    Watchers need to be created the first time delay_sched is set to true.
+    Otherwise, start the prepare/check watchers. The idle watcher is started by the ev_prep_cb. */
     if (ctx->arg.s_params.delay_sched && !ctx->sctx.in_sim) {
-        if (ctx->before && ctx->after) {                    /* Watchers exist */ 
-            flux_watcher_start (ctx->before); 
+        if (ctx->before && ctx->after) {                    /* Watchers exist */
+            flux_watcher_start (ctx->before);
             flux_watcher_start (ctx->after);
         }
-       
+
         /* If one of the watchers is not available, send error */
         if ((!ctx->before && ctx->after) || (!ctx->after && ctx->before)) {
-            rc = -1; 
+            rc = -1;
             errno = EINVAL;
-            goto done; 
-        } 
- 
+            goto done;
+        }
+
         if (!ctx->before && !ctx->after) {      /* Create and start watchers */
             if (!(r = flux_get_reactor (ctx->h))) {
                 rc = -1;
@@ -352,14 +352,14 @@ static int adjust_for_sched_params (ssrvctx_t *ctx)
         }
     } // End if, delay = true
 
-    /* delay_sched = false. 
+    /* delay_sched = false.
     If set at runtime, stop the watchers, call schedule_jobs */
     if (!ctx->arg.s_params.delay_sched && !ctx->sctx.in_sim) {
         if (ctx->before && ctx->after) {
-            flux_watcher_stop (ctx->before); 
+            flux_watcher_stop (ctx->before);
             flux_watcher_stop (ctx->after);
-        
-            /* Create an event to schedule_jobs */   
+
+            /* Create an event to schedule_jobs */
             flux_log (ctx->h, LOG_DEBUG, "Update delay_sched parameter");
             msg = flux_event_encode ("sched.res.param_update", NULL);
             if (!msg || flux_send (ctx->h, msg, 0) < 0) {
@@ -372,9 +372,9 @@ static int adjust_for_sched_params (ssrvctx_t *ctx)
         if ((!ctx->before && ctx->after) || (!ctx->after && ctx->before)) {
             rc = -1;
             errno = EINVAL;
-            goto done; 
-        } 
-    } // End if, delay = false 
+            goto done;
+        }
+    } // End if, delay = false
 done:
     return rc;
 }
@@ -2153,22 +2153,22 @@ static void sched_params_set_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_msg_get_userid (msg, &userid) < 0)
         goto error;
 
-    flux_log (h, LOG_INFO, 
+    flux_log (h, LOG_INFO,
             "sched_params change requested by user (%u).", userid);
-    
+
     if (flux_request_unpack (msg, NULL, "{s:s}", "param", &sprms) < 0)
         goto error;
-   
+
     if (sched_params_args (sprms, &(ctx->arg.s_params)) != 0)
         goto error;
-   
-    /* Only call adjust_for_sched_params if there's a state change in delay_sched, 
+
+    /* Only call adjust_for_sched_params if there's a state change in delay_sched,
     otherwise, flux_watcher_start gets called more than once */
     if (prev_delay_sched != ctx->arg.s_params.delay_sched) {
-        if (adjust_for_sched_params (ctx) != 0) 
+        if (adjust_for_sched_params (ctx) != 0)
             goto error;
     }
-   
+
     if (flux_respond_pack (h, msg, "{}") < 0)
         flux_log_error (h, "%s", __FUNCTION__);
     return;
@@ -2188,14 +2188,14 @@ static void sched_params_get_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_msg_get_userid (msg, &userid) < 0)
         goto error;
 
-    flux_log (h, LOG_INFO, 
+    flux_log (h, LOG_INFO,
             "sched_param values requested by user (%u).", userid);
-   
+
      if (flux_request_unpack (msg, NULL, "{}") < 0)
         goto error;
 
-    if (flux_respond_pack (h, msg, "{s:i s:i}", 
-            "queue-depth", (int)ctx->arg.s_params.queue_depth, 
+    if (flux_respond_pack (h, msg, "{s:i s:i}",
+            "queue-depth", (int)ctx->arg.s_params.queue_depth,
             "delay-sched", (int)ctx->arg.s_params.delay_sched) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
     return;
