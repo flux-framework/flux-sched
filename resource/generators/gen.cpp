@@ -431,7 +431,7 @@ const std::string &resource_generator_t::err_message () const
 /*
  * Read a subsystem spec graphml file and generate resource database
  *
- * \param sfile  generator spec file in graphml
+ * \param sn     generator spec file in graphml
  * \param db     graph database consisting of resource graph and various indices
  * \return       0 on success; non-zero integer on an error
  */
