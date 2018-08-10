@@ -43,6 +43,7 @@ utilities_resource_query_SOURCES = \
     policies/dfu_match_high_id_first.cpp \
     policies/dfu_match_low_id_first.cpp \
     policies/dfu_match_locality.cpp \
+    jobinfo/jobinfo.cpp \
     schema/resource_data.cpp \
     schema/infra_data.cpp \
     schema/sched_data.cpp \
@@ -59,6 +60,7 @@ utilities_resource_query_SOURCES = \
     policies/dfu_match_high_id_first.hpp \
     policies/dfu_match_low_id_first.hpp \
     policies/dfu_match_locality.hpp \
+    jobinfo/jobinfo.hpp \
     schema/resource_graph.hpp \
     schema/data_std.hpp \
     schema/infra_data.hpp \
