@@ -27,10 +27,16 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "traversers/dfu_impl.hpp"
+#include "resource/traversers/dfu_impl.hpp"
 
 namespace Flux {
 namespace resource_model {
+
+enum class R_format { R, R_LITE, R_NATIVE };
+
+const char R_FORMAT[] = "R";
+const char R_LITE_FORMAT[] = "R_LITE";
+const char R_NATIVE_FORMAT[] = "R_NATIVE";
 
 /*! Depth-First-and-Up traverser. Perform depth-first visit on the dominant
  *  subsystem and upwalk on each and all of the auxiliary subsystems selected
@@ -128,6 +134,8 @@ private:
                   vtx_t root, unsigned int *needs,
                   std::unordered_map<std::string, int64_t> &dfv);
 };
+
+bool known_R_format (const std::string &f);
 
 } // namespace resource_model
 } // namespace Flux

@@ -221,6 +221,19 @@ int dfu_traverser_t::remove (int64_t jobid)
     return detail::dfu_impl_t::remove (root, jobid);
 }
 
+namespace Flux {
+namespace resource_model {
+
+bool known_R_format (const string &f)
+{
+    bool rc = true;
+    if (f != R_FORMAT || f != R_LITE_FORMAT || f != R_NATIVE_FORMAT)
+        rc = false;
+    return rc;
+}
+}
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
