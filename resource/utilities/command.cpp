@@ -64,26 +64,6 @@ static double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-static void get_jobstate_str (job_state_t state, string &mode)
-{
-    switch (state) {
-    case job_state_t::ALLOCATED:
-        mode = "ALLOCATED";
-        break;
-    case job_state_t::RESERVED:
-        mode = "RESERVED";
-        break;
-    case job_state_t::CANCELLED:
-        mode = "CANCELLED";
-        break;
-    case job_state_t::INIT:
-    default:
-        mode = "INIT";
-        break;
-    }
-    return;
-}
-
 static int do_remove (resource_context_t *ctx, int64_t jobid)
 {
     int rc = -1;
@@ -117,7 +97,8 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
 
         out << "INFO:" << " =============================" << endl;
         st = (at == 0)? job_state_t::ALLOCATED : job_state_t::RESERVED;
-        ctx->jobs[jobid] = new job_info_t (jobid, st, at, jobspec_fn, elapse);
+        ctx->jobs[jobid] = new job_info_t (jobid, st,
+                                           at, jobspec_fn, "", elapse);
         if (at == 0)
             ctx->allocations[jobid] = jobid;
         else
