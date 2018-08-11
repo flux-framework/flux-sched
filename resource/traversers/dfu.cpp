@@ -80,6 +80,14 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
  *                                                                          *
  ****************************************************************************/
 
+bool known_R_format (const string &f)
+{
+    bool rc = true;
+    if (f != R_FORMAT || f != R_LITE || f != R_NATIVE)
+        rc = false;
+    return rc;
+}
+
 dfu_traverser_t::dfu_traverser_t ()
 {
 

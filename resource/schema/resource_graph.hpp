@@ -118,6 +118,11 @@ struct resource_graph_db_t {
     std::map<std::string, std::vector <vtx_t>> by_type;
     std::map<std::string, std::vector <vtx_t>> by_name;
     std::map<std::string, std::vector <vtx_t>> by_path;
+
+    bool known_subsystem (const std::string &s)
+    {
+        return (roots.find (s) == roots.end ())? true : false;
+    }
 };
 
 template<class name_map, class graph_entity>
