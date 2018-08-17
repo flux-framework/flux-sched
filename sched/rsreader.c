@@ -34,7 +34,7 @@
 #include <hwloc.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
@@ -58,9 +58,10 @@ static inline const char *get_hn (hwloc_topology_t topo)
     return hn;
 }
 
-static inline void create_req4allnodes (JSON reqobj)
+static inline void create_req4allnodes (json_t *reqobj)
 {
-    JSON req1, req2;
+    json_t *req1;
+    json_t *req2;
     Jadd_str (reqobj, "type", "node");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
@@ -69,134 +70,73 @@ static inline void create_req4allnodes (JSON reqobj)
     req2 = Jnew ();
     Jadd_str (req2, "type", "core");
     Jadd_int (req2, "req_qty", 1);
-    json_object_object_add (req1, "req_child", req2);
-    json_object_object_add (reqobj, "req_child", req1);
+    json_object_set_new (req1, "req_child", req2);
+    json_object_set_new (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allsocks (JSON reqobj)
+static inline void create_req4allsocks (json_t *reqobj)
 {
-    JSON req1;
+    json_t *req1;
     Jadd_str (reqobj, "type", "socket");
     Jadd_int (reqobj, "req_qty", 1);
     req1 = Jnew ();
     Jadd_str (req1, "type", "core");
     Jadd_int (req1, "req_qty", 1);
-    json_object_object_add (reqobj, "req_child", req1);
+    json_object_set_new (reqobj, "req_child", req1);
 }
 
-static inline void create_req4allcores (JSON reqobj)
+static inline void create_req4allcores (json_t *reqobj)
 {
     Jadd_str (reqobj, "type", "core");
     Jadd_int (reqobj, "req_qty", 1);
 }
 
-static int find_all_nodes (resrc_t *root, resrc_tree_t **ot)
+static int find_all_nodes (resrc_api_ctx_t *rsapi, resrc_t *root,
+               resrc_tree_t **ot)
 {
-    JSON reqobj = NULL;
+    json_t *reqobj = NULL;
     int64_t size = 0;
     resrc_reqst_t *req = NULL;
 
     reqobj = Jnew ();
     create_req4allnodes (reqobj);
-    req = resrc_reqst_from_json (reqobj, NULL);
-    size = resrc_tree_search (root, req, ot, false);
-    resrc_reqst_destroy (req);
+    req = resrc_reqst_from_json (rsapi, reqobj, NULL);
+    size = resrc_tree_search (rsapi, root, req, ot, false);
+    resrc_reqst_destroy (rsapi, req);
     Jput (reqobj);
 
     return (size > 0) ? 0 : -1;
 }
 
-static int find_all_sockets_cores (resrc_t *node, int *nsocks, int *ncs)
+static int find_all_sockets_cores (resrc_api_ctx_t *rsapi, resrc_t *node,
+               int *nsocks, int *ncs)
 {
-    JSON reqobj= NULL;
+    json_t *reqobj= NULL;
     resrc_reqst_t *req = NULL;
     resrc_tree_t *st = NULL;
     resrc_tree_t *ct = NULL;
 
     reqobj = Jnew ();
     create_req4allsocks (reqobj);
-    req = resrc_reqst_from_json (reqobj, NULL);
-    *nsocks = resrc_tree_search (node, req, &st, false);
-    resrc_reqst_destroy (req);
-    resrc_tree_destroy (st, false);
+    req = resrc_reqst_from_json (rsapi, reqobj, NULL);
+    *nsocks = resrc_tree_search (rsapi, node, req, &st, false);
+    resrc_reqst_destroy (rsapi, req);
+    resrc_tree_destroy (rsapi, st, false, false);
     Jput (reqobj);
 
     reqobj = Jnew ();
     create_req4allcores (reqobj);
-    req = resrc_reqst_from_json (reqobj, NULL);
-    *ncs = resrc_tree_search (node, req, &ct, false);
-    resrc_reqst_destroy (req);
-    resrc_tree_destroy (ct, false);
+    req = resrc_reqst_from_json (rsapi, reqobj, NULL);
+    *ncs = resrc_tree_search (rsapi, node, req, &ct, false);
+    resrc_reqst_destroy (rsapi, req);
+    resrc_tree_destroy (rsapi, ct, false, false);
     Jput (reqobj);
 
     return (*nsocks > 0 && *ncs > 0) ? 0 : -1;
 }
 
-
-/******************************************************************************
- *                                                                            *
- *                   Resource Reader Public APIs                              *
- *                                                                            *
- ******************************************************************************/
-
-int rsreader_resrc_bulkload (const char *path, char *uri, char **r_uri,
-                             resrc_t **r_resrc)
-{
-    *r_uri = uri ? uri : xstrdup ("default");
-    return (*r_resrc = resrc_generate_rdl_resources (path, *r_uri)) ? 0 : -1;
-}
-
-int rsreader_hwloc_bulkload (const char *buf, size_t len, rsreader_t r_mode,
-                             char **r_uri, resrc_t **r_resrc, machs_t *machs)
-{
-    /* NYI */
-    return -1;
-}
-
-int rsreader_resrc_load (const char *path, char *uri, uint32_t rank, char **r_uri,
-                         resrc_t **r_resrc)
-{
-    /* NYI */
-    return -1;
-}
-
-int rsreader_hwloc_load (const char *buf, size_t len, uint32_t rank,
-                         rsreader_t r_mode, resrc_t **r_resrc, machs_t *machs,
-                         char **err_str)
-{
-    int rc = -1;
-    rssig_t *sig = NULL;
-    hwloc_topology_t topo;
-
-    if (!machs)
-        goto done;
-
-    if (hwloc_topology_init (&topo) != 0)
-        goto done;
-    if (hwloc_topology_set_xmlbuffer (topo, buf, len) != 0)
-        goto err;
-    if (hwloc_topology_load (topo) != 0)
-        goto err;
-    if (rs2rank_set_signature ((char*)buf, len, topo, &sig) != 0)
-        goto err;
-    if (rs2rank_tab_update (machs, get_hn (topo), sig, rank) != 0)
-        goto err;
-
-    if (r_mode == RSREADER_HWLOC) {
-        const char *s = rs2rank_get_digest (sig);
-        if (!resrc_generate_hwloc_resources (*r_resrc, topo, s, err_str))
-            goto err;
-    }
-
-    rc = 0;
-err:
-    hwloc_topology_destroy (topo);
-done:
-    return rc;
-}
-
-static int rsreader_set_granular_digest (machs_t *machs, resrc_tree_t *rt,
-                                   char **err_str)
+static int rsreader_set_granular_digest (resrc_api_ctx_t *rsapi, machs_t *machs,
+               resrc_tree_t *rt, char **err_str)
 {
     char *e_str = NULL;
     const char *digest = NULL;
@@ -213,14 +153,15 @@ static int rsreader_set_granular_digest (machs_t *machs, resrc_tree_t *rt,
                     resrc_tree_t *child = resrc_tree_list_first (children);
 
                     while (child) {
-                        rc = rsreader_set_granular_digest (machs, child, err_str);
+                        rc = rsreader_set_granular_digest (rsapi,
+                                 machs, child, err_str);
                         if (rc)
                             break;
                         child = resrc_tree_list_next (children);
                     }
                 }
             }
-        } else if (!find_all_sockets_cores (r, &nsocks, &ncs)) {
+        } else if (!find_all_sockets_cores (rsapi, r, &nsocks, &ncs)) {
             /* matches based on the hostname, number of sockets and
              * cores.  This linking isn't used by hwloc reader so
              * count-based matching is okay
@@ -240,19 +181,6 @@ static int rsreader_set_granular_digest (machs_t *machs, resrc_tree_t *rt,
         *err_str = e_str;
     else
         free (e_str);
-
-    return rc;
-}
-
-int rsreader_link2rank (machs_t *machs, resrc_t *r_resrc, char **err_str)
-{
-    int rc = -1;
-    resrc_tree_t *rt = NULL;
-
-    if (!find_all_nodes (r_resrc, &rt))
-        rc = rsreader_set_granular_digest (machs, rt, err_str);
-    if (rt)
-        resrc_tree_destroy (rt, false);
 
     return rc;
 }
@@ -294,15 +222,102 @@ static int rsreader_set_node_digest (machs_t *machs, resrc_tree_t *rt)
     return rc;
 }
 
-int rsreader_force_link2rank (machs_t *machs, resrc_t *r_resrc)
+
+/******************************************************************************
+ *                                                                            *
+ *                   Resource Reader Public APIs                              *
+ *                                                                            *
+ ******************************************************************************/
+
+int rsreader_resrc_bulkload (resrc_api_ctx_t *rsapi, const char *path, char *uri)
+{
+    char *r_uri = xasprintf ("%s", uri ? uri : "default");
+    resrc_t *rr = resrc_generate_rdl_resources (rsapi, path, r_uri);
+    free (r_uri);
+    return (rr)? 0 : -1;
+}
+
+int rsreader_hwloc_bulkload (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
+        rsreader_t r_mode, machs_t *machs)
+{
+    /* NYI */
+    return -1;
+}
+
+int rsreader_resrc_load (resrc_api_ctx_t *rsapi, const char *path,
+        char *uri, uint32_t rank)
+{
+    /* NYI */
+    return -1;
+}
+
+int rsreader_hwloc_load (resrc_api_ctx_t *rsapi, const char *buf, size_t len,
+        uint32_t rank, rsreader_t r_mode, machs_t *machs, char **err_str)
+{
+    int rc = -1;
+    rssig_t *sig = NULL;
+    char *aux = NULL;
+    hwloc_topology_t topo;
+
+    if (!machs)
+        goto done;
+
+    if (r_mode == RSREADER_HWLOC)
+        aux = xasprintf ("%u", rank);
+
+    if (hwloc_topology_init (&topo) != 0)
+        goto done;
+    if (hwloc_topology_set_flags (topo, HWLOC_TOPOLOGY_FLAG_IO_DEVICES) != 0)
+        goto err;
+    if (hwloc_topology_set_xmlbuffer (topo, buf, len) != 0)
+        goto err;
+    if (hwloc_topology_load (topo) != 0)
+        goto err;
+    if (rs2rank_set_signature ((char*)buf, len, aux, topo, &sig) != 0)
+        goto err;
+    if (rs2rank_tab_update (machs, get_hn (topo), sig, rank) != 0)
+        goto err;
+
+    if (r_mode == RSREADER_HWLOC) {
+        const char *s = rs2rank_get_digest (sig);
+        if (!resrc_generate_hwloc_resources (rsapi, topo, s, err_str))
+            goto err;
+
+        free (aux);
+        aux = NULL;
+    }
+
+    rc = 0;
+err:
+    if (aux)
+        free (aux);
+    hwloc_topology_destroy (topo);
+done:
+    return rc;
+}
+
+int rsreader_link2rank (resrc_api_ctx_t *rsapi, machs_t *machs, char **err_str)
 {
     int rc = -1;
     resrc_tree_t *rt = NULL;
+    resrc_t *r_resrc = resrc_tree_resrc (resrc_tree_root (rsapi));
+    if (!find_all_nodes (rsapi, r_resrc, &rt))
+        rc = rsreader_set_granular_digest (rsapi, machs, rt, err_str);
+    if (rt)
+        resrc_tree_destroy (rsapi, rt, false, false);
 
-    if (!find_all_nodes (r_resrc, &rt))
+    return rc;
+}
+
+int rsreader_force_link2rank (resrc_api_ctx_t *rsapi, machs_t *machs)
+{
+    int rc = -1;
+    resrc_tree_t *rt = NULL;
+    resrc_t *r_resrc = resrc_tree_resrc (resrc_tree_root (rsapi));
+    if (!find_all_nodes (rsapi, r_resrc, &rt))
         rc = rsreader_set_node_digest (machs, rt);
     if (rt)
-        resrc_tree_destroy (rt, false);
+        resrc_tree_destroy (rsapi, rt, false, false);
 
     return rc;
 }

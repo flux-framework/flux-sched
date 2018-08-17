@@ -29,16 +29,26 @@
 #include <flux/core.h>
 #include <czmq.h>
 
-#include "src/common/libutil/shortjson.h"
+#if HAVE_VALGRIND
+# if HAVE_VALGRIND_H
+#  include <valgrind.h>
+# elif HAVE_VALGRIND_VALGRIND_H
+#  include <valgrind/valgrind.h>
+# endif
+#endif
+
+#include "src/common/libutil/shortjansson.h"
 #include "scheduler.h"
 #include "plugin.h"
 
 struct sched_plugin_loader {
-    flux_t h;
-    struct sched_plugin *plugin;
+    flux_t *h;
+    flux_msg_handler_t **handlers;
+    struct behavior_plugin *behavior_plugin;
+    struct priority_plugin *priority_plugin;
 };
 
-static void plugin_destroy (struct sched_plugin *plugin)
+static void behavior_plugin_destroy (struct behavior_plugin *plugin)
 {
     if (plugin) {
         if (plugin->dso)
@@ -51,11 +61,24 @@ static void plugin_destroy (struct sched_plugin *plugin)
     }
 }
 
-static struct sched_plugin *plugin_create (flux_t h, void *dso)
+static void priority_plugin_destroy (struct priority_plugin *plugin)
+{
+    if (plugin) {
+        if (plugin->dso)
+            dlclose (plugin->dso);
+        if (plugin->name)
+            free (plugin->name);
+        if (plugin->path)
+            free (plugin->path);
+        free (plugin);
+    }
+}
+
+static struct behavior_plugin *behavior_plugin_create (flux_t *h, void *dso)
 {
     int saved_errno;
     char *strerr = NULL;
-    struct sched_plugin *plugin = malloc (sizeof (*plugin));
+    struct behavior_plugin *plugin = malloc (sizeof (*plugin));
 
     if (!plugin) {
         errno = ENOMEM;
@@ -64,6 +87,12 @@ static struct sched_plugin *plugin_create (flux_t h, void *dso)
     memset (plugin, 0, sizeof (*plugin));
     dlerror (); // Clear old dlerrors
 
+    plugin->get_sched_properties = dlsym (dso, "get_sched_properties");
+    strerr = dlerror();
+    if (strerr || !plugin->get_sched_properties || !*plugin->get_sched_properties) {
+        flux_log (h, LOG_ERR, "can't load get_sched_properties: %s", strerr);
+        goto error;
+    }
     plugin->sched_loop_setup = dlsym (dso, "sched_loop_setup");
     strerr = dlerror();
     if (strerr || !plugin->sched_loop_setup || !*plugin->sched_loop_setup) {
@@ -110,11 +139,60 @@ error:
     return NULL;
 }
 
-void sched_plugin_unload (struct sched_plugin_loader *sploader)
+static struct priority_plugin *priority_plugin_create (flux_t *h, void *dso)
 {
-    if (sploader->plugin) {
-        plugin_destroy (sploader->plugin);
-        sploader->plugin = NULL;
+    int saved_errno;
+    char *strerr = NULL;
+    struct priority_plugin *plugin = malloc (sizeof (*plugin));
+
+    if (!plugin) {
+        errno = ENOMEM;
+        goto error;
+    }
+    memset (plugin, 0, sizeof (*plugin));
+    dlerror (); // Clear old dlerrors
+
+    plugin->priority_setup = dlsym (dso, "sched_priority_setup");
+    strerr = dlerror();
+    if (strerr || !plugin->priority_setup || !*plugin->priority_setup) {
+        flux_log (h, LOG_ERR, "can't load priority_setup: %s", strerr);
+        goto error;
+    }
+    plugin->prioritize_jobs = dlsym (dso, "sched_priority_prioritize_jobs");
+    strerr = dlerror();
+    if (strerr || !plugin->prioritize_jobs || !*plugin->prioritize_jobs) {
+        flux_log (h, LOG_ERR, "can't load prioritize_jobs: %s", strerr);
+        goto error;
+    }
+    plugin->record_job_usage = dlsym (dso, "sched_priority_record_job_usage");
+    strerr = dlerror();
+    if (strerr || !plugin->record_job_usage || !*plugin->record_job_usage) {
+        flux_log (h, LOG_ERR, "can't load record_job_usage: %s", strerr);
+        goto error;
+    }
+    plugin->dso = dso;
+    return plugin;
+error:
+    saved_errno = errno;
+    if (plugin)
+        free (plugin);
+    errno = saved_errno;
+    return NULL;
+}
+
+void behavior_plugin_unload (struct sched_plugin_loader *sploader)
+{
+    if (sploader->behavior_plugin) {
+        behavior_plugin_destroy (sploader->behavior_plugin);
+        sploader->behavior_plugin = NULL;
+    }
+}
+
+void priority_plugin_unload (struct sched_plugin_loader *sploader)
+{
+    if (sploader->priority_plugin) {
+        priority_plugin_destroy (sploader->priority_plugin);
+        sploader->priority_plugin = NULL;
     }
 }
 
@@ -125,10 +203,6 @@ int sched_plugin_load (struct sched_plugin_loader *sploader, const char *s)
     char *searchpath = getenv ("FLUX_MODULE_PATH");
     void *dso = NULL;
 
-    if (sploader->plugin) {
-        errno = EEXIST;
-        goto error;
-    }
     if (!searchpath) {
         flux_log (sploader->h, LOG_ERR, "FLUX_MODULE_PATH not set");
         goto error;
@@ -152,18 +226,41 @@ int sched_plugin_load (struct sched_plugin_loader *sploader, const char *s)
         if (!(name = flux_modname (path)))
             goto error;
     }
-    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL))) {
+    if (!(dso = dlopen (path, RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND))) {
         flux_log (sploader->h, LOG_ERR, "failed to open sched plugin: %s",
                   dlerror ());
         goto error;
     }
     flux_log (sploader->h, LOG_DEBUG, "loaded: %s", name);
-    if (!(sploader->plugin = plugin_create (sploader->h, dso))) {
-        dlclose (dso);
-        goto error;
+
+    dlerror (); // Clear old dlerrors
+    dlsym (dso, "sched_loop_setup");
+    if (dlerror()) {
+        // It is not a behavior plugin so assume it is the priority plugin
+        dlerror (); // Clear old dlerrors
+        if (sploader->priority_plugin) {
+            errno = EEXIST;
+            goto error;
+        }
+        if (!(sploader->priority_plugin = priority_plugin_create (sploader->h,
+                                                              dso))) {
+            dlclose (dso);
+            goto error;
+        }
+        sploader->priority_plugin->name = name;
+        sploader->priority_plugin->path = path;
+    } else {
+        if (sploader->behavior_plugin) {
+            errno = EEXIST;
+            goto error;
+        }
+        if (!(sploader->behavior_plugin = behavior_plugin_create (sploader->h, dso))) {
+            dlclose (dso);
+            goto error;
+        }
+        sploader->behavior_plugin->name = name;
+        sploader->behavior_plugin->path = path;
     }
-    sploader->plugin->name = name;
-    sploader->plugin->path = path;
     return 0;
 error:
     if (path)
@@ -173,31 +270,48 @@ error:
     return -1;
 }
 
-struct sched_plugin *sched_plugin_get (struct sched_plugin_loader *sploader)
+struct behavior_plugin *behavior_plugin_get (struct sched_plugin_loader *sploader)
 {
-    return sploader->plugin;
+    return sploader->behavior_plugin;
 }
 
-static void rmmod_cb (flux_t h, flux_msg_handler_t *w,
+struct priority_plugin *priority_plugin_get (struct sched_plugin_loader
+                                             *sploader)
+{
+    return sploader->priority_plugin;
+}
+
+static void rmmod_cb (flux_t *h, flux_msg_handler_t *w,
                       const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
-    struct sched_plugin *plugin = sched_plugin_get (sploader);
+    struct behavior_plugin *behavior_plugin = behavior_plugin_get (sploader);
+    struct priority_plugin *priority_plugin = priority_plugin_get (sploader);
     const char *json_str;
     char *name = NULL;
     int rc = -1;
 
     if (flux_request_decode (msg, NULL, &json_str) < 0)
         goto done;
-    if (flux_rmmod_json_decode (json_str, &name) < 0)
-        goto done;
-    if (!plugin || strcmp (name, plugin->name) != 0) {
-        errno = ENOENT;
+    if (!json_str) {
+        errno = EPROTO;
         goto done;
     }
-    sched_plugin_unload (sploader);
-    flux_log (h, LOG_INFO, "%s unloaded", name);
-    rc = 0;
+    if (flux_rmmod_json_decode (json_str, &name) < 0)
+        goto done;
+
+    if ((behavior_plugin) && (strcmp (name, behavior_plugin->name) == 0)) {
+        behavior_plugin_unload (sploader);
+        flux_log (h, LOG_INFO, "%s unloaded", name);
+        rc = 0;
+    }
+    if ((priority_plugin) && (strcmp (name, priority_plugin->name) == 0)) {
+        priority_plugin_unload (sploader);
+        flux_log (h, LOG_INFO, "%s unloaded", name);
+        rc = 0;
+    }
+    if (rc)
+        errno = ENOENT;
 done:
     if (flux_respond (h, msg, rc < 0 ? errno : 0, NULL) < 0)
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);
@@ -205,11 +319,10 @@ done:
         free (name);
 }
 
-static void insmod_cb (flux_t h, flux_msg_handler_t *w,
+static void insmod_cb (flux_t *h, flux_msg_handler_t *w,
                        const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
-    struct sched_plugin *plugin = sched_plugin_get (sploader);
     const sched_params_t *sp = sched_params_get (h);
     const char *json_str;
     char *path = NULL;
@@ -219,16 +332,16 @@ static void insmod_cb (flux_t h, flux_msg_handler_t *w,
 
     if (flux_request_decode (msg, NULL, &json_str) < 0)
         goto done;
-    if (flux_insmod_json_decode (json_str, &path, &argz, &argz_len) < 0)
-        goto done;
-    if (plugin) {
-        errno = EEXIST;
+    if (!json_str) {
+        errno = EPROTO;
         goto done;
     }
+    if (flux_insmod_json_decode (json_str, &path, &argz, &argz_len) < 0)
+        goto done;
     if (sched_plugin_load (sploader, path) < 0)
         goto done;
-
-    if (sploader->plugin->process_args (sploader->h, argz, argz_len, sp) < 0) {
+    if (argz && sploader->behavior_plugin->process_args (sploader->h, argz,
+                                                      argz_len, sp) < 0) {
         goto done;
     }
     rc = 0;
@@ -242,12 +355,13 @@ done:
         free (argz);
 }
 
-static void lsmod_cb (flux_t h, flux_msg_handler_t *w,
+static void lsmod_cb (flux_t *h, flux_msg_handler_t *w,
                       const flux_msg_t *msg, void *arg)
 {
     struct sched_plugin_loader *sploader = arg;
-    struct sched_plugin *plugin = sched_plugin_get (sploader);
-    flux_modlist_t mods = NULL;
+    struct behavior_plugin *behavior_plugin = behavior_plugin_get (sploader);
+    struct priority_plugin *priority_plugin = priority_plugin_get (sploader);
+    flux_modlist_t *mods = NULL;
     zfile_t *zf = NULL;
     char *json_str = NULL;
     struct stat sb;
@@ -257,12 +371,22 @@ static void lsmod_cb (flux_t h, flux_msg_handler_t *w,
         goto done;
     if (!(mods = flux_modlist_create ()))
         goto done;
-    if (plugin) {
-        if (stat (plugin->path, &sb) < 0)
+    if (behavior_plugin) {
+        if (stat (behavior_plugin->path, &sb) < 0)
             goto done;
-        if (!(zf = zfile_new (NULL, plugin->path)))
+        if (!(zf = zfile_new (NULL, behavior_plugin->path)))
             goto done;
-        if (flux_modlist_append (mods, plugin->name, sb.st_size,
+        if (flux_modlist_append (mods, behavior_plugin->name, sb.st_size,
+                                 zfile_digest (zf),
+                                 0, FLUX_MODSTATE_RUNNING) < 0)
+            goto done;
+    }
+    if (priority_plugin) {
+        if (stat (priority_plugin->path, &sb) < 0)
+            goto done;
+        if (!(zf = zfile_new (NULL, priority_plugin->path)))
+            goto done;
+        if (flux_modlist_append (mods, priority_plugin->name, sb.st_size,
                                  zfile_digest (zf),
                                  0, FLUX_MODSTATE_RUNNING) < 0)
             goto done;
@@ -282,14 +406,14 @@ done:
 }
 
 
-static struct flux_msg_handler_spec plugin_htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb },
-    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb },
-    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb },
+static const struct flux_msg_handler_spec plugin_htab[] = {
+    { FLUX_MSGTYPE_REQUEST, "sched.insmod",         insmod_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST, "sched.rmmod",          rmmod_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST, "sched.lsmod",          lsmod_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-struct sched_plugin_loader *sched_plugin_loader_create (flux_t h)
+struct sched_plugin_loader *sched_plugin_loader_create (flux_t *h)
 {
     struct sched_plugin_loader *sploader = malloc (sizeof (*sploader));
     if (!sploader) {
@@ -298,7 +422,8 @@ struct sched_plugin_loader *sched_plugin_loader_create (flux_t h)
     }
     memset (sploader, 0, sizeof (*sploader));
     sploader->h = h;
-    if (flux_msg_handler_addvec (h, plugin_htab, sploader) < 0) {
+    if (flux_msg_handler_addvec (h, plugin_htab, sploader,
+                                 &sploader->handlers) < 0) {
         flux_log_error (h, "flux_msghandler_addvec");
         free (sploader);
         return NULL;
@@ -309,11 +434,18 @@ struct sched_plugin_loader *sched_plugin_loader_create (flux_t h)
 void sched_plugin_loader_destroy (struct sched_plugin_loader *sploader)
 {
     if (sploader) {
-        sched_plugin_unload (sploader);
-        flux_msg_handler_delvec (plugin_htab);
+        behavior_plugin_unload (sploader);
+        priority_plugin_unload (sploader);
+        flux_msg_handler_delvec (sploader->handlers);
         free (sploader);
     }
 }
+
+#if HAVE_VALGRIND
+/* Disable dlclose() during valgrind operation
+ */
+void I_WRAP_SONAME_FNNAME_ZZ(Za,dlclose)(void *dso) {}
+#endif
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

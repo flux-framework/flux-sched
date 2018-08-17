@@ -33,13 +33,13 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
 typedef struct {
     sim_state_t *sim_state;
-    flux_t h;
+    flux_t *h;
     bool rdl_changed;
     char *rdl_string;
     bool exit_on_complete;
@@ -53,7 +53,7 @@ static void freectx (void *arg)
     free (ctx);
 }
 
-static ctx_t *getctx (flux_t h, bool exit_on_complete)
+static ctx_t *getctx (flux_t *h, bool exit_on_complete)
 {
     ctx_t *ctx = (ctx_t *)flux_aux_get (h, "simsrv");
 
@@ -72,32 +72,37 @@ static ctx_t *getctx (flux_t h, bool exit_on_complete)
 
 // builds the trigger request and sends it to "mod_name"
 // converts sim_state to JSON, formats request tag based on "mod_name"
-static int send_trigger (flux_t h, char *mod_name, sim_state_t *sim_state)
+static int send_trigger (flux_t *h, const char *mod_name, sim_state_t *sim_state)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
-    JSON o = NULL;
+    flux_future_t *future = NULL;
+    json_t *o = NULL;
     char *topic = NULL;
+
+    // Reset the next timer for "mod_name" to -1 before we trigger
+    double *next_time = zhash_lookup (sim_state->timers, mod_name);
+    *next_time = -1;
 
     o = sim_state_to_json (sim_state);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
     topic = xasprintf ("%s.trigger", mod_name);
-    flux_msg_set_topic (msg, topic);
-    flux_msg_set_payload_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    const char *jcstr = Jtostr (o);
+    future = flux_rpc (h, topic, jcstr, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         flux_log (h, LOG_ERR, "failed to send trigger to %s", mod_name);
         rc = -1;
     }
+    free((void*)jcstr);
 
     Jput (o);
     free (topic);
+    flux_future_destroy (future);
     return rc;
 }
 
 // Send out a call to all modules that the simulation is starting
 // and that they should join
-int send_start_event (flux_t h)
+int send_start_event (flux_t *h)
 {
     int rc = 0;
     flux_msg_t *msg = NULL;
@@ -106,41 +111,51 @@ int send_start_event (flux_t h)
     if (flux_get_rank (h, &rank) < 0)
         return -1;
 
-    JSON o = Jnew ();
-    Jadd_str (o, "mod_name", "sim");
-    Jadd_int (o, "rank", rank);
-    Jadd_int (o, "sim_time", 0);
-
-    if (!(msg = flux_event_encode ("sim.start", Jtostr (o)))
+    if (!(msg = flux_event_pack ("sim.start", "{ s:s s:i s:i }",
+                                    "mod_name", "sim",
+                                    "rank", rank,
+                                    "sim_time", 0))
         || flux_send (h, msg, 0) < 0) {
         rc = -1;
     }
 
-    Jput (o);
     flux_msg_destroy (msg);
     return rc;
 }
 
 // Send an event to all modules that the simulation has completed
-int send_complete_event (flux_t h)
+int send_complete_event (flux_t *h)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
+    flux_future_t *future = NULL;
 
-    if (!(msg = flux_event_encode ("sim.complete", NULL))
-        || flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.complete", NULL, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
-    flux_msg_destroy (msg);
+    flux_future_destroy (future);
     return rc;
+}
+
+static inline bool occurs_before (double curr_event_time,
+                                  double min_event_time)
+{
+    return (curr_event_time >=0) && (curr_event_time < min_event_time);
+}
+static inline bool breaks_tie (double curr_event_time,
+                              double min_event_time,
+                              const char *curr_mod_name)
+{
+    // sched get precedence in case of ties
+    return (curr_event_time == min_event_time)
+        && (!strcmp (curr_mod_name, "sched"));
 }
 
 // Looks at the current state and launches the next trigger
 static int handle_next_event (ctx_t *ctx)
 {
     zhash_t *timers;
-    zlist_t *keys;
     sim_state_t *sim_state = ctx->sim_state;
     int rc = 0;
 
@@ -150,42 +165,34 @@ static int handle_next_event (ctx_t *ctx)
         flux_log (ctx->h, LOG_ERR, "timer hashtable has no elements");
         return -1;
     }
-    keys = zhash_keys (timers);
 
     // Get the next occuring event time/module
-    double *min_event_time = NULL, *curr_event_time = NULL;
-    char *mod_name = NULL, *curr_name = NULL;
+    double min_event_time = -1;
+    double *curr_event_time = NULL;
+    const char *mod_name = NULL, *curr_name = NULL;
 
-    while (min_event_time == NULL && zlist_size (keys) > 0) {
-        mod_name = zlist_pop (keys);
-        min_event_time = (double *)zhash_lookup (timers, mod_name);
-        if (*min_event_time < 0) {
-            min_event_time = NULL;
-            free (mod_name);
-        }
-    }
-    if (min_event_time == NULL) {
-        return -1;
-    }
-    while (zlist_size (keys) > 0) {
-        curr_name = zlist_pop (keys);
-        curr_event_time = (double *)zhash_lookup (timers, curr_name);
-        if (*curr_event_time > 0
-            && ((*curr_event_time < *min_event_time)
-                || (*curr_event_time == *min_event_time
-                    && !strcmp (curr_name, "sched")))) {
-            free (mod_name);
+    for (curr_event_time = zhash_first (timers);
+         curr_event_time;
+         curr_event_time = zhash_next (timers)) {
+        curr_name = zhash_cursor (timers);
+        if (min_event_time < 0 ||
+            occurs_before (*curr_event_time, min_event_time) ||
+            breaks_tie (*curr_event_time, min_event_time, curr_name)) {
+            min_event_time = *curr_event_time;
             mod_name = curr_name;
-            min_event_time = curr_event_time;
         }
+    }
+
+    if (min_event_time < 0) {
+        return -1;
     }
 
     // advance time then send the trigger to the module with the next event
-    if (*min_event_time > sim_state->sim_time) {
+    if (min_event_time > sim_state->sim_time) {
         // flux_log (ctx->h, LOG_DEBUG, "Time was advanced from %f to %f while
         // triggering the next event for %s",
         //		  sim_state->sim_time, *min_event_time, mod_name);
-        sim_state->sim_time = *min_event_time;
+        sim_state->sim_time = min_event_time;
     } else {
         // flux_log (ctx->h, LOG_DEBUG, "Time was not advanced while triggering
         // the next event for %s", mod_name);
@@ -196,30 +203,26 @@ static int handle_next_event (ctx_t *ctx)
               mod_name,
               sim_state->sim_time);
 
-    *min_event_time = -1;
     rc = send_trigger (ctx->h, mod_name, sim_state);
 
-    // clean up
-    free (mod_name);
-    zlist_destroy (&keys);
     return rc;
 }
 
 // Recevied a request to join the simulation ("sim.join")
-static void join_cb (flux_t h,
+static void join_cb (flux_t *h,
                      flux_msg_handler_t *w,
                      const flux_msg_t *msg,
                      void *arg)
 {
     int mod_rank;
-    JSON request = NULL;
+    json_t *request = NULL;
     const char *mod_name = NULL, *json_str = NULL;
     double *next_event = (double *)malloc (sizeof (double));
     ctx_t *ctx = arg;
     sim_state_t *sim_state = ctx->sim_state;
     uint32_t size;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(request = Jfromstr (json_str))
         || !Jget_str (request, "mod_name", &mod_name)
         || !Jget_int (request, "rank", &mod_rank)
@@ -281,47 +284,46 @@ out:
 // those cases are checked for and logged.
 
 // TODO: verify all of this logic is correct, bugs could easily creep up here
-static int check_for_new_timers (const char *key, void *item, void *argument)
+static int check_for_new_timers (const char *key, double *reply_event_time,
+		                 ctx_t *ctx)
 {
-    ctx_t *ctx = (ctx_t *)argument;
     sim_state_t *curr_sim_state = ctx->sim_state;
     double sim_time = curr_sim_state->sim_time;
-    double *reply_event_time = (double *)item;
     double *curr_event_time =
         (double *)zhash_lookup (curr_sim_state->timers, key);
 
     if (*curr_event_time < 0 && *reply_event_time < 0) {
-        // flux_log (ctx->h, LOG_DEBUG, "no timers found for %s, doing nothing",
-        // key);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - no timers found for %s, doing nothing", __FUNCTION__,
+        //           key);
         return 0;
     } else if (*curr_event_time < 0) {
         if (*reply_event_time >= sim_time) {
             *curr_event_time = *reply_event_time;
-            // flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s",
-            // key);
+            // flux_log (ctx->h, LOG_DEBUG, "%s - change in timer accepted for %s", __FUNCTION__,
+            //           key);
             return 0;
         } else {
-            flux_log (ctx->h, LOG_ERR, "bad reply timer for %s", key);
+            flux_log (ctx->h, LOG_ERR, "%s - bad reply timer for %s", __FUNCTION__, key);
             return -1;
         }
     } else if (*reply_event_time < 0) {
-        flux_log (ctx->h, LOG_ERR, "event timer deleted from %s", key);
+        flux_log (ctx->h, LOG_ERR, "%s - event timer deleted from %s", __FUNCTION__, key);
         return -1;
     } else if (*reply_event_time < sim_time
                && *curr_event_time != *reply_event_time) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "incoming modified time is before sim time for %s",
+                  "%s - incoming modified time is before sim time for %s", __FUNCTION__,
                   key);
         return -1;
     } else if (*reply_event_time >= sim_time
                && *reply_event_time < *curr_event_time) {
         *curr_event_time = *reply_event_time;
-        // flux_log (ctx->h, LOG_DEBUG, "change in timer accepted for %s", key);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - change in timer accepted for %s", __FUNCTION__, key);
         return 0;
     } else {
-        // flux_log (ctx->h, LOG_DEBUG, "no changes made to %s timer, curr_time:
-        // %f\t reply_time: %f", key, *curr_event_time, *reply_event_time);
+        // flux_log (ctx->h, LOG_DEBUG, "%s - no changes made to %s timer, curr_time:"
+        //           "%f\t reply_time: %f", __FUNCTION__, key, *curr_event_time, *reply_event_time);
         return 0;
     }
 }
@@ -334,19 +336,26 @@ static void copy_new_state_data (ctx_t *ctx,
         curr_sim_state->sim_time = reply_sim_state->sim_time;
     }
 
-    zhash_foreach (reply_sim_state->timers, check_for_new_timers, ctx);
+    void *item = NULL;
+    const char *key = NULL;
+    for (item = zhash_first (reply_sim_state->timers);
+         item;
+         item = zhash_next (reply_sim_state->timers)) {
+        key = zhash_cursor (reply_sim_state->timers);
+        check_for_new_timers (key, item, ctx);
+    }
 }
 
-static void rdl_update_cb (flux_t h,
+static void rdl_update_cb (flux_t *h,
                            flux_msg_handler_t *w,
                            const flux_msg_t *msg,
                            void *arg)
 {
-    JSON o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL, *rdl_str = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         Jput (o);
@@ -364,18 +373,18 @@ static void rdl_update_cb (flux_t h,
 }
 
 // Recevied a reply to a trigger ("sim.reply")
-static void reply_cb (flux_t h,
+static void reply_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
     const char *json_str = NULL;
-    JSON request = NULL;
+    json_t *request = NULL;
     ctx_t *ctx = arg;
     sim_state_t *curr_sim_state = ctx->sim_state;
     sim_state_t *reply_sim_state;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(request = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
         Jput (request);
@@ -399,14 +408,14 @@ static void reply_cb (flux_t h,
     Jput (request);
 }
 
-static void alive_cb (flux_t h,
+static void alive_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
 {
     const char *json_str;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL) {
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL) {
         flux_log (h, LOG_ERR, "%s: bad reply message", __FUNCTION__);
         return;
     }
@@ -420,22 +429,23 @@ static void alive_cb (flux_t h,
     flux_log (h, LOG_DEBUG, "sending start event again");
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb},
-    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_REQUEST, "sim.join", join_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim.reply", reply_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim.alive", alive_cb, 0},
+    {FLUX_MSGTYPE_EVENT, "rdl.update", rdl_update_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
-const int htablen = sizeof (htab) / sizeof (htab[0]);
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     zhash_t *args = zhash_fromargv (argc, argv);
     ctx_t *ctx;
     char *eoc_str;
     bool exit_on_complete;
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -463,22 +473,29 @@ int mod_main (flux_t h, int argc, char **argv)
         return -1;
     }
 
-    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+    if (flux_msg_handler_addvec (h, htab, ctx, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
 
     if (send_start_event (h) < 0) {
         flux_log (h, LOG_ERR, "sim failed to send start event");
-        return -1;
+        goto done_delvec;
     }
     flux_log (h, LOG_DEBUG, "sim sent start event");
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
-    return 0;
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
+    return rc;
 }
 
 MOD_NAME ("sim");
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

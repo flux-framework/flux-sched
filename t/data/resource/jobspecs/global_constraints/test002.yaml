@@ -1,0 +1,30 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: rack
+        count: 2
+        with:
+          - type: slot
+            label: myslot
+            count: 3 
+            with:
+              - type: node
+                count: 1
+                with:
+                  - type: socket
+                    count: 2
+                    with:
+                      - type: core
+                        count: 18
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: myslot
+    count:
+      per_slot: 1

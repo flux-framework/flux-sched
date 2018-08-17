@@ -2,24 +2,23 @@ language: c
 
 sudo: false
 
-compiler:
-  - gcc
-  - clang
-
 matrix:
   include:
     - compiler: gcc
-      env: COVERAGE=t
+      env: LUA_VERSION=5.1
+    - compiler: clang
+      env: LUA_VERSION=5.1
     - compiler: gcc
-      env: TEST_INSTALL=t
+      env: LUA_VERSION=5.1 COVERAGE=t
+    - compiler: gcc
+      env: LUA_VERSION=5.2 TEST_INSTALL=t
     - compiler: clang
-      env: CC=clang-3.8 CXX=clang++-3.8
+      env: LUA_VERSION=5.2 CC=clang-3.8 CXX=clang++-3.8
     - compiler: clang
-      env: CPPCHECK=t
+      env: LUA_VERSION=5.1 CPPCHECK=t
 cache:
   directories:
     - $HOME/local
-    - $HOME/.luarocks
     - $HOME/.ccache
     - $HOME/.local
 
@@ -35,19 +34,23 @@ addons:
       - clang-3.8
       - gcc-4.9
       - g++-4.9
-      - lua5.1
-      - liblua5.1-0-dev
-      - luarocks
       - uuid-dev
       - aspell
       - libopenmpi-dev
       - ccache
-      - libhwloc-dev
+      - apport # for coredumps
+      - gdb
       - libmunge-dev
       - munge
       - lcov
+      - libyaml-cpp-dev
+      - libboost-all-dev
+      - libreadline6
+      - valgrind
+      - libevent-dev
 
 before_install:
+  - rm -rf $HOME/.luarocks
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
   - eval $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
@@ -60,6 +63,7 @@ before_install:
   - if test "$COVERAGE" = "t"; then gem install coveralls-lcov; fi
 
 script:
+ - ulimit -c unlimited
  - export CC="ccache $CC"
  - export MAKECMDS="make distcheck"
  - export FLUX_TESTS_LOGFILE=t
@@ -67,7 +71,11 @@ script:
  - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
  - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local2 && make -j 2 && make install)
  - (rm -fr $HOME/flux-core)
+ - (find $HOME/local2/lib -name \*.la | xargs rm -f)
  - ($HOME/local2/bin/flux keygen)
+
+ # Set LD_LIBRARY_PATH so that flux-core libs can be found
+ - export LD_LIBRARY_PATH=$HOME/local2/lib:${LD_LIBRARY_PATH}
 
  # Enable coverage for $CC+coverage build
  - if test "$COVERAGE" = "t" ; then ARGS=--enable-code-coverage; MAKECMDS="make && make check-code-coverage && lcov -l flux-*coverage.info" ; fi
@@ -78,7 +86,7 @@ script:
  # cppcheck instead of make
  - >
    if test "$CPPCHECK" = "t"; then
-     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --quiet
+     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --std=c++11 --quiet
              --error-exitcode=1
              -i src/common/libtap
               .";
@@ -92,6 +100,7 @@ after_success:
 after_failure:
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
+ - src/test/backtrace-all.sh
 
 before_deploy:
   # Get anchor (formatted properly) and base URI for latest tag in NEWS file
@@ -114,3 +123,10 @@ deploy:
     condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
     tags: true
     repo: flux-framework/flux-sched
+
+notifications:
+  email:
+    recipients:
+      - flux-sched-dev@listserv.llnl.gov
+    on_success: change
+    on_failure: always

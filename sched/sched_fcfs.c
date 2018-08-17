@@ -34,23 +34,35 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
 #include "resrc_reqst.h"
 #include "scheduler.h"
 
+static int queue_depth = SCHED_PARAM_Q_DEPTH_DEFAULT;
 
-static bool select_children (flux_t h, resrc_tree_list_t *children,
+static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
+                             resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
                              resrc_tree_t *selected_parent);
 
-resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
+resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                                resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent);
 
-int sched_loop_setup (flux_t h)
+int get_sched_properties (flux_t *h, struct sched_prop *prop)
+{
+    if (!prop)
+        return -1;
+
+    prop->out_of_order_capable = (queue_depth > 1)? true : false;
+    return 0;
+}
+
+int sched_loop_setup (flux_t *h)
 {
     return 0;
 }
@@ -67,7 +79,8 @@ int sched_loop_setup (flux_t h)
  *          found_tree  - a resource tree containing resources that satisfy the
  *                        job's request or NULL if none are found
  */
-int64_t find_resources (flux_t h, resrc_t *resrc, resrc_reqst_t *resrc_reqst,
+int64_t find_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                        resrc_t *resrc, resrc_reqst_t *resrc_reqst,
                         resrc_tree_t **found_tree)
 {
     int64_t nfound = 0;
@@ -85,10 +98,10 @@ int64_t find_resources (flux_t h, resrc_t *resrc, resrc_reqst_t *resrc_reqst,
         goto ret;
 
     *found_tree = NULL;
-    nfound = resrc_tree_search (resrc, resrc_reqst, found_tree, true);
+    nfound = resrc_tree_search (rsapi, resrc, resrc_reqst, found_tree, true);
 
     if (!nfound && *found_tree) {
-        resrc_tree_destroy (*found_tree, false);
+        resrc_tree_destroy (rsapi, *found_tree, false, false);
         *found_tree = NULL;
     }
 ret:
@@ -99,7 +112,8 @@ ret:
  * cycles through all of the resource children and returns true when
  * the requested quantity of resources have been selected.
  */
-static bool select_child (flux_t h, resrc_tree_list_t *children,
+static bool select_child (flux_t *h, resrc_api_ctx_t *rsapi,
+                          resrc_tree_list_t *children,
                           resrc_reqst_t *child_reqst,
                           resrc_tree_t *selected_parent)
 {
@@ -108,7 +122,8 @@ static bool select_child (flux_t h, resrc_tree_list_t *children,
 
     child_tree = resrc_tree_list_first (children);
     while (child_tree) {
-        if (select_resources (h, child_tree, child_reqst, selected_parent) &&
+        if (select_resources (h, rsapi, child_tree,
+                              child_reqst, selected_parent) &&
             (resrc_reqst_nfound (child_reqst) >=
              resrc_reqst_reqrd_qty (child_reqst))) {
             selected = true;
@@ -124,7 +139,8 @@ static bool select_child (flux_t h, resrc_tree_list_t *children,
  * cycles through all of the resource requests and returns true if all
  * of the requested children were selected
  */
-static bool select_children (flux_t h, resrc_tree_list_t *children,
+static bool select_children (flux_t *h, resrc_api_ctx_t *rsapi,
+                             resrc_tree_list_t *children,
                              resrc_reqst_list_t *reqst_children,
                              resrc_tree_t *selected_parent)
 {
@@ -136,7 +152,7 @@ static bool select_children (flux_t h, resrc_tree_list_t *children,
         resrc_reqst_clear_found (child_reqst);
         selected = false;
 
-        if (!select_child (h, children, child_reqst, selected_parent))
+        if (!select_child (h, rsapi, children, child_reqst, selected_parent))
             break;
         selected = true;
         child_reqst = resrc_reqst_list_next (reqst_children);
@@ -154,10 +170,12 @@ static bool select_children (flux_t h, resrc_tree_list_t *children,
  *          selected_parent - parent of the selected resource tree
  * Returns: a resource tree of however many resources were selected
  */
-resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
+resrc_tree_t *select_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                                resrc_tree_t *found_tree,
                                 resrc_reqst_t *resrc_reqst,
                                 resrc_tree_t *selected_parent)
 {
+    int reason = REASON_NONE;
     resrc_t *resrc;
     resrc_tree_list_t *children = NULL;
     resrc_tree_t *child_tree;
@@ -177,11 +195,11 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
         return NULL;
 
     resrc = resrc_tree_resrc (found_tree);
-    if (resrc_match_resource (resrc, resrc_reqst, true)) {
+    if (resrc_match_resource (resrc, resrc_reqst, true, &reason)) {
         if (resrc_reqst_num_children (resrc_reqst)) {
             if (resrc_tree_num_children (found_tree)) {
                 selected_tree = resrc_tree_new (selected_parent, resrc);
-                if (select_children (h, resrc_tree_children (found_tree),
+                if (select_children (h, rsapi, resrc_tree_children (found_tree),
                                      resrc_reqst_children (resrc_reqst),
                                      selected_tree)) {
                     resrc_stage_resrc (resrc,
@@ -190,7 +208,7 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
                     resrc_reqst_add_found (resrc_reqst, 1);
                     flux_log (h, LOG_DEBUG, "selected %s", resrc_name (resrc));
                 } else {
-                    resrc_tree_destroy (selected_tree, false);
+                    resrc_tree_destroy (rsapi, selected_tree, false, false);
                 }
             }
         } else {
@@ -215,7 +233,8 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
         children = resrc_tree_children (found_tree);
         child_tree = resrc_tree_list_first (children);
         while (child_tree) {
-            if (select_resources (h, child_tree, resrc_reqst, selected_tree) &&
+            if (select_resources (h, rsapi, child_tree,
+                    resrc_reqst, selected_tree) &&
                 resrc_reqst_nfound (resrc_reqst) >=
                 resrc_reqst_reqrd_qty (resrc_reqst))
                 break;
@@ -226,7 +245,8 @@ resrc_tree_t *select_resources (flux_t h, resrc_tree_t *found_tree,
     return selected_tree;
 }
 
-int allocate_resources (flux_t h, resrc_tree_t *selected_tree, int64_t job_id,
+int allocate_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                        resrc_tree_t *selected_tree, int64_t job_id,
                         int64_t starttime, int64_t endtime)
 {
     int rc = -1;
@@ -236,20 +256,23 @@ int allocate_resources (flux_t h, resrc_tree_t *selected_tree, int64_t job_id,
     return rc;
 }
 
-int reserve_resources (flux_t h, resrc_tree_t **selected_tree, int64_t job_id,
+int reserve_resources (flux_t *h, resrc_api_ctx_t *rsapi,
+                       resrc_tree_t **selected_tree, int64_t job_id,
                        int64_t starttime, int64_t walltime, resrc_t *resrc,
                        resrc_reqst_t *resrc_reqst)
 {
     int rc = -1;
 
-    if (*selected_tree)
+    /* If queue_depth is 1, this scheduler isn't out-of-order capable */
+    if (queue_depth > 1 && *selected_tree)
         rc = resrc_tree_reserve (*selected_tree, job_id, 0, 0);
     return rc;
 }
 
 
-int process_args (flux_t h, char *argz, size_t argz_len)
+int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *sp)
 {
+    queue_depth = sp->queue_depth;
     return 0;
 }
 

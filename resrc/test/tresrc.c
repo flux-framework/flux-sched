@@ -33,7 +33,7 @@
 #include <czmq.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "../resrc.h"
 #include "../resrc_tree.h"
 #include "../resrc_flow.h"
@@ -96,8 +96,10 @@ static void test_temporal_allocation ()
 {
     int rc = 0;
     size_t available;
-    resrc_t *resource = resrc_new_resource ("custom", "/test", "test", "test1",
-                                            NULL, 1, NULL, 10);
+
+    resrc_api_ctx_t *rsapi = resrc_api_init ();
+    resrc_t *resource = resrc_new_resource (rsapi, "custom", "/test", "test",
+                                            "test1", NULL, 1, NULL, 10);
 
     available = resrc_available_at_time (resource, 0);
     rc = (rc || !(available == 10));
@@ -112,7 +114,7 @@ static void test_temporal_allocation ()
     rc = (rc || resrc_allocate_resource (resource, 2, 2000, 3000));
     ok (!rc, "Temporal allocation setup works");
     if (rc) {
-        return;
+        goto ret;
     }
 
     // Start the actual testing
@@ -123,7 +125,7 @@ static void test_temporal_allocation ()
     rc = (rc || resrc_allocate_resource (resource, 3, 10, 1999));
     ok (!rc, "Overlapping temporal allocations work");
     if (rc) {
-        return;
+        goto ret;
     }
 
     // Test "available at time"
@@ -154,7 +156,7 @@ static void test_temporal_allocation ()
     rc = (rc || !(available == 10));
     ok (!rc, "resrc_available_at_time works");
     if (rc) {
-        return;
+        goto ret;
     }
 
     // Test "available during range"
@@ -227,16 +229,21 @@ static void test_temporal_allocation ()
     rc = (rc || !(available == 10));
     ok (!rc, "resrc_available_during_range: range overlaps all job works");
 
-    resrc_resource_destroy (resource);
+ret:
+    if (resource)
+        resrc_resource_destroy (rsapi, resource);
+    if (rsapi)
+        resrc_api_fini (rsapi);
+    return;
 }
 
-static int test_a_resrc (resrc_t *resrc, bool rdl)
+static int test_a_resrc (resrc_api_ctx_t *rsapi, resrc_t *resrc, bool rdl)
 {
     int found = 0;
     int rc = 0;
     int64_t nowtime = epochtime ();
-    JSON o = NULL;
-    JSON req_res = NULL;
+    json_t *o = NULL;
+    json_t *req_res = NULL;
     resrc_reqst_t *resrc_reqst = NULL;
     resrc_tree_t *deserialized_tree = NULL;
     resrc_tree_t *found_tree = NULL;
@@ -263,56 +270,56 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     req_res = Jnew ();
 
     if (rdl) {
-        JSON bandwidth = Jnew ();
-        JSON child_core = Jnew ();
-        JSON child_sock = Jnew ();
-        JSON graph_array = Jnew_ar ();
-        JSON ja = Jnew_ar ();
-        JSON jpropo = Jnew (); /* json property object */
-        JSON memory = Jnew ();
-        JSON power = Jnew ();
+        json_t *bandwidth = Jnew ();
+        json_t *child_core = Jnew ();
+        json_t *child_sock = Jnew ();
+        json_t *graph_array = Jnew_ar ();
+        json_t *ja = Jnew_ar ();
+        json_t *jpropo = Jnew (); /* json property object */
+        json_t *memory = Jnew ();
+        json_t *power = Jnew ();
 
-        /* JSON jtago = Jnew ();  /\* json tag object *\/ */
+        /* json_t *jtago = Jnew ();  /\* json tag object *\/ */
         /* Jadd_bool (jtago, "maytag", true); */
         /* Jadd_bool (jtago, "yourtag", true); */
 
         Jadd_str (memory, "type", "memory");
         Jadd_int (memory, "req_qty", 1);
         Jadd_int (memory, "size", 100);
-        json_object_array_add (ja, memory);
+        json_array_append_new (ja, memory);
 
         Jadd_str (child_core, "type", "core");
         Jadd_int (child_core, "req_qty", 6);
         Jadd_bool (child_core, "exclusive", true);
         Jadd_int (jpropo, "localid", 1);
-        json_object_object_add (child_core, "properties", jpropo);
-        json_object_array_add (ja, child_core);
+        json_object_set_new (child_core, "properties", jpropo);
+        json_array_append_new (ja, child_core);
 
         Jadd_str (child_sock, "type", "socket");
         Jadd_int (child_sock, "req_qty", 2);
-        json_object_object_add (child_sock, "req_children", ja);
+        json_object_set_new (child_sock, "req_children", ja);
 
         Jadd_str (bandwidth, "type", "bandwidth");
         Jadd_int (bandwidth, "size", 100);
-        json_object_array_add (graph_array, bandwidth);
+        json_array_append_new (graph_array, bandwidth);
 
         Jadd_str (power, "type", "power");
         Jadd_int (power, "size", 10);
-        json_object_array_add (graph_array, power);
+        json_array_append_new (graph_array, power);
 
         Jadd_str (req_res, "type", "node");
         Jadd_int (req_res, "req_qty", 2);
         Jadd_int64 (req_res, "starttime", nowtime);
         /* json_object_object_add (req_res, "tags", jtago); */
-        json_object_object_add (req_res, "req_child", child_sock);
-        json_object_object_add (req_res, "graphs", graph_array);
+        json_object_set_new (req_res, "req_child", child_sock);
+        json_object_set_new (req_res, "graphs", graph_array);
     } else {
         Jadd_str (req_res, "type", "core");
         Jadd_int (req_res, "req_qty", 2);
         Jadd_bool (req_res, "exclusive", true);
     }
 
-    resrc_reqst = resrc_reqst_from_json (req_res, NULL);
+    resrc_reqst = resrc_reqst_from_json (rsapi, req_res, NULL);
     Jput (req_res);
     ok ((resrc_reqst != NULL), "resource request valid");
     if (!resrc_reqst)
@@ -325,7 +332,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     }
 
     init_time ();
-    found = resrc_tree_search (resrc, resrc_reqst, &found_tree, true);
+    found = resrc_tree_search (rsapi, resrc, resrc_reqst, &found_tree, true);
 
     ok (found, "found %d requested resources in %lf", found,
         ((double)get_time ())/1000000);
@@ -348,7 +355,32 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
         printf ("The found resources serialized: %s\n", Jtostr (o));
     }
 
-    deserialized_tree = resrc_tree_deserialize (o, NULL);
+    json_t *gather = Jnew_ar ();
+    json_t *reduce = Jnew ();
+    resrc_api_map_t *gather_map = resrc_api_map_new ();
+    resrc_api_map_put (gather_map, "node", (void *)(intptr_t)REDUCE_UNDER_ME);
+    resrc_api_map_t *reduce_map = resrc_api_map_new ();
+    resrc_api_map_put (reduce_map, "core", (void *)(intptr_t)NONE_UNDER_ME);
+    resrc_api_map_put (reduce_map, "gpu", (void *)(intptr_t)NONE_UNDER_ME);
+
+    init_time ();
+    rc = resrc_tree_serialize_lite (gather, reduce, found_tree,
+                                    gather_map, reduce_map);
+    ok (!rc, "found resource lightweight serialization took: %lf",
+        ((double)get_time ())/1000000);
+
+    if (verbose) {
+        printf ("The lightweight serialization: %s\n",
+                json_dumps (gather, JSON_INDENT (3)));
+    }
+    Jput (gather);
+    Jput (reduce);
+    resrc_api_map_destroy (&gather_map);
+    resrc_api_map_destroy (&reduce_map);
+
+    /* serialized resrcs should be deserialized into a new API instance */
+    resrc_api_ctx_t *new_rsapi = resrc_api_init ();
+    deserialized_tree = resrc_tree_deserialize (new_rsapi, o, NULL);
     if (verbose) {
         printf ("Listing deserialized tree\n");
         resrc_tree_print (deserialized_tree);
@@ -368,7 +400,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     else
         rc = resrc_tree_allocate (selected_tree, 1, 0, 0);
     ok (!rc, "successfully allocated resources for job 1");
-    resrc_tree_destroy (selected_tree, false);
+    resrc_tree_destroy (rsapi, selected_tree, false, false);
     resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 2);
@@ -377,7 +409,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     else
         rc = resrc_tree_allocate (selected_tree, 2, 0, 0);
     ok (!rc, "successfully allocated resources for job 2");
-    resrc_tree_destroy (selected_tree, false);
+    resrc_tree_destroy (rsapi, selected_tree, false, false);
     resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 3);
@@ -386,7 +418,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     else
         rc = resrc_tree_allocate (selected_tree, 3, 0, 0);
     ok (!rc, "successfully allocated resources for job 3");
-    resrc_tree_destroy (selected_tree, false);
+    resrc_tree_destroy (rsapi, selected_tree, false, false);
     resrc_tree_unstage_resources (found_tree);
 
     selected_tree = test_select_resources (found_tree, NULL, 4);
@@ -395,7 +427,7 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     else
         rc = resrc_tree_reserve (selected_tree, 4, 0, 0);
     ok (!rc, "successfully reserved resources for job 4");
-    resrc_tree_destroy (selected_tree, false);
+    resrc_tree_destroy (rsapi, selected_tree, false, false);
     resrc_tree_unstage_resources (found_tree);
 
     printf ("        allocate and reserve took: %lf\n",
@@ -417,11 +449,110 @@ static int test_a_resrc (resrc_t *resrc, bool rdl)
     }
 
     init_time ();
-    resrc_reqst_destroy (resrc_reqst);
-    resrc_tree_destroy (deserialized_tree, true);
-    resrc_tree_destroy (found_tree, false);
+    resrc_reqst_destroy (rsapi, resrc_reqst);
+    resrc_tree_destroy (new_rsapi, deserialized_tree, true, true);
+    resrc_tree_destroy (rsapi, found_tree, false, false);
     printf ("        destroy took: %lf\n", ((double)get_time ())/1000000);
 ret:
+    return rc;
+}
+
+static int test_using_reader_rdl ()
+{
+    int rc = 1;
+    char *filename = NULL;
+    resrc_api_ctx_t *rsapi = NULL;
+    resrc_t *resrc = NULL;
+    resrc_tree_t *phys_tree = NULL;
+    resrc_flow_t *power_flow = NULL;
+    resrc_flow_t *bw_flow = NULL;
+
+    if (!(filename = getenv ("TESTRESRC_INPUT_FILE")))
+        goto ret;
+
+    ok (!(filename == NULL || *filename == '\0'), "resource file provided");
+    ok ((access (filename, F_OK) == 0), "resource file exists");
+    ok ((access (filename, R_OK) == 0), "resource file readable");
+    init_time();
+
+    if (!(rsapi = resrc_api_init ()))
+        goto ret;
+
+    /* Generate a hardware hierarchy of resources using RDL reader */
+    resrc = resrc_generate_rdl_resources (rsapi, filename, "default");
+    double e = (double)get_time()/1000000;
+    ok ((resrc != NULL), "resource generation from config file took: %lf", e);
+    if (!resrc)
+        goto ret;
+    phys_tree = resrc_tree_root (rsapi);
+
+    /* Generate a power hierarchy of resources using RDL reader */
+    if (!(power_flow = resrc_flow_generate_rdl (rsapi, filename, "power")))
+        goto ret;
+    else if (verbose) {
+        printf ("Listing power tree\n");
+        resrc_flow_print (power_flow);
+        printf ("End of power tree\n");
+    }
+
+    /* Generate a bandwidth hierarchy of resources using RDL reader */
+    if (!(bw_flow = resrc_flow_generate_rdl (rsapi, filename, "bandwidth")))
+        goto ret;
+    else if (verbose) {
+        printf ("Listing bandwidth tree\n");
+        resrc_flow_print (bw_flow);
+        printf ("End of bandwidth tree\n");
+    }
+
+    rc = test_a_resrc (rsapi, resrc, true);
+
+ret:
+    if (rsapi) {
+        if (bw_flow)
+            resrc_flow_destroy (rsapi, bw_flow, true);
+        if (power_flow)
+            resrc_flow_destroy (rsapi, power_flow, true);
+        if (phys_tree)
+            resrc_tree_destroy (rsapi, phys_tree, true, true);
+        resrc_api_fini (rsapi);
+    }
+    return rc;
+}
+
+static int test_using_reader_hwloc ()
+{
+    int rc = 1;
+    hwloc_topology_t topology;
+    resrc_api_ctx_t *rsapi = NULL;
+    resrc_tree_t *phys_tree = NULL;
+
+    init_time();
+
+    if (!(rsapi = resrc_api_init ()))
+        goto ret;
+
+    ok ((hwloc_topology_init (&topology) == 0),
+        "hwloc topology init succeeded");
+    ok ((hwloc_topology_load (topology) == 0),
+        "hwloc topology load succeeded");
+    /* Generate the hardware hierarchy of resources using hwloc reader */
+    ok ((resrc_generate_hwloc_resources (rsapi, topology, NULL, NULL) != 0),
+        "resource generation from hwloc took: %lf",
+        ((double)get_time())/1000000);
+    hwloc_topology_destroy (topology);
+
+    phys_tree = resrc_tree_root (rsapi);
+    if (!phys_tree)
+        goto ret;
+
+    rc = test_a_resrc (rsapi, resrc_tree_resrc (phys_tree), false);
+
+ret:
+    if (rsapi) {
+        if (phys_tree)
+            resrc_tree_destroy (rsapi, phys_tree, true, true);
+        resrc_api_fini (rsapi);
+    }
     return rc;
 }
 
@@ -435,73 +566,15 @@ ret:
  */
 int main (int argc, char *argv[])
 {
-    char *filename = NULL;
-    hwloc_topology_t topology;
     int rc1 = 1, rc2 = 1;
-    resrc_t *resrc = NULL;
-    resrc_flow_t *power_flow = NULL;
-    resrc_flow_t *bw_flow = NULL;
 
-    plan (26 + num_temporal_allocation_tests);
+    plan (27 + num_temporal_allocation_tests);
     test_temporal_allocation ();
-
-    if ((filename = getenv ("TESTRESRC_INPUT_FILE"))) {
-        ok (!(filename == NULL || *filename == '\0'), "resource file provided");
-        ok ((access (filename, F_OK) == 0), "resource file exists");
-        ok ((access (filename, R_OK) == 0), "resource file readable");
-
-        init_time();
-        resrc_init ();
-        resrc = resrc_generate_rdl_resources (filename, "default");
-        ok ((resrc != NULL), "resource generation from config file took: %lf",
-            ((double)get_time())/1000000);
-        if (resrc) {
-            power_flow = resrc_flow_generate_rdl (filename, "power");
-            if (power_flow) {
-                if (verbose) {
-                    printf ("Listing power tree\n");
-                    resrc_flow_print (power_flow);
-                    printf ("End of power tree\n");
-                }
-                bw_flow = resrc_flow_generate_rdl (filename, "bandwidth");
-                if (bw_flow) {
-                    if (verbose) {
-                        printf ("Listing bandwidth tree\n");
-                        resrc_flow_print (bw_flow);
-                        printf ("End of bandwidth tree\n");
-                    }
-                } else
-                    goto ret;
-            } else
-                goto ret;
-
-            rc1 = test_a_resrc (resrc, true);
-            resrc_flow_destroy (bw_flow);
-            resrc_flow_destroy (power_flow);
-            resrc_tree_destroy (resrc_phys_tree (resrc), true);
-            resrc_fini ();
-        }
-    }
-
-    init_time();
-    resrc_init ();
-    ok ((hwloc_topology_init (&topology) == 0),
-        "hwloc topology init succeeded");
-    ok ((hwloc_topology_load (topology) == 0),
-        "hwloc topology load succeeded");
-    ok (((resrc = resrc_create_cluster ("cluster")) != 0),
-        "cluster resource creation succeeded");
-    ok ((resrc_generate_hwloc_resources (resrc, topology, NULL, NULL) != 0),
-        "resource generation from hwloc took: %lf",
-        ((double)get_time())/1000000);
-    hwloc_topology_destroy (topology);
-    if (resrc) {
-        rc2 = test_a_resrc (resrc, false);
-        resrc_tree_destroy (resrc_phys_tree (resrc), true);
-        resrc_fini ();
-    }
-ret:
+    rc1 = test_using_reader_rdl ();
+    rc2 = test_using_reader_hwloc ();
+    /* plance holder for testing with other reader types */
     done_testing ();
+
     return (rc1 | rc2);
 }
 

@@ -1,0 +1,29 @@
+version: 1
+resources:
+  - type: node
+    count: 1
+    with:
+      - type: slot
+        count: 1
+        label: default
+        with:
+          - type: socket
+            count: 2
+            with:
+              - type: core
+                count: 16
+              - type: gpu
+                count: 1
+              - type: memory
+                count: 32
+
+# a comment
+attributes:
+  system:
+    duration: 43200
+tasks:
+  - command: app
+    slot: default
+    count:
+      per_slot: 1
+

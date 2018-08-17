@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <jansson.h>
 
 /*
  *  Forward declarations:
@@ -22,13 +23,6 @@ struct rdl;
  *   within a given rdl db.
  */
 struct resource;
-
-/*
- *  struct rdl_accumulator is a container used to accumulate resources
- *   and generate a new RDL representation.
- */
-struct rdl_accumulator;
-
 
 /*
  *  Prototype for error processing function
@@ -93,7 +87,7 @@ struct rdl * rdl_copy (struct rdl *rdl);
  *    'tags'     : [ TAGS ]  - list of tags to match
  *  }
  */
-struct rdl * rdl_find (struct rdl *rdl, json_object *args);
+struct rdl * rdl_find (struct rdl *rdl, json_t *args);
 
 /*
  *  Destroy and deallocate an rdl handle
@@ -190,14 +184,14 @@ void rdl_resource_delete_tag (struct resource *r, const char *tag);
  *      tags: {list of values},
  *    }
  */
-json_object *rdl_resource_json (struct resource *r);
+json_t *rdl_resource_json (struct resource *r);
 
 /*
  *  Aggregate all properties, tags, values and types from
  *   the resource hierarchy starting at [r]. Returns a json object
  *   reprenting the aggregation.
  */
-json_object * rdl_resource_aggregate_json (struct resource *r);
+json_t * rdl_resource_aggregate_json (struct resource *r);
 
 /*
  *  Iterate over child resources in resource [r].
@@ -213,45 +207,5 @@ void rdl_resource_iterator_reset (struct resource *r);
  *  Unlink a child with name [name] from this hierarchy at parent [r].
  */
 int rdl_resource_unlink_child (struct resource *r, const char *name);
-
-
-/*
- *   RDL "Accumulator" methods:
- */
-
-/*
- *  Create a "resource accumulator" object from a source RDL [rdl]
- */
-struct rdl_accumulator * rdl_accumulator_create (struct rdl *rdl);
-
-void rdl_accumulator_destroy (struct rdl_accumulator *a);
-
-/*
- *  Add hierarchy rooted at resource [r] to accumulator.
- */
-int rdl_accumulator_add (struct rdl_accumulator *a, struct resource *r);
-
-/*
- *  Add [n] units from resource [r] to accumulator [a]. The value
- *   [n] must be less than or equal to the available units from resource
- *   [r], i.e. as returned by rdl_resource_available (r);
- */
-int rdl_accumulator_add_n (struct rdl_accumulator *a, struct resource *r,
-                           size_t n);
-
-/*
- *  Serialize the RDL represented by accumulator [a]
- */
-char * rdl_accumulator_serialize (struct rdl_accumulator *a);
-
-/*
- *  Copy the accumulated resource data in [a] to a new RDL object.
- */
-struct rdl * rdl_accumulator_copy (struct rdl_accumulator *a);
-
-/*
- * Returns true if the accumulator is empty
- */
-bool rdl_accumulator_is_empty (struct rdl_accumulator *a);
 
 #endif /* !FLUX_RDL_H */

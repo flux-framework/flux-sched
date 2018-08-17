@@ -1,9 +1,10 @@
 AM_CFLAGS = \
-	@GCCWARN@ \
+	$(WARNING_CFLAGS) \
+	-Wno-parentheses \
 	$(CODE_COVERAGE_CFLAGS)
 
 AM_LDFLAGS = \
-	$(CODE_COVERAGE_LDFLAGS)
+	$(CODE_COVERAGE_LIBS)
 
 AM_CPPFLAGS = -I$(top_srcdir)
 

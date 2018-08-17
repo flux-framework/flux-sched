@@ -1,0 +1,40 @@
+version: 1
+resources:
+  - type: zone
+    count: 1
+    with:
+      - type: cluster
+        count: 1
+        with:
+          - type: rack
+            count: 6
+            with:
+              - type: node
+                count: 16
+                with:
+                - type: slot
+                  label: default
+                  count: 2
+                  with:
+                    - type: socket
+                      count: 1
+                      with:
+                        - type: core
+                          count: 18
+
+      - type: pfs
+        count: 1
+        with:
+          - type: bandwidth
+            count: 1280
+            exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: default
+    slot: socketlevel
+    count:
+      per_slot: 1

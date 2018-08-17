@@ -35,7 +35,7 @@
 #include <hwloc.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "resrc.h"
 #include "resrc_tree.h"
@@ -96,8 +96,20 @@ static void partition_tab_freefn (void *data)
 static void partition_freefn (void *data)
 {
     partition_t *o = (partition_t *)data;
-    free (o->sig->digest);
-    zlist_destroy (&(o->ranks));
+    if (o) {
+        if (o->sig) {
+            if (o->sig->digest) {
+                free (o->sig->digest);
+                o->sig->digest = NULL;
+            }
+            free (o->sig);
+            o->sig = NULL;
+        }
+        if (o->ranks)
+            zlist_destroy (&(o->ranks));
+        free (o);
+        o = NULL;
+    }
 }
 
 static inline void partition_tab_new (zhash_t *tab, const char *hn)
@@ -270,17 +282,25 @@ const char *rs2rank_tab_eq_by_none (machs_t *m)
     return rdigest;
 }
 
-int rs2rank_set_signature (char *rsbuf, size_t len, hwloc_topology_t t,
-                           rssig_t **sig)
+int rs2rank_set_signature (char *rsbuf, size_t len, char *aux,
+                           hwloc_topology_t t, rssig_t **sig)
 {
     int rc = -1;
     zdigest_t *digest = NULL;
+
+    if (!rsbuf)
+        goto error;
+
     *sig = (rssig_t *) xzmalloc (sizeof (**sig)) ;
     if (!(digest = zdigest_new ()))
         oom ();
 
     zdigest_update (digest, (byte *)rsbuf, len);
-    (*sig)->digest = xasprintf ("%s", zdigest_string (digest));
+    if (!aux)
+        (*sig)->digest = xasprintf ("%s", zdigest_string (digest));
+    else
+        (*sig)->digest = xasprintf ("%s.%s", zdigest_string (digest), aux);
+
     zdigest_destroy (&(digest));
     /* FIMXE: Why HWLOC_OBJ_NUMANODE doesn't work ? */
     (*sig)->nsockets = hwloc_get_nbobjs_by_type (t, HWLOC_OBJ_SOCKET);
@@ -288,6 +308,7 @@ int rs2rank_set_signature (char *rsbuf, size_t len, hwloc_topology_t t,
     if (((*sig)->nsockets > 0) && ((*sig)->ncores > 0))
         rc = 0;
 
+error:
     return rc;
 }
 

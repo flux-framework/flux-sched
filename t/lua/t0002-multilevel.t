@@ -1,4 +1,4 @@
-#!/usr/bin/lua
+#!/usr/bin/env lua
 --
 --  Basic rdl testing. Multi-level hierarchy
 --

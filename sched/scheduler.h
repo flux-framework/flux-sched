@@ -43,7 +43,9 @@
 typedef struct flux_resources {
     uint64_t nnodes; /*!< num of nodes requested by a job */
     uint64_t ncores; /*!< num of cores requested by a job */
+    uint64_t ngpus;  /*!< num of gpus requested by a job */
     uint64_t corespernode; /*!< num of cores per node requested by a job */
+    uint64_t gpuspernode; /*!< num of gpus per node requested by a job */
     uint64_t walltime; /*!< walltime requested by a job */
     bool     node_exclusive; /*!< job requires exclusive use of node if true */
 } flux_res_t;
@@ -55,12 +57,24 @@ typedef struct flux_resources {
 typedef struct {
     int64_t     lwj_id;  /*!< LWJ id */
     job_state_t state;   /*!< current job state */
+    char    *user;       /*!< user name of person who submitted job */
+    char    *account;    /*!< account to charge for resource usage */
     flux_res_t *req;     /*!< resources requested by this LWJ */
     resrc_tree_t *resrc_tree; /*!< resources allocated to this LWJ */
+    int64_t submittime;
     int64_t starttime;
+    int64_t endtime;
     int64_t enqueue_pos; /*!< the initial enqueue position */
+    double user_prio;    /*!< user-requested priority */
+    double priority;     /*!< scheduling priority */
 } flux_lwj_t;
 
+/**
+ *  Defines the properties of the scheduler plugin
+ */
+struct sched_prop {
+    bool out_of_order_capable; ;   /*!< true if out of order scheduling*/
+};
 
 /**
  *  Defines parameters that control scheduling optimization
@@ -79,10 +93,10 @@ typedef struct {
  * new values also need to be passed down to the scheduling
  * plug-ins.
  */
-#define SCHED_PARAM_Q_DEPTH_DEFAULT 1024
+#define SCHED_PARAM_Q_DEPTH_DEFAULT 128
 #define SCHED_PARAM_DELAY_DEFAULT true
 
-const sched_params_t *sched_params_get (flux_t h);
+const sched_params_t *sched_params_get (flux_t *h);
 
 #endif /* SCHEDULER_H */
 

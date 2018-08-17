@@ -5,7 +5,9 @@
  *  C API interface to Flux Resources
  */
 
+#include "resrc_api.h"
 #include <uuid/uuid.h>
+#include "src/common/libutil/shortjansson.h"
 
 #define TIME_MAX INT64_MAX
 
@@ -16,29 +18,30 @@ typedef struct resrc_tree resrc_tree_t;
 typedef struct resrc_flow resrc_flow_t;
 
 typedef enum {
-    RESOURCE_INVALID,
+    RESOURCE_INVALID = 1,
     RESOURCE_IDLE,
     RESOURCE_ALLOCATED,
     RESOURCE_RESERVED,
+    RESOURCE_EXCLUDED,
     RESOURCE_DOWN,
     RESOURCE_UNKNOWN,
     RESOURCE_END
 } resource_state_t;
 
+typedef enum {
+    DUE_TO_EXCLUSION = 1,
+    DUE_TO_EXCLUSIVITY,
+    DUE_TO_SIZE,
+    DUE_TO_TYPE,
+    DUE_TO_FEATURE,
+    DUE_TO_TIME,
+    REASON_NONE
+} unmatch_reason_t;
+
 typedef struct resrc_graph_req {
     char   *name;
     size_t size;
 } resrc_graph_req_t;
-
-/*
- * Initialize necessary components of the resource library
- */
-void resrc_init (void);
-
-/*
- * Destroy all internal components of the resource library
- */
-void resrc_fini (void);
 
 /*
  * Return the type of the resouce
@@ -102,7 +105,17 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
 /*
  * Return the resource state as a string
  */
-char* resrc_state (resrc_t *resrc);
+char *resrc_state_string (resrc_t *resrc);
+
+/*
+ * Return the resource state
+ */
+int resrc_state (resrc_t *resrc);
+
+/*
+ * Set the state field of resrc. This will return the old state.
+ */
+int resrc_set_state (resrc_t *resrc, int state);
 
 /*
  * Return the physical tree for the resouce
@@ -115,6 +128,16 @@ resrc_tree_t *resrc_phys_tree (resrc_t *resrc);
 size_t resrc_size_allocs (resrc_t *resrc);
 
 /*
+ * Return the jobid of an allocated job
+ */
+int64_t resrc_alloc_job_first (resrc_t *resrc);
+
+/*
+ * Return the jobid of the next allocated job
+ */
+int64_t resrc_alloc_job_next (resrc_t *resrc);
+
+/*
  * Return the number of jobs reserved for this resource
  */
 size_t resrc_size_reservtns (resrc_t *resrc);
@@ -124,7 +147,8 @@ size_t resrc_size_reservtns (resrc_t *resrc);
  *  If key is already present returns -1 and leaves existing item
  *  unchanged.  Returns 0 on success.
  */
-int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item);
+int resrc_twindow_insert (resrc_t *resrc, const char *key,
+                          int64_t starttime, int64_t endtime);
 
 /*
  *  Insert a resource flow pointer into the graph table using the
@@ -134,74 +158,88 @@ int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item);
 int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow);
 
 /*
- * Return the pointer to the resource with the given path
+ * Return the first resrc object with the given path
  */
-resrc_t *resrc_lookup (const char *path);
+resrc_t *resrc_lookup_first (resrc_api_ctx_t *ctx, const char *path);
+
+/*
+ * Return the next resrc object with the given path
+ */
+resrc_t *resrc_lookup_next (resrc_api_ctx_t *ctx, const char *path);
 
 /*
  * Create a new resource object
  */
-resrc_t *resrc_new_resource (const char *type, const char *path,
+resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx,
+                             const char *type, const char *path,
                              const char *basename, const char *name,
                              const char *sig, int64_t id, uuid_t uuid,
                              size_t size);
 
 /*
  * Create a copy of a resource object
+ * NOTE: as is, resrc_t contains fields that are not suitable
+ * for a deep copy, let's not allow copy constructor for now
  */
-resrc_t *resrc_copy_resource (resrc_t *resrc);
+//resrc_t *resrc_copy_resource (resrc_t *resrc);
 
 /*
  * Destroy a resource object
  */
-void resrc_resource_destroy (void *object);
+void resrc_resource_destroy (resrc_api_ctx_t *ctx, void *object);
 
 /*
  * Create a resrc_t object from a json object
  */
-resrc_t *resrc_new_from_json (json_object *o, resrc_t *parent, bool physical);
+resrc_t *resrc_new_from_json (resrc_api_ctx_t *ctx, json_t *o, resrc_t *parent,
+                              bool physical);
 
-/*
- * Return the head of a resource tree of all resources described by an
- * rdl-formatted configuration file
- */
-resrc_t *resrc_generate_rdl_resources (const char *path, char*resource);
+ /* Return the head of a resource tree of all resources described by an
+  * rdl-formatted configuration file
+  * TODO: The semantics of the generators is "collective" as such
+  *       we ultimately want to move to a different header.
+  */
+resrc_t *resrc_generate_rdl_resources (resrc_api_ctx_t *ctx,
+                                       const char *path, char*resource);
 
-/*
- * Return the head of a resource tree of all resources described by a
+
+ /* Return the head of a resource tree of all resources described by a
  * hwloc topology or NULL if errors are encountered.
  * Note: If err_str is non-null and errors are encountered, err_str will
  *       contain reason why.  Caller must subsequently free err_str.
  */
-resrc_t *resrc_generate_hwloc_resources (resrc_t *host_resrc, TOPOLOGY topo,
+resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx, TOPOLOGY topo,
                                          const char *sig, char **err_str);
 
 /*
  * Add the input resource to the json object
  */
-int resrc_to_json (json_object *o, resrc_t *resrc);
+int resrc_to_json (json_t *o, resrc_t *resrc);
+
+/*
+ * Add the lightweight input resource to the json object
+ * If reduce=true, only concatenate the resrc's id into
+ * o (e.g., 0,2,3,4).
+ */
+int resrc_to_json_lite (json_t *o, resrc_t *resrc, bool reduce);
 
 /*
  * Print details of a specific resource to a string buffer
  * and return to the caller. The caller must free it.
  */
 char *resrc_to_string (resrc_t *resrc);
+
 /*
  * Print details of a specific resource to stdout
  */
 void resrc_print_resource (resrc_t *resrc);
 
 /*
- * Convenience function to create a specialized cluster resource
- */
-resrc_t *resrc_create_cluster (char *cluster);
-
-/*
  * Finds if a resource request matches the specified resource over a period
  * defined by the start and end times.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
-                           size_t reqrd_size);
+                           size_t reqrd_size, int *reason);
 
 /*
  * Determine whether a specific resource has the required characteristics
@@ -209,10 +247,11 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
  *          request   - resource request with the required characteristics
  *          available - when true, consider only idle resources
  *                      otherwise find all possible resources matching type
+ *          reason    - unmatch reason
  * Returns: true if the input resource has the required characteristics
  */
 bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
-                           bool available);
+                           bool available, int *reason);
 
 /*
  * Stage size elements of a resource along with any associated graph
@@ -260,3 +299,7 @@ static inline int64_t epochtime ()
 
 
 #endif /* !FLUX_RESRC_H */
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

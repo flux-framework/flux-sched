@@ -25,6 +25,7 @@
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +34,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
@@ -90,8 +91,14 @@ double convert_time_to_sec (char *time)
 }
 
 // Populate a field in the job_t based off a value extracted from the csv
-int insert_into_job (job_t *job, char *column_name, char *value)
+int insert_into_job (flux_t *h, job_t *job, char *column_name, char *value)
 {
+    // Strip newline off the end, if it exists
+    int last_char_index = strlen(column_name) - 1;
+    if (column_name[last_char_index] == '\n') {
+        column_name[last_char_index] = '\0';
+    }
+
     if (!strcmp (column_name, "JobID")) {
         job->id = atoi (value);
     } else if (!strcmp (column_name, "User")) {
@@ -106,13 +113,38 @@ int insert_into_job (job_t *job, char *column_name, char *value)
         job->ncpus = atoi (value);
     } else if (!strcmp (column_name, "Timelimit")) {
         job->time_limit = convert_time_to_sec (value);
+        if(job->time_limit < job->execution_time) {
+          job->execution_time = job->time_limit;
+        }
     } else if (!strcmp (column_name, "Submit")) {
-        job->submit_time = atof (value);
+        char *endptr;
+        struct tm tm_spec; 
+        double stime = strtod(value, &endptr);
+        // Check if you parsed only a bit of the string (e.g. just the year)
+        // Trailing whitespace is not an error.
+        if (*endptr != '\0' && *endptr != ' ' && *endptr != '\t') {
+            endptr = strptime(value, "%Y-%m-%dT%H:%M:%S", &tm_spec);
+            if (endptr == NULL) {
+                endptr = value;
+            } else {
+                stime = (double) mktime(&tm_spec);
+            }
+        }
+        // endptr gets set by strtod or by strptime
+        if (endptr == value) {
+            flux_log (h, LOG_WARNING, "Incorrect Submit format, expects %s"
+                        " or seconds since epoch; replacing '%s' with %f",
+                        "%Y-%m-%dT%H:%M:%S (yyyy-mm-ddThh:mm:ss)",
+                        value, stime);
+        }
+        job->submit_time = stime;
     } else if (!strcmp (column_name, "Elapsed")) {
-        job->execution_time = convert_time_to_sec (value);
-    } else if (!strncmp (column_name,
-                         "IORate(MB)",
-                         10)) {  // ignore the \n at the end using strncmp
+        if(convert_time_to_sec (value) > job->time_limit) {
+          job->execution_time = job->time_limit;
+        } else {
+          job->execution_time = convert_time_to_sec (value);
+        }
+    } else if (!strcmp (column_name, "IORate(MB)")) {
         job->io_rate = atol (value);
     }
     return 0;
@@ -134,10 +166,11 @@ int populate_header (char *header_line, zlist_t *header_list)
 
 // Populate a list of jobs using the data contained in the csv
 // TODO: breakup this function into several smaller functions
-int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
+int parse_job_csv (flux_t *h, char *filename, zlist_t *jobs, int num_jobs)
 {
     const int MAX_LINE_LEN = 500;  // sort of arbitrary, works for my data
     char curr_line[MAX_LINE_LEN];  // current line of the input file
+    zlist_t *all_jobs = zlist_new (); // temporary list of all jobs
     zlist_t *header = NULL;  // column names
     char *fget_rc = NULL;  // stores the return code of fgets
     char *token = NULL;  // current token from the current line
@@ -165,24 +198,38 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
     while (fget_rc != NULL && feof (fp) == 0) {
         curr_job = blank_job ();
         token = strtok (curr_line, ",");
-        // Walk through even column in record and insert the data into the job
+        // Walk through every column in record and insert the data into the job
         while (token != NULL) {
             if (curr_column == NULL) {
                 flux_log (h, LOG_ERR, "column name is NULL");
                 return -1;
             }
-            insert_into_job (curr_job, curr_column, token);
+            insert_into_job (h, curr_job, curr_column, token);
             token = strtok (NULL, ",");
             curr_column = zlist_next (header);
         }
-        zlist_append (jobs, curr_job);
+        zlist_append (all_jobs, curr_job);
         fget_rc = fgets (curr_line, MAX_LINE_LEN, fp);
         curr_column = zlist_first (header);
         if (curr_line[0] == '#')  // reached a comment line, stop processing
                                   // file
             break;
     }
-    zlist_sort (jobs, compare_job_t);
+    // Sort the list in order of job submission time
+    zlist_sort (all_jobs, compare_job_t);
+
+    // Keep only the first N jobs (where N == num_jobs)
+    int curr_num_job = 0;
+    for (curr_num_job = 0, curr_job = zlist_first(all_jobs);
+         curr_num_job < num_jobs && curr_job;
+         curr_num_job++, curr_job = zlist_next (all_jobs)) {
+        zlist_append (jobs, curr_job);
+    }
+    // Free all the jobs we don't end up using
+    for (; curr_job; curr_job = zlist_next (all_jobs)) {
+        free_job (curr_job);
+    }
+    zlist_destroy (&all_jobs);
 
     // Cleanup
     while (zlist_size (header) > 0)
@@ -198,14 +245,12 @@ int parse_job_csv (flux_t h, char *filename, zlist_t *jobs)
 // Based on the sim_time, schedule any jobs that need to be scheduled
 // Next, add an event timer for the scheduler to the sim_state
 // Finally, updated the submit event timer with the next submit time
-int schedule_next_job (flux_t h, sim_state_t *sim_state)
+int schedule_next_job (flux_t *h, sim_state_t *sim_state)
 {
-    const char *resp_json_str = NULL;
-    JSON req_json = NULL, resp_json = NULL, event_json = NULL;
-    flux_rpc_t *rpc = NULL;
-    flux_msg_t *msg = NULL;
-    kvsdir_t *dir = NULL;
+    flux_future_t *create_f = NULL, *submit_f = NULL;
+    flux_kvsdir_t *dir = NULL;
     job_t *job = NULL;
+    const char *kvs_path = NULL;
     int64_t new_jobid = -1;
     double *new_sched_mod_time = NULL, *new_submit_mod_time = NULL;
 
@@ -216,71 +261,92 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
     job = zlist_pop (jobs);
     if (job == NULL) {
         flux_log (h, LOG_DEBUG, "no more jobs to submit");
-        return -1;
-    }
-    req_json = Jnew ();
-    Jadd_int (req_json, "nnodes", job->nnodes);
-    Jadd_int (req_json, "ntasks", job->ncpus);
-    Jadd_int64 (req_json, "walltime", job->time_limit);
-
-    rpc = flux_rpc (h, "job.create", Jtostr (req_json), FLUX_NODEID_ANY, 0);
-    Jput (req_json);
-    if (rpc == NULL) {
-        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
-        return -1;
-    }
-    if (flux_rpc_get (rpc, NULL, &resp_json_str) < 0) {
-        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
-    }
-    if (resp_json_str == NULL
-        || !(resp_json = Jfromstr (resp_json_str))) {
-        flux_log (h,
-                  LOG_ERR,
-                  "%s: improper response from job.create",
-                  __FUNCTION__);
-        Jput (resp_json);
+        new_submit_mod_time = (double *)zhash_lookup (timers, module_name);
+        *new_submit_mod_time = -1;
         return -1;
     }
 
-    Jget_int64 (resp_json, "jobid", &new_jobid);
-    Jput (resp_json);
+    create_f = flux_rpc_pack (h, "job.create", FLUX_NODEID_ANY, 0,
+                       "{ s:i s:i s:i s:i s:i }",
+                       "ntasks", job->ncpus,
+                       "nnodes", job->nnodes,
+                       "ncores", job->ncpus,
+                       "ngpus", job->ngpus,
+                       "walltime", (int)job->time_limit);
+    if (create_f == NULL) {
+        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
+        return -1;
+    }
+    if (flux_rpc_get_unpack (create_f, "{ s:I s:s }",
+                            "jobid", &new_jobid,
+                             "kvs_path", &kvs_path) < 0) {
+        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, strerror (errno));
+        flux_future_destroy (create_f);
+        return -1;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: created job %"PRId64" at %s",
+              __FUNCTION__, new_jobid, kvs_path);
 
     // Update lwj.%jobid%'s state in the kvs to "submitted"
-    if (kvs_get_dir (h, &dir, "lwj.%lu", new_jobid) < 0)
-        log_err_exit ("kvs_get_dir (id=%lu)", new_jobid);
-    kvsdir_put_string (dir, "state", "submitted");
+    if (!(dir = job_kvsdir (h, new_jobid)))
+        log_err_exit ("kvs_get_dir (id=%"PRId64")", new_jobid);
     job->kvs_dir = dir;
-    if (put_job_in_kvs (job) < 0)
+    if (put_job_in_kvs (job, "submitted") < 0)
         log_err_exit ("put_job_in_kvs");
 
     // Send "submitted" event
-    event_json = Jnew();
-    Jadd_int64 (event_json, "lwj", new_jobid);
-    if (!(msg = flux_event_encode ("wreck.state.submitted", Jtostr (event_json)))
-        || flux_send (h, msg, 0) < 0) {
+    submit_f = flux_rpc_pack (h, "job.submit-nocreate", FLUX_NODEID_ANY, 0,
+                              "{ s:I s:s s:i s:i s:i s:i s:i }",
+                              "jobid", new_jobid,
+                              "kvs_path", kvs_path,
+                              "nnodes", job->nnodes,
+                              "ntasks", job->ncpus,
+                              "ncores", job->ncpus,
+                              "ngpus", job->ngpus,
+                              "walltime", (int)job->time_limit);
+    if (submit_f == NULL) {
+        flux_log (h, LOG_ERR, "%s: failed to pack job.submit-nocreate: %s",
+                  __FUNCTION__, strerror (errno));
+        flux_future_destroy (submit_f);
         return -1;
     }
-    Jput (event_json);
-    flux_msg_destroy (msg);
+    if (flux_rpc_get (submit_f, NULL) < 0) {
+        flux_log (h, LOG_ERR, "%s: failed to get response for job.submit-nocreate",
+                  __FUNCTION__);
+        flux_future_destroy (submit_f);
+        return -1;
+    }
+    flux_future_destroy (submit_f);
+
+    // Must delay the destruction until we are done using the unpacked values
+    flux_future_destroy (create_f);
+
+    flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
 
     // Update event timers in reply (submit and sched)
     new_sched_mod_time = (double *)zhash_lookup (timers, "sched");
-    if (new_sched_mod_time != NULL)
+    if (new_sched_mod_time == NULL) {
+        flux_log (h, LOG_ERR, "%s: 'sched' not in timers dictionary",
+                  __FUNCTION__);
+    } else {
         *new_sched_mod_time = sim_state->sim_time + .00001;
-    flux_log (h,
-              LOG_DEBUG,
-              "added a sched timer that will occur at %f",
-              *new_sched_mod_time);
+        flux_log (h, LOG_DEBUG, "added a sched timer that will occur at %f",
+                  *new_sched_mod_time);
+    }
+
     new_submit_mod_time = (double *)zhash_lookup (timers, module_name);
-    if (get_next_submit_time () > *new_sched_mod_time)
-        *new_submit_mod_time = get_next_submit_time ();
-    else
-        *new_submit_mod_time = *new_sched_mod_time + .0001;
-    flux_log (h, LOG_INFO, "submitted job %"PRId64" (%d in csv)", new_jobid, job->id);
-    flux_log (h,
-              LOG_DEBUG,
-              "next submit event will occur at %f",
-              *new_submit_mod_time);
+    if (new_sched_mod_time == NULL) {
+        flux_log (h, LOG_ERR, "%s: '%s' not in timers dictionary",
+                  __FUNCTION__, module_name);
+    } else {
+        if (get_next_submit_time () > *new_sched_mod_time)
+            *new_submit_mod_time = get_next_submit_time ();
+        else
+            *new_submit_mod_time = *new_sched_mod_time + .0001;
+        flux_log (h, LOG_DEBUG, "next submit event will occur at %f",
+                  *new_submit_mod_time);
+    }
 
     // Cleanup
     free_job (job);
@@ -288,7 +354,7 @@ int schedule_next_job (flux_t h, sim_state_t *sim_state)
 }
 
 // Received an event that a simulation is starting
-static void start_cb (flux_t h,
+static void start_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -310,16 +376,16 @@ static void start_cb (flux_t h,
 }
 
 // Handle trigger requests from the sim module ("submit.trigger")
-static void trigger_cb (flux_t h,
+static void trigger_cb (flux_t *h,
                         flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
 {
-    JSON o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL;
     sim_state_t *sim_state = NULL;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         Jput (o);
@@ -342,19 +408,22 @@ static void trigger_cb (flux_t h,
     Jput (o);
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "submit.trigger", trigger_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     zhash_t *args = zhash_fromargv (argc, argv);
     if (!args)
         oom ();
-    char *csv_filename;
+    char *csv_filename, *num_jobs_str;
+    int num_jobs;
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -369,15 +438,21 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "job-csv argument is not set");
         return -1;
     }
+    if ((num_jobs_str = zhash_lookup (args, "num-jobs")) == NULL) {
+        flux_log (h, LOG_DEBUG, "num-jobs argument is not set, parsing/submitting all jobs");
+        num_jobs = INT_MAX;
+    } else {
+        num_jobs = atoi (num_jobs_str);
+    }
     jobs = zlist_new ();
-    parse_job_csv (h, csv_filename, jobs);
+    parse_job_csv (h, csv_filename, jobs, num_jobs);
     flux_log (h, LOG_INFO, "submit comms module finished parsing job data");
 
     if (flux_event_subscribe (h, "sim.start") < 0) {
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_handler_addvec (h, htab, NULL) < 0) {
+    if (flux_msg_handler_addvec (h, htab, NULL, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_addvec: %s", strerror (errno));
         return -1;
     }
@@ -386,10 +461,17 @@ int mod_main (flux_t h, int argc, char **argv)
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
     zhash_destroy (&args);
-    return 0;
+    return rc;
 }
 
 MOD_NAME ("submit");
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

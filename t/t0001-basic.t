@@ -48,4 +48,8 @@ test_expect_success 'get_instance_size works' '
 	test "$(get_instance_size)" = "$SIZE" &&
 	test "$(get_instance_size)" = "$(get_instance_size)"
 '
+
+test_expect_success 'sched: module remove' '
+	flux module remove sched
+'
 test_done

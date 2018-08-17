@@ -33,13 +33,42 @@
 #include <czmq.h>
 #include <hwloc.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "rdl.h"
 #include "resrc.h"
+#include "resrc_api_internal.h"
 #include "resrc_tree.h"
 #include "resrc_flow.h"
 #include "resrc_reqst.h"
 #include "src/common/libutil/xzmalloc.h"
+
+
+
+typedef struct window {
+    int64_t starttime;
+    int64_t endtime;
+    const char *job_id;
+} window_t;
+
+/* static window_t * window_new (int64_t starttime, int64_t endtime) { */
+/*     window_t *ret = malloc (sizeof *ret); */
+/*     ret->starttime = starttime; */
+/*     ret->endtime = endtime; */
+/*     return ret; */
+/* } */
+
+static void window_destructor (void **window_v) {
+    if (window_v) {
+        free(*window_v);
+        *window_v = NULL;
+    }
+}
+
+static void *window_dup (const void *window) {
+    window_t * ret = malloc(sizeof *ret);
+    memcpy(ret, window, sizeof *ret);
+    return ret;
+}
 
 struct resrc {
     char *type;
@@ -58,26 +87,81 @@ struct resrc {
     zhash_t *properties;
     zhash_t *tags;
     zhash_t *allocs;
+    zlist_t *alloc_keys;
     zhash_t *reservtns;
-    zhash_t *twindow;
+    zhashx_t *twindow;
 };
-
-static zhash_t *resrc_hash = NULL;
 
 /***************************************************************************
  *  API
  ***************************************************************************/
 
-void resrc_init (void)
+resrc_api_ctx_t *resrc_api_init (void)
 {
-    if (!resrc_hash)
-        resrc_hash = zhash_new ();
+    resrc_api_ctx_t *ctx = xzmalloc (sizeof (*ctx));
+    ctx->resrc_hash = zhash_new ();
+    ctx->hwloc_cluster = NULL;
+    ctx->tree_name = NULL;
+    ctx->tree_root = NULL;
+    ctx->flow_names = NULL;
+    ctx->flow_roots = zhash_new ();
+    return ctx;
 }
 
-void resrc_fini (void)
+void resrc_api_fini (resrc_api_ctx_t *ctx)
 {
-    if (resrc_hash)
-        zhash_destroy (&resrc_hash);
+    if (!ctx) {
+        errno = EINVAL;
+        return;
+    }
+    if (ctx->resrc_hash)
+        zhash_destroy (&(ctx->resrc_hash));
+    if (ctx->tree_name)
+        free (ctx->tree_name);
+    if (ctx->flow_roots)
+        zhash_destroy (&(ctx->flow_roots));
+    if (ctx->flow_names)
+        zlist_destroy (&(ctx->flow_names));
+    /* tree_root_resrc should already have been destroyed */
+    free (ctx);
+}
+
+resrc_api_map_t *resrc_api_map_new ()
+{
+    resrc_api_map_t *o = (resrc_api_map_t *)malloc (sizeof (resrc_api_map_t));
+    o->map = zhash_new ();
+    return o;
+}
+
+void resrc_api_map_destroy (resrc_api_map_t **m)
+{
+    if (!m || !*m)
+        return;
+    if ((*m)->map)
+        zhash_destroy (&((*m)->map));
+    free (*m);
+    *m = NULL;
+}
+
+void *resrc_api_map_get (resrc_api_map_t *m, const char *key)
+{
+    if (!m || !key || !(m->map))
+        return NULL;
+    return zhash_lookup (m->map, key);
+}
+
+void resrc_api_map_put (resrc_api_map_t *m, const char *key, void *val)
+{
+    if (!m || !key || !(m->map))
+        return;
+    zhash_insert (m->map, key, (void *)val);
+}
+
+void resrc_api_map_rm (resrc_api_map_t *m, const char *key)
+{
+    if (!m || !key || !(m->map))
+        return;
+    zhash_delete (m->map, key);
 }
 
 char *resrc_type (resrc_t *resrc)
@@ -148,13 +232,8 @@ size_t resrc_available (resrc_t *resrc)
 
 size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
 {
-    int64_t starttime = 0;
-    int64_t endtime = 0;
-
     const char *id_ptr = NULL;
-    const char *window_json_str = NULL;
-    JSON window_json = NULL;
-    zlist_t *window_keys = NULL;
+    window_t *window = NULL;
     size_t *size_ptr = NULL;
 
     size_t available = resrc->size;
@@ -164,34 +243,26 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
     }
 
     // Check that the time is during the resource lifetime
-    window_json_str = (const char*) zhash_lookup (resrc->twindow, "0");
-    if (window_json_str) {
-        window_json = Jfromstr (window_json_str);
-        if (window_json == NULL) {
-            return 0;
-        }
-        Jget_int64 (window_json, "starttime", &starttime);
-        Jget_int64 (window_json, "endtime", &endtime);
-        if (time < starttime || time > endtime) {
-            return 0;
-        }
+    window = zhashx_lookup (resrc->twindow, "0");
+    if (window && (time < window->starttime || time > window->endtime)) {
+        return 0;
     }
 
     // Iterate over all allocation windows in resrc.  We iterate using
-    // keys since we need the key to lookup the size in resrc->allocs.
-    window_keys = zhash_keys (resrc->twindow);
-    id_ptr = zlist_next (window_keys);
-    while (id_ptr) {
-        window_json_str = (const char*) zhash_lookup (resrc->twindow, id_ptr);
-        window_json = Jfromstr (window_json_str);
-        if (window_json == NULL) {
-            return 0;
+    // the hash to avoid copying the entire hash every time, using
+    // zhashx_cursor to retrieve the key to lookup the size in resrc->allocs.
+    window = zhashx_first (resrc->twindow);
+    while (window) {
+        id_ptr = zhashx_cursor(resrc->twindow);
+        if (!strcmp (id_ptr, "0")) {
+            /* This is the resource lifetime entry and should not be
+             * evaluated as an allocation or reservation entry */
+            window = zhashx_next (resrc->twindow);
+            continue;
         }
-        Jget_int64 (window_json, "starttime", &starttime);
-        Jget_int64 (window_json, "endtime", &endtime);
 
         // Does time intersect with window?
-        if (time >= starttime && time <= endtime) {
+        if (time >= window->starttime && time <= window->endtime) {
             // Decrement available by allocation and/or reservation size
             size_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
             if (size_ptr) {
@@ -203,84 +274,37 @@ size_t resrc_available_at_time (resrc_t *resrc, int64_t time)
             }
         }
 
-        Jput (window_json);
-        id_ptr = zlist_next (window_keys);
+        window = zhashx_next (resrc->twindow);
     }
-
-    zlist_destroy (&window_keys);
 
     return available;
 }
 
-
-#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
-static bool compare_windows_starttime (void *item1, void *item2)
+static int compare_windows_starttime (const void *item1, const void *item2)
 {
-    int64_t starttime1, starttime2;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
-
-    Jget_int64 (json1, "starttime", &starttime1);
-    Jget_int64 (json2, "starttime", &starttime2);
-
-    return (starttime1 > starttime2);
+    const window_t * lhs = item1, *rhs = item2;
+    if (lhs->starttime < rhs->starttime)
+        return -1;
+    if (lhs->starttime == rhs->starttime)
+        return 0;
+    return 1;
 }
-#else
-static int compare_windows_starttime (void *item1, void *item2)
+
+static int compare_windows_endtime (const void *item1, const void *item2)
 {
-    int64_t starttime1 = 0;
-    int64_t starttime2 = 0;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
-
-    Jget_int64 (json1, "starttime", &starttime1);
-    Jget_int64 (json2, "starttime", &starttime2);
-
-    return (starttime1 - starttime2);
-}
-#endif
-
-
-#if CZMQ_VERSION < CZMQ_MAKE_VERSION(3, 0, 1)
-static bool compare_windows_endtime (void *item1, void *item2)
-{
-    int64_t endtime1, endtime2;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
-
-    Jget_int64 (json1, "endtime", &endtime1);
-    Jget_int64 (json2, "endtime", &endtime2);
-
-    return (endtime1 > endtime2);
-}
-#else
-static int compare_windows_endtime (void *item1, void *item2)
-{
-    int64_t endtime1 = 0;
-    int64_t endtime2 = 0;
-    JSON json1 = (JSON) item1;
-    JSON json2 = (JSON) item2;
-
-    Jget_int64 (json1, "endtime", &endtime1);
-    Jget_int64 (json2, "endtime", &endtime2);
-
-    return (endtime1 - endtime2);
-}
-#endif
-
-static __inline__ void
-myJput (void* o)
-{
-    if (o)
-        json_object_put ((JSON)o);
+    const window_t * lhs = item1, *rhs = item2;
+    if (lhs->endtime < rhs->endtime)
+        return -1;
+    if (lhs->endtime == rhs->endtime)
+        return 0;
+    return 1;
 }
 
 size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
                                      int64_t range_endtime, bool exclusive)
 {
-    JSON window_json = NULL;
+    window_t *window = NULL;
     const char *id_ptr = NULL;
-    const char *window_json_str = NULL;
     int64_t  curr_endtime = 0;
     int64_t  curr_starttime = 0;
     size_t   curr_available = 0;
@@ -288,46 +312,42 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     size_t  *alloc_ptr = NULL;
     size_t  *reservtn_ptr = NULL;
     size_t  *size_ptr = NULL;
-    zlist_t *matching_windows = NULL;
-    zlist_t *window_keys = NULL;
+    zlistx_t *matching_windows = NULL;
 
     if (range_starttime == range_endtime) {
         return resrc_available_at_time (resrc, range_starttime);
     }
 
-    matching_windows = zlist_new ();
+    matching_windows = zlistx_new ();
+    /* zlistx_set_duplicator(matching_windows, window_dup); */
+    zlistx_set_destructor(matching_windows, window_destructor);
 
     // Check that the time is during the resource lifetime
-    window_json_str = (const char*) zhash_lookup (resrc->twindow, "0");
-    if (window_json_str) {
-        window_json = Jfromstr (window_json_str);
-        if (window_json == NULL) {
-            return 0;
-        }
-        Jget_int64 (window_json, "starttime", &curr_starttime);
-        Jget_int64 (window_json, "endtime", &curr_endtime);
+    window =  zhashx_lookup (resrc->twindow, "0");
+    if (window) {
+        curr_starttime = window->starttime;
+        curr_endtime = window->endtime;
         if ( (range_starttime < curr_starttime) ||
-             (range_endtime > curr_endtime) ) {
-            Jput (window_json);
+                (range_endtime > curr_endtime) ) {
             return 0;
         }
-        Jput (window_json);
     }
 
     // Map allocation window strings to JSON objects.  Filter out
     // windows that don't overlap with the input range. Then add the
     // job id to the JSON obj and insert the JSON obj into the
     // "matching windows" list.
-    window_keys = zhash_keys (resrc->twindow);
-    id_ptr = (const char *) zlist_next (window_keys);
-    while (id_ptr) {
-        window_json_str = (const char*) zhash_lookup (resrc->twindow, id_ptr);
-        window_json = Jfromstr (window_json_str);
-        if (window_json == NULL) {
-            return 0;
+    window = zhashx_first (resrc->twindow);
+    while (window) {
+        id_ptr = zhashx_cursor(resrc->twindow);
+        if (!strcmp (id_ptr, "0")) {
+            /* This is the resource lifetime entry and should not be
+             * evaluated as an allocation or reservation entry */
+            window = zhashx_next (resrc->twindow);
+            continue;
         }
-        Jget_int64 (window_json, "starttime", &curr_starttime);
-        Jget_int64 (window_json, "endtime", &curr_endtime);
+        curr_starttime = window->starttime;
+        curr_endtime = window->endtime;
 
         // Does input range intersect with window?
         if ( !((curr_starttime < range_starttime &&
@@ -346,30 +366,30 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
             if (alloc_ptr || reservtn_ptr) {
                 // Add the window key and insert JSON obj into the
                 // "matching windows" list
-                Jadd_str (window_json, "job_id", id_ptr);
-                zlist_append (matching_windows, window_json);
-                zlist_freefn (matching_windows, window_json, myJput, true);
-            } else
-                Jput (window_json);
-        } else
-            Jput (window_json);
+                window_t * new_window = window_dup (window);
+                new_window->job_id = id_ptr;
+                zlistx_add_end (matching_windows, new_window);
+            }
+        }
 
-        id_ptr = zlist_next (window_keys);
+        window = zhashx_next (resrc->twindow);
     }
 
     // Duplicate the "matching windows" list and then sort the 2 lists
     // based on start and end times.  We will walk through these lists
     // in order to find the minimum available during the input range
-    zlist_t *start_windows = matching_windows;
-    zlist_t *end_windows = zlist_dup (matching_windows);
-    zlist_sort (start_windows, compare_windows_starttime);
-    zlist_sort (end_windows, compare_windows_endtime);
+    zlistx_t *start_windows = matching_windows;
+    zlistx_set_comparator(start_windows, compare_windows_starttime);
+    zlistx_t *end_windows = zlistx_dup (start_windows);
+    // Do not free items in this list, they are owned by the start_windows
+    // list
+    zlistx_set_destructor(end_windows, NULL);
+    zlistx_set_comparator(end_windows, compare_windows_endtime);
+    zlistx_sort (start_windows);
+    zlistx_sort (end_windows);
 
-    JSON curr_start_window = zlist_first (start_windows);
-    JSON curr_end_window = zlist_first (end_windows);
-
-    Jget_int64 (curr_start_window, "starttime", &curr_starttime);
-    Jget_int64 (curr_end_window, "endtime", &curr_endtime);
+    window_t *curr_start_window = zlistx_first (start_windows);
+    window_t *curr_end_window = zlistx_first (end_windows);
 
     min_available = resrc->size;
     curr_available = resrc->size;
@@ -382,20 +402,22 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
     // smaller; we have hit our min.  Just need to test to verify that
     // this optimziation is correct/safe.
     while (curr_start_window) {
+        curr_starttime = curr_start_window->starttime;
+        curr_endtime = curr_end_window->endtime;
+
         if ((curr_start_window) &&
             (curr_starttime < curr_endtime)) {
             // New range is starting, get its size and subtract it
             // from current available
-            Jget_str (curr_start_window, "job_id", &id_ptr);
-            size_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
+            size_ptr = (size_t*)zhash_lookup (resrc->allocs, curr_start_window->job_id);
             if (size_ptr)
                 curr_available -= *size_ptr;
-            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
+            size_ptr = (size_t*)zhash_lookup (resrc->reservtns, curr_start_window->job_id);
             if (size_ptr)
                 curr_available -= *size_ptr;
-            curr_start_window = zlist_next (start_windows);
+            curr_start_window = zlistx_next (start_windows);
             if (curr_start_window) {
-                Jget_int64 (curr_start_window, "starttime", &curr_starttime);
+                curr_starttime = curr_start_window->starttime;
             } else {
                 curr_starttime = TIME_MAX;
             }
@@ -403,16 +425,16 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
                    (curr_endtime < curr_starttime)) {
             // A range just ended, get its size and add it back into
             // current available
-            Jget_str (curr_end_window, "job_id", &id_ptr);
+            id_ptr = curr_end_window->job_id;
             size_ptr = (size_t*)zhash_lookup (resrc->allocs, id_ptr);
             if (size_ptr)
                 curr_available += *size_ptr;
             size_ptr = (size_t*)zhash_lookup (resrc->reservtns, id_ptr);
             if (size_ptr)
                 curr_available += *size_ptr;
-            curr_end_window = zlist_next (end_windows);
+            curr_end_window = zlistx_next (end_windows);
             if (curr_end_window) {
-                Jget_int64 (curr_end_window, "endtime", &curr_endtime);
+                curr_endtime = curr_end_window->endtime;
             } else {
                 curr_endtime = TIME_MAX;
             }
@@ -425,15 +447,14 @@ size_t resrc_available_during_range (resrc_t *resrc, int64_t range_starttime,
             min_available;
     }
 
-    zlist_destroy (&end_windows);
+    zlistx_destroy (&end_windows);
 ret:
-    zlist_destroy (&window_keys);
-    zlist_destroy (&matching_windows);
+    zlistx_destroy (&matching_windows);
 
     return min_available;
 }
 
-char* resrc_state (resrc_t *resrc)
+char* resrc_state_string (resrc_t *resrc)
 {
     char* str = NULL;
 
@@ -447,6 +468,8 @@ char* resrc_state (resrc_t *resrc)
             str = "allocated";  break;
         case RESOURCE_RESERVED:
             str = "reserved";   break;
+        case RESOURCE_EXCLUDED:
+            str = "excluded";   break;
         case RESOURCE_DOWN:
             str = "down";       break;
         case RESOURCE_UNKNOWN:
@@ -457,6 +480,23 @@ char* resrc_state (resrc_t *resrc)
         }
     }
     return str;
+}
+
+int resrc_state (resrc_t *resrc)
+{
+    if (!resrc)
+        return -1;
+    return (int) resrc->state;
+}
+
+int resrc_set_state (resrc_t *resrc, int state)
+{
+    int oldstate = -1;
+    if (!resrc)
+        return oldstate;
+    oldstate = resrc->state;
+    resrc->state = state;
+    return oldstate;
 }
 
 resrc_tree_t *resrc_phys_tree (resrc_t *resrc)
@@ -473,6 +513,27 @@ size_t resrc_size_allocs (resrc_t *resrc)
     return 0;
 }
 
+int64_t resrc_alloc_job_first (resrc_t *resrc)
+{
+    char *jobid_str = NULL;
+    if (resrc->alloc_keys) {
+        zlist_destroy (&(resrc->alloc_keys));
+        resrc->alloc_keys = NULL;
+    }
+    resrc->alloc_keys = zhash_keys (resrc->allocs);
+    jobid_str = (char *)zlist_first (resrc->alloc_keys);
+    return (jobid_str)? (int64_t) strtol (jobid_str, NULL, 10) : -1;
+}
+
+int64_t resrc_alloc_job_next (resrc_t *resrc)
+{
+    char *jobid_str = NULL;
+    if (!resrc->alloc_keys)
+        return -1;
+    jobid_str = (char *)zlist_next (resrc->alloc_keys);
+    return (jobid_str)? (int64_t) strtol (jobid_str, NULL, 10) : -1;
+}
+
 size_t resrc_size_reservtns (resrc_t *resrc)
 {
     if (resrc)
@@ -480,10 +541,10 @@ size_t resrc_size_reservtns (resrc_t *resrc)
     return 0;
 }
 
-int resrc_twindow_insert (resrc_t *resrc, const char *key, void *item)
+int resrc_twindow_insert (resrc_t *resrc, const char *key, int64_t starttime, int64_t endtime)
 {
-    int rc = zhash_insert (resrc->twindow, key, item);
-    zhash_freefn (resrc->twindow, key, free);
+    const window_t w = {.starttime = starttime, .endtime = endtime};
+    int rc = zhashx_insert (resrc->twindow, key, (void *)&w);
     return rc;
 }
 
@@ -494,14 +555,35 @@ int resrc_graph_insert (resrc_t *resrc, const char *name, resrc_flow_t *flow)
     return rc;
 }
 
-resrc_t *resrc_lookup (const char *path)
+resrc_t *resrc_lookup_first (resrc_api_ctx_t *ctx, const char *path)
 {
-    if (resrc_hash && path)
-        return ((resrc_t *)zhash_lookup (resrc_hash, path));
-    return NULL;
+    zlist_t *l = NULL;
+    resrc_t *r = NULL;
+    if (!ctx || !(ctx->resrc_hash) || !path)
+        return NULL;
+    if ((l = zhash_lookup (ctx->resrc_hash, path)))
+        r = zlist_first (l);
+    return r;
 }
 
-resrc_t *resrc_new_resource (const char *type, const char *path,
+resrc_t *resrc_lookup_next (resrc_api_ctx_t *ctx, const char *path)
+{
+    zlist_t *l = NULL;
+    resrc_t *r = NULL;
+    if (!ctx || !(ctx->resrc_hash) || !path)
+        return NULL;
+    if ((l = zhash_lookup (ctx->resrc_hash, path)))
+        r = zlist_next (l);
+    return r;
+}
+
+static void list_free_wrap (void *data)
+{
+    zlist_t *l = (zlist_t *)data;
+    zlist_destroy (&l);
+}
+
+resrc_t *resrc_new_resource (resrc_api_ctx_t *ctx, const char *type, const char *path,
                              const char *basename, const char *name,
                              const char *sig, int64_t id, uuid_t uuid,
                              size_t size)
@@ -526,8 +608,13 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         }
         if (!strncmp (type, "node", 5)) {
             /* Add this new resource to the resource hash table.
-             * Do not supply a zhash_freefn() */
-            zhash_insert (resrc_hash, resrc->name, (void *)resrc);
+             * Do not supply a zlist_freefn() */
+            zlist_t *l = NULL;
+            if (!(l = zhash_lookup (ctx->resrc_hash, resrc->name)))
+                l = zlist_new ();
+            zlist_append (l, (void *)resrc);
+            zhash_insert (ctx->resrc_hash, resrc->name, (void *)l);
+            zhash_freefn (ctx->resrc_hash, resrc->name, list_free_wrap);
         }
         resrc->digest = NULL;
         if (sig)
@@ -543,15 +630,24 @@ resrc_t *resrc_new_resource (const char *type, const char *path,
         resrc->phys_tree = NULL;
         resrc->graphs = zhash_new ();
         resrc->allocs = zhash_new ();
+        resrc->alloc_keys = NULL;
         resrc->reservtns = zhash_new ();
         resrc->properties = zhash_new ();
         resrc->tags = zhash_new ();
-        resrc->twindow = zhash_new ();
+        resrc->twindow = zhashx_new ();
+        zhashx_set_destructor(resrc->twindow, window_destructor);
+        zhashx_set_duplicator(resrc->twindow, window_dup);
     }
 
     return resrc;
 }
 
+/*
+ * NOTE: until resrc_t can be refactor to contain only the base data
+ * model of a resource, this copy constructor will find little use.
+ * remove it for now.
+ */
+#if 0
 resrc_t *resrc_copy_resource (resrc_t *resrc)
 {
     resrc_t *new_resrc = xzmalloc (sizeof (resrc_t));
@@ -573,15 +669,16 @@ resrc_t *resrc_copy_resource (resrc_t *resrc)
         new_resrc->properties = zhash_dup (resrc->properties);
         new_resrc->tags = zhash_dup (resrc->tags);
         if (resrc->twindow)
-            new_resrc->twindow = zhash_dup (resrc->twindow);
+            new_resrc->twindow = zhashx_dup (resrc->twindow);
         else
             new_resrc->twindow = NULL;
     }
 
     return new_resrc;
 }
+#endif
 
-void resrc_resource_destroy (void *object)
+void resrc_resource_destroy (resrc_api_ctx_t *ctx, void *object)
 {
     resrc_t *resrc = (resrc_t *) object;
 
@@ -589,8 +686,8 @@ void resrc_resource_destroy (void *object)
         if (resrc->type)
             free (resrc->type);
         if (resrc->path) {
-            if (resrc_hash)
-                zhash_delete (resrc_hash, resrc->path);
+            if (ctx->resrc_hash)
+                zhash_delete (ctx->resrc_hash, resrc->path);
             free (resrc->path);
         }
         if (resrc->basename)
@@ -603,20 +700,48 @@ void resrc_resource_destroy (void *object)
          * with its physical tree */
         zhash_destroy (&resrc->graphs);
         zhash_destroy (&resrc->allocs);
+        if (resrc->alloc_keys) {
+            zlist_destroy (&(resrc->alloc_keys));
+            resrc->alloc_keys = NULL;
+        }
         zhash_destroy (&resrc->reservtns);
         zhash_destroy (&resrc->properties);
         zhash_destroy (&resrc->tags);
         if (resrc->twindow)
-            zhash_destroy (&resrc->twindow);
+            zhashx_destroy (&resrc->twindow);
         free (resrc);
     }
 }
 
-resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
+/*
+ *  Create a string of either a JSON_STRING or JSON_NUMBER object
+ *  Caller must free result.
+ */
+static char *json_create_string (json_t *o)
 {
-    JSON jhierarchyo = NULL; /* json hierarchy object */
-    JSON jpropso = NULL; /* json properties object */
-    JSON jtagso = NULL;  /* json tags object */
+    char *result = NULL;
+    switch (json_typeof (o)) {
+        case JSON_STRING:
+            result = strdup (json_string_value (o));
+            break;
+        case JSON_INTEGER:
+            result = xasprintf ("%ju", (uintmax_t) json_integer_value (o));
+            break;
+        case JSON_REAL:
+            result = xasprintf ("%f", json_real_value (o));
+            break;
+        default:
+            break;
+    }
+    return (result);
+}
+
+resrc_t *resrc_new_from_json (resrc_api_ctx_t *ctx, json_t *o, resrc_t *parent,
+                              bool physical)
+{
+    json_t *jhierarchyo = NULL; /* json hierarchy object */
+    json_t *jpropso = NULL; /* json properties object */
+    json_t *jtagso = NULL;  /* json tags object */
     const char *basename = NULL;
     const char *name = NULL;
     const char *path = NULL;
@@ -624,7 +749,6 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     const char *type = NULL;
     int64_t id;
     int64_t ssize;
-    json_object_iter iter;
     resrc_t *resrc = NULL;
     resrc_tree_t *parent_tree = NULL;
     size_t size = 1;
@@ -643,9 +767,13 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
     if (Jget_int64 (o, "size", &ssize))
         size = (size_t) ssize;
     if (!Jget_str (o, "path", &path)) {
-        if ((jhierarchyo = Jobj_get (o, "hierarchy")))
+        if ((jhierarchyo = Jobj_get (o, "hierarchy"))) {
             Jget_str (jhierarchyo, "default", &path);
+        }
     }
+    // Duplicate unowned json string
+    if (path)
+        path = xstrdup (path);
     if (!path) {
         if (parent)
             path = xasprintf ("%s/%s", parent->path, name);
@@ -653,7 +781,7 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             path = xasprintf ("/%s", name);
     }
 
-    resrc = resrc_new_resource (type, path, basename, name, NULL, id, uuid,
+    resrc = resrc_new_resource (ctx, type, path, basename, name, NULL, id, uuid,
                                 size);
     if (resrc) {
         /*
@@ -668,70 +796,65 @@ resrc_t *resrc_new_from_json (JSON o, resrc_t *parent, bool physical)
             /* add time window if we are given a start time */
             int64_t starttime;
             if (Jget_int64 (o, "starttime", &starttime)) {
-                JSON    w = Jnew ();
-                char    *json_str;
                 int64_t endtime;
-                int64_t wall_time;
-
-                Jadd_int64 (w, "starttime", starttime);
 
                 if (!Jget_int64 (o, "endtime", &endtime)) {
+                    int64_t wall_time;
                     if (Jget_int64 (o, "walltime", &wall_time))
                         endtime = starttime + wall_time;
                     else
                         endtime = TIME_MAX;
                 }
-                Jadd_int64 (w, "endtime", endtime);
 
-                json_str = xstrdup (Jtostr (w));
-                resrc_twindow_insert (resrc, "0", (void *) json_str);
-                Jput (w);
+                resrc_twindow_insert (resrc, "0", starttime, endtime);
             }
         }
 
         jpropso = Jobj_get (o, "properties");
         if (jpropso) {
-            JSON jpropo;        /* json property object */
+            json_t *jpropo;        /* json property object */
             char *property;
+            const char *key;
 
-            json_object_object_foreachC (jpropso, iter) {
-                jpropo = Jget (iter.val);
-                property = xstrdup (json_object_get_string (jpropo));
-                zhash_insert (resrc->properties, iter.key, property);
-                zhash_freefn (resrc->properties, iter.key, free);
-                Jput (jpropo);
+            json_object_foreach (jpropso, key, jpropo) {
+                if ((property = json_create_string (jpropo))) {
+                    zhash_insert (resrc->properties, key, property);
+                    zhash_freefn (resrc->properties, key, free);
+                }
             }
         }
 
         jtagso = Jobj_get (o, "tags");
         if (jtagso) {
-            JSON jtago;        /* json tag object */
-            char *tag;
+            json_t *jtago;        /* json tag object */
+            const char *key = NULL;
+            char *tag = NULL;
 
-            json_object_object_foreachC (jtagso, iter) {
-                jtago = Jget (iter.val);
-                tag = xstrdup (json_object_get_string (jtago));
-                zhash_insert (resrc->tags, iter.key, tag);
-                zhash_freefn (resrc->tags, iter.key, free);
-                Jput (jtago);
+            json_object_foreach (jtagso, key, jtago) {
+                if ((tag = json_create_string (jtago))) {
+                    zhash_insert (resrc->tags, key, tag);
+                    zhash_freefn (resrc->tags, key, free);
+                }
             }
         }
     }
 ret:
+    free ((void*)path);
     return resrc;
 }
 
-static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
+static resrc_t *resrc_add_rdl_resource (resrc_api_ctx_t *ctx, resrc_t *parent,
+                                        struct resource *r)
 {
-    JSON o = NULL;
+    json_t *o = NULL;
     resrc_t *resrc = NULL;
     struct resource *c;
 
     o = rdl_resource_json (r);
-    resrc = resrc_new_from_json (o, parent, true);
+    resrc = resrc_new_from_json (ctx, o, parent, true);
 
     while ((c = rdl_resource_next_child (r))) {
-        (void) resrc_add_rdl_resource (resrc, c);
+        (void) resrc_add_rdl_resource (ctx, resrc, c);
         rdl_resource_destroy (c);
     }
 
@@ -739,7 +862,8 @@ static resrc_t *resrc_add_rdl_resource (resrc_t *parent, struct resource *r)
     return resrc;
 }
 
-resrc_t *resrc_generate_rdl_resources (const char *path, char *resource)
+resrc_t *resrc_generate_rdl_resources (resrc_api_ctx_t *ctx, const char *path,
+                                       char *resource)
 {
     resrc_t *resrc = NULL;
     struct rdl *rdl = NULL;
@@ -750,16 +874,18 @@ resrc_t *resrc_generate_rdl_resources (const char *path, char *resource)
         goto ret;
 
     if ((r = rdl_resource_get (rdl, resource)))
-        resrc = resrc_add_rdl_resource (NULL, r);
+        resrc = resrc_add_rdl_resource (ctx, NULL, r);
 
     rdl_destroy (rdl);
     rdllib_close (l);
+    ctx->tree_name = xstrdup (resource);
+    ctx->tree_root = resrc_phys_tree (resrc);
 ret:
     return resrc;
 }
 
-static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
-                                          const char *sig)
+static resrc_t *resrc_new_from_hwloc_obj (resrc_api_ctx_t *ctx, hwloc_obj_t obj,
+                                          resrc_t *parent, const char *sig)
 {
     const char *hwloc_name = NULL;
     char *basename = NULL;
@@ -781,18 +907,13 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
         if (!hwloc_name)
             goto ret;
         name = xstrdup (hwloc_name);
-#if HWLOC_API_VERSION < 0x00010b00
-    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NODE)) {
-#else
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_GROUP)) {
+        type = xstrdup ("group");
+        name = xasprintf ("%s%"PRId64"", type, id);
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_NUMANODE)) {
-#endif
         type = xstrdup ("numanode");
         name = xasprintf ("%s%"PRId64"", type, id);
-#if HWLOC_API_VERSION < 0x00010b00
-    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_SOCKET)) {
-#else
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PACKAGE)) {
-#endif
         type = xstrdup ("socket");
         name = xasprintf ("%s%"PRId64"", type, id);
 #if HWLOC_API_VERSION < 0x00020000
@@ -821,6 +942,19 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
     } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_PU)) {
         type = xstrdup ("pu");
         name = xasprintf ("%s%"PRId64"", type, id);
+    } else if (!hwloc_compare_types (obj->type, HWLOC_OBJ_OS_DEVICE)
+               && obj->attr
+               && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+        /* hwloc doesn't provide the logical index only amongst CoProc devices
+           so we parse this info from the name until hwloc provide better
+           support.
+         */
+        if (strncmp(obj->name, "cuda", 4) == 0)
+            id = atoi (obj->name + 4);
+        else if (strncmp(obj->name, "opencl", 6) == 0)
+            id = atoi (obj->name + 6);
+        type = xstrdup ("gpu");
+        name = xasprintf ("%s%"PRId64"", type, id);
     } else {
         /* that's all we're supporting for now... */
         goto ret;
@@ -832,8 +966,8 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
     else
         path = xasprintf ("/%s", name);
 
-    resrc = resrc_new_resource (type, path, basename, name, signature, id, uuid,
-                                size);
+    resrc = resrc_new_resource (ctx, type, path, basename, name, signature, id,
+                                uuid, size);
     if (resrc) {
         if (parent)
             parent_tree = parent->phys_tree;
@@ -848,7 +982,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
              */
             size = obj->memory.local_memory / 1024;
             uuid_generate (uuid);
-            mem_resrc = resrc_new_resource ("memory", mempath, "memory",
+            mem_resrc = resrc_new_resource (ctx, "memory", mempath, "memory",
                                             "memory0", signature, 0, uuid, size);
             mem_resrc->phys_tree = resrc_tree_new (resrc->phys_tree, mem_resrc);
             free (mempath);
@@ -856,12 +990,7 @@ static resrc_t *resrc_new_from_hwloc_obj (hwloc_obj_t obj, resrc_t *parent,
 
         /* add twindow */
         if ((!strncmp (type, "node", 5)) || (!strncmp (type, "core", 5))) {
-            JSON w = Jnew ();
-            Jadd_int64 (w, "starttime", epochtime ());
-            Jadd_int64 (w, "endtime", TIME_MAX);
-            char *json_str = xstrdup (Jtostr (w));
-            resrc_twindow_insert (resrc, "0", (void *) json_str);
-            Jput (w);
+            resrc_twindow_insert (resrc, "0", epochtime (), TIME_MAX);
         }
     }
 ret:
@@ -874,25 +1003,64 @@ ret:
     return resrc;
 }
 
-resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
-                                         hwloc_topology_t topo, const char *sig,
-                                         char **err_str)
+/* Make this function internal. This is a special constructor only needed
+ * by hwloc reader. As the tree root query is a part of the API, this
+ * does not need to be exported.
+ */
+static resrc_t *resrc_create_cluster (resrc_api_ctx_t *ctx, char *cluster)
 {
-    char *obj_ptr = NULL;
-    char *str = NULL;
-    hwloc_obj_t obj;
-    resrc_t *parent = NULL;
     resrc_t *resrc = NULL;
-    uint32_t depth;
+    uuid_t uuid;
+    char *path = xasprintf ("/%s", cluster);
+
+    uuid_generate (uuid);
+    resrc = resrc_new_resource (ctx, "cluster", path, cluster, cluster, NULL, -1,
+                                uuid, 1);
+    resrc->phys_tree = resrc_tree_new (NULL, resrc);
+    free (path);
+    return resrc;
+}
+
+static void resrc_walk_hwloc (resrc_api_ctx_t *ctx, hwloc_topology_t topo,
+                hwloc_obj_t obj, resrc_t *parent, const char *sig, int depth,
+                zhash_t *resrc_objs)
+{
+    int i = 0;
+    char *obj_ptr = NULL;
+    resrc_t *resrc = NULL;
+
+    if ((resrc = resrc_new_from_hwloc_obj (ctx, obj, parent, sig))) {
+        obj_ptr = xasprintf ("%p", obj);
+        zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
+        /* do not call the zhash_freefn() for the *resrc */
+        free (obj_ptr);
+    }
+    for (i = 0; i < obj->arity; i++) {
+        resrc_walk_hwloc (ctx, topo, obj->children[i], (resrc ? resrc : parent),
+                          sig, depth + 1, resrc_objs);
+    }
+}
+
+/* Generate with HWLOC reader */
+resrc_t *resrc_generate_hwloc_resources (resrc_api_ctx_t *ctx,
+             hwloc_topology_t topo, const char *sig, char **err_str)
+{
+    char *str = NULL;
+    resrc_t *resrc_root = NULL;
+    hwloc_obj_t hwloc_root;
     uint32_t hwloc_version;
-    uint32_t level_size;
-    uint32_t size;
-    uint32_t topodepth;
     zhash_t *resrc_objs = zhash_new ();
 
-    if (!cluster_resrc) {
-        str = xasprintf ("%s: cluster_resrc is null", __FUNCTION__);
-        goto ret;
+    if (!(ctx->hwloc_cluster)) {
+        /* Note: Put them here to make this generator method somewhat
+         * parallel to other generators. Hwloc-based generator
+         * has individual load semantics whereas other generators
+         * have bulk load semantics. So, we may need a higher-level method
+         * with bulk load semantics, though.
+         */
+        ctx->hwloc_cluster = resrc_create_cluster (ctx, "cluster");
+        ctx->tree_root = resrc_phys_tree (ctx->hwloc_cluster);
+        ctx->tree_name = xstrdup ("default");
     }
 
     hwloc_version = hwloc_get_api_version();
@@ -903,59 +1071,10 @@ resrc_t *resrc_generate_hwloc_resources (resrc_t *cluster_resrc,
         goto ret;
     }
 
-    topodepth = hwloc_topology_get_depth (topo);
-    parent = cluster_resrc;
-    level_size = hwloc_get_nbobjs_by_depth (topo, 0);
-    for (size = 0; size < level_size; size++) {
-        obj = hwloc_get_obj_by_depth (topo, 0, size);
-        if (!obj) {
-            str = xasprintf ("%s: Failed to get hwloc obj at depth 0",
-                             __FUNCTION__);
-            goto ret;
-        }
-        resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
-        if (resrc) {
-            obj_ptr = xasprintf ("%p", obj);
-            zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
-            /* do not call the zhash_freefn() for the *resrc */
-            free (obj_ptr);
-        } else {
-            str = xasprintf ("%s: Failed to create resrc from hwloc depth 0",
-                             __FUNCTION__);
-            goto ret;
-        }
-    }
-    for (depth = 1; depth < topodepth; depth++) {
-        level_size = hwloc_get_nbobjs_by_depth (topo, depth);
-        for (size = 0; size < level_size; size++) {
-            obj = hwloc_get_obj_by_depth (topo, depth, size);
-            if (!obj) {
-                str = xasprintf ("%s: Failed to get hwloc obj at depth %u",
-                                 __FUNCTION__, depth);
-                goto ret;
-            }
-            obj_ptr = xasprintf ("%p", obj->parent);
-            parent = zhash_lookup (resrc_objs, obj_ptr);
-            free (obj_ptr);
-            if (!parent) {
-                str = xasprintf ("%s: Failed to find parent of obj depth %u",
-                                 __FUNCTION__, depth);
-                goto ret;
-            }
-            resrc = resrc_new_from_hwloc_obj (obj, parent, sig);
-            if (resrc) {
-                obj_ptr = xasprintf ("%p", obj);
-                zhash_insert (resrc_objs, obj_ptr, (void *) resrc);
-                /* do not call the zhash_freefn() for the *resrc */
-                free (obj_ptr);
-            } else {
-                str = xasprintf ("%s: Failed to create resrc from hwloc depth "
-                                 "%u", __FUNCTION__, depth);
-                goto ret;
-            }
-        }
-    }
-    resrc = cluster_resrc;
+    resrc_root = ctx->hwloc_cluster;
+    hwloc_root = hwloc_get_root_obj (topo);
+    resrc_walk_hwloc (ctx, topo, hwloc_root, resrc_root, sig, 0, resrc_objs);
+
 ret:
     zhash_destroy (&resrc_objs);
     if (str) {
@@ -967,10 +1086,10 @@ ret:
         }
     }
 
-    return resrc;
+    return resrc_root;
 }
 
-int resrc_to_json (JSON o, resrc_t *resrc)
+int resrc_to_json (json_t *o, resrc_t *resrc)
 {
     char uuid[40];
     int rc = -1;
@@ -987,6 +1106,28 @@ int resrc_to_json (JSON o, resrc_t *resrc)
         rc = 0;
     }
     return rc;
+}
+
+int resrc_to_json_lite (json_t *o, resrc_t *resrc, bool reduce)
+{
+    if (!resrc)
+        return -1;
+
+    if (!reduce) {
+        Jadd_str (o, resrc_type (resrc), resrc_name (resrc));
+        if (resrc_digest (resrc))
+            Jadd_str (o, "digest", resrc_digest (resrc));
+    } else {
+        const char *val = NULL;
+        char *s = NULL;
+        if (Jget_str (o, resrc_type (resrc), &val))
+            s = xasprintf ("%s,%"PRId64"", val, resrc_id (resrc));
+        else
+            s = xasprintf ("%"PRId64"", resrc_id (resrc));
+        Jadd_str (o, resrc_type (resrc), s);
+        free (s);
+    }
+    return 0;
 }
 
 char *resrc_to_string (resrc_t *resrc)
@@ -1007,9 +1148,9 @@ char *resrc_to_string (resrc_t *resrc)
     uuid_unparse (resrc->uuid, uuid);
     fprintf (ss, "resrc type: %s, path: %s, basename: %s, name: %s, digest: %s, "
              "id: %"PRId64", state: %s, "
-             "uuid: %s, size: %"PRIu64", avail: %"PRIu64"",
+             "uuid: %s, size: %zd, avail: %zd",
              resrc->type, resrc->path, resrc->basename, resrc->name,
-             resrc->digest, resrc->id, resrc_state (resrc),
+             resrc->digest, resrc->id, resrc_state_string (resrc),
              uuid, resrc->size, resrc->available);
     if (zhash_size (resrc->properties)) {
         fprintf (ss, ", properties:");
@@ -1032,7 +1173,7 @@ char *resrc_to_string (resrc_t *resrc)
         fprintf (ss, ", allocs");
         size_ptr = zhash_first (resrc->allocs);
         while (size_ptr) {
-            fprintf (ss, ", %s: %"PRIu64"",
+            fprintf (ss, ", %s: %zd",
                     (char *)zhash_cursor (resrc->allocs), *size_ptr);
             size_ptr = zhash_next (resrc->allocs);
         }
@@ -1041,7 +1182,7 @@ char *resrc_to_string (resrc_t *resrc)
         fprintf (ss, ", reserved");
         size_ptr = zhash_first (resrc->reservtns);
         while (size_ptr) {
-            fprintf (ss, ", %s: %"PRIu64"",
+            fprintf (ss, ", %s: %zd",
                     (char *)zhash_cursor (resrc->reservtns), *size_ptr);
             size_ptr = zhash_next (resrc->reservtns);
         }
@@ -1058,42 +1199,26 @@ void resrc_print_resource (resrc_t *resrc)
     free (buffer);
 }
 
-resrc_t *resrc_create_cluster (char *cluster)
-{
-    resrc_t *resrc = NULL;
-    uuid_t uuid;
-    char *path = xasprintf ("/%s", cluster);
-
-    uuid_generate (uuid);
-    resrc = resrc_new_resource ("cluster", path, cluster, cluster, NULL, -1,
-                                uuid, 1);
-    resrc->phys_tree = resrc_tree_new (NULL, resrc);
-    free (path);
-    return resrc;
-}
-
 /*
  * Finds if a resource request matches the specified resource over a period
  * defined by the start and end times.
  */
 bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
-                           size_t reqrd_size)
+                           size_t reqrd_size, int *reason)
 {
     bool rc = false;
-    char *json_str_window = NULL;
+    window_t *window = NULL;
     int64_t endtime = resrc_reqst_endtime (request);
-    int64_t lendtime = 0; // Resource lifetime end time
     int64_t starttime = resrc_reqst_starttime (request);
     size_t available = 0;
+    *reason = REASON_NONE;
 
     /* If request endtime is greater than the lifetime of the
        resource, then return false */
-    json_str_window = zhash_lookup (resrc->twindow, "0");
-    if (json_str_window) {
-        JSON lt = Jfromstr (json_str_window);
-        Jget_int64 (lt, "endtime", &lendtime);
-        Jput (lt);
-        if (endtime > (lendtime - 10)) {
+    window = zhashx_lookup (resrc->twindow, "0");
+    if (window) {
+        if (endtime > (window->endtime - 10)) {
+            *reason = DUE_TO_TIME;
             return false;
         }
     }
@@ -1105,21 +1230,33 @@ bool resrc_walltime_match (resrc_t *resrc, resrc_reqst_t *request,
 
     rc = (available >= reqrd_size);
 
+    if (!available)
+        *reason = DUE_TO_EXCLUSIVITY;
+    else if (!rc)
+        *reason  = DUE_TO_SIZE;
+
     return rc;
 }
 
 bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
-                           bool available)
+                           bool available, int *reason)
 {
     bool rc = false;
     char *rproperty = NULL;                             /* request property */
     char *rtag = NULL;                                  /* request tag */
     resrc_t *reqst_resrc = resrc_reqst_resrc (request); /* request's resrc */
     resrc_graph_req_t *graph_req = NULL;
+    *reason = REASON_NONE;
 
     if (reqst_resrc && !strcmp (resrc->type, reqst_resrc->type)) {
+        if (resrc_state (resrc) == RESOURCE_EXCLUDED) {
+            *reason = DUE_TO_EXCLUSION;
+            goto ret;
+        }
+
         if (zhash_size (reqst_resrc->properties)) {
             if (!zhash_size (resrc->properties)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
             }
             /* be sure the resource has all the requested properties */
@@ -1127,21 +1264,26 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             zhash_first (reqst_resrc->properties);
             do {
                 rproperty = (char *)zhash_cursor (reqst_resrc->properties);
-                if (!zhash_lookup (resrc->properties, rproperty))
+                if (!zhash_lookup (resrc->properties, rproperty)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
             } while (zhash_next (reqst_resrc->properties));
         }
 
         if (zhash_size (reqst_resrc->tags)) {
             if (!zhash_size (resrc->tags)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
             }
             /* be sure the resource has all the requested tags */
             zhash_first (reqst_resrc->tags);
             do {
                 rtag = (char *)zhash_cursor (reqst_resrc->tags);
-                if (!zhash_lookup (resrc->tags, rtag))
+                if (!zhash_lookup (resrc->tags, rtag)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
             } while (zhash_next (reqst_resrc->tags));
         }
 
@@ -1149,8 +1291,10 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
         if (graph_req) {
             resrc_flow_t *resrc_flow;
 
-            if (!zhash_size (resrc->graphs))
+            if (!zhash_size (resrc->graphs)) {
+                *reason = DUE_TO_FEATURE;
                 goto ret;
+            }
             /*
              * Support only flow graphs right now.  When other graph
              * types are added, a switch will need to be added to
@@ -1159,8 +1303,10 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
             while (graph_req->name) {
                 resrc_flow = zhash_lookup (resrc->graphs, graph_req->name);
                 if (!resrc_flow ||
-                    !resrc_flow_available (resrc_flow, graph_req->size, request))
+                    !resrc_flow_available (resrc_flow, graph_req->size, request)) {
+                    *reason = DUE_TO_FEATURE;
                     goto ret;
+                }
                 graph_req++;
             }
         }
@@ -1174,12 +1320,20 @@ bool resrc_match_resource (resrc_t *resrc, resrc_reqst_t *request,
              */
             if (resrc_reqst_starttime (request))
                 rc = resrc_walltime_match (resrc, request,
-                                           resrc_reqst_reqrd_size (request));
+                                           resrc_reqst_reqrd_size (request),
+                                           reason);
             else {
                 rc = (resrc_reqst_reqrd_size (request) <= resrc->available);
+                if (!resrc->available)
+                    *reason = DUE_TO_EXCLUSIVITY;
+                else if (!rc)
+                    *reason = DUE_TO_SIZE;
+
                 if (rc && resrc_reqst_exclusive (request)) {
                     rc = !zhash_size (resrc->allocs) &&
                         !zhash_size (resrc->reservtns);
+                    if (!rc)
+                        *reason = DUE_TO_EXCLUSIVITY;
                 }
             }
         } else {
@@ -1278,9 +1432,7 @@ ret:
 static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
                                             int64_t starttime, int64_t endtime)
 {
-    JSON j;
     char *id_ptr = NULL;
-    char *json_str = NULL;
     int rc = -1;
     size_t *size_ptr;
     size_t available;
@@ -1301,12 +1453,7 @@ static int resrc_allocate_resource_in_time (resrc_t *resrc, int64_t job_id,
     resrc->staged = 0;
 
     /* add walltime */
-    j = Jnew ();
-    Jadd_int64 (j, "starttime", starttime);
-    Jadd_int64 (j, "endtime", endtime);
-    json_str = xstrdup (Jtostr (j));
-    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
-    Jput (j);
+    resrc_twindow_insert (resrc, id_ptr, starttime, endtime);
 
     rc = 0;
     free (id_ptr);
@@ -1390,9 +1537,7 @@ ret:
 static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
                                            int64_t starttime, int64_t endtime)
 {
-    JSON j;
     char *id_ptr = NULL;
-    char *json_str = NULL;
     int rc = -1;
     size_t *size_ptr;
     size_t available;
@@ -1413,12 +1558,7 @@ static int resrc_reserve_resource_in_time (resrc_t *resrc, int64_t job_id,
     resrc->staged = 0;
 
     /* add walltime */
-    j = Jnew ();
-    Jadd_int64 (j, "starttime", starttime);
-    Jadd_int64 (j, "endtime", endtime);
-    json_str = xstrdup (Jtostr (j));
-    resrc_twindow_insert (resrc, id_ptr, (void *) json_str);
-    Jput (j);
+    resrc_twindow_insert (resrc, id_ptr, starttime, endtime);
 
     rc = 0;
     free (id_ptr);
@@ -1492,10 +1632,12 @@ int resrc_release_allocation (resrc_t *resrc, int64_t rel_job)
         if (resrc->state == RESOURCE_ALLOCATED)
             resrc->available += *size_ptr;
         else
-            zhash_delete (resrc->twindow, id_ptr);
+            zhashx_delete (resrc->twindow, id_ptr);
 
         zhash_delete (resrc->allocs, id_ptr);
-        if ((resrc->state != RESOURCE_INVALID) && !zhash_size (resrc->allocs)) {
+        if (((resrc->state != RESOURCE_INVALID)
+              && (resrc->state != RESOURCE_EXCLUDED))
+            && !zhash_size (resrc->allocs)) {
             if (zhash_size (resrc->reservtns))
                 resrc->state = RESOURCE_RESERVED;
             else
@@ -1534,7 +1676,7 @@ int resrc_release_all_reservations (resrc_t *resrc)
                 resrc->available += *size_ptr;
             else {
                 id_ptr = (char *)zhash_cursor (resrc->reservtns);
-                zhash_delete (resrc->twindow, id_ptr);
+                zhashx_delete (resrc->twindow, id_ptr);
             }
             size_ptr = zhash_next (resrc->reservtns);
         }
@@ -1542,7 +1684,8 @@ int resrc_release_all_reservations (resrc_t *resrc)
         resrc->reservtns = zhash_new ();
     }
 
-    if (resrc->state != RESOURCE_INVALID) {
+    if (resrc->state != RESOURCE_INVALID
+        && resrc->state != RESOURCE_EXCLUDED) {
         if (zhash_size (resrc->allocs))
             resrc->state = RESOURCE_ALLOCATED;
         else

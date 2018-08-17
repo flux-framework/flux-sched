@@ -12,22 +12,20 @@ Ensure JSC works as expected with sched module.
 #
 test_under_flux 4
 
-tr1="null->null"
-tr2="null->reserved"
-tr3="reserved->submitted"
-tr4="submitted->allocated"
-tr5="allocated->runrequest"
-tr6="runrequest->starting"
-tr7="starting->running"
-tr8="running->complete"
+tr1="null->submitted"
+tr2="submitted->allocated"
+tr3="allocated->runrequest"
+tr4="runrequest->starting"
+tr5="starting->running"
+tr6="running->completing"
+tr7="completing->complete"
 trans="$tr1
 $tr2
 $tr3
 $tr4
 $tr5
 $tr6
-$tr7
-$tr8"
+$tr7"
 
 test_expect_success 'jsc: expected job-event sequence for single-job scheduling' '
     adjust_session_info 1 && 
@@ -106,6 +104,10 @@ EOF
     sort output.$(get_session).cp > output.$(get_session).cp.sort &&
     kill -INT $p &&
     test_cmp expected4.sort output.$(get_session).cp.sort 
+'
+
+test_expect_success 'jsc: unloaded sched module' '
+    flux module remove sched
 '
 
 test_done

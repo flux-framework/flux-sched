@@ -75,11 +75,12 @@ int rs2rank_tab_query_by_none (machs_t *m, const char *digest,
                                bool reset, uint32_t *rank);
 
 
-/* Allocate and set signature s using the hwloc xml string (rsb), its length
- * and hwloc obj.  s should be freed by rs2rank_tab_destroy after it is made
- * associated with the rs2rank table.
+/* Allocate and set signature s using the hwloc xml string (rsb), its length,
+ * optional auxiliary information and hwloc obj. s should be freed
+ * by rs2rank_tab_destroy after it is made associated with the rs2rank table.
  */
-int rs2rank_set_signature (char *rsb, size_t l, hwloc_topology_t t, rssig_t **s);
+int rs2rank_set_signature (char *rsb, size_t l, char *aux,
+                           hwloc_topology_t t, rssig_t **s);
 
 /* Utility function to return a stringfied SHA digest of the resource partition */
 const char *rs2rank_get_digest (rssig_t *sig);

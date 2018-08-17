@@ -35,7 +35,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 
@@ -57,11 +57,8 @@ void free_simstate (sim_state_t *sim_state)
     }
 }
 
-static int add_timers_to_json (const char *key, void *item, void *argument)
+static int add_timers_to_json (const char *key, double *event_time, json_t *o)
 {
-    JSON o = argument;
-    double *event_time = (double *)item;
-
     if (event_time != NULL)
         Jadd_double (o, key, *event_time);
     else
@@ -69,12 +66,19 @@ static int add_timers_to_json (const char *key, void *item, void *argument)
     return 0;
 }
 
-JSON sim_state_to_json (sim_state_t *sim_state)
+json_t *sim_state_to_json (sim_state_t *sim_state)
 {
-    JSON o = Jnew ();
-    JSON event_timers = Jnew ();
+    json_t *o = Jnew ();
+    json_t *event_timers = Jnew ();
 
-    zhash_foreach (sim_state->timers, add_timers_to_json, event_timers);
+    void *item = NULL;
+    const char *key = NULL;
+    for (item = zhash_first (sim_state->timers);
+         item;
+         item = zhash_next (sim_state->timers)) {
+        key = zhash_cursor (sim_state->timers);
+        add_timers_to_json (key, item, event_timers);
+    }
 
     // build the main json obg
     Jadd_double (o, "sim_time", sim_state->sim_time);
@@ -84,30 +88,25 @@ JSON sim_state_to_json (sim_state_t *sim_state)
     return o;
 }
 
-static void add_timers_to_hash (JSON o, zhash_t *hash)
+static void add_timers_to_hash (json_t *o, zhash_t *hash)
 {
-    JSON value;
+    json_t *value;
     const char *key;
     double *event_time;
-    struct json_object_iterator iter = json_object_iter_begin (o);
-    struct json_object_iterator iter_end = json_object_iter_end (o);
-    while (!json_object_iter_equal (&iter, &iter_end)) {
-        key = json_object_iter_peek_name (&iter);
-        value = json_object_iter_peek_value (&iter);
+    json_object_foreach (o, key, value) {
         event_time = (double *)malloc (sizeof (double));
-        *event_time = json_object_get_double (value);
+        *event_time = json_real_value (value);
 
         // Insert key,value pair into sim_state hashtable
         zhash_insert (hash, key, event_time);
-
-        json_object_iter_next (&iter);
+        zhash_freefn (hash, key, free);
     }
 }
 
-sim_state_t *json_to_sim_state (JSON o)
+sim_state_t *json_to_sim_state (json_t *o)
 {
     sim_state_t *sim_state = new_simstate ();
-    JSON event_timers;
+    json_t *event_timers;
 
     Jget_double (o, "sim_time", &sim_state->sim_time);
     if (Jget_obj (o, "event_timers", &event_timers)) {
@@ -139,77 +138,240 @@ job_t *blank_job ()
     job->time_limit = 0;
     job->nnodes = 0;
     job->ncpus = 0;
+    job->ngpus= 0;
     job->kvs_dir = NULL;
     return job;
 }
 
-int put_job_in_kvs (job_t *job)
+/* Helper for put_job_in_kvs()
+ */
+static int txn_dir_pack (flux_kvs_txn_t *txn, flux_kvsdir_t *dir,
+		         const char *name, const char *fmt, ...)
 {
-    if (job->kvs_dir == NULL)
+    va_list ap;
+    char *key;
+    int rc;
+
+    if (!(key = flux_kvsdir_key_at (dir, name)))
         return -1;
 
-    if (!kvsdir_exists (job->kvs_dir, "user"))
-        kvsdir_put_string (job->kvs_dir, "user", job->user);
-    if (!kvsdir_exists (job->kvs_dir, "jobname"))
-        kvsdir_put_string (job->kvs_dir, "jobname", job->jobname);
-    if (!kvsdir_exists (job->kvs_dir, "account"))
-        kvsdir_put_string (job->kvs_dir, "account", job->account);
-    if (!kvsdir_exists (job->kvs_dir, "submit_time"))
-        kvsdir_put_double (job->kvs_dir, "submit_time", job->submit_time);
-    if (!kvsdir_exists (job->kvs_dir, "execution_time"))
-        kvsdir_put_double (job->kvs_dir, "execution_time", job->execution_time);
-    if (!kvsdir_exists (job->kvs_dir, "time_limit"))
-        kvsdir_put_double (job->kvs_dir, "time_limit", job->time_limit);
-    if (!kvsdir_exists (job->kvs_dir, "nnodes"))
-        kvsdir_put_int (job->kvs_dir, "nnodes", job->nnodes);
-    if (!kvsdir_exists (job->kvs_dir, "ncpus"))
-        kvsdir_put_int (job->kvs_dir, "ncpus", job->ncpus);
-    if (!kvsdir_exists (job->kvs_dir, "io_rate"))
-        kvsdir_put_int64 (job->kvs_dir, "io_rate", job->io_rate);
+    va_start (ap, fmt);
+    rc = flux_kvs_txn_vpack (txn, 0, key, fmt, ap);
+    va_end (ap);
 
-    flux_t h = kvsdir_handle (job->kvs_dir);
-    kvs_commit (h);
-
-    // TODO: Check to see if this is necessary, i assume the kvsdir becomes
-    // stale after a commit
-    kvsdir_t *tmp = job->kvs_dir;
-    int rc = kvs_get_dir (h, &job->kvs_dir, "%s", kvsdir_key (tmp));
-    kvsdir_destroy (tmp);
-    if (rc < 0)
-        flux_log_error (h, "put_job_in_kvs: kvs_get_dir");
-    return (rc);
+    free (key);
+    return rc;
 }
 
-job_t *pull_job_from_kvs (kvsdir_t *kvsdir)
+int put_job_in_kvs (job_t *job, const char *initial_state)
+{
+    if (job->kvs_dir == NULL)
+        return (-1);
+
+    flux_t *h = flux_kvsdir_handle (job->kvs_dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
+
+    if (!(txn = flux_kvs_txn_create ()))
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "user", "s", job->user) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "jobname", "s", job->jobname) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "account", "s", job->account) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "submit_time", "f",
+                      job->submit_time) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "execution_time", "f",
+                      job->execution_time) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "time_limit", "f",
+                      job->time_limit) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "nnodes", "i", job->nnodes) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "ncpus", "i", job->ncpus) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "io_rate", "I", job->io_rate) < 0)
+        goto error;
+    if (txn_dir_pack (txn, job->kvs_dir, "state", "s", initial_state) < 0)
+        goto error;
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (0);
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (-1);
+}
+
+int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
+                        double t_running, double t_completing,
+                        double t_complete, double t_io)
+{
+    flux_t *h = flux_kvsdir_handle (dir);
+    flux_kvs_txn_t *txn;
+    flux_future_t *f = NULL;
+
+    if (!(txn = flux_kvs_txn_create ()))
+        goto error;
+    if (t_starting != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "starting_time", "f", t_starting) < 0)
+	    goto error;
+    }
+    if (t_running != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "running_time", "f", t_running) < 0)
+	    goto error;
+    }
+    if (t_completing != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "completing_time", "f", t_completing) < 0)
+	    goto error;
+    }
+    if (t_complete != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "complete_time", "f", t_complete) < 0)
+	    goto error;
+    }
+    if (t_io != SIM_TIME_NONE) {
+        if (txn_dir_pack (txn, dir, "io_time", "f", t_io) < 0)
+	    goto error;
+    }
+    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+        goto error;
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return 0;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    flux_kvs_txn_destroy (txn);
+    flux_future_destroy (f);
+    return (-1);
+}
+
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ * N.B. this function only works on scalar types
+ */
+static int lookup_dir_unpack (flux_kvsdir_t *dir, const char *name,
+                       const char *fmt, ...)
+{
+    flux_t *h = flux_kvsdir_handle (dir);
+    flux_future_t *f = NULL;
+    char *key = NULL;
+    json_t *obj = NULL;
+    const char *json_str;
+    va_list ap;
+    int rc = -1;
+
+    if (strchr (fmt, 's') || strchr (fmt, 'o') || strchr (fmt, 'O'))
+        goto inval;
+    if (!(key = flux_kvsdir_key_at (dir, name)))
+        goto done;
+    if (!(f = flux_kvs_lookup (h, 0, key)))
+        goto done;
+    if (flux_kvs_lookup_get (f, &json_str) < 0)
+        goto done;
+    if (!(obj = json_loads (json_str, JSON_DECODE_ANY, NULL)))
+        goto inval;
+    va_start (ap, fmt);
+    rc = json_vunpack_ex (obj, NULL, 0, fmt, ap);
+    va_end (ap);
+    if (rc < 0)
+        goto inval;
+    rc = 0;
+inval:
+    errno = EINVAL;
+done:
+    json_decref (obj); // N.B. destroys any returned string, object, array
+    free (key);
+    flux_future_destroy (f);
+    return rc;
+}
+
+/* Helper for pull_job_from_kvs(), while KVS API is anemic with respect
+ * to flux_kvsdir_t.
+ */
+static int lookup_dir_string (flux_kvsdir_t *dir, const char *name, char **valp)
+{
+    flux_t *h = flux_kvsdir_handle (dir);
+    flux_future_t *f = NULL;
+    const char *s;
+    char *key;
+    char *cpy;
+    int rc = -1;
+
+    if (!(key = flux_kvsdir_key_at (dir, name)))
+        goto done;
+    if (!(f = flux_kvs_lookup (h, 0, key)))
+        goto done;
+    if (flux_kvs_lookup_get_unpack (f, "s", &s) < 0)
+        goto done;
+    if (!(cpy = strdup (s))) {
+        errno = ENOMEM;
+        goto done;
+    }
+    *valp = cpy;
+    rc = 0;
+done:
+    free (key);
+    flux_future_destroy (f);
+    return rc;
+}
+
+job_t *pull_job_from_kvs (int id, flux_kvsdir_t *kvsdir)
 {
     if (kvsdir == NULL)
         return NULL;
 
+    flux_t *h = flux_kvsdir_handle (kvsdir);
     job_t *job = blank_job ();
 
     job->kvs_dir = kvsdir;
+    job->id = id;
 
-    sscanf (kvsdir_key (job->kvs_dir), "lwj.%d", &job->id);
-    kvsdir_get_string (job->kvs_dir, "user", &job->user);
-    kvsdir_get_string (job->kvs_dir, "jobname", &job->jobname);
-    kvsdir_get_string (job->kvs_dir, "account", &job->account);
-    kvsdir_get_double (job->kvs_dir, "submit_time", &job->submit_time);
-    kvsdir_get_double (job->kvs_dir, "starting_time", &job->start_time);
-    kvsdir_get_double (job->kvs_dir, "execution_time", &job->execution_time);
-    kvsdir_get_double (job->kvs_dir, "io_time", &job->io_time);
-    kvsdir_get_double (job->kvs_dir, "time_limit", &job->time_limit);
-    kvsdir_get_int (job->kvs_dir, "nnodes", &job->nnodes);
-    kvsdir_get_int (job->kvs_dir, "ncpus", &job->ncpus);
-    kvsdir_get_int64 (job->kvs_dir, "io_rate", &job->io_rate);
+    if (lookup_dir_string (job->kvs_dir, "user", &job->user) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "jobname", &job->jobname) < 0)
+        goto error;
+    if (lookup_dir_string (job->kvs_dir, "account", &job->account) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "submit_time", "f",
+                           &job->submit_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "execution_time", "f",
+                           &job->execution_time) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "time_limit", "f",
+                           &job->time_limit) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "nnodes", "i", &job->nnodes) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "ncpus", "i", &job->ncpus) < 0)
+        goto error;
+    if (lookup_dir_unpack (job->kvs_dir, "io_rate", "I", &job->io_rate) < 0)
+        goto error;
+
+    /* Not set in put_job_in_kvs().
+     * Allow them to not be set here without error.
+     */
+    (void)lookup_dir_unpack (job->kvs_dir, "starting_time", "f",
+		             &job->start_time);
+    (void)lookup_dir_unpack (job->kvs_dir, "io_time", "f", &job->io_time);
 
     return job;
+error:
+    flux_log_error (h, "%s", __FUNCTION__);
+    return NULL;
 }
 
-int send_alive_request (flux_t h, const char *module_name)
+int send_alive_request (flux_t *h, const char *module_name)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
-    JSON o = Jnew ();
+    flux_future_t *future = NULL;
+    json_t *o = Jnew ();
     uint32_t rank;
 
     if (flux_get_rank (h, &rank) < 0)
@@ -218,47 +380,50 @@ int send_alive_request (flux_t h, const char *module_name)
     Jadd_str (o, "mod_name", module_name);
     Jadd_int (o, "rank", rank);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.alive");
-    flux_msg_set_payload_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.alive", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
     Jput (o);
+    flux_future_destroy (future);
+
     return rc;
 }
 
 // Reply back to the sim module with the updated sim state (in JSON form)
-int send_reply_request (flux_t h,
+int send_reply_request (flux_t *h,
                         const char *module_name,
                         sim_state_t *sim_state)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
-    JSON o = NULL;
+    flux_future_t *future = NULL;
+    json_t *o = NULL;
 
     o = sim_state_to_json (sim_state);
     Jadd_str (o, "mod_name", module_name);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.reply");
-    flux_msg_set_payload_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    const char * jcbstr = Jtostr (o);
+    future = flux_rpc (h, "sim.reply", jcbstr, FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
+    free((void*)jcbstr);
 
-    flux_log (h, LOG_DEBUG, "sent a reply request: %s", Jtostr (o));
+    jcbstr = Jtostr (o);
+    flux_log (h, LOG_DEBUG, "sent a reply request: %s", jcbstr);
+    free((void*)jcbstr);
     Jput (o);
+    flux_future_destroy(future);
     return rc;
 }
 
 // Request to join the simulation
-int send_join_request (flux_t h, const char *module_name, double next_event)
+int send_join_request (flux_t *h, const char *module_name, double next_event)
 {
     int rc = 0;
-    flux_msg_t *msg = NULL;
-    JSON o = Jnew ();
+    flux_future_t *future = NULL;
+    json_t *o = Jnew ();
     uint32_t rank;
 
     if (flux_get_rank (h, &rank) < 0)
@@ -268,14 +433,13 @@ int send_join_request (flux_t h, const char *module_name, double next_event)
     Jadd_int (o, "rank", rank);
     Jadd_double (o, "next_event", next_event);
 
-    msg = flux_msg_create (FLUX_MSGTYPE_REQUEST);
-    flux_msg_set_topic (msg, "sim.join");
-    flux_msg_set_payload_json (msg, Jtostr (o));
-    if (flux_send (h, msg, 0) < 0) {
+    future = flux_rpc (h, "sim.join", Jtostr (o), FLUX_NODEID_ANY, FLUX_RPC_NORESPONSE);
+    if (!future) {
         rc = -1;
     }
 
     Jput (o);
+    flux_future_destroy (future);
     return rc;
 }
 
@@ -298,3 +462,59 @@ zhash_t *zhash_fromargv (int argc, char **argv)
     }
     return args;
 }
+
+static int job_kvspath (flux_t *h, int jobid, char **path)
+{
+    flux_future_t *f;
+    const char *s;
+    char *cpy;
+    int rc = -1;
+
+    if (!(f = flux_rpc_pack (h, "job.kvspath", FLUX_NODEID_ANY, 0,
+                             "{s:[i]}", "ids", jobid)))
+        goto done;
+    if (flux_rpc_get_unpack (f, "{s:[s]}", "paths", &s) < 0)
+        goto done;
+    if (!(cpy = strdup (s)))
+        goto done;
+    *path = cpy;
+    rc = 0;
+done:
+    flux_future_destroy (f);
+    return rc;
+}
+
+// Get a kvsdir handle to jobid [jobid] using job.kvspath service.
+//  If service doesn't answer, fall back to `lwj.%d`
+flux_kvsdir_t *job_kvsdir (flux_t *h, int jobid)
+{
+    char *path = NULL;
+    const flux_kvsdir_t *dir;
+    flux_kvsdir_t *cpy = NULL;
+    flux_future_t *f = NULL;
+
+    if (job_kvspath (h, jobid, &path) < 0) {
+        if (asprintf (&path, "lwj.%d", jobid) < 0) {
+            flux_log_error (h, "%s", __FUNCTION__);
+            goto done;
+        }
+        flux_log (h, LOG_DEBUG,
+                  "%s: failed to resolve job directory, falling back to %s",
+                  __FUNCTION__, path);
+    }
+    if (!(f = flux_kvs_lookup (h, FLUX_KVS_READDIR, path))
+		    || flux_kvs_lookup_get_dir (f, &dir) < 0) {
+        flux_log_error (h, "%s: flux_kvs_lookup %s", __FUNCTION__, path);
+	goto done;
+    }
+    if (!(cpy = flux_kvsdir_copy (dir)))
+        goto done;
+done:
+    free (path);
+    flux_future_destroy (f);
+    return cpy;
+}
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */

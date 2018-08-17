@@ -33,6 +33,14 @@ sched_src_path () {
     readlink -e "${SHARNESS_TEST_SRCDIR}/../${1}"
 }
 
+job_kvs_path () {
+    if flux wreck help 2>&1 | grep -q kvs-path; then
+        flux wreck kvs-path "$1"
+    else
+        echo "lwj.$1"
+    fi
+}
+
 export FLUX_EXEC_PATH_PREPEND
 export FLUX_SCHED_RC_NOOP
 export FLUX_SCHED_RC_PATH
@@ -116,8 +124,8 @@ verify_1N_sleep_jobs () {
     local rank=0
     for i in `seq $sched_start_jobid $sched_end_jobid`
     do
-        flux kvs get lwj.$i.rank.$rank.cores \
-            > $sched_test_session.$i.out
+        $SHARNESS_TEST_SRCDIR/scripts/R_lite.lua ${i} ${rank} core count \
+            > ${sched_test_session}.${i}.out
         grep $cores $sched_test_session.$i.out
         if [ $? -ne 0 ]
         then
@@ -216,11 +224,16 @@ timed_run_flux_jstat () {
 #
 timed_wait_job () {
     local tout=$1
-    flux waitjob -s wo.st.$sched_test_session \
-         -c wo.end.$sched_test_session $sched_end_jobid &
-    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
-        wo.st.$sched_test_session >&2
-    return $?
+    local state=$2
+    local sfile=wo.st.$sched_test_session
+    local cfile=wo.end.$sched_test_session
+    rm -f ${sfile} ${cfile}
+    if [ "x${state}" = "x" ]; then
+        flux waitjob -s ${sfile} -c ${cfile} ${sched_end_jobid} &
+    else
+        flux waitjob -s ${sfile} -c ${cfile} -j ${state} ${sched_end_jobid} &
+    fi
+    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} ${sfile} >&2
 }
 
 # PUBLIC:
@@ -229,9 +242,8 @@ timed_wait_job () {
 #
 timed_sync_wait_job () {
     local tout=$1
-    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} \
-        wo.end.$sched_test_session >&2
-    return $?
+    local cfile=wo.end.$sched_test_session
+    $SHARNESS_TEST_SRCDIR/scripts/waitfile.lua --timeout ${tout} ${cfile} >&2
 }
 
 # PUBLIC: 

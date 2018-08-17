@@ -1,0 +1,3 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/power/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/power/test002.yaml
+quit

@@ -43,7 +43,15 @@ make
 make install
 ```
 
-The next step is to build the sched module.  The sched module contains
+The next step is to build the sched module.
+flux-sched requires the following packages to build:
+
+```
+libboost-dev >= 1.53
+libhwloc-dev >= 1.11.1
+```
+
+The sched module contains
 a bifurcated structure of a core framework that has all the basic
 functionality plus a loadable plugin that implements specific
 scheduling behavior.  There are currently two plugins available:

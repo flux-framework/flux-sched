@@ -31,24 +31,26 @@
 #include <czmq.h>
 #include <flux/core.h>
 
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/log.h"
 #include "src/common/libutil/xzmalloc.h"
 
 typedef struct {
-    flux_t h;
+    flux_t *h;
     int64_t jobid;
     char *start;
     char *complete;
+    job_state_t tgt_state;
 } wjctx_t;
 
-static flux_t sig_flux_h;
+static flux_t *sig_flux_h;
 
-#define OPTIONS "+hc:s:"
+#define OPTIONS "+hc:s:j:"
 static const struct option longopts[] = {
     {"help",          no_argument,        0, 'h'},
     {"sync-start",    required_argument,  0, 's'},
     {"sync-complete", required_argument,  0, 'c'},
+    {"job-state",     required_argument,  0, 'j'},
     { 0, 0, 0, 0 },
 };
 
@@ -59,8 +61,13 @@ static void usage (void)
 " Block waiting until the job specified by jobid completes.\n"
 " The OPTIONS are:\n"
 "  -h, --help                    Display this message\n"
-"  -s, --sync-start=filename1    Create an empty file (filename1) right after the reactor starts\n"
-"  -c, --sync-complete=filename2 Create an empty file (filename2) right after jobid completed\n"
+"  -s, --sync-start=filename1    Create an empty file (filename1) right \n"
+"                                    after the reactor starts\n"
+"  -c, --sync-complete=filename2 Create an empty file (filename2) right \n"
+"                                    after jobid reaches the target state\n"
+"  -j, --job-state=state         Wait for the job to become the target \n"
+"                                    state, e.g., submitted, allocated, \n"
+"                                    running, complete (default).\n"
 );
     exit (1);
 }
@@ -76,7 +83,7 @@ static void freectx (void *arg)
     ctx = NULL;
 }
 
-static wjctx_t *getctx (flux_t h)
+static wjctx_t *getctx (flux_t *h)
 {
     wjctx_t *ctx = (wjctx_t *)flux_aux_get (h, "waitjob");
     if (!ctx) {
@@ -90,17 +97,6 @@ static wjctx_t *getctx (flux_t h)
     return ctx;
 }
 
-static void sig_handler (int s)
-{
-    if (s == SIGINT) {
-        fprintf (stdout, "Exit on INT\n\n");
-        /* this will call freectx */
-        flux_close (sig_flux_h);
-        log_fini ();
-        exit (0);
-    }
-}
-
 static void touch_outfile (const char *fn)
 {
     FILE *fp = NULL;
@@ -110,23 +106,23 @@ static void touch_outfile (const char *fn)
     fclose (fp);
 }
 
-static inline void get_jobid (JSON jcb, int64_t *j)
+static inline void get_jobid (json_t *jcb, int64_t *j)
 {
     Jget_int64 (jcb, JSC_JOBID, j);
 }
 
-static inline void get_states (JSON jcb, int64_t *os, int64_t *ns)
+static inline void get_states (json_t *jcb, int64_t *os, int64_t *ns)
 {
-    JSON o = NULL;
+    json_t *o = NULL;
     Jget_obj (jcb, JSC_STATE_PAIR, &o);
     Jget_int64 (o, JSC_STATE_PAIR_OSTATE, os);
     Jget_int64 (o, JSC_STATE_PAIR_NSTATE, ns);
 }
 
-static bool complete_job (wjctx_t *ctx)
+static bool state_reached (wjctx_t *ctx)
 {
-    JSON jcb = NULL;
-    JSON o = NULL;
+    json_t *jcb = NULL;
+    json_t *o = NULL;
     bool rc = false;
     char *json_str = NULL;
     int64_t state = J_NULL;
@@ -137,10 +133,11 @@ static bool complete_job (wjctx_t *ctx)
         Jget_int64 (o, JSC_STATE_PAIR_NSTATE, &state);
         Jput (jcb);
         free (json_str);
-        flux_log (ctx->h, LOG_INFO, "%"PRId64" already started (%s)",
-                     ctx->jobid, jsc_job_num2state (state));
-        if (state == J_COMPLETE) {
-            flux_log (ctx->h, LOG_INFO, "%"PRId64" already completed", ctx->jobid);
+        log_msg ("%s: %"PRId64" already started (%s)",
+                 __FUNCTION__, ctx->jobid, jsc_job_num2state (state));
+        if (state == ctx->tgt_state) {
+            log_msg ("%s: %"PRId64" already reached the target state",
+                     __FUNCTION__,  ctx->jobid);
             rc = true;
         }
     }
@@ -149,44 +146,43 @@ static bool complete_job (wjctx_t *ctx)
 
 static int waitjob_cb (const char *jcbstr, void *arg, int errnum)
 {
-    JSON jcb = NULL;
+    json_t *jcb = NULL;
     int64_t os = 0, ns = 0, j = 0;
-    flux_t h = (flux_t)arg;
+    flux_t *h = (flux_t *)arg;
     wjctx_t *ctx = getctx (h);
 
     if (errnum > 0) {
-        flux_log (ctx->h, LOG_ERR, "waitjob_cb: errnum passed in");
+        log_errn (errnum, "%s: jsc error", __FUNCTION__);
         return -1;
     }
 
     if (!(jcb = Jfromstr (jcbstr))) {
-        flux_log (ctx->h, LOG_ERR, "waitjob_cb: error parsing JSON string");
+        log_msg ("%s: error parsing JSON string", __FUNCTION__);
         return -1;
     }
     get_jobid (jcb, &j);
     get_states (jcb, &os, &ns);
     Jput (jcb);
-    if ((j == ctx->jobid) && (ns == J_COMPLETE)) {
+    if ((j == ctx->jobid) && (ns == ctx->tgt_state)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        flux_log (ctx->h, LOG_INFO, "waitjob_cb: completion notified");
-        raise (SIGINT);
+        log_msg ("%s: completion notified", __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
     }
 
     return 0;
 }
 
-static int wait_job_complete (flux_t h)
+static int wait_job_complete (flux_t *h)
 {
     int rc = -1;
     sig_flux_h = h;
     wjctx_t *ctx = getctx (h);
 
-    if (signal (SIGINT, sig_handler) == SIG_ERR)
-        goto done;
-
     if (jsc_notify_status (h, waitjob_cb, (void *)h) != 0) {
-        flux_log (h, LOG_ERR, "failed to register a waitjob CB");
+        errno = EINVAL;
+        log_err ("%s: failed to register a waitjob CB", __FUNCTION__);
+        goto done;
     }
     /* once jsc_notify_status is returned, all of JSC events
      * will be queued and delivered. It is safe to signal
@@ -195,13 +191,14 @@ static int wait_job_complete (flux_t h)
     if (ctx->start)
         touch_outfile (ctx->start);
 
-    if (complete_job (ctx)) {
+    if (state_reached (ctx)) {
         if (ctx->complete)
             touch_outfile (ctx->complete);
-        flux_log (ctx->h, LOG_INFO, "wait_job_complete: completion detected");
+        log_msg ("%s: completion detected", __FUNCTION__);
+        goto done;
     }
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
-        flux_log (h, LOG_ERR, "error in flux_reactor_run");
+        log_msg ("%s: flux_reactor_run returned", __FUNCTION__);
         goto done;
     }
     rc = 0;
@@ -217,11 +214,13 @@ done:
 
 int main (int argc, char *argv[])
 {
-    flux_t h;
+    flux_t *h;
     int ch = 0;
     int64_t jobid = -1;
     char *sfn = NULL;
     char *cfn = NULL;
+    char *state = NULL;
+    int sc = -1;
     wjctx_t *ctx = NULL;
 
     log_init ("flux-waitjob");
@@ -235,6 +234,9 @@ int main (int argc, char *argv[])
                 break;
             case 'c': /* --sync-complete */
                 cfn = xstrdup (optarg);
+                break;
+            case 'j': /* --job-state */
+                state = xstrdup (optarg);
                 break;
             default:
                 usage ();
@@ -257,7 +259,14 @@ int main (int argc, char *argv[])
         ctx->complete = cfn;
     ctx->jobid = jobid;
 
-    flux_log_set_appname (h, "waitjob");
+    if (state) {
+        if ((sc = jsc_job_state2num (state)) < 0)
+            log_err_exit ("unknown job state");
+        ctx->tgt_state = jsc_job_state2num (state);
+    } else {
+        ctx->tgt_state = J_COMPLETE;
+    }
+
     wait_job_complete (h);
 
     flux_close (h);

@@ -1,5 +1,5 @@
-AM_CFLAGS = @GCCWARN@ $(CODE_COVERAGE_CFLAGS)
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
+AM_CFLAGS = $(WARNING_CFLAGS) $(CODE_COVERAGE_CFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LIBS)
 
 TEST_EXTENSIONS = .t
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
@@ -20,11 +20,10 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 # test can conditionally set FLUX_RC_EXTRA.
 #
 TESTS_ENVIRONMENT = \
-    LUA_PATH="$(FLUX_PREFIX)/share/lua/5.1/?.lua;$(LUA_PATH);;" \
-    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/share/lua/5.1/?.lua}" \
+    LUA_PATH="$(FLUX_PREFIX)/share/lua/$(LUA_VERSION)/?.lua;$(LUA_PATH);;" \
+    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/share/lua/$(LUA_VERSION)/?.lua}" \
     FLUX_LUA_PATH_PREPEND="$${FLUX_LUA_PATH_PREPEND:-$(abs_top_srcdir)/rdl/?.lua}" \
-    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib64/lua/5.1/?.so}" \
-    FLUX_LUA_CPATH_PREPEND="$${FLUX_LUA_CPATH_PREPEND:-$(abs_top_builddir)/rdl/?.so}" \
+    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(libdir)/lua/$(LUA_VERSION)/?.so}" \
     FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
     FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
     FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
@@ -48,18 +47,36 @@ TESTS = \
     t1003-stress.t \
     t1004-module-load.t \
     t1005-sched-params.t \
+    t1008-runtime-sched-params.t \
+    t1006-cancel.t \
+    t1007-exclude.t \
     t2000-fcfs.t \
     t2001-fcfs-aware.t \
-    t2002-easy.t
+    t2002-easy.t \
+	t2004-topo.t \
+    t2003-fcfs-inorder.t \
+    t3001-resource-basic.t \
+    t3002-resource-prefix.t \
+    t3003-resource-global.t \
+    t3004-resource-excl.t \
+    t3005-resource-rsv.t \
+    t3006-resource-advanced.t \
+    t3007-resource-iobw.t \
+    t3008-resource-cancel.t \
+    t3009-resource-minmax.t \
+    t3010-resource-power.t \
+    t5000-valgrind.t
 
 check_SCRIPTS = $(TESTS)
 
 EXTRA_DIST= \
 	$(check_SCRIPTS) \
 	data \
+    data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
-	sharness.d
+	sharness.d \
+	valgrind
 
 clean-local:
 	rm -rf *.o test-results trash-directory*

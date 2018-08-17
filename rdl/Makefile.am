@@ -1,8 +1,8 @@
-AM_CFLAGS = @GCCWARN@ $(CODE_COVERAGE_CFLAGS)
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
+AM_CFLAGS = $(WARNING_CFLAGS) $(CODE_COVERAGE_CFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LIBS)
 
 AM_CPPFLAGS = -I$(top_srcdir) \
-    $(JSON_CFLAGS) $(LUA_INCLUDE) $(CZMQ_CFLAGS)
+    $(JANSSON_CFLAGS) $(LUA_INCLUDE) $(CZMQ_CFLAGS)
 
 SUBDIRS = . test
 
@@ -26,22 +26,17 @@ nobase_dist_lua_SCRIPTS = \
 	RDL/uri.lua \
 	RDL/uuid.lua
 
+noinst_LTLIBRARIES = libjansson-lua.la
 lib_LTLIBRARIES = libflux-rdl.la
-fluxluaexec_LTLIBRARIES = \
-    flux/cpuset.la
 
 fluxschedinclude_HEADERS = rdl.h
 
-flux_cpuset_la_SOURCES = lua-cpuset.c cpuset-str.c cpuset-str.h
-flux_cpuset_la_CFLAGS = $(LUA_INCLUDE) $(AM_CFLAGS)
-flux_cpuset_la_LIBADD = $(LUA_LIB)
-flux_cpuset_la_LDFLAGS = \
-    $(luamod_ldflags) \
-    -Wl,--defsym=luaopen_flux_cpuset=luaopen_cpuset \
-    $(AM_LDFLAGS)
+libjansson_lua_la_SOURCES = jansson-lua.c jansson-lua.h
+libjansson_lua_la_LIBADD = $(LUA_LIB) $(JANSSON_LIBS)
 
-libflux_rdl_la_SOURCES = rdl.c json-lua.c json-lua.h
-libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(JSON_LIBS) $(CZMQ_LIBS) \
+libflux_rdl_la_SOURCES = rdl.c
+libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(CZMQ_LIBS) $(JANSSON_LIBS) \
+    libjansson-lua.la \
     $(top_builddir)/src/common/liblsd/liblsd.la \
     $(top_builddir)/src/common/libutil/libutil.la
 libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
@@ -51,7 +46,7 @@ libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
 fluxcmd_PROGRAMS = flux-rdltool
 flux_rdltool_SOURCES = flux-rdltool.c
 flux_rdltool_CFLAGS = $(AM_CFLAGS)
-flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JSON_LIBS)
+flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JANSSON_LIBS)
 
 EXTRA_DIST = rdl_version.map
 

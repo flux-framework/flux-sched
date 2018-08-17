@@ -1,0 +1,28 @@
+version: 1
+resources:
+  - type: node
+    count: 1
+    with:
+    - type: slot
+      label: default
+      count:
+        min: 1
+        max: 2
+        operator: "*"
+        operand: 2
+      with:
+        - type: socket
+          count: 1
+          with:
+            - type: core
+              count: 18
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: default
+    slot: socketlevel
+    count:
+      per_slot: 1

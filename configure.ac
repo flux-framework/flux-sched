@@ -19,30 +19,74 @@ AC_DEFINE([_GNU_SOURCE], 1,
           [Define _GNU_SOURCE so that we get all necessary prototypes])
 AC_PROG_CC_C99
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_CC_C_O
 AX_CODE_COVERAGE
 
-GCCWARN="-Wall -Werror -Wno-error=deprecated-declarations"
-AC_SUBST([GCCWARN])
+if test "$GCC" = yes; then
+  WARNING_CFLAGS="-Wall -Werror -Werror=missing-field-initializers -Wno-error=deprecated-declarations"
+  AC_SUBST([WARNING_CFLAGS])
+fi
+if test "$GXX" = "yes"; then
+  WARNING_CXXFLAGS=$WARNING_CFLAGS
+  AC_SUBST([WARNING_CXXFLAGS])
+fi
 
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([CZMQ], [libczmq >= 3.0.0])
-AC_CHECK_LIB([dl], [dlerror])
-AC_CHECK_LIB([hwloc], [hwloc_topology_init])
-PKG_CHECK_MODULES([JSON], [json], [],
-  [PKG_CHECK_MODULES([JSON], [json-c])])
+AC_CHECK_LIB([dl], [dlerror],
+             [AC_SUBST([DL_LIBS], ["-ldl"])
+              AC_DEFINE([HAVE_LIBDL], [1],
+                        [Define if you have libdl])],
+             [AC_MSG_ERROR([Please install dl])])
+PKG_CHECK_MODULES([HWLOC], [hwloc >= 1.11.1], [], [])
+PKG_CHECK_MODULES([JANSSON], [jansson >= 2.6], [], [])
 PKG_CHECK_MODULES([XML2], [libxml-2.0])
+AX_VALGRIND_H
 AX_PROG_LUA([5.1],[5.3])
 AX_LUA_HEADERS
 AX_LUA_LIBS
-AC_CHECK_LIB([uuid], [uuid_clear])
+#  Glean liblua name from LUA_LIB set by AX_LUA_LIBS
+LIBLUA_SONAME=`echo $LUA_LIB | sed 's/.*-l\(lua[[0-9.-]]*\).*/lib\1.so/'`
+AC_MSG_CHECKING([for liblua DSO name])
+AS_IF([test "x$LIBLUA_SONAME" != "x"],
+      [AC_MSG_RESULT([$LIBLUA_SONAME])],
+      [AC_MSG_RESULT([no])
+       AC_MSG_ERROR([Unable to determine name of the liblua shared library])
+      ])
+AC_DEFINE_UNQUOTED([LIBLUA_SO], ["$LIBLUA_SONAME"],
+                   [Define the liblua DSO filename])
+
+PKG_CHECK_MODULES([UUID], [uuid], [], [])
 AX_FLUX_CORE
+AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+AX_BOOST_GRAPH
+AX_BOOST_REGEX
+PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
+PKG_CHECK_MODULES([IDSET], [flux-idset], [], [])
+AC_CHECK_LIB([readline], [readline],
+             [AC_SUBST([READLINE_LIBS], ["-lreadline"])
+              AC_DEFINE([HAVE_LIBREADLINE], [1],
+                        [Define if you have libreadline])],
+             [AC_MSG_ERROR([Please install GNU readline])])
 
 # Checks for header files.
-AC_CHECK_HEADERS([inttypes.h limits.h stdint.h stdlib.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([\
+  inttypes.h \
+  limits.h \
+  stdint.h \
+  stdlib.h \
+  string.h \
+  sys/time.h \
+  unistd.h \
+  readline/readline.h \
+  readline/history.h \
+])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL # in newer ac version:  AC_CHECK_HEADER_STDBOOL
@@ -95,11 +139,17 @@ AC_CONFIG_FILES([Makefile
   src/common/libtap/Makefile
   src/common/liblsd/Makefile
   src/common/libutil/Makefile
+  src/common/librbtree/Makefile
   rdl/Makefile
   rdl/test/Makefile
   resrc/Makefile
   resrc/test/Makefile
+  resource/Makefile
+  resource/planner/Makefile
+  resource/planner/test/Makefile
   sched/Makefile
+  sched/priority/Makefile
+  sched/priority/modified_fair_tree/Makefile
   simulator/Makefile
   etc/Makefile
   t/Makefile])
@@ -110,8 +160,10 @@ echo "
   Prefix...........: $prefix
   Debug Build......: $debug
   C Compiler.......: $CC
+  C++ Compiler.....: $CXX
   CFLAGS...........: $CFLAGS
   CPPFLAGS.......... $CPPFLAGS
+  CXXFLAGS.......... $CXXFLAGS
   FLUX.............: $FLUX
   FLUX_CORE_CFLAGS.: $FLUX_CORE_CFLAGS
   FLUX_CORE_LIBS...: $FLUX_CORE_LIBS

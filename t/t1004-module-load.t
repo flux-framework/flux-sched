@@ -62,6 +62,16 @@ test_expect_success 'module-load: sched unloads the backfill plugin' '
     flux module list sched
 '
 
+test_expect_success 'module-load: sched loads the topo plugin' '
+    flux module load sched.topo &&
+    flux module list sched
+'
+
+test_expect_success 'module-load: sched unloads the topo plugin' '
+    flux module remove sched.topo &&
+    flux module list sched
+'
+
 test_expect_success 'module-load: loads backfill with an argument meant for sched' '
     test_must_fail flux module load sched.backfill sched-once=true &&
     flux module remove sched.backfill
@@ -85,7 +95,7 @@ test_expect_success 'module-load: sched loads the backfill plugin with arguments
 test_expect_success 'module-load: no jobs are lost' '
     for i in `seq $sched_start_jobid $sched_end_jobid`
     do
-        state=$(flux kvs get lwj.$i.state)
+        state=$(flux kvs get -j $(job_kvs_path $i).state)
         if test $state != "submitted"; then
             return 48
         fi

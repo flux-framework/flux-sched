@@ -1,12 +1,12 @@
 AM_CFLAGS = \
-	@GCCWARN@ \
+	$(WARNING_CFLAGS) \
 	$(CODE_COVERAGE_CFLAGS)
 
 AM_CPPFLAGS = \
 	$(CZMQ_CFLAGS)
 
 AM_LDFLAGS = \
-	$(CODE_COVERAGE_LDFLAGS)
+	$(CODE_COVERAGE_LIBS)
 
 noinst_LTLIBRARIES = libutil.la
 
@@ -16,4 +16,4 @@ libutil_la_SOURCES = \
 	log.c \
 	log.h \
 	oom.h \
-	shortjson.h
+	shortjansson.h

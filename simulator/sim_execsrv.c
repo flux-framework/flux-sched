@@ -33,7 +33,7 @@
 #include <flux/core.h>
 
 #include "src/common/libutil/log.h"
-#include "src/common/libutil/shortjson.h"
+#include "src/common/libutil/shortjansson.h"
 #include "src/common/libutil/xzmalloc.h"
 #include "simulator.h"
 #include "rdl.h"
@@ -44,7 +44,7 @@ typedef struct {
     sim_state_t *sim_state;
     zlist_t *queued_events;  // holds int *
     zlist_t *running_jobs;  // holds job_t *
-    flux_t h;
+    flux_t *h;
     double prev_sim_time;
     struct rdllib *rdllib;
     struct rdl *rdl;
@@ -73,7 +73,7 @@ static void freectx (void *arg)
     free (ctx);
 }
 
-static ctx_t *getctx (flux_t h)
+static ctx_t *getctx (flux_t *h)
 {
     ctx_t *ctx = (ctx_t *)flux_aux_get (h, "sim_exec");
 
@@ -86,7 +86,7 @@ static ctx_t *getctx (flux_t h)
         ctx->prev_sim_time = 0;
         ctx->rdllib = rdllib_open ();
         ctx->rdl = NULL;
-        flux_aux_set (h, "simsrv", ctx, freectx);
+        flux_aux_set  (h, "sim_exec", ctx, freectx);
     }
 
     return ctx;
@@ -96,37 +96,48 @@ static ctx_t *getctx (flux_t h)
 // timestamp the change
 static int update_job_state (ctx_t *ctx,
                              int64_t jobid,
-                             kvsdir_t *kvs_dir,
+                             flux_kvsdir_t *kvs_dir,
                              job_state_t new_state,
                              double update_time)
 {
-    char *timer_key = NULL;
+    int rc;
+    double t_starting = SIM_TIME_NONE;
+    double t_running = SIM_TIME_NONE;
+    double t_completing = SIM_TIME_NONE;
+    double t_complete = SIM_TIME_NONE;
 
     switch (new_state) {
-    case J_STARTING: timer_key = "starting_time"; break;
-    case J_RUNNING: timer_key = "running_time"; break;
-    case J_COMPLETE: timer_key = "complete_time"; break;
-    default: break;
-    }
-    if (timer_key == NULL) {
+    case J_STARTING: t_starting = update_time; break;
+    case J_RUNNING: t_running = update_time; break;
+    case J_COMPLETING: t_completing = update_time; break;
+    case J_COMPLETE: t_complete = update_time;  break;
+    default:
         flux_log (ctx->h, LOG_ERR, "Unknown state %d", (int) new_state);
         return -1;
     }
 
-    JSON jcb = Jnew ();
-    JSON o = Jnew ();
+    json_t *jcb = Jnew ();
+    json_t *o = Jnew ();
 
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE, (int64_t) new_state);
     Jadd_obj (jcb, JSC_STATE_PAIR, o);
-    jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
+    const char *jcbstr = Jtostr (jcb);
+    jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, jcbstr);
+    free((void*)jcbstr);
 
-    kvsdir_put_double (kvs_dir, timer_key, update_time);
-    kvs_commit (ctx->h);
+    rc = set_job_timestamps (kvs_dir,
+                             t_starting,
+                             t_running,
+                             t_completing,
+                             t_complete,
+                             SIM_TIME_NONE); // io
+    if (rc < 0)
+	flux_log_error (ctx->h, "%s: set_job_timestamps", __FUNCTION__);
 
     Jput (jcb);
     Jput (o);
 
-    return 0;
+    return rc;
 }
 
 static double calc_curr_progress (job_t *job, double sim_time)
@@ -194,19 +205,26 @@ static int set_event_timer (ctx_t *ctx, char *mod_name, double timer_value)
 // Also change the state of the job in the KVS
 static int complete_job (ctx_t *ctx, job_t *job, double completion_time)
 {
-    flux_t h = ctx->h;
+    flux_t *h = ctx->h;
+    int rc;
 
     flux_log (h, LOG_INFO, "Job %d completed", job->id);
 
     update_job_state (ctx, job->id, job->kvs_dir, J_COMPLETE, completion_time);
     set_event_timer (ctx, "sched", ctx->sim_state->sim_time + .00001);
-    kvsdir_put_double (job->kvs_dir, "complete_time", completion_time);
-    kvsdir_put_double (job->kvs_dir, "io_time", job->io_time);
 
-    kvs_commit (h);
+    rc = set_job_timestamps (job->kvs_dir,
+                             SIM_TIME_NONE,  // starting
+                             SIM_TIME_NONE,  // running
+                             SIM_TIME_NONE,  // completing
+                             completion_time,
+                             job->io_time);
+    if (rc < 0)
+        flux_log_error (h, "%s: set_job_timestamps", __FUNCTION__);
+
     free_job (job);
 
-    return 0;
+    return rc;
 }
 
 // Remove completed jobs from the list of running jobs
@@ -314,7 +332,7 @@ static void determine_all_min_bandwidth_helper (struct resource *r,
     double total_requested_bandwidth, curr_average_bandwidth,
         child_alloc_bandwidth, total_used_bandwidth, this_max_bandwidth,
         num_children, this_alloc_bandwidth;
-    JSON o;
+    json_t *o;
     zlist_t *child_list;
     const char *type = NULL;
 
@@ -507,17 +525,17 @@ static int handle_queued_events (ctx_t *ctx)
 {
     job_t *job = NULL;
     int *jobid = NULL;
-    kvsdir_t *kvs_dir;
-    flux_t h = ctx->h;
+    flux_kvsdir_t *kvs_dir;
+    flux_t *h = ctx->h;
     zlist_t *queued_events = ctx->queued_events;
     zlist_t *running_jobs = ctx->running_jobs;
     double sim_time = ctx->sim_state->sim_time;
 
     while (zlist_size (queued_events) > 0) {
         jobid = zlist_pop (queued_events);
-        if (kvs_get_dir (h, &kvs_dir, "lwj.%d", *jobid) < 0)
-            log_err_exit ("kvs_get_dir (id=%d)", *jobid);
-        job = pull_job_from_kvs (kvs_dir);
+        if (!(kvs_dir = job_kvsdir (ctx->h, *jobid)))
+            log_err_exit ("job_kvsdir (id=%d)", *jobid);
+        job = pull_job_from_kvs (*jobid, kvs_dir);
         if (update_job_state (ctx, *jobid, kvs_dir, J_STARTING, sim_time) < 0) {
             flux_log (h,
                       LOG_ERR,
@@ -529,6 +547,13 @@ static int handle_queued_events (ctx_t *ctx)
             flux_log (h,
                       LOG_ERR,
                       "failed to set job %d's state to running",
+                      *jobid);
+            return -1;
+        }
+        if (update_job_state (ctx, *jobid, kvs_dir, J_COMPLETING, sim_time) < 0) {
+            flux_log (h,
+                      LOG_ERR,
+                      "failed to set job %d's state to completing",
                       *jobid);
             return -1;
         }
@@ -544,7 +569,7 @@ static int handle_queued_events (ctx_t *ctx)
 }
 
 // Received an event that a simulation is starting
-static void start_cb (flux_t h,
+static void start_cb (flux_t *h,
                       flux_msg_handler_t *w,
                       const flux_msg_t *msg,
                       void *arg)
@@ -564,18 +589,18 @@ static void start_cb (flux_t h,
 }
 
 // Handle trigger requests from the sim module ("sim_exec.trigger")
-static void trigger_cb (flux_t h,
+static void trigger_cb (flux_t *h,
                         flux_msg_handler_t *w,
                         const flux_msg_t *msg,
                         void *arg)
 {
-    JSON o = NULL;
+    json_t *o = NULL;
     const char *json_str = NULL;
     double next_termination = -1;
     zhash_t *job_hash = NULL;
     ctx_t *ctx = (ctx_t *)arg;
 
-    if (flux_msg_get_payload_json (msg, &json_str) < 0 || json_str == NULL
+    if (flux_msg_get_string (msg, &json_str) < 0 || json_str == NULL
         || !(o = Jfromstr (json_str))) {
         flux_log (h, LOG_ERR, "%s: bad message", __FUNCTION__);
         return;
@@ -602,11 +627,12 @@ static void trigger_cb (flux_t h,
 
     // Cleanup
     free_simstate (ctx->sim_state);
+    ctx->sim_state = NULL;
     Jput (o);
     zhash_destroy (&job_hash);
 }
 
-static void run_cb (flux_t h,
+static void run_cb (flux_t *h,
                     flux_msg_handler_t *w,
                     const flux_msg_t *msg,
                     void *arg)
@@ -630,17 +656,19 @@ static void run_cb (flux_t h,
     flux_log (h, LOG_DEBUG, "queued the running of jobid %d", *jobid);
 }
 
-static struct flux_msg_handler_spec htab[] = {
-    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb},
-    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb},
+static const struct flux_msg_handler_spec htab[] = {
+    {FLUX_MSGTYPE_EVENT, "sim.start", start_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.trigger", trigger_cb, 0},
+    {FLUX_MSGTYPE_REQUEST, "sim_exec.run.*", run_cb, 0},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
-int mod_main (flux_t h, int argc, char **argv)
+int mod_main (flux_t *h, int argc, char **argv)
 {
     ctx_t *ctx = getctx (h);
     uint32_t rank;
+    flux_msg_handler_t **handlers = NULL;
+    int rc = -1;
 
     if (flux_get_rank (h, &rank) < 0)
         return -1;
@@ -654,7 +682,7 @@ int mod_main (flux_t h, int argc, char **argv)
         flux_log (h, LOG_ERR, "subscribing to event: %s", strerror (errno));
         return -1;
     }
-    if (flux_msg_handler_addvec (h, htab, ctx) < 0) {
+    if (flux_msg_handler_addvec (h, htab, ctx, &handlers) < 0) {
         flux_log (h, LOG_ERR, "flux_msg_handler_add: %s", strerror (errno));
         return -1;
     }
@@ -663,10 +691,16 @@ int mod_main (flux_t h, int argc, char **argv)
 
     if (flux_reactor_run (flux_get_reactor (h), 0) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        return -1;
+        goto done_delvec;
     }
-
-    return 0;
+    rc = 0;
+done_delvec:
+    flux_msg_handler_delvec (handlers);
+    return rc;
 }
 
 MOD_NAME ("sim_exec");
+
+/*
+ * vi: ts=4 sw=4 expandtab
+ */
