@@ -1638,11 +1638,13 @@ int process_args (flux_t *h, char *argz, size_t argz_len, const sched_params_t *
         flux_log (h, LOG_ERR, "scheduling parameters unavailable");
         rc = -1;
         errno = EINVAL;
-    } else if (reservation_depth == -1) {
-        /* Conservative backfill (-1) will still be limited by the queue-depth
-         * but we just treat queue-depth as the limit for it
-         */
-        reservation_depth = sp->queue_depth;
+    // This plugin supports either EASY backfilling or no backfilling.
+    // Adding the ability to have deeper reservation depth is future work.
+    } else if (reservation_depth != 0 && reservation_depth != 1) {
+        flux_log (h, LOG_ERR,
+                  "reservation_depths of 0 or 1 are the supported values");
+        rc = -1;
+        errno = EINVAL;        
     } else if (reservation_depth > sp->queue_depth) {
         flux_log (h, LOG_ERR,
                   "reserve-depth value (%d) - greater than queue-depth (%ld)",
