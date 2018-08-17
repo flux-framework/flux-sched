@@ -48,9 +48,16 @@ int resrc_tree_add_child (resrc_tree_t *parent, resrc_tree_t *child);
 resrc_tree_t *resrc_tree_new (resrc_tree_t *parent, resrc_t *resrc);
 
 /*
- * Return a copy of the input resource tree
+ * Return a copy of the input resource tree. This copies the resource and all 
+ * its children but not any deeper. A semi-shallow copy.
  */
 resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree);
+
+/*
+ * Return a copy of the input resource tree, also copying its children,
+ * its children's children, etc.
+ */
+resrc_tree_t *resrc_tree_deep_copy (resrc_tree_t *resrc_tree);
 
 /*
  * Destroy an entire tree of resrc_tree_t objects
@@ -114,6 +121,11 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
                          int64_t starttime, int64_t endtime);
 
 /*
+ * Allocate all the resources in a resource tree and print node list to file
+ */
+int resrc_tree_allocate_print (resrc_tree_t *resrc_tree, int64_t job_id,
+                               int64_t starttime, int64_t endtime, FILE *alloc_file);
+/*
  * Reserve all the resources in a resource tree
  */
 int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
@@ -174,6 +186,11 @@ void resrc_tree_list_destroy (resrc_api_ctx_t *ctx, resrc_tree_list_t *rtl,
                               bool destroy_resrc);
 
 /*
+ * Desroy just the resrc_tree_list and not their children
+ */
+void resrc_tree_list_shallow_destroy (resrc_tree_list_t *rtl);
+
+/*
  * Add the input list of resource trees to the json array object
  */
 int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl);
@@ -188,6 +205,11 @@ resrc_tree_list_t *resrc_tree_list_deserialize (resrc_api_ctx_t *ctx, json_t *o)
  */
 int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
                               int64_t starttime, int64_t endtime);
+/*
+ * Allocate all the resources in a list of resource trees and print to a file
+ */
+int resrc_tree_list_allocate_print (resrc_tree_list_t *rtl, int64_t job_id,
+                                    int64_t starttime, int64_t endtime, FILE *alloc_file);
 
 /*
  * Reserve all the resources in a list of resource trees

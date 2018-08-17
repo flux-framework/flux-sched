@@ -62,6 +62,16 @@ test_expect_success 'module-load: sched unloads the backfill plugin' '
     flux module list sched
 '
 
+test_expect_success 'module-load: sched loads the topo plugin' '
+    flux module load sched.topo &&
+    flux module list sched
+'
+
+test_expect_success 'module-load: sched unloads the topo plugin' '
+    flux module remove sched.topo &&
+    flux module list sched
+'
+
 test_expect_success 'module-load: loads backfill with an argument meant for sched' '
     test_must_fail flux module load sched.backfill sched-once=true &&
     flux module remove sched.backfill
