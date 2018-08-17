@@ -38,6 +38,7 @@ namespace resource_model {
 
 struct test_params_t {
     std::string grug;           /* GRUG file name */
+    std::string hwloc_xml;      /* hwloc XML file name */
     std::string matcher_name;   /* Matcher name */
     std::string matcher_policy; /* Matcher policy name */
     std::string o_fname;        /* Output file to dump the filtered graph */
@@ -47,6 +48,7 @@ struct test_params_t {
     std::string prune_filters;   /* Raw prune-filter specification */
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
+    bool flux_hwloc;            /* get hwloc info from flux instance */
 };
 
 struct resource_context_t {

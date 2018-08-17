@@ -33,6 +33,7 @@ resource_query_CXXFLAGS = \
 resource_query_LDADD = \
     ../libresource.la \
     $(READLINE_LIBS) \
+    $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \

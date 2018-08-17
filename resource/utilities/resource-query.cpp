@@ -47,11 +47,12 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "G:S:P:g:o:p:t:e:h"
+#define OPTIONS "S:P:g:o:p:t:e:G:X:h"
 static const struct option longopts[] = {
-    {"grug",             required_argument,  0, 'G'},
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
+    {"grug",             required_argument,  0, 'G'},
+    {"hwloc-xml",        required_argument,  0, 'X'},
     {"graph-format",     required_argument,  0, 'g'},
     {"graph-output",     required_argument,  0, 'o'},
     {"prune-filters",    required_argument,  0, 'p'},
@@ -104,7 +105,9 @@ static void usage (int code)
 "\n"
 "    -G, --grug=<genspec>.graphml\n"
 "            GRUG resource graph generator specification file in graphml\n"
-"            (default=conf/default)\n"
+"\n"
+"    -X, --hwloc-xml=<hwloc>.xml\n"
+"            xml output from hwloc\n"
 "\n"
 "    -S, --match-subsystems="
          "<CA|IBA|IBBA|PFS1BA|PA|C+IBA|C+PFS1BA|C+PA|IB+IBBA|"
@@ -179,7 +182,8 @@ static dfu_match_cb_t *create_match_cb (const string &policy)
 
 static void set_default_params (resource_context_t *ctx)
 {
-    ctx->params.grug = "conf/default";
+    ctx->params.grug = "";
+    ctx->params.hwloc_xml = "";
     ctx->params.matcher_name = "CA";
     ctx->params.matcher_policy = "high";
     ctx->params.o_fname = "";
@@ -436,6 +440,10 @@ int main (int argc, char *argv[])
                 ctx->params.grug = optarg;
                 rc = 0;
                 break;
+            case 'X': /* --hwloc-xml*/
+                ctx->params.hwloc_xml = optarg;
+                rc = 0;
+                break;
             case 'S': /* --match-subsystems */
                 ctx->params.matcher_name = optarg;
                 break;
@@ -481,10 +489,24 @@ int main (int argc, char *argv[])
 
     // Generate a resource graph data store
     resource_generator_t rgen;
-    if ( (rc = rgen.read_graphml (ctx->params.grug, ctx->db)) != 0) {
-        cerr << "ERROR: " << rgen.err_message () << endl;
-        cerr << "ERROR: error in generating resources" << endl;
-        return EXIT_FAILURE;
+    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "") {
+        ctx->params.grug = "conf/default";
+    }
+    if (ctx->params.grug != "") {
+        if (ctx->params.hwloc_xml != "") {
+            cout << "WARN: multiple resource inputs provided, using grug" << endl;
+        }
+        if ( (rc = rgen.read_graphml (ctx->params.grug, ctx->db)) != 0) {
+            cerr << "ERROR: " << rgen.err_message () << endl;
+            cerr << "ERROR: error in generating resources" << endl;
+            return EXIT_FAILURE;
+        }
+    } else if (ctx->params.hwloc_xml != "") {
+        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(), ctx->db)) != 0) {
+            cerr << "ERROR: " << rgen.err_message () << endl;
+            cerr << "ERROR: error in generating resources" << endl;
+            return EXIT_FAILURE;
+        }
     }
     resource_graph_t &g = ctx->db.resource_graph;
 

@@ -72,5 +72,5 @@ libresource_la_LIBADD = \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
-    $(BOOST_REGEX_LIB)
-
+    $(BOOST_REGEX_LIB) \
+    $(HWLOC_LIBS)
