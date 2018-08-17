@@ -1603,8 +1603,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                 // TODO: handle this some other way (JSC?)
                 job->starttime = starttime;
                 job->state = J_SELECTED;
-                if (job->resrc_tree != NULL)
+                if (job->resrc_tree != NULL) {
                     resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+                }
                 job->resrc_tree = selected_tree;
                 if (req_tpexec_allocate (ctx, job) != 0) {
                     flux_log (h, LOG_ERR,
@@ -1628,8 +1629,9 @@ int schedule_job (ssrvctx_t *ctx, flux_lwj_t *job, int64_t starttime)
                     resrc_tree_destroy (ctx->rsapi, selected_tree, false, false);
                     job->resrc_tree = NULL;
                 } else {
-                    if (job->resrc_tree != NULL)
+                    if (job->resrc_tree != NULL) {
                         resrc_tree_destroy (ctx->rsapi, job->resrc_tree, false, false);
+                    }
                     job->resrc_tree = selected_tree;
                 }
             }
