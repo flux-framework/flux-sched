@@ -45,6 +45,7 @@ struct behavior_plugin {
                                          char *argz,
                                          size_t argz_len,
                                          const sched_params_t *params);
+    int                  (*job_end)(flux_lwj_t *job);
 };
 
 struct priority_plugin {

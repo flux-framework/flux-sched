@@ -121,7 +121,9 @@ static int update_job_state (ctx_t *ctx,
 
     Jadd_int64 (o, JSC_STATE_PAIR_NSTATE, (int64_t) new_state);
     Jadd_obj (jcb, JSC_STATE_PAIR, o);
-    jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, Jtostr (jcb));
+    const char *jcbstr = Jtostr (jcb);
+    jsc_update_jcb(ctx->h, jobid, JSC_STATE_PAIR, jcbstr);
+    free((void*)jcbstr);
 
     rc = set_job_timestamps (kvs_dir,
                              t_starting,

@@ -17,7 +17,8 @@ fluxmod_LTLIBRARIES = sched.la
 
 schedplugin_LTLIBRARIES = \
         sched_fcfs.la \
-        sched_backfill.la
+        sched_backfill.la \
+        sched_topo.la
 
 noinst_HEADERS = scheduler.h rs2rank.h rsreader.h plugin.h
 
@@ -42,6 +43,13 @@ sched_backfill_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
     $(FLUX_CORE_LIBS) $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) \
     $(JANSSON_LIBS) $(CZMQ_LIBS)
 sched_backfill_la_LDFLAGS = $(AM_LDFLAGS) $(schedplugin_ldflags)
+
+sched_topo_la_SOURCES = sched_topo.c
+sched_topo_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resrc
+sched_topo_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
+    $(FLUX_CORE_LIBS) $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) \
+    $(JANSSON_LIBS) $(CZMQ_LIBS)
+sched_topo_la_LDFLAGS = $(AM_LDFLAGS) $(schedplugin_ldflags)
 
 fluxcmd_PROGRAMS = flux-waitjob
 flux_waitjob_SOURCES = flux-waitjob.c

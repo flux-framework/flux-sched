@@ -127,6 +127,26 @@ resrc_tree_t *resrc_tree_copy (resrc_tree_t *resrc_tree)
     return new_resrc_tree;
 }
 
+resrc_tree_t *resrc_tree_deep_copy (resrc_tree_t *resrc_tree)
+{
+    resrc_tree_t *new_resrc_tree = xzmalloc (sizeof (resrc_tree_t));
+    if (new_resrc_tree) {
+        new_resrc_tree->parent = resrc_tree->parent;
+        new_resrc_tree->resrc = resrc_tree->resrc;
+        new_resrc_tree->children = resrc_tree_list_new ();
+        resrc_tree_t *child;
+        for (child = resrc_tree_list_first (resrc_tree->children);
+             child;
+             child = resrc_tree_list_next (resrc_tree->children)) {
+
+            resrc_tree_list_append (
+                    new_resrc_tree->children, resrc_tree_deep_copy (child));
+        }
+    }
+    return new_resrc_tree;
+}
+
+
 void resrc_tree_destroy (resrc_api_ctx_t *ctx, resrc_tree_t *resrc_tree,
                          bool is_root, bool destroy_resrc)
 {
@@ -331,6 +351,25 @@ int resrc_tree_allocate (resrc_tree_t *resrc_tree, int64_t job_id,
     return rc;
 }
 
+
+/* Allocate the resource and print to file if it's a node */
+int resrc_tree_allocate_print (resrc_tree_t *resrc_tree, int64_t job_id,
+                               int64_t starttime, int64_t endtime, FILE *alloc_file)
+{
+    int rc = -1;
+    if (resrc_tree) {
+        rc = resrc_allocate_resource (resrc_tree->resrc, job_id,
+                                      starttime, endtime);
+        if (strcmp (resrc_type (resrc_tree->resrc), "node") == 0) {
+            fprintf (alloc_file, "%s|", resrc_name (resrc_tree->resrc));
+        }
+        if (resrc_tree_num_children (resrc_tree))
+            rc = resrc_tree_list_allocate_print (resrc_tree->children, job_id,
+                                                 starttime, endtime, alloc_file);
+    }
+    return rc;
+}
+
 int resrc_tree_reserve (resrc_tree_t *resrc_tree, int64_t job_id,
                         int64_t starttime, int64_t endtime)
 {
@@ -439,6 +478,16 @@ void resrc_tree_list_destroy (resrc_api_ctx_t *ctx,
     }
 }
 
+void resrc_tree_list_shallow_destroy (resrc_tree_list_t *resrc_tree_list)
+{
+    if (resrc_tree_list) {
+        if (resrc_tree_list->list) {
+            zlist_destroy (&(resrc_tree_list->list));
+        }
+        free (resrc_tree_list);
+    }
+}
+
 int resrc_tree_list_serialize (json_t *o, resrc_tree_list_t *rtl)
 {
     resrc_tree_t *rt;
@@ -492,6 +541,24 @@ int resrc_tree_list_allocate (resrc_tree_list_t *rtl, int64_t job_id,
         rt = resrc_tree_list_first (rtl);
         while (!rc && rt) {
             rc = resrc_tree_allocate (rt, job_id, starttime, endtime);
+            rt = resrc_tree_list_next (rtl);
+        }
+    }
+
+    return rc;
+}
+
+int resrc_tree_list_allocate_print (resrc_tree_list_t *rtl, int64_t job_id,
+                                    int64_t starttime, int64_t endtime, FILE *alloc_file)
+{
+    resrc_tree_t *rt;
+    int rc = -1;
+
+    if (rtl) {
+        rc = 0;
+        rt = resrc_tree_list_first (rtl);
+        while (!rc && rt) {
+            rc = resrc_tree_allocate_print (rt, job_id, starttime, endtime, alloc_file);
             rt = resrc_tree_list_next (rtl);
         }
     }
