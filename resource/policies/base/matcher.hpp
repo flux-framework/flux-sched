@@ -31,8 +31,8 @@
 #include <set>
 #include <map>
 #include <flux/jobspec.hpp>
-#include "schema/data_std.hpp"
-#include "planner/planner.h"
+#include "resource/schema/data_std.hpp"
+#include "resource/planner/planner.h"
 
 namespace Flux {
 namespace resource_model {

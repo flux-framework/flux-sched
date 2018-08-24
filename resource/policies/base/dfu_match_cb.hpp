@@ -31,10 +31,10 @@
 #include <cstdint>
 #include <iostream>
 #include <flux/jobspec.hpp>
-#include "schema/resource_graph.hpp"
-#include "evaluators/scoring_api.hpp"
-#include "policies/base/matcher.hpp"
-#include "planner/planner.h"
+#include "resource/schema/resource_graph.hpp"
+#include "resource/evaluators/scoring_api.hpp"
+#include "resource/policies/base/matcher.hpp"
+#include "resource/planner/planner.h"
 
 namespace Flux {
 namespace resource_model {

@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "traversers/dfu.hpp"
+#include "resource/traversers/dfu.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

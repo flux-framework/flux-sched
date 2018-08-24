@@ -32,9 +32,9 @@
 #include <numeric>
 #include <functional>
 #include <algorithm>
-#include "schema/resource_graph.hpp"
-#include "evaluators/edge_eval_api.hpp"
-#include "evaluators/fold.hpp"
+#include "resource/schema/resource_graph.hpp"
+#include "resource/evaluators/edge_eval_api.hpp"
+#include "resource/evaluators/fold.hpp"
 
 namespace Flux {
 namespace resource_model {

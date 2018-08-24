@@ -27,8 +27,8 @@
 
 #include <string>
 #include <boost/graph/depth_first_search.hpp>
-#include "schema/resource_graph.hpp"
-#include "generators/spec.hpp"
+#include "resource/schema/resource_graph.hpp"
+#include "resource/generators/spec.hpp"
 
 namespace Flux {
 namespace resource_model {

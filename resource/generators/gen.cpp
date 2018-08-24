@@ -27,8 +27,8 @@
 #include <vector>
 #include <cstdint>
 #include <boost/algorithm/string.hpp>
-#include "generators/gen.hpp"
-#include "planner/planner.h"
+#include "resource/generators/gen.hpp"
+#include "resource/planner/planner.h"
 
 extern "C" {
 #if HAVE_CONFIG_H

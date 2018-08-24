@@ -27,7 +27,7 @@
 
 #include <boost/icl/interval.hpp>
 #include <boost/icl/interval_set.hpp>
-#include "evaluators/edge_eval_api.hpp"
+#include "resource/evaluators/edge_eval_api.hpp"
 
 namespace Flux {
 namespace resource_model {
