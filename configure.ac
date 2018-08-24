@@ -147,6 +147,7 @@ AC_CONFIG_FILES([Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
+  resource/modules/Makefile
   sched/Makefile
   sched/priority/Makefile
   sched/priority/modified_fair_tree/Makefile
