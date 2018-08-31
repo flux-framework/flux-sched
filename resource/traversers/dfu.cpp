@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cerrno>
 #include "resource/traversers/dfu.hpp"
 
 extern "C" {
@@ -70,6 +71,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x, needs);
         }
     }
+
+    if ((rc != 0) && (errno == 0))
+        errno = EBUSY;
+
     return rc;
 }
 
