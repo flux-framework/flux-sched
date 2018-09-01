@@ -14,8 +14,6 @@ AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 
 fluxmod_LTLIBRARIES = resource.la
 
-dist_fluxcmd_SCRIPTS = flux-resource
-
 #
 # resource service module
 #
