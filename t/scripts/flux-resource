@@ -1,0 +1,189 @@
+#!/usr/bin/env python
+
+import argparse
+import errno
+import yaml
+import flux
+
+def heading ():
+    return '{:20} {:20} {:20} {:20}'.format ('JOBID', 'STATUS',
+                                             'AT', 'OVERHEAD (Secs)')
+
+def body (jobid, status, at, overhead):
+    t = "Now" if at == 0 else str (at)
+    o = str (overhead)
+    return '{:20} {:20} {:20} {:20}'.format (str (jobid), status, t, o)
+
+def width ():
+    return 20 + 20 + 20 + 20
+
+"""
+    Class to interface with the resource module with RPC
+"""
+class ResourceModuleInterface:
+    def __init__ (self):
+        self.f = flux.Flux ()
+
+    def rpc_next_jobid (self):
+        resp = self.f.rpc_send ("resource.next_jobid")
+        return resp['jobid']
+
+    def rpc_allocate (self, jobid, jobspec_str):
+        payload = {'cmd' : 'allocate', 'jobid' : jobid, 'jobspec' : jobspec_str}
+        return self.f.rpc_send ("resource.match", payload)
+
+    def rpc_reserve (self, jobid, jobspec_str):
+        payload = {'cmd' : 'allocate_orelse_reserve',
+                   'jobid' : jobid, 'jobspec' : jobspec_str}
+        return self.f.rpc_send ("resource.match", payload)
+
+    def rpc_info (self, jobid):
+        payload = {'jobid' : jobid}
+        return self.f.rpc_send ("resource.info", payload)
+
+    def rpc_cancel (self, jobid):
+        payload = {'jobid' : jobid}
+        return self.f.rpc_send ("resource.cancel", payload)
+
+"""
+    Action for match allocate sub-command
+"""
+def match_alloc_action (args):
+    with open (args.jobspec, 'r') as stream:
+        jobspec_str = yaml.dump (yaml.load (stream))
+        r = ResourceModuleInterface ()
+        resp = r.rpc_allocate (r.rpc_next_jobid (), jobspec_str)
+        print heading ()
+        print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+        print ("=" * width ())
+        print "MATCHED RESOURCES:"
+        print resp['R']
+
+"""
+    Action for match allocate_orelse_reserve sub-command
+"""
+def match_reserve_action (args):
+    with open (args.jobspec, 'r') as stream:
+        jobspec_str = yaml.dump (yaml.load (stream))
+        r = ResourceModuleInterface ()
+        resp = r.rpc_reserve (r.rpc_next_jobid (), jobspec_str)
+        print heading ()
+        print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+        print ("=" * width ())
+        print "MATCHED RESOURCES:"
+        print resp['R']
+
+"""
+    Action for cancel sub-command
+"""
+def cancel_action (args):
+    r = ResourceModuleInterface ()
+    jobid = args.jobid
+    resp = r.rpc_cancel (jobid)
+
+"""
+    Action for info sub-command
+"""
+def info_action (args):
+    r = ResourceModuleInterface ()
+    jobid = args.jobid
+    resp = r.rpc_info (jobid)
+    print heading ()
+    print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+
+
+"""
+    Main entry point
+"""
+def main ():
+    #
+    # Main command arguments/options
+    #
+    desc = 'Front-end command for resource '\
+           'module for testing. Provide 4 sub-commands. '\
+           'For sub-command usage, '\
+           '%(prog)s <sub-command> --help'
+    parser = argparse.ArgumentParser (description=desc)
+    parser.add_argument ('-v', '--verbose', action='store_true',
+                         help='be verbose')
+
+    #
+    # Add subparser for the top-level sub-commands
+    #
+    subpar = parser.add_subparsers (title='Available Commands',
+                                    description='Valid commands',
+                                    help='Additional help')
+    mstr = "Find the best matching resources for a jobspec"
+    istr = "Print info on a single job"
+    cstr = "Cancel an allocated or reserved job"
+    parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
+    parser_i = subpar.add_parser ('info', help=istr, description=istr)
+    parser_c = subpar.add_parser ('cancel', help=cstr, description=cstr)
+
+    #
+    # Add subparser for the match sub-command
+    #
+    subparsers_m = parser_m.add_subparsers (title='Available Commands',
+                                           description='Valid commands',
+                                           help='Additional help')
+
+    mastr = "Allocate the best matching resources if found"
+    mrstr = "Allocate the best matching resources if found. "\
+            "If not found, reserve them instead at earliest time"
+    parser_ma = subparsers_m.add_parser ('allocate', help=mastr)
+    parser_mr = subparsers_m.add_parser ('allocate_orelse_reserve', help=mrstr)
+
+    #
+    # Positional argument for info sub-command
+    #
+    parser_i.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_i.set_defaults (func=info_action)
+
+    #
+    # Positional argument for cancel sub-command
+    #
+    parser_c.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_c.set_defaults (func=cancel_action)
+
+    #
+    # Positional argument for match allocate sub-command
+    #
+    parser_ma.add_argument ('jobspec', metavar='Jobspec', type=str,
+                            help='Jobspec file name')
+    parser_ma.set_defaults (func=match_alloc_action)
+
+    #
+    # Positional argument for match allocate_orelse_reserve sub-command
+    #
+    parser_mr.add_argument ('jobspec', metavar='Jobspec', type=str,
+                            help='Jobspec file name')
+    parser_mr.set_defaults (func=match_reserve_action)
+
+    #
+    # Parse the args and call an action routine as part of that
+    #
+    try:
+        args = parser.parse_args ()
+        args.func (args)
+
+    except IOError as e:
+        print "I/O error({0}): {1}".format (e.errno, e.strerror)
+        exit (3)
+
+    except EnvironmentError as e:
+        print "Environment error({0}): {1}".format (e.errno, e.strerror)
+        if e.errno == errno.EBUSY:
+            exit (16)
+        else:
+            exit (1)
+
+    except yaml.YAMLError as e:
+        print "Parsing error: ", e
+        exit (2)
+
+if __name__ == "__main__":
+    main ()
+
+#
+# vi:tabstop=4 shiftwidth=4 expandtab
+#
