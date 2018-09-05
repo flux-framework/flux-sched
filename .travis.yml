@@ -32,8 +32,8 @@ addons:
       - cmake
       - cmake-data
       - clang-3.8
-      - gcc-4.9
-      - g++-4.9
+      - gcc-8
+      - g++-8
       - uuid-dev
       - aspell
       - libopenmpi-dev
