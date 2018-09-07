@@ -52,7 +52,7 @@ addons:
 before_install:
   - rm -rf $HOME/.luarocks
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
-  - eval $(bash ./travis-dep-builder.sh --printenv)
+  - $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
   - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
   - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
