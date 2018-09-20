@@ -12,37 +12,21 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS) \
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 	      $(BOOST_CPPFLAGS)
 
-SUBDIRS = planner .
+SUBDIRS = planner . modules
+
+noinst_LTLIBRARIES = libresource.la
 
 noinst_PROGRAMS = utilities/grug2dot utilities/resource-query
 
 EXTRA_DIST= \
     utilities/conf
 
-#
-# grug2dot
-#
-utilities_grug2dot_SOURCES = \
-    utilities/grug2dot.cpp \
-    generators/spec.cpp \
-    generators/spec.hpp
-utilities_grug2dot_CXXFLAGS = \
-    $(AM_CXXFLAGS)
-utilities_grug2dot_LDADD = \
-    $(BOOST_SYSTEM_LIB) \
-    $(BOOST_FILESYSTEM_LIB) \
-    $(BOOST_GRAPH_LIB) \
-    $(BOOST_REGEX_LIB)
-
-#.
-# resource-query
-#
-utilities_resource_query_SOURCES = \
-    utilities/resource-query.cpp \
-    utilities/command.cpp \
+libresource_la_SOURCES = \
     policies/dfu_match_high_id_first.cpp \
     policies/dfu_match_low_id_first.cpp \
     policies/dfu_match_locality.cpp \
+    policies/dfu_match_policy_factory.cpp \
+    jobinfo/jobinfo.cpp \
     schema/resource_data.cpp \
     schema/infra_data.cpp \
     schema/sched_data.cpp \
@@ -59,6 +43,8 @@ utilities_resource_query_SOURCES = \
     policies/dfu_match_high_id_first.hpp \
     policies/dfu_match_low_id_first.hpp \
     policies/dfu_match_locality.hpp \
+    policies/dfu_match_policy_factory.hpp \
+    jobinfo/jobinfo.hpp \
     schema/resource_graph.hpp \
     schema/data_std.hpp \
     schema/infra_data.hpp \
@@ -76,15 +62,46 @@ utilities_resource_query_SOURCES = \
     evaluators/fold.hpp \
     config/system_defaults.hpp \
     planner/planner.h
-utilities_resource_query_CXXFLAGS = \
+
+libresource_la_CXXFLAGS = \
+    $(WARNING_CXXFLAGS) \
+    $(CODE_COVERAGE_CFLAGS) \
     $(AM_CXXFLAGS) \
     $(JOBSPEC_CFLAGS)
-utilities_resource_query_LDADD = \
+
+libresource_la_LIBADD = \
     $(top_builddir)/resource/planner/libplanner.la \
     $(JOBSPEC_LIBS) \
-    $(READLINE_LIBS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
     $(BOOST_REGEX_LIB)
+
+#
+# grug2dot
+#
+utilities_grug2dot_SOURCES = \
+    utilities/grug2dot.cpp \
+    generators/spec.cpp \
+    generators/spec.hpp
+utilities_grug2dot_CXXFLAGS = \
+    $(AM_CXXFLAGS)
+utilities_grug2dot_LDADD = \
+    $(BOOST_SYSTEM_LIB) \
+    $(BOOST_FILESYSTEM_LIB) \
+    $(BOOST_GRAPH_LIB) \
+    $(BOOST_REGEX_LIB)
+
+#
+# resource-query
+#
+utilities_resource_query_SOURCES = \
+    utilities/resource-query.cpp \
+    utilities/command.cpp
+utilities_resource_query_CXXFLAGS = \
+    $(AM_CXXFLAGS) \
+    $(JOBSPEC_CFLAGS) \
+    $(READLINE_LIBS)
+utilities_resource_query_LDADD = \
+    libresource.la
 

@@ -22,43 +22,33 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef DFU_MATCH_LOW_ID_FIRST_HPP
-#define DFU_MATCH_LOW_ID_FIRST_HPP
+#ifndef DFU_MATCH_POLICY_FACTORY_HPP
+#define DFU_MATCH_POLICY_FACTORY_HPP
 
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <map>
+#include <string>
 #include "resource/policies/base/dfu_match_cb.hpp"
+#include "resource/policies/dfu_match_high_id_first.hpp"
+#include "resource/policies/dfu_match_low_id_first.hpp"
+#include "resource/policies/dfu_match_locality.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-/*! Low ID first policy: select resources of each type
- *  with lower numeric IDs.
+const std::string HIGH_ID_FIRST = "high";
+const std::string LOW_ID_FIRST = "low";
+const std::string LOCALITY_AWARE = "locality";
+
+bool known_match_policy (const std::string &policy);
+
+/*! Factory method for creating a matching callback
+ *  object, representing a matching policy.
  */
-struct low_first_t : public dfu_match_cb_t
-{
-    low_first_t ();
-    low_first_t (const std::string &name);
-    low_first_t (const low_first_t &o);
-    low_first_t &operator= (const low_first_t &o);
-    ~low_first_t ();
-
-    int dom_finish_graph (const subsystem_t &subsystem,
-                          const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g, scoring_api_t &dfu);
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
-                        const std::vector<Flux::Jobspec::Resource> &resources,
-                        const f_resource_graph_t &g, scoring_api_t &dfu);
-
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
-};
+dfu_match_cb_t *create_match_cb (const std::string &policy);
 
 } // resource_model
 } // Flux
 
-#endif // DFU_MATCH_LOW_ID_FIRST_HPP
+#endif // DFU_MATCH_POLICY_FACTORY_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

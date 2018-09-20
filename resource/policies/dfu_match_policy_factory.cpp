@@ -22,43 +22,36 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef DFU_MATCH_LOW_ID_FIRST_HPP
-#define DFU_MATCH_LOW_ID_FIRST_HPP
-
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <map>
-#include "resource/policies/base/dfu_match_cb.hpp"
+#include <string>
+#include "resource/policies/dfu_match_policy_factory.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-/*! Low ID first policy: select resources of each type
- *  with lower numeric IDs.
- */
-struct low_first_t : public dfu_match_cb_t
+bool known_match_policy (const std::string &policy)
 {
-    low_first_t ();
-    low_first_t (const std::string &name);
-    low_first_t (const low_first_t &o);
-    low_first_t &operator= (const low_first_t &o);
-    ~low_first_t ();
+    bool rc = true;
+    if (policy != HIGH_ID_FIRST && policy != LOW_ID_FIRST
+        && policy != LOCALITY_AWARE)
+        rc = false;
 
-    int dom_finish_graph (const subsystem_t &subsystem,
-                          const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g, scoring_api_t &dfu);
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
-                        const std::vector<Flux::Jobspec::Resource> &resources,
-                        const f_resource_graph_t &g, scoring_api_t &dfu);
+    return rc;
+}
 
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
-};
+dfu_match_cb_t *create_match_cb (const std::string &policy)
+{
+    dfu_match_cb_t *matcher = NULL;
+    if (policy == HIGH_ID_FIRST)
+        matcher = (dfu_match_cb_t *)new high_first_t ();
+    else if (policy == LOW_ID_FIRST)
+        matcher = (dfu_match_cb_t *)new low_first_t ();
+    else if (policy == LOCALITY_AWARE)
+        matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
+    return matcher;
+}
 
 } // resource_model
 } // Flux
-
-#endif // DFU_MATCH_LOW_ID_FIRST_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

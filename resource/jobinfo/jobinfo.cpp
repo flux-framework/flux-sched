@@ -22,43 +22,53 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef DFU_MATCH_LOW_ID_FIRST_HPP
-#define DFU_MATCH_LOW_ID_FIRST_HPP
-
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <map>
-#include "resource/policies/base/dfu_match_cb.hpp"
+#include <string>
+#include "resource/jobinfo/jobinfo.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-/*! Low ID first policy: select resources of each type
- *  with lower numeric IDs.
- */
-struct low_first_t : public dfu_match_cb_t
+job_info_t::job_info_t (uint64_t j, job_lifecycle_t s, int64_t at, const std::string &fn,
+                        const std::string &jstr, const std::string &R_str,  double o)
+    : jobid (j), state (s), scheduled_at (at), jobspec_fn (fn), jobspec_str (jstr),
+      R (R_str), overhead (o)
 {
-    low_first_t ();
-    low_first_t (const std::string &name);
-    low_first_t (const low_first_t &o);
-    low_first_t &operator= (const low_first_t &o);
-    ~low_first_t ();
 
-    int dom_finish_graph (const subsystem_t &subsystem,
-                          const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g, scoring_api_t &dfu);
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
-                        const std::vector<Flux::Jobspec::Resource> &resources,
-                        const f_resource_graph_t &g, scoring_api_t &dfu);
+}
 
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
-};
+job_info_t::job_info_t (uint64_t j, job_lifecycle_t s, int64_t at, const std::string &fn,
+                        const std::string &jstr, double o)
+    : jobid (j), state (s), scheduled_at (at), jobspec_fn (fn), jobspec_str (jstr),
+      overhead (o)
+{
 
-} // resource_model
-} // Flux
+}
 
-#endif // DFU_MATCH_LOW_ID_FIRST_HPP
+void get_jobstate_str (job_lifecycle_t state, std::string &status)
+{
+    switch (state) {
+    case job_lifecycle_t::ALLOCATED:
+        status = "ALLOCATED";
+        break;
+    case job_lifecycle_t::RESERVED:
+        status = "RESERVED";
+        break;
+    case job_lifecycle_t::CANCELLED:
+        status = "CANCELLED";
+        break;
+    case job_lifecycle_t::ERROR:
+        status = "ERROR";
+        break;
+    case job_lifecycle_t::INIT:
+    default:
+        status = "INIT";
+        break;
+    }
+    return;
+}
+
+}
+}
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

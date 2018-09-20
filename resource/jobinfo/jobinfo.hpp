@@ -22,43 +22,39 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef DFU_MATCH_LOW_ID_FIRST_HPP
-#define DFU_MATCH_LOW_ID_FIRST_HPP
+#ifndef JOBINFO_HPP
+#define JOBINFO_HPP
 
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <map>
-#include "resource/policies/base/dfu_match_cb.hpp"
+#include <string>
 
 namespace Flux {
 namespace resource_model {
 
-/*! Low ID first policy: select resources of each type
- *  with lower numeric IDs.
- */
-struct low_first_t : public dfu_match_cb_t
-{
-    low_first_t ();
-    low_first_t (const std::string &name);
-    low_first_t (const low_first_t &o);
-    low_first_t &operator= (const low_first_t &o);
-    ~low_first_t ();
+enum class job_lifecycle_t { INIT, ALLOCATED, RESERVED, CANCELLED, ERROR };
 
-    int dom_finish_graph (const subsystem_t &subsystem,
-                          const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g, scoring_api_t &dfu);
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
-                        const std::vector<Flux::Jobspec::Resource> &resources,
-                        const f_resource_graph_t &g, scoring_api_t &dfu);
+struct job_info_t {
+    job_info_t (uint64_t j, job_lifecycle_t s, int64_t at,
+                const std::string &j_fn, const std::string &jstr,
+                const std::string &R_str,  double o);
 
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+    job_info_t (uint64_t j, job_lifecycle_t s, int64_t at,
+                const std::string &j_fn, const std::string &jstr, double o);
+
+    uint64_t jobid = UINT64_MAX;
+    job_lifecycle_t state = job_lifecycle_t::INIT;
+    int64_t scheduled_at = -1;
+    std::string jobspec_fn;
+    std::string jobspec_str;
+    std::string R;
+    double overhead = 0.0f;
 };
 
-} // resource_model
-} // Flux
+void get_jobstate_str (job_lifecycle_t state, std::string &status);
 
-#endif // DFU_MATCH_LOW_ID_FIRST_HPP
+} // namespace resource_model
+} // namespace Flux
+
+#endif // JOBINFO_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

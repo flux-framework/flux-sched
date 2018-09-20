@@ -64,33 +64,13 @@ static double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-static void get_jobstate_str (job_state_t state, string &mode)
-{
-    switch (state) {
-    case job_state_t::ALLOCATED:
-        mode = "ALLOCATED";
-        break;
-    case job_state_t::RESERVED:
-        mode = "RESERVED";
-        break;
-    case job_state_t::CANCELLED:
-        mode = "CANCELLED";
-        break;
-    case job_state_t::INIT:
-    default:
-        mode = "INIT";
-        break;
-    }
-    return;
-}
-
 static int do_remove (resource_context_t *ctx, int64_t jobid)
 {
     int rc = -1;
     if ((rc = ctx->traverser.remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
            job_info_t *info = ctx->jobs[jobid];
-           info->state = job_state_t::CANCELLED;
+           info->state = job_lifecycle_t::CANCELLED;
         }
     } else {
         cout << ctx->traverser.err_message ();
@@ -105,7 +85,7 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
                                  double elapse)
 {
     if (matched) {
-        job_state_t st;
+        job_lifecycle_t st;
         string mode = (at == 0)? "ALLOCATED" : "RESERVED";
         string scheduled_at = (at == 0)? "Now" : to_string (at);
         out << "INFO:" << " =============================" << endl;
@@ -116,8 +96,9 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
             out << "INFO:" << " ELAPSE=" << to_string (elapse) << endl;
 
         out << "INFO:" << " =============================" << endl;
-        st = (at == 0)? job_state_t::ALLOCATED : job_state_t::RESERVED;
-        ctx->jobs[jobid] = new job_info_t (jobid, st, at, jobspec_fn, elapse);
+        st = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+        ctx->jobs[jobid] = new job_info_t (jobid, st,
+                                           at, jobspec_fn, "", elapse);
         if (at == 0)
             ctx->allocations[jobid] = jobid;
         else

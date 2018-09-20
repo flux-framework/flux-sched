@@ -24,7 +24,8 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "traversers/dfu.hpp"
+#include <cerrno>
+#include "resource/traversers/dfu.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -70,6 +71,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x, needs);
         }
     }
+
+    if ((rc != 0) && (errno == 0))
+        errno = EBUSY;
+
     return rc;
 }
 
@@ -219,6 +224,19 @@ int dfu_traverser_t::remove (int64_t jobid)
 
     vtx_t root = get_roots ()->at(dom);
     return detail::dfu_impl_t::remove (root, jobid);
+}
+
+namespace Flux {
+namespace resource_model {
+
+bool known_R_format (const string &f)
+{
+    bool rc = true;
+    if (f != R_FORMAT || f != R_LITE_FORMAT || f != R_NATIVE_FORMAT)
+        rc = false;
+    return rc;
+}
+}
 }
 
 /*

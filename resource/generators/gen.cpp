@@ -27,8 +27,8 @@
 #include <vector>
 #include <cstdint>
 #include <boost/algorithm/string.hpp>
-#include "generators/gen.hpp"
-#include "planner/planner.h"
+#include "resource/generators/gen.hpp"
+#include "resource/planner/planner.h"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -431,7 +431,7 @@ const std::string &resource_generator_t::err_message () const
 /*
  * Read a subsystem spec graphml file and generate resource database
  *
- * \param sfile  generator spec file in graphml
+ * \param sn     generator spec file in graphml
  * \param db     graph database consisting of resource graph and various indices
  * \return       0 on success; non-zero integer on an error
  */

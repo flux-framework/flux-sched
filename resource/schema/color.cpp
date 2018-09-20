@@ -20,7 +20,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "schema/color.hpp"
+#include "resource/schema/color.hpp"
 
 namespace Flux {
 namespace resource_model {

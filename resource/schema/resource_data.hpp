@@ -28,11 +28,11 @@
 #include <cstring>
 #include <map>
 #include <set>
-#include "schema/color.hpp"
-#include "schema/data_std.hpp"
-#include "schema/sched_data.hpp"
-#include "schema/infra_data.hpp"
-#include "planner/planner.h"
+#include "resource/schema/color.hpp"
+#include "resource/schema/data_std.hpp"
+#include "resource/schema/sched_data.hpp"
+#include "resource/schema/infra_data.hpp"
+#include "resource/planner/planner.h"
 
 namespace Flux {
 namespace resource_model {

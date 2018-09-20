@@ -30,7 +30,7 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
-#include "schema/resource_data.hpp"
+#include "resource/schema/resource_data.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -118,6 +118,11 @@ struct resource_graph_db_t {
     std::map<std::string, std::vector <vtx_t>> by_type;
     std::map<std::string, std::vector <vtx_t>> by_name;
     std::map<std::string, std::vector <vtx_t>> by_path;
+
+    bool known_subsystem (const std::string &s)
+    {
+        return (roots.find (s) != roots.end ())? true : false;
+    }
 };
 
 template<class name_map, class graph_entity>

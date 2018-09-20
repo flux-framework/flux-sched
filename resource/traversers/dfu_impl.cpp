@@ -22,7 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include "traversers/dfu_impl.hpp"
+#include "resource/traversers/dfu_impl.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

@@ -25,8 +25,8 @@
 
 #include <map>
 #include <cstdint>
-#include "schema/data_std.hpp"
-#include "planner/planner_multi.h"
+#include "resource/schema/data_std.hpp"
+#include "resource/planner/planner_multi.h"
 
 namespace Flux {
 namespace resource_model {

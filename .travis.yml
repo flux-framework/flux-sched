@@ -32,8 +32,8 @@ addons:
       - cmake
       - cmake-data
       - clang-3.8
-      - gcc-4.9
-      - g++-4.9
+      - gcc-8
+      - g++-8
       - uuid-dev
       - aspell
       - libopenmpi-dev
@@ -52,7 +52,7 @@ addons:
 before_install:
   - rm -rf $HOME/.luarocks
   - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
-  - eval $(bash ./travis-dep-builder.sh --printenv)
+  - $(bash ./travis-dep-builder.sh --printenv)
   - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
   - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
   - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
@@ -98,6 +98,7 @@ after_success:
  - ccache -s
  - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info;  bash <(curl -s https://codecov.io/bash); fi
 after_failure:
+ - find . -name test-suite.log | xargs -i sh -c 'printf "===XXX {} XXX===";cat {}'
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - find . -name *.broker.log -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
  - src/test/backtrace-all.sh

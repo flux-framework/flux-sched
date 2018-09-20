@@ -64,6 +64,9 @@ TESTS = \
     t3008-resource-cancel.t \
     t3009-resource-minmax.t \
     t3010-resource-power.t \
+    t4001-match-allocate.t \
+    t4002-match-reserve.t \
+    t4003-cancel-info.t \
     t5000-valgrind.t
 
 check_SCRIPTS = $(TESTS)
