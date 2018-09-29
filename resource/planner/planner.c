@@ -85,7 +85,7 @@ struct planner {
     struct rb_root mt_resource_tree;  /* min-time resrouce rb tree */
     scheduled_point_t *p0;       /* system's scheduled point at base time */
     zhashx_t *span_lookup;       /* span lookup table by string id */
-    zhash_t *avail_time_iter;    /* tracking nodes temporarily deleted from MTR */
+    zhashx_t *avail_time_iter;    /* tracking nodes temporarily deleted from MTR */
     request_t *current_request;  /* the req copy for avail time iteration */
     int avail_time_iter_set;     /* iterator set flag */
     uint64_t span_counter;       /* current span counter */
@@ -368,27 +368,27 @@ static scheduled_point_t *mintime_resource_mintime (int64_t request,
  *                  Scheduled Point and Resource Update APIs                   *
  *                                                                             *
  *******************************************************************************/
-static int track_points (zhash_t *tracker, scheduled_point_t *point)
+static int track_points (zhashx_t *tracker, scheduled_point_t *point)
 {
     char key[32];
     sprintf (key, "%jd", (intmax_t)point->at);
     // caller will rely on the fact that rc == -1 when key already exists.
     // don't need to register free */
-    return zhash_insert (tracker, key, point);
+    return zhashx_insert (tracker, key, point);
 }
 
 static void restore_track_points (planner_t *ctx)
 {
     scheduled_point_t *point = NULL;
     struct rb_root *root = &(ctx->mt_resource_tree);
-    zlist_t *keys = zhash_keys (ctx->avail_time_iter);
+    zlistx_t *keys = zhashx_keys (ctx->avail_time_iter);
     const char *k = NULL;
-    for (k = zlist_first (keys); k; k = zlist_next (keys)) {
-        point = zhash_lookup (ctx->avail_time_iter, k);
+    for (k = zlistx_first (keys); k; k = zlistx_next (keys)) {
+        point = zhashx_lookup (ctx->avail_time_iter, k);
         mintime_resource_insert (point, root);
-        zhash_delete (ctx->avail_time_iter, k);
+        zhashx_delete (ctx->avail_time_iter, k);
     }
-    zlist_destroy (&keys);
+    zlistx_destroy (&keys);
 }
 
 static void update_mintime_resource_tree (planner_t *ctx, zlist_t *list)
@@ -596,7 +596,7 @@ static void initialize (planner_t *ctx, int64_t base_time, uint64_t duration)
     scheduled_point_insert (ctx->p0, &(ctx->sched_point_tree));
     mintime_resource_insert (ctx->p0, &(ctx->mt_resource_tree));
     ctx->span_lookup = zhashx_new ();
-    ctx->avail_time_iter = zhash_new ();
+    ctx->avail_time_iter = zhashx_new ();
     ctx->current_request = xzmalloc (sizeof (*(ctx->current_request)));
     ctx->avail_time_iter_set = 0;
     ctx->span_counter = 0;
@@ -610,7 +610,7 @@ static inline void erase (planner_t *ctx)
     zhashx_destroy (&(ctx->span_lookup));
 
     if (ctx->avail_time_iter) {
-        zhash_destroy (&ctx->avail_time_iter);
+        zhashx_destroy (&ctx->avail_time_iter);
         ctx->avail_time_iter = NULL;
     }
     if (ctx->current_request) {
