@@ -11,10 +11,11 @@ EXTRA_DIST= \
 
 CODE_COVERAGE_IGNORE_PATTERN = \
     "$(abs_top_builddir)/t/*" \
-    "/test/*.c" \
-    "/tests/*.c" \
-    "common/libtap/*" \
-    "common/liblsd/*" \
-    "/usr/*"
+    "*/test/*.c" \
+    "*/tests/*.c" \
+    "*/common/libtap/*" \
+    "*/common/liblsd/*" \
+    "/usr/include/*" \
+    "/usr/lib/*"
 CODE_COVERAGE_LCOV_OPTIONS =
 @CODE_COVERAGE_RULES@
