@@ -48,7 +48,7 @@ test_expect_success 'jobs scheduled in correct order' '
 '
 
 test_expect_success 'sim: unloaded' '
-    flux module remove sched
+    flux module remove sched &&
     flux module remove sim_exec &&
     flux module remove submit &&
     flux module remove sim
