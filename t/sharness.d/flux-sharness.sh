@@ -7,7 +7,7 @@
 #  Extra functions for Flux testsuite
 #
 run_timeout() {
-    perl -e 'alarm shift @ARGV; exec @ARGV' "$@"
+    perl -e 'use Time::HiRes qw( ualarm ) ; ualarm ((shift @ARGV) * 1000000) ; exec @ARGV' "$@"
 }
 
 #
@@ -102,11 +102,22 @@ test_under_flux() {
         unset FLUX_RC1_PATH
         unset FLUX_RC3_PATH
     fi
+    if test -n "$FLUX_TEST_VALGRIND" ; then
+        VALGRIND_SUPPRESSIONS=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind.supp
+        valgrind="--wrap=libtool,e"
+        valgrind="$valgrind,valgrind,--leak-check=full"
+        valgrind="$valgrind,--trace-children=no,--child-silent-after-fork=yes"
+        valgrind="$valgrind,--leak-resolution=med,--error-exitcode=1"
+        valgrind="$valgrind,--suppressions=${VALGRIND_SUPPRESSIONS}"
+    fi
 
     logopts="-o -Slog-filename=${log_file},-Slog-forward-level=7"
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux start --bootstrap=selfpmi --size=${size} ${logopts} ${timeout} \
+      exec flux start --bootstrap=selfpmi --size=${size} \
+                      ${logopts} \
+                      ${timeout} \
+                      ${valgrind} \
                      "sh $0 ${flags}"
 }
 
@@ -135,7 +146,7 @@ TEST_NAME=$SHARNESS_TEST_NAME
 export TEST_NAME
 
 #  Test requirements for testsuite
-if ! lua -e 'require "posix"'; then
+if ! run_timeout 1.0 lua -e 'require "posix"'; then
     error "failed to find lua posix module in path"
 fi
 
