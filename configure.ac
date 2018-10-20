@@ -77,6 +77,10 @@ AC_CHECK_LIB([readline], [readline],
                         [Define if you have libreadline])],
              [AC_MSG_ERROR([Please install GNU readline])])
 
+AM_CHECK_PYMOD(yaml,
+               [StrictVersion(yaml.__version__) >= StrictVersion('3.10')], [],
+               [AC_MSG_ERROR([[could not find python module yaml, version 3.10+ required]])])
+
 # Checks for header files.
 AC_CHECK_HEADERS([\
   inttypes.h \
