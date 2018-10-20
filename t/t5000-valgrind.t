@@ -39,7 +39,7 @@ test_expect_success 'found executable flux-broker' '
 	test -x "$BROKER"
 '
 test_expect_success 'valgrind reports no new errors on single broker run' '
-	flux ${VALGRIND} \
+	run_timeout 120 flux ${VALGRIND} \
 		--tool=memcheck \
 		--leak-check=full \
 		--gen-suppressions=all \

@@ -1,98 +1,66 @@
+sudo: required
+services: docker
+dist: trusty
 language: c
-
-sudo: false
 
 matrix:
   include:
-    - compiler: gcc
-      env: LUA_VERSION=5.1
-    - compiler: clang
-      env: LUA_VERSION=5.1
-    - compiler: gcc
-      env: LUA_VERSION=5.1 COVERAGE=t
-    - compiler: gcc
-      env: LUA_VERSION=5.2 TEST_INSTALL=t
-    - compiler: clang
-      env: LUA_VERSION=5.2 CC=clang-3.8 CXX=clang++-3.8
-    - compiler: clang
-      env: LUA_VERSION=5.1 CPPCHECK=t
+    - name: "Ubuntu: gcc-8, distcheck"
+      compiler: gcc-8
+      env:
+       - CC=gcc-8
+       - CXX=g++-8
+       - DISTCHECK=t
+    - name: "Ubuntu: clang-6.0 chain-lint"
+      compiler: clang-6.0
+      env:
+       - CC=clang-6.0
+       - CXX=clang++-6.0
+       - chain_lint=t
+    - name: "Ubuntu: COVERAGE=t"
+      compiler: gcc
+      env:
+       - COVERAGE=t
+    - name: "Ubuntu: TEST_INSTALL docker-deploy"
+      compiler: gcc
+      env:
+       - TEST_INSTALL=t
+       - DOCKER_TAG=t
+    - name: "Centos 7: docker-deploy"
+      compiler: gcc
+      env:
+       - IMG=centos7
+       - DOCKER_TAG=t
+
+env:
+  global:
+  - TAP_DRIVER_QUIET=1
+  - DOCKERREPO=fluxrm/flux-sched
+  - DOCKER_USERNAME=travisflux
+
 cache:
   directories:
-    - $HOME/local
     - $HOME/.ccache
-    - $HOME/.local
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
-      - george-edison55-precise-backports # CMake 3.0
-    packages:
-      - cmake
-      - cmake-data
-      - clang-3.8
-      - gcc-8
-      - g++-8
-      - uuid-dev
-      - aspell
-      - libopenmpi-dev
-      - ccache
-      - apport # for coredumps
-      - gdb
-      - libmunge-dev
-      - munge
-      - lcov
-      - libyaml-cpp-dev
-      - libboost-all-dev
-      - libreadline6
-      - valgrind
-      - libevent-dev
 
 before_install:
-  - rm -rf $HOME/.luarocks
-  - wget https://raw.githubusercontent.com/flux-framework/flux-core/master/src/test/travis-dep-builder.sh
-  - $(bash ./travis-dep-builder.sh --printenv)
-  - export PKG_CONFIG_PATH=$HOME/local2/lib/pkgconfig:${PKG_CONFIG_PATH}
-  - test "$TRAVIS_PULL_REQUEST" == "false" || export CCACHE_READONLY=1
-  - if test "$CC" = "clang"; then export CCACHE_CPP2=1; fi
-  - depbuilder=$(pwd)/travis-dep-builder.sh
-  - (mkdir -p ../depbuild && cd ../depbuild && bash ${depbuilder} --cachedir=$HOME/local/.cache)
-
   # coveralls-lcov required only for coveralls.io upload:
   - if test "$COVERAGE" = "t"; then gem install coveralls-lcov; fi
-
-script:
- - ulimit -c unlimited
- - export CC="ccache $CC"
- - export MAKECMDS="make distcheck"
- - export FLUX_TESTS_LOGFILE=t
-
- - git clone https://github.com/flux-framework/flux-core.git $HOME/flux-core
- - (cd $HOME/flux-core && ./autogen.sh && ./configure --prefix=$HOME/local2 && make -j 2 && make install)
- - (rm -fr $HOME/flux-core)
- - (find $HOME/local2/lib -name \*.la | xargs rm -f)
- - ($HOME/local2/bin/flux keygen)
-
- # Set LD_LIBRARY_PATH so that flux-core libs can be found
- - export LD_LIBRARY_PATH=$HOME/local2/lib:${LD_LIBRARY_PATH}
-
- # Enable coverage for $CC+coverage build
- - if test "$COVERAGE" = "t" ; then ARGS=--enable-code-coverage; MAKECMDS="make && make check-code-coverage && lcov -l flux-*coverage.info" ; fi
- 
- # Use "make install" and set FLUX_SCHED_TEST_INSTALLED in environment for installed testing:
- - if test "$TEST_INSTALL" = "t"; then ARGS=--prefix=$HOME/local2; MAKECMDS="make && make install && FLUX_SCHED_TEST_INSTALLED=t make check"; fi
-
- # cppcheck instead of make
- - >
-   if test "$CPPCHECK" = "t"; then
-     MAKECMDS="cppcheck --force --inline-suppr -j 2 --std=c99 --std=c++11 --quiet
-             --error-exitcode=1
-             -i src/common/libtap
-              .";
+  - if test -z "$IMG"; then IMG=bionic; fi
+  #  Tag image if this build is on master or result of a tag:
+  - |
+   if test "$DOCKER_TAG" = "t" \
+     -a "$TRAVIS_REPO_SLUG" = "flux-framework/flux-sched" \
+     -a "$TRAVIS_PULL_REQUEST" = "false" \
+     -a \( "$TRAVIS_BRANCH" = "master" -o -n "$TRAVIS_TAG" \); then
+      export TAGNAME="${DOCKERREPO}:${IMG}-${TRAVIS_TAG:-latest}"
+      echo "Tagging new image $TAGNAME"
    fi
 
- - autoreconf -i && ./configure ${ARGS} && echo $MAKECMDS && eval ${MAKECMDS}
+script:
+  - |
+   src/test/docker/docker-run-checks.sh -j2 \
+     --image=${IMG} \
+     ${TAGNAME:+--tag=${TAGNAME}}
 
 after_success:
  - ccache -s
