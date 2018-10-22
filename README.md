@@ -47,8 +47,15 @@ The next step is to build the sched module.
 flux-sched requires the following packages to build:
 
 ```
-libboost-dev >= 1.53
 libhwloc-dev >= 1.11.1
+libboost packages == 1.53 or > 1.58
+  -  libboost-dev
+  -  libboost-system-dev
+  -  libboost-filesystem-dev
+  -  libboost-thread-dev
+  -  libboost-graph-dev
+  -  libboost-regex-dev
+libxml2-dev >= 2.9.1
 ```
 
 The sched module contains

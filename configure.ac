@@ -62,7 +62,9 @@ AC_DEFINE_UNQUOTED([LIBLUA_SO], ["$LIBLUA_SONAME"],
 
 PKG_CHECK_MODULES([UUID], [uuid], [], [])
 AX_FLUX_CORE
-AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please install boost >= 1.53)])])
+
+AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please use boost == 1.53 or > 1.58])])
+AX_CHECK_BUGGY_BOOST
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
@@ -74,6 +76,10 @@ AC_CHECK_LIB([readline], [readline],
               AC_DEFINE([HAVE_LIBREADLINE], [1],
                         [Define if you have libreadline])],
              [AC_MSG_ERROR([Please install GNU readline])])
+
+AM_CHECK_PYMOD(yaml,
+               [StrictVersion(yaml.__version__) >= StrictVersion('3.10')], [],
+               [AC_MSG_ERROR([[could not find python module yaml, version 3.10+ required]])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([\
