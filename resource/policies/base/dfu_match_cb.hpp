@@ -30,7 +30,7 @@
 #include <vector>
 #include <cstdint>
 #include <iostream>
-#include <flux/jobspec.hpp>
+#include "resource/libjobspec/jobspec.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/evaluators/scoring_api.hpp"
 #include "resource/policies/base/matcher.hpp"

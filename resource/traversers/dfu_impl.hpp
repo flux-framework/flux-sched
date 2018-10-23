@@ -28,7 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include <flux/jobspec.hpp>
+#include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
 #include "resource/schema/resource_data.hpp"
 #include "resource/schema/resource_graph.hpp"

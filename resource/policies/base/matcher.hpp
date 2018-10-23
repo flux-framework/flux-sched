@@ -30,7 +30,7 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <flux/jobspec.hpp>
+#include "resource/libjobspec/jobspec.hpp"
 #include "resource/schema/data_std.hpp"
 #include "resource/planner/planner.h"
 
