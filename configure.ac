@@ -63,13 +63,13 @@ AC_DEFINE_UNQUOTED([LIBLUA_SO], ["$LIBLUA_SONAME"],
 PKG_CHECK_MODULES([UUID], [uuid], [], [])
 AX_FLUX_CORE
 
+X_AC_YAMLCPP
 AX_BOOST_BASE([1.53.0], [], [AC_MSG_ERROR([Please use boost == 1.53 or > 1.58])])
 AX_CHECK_BUGGY_BOOST
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
 AX_BOOST_REGEX
-PKG_CHECK_MODULES([JOBSPEC], [flux-jobspec], [], [])
 PKG_CHECK_MODULES([IDSET], [flux-idset], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])
@@ -153,6 +153,8 @@ AC_CONFIG_FILES([Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
+  resource/libjobspec/Makefile
+  resource/utilities/Makefile
   resource/modules/Makefile
   sched/Makefile
   sched/priority/Makefile

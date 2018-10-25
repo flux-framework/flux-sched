@@ -411,7 +411,7 @@ int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
     }
 
     for (i = 0, s = zlist_first (list); s; i++, s = zlist_next (list))
-        if (planner_rem_span (ctx->planners[i], (int64_t)s) == -1)
+        if (planner_rem_span (ctx->planners[i], (intptr_t)s) == -1)
             goto done;
 
     zhashx_delete (ctx->span_lookup, key);
@@ -433,7 +433,7 @@ int64_t planner_multi_span_first (planner_multi_t *ctx)
         goto done;
 
     }
-    rc = (int64_t)span;
+    rc = (intptr_t)span;
 done:
     return rc;
 }
@@ -450,7 +450,7 @@ int64_t planner_multi_span_next (planner_multi_t *ctx)
         errno = ENOENT;
         goto done;
     }
-    rc = (int64_t)span;
+    rc = (intptr_t)span;
 done:
     return rc;
 }

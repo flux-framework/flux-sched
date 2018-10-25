@@ -25,7 +25,6 @@ resource_la_CXXFLAGS = \
     $(FLUX_CORE_CFLAGS)
 resource_la_LIBADD = \
     ../libresource.la \
-    $(JOBSPEC_LIBS) \
     $(FLUX_CORE_LIBS) \
     $(DL_LIBS) \
     $(HWLOC_LIBS) \
