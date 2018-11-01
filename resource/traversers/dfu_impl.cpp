@@ -309,7 +309,8 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
         if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
             continue;
-        if ((rc = prime (subsystem, target (*ei, *m_graph), dfv)) != 0)
+        if ((rc = prime_pruning_filter (subsystem,
+                                        target (*ei, *m_graph), dfv)) != 0)
             break;
     }
     return rc;
@@ -932,8 +933,8 @@ void dfu_impl_t::clear_err_message ()
     m_err_msg = "";
 }
 
-int dfu_impl_t::prime (const subsystem_t &s, vtx_t u,
-                       map<string, int64_t> &to_parent)
+int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
+                                      map<string, int64_t> &to_parent)
 {
     int rc = -1;
     vector<uint64_t> avail;
@@ -970,15 +971,15 @@ done:
     return rc;
 }
 
-void dfu_impl_t::prime (vector<Resource> &resources,
-                        std::unordered_map<string, int64_t> &to_parent)
+void dfu_impl_t::prime_jobspec (vector<Resource> &resources,
+                                std::unordered_map<string, int64_t> &to_parent)
 {
     const subsystem_t &subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
-        prime (resource.with, resource.user_data);
+        prime_jobspec (resource.with, resource.user_data);
         for (auto &aggregate : resource.user_data) {
             accum_if (subsystem, aggregate.first,
                       resource.count.min * aggregate.second, to_parent);

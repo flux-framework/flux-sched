@@ -171,7 +171,8 @@ int dfu_traverser_t::initialize ()
             break;
         }
         root = get_roots ()->at(subsystem);
-        rc += detail::dfu_impl_t::prime (subsystem, root, from_dfv);
+        rc += detail::dfu_impl_t::prime_pruning_filter (subsystem,
+                                                        root, from_dfv);
     }
     return rc;
 }
@@ -203,7 +204,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_op_t op,
     vtx_t root = get_roots ()->at(dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
     std::unordered_map<string, int64_t> dfv;
-    detail::dfu_impl_t::prime (jobspec.resources, dfv);
+    detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     meta.build (jobspec, true, jobid, *at);
     if ( (rc = schedule (jobspec, meta, x, op, root, &needs, dfv)) ==  0) {
         *at = meta.at;
