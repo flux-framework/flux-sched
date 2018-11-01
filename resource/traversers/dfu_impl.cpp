@@ -272,6 +272,9 @@ const vector<Resource> &dfu_impl_t::test (vtx_t u,
     return *ret;
 }
 
+/* Accumulate counts into accum[type] if the type is one of the pruning
+ * filter type.
+ */
 int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts, map<string, int64_t> &accum)
 {
@@ -286,6 +289,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
     return rc;
 }
 
+/* Same as above except that accum is unorder_map */
 int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts,
                           std::unordered_map<string, int64_t> &accum)
