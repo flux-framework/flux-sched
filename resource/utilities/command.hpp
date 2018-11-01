@@ -44,6 +44,7 @@ struct test_params_t {
     std::ofstream r_out;        /* Output file stream for emitted R */
     std::string r_fname;        /* Output file to dump the emitted R */
     std::string o_fext;         /* File extension */
+    std::string prune_filters;   /* Raw prune-filter specification */
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
 };

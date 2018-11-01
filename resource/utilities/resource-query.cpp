@@ -186,6 +186,7 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.r_fname = "";
     ctx->params.o_fext = "dot";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
+    ctx->params.prune_filters = "ALL:core";
     ctx->params.elapse_time = false;
 }
 
@@ -453,6 +454,9 @@ int main (int argc, char *argv[])
             case 'o': /* --graph-output */
                 ctx->params.o_fname = optarg;
                 break;
+            case 'p': /* --prune-filter */
+                ctx->params.prune_filters = optarg;
+                break;
             case 't': /* --test-output */
                 ctx->params.r_fname = optarg;
                 break;
@@ -499,8 +503,13 @@ int main (int argc, char *argv[])
     f_resource_graph_t *fg = new f_resource_graph_t (g, edgsel, vtxsel);
     ctx->resource_graph_views[ctx->params.matcher_name] = fg;
     ctx->jobid_counter = 1;
-    const string &dom = ctx->matcher->dom_subsystem ();
-    ctx->matcher->set_pruning_type (dom, ANY_RESOURCE_TYPE, "core");
+    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                ctx->params.prune_filters)
+                                                < 0) {
+        cerr << "ERROR: setting pruning filters with "
+             << "ctx->params.prune_filters" << endl;
+        return EXIT_FAILURE;
+    }
 
     if (ctx->params.r_fname != "") {
         ctx->params.r_out.exceptions (std::ofstream::failbit
