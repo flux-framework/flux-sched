@@ -152,6 +152,68 @@ unsigned int matcher_util_api_t::calc_count (
     return count;
 }
 
+int matcher_util_api_t::register_resource_pair (const std::string &subsystem,
+                                                std::string &r_pair)
+{
+    int rc = -1;
+    size_t pos = 0;
+    std::string h;
+    std::string l;
+    std::string split = ":";
+
+    if (((pos = r_pair.find (split)) == std::string::npos))
+        goto done;
+    h = r_pair.substr (0, pos);
+    h.erase (std::remove_if (h.begin (), h.end (), ::isspace), h.end ());
+    if (h.empty ()) {
+        errno = EINVAL;
+        goto done;
+    }
+    if (h == "ALL")
+        h = ANY_RESOURCE_TYPE;
+    l = r_pair.erase (0, pos + split.length ());
+    l.erase (std::remove_if (l.begin (), l.end (), ::isspace), l.end ());
+    if (l.empty ()) {
+        errno = EINVAL;
+        goto done;
+    }
+    set_pruning_type (subsystem, h, l);
+    rc = 0;
+
+done:
+    return rc;
+}
+
+int matcher_util_api_t::set_pruning_types_w_spec (const std::string &subsystem,
+                                                  const std::string &spec)
+{
+    int rc = -1;
+    size_t pos = 0;
+    std::string spec_copy = spec;
+    std::string sep = ",";
+
+    try {
+        while ((pos = spec_copy.find (sep)) != std::string::npos) {
+            std::string r_pair = spec_copy.substr (0, pos);
+            if (register_resource_pair (subsystem, r_pair) < 0)
+                goto done;
+            spec_copy.erase (0, pos + sep.length ());
+        }
+        if (register_resource_pair (subsystem, spec_copy) < 0)
+            goto done;
+        rc = 0;
+    } catch (std::out_of_range &e) {
+        errno = EINVAL;
+        rc = -1;
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        rc = -1;
+    }
+
+done:
+    return rc;
+}
+
 void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
                                            const std::string &anchor_type,
                                            const std::string &prune_type)

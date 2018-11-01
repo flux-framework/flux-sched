@@ -115,16 +115,43 @@ public:
     unsigned int calc_count (const Flux::Jobspec::Resource &resource,
                              unsigned int qual_cnt) const;
 
+    /*! Set prune filters based on spec. The spec should comply with
+     *  the following format:
+     *  <HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>
+     *      Install a planner-based filter at each High-Level (HL) resource
+     *      vertex which tracks the state of the Low-Level (LL) resources
+     *      in aggregate, residing under its subtree. If a jobspec requests
+     *      1 node with 4 cores, and the visiting compute-node vertex has
+     *      only a total of 2 available cores in aggregate at its
+     *      subtree, this filter allows the traverser to prune a further descent
+     *      to accelerate the search.
+     *      Use the ALL keyword for HL-resource if you want LL-resource to be
+     *      tracked at all of the HL-resource vertices. Examples:
+     *      rack:node,node:core
+     *      ALL:core,cluster:node,rack:node
+     *
+     *  \param subsystem subsystem
+     *  \param spec      prune filter specification string
+     */
+    int set_pruning_types_w_spec (const std::string &subsystem,
+                                  const std::string &spec);
+
     void set_pruning_type (const std::string &subsystem,
                            const std::string &anchor_type,
                            const std::string &prune_type);
+
     bool is_my_pruning_type (const std::string &subsystem,
                              const std::string &anchor_type,
                              const std::string &prune_type);
+
     bool is_pruning_type (const std::string &subsystem,
                           const std::string &prune_type);
 
 private:
+
+    int register_resource_pair (const std::string &subsystem,
+                                std::string &r_pair);
+
     // resource types that will be used for scheduler driven aggregate updates
     // Examples:
     // m_pruning_type["containment"]["rack"] -> {"node"}
