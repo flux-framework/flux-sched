@@ -140,7 +140,7 @@ public:
      *
      *  \param plan      multi-planner object.
      *  \param lookup    a map type such as std::map or unordered_map.
-     *  \param[out] resource_counts
+     *  \param[out]      resource_counts
      *                   output array.
      *  \return          0 on success; -1 on error.
      */
