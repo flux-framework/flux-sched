@@ -272,6 +272,9 @@ const vector<Resource> &dfu_impl_t::test (vtx_t u,
     return *ret;
 }
 
+/* Accumulate counts into accum[type] if the type is one of the pruning
+ * filter type.
+ */
 int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts, map<string, int64_t> &accum)
 {
@@ -286,6 +289,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
     return rc;
 }
 
+/* Same as above except that accum is unorder_map */
 int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
                           unsigned int counts,
                           std::unordered_map<string, int64_t> &accum)
@@ -309,7 +313,8 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
         if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
             continue;
-        if ((rc = prime (subsystem, target (*ei, *m_graph), dfv)) != 0)
+        if ((rc = prime_pruning_filter (subsystem,
+                                        target (*ei, *m_graph), dfv)) != 0)
             break;
     }
     return rc;
@@ -932,8 +937,8 @@ void dfu_impl_t::clear_err_message ()
     m_err_msg = "";
 }
 
-int dfu_impl_t::prime (const subsystem_t &s, vtx_t u,
-                       map<string, int64_t> &to_parent)
+int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
+                                      map<string, int64_t> &to_parent)
 {
     int rc = -1;
     vector<uint64_t> avail;
@@ -946,10 +951,14 @@ int dfu_impl_t::prime (const subsystem_t &s, vtx_t u,
     if (prime_exp (s, u, dfv) != 0)
         goto done;
 
-    for (auto &aggregate : dfv) {
-        accum_if (s, aggregate.first, aggregate.second, to_parent);
-        types.push_back (strdup (aggregate.first.c_str ()));
-        avail.push_back (aggregate.second);
+    for (auto &aggr : dfv) {
+        /* If the aggregate type is any filter type, accume for the parent */
+        accum_if (s, aggr.first, aggr.second, to_parent);
+        /* If the aggregate type is "my" filter type, track them in my filter */
+        if (m_match->is_my_pruning_type (s, (*m_graph)[u].type, aggr.first)) {
+            types.push_back (strdup (aggr.first.c_str ()));
+            avail.push_back (aggr.second);
+        }
     }
     if (!avail.empty () && !types.empty ()) {
         planner_multi_t *p = NULL;
@@ -970,15 +979,15 @@ done:
     return rc;
 }
 
-void dfu_impl_t::prime (vector<Resource> &resources,
-                        std::unordered_map<string, int64_t> &to_parent)
+void dfu_impl_t::prime_jobspec (vector<Resource> &resources,
+                                std::unordered_map<string, int64_t> &to_parent)
 {
     const subsystem_t &subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
-        prime (resource.with, resource.user_data);
+        prime_jobspec (resource.with, resource.user_data);
         for (auto &aggregate : resource.user_data) {
             accum_if (subsystem, aggregate.first,
                       resource.count.min * aggregate.second, to_parent);

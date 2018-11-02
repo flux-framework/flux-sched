@@ -132,17 +132,19 @@ static void usage (int code)
 "                locality: Select contiguous resources first in their ID space\n"
 "            (default=high).\n"
 "\n"
-"    -C, --prune-filters=<[HL-resource1|]:LL-resource1[,[HL-resource2|]:LL-resource2...]...]>\n"
-"            Install a planner-based cache at each HL(High-Level)-resource,\n"
-"                vertex which maintains the state of LL(Low-Level)-resources\n"
-"                in aggregate residing under its subtree. If a spec requests\n"
-"                1 node with 4 cores, and the visiting node vertex has\n"
-"                only a total of 2 available cores in aggreate at its\n"
-"                subtree, traverse will prune the further descent from\n"
-"                this node vertex to speep up the search. Example:\n"
+"    -C, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>\n"
+"            Install a planner-based filter at each High-Level (HL) resource\n"
+"                vertex which tracks the state of the Low-Level (LL) resources\n"
+"                in aggregate, residing under its subtree. If a jobspec requests\n"
+"                1 node with 4 cores, and the visiting compute-node vertex has\n"
+"                only a total of 2 available cores in aggregate at its\n"
+"                subtree, this filter allows the traverser to prune a further descent\n"
+"                to accelerate the search.\n"
+"                Use the ALL keyword for HL-resource if you want LL-resource to be\n"
+"                tracked at all of the HL-resource vertices. Examples:\n"
 "                    rack:node,node:core\n"
-"                    :core,cluster:node,rack:node\n"
-"                (default=:core).\n"
+"                    ALL:core,cluster:node,rack:node\n"
+"                (default=ALL:core).\n"
 "\n"
 "    -g, --graph-format=<dot|graphml>\n"
 "            Specify the graph format of the output file\n"
@@ -184,6 +186,7 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.r_fname = "";
     ctx->params.o_fext = "dot";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
+    ctx->params.prune_filters = "ALL:core";
     ctx->params.elapse_time = false;
 }
 
@@ -451,6 +454,9 @@ int main (int argc, char *argv[])
             case 'o': /* --graph-output */
                 ctx->params.o_fname = optarg;
                 break;
+            case 'p': /* --prune-filter */
+                ctx->params.prune_filters = optarg;
+                break;
             case 't': /* --test-output */
                 ctx->params.r_fname = optarg;
                 break;
@@ -497,8 +503,13 @@ int main (int argc, char *argv[])
     f_resource_graph_t *fg = new f_resource_graph_t (g, edgsel, vtxsel);
     ctx->resource_graph_views[ctx->params.matcher_name] = fg;
     ctx->jobid_counter = 1;
-    const string &dom = ctx->matcher->dom_subsystem ();
-    ctx->matcher->set_pruning_type (dom, ANY_RESOURCE_TYPE, "core");
+    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                ctx->params.prune_filters)
+                                                < 0) {
+        cerr << "ERROR: setting pruning filters with "
+             << "ctx->params.prune_filters" << endl;
+        return EXIT_FAILURE;
+    }
 
     if (ctx->params.r_fname != "") {
         ctx->params.r_out.exceptions (std::ofstream::failbit

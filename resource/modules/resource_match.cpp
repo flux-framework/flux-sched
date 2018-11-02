@@ -127,7 +127,7 @@ static void set_default_args (resource_args_t &args)
     args.grug = "none";
     args.match_subsystems = "containment";
     args.match_policy = "high";
-    args.prune_filters = "core";
+    args.prune_filters = "ALL:core";
     args.R_format = "R_NATIVE";
 }
 
@@ -178,7 +178,7 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
                            args.match_policy.c_str (), dflt.c_str ());
                 args.match_policy = dflt;
             }
-        } else if (!strncmp ("filters=", argv[i], sizeof ("fileters"))) {
+        } else if (!strncmp ("prune-filters=", argv[i], sizeof ("prune-filters"))) {
             dflt = args.prune_filters;
             args.prune_filters = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("R-format=", argv[i], sizeof ("R-format"))) {
@@ -331,14 +331,15 @@ static int init_resource_graph (resource_ctx_t *ctx)
         return -1;
      }
 
-    // Set pruning filter type for scheduler driven aggregate update
-    const string &dom = ctx->matcher->dom_subsystem ();
-    // TODO: Hook this with ctx.args.prune_filters
-    ctx->matcher->set_pruning_type (dom, ANY_RESOURCE_TYPE, "core");
+    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                ctx->args.prune_filters) < 0) {
+        flux_log (ctx->h, LOG_ERR, "error setting pruning types with: %s",
+                  ctx->args.prune_filters.c_str ());
+        return -1;
+    }
 
     // Initialize the DFU traverser
     ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots), ctx->matcher);
-
     return rc;
 }
 

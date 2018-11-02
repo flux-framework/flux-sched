@@ -112,8 +112,8 @@ public:
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int prime (const subsystem_t &subsystem, vtx_t u,
-               std::map<std::string, int64_t> &to_parent);
+    int prime_pruning_filter (const subsystem_t &subsystem, vtx_t u,
+                             std::map<std::string, int64_t> &to_parent);
 
     /*! Prime the resource section of the jobspec. Aggregate configured
      *  subtree resources into jobspec's user_data.  For example,
@@ -131,8 +131,8 @@ public:
      *                   output aggregates on the subtree.
      *  \return          none.
      */
-    void prime (std::vector<Jobspec::Resource> &resources,
-                std::unordered_map<std::string, int64_t> &to_parent);
+    void prime_jobspec (std::vector<Jobspec::Resource> &resources,
+                        std::unordered_map<std::string, int64_t> &to_parent);
 
     /*! Extract the aggregate info in the lookup object as pertaining to the
      *  planner-tracking resource types into resource_counts array, a form that
@@ -140,7 +140,7 @@ public:
      *
      *  \param plan      multi-planner object.
      *  \param lookup    a map type such as std::map or unordered_map.
-     *  \param[out] resource_counts
+     *  \param[out]      resource_counts
      *                   output array.
      *  \return          0 on success; -1 on error.
      */
