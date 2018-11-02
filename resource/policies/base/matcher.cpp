@@ -226,10 +226,16 @@ bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
                                              const std::string &anchor_type,
                                              const std::string &prune_type)
 {
-    bool rc = true;
+    bool rc = false;
     try {
-        auto &s = m_pruning_types.at (subsystem).at (anchor_type);
-        rc = (s.find (prune_type) != s.end ());
+        auto &s = m_pruning_types.at (subsystem);
+        if (s.find (anchor_type) != s.end ()) {
+            auto &m = s.at (anchor_type);
+            rc = (m.find (prune_type) != m.end ());
+        } else if (s.find (ANY_RESOURCE_TYPE) != s.end ()) {
+            auto &m = s.at (ANY_RESOURCE_TYPE);
+            rc = (m.find (prune_type) != m.end ());
+        }
     } catch (std::out_of_range &e) {
         rc = false;
     }

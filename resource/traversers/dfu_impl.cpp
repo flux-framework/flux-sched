@@ -951,10 +951,14 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     if (prime_exp (s, u, dfv) != 0)
         goto done;
 
-    for (auto &aggregate : dfv) {
-        accum_if (s, aggregate.first, aggregate.second, to_parent);
-        types.push_back (strdup (aggregate.first.c_str ()));
-        avail.push_back (aggregate.second);
+    for (auto &aggr : dfv) {
+        /* If the aggregate type is any filter type, accume for the parent */
+        accum_if (s, aggr.first, aggr.second, to_parent);
+        /* If the aggregate type is "my" filter type, track them in my filter */
+        if (m_match->is_my_pruning_type (s, (*m_graph)[u].type, aggr.first)) {
+            types.push_back (strdup (aggr.first.c_str ()));
+            avail.push_back (aggr.second);
+        }
     }
     if (!avail.empty () && !types.empty ()) {
         planner_multi_t *p = NULL;
