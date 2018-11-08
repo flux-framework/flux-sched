@@ -68,6 +68,7 @@ TESTS = \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
     t4003-cancel-info.t \
+    t4004-match-hwloc.t \
     t5000-valgrind.t
 
 check_SCRIPTS = $(TESTS)
