@@ -27,7 +27,7 @@ TESTS_ENVIRONMENT = \
     FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
     FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
     FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
-    FLUX_SCHED_CO_INST=$(shell if [ $(FLUX_PREFIX) = $(prefix) ]; then echo co; fi) \
+    FLUX_SCHED_CO_INST=`sh -c 'if [ $(FLUX_PREFIX) = $(prefix) ]; then echo co; fi'` \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
