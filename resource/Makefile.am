@@ -6,8 +6,7 @@ AM_CXXFLAGS = \
     -Wno-error \
     $(CODE_COVERAGE_CXXFLAGS)
 
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS) \
-             $(BOOST_LDFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 	      $(BOOST_CPPFLAGS)
@@ -69,6 +68,7 @@ libresource_la_CXXFLAGS = \
 libresource_la_LIBADD = \
     $(top_builddir)/resource/planner/libplanner.la \
     $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
+    $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
