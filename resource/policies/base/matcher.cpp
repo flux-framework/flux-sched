@@ -22,6 +22,8 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
+#include <algorithm>
+
 #include "policies/base/matcher.hpp"
 
 namespace Flux {
