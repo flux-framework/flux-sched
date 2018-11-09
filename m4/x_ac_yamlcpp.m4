@@ -20,11 +20,11 @@ AC_DEFUN([X_AC_YAMLCPP], [
 
     # YAML::Node::Mark() is only present in yaml-cpp beginning
     # with release 0.5.3.
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <yaml-cpp/yaml.h>],
-                                    [YAML::Node node; node.Mark()])],
-                   [AC_DEFINE([HAVE_YAML_MARK], [1],
-                              [Define to 1 if yaml-cpp library has YAML::Node::Mark()])],
-                   [])
+    AC_MSG_CHECKING([whether yaml-cpp has YAML::Node::Mark])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <yaml-cpp/yaml.h>], [YAML::Node node; node.Mark()])],
+                       [AC_DEFINE([HAVE_YAML_MARK], [1], [Define to 1 if yaml-cpp library has YAML::Node::Mark()])
+                        AC_MSG_RESULT([yes])],
+                       [AC_MSG_RESULT([no])])
 
     AC_LANG_POP([C++])
     LIBS="$ac_save_LIBS"
