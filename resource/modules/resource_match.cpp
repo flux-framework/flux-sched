@@ -200,11 +200,10 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
         } else {
             rc = -1;
             errno = EINVAL;
-            goto done;
+            flux_log (ctx->h, LOG_ERR, "Unknown option `%s'", argv[i]);
         }
     }
 
-done:
     return rc;
 }
 
@@ -215,27 +214,26 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't allocate the context");
-        goto done;
+        goto error;
     }
     if (flux_get_rank (h, &rank) < 0) {
         flux_log (h, LOG_ERR, "can't determine rank");
-        goto done;
+        goto error;
     }
     if (rank) {
         flux_log (h, LOG_ERR, "resource module must only run on rank 0");
-        goto done;
+        goto error;
     }
-    if (process_args (ctx, argc, argv) != 0) {
-        flux_log (h, LOG_ERR, "can't process module args");
-        goto done;
-    }
+    process_args (ctx, argc, argv);
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log (h, LOG_ERR, "error registering resource event handler");
-        goto done;
+        goto error;
     }
-
-done:
     return ctx;
+
+error:
+    freectx (ctx);
+    return NULL;
 }
 
 
@@ -319,7 +317,7 @@ static int populate_resource_db (resource_ctx_t *ctx)
     // TODO: include rgen.err_message()
     if (ctx->args.grug != "") {
         if (ctx->args.hwloc_xml != "") {
-            cout << "WARN: multiple resource inputs provided, using grug" << endl;
+            flux_log (ctx->h, LOG_WARNING, "multiple resource inputs provided, using grug");
         }
         if ((rc = rgen.read_graphml (ctx->args.grug, ctx->db)) != 0) {
             errno = EINVAL;
