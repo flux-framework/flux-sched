@@ -132,7 +132,7 @@ static void usage (int code)
 "                locality: Select contiguous resources first in their ID space\n"
 "            (default=high).\n"
 "\n"
-"    -C, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>\n"
+"    -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>\n"
 "            Install a planner-based filter at each High-Level (HL) resource\n"
 "                vertex which tracks the state of the Low-Level (LL) resources\n"
 "                in aggregate, residing under its subtree. If a jobspec requests\n"
