@@ -1,0 +1,4 @@
+# 2x slot[1]->numanode[1]->gpu[2]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test010.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test010.yaml
+quit

@@ -1,11 +1,17 @@
 version: 1
 resources:
-  - type: slot
-    count: 2
-    label: default
+  - type: node
+    count: 1
     with:
-      - type: socket
-        count: 1
+      - type: slot
+        count: 2
+        label: default
+        with:
+          - type: numanode
+            count: 1
+            with:
+              - type: socket
+                count: 1
 
 # a comment
 attributes:
