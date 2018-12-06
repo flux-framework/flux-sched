@@ -6,8 +6,7 @@ AM_CXXFLAGS = \
     -Wno-error \
     $(CODE_COVERAGE_CXXFLAGS)
 
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS) \
-             $(BOOST_LDFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
           $(BOOST_CPPFLAGS)
@@ -30,7 +29,8 @@ resource_la_LIBADD = \
     $(HWLOC_LIBS) \
     $(UUID_LIBS) \
     $(JANSSON_LIBS) \
-    $(CZMQ_LIBS)
+    $(CZMQ_LIBS) \
+    $(BOOST_LDFLAGS)
 resource_la_LDFLAGS = \
     $(AM_LDFLAGS) \
     $(fluxmod_ldflags) -module

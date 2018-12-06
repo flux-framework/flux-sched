@@ -6,8 +6,7 @@ AM_CXXFLAGS = \
     -Wno-error \
     $(CODE_COVERAGE_CXXFLAGS)
 
-AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS) \
-             $(BOOST_LDFLAGS)
+AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
           $(BOOST_CPPFLAGS)
@@ -20,6 +19,7 @@ grug2dot_CXXFLAGS = \
     $(AM_CXXFLAGS)
 grug2dot_LDADD = \
     ../libresource.la \
+    $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
@@ -37,4 +37,3 @@ resource_query_LDADD = \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
     $(BOOST_REGEX_LIB)
-
