@@ -26,12 +26,15 @@
 #include <sstream>
 #include <cerrno>
 #include <map>
+#include <cinttypes>
 
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <jansson.h>
+#include "src/common/libutil/shortjansson.h"
 }
 
 #include "resource/schema/resource_graph.hpp"
@@ -51,6 +54,7 @@ using namespace Flux::resource_model;
 
 struct resource_args_t {
     string grug;
+    string hwloc_xml;
     string match_subsystems;
     string match_policy;
     string prune_filters;
@@ -124,7 +128,8 @@ static void freectx (void *arg)
 
 static void set_default_args (resource_args_t &args)
 {
-    args.grug = "none";
+    args.grug = "";
+    args.hwloc_xml = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
     args.prune_filters = "ALL:core";
@@ -166,6 +171,8 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
     for (int i = 0; i < argc; i++) {
         if (!strncmp ("grug-conf=", argv[i], sizeof ("grug-conf"))) {
             args.grug = strstr (argv[i], "=") + 1;
+        } else if (!strncmp ("hwloc-xml=", argv[i], sizeof ("hwloc-xml"))) {
+            args.hwloc_xml = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
             dflt = args.match_subsystems;
             args.match_subsystems = strstr (argv[i], "=") + 1;
@@ -193,11 +200,10 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
         } else {
             rc = -1;
             errno = EINVAL;
-            goto done;
+            flux_log (ctx->h, LOG_ERR, "Unknown option `%s'", argv[i]);
         }
     }
 
-done:
     return rc;
 }
 
@@ -208,27 +214,26 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't allocate the context");
-        goto done;
+        goto error;
     }
     if (flux_get_rank (h, &rank) < 0) {
         flux_log (h, LOG_ERR, "can't determine rank");
-        goto done;
+        goto error;
     }
     if (rank) {
         flux_log (h, LOG_ERR, "resource module must only run on rank 0");
-        goto done;
+        goto error;
     }
-    if (process_args (ctx, argc, argv) != 0) {
-        flux_log (h, LOG_ERR, "can't process module args");
-        goto done;
-    }
+    process_args (ctx, argc, argv);
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log (h, LOG_ERR, "error registering resource event handler");
-        goto done;
+        goto error;
     }
-
-done:
     return ctx;
+
+error:
+    freectx (ctx);
+    return NULL;
 }
 
 
@@ -238,22 +243,106 @@ done:
  *                                                                            *
  ******************************************************************************/
 
+/* Block until value of 'key' becomes non-NULL.
+ * It is an EPROTO error if value is type other than json_type_string.
+ * On success returns value, otherwise NULL with errno set.
+ */
+static json_t *get_string_blocking (flux_t *h, const char *key)
+{
+    char *json_str = NULL; /* initial value for watch */
+    json_t *o = NULL;
+    int saved_errno;
+
+    if (flux_kvs_watch_once (h, key, &json_str) < 0) {
+        saved_errno = errno;
+        goto error;
+    }
+
+    if (!json_str || !(o = Jfromstr (json_str))
+                  || !json_is_string (o)) {
+        saved_errno = EPROTO;
+        goto error;
+    }
+    free (json_str);
+    return o;
+error:
+    free (json_str);
+    Jput (o);
+    errno = saved_errno;
+    return NULL;
+}
+
+
+/*
+ * Read the hwloc xml stored in Flux's KVS and populate the resource db
+ *
+ * \param rgen   resource generator
+ * \param h      flux handle
+ * \param db     graph database consisting of resource graph and various indices
+ * \return       0 on success; non-zero integer on an error
+ */
+int read_flux_hwloc (resource_generator_t &rgen, flux_t *h, resource_graph_db_t &db)
+{
+    int rc = -1;
+    uint32_t rank = 0, size = 0;
+
+    if (flux_get_size (h, &size) == -1) {
+        flux_log (h, LOG_ERR, "%s: error with flux_get_size", __FUNCTION__);
+        return -1;
+    }
+
+    ggv_t cluster_vertex = rgen.create_cluster_vertex (db);
+
+    for (rank=0; rank < size; rank++) {
+        char k[64];
+        int n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
+        if ((n < 0) || ((unsigned int) n > sizeof (k))) {
+          errno = ENOMEM;
+          return -1;
+        }
+        json_t *o = get_string_blocking (h, k);
+
+        const char *hwloc_xml = json_string_value (o);
+        rgen.read_ranked_hwloc_xml (hwloc_xml, rank, cluster_vertex, db);
+        Jput (o);
+    }
+
+    return 0;
+}
+
 static int populate_resource_db (resource_ctx_t *ctx)
 {
     int rc = 0;
     resource_generator_t rgen;
-    if (ctx->args.grug != "none") {
+    // TODO: include rgen.err_message()
+    if (ctx->args.grug != "") {
+        if (ctx->args.hwloc_xml != "") {
+            flux_log (ctx->h, LOG_WARNING, "multiple resource inputs provided, using grug");
+        }
         if ((rc = rgen.read_graphml (ctx->args.grug, ctx->db)) != 0) {
             errno = EINVAL;
             rc = -1;
             flux_log (ctx->h, LOG_ERR, "error in generating resources");
             goto done;
         }
+        flux_log (ctx->h, LOG_INFO, "loaded resources from grug");
+    } else if (ctx->args.hwloc_xml != "") {
+        if ( (rc = rgen.read_hwloc_xml_file (ctx->args.hwloc_xml.c_str(), ctx->db)) != 0) {
+            errno = EINVAL;
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "error in generating resources");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "loaded resources from hwloc xml");
     } else {
-        errno = ENOTSUP;
-        rc = -1;
-        flux_log (ctx->h, LOG_ERR, "hwloc reader not implemented");
-        goto done;
+        // gather hwloc from Flux's KVS
+        if ( (rc = read_flux_hwloc (rgen, ctx->h, ctx->db)) != 0) {
+            errno = EINVAL;
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "error in generating resources");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "loaded resources from the hwloc xml in the KVS");
     }
 
 done:
@@ -411,6 +500,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     } else {
         rc = -1;
         errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "unknown cmd: %s", cmd);
         goto done;
     }
     gettimeofday (&end, NULL);

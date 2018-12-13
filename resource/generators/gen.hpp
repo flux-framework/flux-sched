@@ -39,12 +39,19 @@ public:
     resource_generator_t (const resource_generator_t &o);
     const resource_generator_t &operator=(const resource_generator_t &o);
     ~resource_generator_t ();
-    int read_graphml (const std::string &f, resource_graph_db_t &db);
+    int read_graphml (const std::string &fn, resource_graph_db_t &db);
+    int read_hwloc_xml_file (const char *fn, resource_graph_db_t &db);
+    int read_ranked_hwloc_xml (const char *hwloc_xml, int rank,
+                               const ggv_t &root_vertex, resource_graph_db_t &db);
+    int read_ranked_hwloc_xmls (char **hwloc_strs, int size, resource_graph_db_t &db);
+    ggv_t create_cluster_vertex(resource_graph_db_t &db);
     const std::string &err_message () const;
 private:
     resource_gen_spec_t m_gspec;
+    // TODO: convert to string stream
     std::string m_err_msg = "";
 };
+
 
 } // namespace resource_model
 } // namespace Flux

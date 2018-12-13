@@ -53,6 +53,7 @@ struct resource_pool_t {
     int64_t id = -1;
     uuid_t uuid;
     unsigned int size = 0;
+    int rank = -1;
     std::string unit;
 
     schedule_t schedule;    //!< schedule data

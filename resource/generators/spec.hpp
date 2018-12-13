@@ -45,6 +45,7 @@ struct resource_pool_gen_t {
     int root;
     std::string type;
     std::string basename;
+    int rank;
     long size;
     std::string unit;
     std::string subsystem;
