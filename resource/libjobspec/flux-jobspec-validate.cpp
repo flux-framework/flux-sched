@@ -25,9 +25,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
-#include <flux/jobspec.hpp>
 #include <yaml-cpp/yaml.h>
+#include "jobspec.hpp"
 
 using namespace std;
 using namespace Flux::Jobspec;
