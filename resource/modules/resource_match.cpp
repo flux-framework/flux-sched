@@ -132,7 +132,7 @@ static void set_default_args (resource_args_t &args)
     args.hwloc_xml = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
-    args.prune_filters = "ALL:core";
+    args.prune_filters = "ALL:pu";
     args.R_format = "R_NATIVE";
 }
 
