@@ -130,6 +130,12 @@ AC_SUBST(fluxschedrc1dir)
 AS_VAR_SET(fluxschedrc3dir, $sysconfdir/flux/rc3.d)
 AC_SUBST(fluxschedrc3dir)
 
+AS_VAR_SET(fluxresourcerc1dir, $sysconfdir/flux/rc1.d)
+AC_SUBST(fluxresourcerc1dir)
+
+AS_VAR_SET(fluxresourcerc3dir, $sysconfdir/flux/rc3.d)
+AC_SUBST(fluxresourcerc3dir)
+
 ##
 # Macros to avoid repetition in Makefiles.am's
 ##
