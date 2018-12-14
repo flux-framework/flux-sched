@@ -1,0 +1,17 @@
+#!/bin/bash -e
+#
+# If resource is not installed into flux-core's $prefix,
+# one should set FLUX_RC_EXTRA environment variable to flux-sched's $prefix/etc/flux
+# so that flux start can automatically execute resource's runlevel 1 and 3.
+#
+# In addition, users can set FLUX_RESOURCE_OPTIONS if they want flux
+# to load in the resource matching service module with non-default options.
+#
+# Finally, if FLUX_RESOURCE_RC_NOOP=1, flux-core
+# won't load in or remove sched as part of runlevel 1 and 3.
+#
+
+if [ -z ${FLUX_RESOURCE_RC_NOOP} ]; then
+    flux module load -r 0 resource ${FLUX_RESOURCE_OPTIONS}
+fi
+
