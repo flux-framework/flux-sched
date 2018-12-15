@@ -420,8 +420,9 @@ static int init_resource_graph (resource_ctx_t *ctx)
         return -1;
      }
 
-    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                ctx->args.prune_filters) < 0) {
+    if (ctx->args.prune_filters != ""
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                   ctx->args.prune_filters) < 0) {
         flux_log (ctx->h, LOG_ERR, "error setting pruning types with: %s",
                   ctx->args.prune_filters.c_str ());
         return -1;

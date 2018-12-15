@@ -525,11 +525,12 @@ int main (int argc, char *argv[])
     f_resource_graph_t *fg = new f_resource_graph_t (g, edgsel, vtxsel);
     ctx->resource_graph_views[ctx->params.matcher_name] = fg;
     ctx->jobid_counter = 1;
-    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                ctx->params.prune_filters)
-                                                < 0) {
-        cerr << "ERROR: setting pruning filters with "
-             << "ctx->params.prune_filters" << endl;
+    if (ctx->params.prune_filters != ""
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                   ctx->params.prune_filters)
+                                                   < 0) {
+        cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
+             << ctx->params.prune_filters << endl;
         return EXIT_FAILURE;
     }
 
