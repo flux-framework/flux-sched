@@ -661,7 +661,7 @@ int dfu_impl_t::upd_sched (vtx_t u, const subsystem_t &s, unsigned int needs,
 
         // Update subtree plan
         planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
-        if (subtree_plan && !dfu.empty ()) {
+        if (subtree_plan) {
             vector<uint64_t> aggregate;
             count_relevant_types (subtree_plan, dfu, aggregate);
             span = planner_multi_add_span (subtree_plan, meta.at, meta.duration,
@@ -700,6 +700,7 @@ int dfu_impl_t::upd_dfv (vtx_t u, unsigned int needs, bool excl,
     map<string, int64_t> dfu;
     const string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
+
     m_trav_level++;
     for (auto &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
