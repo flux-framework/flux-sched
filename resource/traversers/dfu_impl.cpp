@@ -153,7 +153,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     vector<uint64_t> aggs;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
-    count (p, resource.user_data, aggs);
+    count_relevant_types (p, resource.user_data, aggs);
     if (aggs.empty ()) {
         rc = 0;
         goto done;
@@ -663,7 +663,7 @@ int dfu_impl_t::upd_sched (vtx_t u, const subsystem_t &s, unsigned int needs,
         planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
         if (subtree_plan && !dfu.empty ()) {
             vector<uint64_t> aggregate;
-            count (subtree_plan, dfu, aggregate);
+            count_relevant_types (subtree_plan, dfu, aggregate);
             span = planner_multi_add_span (subtree_plan, meta.at, meta.duration,
                                            &(aggregate[0]), aggregate.size ());
             if (span == -1) {
