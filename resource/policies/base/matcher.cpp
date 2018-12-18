@@ -220,6 +220,7 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
                                            const std::string &anchor_type,
                                            const std::string &prune_type)
 {
+    // Note the final container is "set" so it will only allow uniqe prune_types
     m_pruning_types[subsystem][anchor_type].insert (prune_type);
     m_total_set[subsystem].insert (prune_type);
 }

@@ -186,8 +186,11 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
                 args.match_policy = dflt;
             }
         } else if (!strncmp ("prune-filters=", argv[i], sizeof ("prune-filters"))) {
-            dflt = args.prune_filters;
-            args.prune_filters = strstr (argv[i], "=") + 1;
+            std::string token = strstr (argv[i], "=") + 1;
+            if(token.find_first_not_of(' ') != std::string::npos) {
+                args.prune_filters += ",";
+                args.prune_filters += token;
+            }
         } else if (!strncmp ("R-format=", argv[i], sizeof ("R-format"))) {
             dflt = args.R_format;
             args.R_format = strstr (argv[i], "=") + 1;
