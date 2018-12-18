@@ -35,7 +35,7 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource grug-conf=${grug} \
+    flux module load resource grug-conf=${grug} prune-filters=ALL:core \
 subsystems=containment policy=low
 '
 

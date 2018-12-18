@@ -64,7 +64,7 @@ test_expect_success 'resource-query works on gpu query using xml file' '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
-    flux module load -r 0 resource hwloc-xml=${hwloc_4core} prune-filters=ALL:pu
+    flux module load -r 0 resource hwloc-xml=${hwloc_4core}
 '
 
 test_expect_success 'match-allocate works with four one-core jobspecs' '

@@ -3,6 +3,7 @@
 # project-local sharness code for flux-sched
 #
 FLUX_SCHED_RC_NOOP=1
+FLUX_RESOURCE_RC_NOOP=1
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
@@ -45,6 +46,8 @@ job_kvs_path () {
 export FLUX_EXEC_PATH_PREPEND
 export FLUX_SCHED_RC_NOOP
 export FLUX_SCHED_RC_PATH
+export FLUX_RESOURCE_RC_NOOP
+export FLUX_RESOURCE_RC_PATH
 export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND
 export FLUX_LUA_CPATH_PREPEND
