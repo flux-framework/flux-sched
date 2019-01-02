@@ -63,8 +63,6 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         size_t len = planner_multi_resources_len (p);
         uint64_t duration = meta.duration;
         detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
-        // TODO: examine correctness when a jobspec doesn't include
-        // the subtree plan resource type
         for (t = planner_multi_avail_time_first (p, t, duration, &agg[0], len);
              (t != -1 && rc != 0); t = planner_multi_avail_time_next (p)) {
             meta.at = t;
