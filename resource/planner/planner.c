@@ -683,7 +683,7 @@ planner_t *planner_new (int64_t base_time, uint64_t duration,
 {
     planner_t *ctx = NULL;
 
-    if (duration < 1 || !resource_totals || !resource_type) {
+    if (duration < 1 || !resource_type) {
         errno = EINVAL;
         goto done;
     } else if (resource_totals > INT64_MAX) {
