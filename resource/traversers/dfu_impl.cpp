@@ -946,21 +946,26 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     vector<const char *> types;
     map<string, int64_t> dfv;
     string type = (*m_graph)[u].type;
+    std::vector<std::string> out_prune_types;
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
     accum_if (s, type, (*m_graph)[u].size, to_parent);
     if (prime_exp (s, u, dfv) != 0)
         goto done;
 
-    for (auto &aggr : dfv) {
-        /* If the aggregate type is any filter type, accume for the parent */
+    for (auto &aggr : dfv)
         accum_if (s, aggr.first, aggr.second, to_parent);
-        /* If the aggregate type is "my" filter type, track them in my filter */
-        if (m_match->is_my_pruning_type (s, (*m_graph)[u].type, aggr.first)) {
-            types.push_back (strdup (aggr.first.c_str ()));
-            avail.push_back (aggr.second);
+
+    if (m_match->get_my_pruning_types (s, (*m_graph)[u].type, out_prune_types)) {
+        for (auto &type : out_prune_types) {
+            types.push_back (strdup (type.c_str ()));
+            if (dfv.find (type) != dfv.end ())
+                avail.push_back (dfv.at (type));
+            else
+                avail.push_back (0);
         }
     }
+
     if (!avail.empty () && !types.empty ()) {
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types)) ) {
