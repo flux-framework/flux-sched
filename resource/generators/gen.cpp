@@ -690,6 +690,9 @@ int resource_generator_t::read_hwloc_xml_file (const char *ifn,
 
     ggv_t cluster_vertex = create_cluster_vertex (db);
     std::ifstream infile (ifn);
+    if (!infile.good ())
+        return -1;
+
     std::string xml_str ((std::istreambuf_iterator<char> (infile)),
                          std::istreambuf_iterator<char> ());
     read_ranked_hwloc_xml (xml_str.c_str(), -1, cluster_vertex, db);
