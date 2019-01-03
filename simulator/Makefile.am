@@ -29,7 +29,7 @@ simsrv_la_LDFLAGS = $(AM_LDFLAGS) $(fluxmod_ldflags) -module -rpath /nowhere
 
 sim_execsrv_la_SOURCES = sim_execsrv.c
 sim_execsrv_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
-sim_execsrv_la_LIBADD = $(top_builddir)/rdl/libflux-rdl.la \
+sim_execsrv_la_LIBADD =  \
     $(top_builddir)/resrc/libflux-resrc.la libflux-sim.la \
     $(FLUX_CORE_LIBS) $(DL_LIBS) $(HWLOC_LIBS) $(UUID_LIBS) \
     $(JANSSON_LIBS) $(CZMQ_LIBS)
