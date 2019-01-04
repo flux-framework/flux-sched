@@ -41,8 +41,6 @@ flux_rdltool_SOURCES = flux-rdltool.c
 flux_rdltool_CFLAGS = $(AM_CFLAGS)
 flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JANSSON_LIBS)
 
-EXTRA_DIST = rdl_version.map
-
 # Copy any Lua modules in flux/.libs to ${top_builddir}/flux/*.so so that
 #  they can be used as require 'flux.<name>' in-tree
 #
