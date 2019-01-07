@@ -4,12 +4,13 @@
 AC_PREREQ([2.63])
 AC_INIT([flux-sched],
         m4_esyscmd([git describe --always | awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']))
-AC_CONFIG_SRCDIR([NEWS])
-AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([config])
+AC_CONFIG_SRCDIR([NEWS])
+
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])
+AM_CONFIG_HEADER([config.h])
 
 #LT_PREREQ([2.4.2])
 LT_INIT([dlopen])

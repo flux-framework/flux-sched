@@ -3,7 +3,7 @@ AM_LDFLAGS = $(CODE_COVERAGE_LIBS)
 
 TEST_EXTENSIONS = .t
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
-	$(top_srcdir)/m4/tap-driver.sh
+	$(top_srcdir)/config/tap-driver.sh
 
 #
 # Set up paths for fluxometer-based Lua tests.

@@ -1,11 +1,10 @@
-
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = src rdl resrc resource simulator sched etc t
 
 EXTRA_DIST= \
 	conf \
-	m4/tap-driver.sh \
+	config/tap-driver.sh \
 	DISCLAIMER.LLNS \
 	README.md
 
