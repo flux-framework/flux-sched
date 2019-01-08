@@ -15,14 +15,12 @@ check_LTLIBRARIES = janssontest.la
 trdl_SOURCES = trdl.c
 trdl_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/rdl
 trdl_LDADD = $(top_builddir)/rdl/libflux-rdl.la \
-    $(top_builddir)/src/common/liblsd/liblsd.la \
-    $(top_builddir)/src/common/libutil/libutil.la \
     $(FLUX_CORE_LIBS) $(LUA_LIB) $(JANSSON_LIBS) $(CZMQ_LIBS)
 
 janssontest_la_LDFLAGS = \
     -avoid-version -module -shared --disable-static -rpath /dev/null
 janssontest_la_LIBADD = \
-    $(top_builddir)/rdl/libjansson-lua.la \
+    $(top_builddir)/rdl/libflux-rdl.la \
     $(JANSSON_LIBS) $(LUA_LIB) $(FLUX_CORE_LIBS)
 janssontest_la_SOURCES = \
     jansson-test.c

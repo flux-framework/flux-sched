@@ -8,10 +8,6 @@ SUBDIRS = . test
 
 fluxluaexecdir = $(luaexecdir)/flux
 
-luamod_ldflags = \
-	-avoid-version -module -shared --disable-static \
-	-Wl,--no-undefined
-
 dist_lua_SCRIPTS = RDL.lua
 
 nobase_dist_lua_SCRIPTS = \
@@ -26,29 +22,24 @@ nobase_dist_lua_SCRIPTS = \
 	RDL/uri.lua \
 	RDL/uuid.lua
 
-noinst_LTLIBRARIES = libjansson-lua.la
-lib_LTLIBRARIES = libflux-rdl.la
+noinst_LTLIBRARIES = libflux-rdl.la
 
-fluxschedinclude_HEADERS = rdl.h
-
-libjansson_lua_la_SOURCES = jansson-lua.c jansson-lua.h
-libjansson_lua_la_LIBADD = $(LUA_LIB) $(JANSSON_LIBS)
-
-libflux_rdl_la_SOURCES = rdl.c
-libflux_rdl_la_LIBADD = $(FLUX_CORE_LIBS) $(LUA_LIB) $(CZMQ_LIBS) $(JANSSON_LIBS) \
-    libjansson-lua.la \
+libflux_rdl_la_SOURCES = \
+    rdl.h \
+    rdl.c \
+    jansson-lua.h \
+    jansson-lua.c
+libflux_rdl_la_LIBADD = \
     $(top_builddir)/src/common/liblsd/liblsd.la \
-    $(top_builddir)/src/common/libutil/libutil.la
-libflux_rdl_la_LDFLAGS = $(fluxlib_ldflags) \
-    -Wl,--version-script=$(srcdir)/rdl_version.map \
+    $(top_builddir)/src/common/libutil/libutil.la \
+    $(FLUX_CORE_LIBS) $(LUA_LIB) $(CZMQ_LIBS) $(JANSSON_LIBS)
+libflux_rdl_la_LDFLAGS = \
     $(AM_LDFLAGS)
 
 fluxcmd_PROGRAMS = flux-rdltool
 flux_rdltool_SOURCES = flux-rdltool.c
 flux_rdltool_CFLAGS = $(AM_CFLAGS)
 flux_rdltool_LDADD = libflux-rdl.la $(LUA_LIB) $(JANSSON_LIBS)
-
-EXTRA_DIST = rdl_version.map
 
 # Copy any Lua modules in flux/.libs to ${top_builddir}/flux/*.so so that
 #  they can be used as require 'flux.<name>' in-tree
