@@ -11,6 +11,7 @@ matrix:
        - CC=gcc-8
        - CXX=g++-8
        - DISTCHECK=t
+       - GITHUB_RELEASES_DEPLOY=t
     - name: "Ubuntu: clang-6.0 chain-lint"
       compiler: clang-6.0
       env:
@@ -103,8 +104,8 @@ deploy:
   api_key:
     secure: h+xiQ6lg0SNrHor+cwSKFCUBDk51maSQILAhLYZXWB8LvAib7TQ17ZCUiwYZ8Pwt6aacrqshWuYapbm7PzTv2kfQqtuVgPh0ILphXGXyokhv1PpIlz3bePKfa/cNwPr1GAHtAxqsZndqvRMKeAmkfH00iezGzK72xwhslnbqVfE=
   on:
-    # Only deploy from first job in build matrix
-    condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
+    # Only deploy if GITHUB_RELEASES_DEPLOY is set
+    condition: $GITHUB_RELEASES_DEPLOY = "t"
     tags: true
     repo: flux-framework/flux-sched
 
