@@ -54,7 +54,7 @@ before_install:
      -a "$TRAVIS_REPO_SLUG" = "flux-framework/flux-sched" \
      -a "$TRAVIS_PULL_REQUEST" = "false" \
      -a \( "$TRAVIS_BRANCH" = "master" -o -n "$TRAVIS_TAG" \); then
-      export TAGNAME="${DOCKERREPO}:${IMG}-${TRAVIS_TAG:-latest}"
+      export TAGNAME="${DOCKERREPO}:${IMG}${TRAVIS_TAG:+-${TRAVIS_TAG}}"
       echo "Tagging new image $TAGNAME"
    fi
 
@@ -73,8 +73,8 @@ after_success:
      echo "$DOCKER_PASSWORD" | \
        docker login -u "$DOCKER_USERNAME" --password-stdin && \
      docker push ${TAGNAME}
-     # If this is the bionic-base build, then also tag without image name:
-     if echo "$TAGNAME" | grep -q "bionic-base"; then
+     # If this is the bionic build, then also tag without image name:
+     if echo "$TAGNAME" | grep -q "bionic"; then
        t="${DOCKERREPO}:${TRAVIS_TAG:-latest}"
        docker tag "$TAGNAME" ${t} && \
        docker push ${t}
