@@ -11,6 +11,7 @@ matrix:
        - CC=gcc-8
        - CXX=g++-8
        - DISTCHECK=t
+       - GITHUB_RELEASES_DEPLOY=t
     - name: "Ubuntu: clang-6.0 chain-lint"
       compiler: clang-6.0
       env:
@@ -37,6 +38,7 @@ env:
   - TAP_DRIVER_QUIET=1
   - DOCKERREPO=fluxrm/flux-sched
   - DOCKER_USERNAME=travisflux
+  - secure: "Vt/k/YlbYuVUC2NDBDHcIsRNjNUlEC+YukAIiU3PjsjIlRjD6SnPF+Ig0Jnoqe8oXSCyysMo/c2nzyVHiPj5PsEXMuy7iC4Om4srhd6o1ajuZTVyjEXnEH2SiwZcIpH4QrpZ64OsZHKd79U3/fS6Gu0hFWKv/FFBBNrmHqFZxwc="
 
 cache:
   directories:
@@ -65,6 +67,20 @@ script:
 after_success:
  - ccache -s
  - if test "$COVERAGE" = "t"; then coveralls-lcov flux*-coverage.info;  bash <(curl -s https://codecov.io/bash); fi
+ #  Deploy resulting docker image to Docker Hub with appropriate tag
+ - |
+  if test -n "$TAGNAME"; then
+     echo "$DOCKER_PASSWORD" | \
+       docker login -u "$DOCKER_USERNAME" --password-stdin && \
+     docker push ${TAGNAME}
+     # If this is the bionic-base build, then also tag without image name:
+     if echo "$TAGNAME" | grep -q "bionic-base"; then
+       t="${DOCKERREPO}:${TRAVIS_TAG:-latest}"
+       docker tag "$TAGNAME" ${t} && \
+       docker push ${t}
+     fi
+  fi
+
 after_failure:
  - find . -name test-suite.log | xargs -i sh -c 'printf "===XXX {} XXX===";cat {}'
  - find . -name t[0-9]*.output -print0 | xargs -0 -I'{}' sh -c 'printf "\033[31mFound {}\033[39m\n";cat {}'
@@ -88,8 +104,8 @@ deploy:
   api_key:
     secure: h+xiQ6lg0SNrHor+cwSKFCUBDk51maSQILAhLYZXWB8LvAib7TQ17ZCUiwYZ8Pwt6aacrqshWuYapbm7PzTv2kfQqtuVgPh0ILphXGXyokhv1PpIlz3bePKfa/cNwPr1GAHtAxqsZndqvRMKeAmkfH00iezGzK72xwhslnbqVfE=
   on:
-    # Only deploy from first job in build matrix
-    condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
+    # Only deploy if GITHUB_RELEASES_DEPLOY is set
+    condition: $GITHUB_RELEASES_DEPLOY = "t"
     tags: true
     repo: flux-framework/flux-sched
 
