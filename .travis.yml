@@ -38,7 +38,7 @@ env:
   - TAP_DRIVER_QUIET=1
   - DOCKERREPO=fluxrm/flux-sched
   - DOCKER_USERNAME=travisflux
-  - secure: "Vt/k/YlbYuVUC2NDBDHcIsRNjNUlEC+YukAIiU3PjsjIlRjD6SnPF+Ig0Jnoqe8oXSCyysMo/c2nzyVHiPj5PsEXMuy7iC4Om4srhd6o1ajuZTVyjEXnEH2SiwZcIpH4QrpZ64OsZHKd79U3/fS6Gu0hFWKv/FFBBNrmHqFZxwc="
+  - secure: "r/VnyLaR1NPcErRnfktopohrMPo8GSJokJiQwDr2XDrglPiL4T7Qppu42ihdvtWd3U3ZYFYLImeqipZqqz7+rhWxvao6k+NTAyQWkrsAmfC8B2czUR52ozcDF3jV2C4EJth/xlzsx54Gy7YNUEITfnUbnHCZ+/FmXXjuAyEPJ3c="
 
 cache:
   directories:
