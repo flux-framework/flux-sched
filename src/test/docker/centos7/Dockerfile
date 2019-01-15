@@ -4,12 +4,12 @@ ARG USER=flux
 ARG UID=1000
 
 # Install extra buildrequires for flux-sched:
-RUN sudo yum -y install  \
+RUN sudo yum -y install \
 	libboost-graph-devel \
 	libboost-system-devel \
 	libboost-filesystem-devel \
 	libboost-regex-devel \
-        libxml2-devel \
+	libxml2-devel \
 	readline-devel \
 	python-yaml \
 	yaml-cpp-devel
