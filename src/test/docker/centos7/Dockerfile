@@ -11,7 +11,8 @@ RUN sudo yum -y install  \
 	libboost-regex-devel \
         libxml2-devel \
 	readline-devel \
-	python-yaml
+	python-yaml \
+	yaml-cpp-devel
 
 # Add configured user to image with sudo access:
 #
