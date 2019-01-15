@@ -56,6 +56,7 @@ libboost packages == 1.53 or > 1.58
   -  libboost-graph-dev
   -  libboost-regex-dev
 libxml2-dev >= 2.9.1
+yaml-cpp-dev >= 0.5.1
 ```
 
 The sched module contains
