@@ -958,7 +958,7 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
 
     if (m_match->get_my_pruning_types (s, (*m_graph)[u].type, out_prune_types)) {
         for (auto &type : out_prune_types) {
-            types.push_back (strdup (type.c_str ()));
+            types.push_back (type.c_str ());
             if (dfv.find (type) != dfv.end ())
                 avail.push_back (dfv.at (type));
             else
@@ -979,9 +979,6 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     rc = 0;
 done:
     (*m_graph)[u].idata.colors[s] = m_color.black ();
-    if (!types.empty ())
-        for (size_t i = 0; i < types.size (); ++i)
-            free ((void *)types[i]);
     return rc;
 }
 
