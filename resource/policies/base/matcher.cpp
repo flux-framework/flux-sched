@@ -220,8 +220,27 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
                                            const std::string &anchor_type,
                                            const std::string &prune_type)
 {
-    // Note the final container is "set" so it will only allow uniqe prune_types
-    m_pruning_types[subsystem][anchor_type].insert (prune_type);
+    // Use operator[] to create an entry if subsystem key doesn't exist
+    auto &s = m_pruning_types[subsystem];
+    if (anchor_type == ANY_RESOURCE_TYPE) {
+        // Check whether you have already installed prune_type.
+        // If so, remove it as you want to install it against ANY_RESOURCE_TYPE.
+        for (auto &kv : s)
+            kv.second.erase (prune_type);
+        // final container is "set" so it will only allow uniqe prune_types
+        s[anchor_type].insert (prune_type);
+    } else {
+        if ((s.find (ANY_RESOURCE_TYPE) != s.end ())) {
+            auto &prune_set = s[ANY_RESOURCE_TYPE];
+            if (prune_set.find (prune_type) == prune_set.end ()) {
+                // If prune_type does not exist against ANY_RESOURCE_TYPE
+                // Install it against anchor_type, an individual resource type
+                s[anchor_type].insert (prune_type);
+            } // orelse NOOP
+        } else {
+            s[anchor_type].insert (prune_type);
+        }
+    }
     m_total_set[subsystem].insert (prune_type);
 }
 
