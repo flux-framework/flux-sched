@@ -273,7 +273,8 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
             for (auto &k : m)
                 out.push_back (k);
         }
-        if (s.find (ANY_RESOURCE_TYPE) != s.end ()) {
+        if (anchor_type != ANY_RESOURCE_TYPE
+            && s.find (ANY_RESOURCE_TYPE) != s.end ()) {
             auto &m = s.at (ANY_RESOURCE_TYPE);
             for (auto &k : m)
                 out.push_back (k);
