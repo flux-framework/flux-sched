@@ -145,8 +145,8 @@ public:
      *  \return          0 on success; -1 on error.
      */
     template <class lookup_t>
-    int count (planner_multi_t *plan, const lookup_t &lookup,
-               std::vector<uint64_t> &resource_counts);
+    int count_relevant_types (planner_multi_t *plan, const lookup_t &lookup,
+                              std::vector<uint64_t> &resource_counts);
 
     /*! Entry point for graph matching and scoring depth-first-and-up (DFU) walk.
      *  It finds best-matching resources and resolves hierarchical constraints.
@@ -307,7 +307,8 @@ private:
 }; // the end of class dfu_impl_t
 
 template <class lookup_t>
-int dfu_impl_t::count (planner_multi_t *plan, const lookup_t &lookup,
+int dfu_impl_t::count_relevant_types (planner_multi_t *plan,
+                       const lookup_t &lookup,
                        std::vector<uint64_t> &resource_counts)
 {
     int rc = 0;

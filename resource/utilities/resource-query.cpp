@@ -428,6 +428,7 @@ static void control_loop (resource_context_t *ctx)
 int main (int argc, char *argv[])
 {
     int rc, ch;
+    std::string token;
     resource_context_t *ctx = new resource_context_t ();
     set_default_params (ctx);
 
@@ -462,8 +463,12 @@ int main (int argc, char *argv[])
             case 'o': /* --graph-output */
                 ctx->params.o_fname = optarg;
                 break;
-            case 'p': /* --prune-filter */
-                ctx->params.prune_filters = optarg;
+            case 'p': /* --prune-filters */
+                token = optarg;
+                if(token.find_first_not_of(' ') != std::string::npos) {
+                    ctx->params.prune_filters += ",";
+                    ctx->params.prune_filters += token;
+                }
                 break;
             case 't': /* --test-output */
                 ctx->params.r_fname = optarg;
@@ -525,11 +530,12 @@ int main (int argc, char *argv[])
     f_resource_graph_t *fg = new f_resource_graph_t (g, edgsel, vtxsel);
     ctx->resource_graph_views[ctx->params.matcher_name] = fg;
     ctx->jobid_counter = 1;
-    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                ctx->params.prune_filters)
-                                                < 0) {
-        cerr << "ERROR: setting pruning filters with "
-             << "ctx->params.prune_filters" << endl;
+    if (ctx->params.prune_filters != ""
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                   ctx->params.prune_filters)
+                                                   < 0) {
+        cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
+             << ctx->params.prune_filters << endl;
         return EXIT_FAILURE;
     }
 

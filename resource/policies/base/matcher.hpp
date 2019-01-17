@@ -147,6 +147,11 @@ public:
     bool is_pruning_type (const std::string &subsystem,
                           const std::string &prune_type);
 
+
+    bool get_my_pruning_types (const std::string &subsystem,
+                               const std::string &anchor_type,
+                               std::vector<std::string> &out_prune_types);
+
 private:
 
     int register_resource_pair (const std::string &subsystem,

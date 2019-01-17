@@ -186,8 +186,11 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
                 args.match_policy = dflt;
             }
         } else if (!strncmp ("prune-filters=", argv[i], sizeof ("prune-filters"))) {
-            dflt = args.prune_filters;
-            args.prune_filters = strstr (argv[i], "=") + 1;
+            std::string token = strstr (argv[i], "=") + 1;
+            if(token.find_first_not_of(' ') != std::string::npos) {
+                args.prune_filters += ",";
+                args.prune_filters += token;
+            }
         } else if (!strncmp ("R-format=", argv[i], sizeof ("R-format"))) {
             dflt = args.R_format;
             args.R_format = strstr (argv[i], "=") + 1;
@@ -420,8 +423,9 @@ static int init_resource_graph (resource_ctx_t *ctx)
         return -1;
      }
 
-    if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                ctx->args.prune_filters) < 0) {
+    if (ctx->args.prune_filters != ""
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                   ctx->args.prune_filters) < 0) {
         flux_log (ctx->h, LOG_ERR, "error setting pruning types with: %s",
                   ctx->args.prune_filters.c_str ());
         return -1;
