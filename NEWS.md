@@ -1,3 +1,37 @@
+flux-sched version 0.7.0 - 2019-01-20
+-------------------------------------
+
+### Fixes
+ * sched/plugin: track flux-core module API changes (#414)
+ * Ensure scheduling correctness with different prune filter configurations
+   (#419)
+ * travis: fix docker and github release deployment (#424)
+ * travis-ci: fix docker deploy better (#426)
+ * docker: update repo tag names, ensure flux-sched installed with
+   prefix=/usr (#427)
+ * docker: add yaml-cpp dependency (#428)
+ * config: Fix a non-portable use of schell conditionals for automake
+   (#405)
+ * config: Add libtoolize into autogen.sh (#406)
+ * Integrate jobspec into resource, etc (#398)
+ * Compilation fixes (#417)
+
+### Features
+ * travis-ci: use docker for test builds (#392)
+ * resource: support for hwloc ingestion (#385)
+ * Add support for resource matching service (#386)
+ * planner: Replace zhash_t to zhashx_t for higher performance (#391)
+ * resource: wire in --prune-filters option for resource-query and
+   matching module (#401)
+ * resource: Add run-level support for resource matching module (#418)
+ * Add better autoconf support for libboost (#394)
+
+### Cleanup
+ * build: do not install libflux-rdl.so, fix rebuild of aclocal.m4 on
+   first make (#421)
+ * sched: remove trailing whitespaces (#376)
+
+
 flux-sched version 0.6.0 - 2018-08-03
 -------------------------------------
 
