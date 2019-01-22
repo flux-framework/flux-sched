@@ -57,6 +57,8 @@ libboost packages == 1.53 or > 1.58
   -  libboost-regex-dev
 libxml2-dev >= 2.9.1
 yaml-cpp-dev >= 0.5.1
+python-yaml >= 3.10
+uuid-dev
 ```
 
 The sched module contains
