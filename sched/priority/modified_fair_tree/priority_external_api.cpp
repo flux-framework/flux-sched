@@ -361,6 +361,8 @@ void sched_priority_prioritize_jobs (flux_t *h, zlist_t *jobs)
 
 } // namespace Priority
 } // namespace Flux
+
+MOD_NAME("sched.priority_fair_tree");
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

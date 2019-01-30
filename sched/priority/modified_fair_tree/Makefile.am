@@ -21,7 +21,7 @@ priority_mod_fair_tree_la_LDFLAGS = \
 	$(fluxlib_ldflags) \
 	-avoid-version \
 	-module \
-	-export-symbols-regex '^sched_priority_.*'
+	-export-symbols-regex '^(sched_priority_|mod_name).*'
 
 check_PROGRAMS = parse_sacct
 
