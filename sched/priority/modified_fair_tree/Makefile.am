@@ -11,7 +11,7 @@ libconvenience_la_CXXFLAGS = \
 libconvenience_la_LIBADD = $(top_builddir)/resrc/libflux-resrc.la \
 	$(FLUX_CORE_LIBS) $(JANSSON_LIBS) $(CZMQ_LIBS)
 
-lib_LTLIBRARIES = priority_mod_fair_tree.la
+schedplugin_LTLIBRARIES = priority_mod_fair_tree.la
 # Dummy C++ source to cause C++ linking.
 nodist_EXTRA_priority_mod_fair_tree_la_SOURCES = dummy.cpp
 priority_mod_fair_tree_la_SOURCES =
@@ -21,7 +21,7 @@ priority_mod_fair_tree_la_LDFLAGS = \
 	$(fluxlib_ldflags) \
 	-avoid-version \
 	-module \
-	-export-symbols-regex '^sched_priority_.*'
+	-export-symbols-regex '^(sched_priority_|mod_name).*'
 
 check_PROGRAMS = parse_sacct
 
