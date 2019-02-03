@@ -196,7 +196,8 @@ int put_job_in_kvs (job_t *job, const char *initial_state)
         goto error;
     if (txn_dir_pack (txn, job->kvs_dir, "state", "s", initial_state) < 0)
         goto error;
-    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+    if (!(f = flux_kvs_commit (h, NULL, 0, txn))
+        || flux_future_get (f, NULL) < 0)
         goto error;
     flux_kvs_txn_destroy (txn);
     flux_future_destroy (f);
@@ -238,7 +239,8 @@ int set_job_timestamps (flux_kvsdir_t *dir, double t_starting,
         if (txn_dir_pack (txn, dir, "io_time", "f", t_io) < 0)
 	    goto error;
     }
-    if (!(f = flux_kvs_commit (h, 0, txn)) || flux_future_get (f, NULL) < 0)
+    if (!(f = flux_kvs_commit (h, NULL, 0, txn))
+        || flux_future_get (f, NULL) < 0)
         goto error;
     flux_kvs_txn_destroy (txn);
     flux_future_destroy (f);
@@ -269,7 +271,7 @@ static int lookup_dir_unpack (flux_kvsdir_t *dir, const char *name,
         goto inval;
     if (!(key = flux_kvsdir_key_at (dir, name)))
         goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
+    if (!(f = flux_kvs_lookup (h, NULL, 0, key)))
         goto done;
     if (flux_kvs_lookup_get (f, &json_str) < 0)
         goto done;
@@ -304,7 +306,7 @@ static int lookup_dir_string (flux_kvsdir_t *dir, const char *name, char **valp)
 
     if (!(key = flux_kvsdir_key_at (dir, name)))
         goto done;
-    if (!(f = flux_kvs_lookup (h, 0, key)))
+    if (!(f = flux_kvs_lookup (h, NULL, 0, key)))
         goto done;
     if (flux_kvs_lookup_get_unpack (f, "s", &s) < 0)
         goto done;
@@ -497,7 +499,7 @@ flux_kvsdir_t *job_kvsdir (flux_t *h, int jobid)
                   "%s: failed to resolve job directory, falling back to %s",
                   __FUNCTION__, path);
     }
-    if (!(f = flux_kvs_lookup (h, FLUX_KVS_READDIR, path))
+    if (!(f = flux_kvs_lookup (h, NULL, FLUX_KVS_READDIR, path))
 		    || flux_kvs_lookup_get_dir (f, &dir) < 0) {
         flux_log_error (h, "%s: flux_kvs_lookup %s", __FUNCTION__, path);
 	goto done;
