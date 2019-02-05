@@ -20,23 +20,14 @@ fi
 # test_under_flux is under sharness.d/
 #
 SIZE=2
-unset FLUX_SCHED_NOOP_RC
 if [ test ${FLUX_FLUX_CO_INST} = co ]; then
     export FLUX_RC_EXTRA=${FLUX_SCHED_RC_PATH}
 fi
 test_under_flux ${SIZE}
-test_expect_success 'sched: module remove/load works with installed sched' '
-	flux module remove sched &&
-	flux module load sched
-'
 
 test_expect_success 'resource: module remove/load works with installed resource' '
 	flux module remove resource &&
 	flux module load resource
-'
-
-test_expect_success 'sched: module unload' '
-	flux module remove sched
 '
 
 test_expect_success 'resource: module unload' '

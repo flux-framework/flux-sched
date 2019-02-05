@@ -1,9 +1,8 @@
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = src rdl resrc resource simulator sched etc t
+SUBDIRS = src resource etc t
 
 EXTRA_DIST= \
-	conf \
 	config/tap-driver.sh \
 	DISCLAIMER.LLNS \
 	README.md

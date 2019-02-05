@@ -20,10 +20,6 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 # test can conditionally set FLUX_RC_EXTRA.
 #
 TESTS_ENVIRONMENT = \
-    LUA_PATH="$(FLUX_PREFIX)/share/lua/$(LUA_VERSION)/?.lua;$(LUA_PATH);;" \
-    FLUX_LUA_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/share/lua/$(LUA_VERSION)/?.lua}" \
-    FLUX_LUA_PATH_PREPEND="$${FLUX_LUA_PATH_PREPEND:-$(abs_top_srcdir)/rdl/?.lua}" \
-    FLUX_LUA_CPATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(libdir)/lua/$(LUA_VERSION)/?.so}" \
     FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
     FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
     FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
@@ -33,28 +29,7 @@ TESTS_ENVIRONMENT = \
 
 TESTS = \
     t0000-sharness.t \
-    t0001-basic.t \
-    lua/t0001-rdl-basic.t \
-    lua/t0002-multilevel.t \
-    lua/t0003-default-tags.t \
-    lua/t0004-derived-type.t \
-    lua/t0005-multi-hierarchy.t \
-    t0002-waitjob.t \
     t0003-basic-install.t \
-    t0004-rdltool.t \
-    t1000-jsc.t \
-    t1001-rs2rank-basic.t \
-    t1002-rs2rank-64ranks.t \
-    t1003-stress.t \
-    t1004-module-load.t \
-    t1005-sched-params.t \
-    t1008-runtime-sched-params.t \
-    t1006-cancel.t \
-    t1007-exclude.t \
-    t2000-fcfs.t \
-    t2001-fcfs-aware.t \
-    t2002-easy.t \
-    t2003-fcfs-inorder.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
@@ -71,8 +46,7 @@ TESTS = \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
     t4003-cancel-info.t \
-    t4004-match-hwloc.t \
-    t5000-valgrind.t
+    t4004-match-hwloc.t
 
 check_SCRIPTS = $(TESTS)
 
@@ -82,8 +56,7 @@ EXTRA_DIST= \
     data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
-	sharness.d \
-	valgrind
+	sharness.d
 
 clean-local:
 	rm -rf *.o test-results trash-directory*
