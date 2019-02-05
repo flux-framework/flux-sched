@@ -13,7 +13,5 @@ noinst_LTLIBRARIES = libutil.la
 libutil_la_SOURCES = \
 	xzmalloc.c \
 	xzmalloc.h \
-	log.c \
-	log.h \
 	oom.h \
 	shortjansson.h
