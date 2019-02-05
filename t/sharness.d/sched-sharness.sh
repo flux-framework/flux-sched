@@ -10,15 +10,13 @@ if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # (Assume sched modules installed under PREFIX/lib/flux/modeuls/sched)
   # (We also support testing this when sched is installed
   # another location, but only via make check)
-  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/modules/sched|'):${FLUX_MODULE_PATH_PREPEND}
+  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/modules/resource|'):${FLUX_MODULE_PATH_PREPEND}
   FLUX_EXEC_PATH_PREPEND=${SHARNESS_TEST_SRCDIR}/scripts:${FLUX_EXEC_PATH_PREPEND}
 else
   # Set up environment so that we find flux-sched modules,
   #  commands, and Lua libs from the build directories:
-  FLUX_LUA_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/../rdl/?.lua"
-  FLUX_LUA_CPATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/rdl/?.so"
-  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched/.libs:${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
-  FLUX_EXEC_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/sched:${SHARNESS_TEST_SRCDIR}/scripts"
+  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
+  FLUX_EXEC_PATH_PREPEND=":${SHARNESS_TEST_SRCDIR}/scripts"
 fi
 
 ## Set up environment using flux(1) in PATH
