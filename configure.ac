@@ -151,7 +151,6 @@ AC_CONFIG_FILES([Makefile
   src/Makefile
   src/common/Makefile
   src/common/libtap/Makefile
-  src/common/liblsd/Makefile
   src/common/libutil/Makefile
   src/common/librbtree/Makefile
   resource/Makefile
