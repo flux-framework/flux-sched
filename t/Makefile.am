@@ -46,14 +46,16 @@ TESTS = \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
     t4003-cancel-info.t \
-    t4004-match-hwloc.t
+    t4004-match-hwloc.t \
+    t5000-valgrind.t
 
 check_SCRIPTS = $(TESTS)
 
 EXTRA_DIST= \
 	$(check_SCRIPTS) \
 	data \
-    data/resource/jobspecs/basics \
+	valgrind \
+	data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
 	sharness.d
