@@ -1,17 +1,19 @@
 #!/bin/bash
 
-flux module load sched
-
-size=$(flux getattr size)
-NJOBS=$1
 echo FLUX_URI=$FLUX_URI
+TESTDIR=${SHARNESS_TEST_SRCDIR:-.}/valgrind/workload.d/*
+exitcode=0
 
-for i in `seq 1 $NJOBS`; do
-    flux wreckrun --ntasks $size /bin/true
+# Check for no workload:
+test -d ${TESTDIR} || exit $exitcode
+
+for file in ${TESTDIR}/*; do
+	echo Running $(basename $file)
+	$file
+	rc=$?
+	if test $rc -gt 0; then
+		echo "$(basename $file): Failed with rc=$rc" >&2
+		exitcode=1
+	fi
 done
-
-# Wait up to 5s for last job to be fully complete before removing sched module:
-KEY=$(echo $(flux wreck last-jobid -p).state)
-${SHARNESS_TEST_SRCDIR}/scripts/kvs-watch-until.lua -t 5 $KEY 'v == "complete"'
-
-flux module remove sched
+exit $exitcode

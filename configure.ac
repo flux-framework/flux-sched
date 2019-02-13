@@ -151,23 +151,14 @@ AC_CONFIG_FILES([Makefile
   src/Makefile
   src/common/Makefile
   src/common/libtap/Makefile
-  src/common/liblsd/Makefile
   src/common/libutil/Makefile
   src/common/librbtree/Makefile
-  rdl/Makefile
-  rdl/test/Makefile
-  resrc/Makefile
-  resrc/test/Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
   resource/libjobspec/Makefile
   resource/utilities/Makefile
   resource/modules/Makefile
-  sched/Makefile
-  sched/priority/Makefile
-  sched/priority/modified_fair_tree/Makefile
-  simulator/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT

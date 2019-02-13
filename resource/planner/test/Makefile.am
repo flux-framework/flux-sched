@@ -7,9 +7,7 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS)
 
 TESTS_ENVIRONMENT = \
-    TESTRESRC_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua" \
-    LUA_PATH="$(abs_top_srcdir)/rdl/?.lua;$(FLUX_PREFIX)/share/lua/$(LUA_VERSION)/?.lua;$(LUA_PATH);;" \
-    LUA_CPATH=";$(FLUX_PREFIX)/lib64/lua/$(LUA_VERSION)/?.so;$(FLUX_PREFIX)/lib/lua/$(LUA_VERSION)/?.so;$(LUA_CPATH);;"
+    TESTRESRC_INPUT_FILE="$(abs_top_srcdir)/conf/hype.lua"
 
 TESTS = planner_test01 planner_test02
 
