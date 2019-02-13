@@ -252,11 +252,17 @@ error:
  */
 static json_t *get_string_blocking (flux_t *h, const char *key)
 {
-    char *json_str = NULL; /* initial value for watch */
+    flux_future_t *f = NULL;
+    const char *json_str;
     json_t *o = NULL;
     int saved_errno;
 
-    if (flux_kvs_watch_once (h, NULL, key, &json_str) < 0) {
+    if (!(f = flux_kvs_lookup (h, NULL, FLUX_KVS_WAITCREATE, key))) {
+        saved_errno = errno;
+        goto error;
+    }
+
+    if (flux_kvs_lookup_get (f, &json_str) < 0) {
         saved_errno = errno;
         goto error;
     }
@@ -266,10 +272,11 @@ static json_t *get_string_blocking (flux_t *h, const char *key)
         saved_errno = EPROTO;
         goto error;
     }
-    free (json_str);
+
+    flux_future_destroy (f);
     return o;
 error:
-    free (json_str);
+    flux_future_destroy (f);
     Jput (o);
     errno = saved_errno;
     return NULL;
