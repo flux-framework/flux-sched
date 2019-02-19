@@ -36,6 +36,7 @@ libresource_la_SOURCES = \
     generators/spec.cpp \
     evaluators/scoring_api.cpp \
     evaluators/edge_eval_api.cpp \
+    emitters/match_emitters.cpp \
     utilities/command.hpp \
     policies/dfu_match_high_id_first.hpp \
     policies/dfu_match_low_id_first.hpp \
@@ -58,6 +59,7 @@ libresource_la_SOURCES = \
     evaluators/edge_eval_api.hpp \
     evaluators/fold.hpp \
     config/system_defaults.hpp \
+    emitters/match_emitters.hpp \
     planner/planner.h
 
 libresource_la_CXXFLAGS = \
