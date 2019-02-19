@@ -45,7 +45,7 @@ struct test_params_t {
     std::ofstream r_out;        /* Output file stream for emitted R */
     std::string r_fname;        /* Output file to dump the emitted R */
     std::string o_fext;         /* File extension */
-    std::string prune_filters;   /* Raw prune-filter specification */
+    std::string prune_filters;  /* Raw prune-filter specification */
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
     bool flux_hwloc;            /* get hwloc info from flux instance */
@@ -54,13 +54,13 @@ struct test_params_t {
 struct resource_context_t {
     test_params_t params;        /* Parameters for resource-query */
     uint64_t jobid_counter;      /* Hold the current jobid value */
-    resource_graph_db_t db;      /* Resource graph data store */
     dfu_match_cb_t *matcher;     /* Match callback object */
-    dfu_traverser_t traverser;   /* Graph traverser object */
+    dfu_traverser_t *traverser;  /* Graph traverser object */
+    resource_graph_db_t db;      /* Resource graph data store */
+    f_resource_graph_t *fgraph;  /* Graph filtered by subsystems to use */
     std::map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
-    std::map<std::string, f_resource_graph_t *> resource_graph_views;
 };
 
 typedef int cmd_func_f (resource_context_t *, std::vector<std::string> &);

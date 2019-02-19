@@ -67,14 +67,14 @@ static double get_elapse_time (timeval &st, timeval &et)
 static int do_remove (resource_context_t *ctx, int64_t jobid)
 {
     int rc = -1;
-    if ((rc = ctx->traverser.remove ((int64_t)jobid)) == 0) {
+    if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::CANCELLED;
         }
     } else {
-        cout << ctx->traverser.err_message ();
-        ctx->traverser.clear_err_message ();
+        cout << ctx->traverser->err_message ();
+        ctx->traverser->clear_err_message ();
     }
     return rc;
 }
@@ -141,12 +141,12 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
 
         gettimeofday (&st, NULL);
         if (args[1] == "allocate")
-            rc = ctx->traverser.run (job, match_op_t::MATCH_ALLOCATE,
-                                     (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job, match_op_t::MATCH_ALLOCATE,
+                                      (int64_t)jobid, &at, r_emitted);
         else if (args[1] == "allocate_orelse_reserve")
-            rc = ctx->traverser.run (job,
-                                     match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                     (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job,
+                                      match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                                      (int64_t)jobid, &at, r_emitted);
         gettimeofday (&et, NULL);
         elapse = get_elapse_time (st, et);
 

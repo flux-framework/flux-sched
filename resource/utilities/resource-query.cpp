@@ -375,7 +375,6 @@ static void write_to_graph (resource_context_t *ctx)
     fstream o;
     string fn, mn;
     mn = ctx->matcher->matcher_name ();
-    f_resource_graph_t &fg = *(ctx->resource_graph_views[mn]);
     fn = ctx->params.o_fname + "." + ctx->params.o_fext;
 
     cout << "INFO: Write the target graph of the matcher..." << endl;
@@ -383,10 +382,10 @@ static void write_to_graph (resource_context_t *ctx)
 
     switch (ctx->params.o_format) {
     case emit_format_t::GRAPHVIZ_DOT:
-        write_to_graphviz (fg, ctx->matcher->dom_subsystem (), o);
+        write_to_graphviz (*(ctx->fgraph), ctx->matcher->dom_subsystem (), o);
         break;
     case emit_format_t::GRAPH_ML:
-        write_to_graphml (fg, o);
+        write_to_graphml (*(ctx->fgraph), o);
         break;
     default:
         cout << "ERROR: Unknown graph format" << endl;
@@ -397,6 +396,21 @@ static void write_to_graph (resource_context_t *ctx)
         o.clear ();
     }
     o.close ();
+}
+
+static void destory_resource_ctx (resource_context_t *ctx)
+{
+    delete ctx->matcher;
+    delete ctx->traverser;
+    delete ctx->fgraph;
+    for (auto &kv : ctx->jobs) {
+        delete kv.second;    /* job_info_t* type */
+        ctx->jobs.erase (kv.first);
+    }
+    ctx->jobs.clear ();
+    ctx->allocations.clear ();
+    ctx->reservations.clear ();
+    delete ctx;
 }
 
 static void control_loop (resource_context_t *ctx)
@@ -425,12 +439,93 @@ static void control_loop (resource_context_t *ctx)
     }
 }
 
-int main (int argc, char *argv[])
+static int populate_resource_db (resource_context_t *ctx)
 {
-    int rc, ch;
+    int rc = 0;
+    resource_generator_t rgen;
+
+    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "") {
+        ctx->params.grug = "conf/default";
+    }
+    if (ctx->params.grug != "") {
+        if (ctx->params.hwloc_xml != "") {
+            cout << "WARN: multiple resource inputs provided, using grug" << endl;
+        }
+        if ( (rc = rgen.read_graphml (ctx->params.grug, ctx->db)) != 0) {
+            cerr << "ERROR: " << rgen.err_message () << endl;
+            cerr << "ERROR: error in generating resources" << endl;
+            rc = -1;
+        }
+    } else if (ctx->params.hwloc_xml != "") {
+        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(), ctx->db)) != 0) {
+            cerr << "ERROR: " << rgen.err_message () << endl;
+            cerr << "ERROR: error in generating resources" << endl;
+            rc = -1;
+        }
+    }
+
+    return rc;
+}
+
+static int init_resource_graph (resource_context_t *ctx)
+{
+    int rc = 0;
+
+    if ( (rc = populate_resource_db (ctx)) != 0) {
+        cerr << "ERROR: can't populate graph resource database" << endl;
+        return rc;
+    }
+
+    resource_graph_t &g = ctx->db.resource_graph;
+    // Configure the matcher and its subsystem selector
+    cout << "INFO: Loading a matcher: " << ctx->params.matcher_name << endl;
+    if ( (rc = set_subsystems_use (ctx, ctx->params.matcher_name)) != 0) {
+        cerr << "ERROR: Not all subsystems found" << endl;
+        return rc;
+    }
+
+    vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
+    edg_infra_map_t emap = get (&resource_relation_t::idata, g);
+    const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
+    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
+    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
+
+    if (!(ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel))) {
+        cerr << "ERROR: out of memory allocating f_resource_graph_t" << endl;
+        return -1;
+    }
+    ctx->jobid_counter = 1;
+    if (ctx->params.prune_filters != ""
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
+                                                   ctx->params.prune_filters)
+                                                   < 0) {
+        cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
+             << ctx->params.prune_filters << endl;
+        return -1;
+    }
+
+    if (ctx->params.r_fname != "") {
+        ctx->params.r_out.exceptions (std::ofstream::failbit
+                                          | std::ofstream::badbit);
+        ctx->params.r_out.open (ctx->params.r_fname);
+    }
+    if ( !(ctx->traverser = new (nothrow)dfu_traverser_t ())) {
+        cerr << "ERROR: out of memory allocating traverser" << endl;
+        return -1;
+    }
+    if ( (rc = ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots),
+                                           ctx->matcher)) != 0) {
+        cerr << "ERROR: initializing traverser" << endl;
+    }
+
+    return rc;
+}
+
+static void process_args (resource_context_t *ctx, int argc, char *argv[])
+{
+    int rc = 0;
+    int ch = 0;
     std::string token;
-    resource_context_t *ctx = new resource_context_t ();
-    set_default_params (ctx);
 
     while ((ch = getopt_long (argc, argv, OPTIONS, longopts, NULL)) != -1) {
         switch (ch) {
@@ -439,11 +534,9 @@ int main (int argc, char *argv[])
                 break;
             case 'G': /* --grug*/
                 ctx->params.grug = optarg;
-                rc = 0;
                 break;
             case 'X': /* --hwloc-xml*/
                 ctx->params.hwloc_xml = optarg;
-                rc = 0;
                 break;
             case 'S': /* --match-subsystems */
                 ctx->params.matcher_name = optarg;
@@ -484,78 +577,54 @@ int main (int argc, char *argv[])
 
     if (optind != argc)
         usage (1);
+}
 
-    // Create matcher and traverser objects
-    if (!(ctx->matcher = create_match_cb (ctx->params.matcher_policy))) {
+static int init_resource_query (resource_context_t **ctx, int c, char *v[])
+{
+    int rc = 0;
+
+    if (!(*ctx = new (nothrow)resource_context_t ())) {
+        cerr << "ERROR: out of memory allocating resource context" << endl;
+        errno = ENOMEM;
+        rc = -1;
+        goto done;
+    }
+    set_default_params (*ctx);
+    process_args (*ctx, c, v);
+    if ( !((*ctx)->matcher = create_match_cb ((*ctx)->params.matcher_policy))) {
         cerr << "ERROR: unknown match policy " << endl;
-        cerr << "ERROR: " << ctx->params.matcher_policy << endl;
-        return EXIT_FAILURE;
+        cerr << "ERROR: " << (*ctx)->params.matcher_policy << endl;
+        rc = -1;
+    }
+    if (init_resource_graph (*ctx) != 0) {
+        cerr << "ERROR: resource graph initialization" << endl;
+        rc = -1;
     }
 
-    // Generate a resource graph data store
-    resource_generator_t rgen;
-    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "") {
-        ctx->params.grug = "conf/default";
-    }
-    if (ctx->params.grug != "") {
-        if (ctx->params.hwloc_xml != "") {
-            cout << "WARN: multiple resource inputs provided, using grug" << endl;
-        }
-        if ( (rc = rgen.read_graphml (ctx->params.grug, ctx->db)) != 0) {
-            cerr << "ERROR: " << rgen.err_message () << endl;
-            cerr << "ERROR: error in generating resources" << endl;
-            return EXIT_FAILURE;
-        }
-    } else if (ctx->params.hwloc_xml != "") {
-        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(), ctx->db)) != 0) {
-            cerr << "ERROR: " << rgen.err_message () << endl;
-            cerr << "ERROR: error in generating resources" << endl;
-            return EXIT_FAILURE;
-        }
-    }
-    resource_graph_t &g = ctx->db.resource_graph;
+done:
+    return rc;
+}
 
-    // Configure the matcher and its subsystem selector
-    cout << "INFO: Loading a matcher: " << ctx->params.matcher_name << endl;
-    if (set_subsystems_use (ctx, ctx->params.matcher_name) != 0) {
-        cerr << "ERROR: Not all subsystems found" << endl;
-        return EXIT_FAILURE;
-    }
-    vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-    edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-    const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-
-    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
-    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
-    f_resource_graph_t *fg = new f_resource_graph_t (g, edgsel, vtxsel);
-    ctx->resource_graph_views[ctx->params.matcher_name] = fg;
-    ctx->jobid_counter = 1;
-    if (ctx->params.prune_filters != ""
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->params.prune_filters)
-                                                   < 0) {
-        cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
-             << ctx->params.prune_filters << endl;
-        return EXIT_FAILURE;
-    }
-
-    if (ctx->params.r_fname != "") {
-        ctx->params.r_out.exceptions (std::ofstream::failbit
-                                          | std::ofstream::badbit);
-        ctx->params.r_out.open (ctx->params.r_fname);
-    }
-
-    ctx->traverser.initialize (fg, &(ctx->db.roots), ctx->matcher);
-
-    // Command line begins
-    control_loop (ctx);
-
+static void fini_resource_query (resource_context_t *ctx)
+{
     if (ctx->params.r_fname != "")
         ctx->params.r_out.close ();
-
-    // Output the filtered resource graph
     if (ctx->params.o_fname != "")
         write_to_graph (ctx);
+    destory_resource_ctx (ctx);
+}
+
+int main (int argc, char *argv[])
+{
+    resource_context_t *ctx = NULL;
+    if (init_resource_query (&ctx, argc, argv) != 0) {
+        cerr << "ERROR: resource query initialization" << endl;
+        return EXIT_FAILURE;
+    }
+
+    control_loop (ctx);
+
+    fini_resource_query (ctx);
 
     return EXIT_SUCCESS;
 }
