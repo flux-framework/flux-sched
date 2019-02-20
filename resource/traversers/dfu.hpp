@@ -32,12 +32,6 @@
 namespace Flux {
 namespace resource_model {
 
-enum class R_format { R, R_LITE, R_NATIVE };
-
-const char R_FORMAT[] = "R";
-const char R_LITE_FORMAT[] = "R_LITE";
-const char R_NATIVE_FORMAT[] = "R_NATIVE";
-
 /*! Depth-First-and-Up traverser. Perform depth-first visit on the dominant
  *  subsystem and upwalk on each and all of the auxiliary subsystems selected
  *  by the matcher callback object (dfu_match_cb_t). Corresponding match
@@ -106,18 +100,18 @@ public:
      *  method is called.
      *
      *  \param jobspec   Jobspec object.
+     *  \param writers   vertex/edge writers to emit the matched labels
      *  \param op        schedule operation:
      *                       allocate or allocate_orelse_reserve.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
-     *  \param ss        stringstream into which emitted R infor is stored.
      *  \return          0 on success; -1 on error.
      *                       EINVAL: graph, roots or match callback not set.
      *                       ENOTSUP: roots does not contain a subsystem the
      *                                match callback uses.
      */
-    int run (Jobspec::Jobspec &jobspec, match_op_t op, int64_t id, int64_t *at,
-             std::stringstream &ss);
+    int run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
+             match_op_t op, int64_t id, int64_t *at);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
@@ -134,8 +128,6 @@ private:
                   vtx_t root, unsigned int *needs,
                   std::unordered_map<std::string, int64_t> &dfv);
 };
-
-bool known_R_format (const std::string &f);
 
 } // namespace resource_model
 } // namespace Flux

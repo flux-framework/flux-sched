@@ -135,25 +135,29 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
         jobspec_in.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         jobspec_in.open (jobspec_fn);
         Flux::Jobspec::Jobspec job {jobspec_in};
-        stringstream r_emitted;
+        stringstream o;
         double elapse = 0.0f;
         struct timeval st, et;
 
         gettimeofday (&st, NULL);
+        ctx->writers->reset ();
+
         if (args[1] == "allocate")
-            rc = ctx->traverser->run (job, match_op_t::MATCH_ALLOCATE,
-                                      (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                      MATCH_ALLOCATE, (int64_t)jobid, &at);
         else if (args[1] == "allocate_orelse_reserve")
-            rc = ctx->traverser->run (job,
-                                      match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                      (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                      MATCH_ALLOCATE_ORELSE_RESERVE,
+                                      (int64_t)jobid, &at);
+
+        ctx->writers->emit (o);
+        ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
+        out << o.str ();
+
         gettimeofday (&et, NULL);
         elapse = get_elapse_time (st, et);
 
-        ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
-        out << r_emitted.str ();
-
-        print_schedule_info (ctx, out, jobid, jobspec_fn, (rc == 0), at, elapse);
+        print_schedule_info (ctx, out, jobid, jobspec_fn, rc == 0, at, elapse);
         jobspec_in.close ();
 
     } catch (ifstream::failure &e) {

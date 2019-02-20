@@ -58,7 +58,8 @@ struct resource_args_t {
     string match_subsystems;
     string match_policy;
     string prune_filters;
-    string R_format;
+    string match_format;
+    int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
 };
 
 struct resource_ctx_t {
@@ -69,6 +70,7 @@ struct resource_ctx_t {
     dfu_traverser_t *traverser;    /* Graph traverser object */
     resource_graph_db_t db;        /* Resource graph data store */
     f_resource_graph_t *fgraph;    /* Graph filtered by subsystems to use */
+    match_writers_t *writers;      /* Vertex/Edge writers for a match */
     map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     map<uint64_t, uint64_t> allocations;  /* Allocation table */
     map<uint64_t, uint64_t> reservations; /* Reservation table */
@@ -119,6 +121,7 @@ static void freectx (void *arg)
             delete kv.second;    /* job_info_t* type */
             ctx->jobs.erase (kv.first);
         }
+        delete ctx->writers;
         ctx->jobs.clear ();
         ctx->allocations.clear ();
         ctx->reservations.clear ();
@@ -133,7 +136,8 @@ static void set_default_args (resource_args_t &args)
     args.match_subsystems = "containment";
     args.match_policy = "high";
     args.prune_filters = "ALL:pu";
-    args.R_format = "R_NATIVE";
+    args.match_format = "rv1_nosched";
+    args.reserve_vtx_vec = 0;
 }
 
 static resource_ctx_t *getctx (flux_t *h)
@@ -154,7 +158,8 @@ static resource_ctx_t *getctx (flux_t *h)
             errno = ENOMEM;
             goto done;
         }
-        ctx->fgraph = NULL; /* Cannot be allocated at this point */
+        ctx->fgraph = NULL;  /* Cannot be allocated at this point */
+        ctx->writers = NULL; /* Cannot be allocated at this point */
         flux_aux_set (h, "resource", ctx, freectx);
     }
 
@@ -185,20 +190,23 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
                            args.match_policy.c_str (), dflt.c_str ());
                 args.match_policy = dflt;
             }
-        } else if (!strncmp ("prune-filters=", argv[i], sizeof ("prune-filters"))) {
+        } else if (!strncmp ("prune-filters=",
+                             argv[i], sizeof ("prune-filters"))) {
             std::string token = strstr (argv[i], "=") + 1;
             if(token.find_first_not_of(' ') != std::string::npos) {
                 args.prune_filters += ",";
                 args.prune_filters += token;
             }
-        } else if (!strncmp ("R-format=", argv[i], sizeof ("R-format"))) {
-            dflt = args.R_format;
-            args.R_format = strstr (argv[i], "=") + 1;
-            if (!known_R_format (args.R_format)) {
+        } else if (!strncmp ("match-format=",
+                             argv[i], sizeof ("match-format"))) {
+            dflt = args.match_format;
+            args.match_format = strstr (argv[i], "=") + 1;
+            if (!known_match_format (args.match_format)) {
+                args.match_format = dflt;
                 flux_log (ctx->h, LOG_ERR,
-                          "Unknown R format (%s)! Use default (%s).",
-                           args.R_format.c_str (), dflt.c_str ());
-                args.R_format = dflt;
+                          "Unknown match format (%s)! Use default (%s).",
+                           args.match_format.c_str (), dflt.c_str ());
+                args.match_format = dflt;
             }
         } else {
             rc = -1;
@@ -424,11 +432,16 @@ static int init_resource_graph (resource_ctx_t *ctx)
     subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
 
     // Create a filtered graph based on the filters
-    ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel);
-    if (!ctx->fgraph) {
+    if (!(ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel))) {
         errno = ENOMEM;
         return -1;
      }
+
+    // Create a writers object for matched vertices and edges
+    match_format_t format = match_writers_factory_t::
+                                get_writers_type (ctx->args.match_format);
+    if (!(ctx->writers = match_writers_factory_t::create (format)))
+        return -1;
 
     if (ctx->args.prune_filters != ""
         && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
@@ -483,7 +496,7 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t at,
 }
 
 static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
-                      string jstr, int64_t *at, double *ov, stringstream &R)
+                      string jstr, int64_t *at, double *ov, stringstream &o)
 {
     int rc = 0;
     double elapse = 0.0f;
@@ -492,9 +505,11 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     dfu_traverser_t &tr = *(ctx->traverser);
 
     gettimeofday (&start, NULL);
+    ctx->writers->reset ();
+
     if (string ("allocate") == cmd) {
         Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, match_op_t::MATCH_ALLOCATE, jobid, at, R);
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
         if (rc != 0) {
             flux_log (ctx->h, LOG_INFO,
                       "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
@@ -502,7 +517,8 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         }
     } else if (string ("allocate_orelse_reserve") == cmd) {
         Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,jobid, at, R);
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                     jobid, at);
         if (rc != 0) {
             flux_log (ctx->h, LOG_INFO,
                       "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
@@ -514,10 +530,11 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         flux_log (ctx->h, LOG_ERR, "unknown cmd: %s", cmd);
         goto done;
     }
+    ctx->writers->emit (o);
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
 
-    if ((rc = track_schedule_info (ctx, jobid, *at, jstr, R, *ov)) != 0) {
+    if ((rc = track_schedule_info (ctx, jobid, *at, jstr, o, *ov)) != 0) {
         flux_log (ctx->h, LOG_ERR, "can't add info for %ld.", (intmax_t)jobid);
         goto done;
     }

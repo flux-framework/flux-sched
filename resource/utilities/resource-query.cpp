@@ -47,10 +47,11 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:g:o:p:t:e:G:X:h"
+#define OPTIONS "S:P:F:G:X:g:o:p:t:e:h"
 static const struct option longopts[] = {
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
+    {"match-format",     required_argument,  0, 'F'},
     {"grug",             required_argument,  0, 'G'},
     {"hwloc-xml",        required_argument,  0, 'X'},
     {"graph-format",     required_argument,  0, 'g'},
@@ -135,6 +136,11 @@ static void usage (int code)
 "                locality: Select contiguous resources first in their ID space\n"
 "            (default=high).\n"
 "\n"
+"    -F, --match-format=<simple|jgf|rlite|rv1|rv1_nosched"
+"|pretty_simple|pretty_jgf|pretty_rlite|pretty_rv1>\n"
+"            Specify the emit format of the matched resource set.\n"
+"            (default=simple).\n"
+"\n"
 "    -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>\n"
 "            Install a planner-based filter at each High-Level (HL) resource\n"
 "                vertex which tracks the state of the Low-Level (LL) resources\n"
@@ -189,6 +195,7 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.o_fname = "";
     ctx->params.r_fname = "";
     ctx->params.o_fext = "dot";
+    ctx->params.match_format = "simple";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
     ctx->params.prune_filters = "ALL:core";
     ctx->params.elapse_time = false;
@@ -403,6 +410,7 @@ static void destory_resource_ctx (resource_context_t *ctx)
     delete ctx->matcher;
     delete ctx->traverser;
     delete ctx->fgraph;
+    delete ctx->writers;
     for (auto &kv : ctx->jobs) {
         delete kv.second;    /* job_info_t* type */
         ctx->jobs.erase (kv.first);
@@ -516,6 +524,13 @@ static int init_resource_graph (resource_context_t *ctx)
     if ( (rc = ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots),
                                            ctx->matcher)) != 0) {
         cerr << "ERROR: initializing traverser" << endl;
+        return -1;
+    }
+    match_format_t format = match_writers_factory_t::
+                                get_writers_type (ctx->params.match_format);
+    if (!(ctx->writers = match_writers_factory_t::create (format))) {
+        cerr << "ERROR: out of memory allocating traverser" << endl;
+        return -1;
     }
 
     return rc;
@@ -543,6 +558,14 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 break;
             case 'P': /* --match-policy */
                 ctx->params.matcher_policy = optarg;
+                break;
+            case 'F': /* --match-format */
+                ctx->params.match_format = optarg;
+                if (!known_match_format (ctx->params.match_format)) {
+                    cerr << "[ERROR] unknown format for --match-format: ";
+                    cerr << optarg << endl;
+                    usage (1);
+                }
                 break;
             case 'g': /* --graph-format */
                 rc = string_to_graph_format (optarg, ctx->params.o_format);

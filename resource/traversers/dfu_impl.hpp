@@ -34,6 +34,7 @@
 #include "resource/schema/resource_graph.hpp"
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/evaluators/scoring_api.hpp"
+#include "resource/emitters/match_emitters.hpp"
 #include "resource/planner/planner.h"
 
 namespace Flux {
@@ -176,16 +177,15 @@ public:
      *  and emit the allocation/reservation information.
      *
      *  \param root      root resource vertex.
+     *  \param writers   vertex/edge writers to emit the matched resources
      *  \param meta      metadata on the job.
      *  \param needs     the number of root resources requested.
      *  \param excl      exclusive access requested.
-     *  \param ss        stringstream into which allocation/reservation
-     *                   information is printed.
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int update (vtx_t root, jobmeta_t &meta, unsigned int needs, bool excl,
-                std::stringstream &ss);
+    int update (vtx_t root, match_writers_t *writers,
+                jobmeta_t &meta, unsigned int needs, bool excl);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
@@ -261,27 +261,26 @@ private:
                  const std::vector<Jobspec::Resource> &resources, bool *excl,
                  scoring_api_t &to_parent);
 
-    // Emit R
-    int emit_edge (edg_t e);
-    int emit_vertex (vtx_t u, unsigned int needs, bool exclusive,
-                     std::stringstream &ss);
+    // Emit matched resource set
+    int emit_vtx (vtx_t u, match_writers_t *w, unsigned int needs,
+                  bool exclusive);
+    int emit_edg (edg_t e, match_writers_t *w);
 
     // Update resource graph data store
     int upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                   bool excl, const jobmeta_t &meta, int &n_p,
                   std::map<std::string, int64_t> &to_parent);
-    int upd_sched (vtx_t u, const subsystem_t &subsystem, unsigned int needs,
+    int upd_sched (vtx_t u, match_writers_t *writers,
+                   const subsystem_t &subsystem, unsigned int needs,
                    bool excl, int n, const jobmeta_t &meta,
                    std::map<std::string, int64_t> &dfu,
-                   std::map<std::string, int64_t> &to_parent,
-                   std::stringstream &ss);
+                   std::map<std::string, int64_t> &to_parent);
     int upd_upv (vtx_t u, const subsystem_t &subsystem, unsigned int needs,
                  bool excl, const jobmeta_t &meta,
                  std::map<std::string, int64_t> &to_parent);
-    int upd_dfv (vtx_t u, unsigned int needs,
+    int upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
                  bool excl, const jobmeta_t &meta,
-                 std::map<std::string, int64_t> &to_parent,
-                 std::stringstream &ss);
+                 std::map<std::string, int64_t> &to_parent);
 
     // Remove allocation or reservations
     int rem_subtree_plan (vtx_t u, int64_t jobid, const std::string &subsystem);
