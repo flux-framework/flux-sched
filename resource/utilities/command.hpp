@@ -46,6 +46,7 @@ struct test_params_t {
     std::string r_fname;        /* Output file to dump the emitted R */
     std::string o_fext;         /* File extension */
     std::string prune_filters;  /* Raw prune-filter specification */
+    std::string match_format;   /* Format to emit a matched resources */
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
     bool flux_hwloc;            /* get hwloc info from flux instance */
@@ -58,6 +59,7 @@ struct resource_context_t {
     dfu_traverser_t *traverser;  /* Graph traverser object */
     resource_graph_db_t db;      /* Resource graph data store */
     f_resource_graph_t *fgraph;  /* Graph filtered by subsystems to use */
+    match_writers_t *writers;    /* Vertex/Edge writers for a match */
     std::map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
