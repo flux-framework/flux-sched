@@ -57,13 +57,6 @@ command_t commands[] = {
     { "NA", "NA", (cmd_func_f *)NULL, "NA" }
 };
 
-static double get_elapse_time (timeval &st, timeval &et)
-{
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
-    return ts2 - ts1;
-}
-
 static int do_remove (resource_context_t *ctx, int64_t jobid)
 {
     int rc = -1;
@@ -112,6 +105,13 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
         out << "INFO:" << " =============================" << endl;
     }
     ctx->jobid_counter++;
+}
+
+double get_elapse_time (timeval &st, timeval &et)
+{
+    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
+    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
+    return ts2 - ts1;
 }
 
 int cmd_match (resource_context_t *ctx, vector<string> &args)

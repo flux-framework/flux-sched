@@ -450,11 +450,16 @@ static void control_loop (resource_context_t *ctx)
 static int populate_resource_db (resource_context_t *ctx)
 {
     int rc = 0;
+    struct timeval st, et;
+    double elapse;
     resource_generator_t rgen;
 
     if (ctx->params.grug == "" && ctx->params.hwloc_xml == "") {
         ctx->params.grug = "conf/default";
     }
+
+    gettimeofday (&st, NULL);
+
     if (ctx->params.grug != "") {
         if (ctx->params.hwloc_xml != "") {
             cout << "WARN: multiple resource inputs provided, using grug" << endl;
@@ -470,6 +475,17 @@ static int populate_resource_db (resource_context_t *ctx)
             cerr << "ERROR: error in generating resources" << endl;
             rc = -1;
         }
+    }
+
+    gettimeofday (&et, NULL);
+    elapse = get_elapse_time (st, et);
+    if (ctx->params.elapse_time) {
+        cout << "INFO: Graph Load Time: " << elapse
+             << endl;
+        cout << "INFO: Vertex Count: " << num_vertices (ctx->db.resource_graph)
+             << endl;
+        cout << "INFO: Edge Count: " << num_edges (ctx->db.resource_graph)
+             << endl;
     }
 
     return rc;
