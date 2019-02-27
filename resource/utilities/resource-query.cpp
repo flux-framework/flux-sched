@@ -47,7 +47,7 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:F:G:X:g:o:p:t:e:h"
+#define OPTIONS "S:P:F:G:X:g:o:p:t:eh"
 static const struct option longopts[] = {
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
@@ -58,7 +58,7 @@ static const struct option longopts[] = {
     {"graph-output",     required_argument,  0, 'o'},
     {"prune-filters",    required_argument,  0, 'p'},
     {"test-output",      required_argument,  0, 't'},
-    {"elapse",           required_argument,  0, 'e'},
+    {"elapse-time",      no_argument,        0, 'e'},
     {"help",             no_argument,        0, 'h'},
     { 0, 0, 0, 0 },
 };
