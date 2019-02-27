@@ -75,6 +75,7 @@ int cmd_info (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_cat (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_quit (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_help (resource_context_t *ctx, std::vector<std::string> &args);
+double get_elapse_time (timeval &st, timeval &et);
 
 } // namespace resource_model
 } // namespace Flux
