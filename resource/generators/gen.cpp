@@ -199,8 +199,6 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
         db.roots[recipe[u].subsystem] = v;
         id = 0;
     } else {
-        // TODO: should add_vertex really be called a second time?
-        v = add_vertex (db.resource_graph);
         id = gen_id (e, recipe, i, sz, j);
         pref = db.resource_graph[src_v].paths[ssys];
     }
