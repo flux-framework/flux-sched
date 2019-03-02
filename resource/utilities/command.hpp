@@ -50,6 +50,7 @@ struct test_params_t {
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
     bool flux_hwloc;            /* get hwloc info from flux instance */
+    size_t reserve_vtx_vec;     /* Allow for reserving vertex vector size */
 };
 
 struct resource_context_t {
