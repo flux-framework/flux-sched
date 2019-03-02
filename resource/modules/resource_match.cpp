@@ -59,7 +59,7 @@ struct resource_args_t {
     string match_policy;
     string prune_filters;
     string match_format;
-    int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
+    int reserve_vtx_vec;        /* Allow for reserving vertex vector size */
 };
 
 struct resource_ctx_t {
@@ -208,6 +208,15 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
                            args.match_format.c_str (), dflt.c_str ());
                 args.match_format = dflt;
             }
+        } else if (!strncmp ("reserve-vtx-vec=",
+                             argv[i], sizeof ("reserve-vtx-vec"))) {
+            args.reserve_vtx_vec = atoi (strstr (argv[i], "=") + 1);
+            if ( args.reserve_vtx_vec <= 0 || args.reserve_vtx_vec > 2000000) {
+                flux_log (ctx->h, LOG_ERR,
+                          "out of range specified for reserve-vtx-vec (%d)",
+                          args.reserve_vtx_vec);
+                args.reserve_vtx_vec = 0;
+            }
         } else {
             rc = -1;
             errno = EINVAL;
@@ -332,6 +341,10 @@ static int populate_resource_db (resource_ctx_t *ctx)
 {
     int rc = 0;
     resource_generator_t rgen;
+
+    if (ctx->args.reserve_vtx_vec != 0)
+        ctx->db.resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
+
     // TODO: include rgen.err_message()
     if (ctx->args.grug != "") {
         if (ctx->args.hwloc_xml != "") {

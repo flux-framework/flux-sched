@@ -47,7 +47,7 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:F:G:X:g:o:p:t:eh"
+#define OPTIONS "S:P:F:G:X:g:o:p:t:r:eh"
 static const struct option longopts[] = {
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
@@ -58,6 +58,7 @@ static const struct option longopts[] = {
     {"graph-output",     required_argument,  0, 'o'},
     {"prune-filters",    required_argument,  0, 'p'},
     {"test-output",      required_argument,  0, 't'},
+    {"reserve-vtx-vec",  required_argument,  0, 'r'},
     {"elapse-time",      no_argument,        0, 'e'},
     {"help",             no_argument,        0, 'h'},
     { 0, 0, 0, 0 },
@@ -159,6 +160,10 @@ static void usage (int code)
 "            Specify the graph format of the output file\n"
 "            (default=dot).\n"
 "\n"
+"    -r, --reserve-vtx-vec=<size>\n"
+"            Reserve the graph vertex size to optimize resource graph loading.\n"
+"            The size value must be a non-zero integer up to 2000000.\n"
+"\n"
 "    -e, --elapse-time\n"
 "            Print the elapse time per scheduling operation.\n"
 "\n"
@@ -198,6 +203,7 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.match_format = "simple";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
     ctx->params.prune_filters = "ALL:core";
+    ctx->params.reserve_vtx_vec = 0;
     ctx->params.elapse_time = false;
 }
 
@@ -454,9 +460,10 @@ static int populate_resource_db (resource_context_t *ctx)
     double elapse;
     resource_generator_t rgen;
 
-    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "") {
+    if (ctx->params.reserve_vtx_vec != 0)
+        ctx->db.resource_graph.m_vertices.reserve (ctx->params.reserve_vtx_vec);
+    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "")
         ctx->params.grug = "conf/default";
-    }
 
     gettimeofday (&st, NULL);
 
@@ -604,6 +611,16 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 break;
             case 't': /* --test-output */
                 ctx->params.r_fname = optarg;
+                break;
+            case 'r': /* --reserve-vtx-vec */
+                // If atoi fails, it defaults to 0, which is fine for us
+                ctx->params.reserve_vtx_vec = atoi (optarg);
+                if ( (ctx->params.reserve_vtx_vec < 0)
+                    || (ctx->params.reserve_vtx_vec > 2000000)) {
+                    ctx->params.reserve_vtx_vec = 0;
+                    cerr << "WARN: out of range specified for --reserve-vtx-vec: ";
+                    cerr << optarg << endl;
+                }
                 break;
             case 'e': /* --elapse-time */
                 ctx->params.elapse_time = true;
