@@ -49,6 +49,7 @@ struct test_params_t {
     std::string match_format;   /* Format to emit a matched resources */
     emit_format_t o_format;
     bool elapse_time;           /* Print elapse time */
+    bool disable_prompt;        /* Disable resource-query> prompt */
     bool flux_hwloc;            /* get hwloc info from flux instance */
     size_t reserve_vtx_vec;     /* Allow for reserving vertex vector size */
 };
