@@ -158,6 +158,7 @@ AC_CONFIG_FILES([Makefile
   resource/planner/test/Makefile
   resource/libjobspec/Makefile
   resource/utilities/Makefile
+  resource/utilities/test/Makefile
   resource/modules/Makefile
   etc/Makefile
   t/Makefile])
