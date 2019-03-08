@@ -53,6 +53,12 @@ struct test_params_t {
     size_t reserve_vtx_vec;     /* Allow for reserving vertex vector size */
 };
 
+struct match_perf_t {
+    double min;                 /* Min match time */
+    double max;                 /* Max match time */
+    double accum;               /* Total match time accumulated */
+};
+
 struct resource_context_t {
     test_params_t params;        /* Parameters for resource-query */
     uint64_t jobid_counter;      /* Hold the current jobid value */
@@ -61,6 +67,7 @@ struct resource_context_t {
     resource_graph_db_t db;      /* Resource graph data store */
     f_resource_graph_t *fgraph;  /* Graph filtered by subsystems to use */
     match_writers_t *writers;    /* Vertex/Edge writers for a match */
+    match_perf_t perf;           /* Match performance stats */
     std::map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
@@ -73,6 +80,7 @@ int cmd_match (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_cancel (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_list (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_info (resource_context_t *ctx, std::vector<std::string> &args);
+int cmd_stat (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_cat (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_quit (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_help (resource_context_t *ctx, std::vector<std::string> &args);

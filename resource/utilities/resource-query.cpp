@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <iterator>
 #include <cstdint>
+#include <limits>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
@@ -647,6 +648,9 @@ static int init_resource_query (resource_context_t **ctx, int c, char *v[])
     }
     set_default_params (*ctx);
     process_args (*ctx, c, v);
+    (*ctx)->perf.min = DBL_MAX;
+    (*ctx)->perf.max = 0.0f;
+    (*ctx)->perf.accum = 0.0f;
     if ( !((*ctx)->matcher = create_match_cb ((*ctx)->params.matcher_policy))) {
         cerr << "ERROR: unknown match policy " << endl;
         cerr << "ERROR: " << (*ctx)->params.matcher_policy << endl;
