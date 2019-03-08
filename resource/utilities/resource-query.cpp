@@ -48,7 +48,7 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:F:G:X:g:o:p:t:r:eh"
+#define OPTIONS "S:P:F:G:X:g:o:p:t:r:edh"
 static const struct option longopts[] = {
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
@@ -61,6 +61,7 @@ static const struct option longopts[] = {
     {"test-output",      required_argument,  0, 't'},
     {"reserve-vtx-vec",  required_argument,  0, 'r'},
     {"elapse-time",      no_argument,        0, 'e'},
+    {"disable-prompt",   no_argument,        0, 'd'},
     {"help",             no_argument,        0, 'h'},
     { 0, 0, 0, 0 },
 };
@@ -168,6 +169,9 @@ static void usage (int code)
 "    -e, --elapse-time\n"
 "            Print the elapse time per scheduling operation.\n"
 "\n"
+"    -d, --disable-prompt\n"
+"            Don't print the prompt.\n"
+"\n"
 "    -o, --graph-output=<basename>\n"
 "            Set the basename of the graph output file\n"
 "            For AT&T Graphviz dot, <basename>.dot\n"
@@ -206,6 +210,7 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.prune_filters = "ALL:core";
     ctx->params.reserve_vtx_vec = 0;
     ctx->params.elapse_time = false;
+    ctx->params.disable_prompt = false;
 }
 
 static int string_to_graph_format (string st, emit_format_t &format)
@@ -432,7 +437,8 @@ static void control_loop (resource_context_t *ctx)
 {
     cmd_func_f *cmd = NULL;
     while (1) {
-        char *line = readline ("resource-query> ");
+        char *line = ctx->params.disable_prompt? readline ("")
+                                               : readline ("resource-query> ");
         if (line == NULL)
             continue;
         else if(*line)
@@ -625,6 +631,9 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 break;
             case 'e': /* --elapse-time */
                 ctx->params.elapse_time = true;
+                break;
+            case 'd': /* --disable-prompt */
+                ctx->params.disable_prompt = true;
                 break;
             default:
                 usage (1);
