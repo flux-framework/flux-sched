@@ -25,25 +25,25 @@ class ResourceModuleInterface:
         self.f = flux.Flux ()
 
     def rpc_next_jobid (self):
-        resp = self.f.rpc_send ("resource.next_jobid")
+        resp = self.f.rpc ("resource.next_jobid").get ()
         return resp['jobid']
 
     def rpc_allocate (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate', 'jobid' : jobid, 'jobspec' : jobspec_str}
-        return self.f.rpc_send ("resource.match", payload)
+        return self.f.rpc ("resource.match", payload).get ()
 
     def rpc_reserve (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate_orelse_reserve',
                    'jobid' : jobid, 'jobspec' : jobspec_str}
-        return self.f.rpc_send ("resource.match", payload)
+        return self.f.rpc ("resource.match", payload).get ()
 
     def rpc_info (self, jobid):
         payload = {'jobid' : jobid}
-        return self.f.rpc_send ("resource.info", payload)
+        return self.f.rpc ("resource.info", payload).get ()
 
     def rpc_cancel (self, jobid):
         payload = {'jobid' : jobid}
-        return self.f.rpc_send ("resource.cancel", payload)
+        return self.f.rpc ("resource.cancel", payload).get ()
 
 """
     Action for match allocate sub-command
