@@ -408,7 +408,7 @@ void pretty_jgf_match_writers_t::emit_vtx (const string &prefix,
     m_vout << indent << "          \"name\": " << "\"" << g[u].name
            << "\", " << endl;
     m_vout << indent << "          \"id\": " << g[u].id << ", " << endl;
-    m_vout << indent << "          \"uuid\": " << g[u].uniq_id << ", " << endl;
+    m_vout << indent << "          \"uniq_id\": " << g[u].uniq_id << ", " << endl;
     m_vout << indent << "          \"rank\": " << g[u].rank << ", " << endl;
     m_vout << indent << "          \"exclusive\": " << x << ", " << endl;
     m_vout << indent << "          \"unit\": \"" << g[u].unit << "\", " << endl;
