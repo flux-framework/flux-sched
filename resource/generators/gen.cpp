@@ -471,6 +471,7 @@ ggv_t add_new_vertex(resource_graph_db_t &db, const ggv_t &parent,
     db.resource_graph[v].type = type;
     db.resource_graph[v].basename = basename;
     db.resource_graph[v].size = size;
+    db.resource_graph[v].uniq_id = v;
     db.resource_graph[v].rank = rank;
     db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
                                                        size,
