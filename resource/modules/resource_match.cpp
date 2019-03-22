@@ -59,7 +59,14 @@ struct resource_args_t {
     string match_policy;
     string prune_filters;
     string match_format;
-    int reserve_vtx_vec;        /* Allow for reserving vertex vector size */
+    int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
+};
+
+struct match_perf_t {
+    double load;                   /* Graph load time */
+    double min;                    /* Min match time */
+    double max;                    /* Max match time */
+    double accum;                  /* Total match time accumulated */
 };
 
 struct resource_ctx_t {
@@ -71,6 +78,7 @@ struct resource_ctx_t {
     resource_graph_db_t db;        /* Resource graph data store */
     f_resource_graph_t *fgraph;    /* Graph filtered by subsystems to use */
     match_writers_t *writers;      /* Vertex/Edge writers for a match */
+    match_perf_t perf;             /* Match performance stats */
     map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     map<uint64_t, uint64_t> allocations;  /* Allocation table */
     map<uint64_t, uint64_t> reservations; /* Reservation table */
@@ -92,6 +100,9 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
+static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg);
+
 static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
@@ -99,9 +110,17 @@ static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
+
+static double get_elapse_time (timeval &st, timeval &et)
+{
+    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
+    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
+    return ts2 - ts1;
+}
 
 /******************************************************************************
  *                                                                            *
@@ -152,6 +171,10 @@ static resource_ctx_t *getctx (flux_t *h)
         ctx->h = h;
         ctx->handlers = NULL;
         set_default_args (ctx->args);
+        ctx->perf.load = 0.0f;
+        ctx->perf.min = DBL_MAX;
+        ctx->perf.max = 0.0f;
+        ctx->perf.accum = 0.0f;
         ctx->matcher = create_match_cb (ctx->args.match_policy);
         ctx->traverser = new (nothrow)dfu_traverser_t ();
         if (!ctx->traverser) {
@@ -340,10 +363,13 @@ int read_flux_hwloc (resource_generator_t &rgen, flux_t *h, resource_graph_db_t 
 static int populate_resource_db (resource_ctx_t *ctx)
 {
     int rc = 0;
+    struct timeval st, et;
     resource_generator_t rgen;
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db.resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
+
+    gettimeofday (&st, NULL);
 
     // TODO: include rgen.err_message()
     if (ctx->args.grug != "") {
@@ -375,6 +401,9 @@ static int populate_resource_db (resource_ctx_t *ctx)
         }
         flux_log (ctx->h, LOG_INFO, "loaded resources from the hwloc xml in the KVS");
     }
+
+    gettimeofday (&et, NULL);
+    ctx->perf.load = get_elapse_time (st, et);
 
 done:
     return rc;
@@ -476,11 +505,11 @@ static int init_resource_graph (resource_ctx_t *ctx)
  *                                                                            *
  ******************************************************************************/
 
-static double get_elapse_time (timeval &st, timeval &et)
+static void update_match_perf (resource_ctx_t *ctx, double elapse)
 {
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
-    return ts2 - ts1;
+    ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
+    ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
+    ctx->perf.accum += elapse;
 }
 
 static inline string get_status_string (int64_t at)
@@ -546,6 +575,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     ctx->writers->emit (o);
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
+    update_match_perf (ctx, *ov);
 
     if ((rc = track_schedule_info (ctx, jobid, *at, jstr, o, *ov)) != 0) {
         flux_log (ctx->h, LOG_ERR, "can't add info for %ld.", (intmax_t)jobid);
@@ -706,6 +736,41 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
 error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg)
+{
+    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    uint32_t userid = 0;
+    double avg = 0.0f;
+    double min = 0.0f;
+
+    if (flux_msg_get_userid (msg, &userid) < 0)
+        goto error;
+
+    flux_log (h, LOG_INFO, "stat requested by user (%u).", userid);
+
+    if (ctx->jobs.size ()) {
+        avg = ctx->perf.accum / (double)ctx->jobs.size ();
+        min = ctx->perf.min;
+    }
+    if (flux_respond_pack (h, msg, "{s:I s:I s:f s:I s:f s:f s:f}",
+                                   "V", num_vertices (ctx->db.resource_graph),
+                                   "E", num_edges (ctx->db.resource_graph),
+                                   "load-time", ctx->perf.load,
+                                   "njobs", ctx->jobs.size (),
+                                   "min-match", min,
+                                   "max-match", ctx->perf.max,
+                                   "avg-match", avg) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    flux_log (h, LOG_INFO, "stat request succeeded.");
+    return;
+
+error:
+    if (flux_respond (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
 }
 
 static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
