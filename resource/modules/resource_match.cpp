@@ -598,8 +598,8 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
@@ -635,8 +635,8 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
@@ -674,8 +674,8 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
@@ -713,8 +713,8 @@ static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 
