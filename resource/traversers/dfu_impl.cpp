@@ -707,16 +707,19 @@ int dfu_impl_t::upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
             if ((*m_graph)[*ei].idata.best_k_cnt != m_best_k_cnt)
                 continue;
 
+	    int n_plan_sub = 0;
             bool x = (*m_graph)[*ei].idata.exclusive;
             unsigned int needs = (*m_graph)[*ei].idata.needs;
             vtx_t tgt = target (*ei, *m_graph);
             if (subsystem == dom)
-                n_plans += upd_dfv (tgt, writers, needs, x, meta, dfu);
+                n_plan_sub += upd_dfv (tgt, writers, needs, x, meta, dfu);
             else
-                n_plans += upd_upv (tgt, subsystem, needs, x, meta, dfu);
+                n_plan_sub += upd_upv (tgt, subsystem, needs, x, meta, dfu);
 
-            if (n_plans > 0)
+            if (n_plan_sub > 0) {
                 emit_edg (*ei, writers);
+                n_plans += n_plan_sub;
+	    }
         }
     }
     (*m_graph)[u].idata.colors[dom] = m_color.black ();

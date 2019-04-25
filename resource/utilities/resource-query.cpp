@@ -381,6 +381,7 @@ static void write_to_graphml (f_resource_graph_t &fg, fstream &o)
     dp.property ("basename", get (&resource_pool_t::basename, fg));
     dp.property ("name", get (&resource_pool_t::name, fg));
     dp.property ("id", get (&resource_pool_t::id, fg));
+    dp.property ("uniq_id", get (&resource_pool_t::uniq_id, fg));
     dp.property ("size", get (&resource_pool_t::size, fg));
     dp.property ("unit", get (&resource_pool_t::unit, fg));
     // Relation edges
