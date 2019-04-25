@@ -22,8 +22,8 @@
  *  See also:  http://www.gnu.org/licenses/
  \*****************************************************************************/
 
-#ifndef MATCH_EMITTERS_HPP
-#define MATCH_EMITTERS_HPP
+#ifndef MATCH_WRITERS_HPP
+#define MATCH_WRITERS_HPP
 
 #include <string>
 #include <sstream>
@@ -233,7 +233,7 @@ bool known_match_format (const std::string &format);
 } // namespace resource_model
 } // namespace Flux
 
-#endif // MATCH_EMITTERS_HPP
+#endif // MATCH_WRITERS_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

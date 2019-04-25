@@ -34,7 +34,7 @@
 #include "resource/schema/resource_graph.hpp"
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/evaluators/scoring_api.hpp"
-#include "resource/emitters/match_emitters.hpp"
+#include "resource/writers/match_writers.hpp"
 #include "resource/planner/planner.h"
 
 namespace Flux {

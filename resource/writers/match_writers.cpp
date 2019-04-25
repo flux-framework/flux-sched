@@ -26,7 +26,7 @@
 #include <cerrno>
 #include "resource/schema/resource_data.hpp"
 #include "resource/schema/resource_graph.hpp"
-#include "resource/emitters/match_emitters.hpp"
+#include "resource/writers/match_writers.hpp"
 
 namespace Flux {
 namespace resource_model {
