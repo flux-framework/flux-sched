@@ -163,7 +163,7 @@ int matcher_util_api_t::register_resource_pair (const std::string &subsystem,
     std::string l;
     std::string split = ":";
 
-    if (((pos = r_pair.find (split)) == std::string::npos))
+    if ((pos = r_pair.find (split)) == std::string::npos)
         goto done;
     h = r_pair.substr (0, pos);
     h.erase (std::remove_if (h.begin (), h.end (), ::isspace), h.end ());
