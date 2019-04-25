@@ -769,7 +769,7 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (flux_respond (h, msg, errno, NULL) < 0)
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
