@@ -60,7 +60,8 @@ EXTRA_DIST= \
 	data/resource/jobspecs/basics \
 	scripts \
 	sharness.sh \
-	sharness.d
+	sharness.d \
+	schemas
 
 clean-local:
 	rm -rf *.o test-results trash-directory*
