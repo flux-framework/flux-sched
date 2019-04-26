@@ -424,10 +424,8 @@ static void destory_resource_ctx (resource_context_t *ctx)
     delete ctx->traverser;
     delete ctx->fgraph;
     delete ctx->writers;
-    for (auto &kv : ctx->jobs) {
+    for (auto &kv : ctx->jobs)
         delete kv.second;    /* job_info_t* type */
-        ctx->jobs.erase (kv.first);
-    }
     ctx->jobs.clear ();
     ctx->allocations.clear ();
     ctx->reservations.clear ();
