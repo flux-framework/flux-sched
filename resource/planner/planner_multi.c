@@ -194,12 +194,15 @@ void planner_multi_destroy (planner_multi_t **ctx_p)
 {
     int i = 0;
     if (ctx_p && *ctx_p) {
-        for (i = 0; i < (*ctx_p)->size; ++i)
+        for (i = 0; i < (*ctx_p)->size; ++i) {
             planner_destroy (&((*ctx_p)->planners[i]));
-
+            free ((*ctx_p)->resource_types[i]);
+        }
         free ((*ctx_p)->resource_totals);
         free ((*ctx_p)->resource_types);
         free ((*ctx_p)->iter.counts);
+        free ((*ctx_p)->planners);
+        zhashx_destroy (&((*ctx_p)->span_lookup));
         free (*ctx_p);
         *ctx_p = NULL;
     }
