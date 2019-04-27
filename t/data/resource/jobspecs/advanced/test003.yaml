@@ -1,0 +1,77 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: cpu_rack
+        count: 1
+        with:
+          - type: slot
+            label: default
+            count: 4
+            with:
+              - type: cpu_group
+                count: 1
+                with:
+                  - type: socket
+                    count: 2
+                    with:
+                      - type: core
+                        count: 22
+      - type: gpu_rack
+        count: 1
+        with:
+          - type: slot
+            label: gpu_slot
+            count: 1
+            with:
+              - type: gpu_group
+                count: 2
+                with:
+                  - type: gpu
+                    count: 8
+      - type: mem_rack
+        count: 1
+        with:
+          - type: slot
+            label: mem_slot
+            count: 1
+            with:
+              - type: mem_group
+                count: 1
+                with:
+                  - type: memory
+                    count: 960
+      - type: bb_rack
+        count: 1
+        with:
+          - type: slot
+            label: bb_slot
+            count: 1
+            with:
+              - type: bb_group
+                count: 1
+                with:
+                  - type: bb
+                    count: 6016
+      - type: storage_rack
+        count: 1
+        with:
+          - type: slot
+            label: storage_slot
+            count: 1
+            with:
+              - type: storage_group
+                count: 1
+                with:
+                  - type: gpfs
+                    count: 120
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: default
+    count:
+      per_slot: 1
