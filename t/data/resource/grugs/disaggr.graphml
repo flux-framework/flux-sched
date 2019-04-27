@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+        http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
+
+    <!-- resource pool vertex generation spec attributes -->
+    <key id="root" for="node" attr.name="root" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="type" for="node" attr.name="type" attr.type="string"/>
+    <key id="basename" for="node" attr.name="basename" attr.type="string"/>
+    <key id="unit" for="node" attr.name="unit" attr.type="string"/>
+    <key id="size" for="node" attr.name="size" attr.type="long">
+        <default>1</default>
+    </key>
+    <key id="subsystem" for="node" attr.name="subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+
+    <!-- resource relationship generation attributes     -->
+    <key id="e_subsystem" for="edge" attr.name="e_subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="relation" for="edge" attr.name="relation" attr.type="string">
+        <default>contains</default>
+    </key>
+    <key id="rrelation" for="edge" attr.name="rrelation" attr.type="string">
+        <default>in</default>
+    </key>
+
+    <!-- id generation method                             -->
+    <key id="id_scope" for="edge" attr.name="id_scope" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_start" for="edge" attr.name="id_start" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_stride" for="edge" attr.name="id_stride" attr.type="int">
+        <default>1</default>
+    </key>
+
+    <!-- resource gen method: multiply or associate-in   -->
+    <key id="gen_method" for="edge" attr.name="gen_method" attr.type="string">
+        <default>MULTIPLY</default>
+    </key>
+    <!-- argument (scaling factor) for multiply method   -->
+    <key id="multi_scale" for="edge" attr.name="multi_scale" attr.type="int">
+        <default>1</default>
+    </key>
+    <!-- 3 arguments for associate-in method             -->
+    <key id="as_tgt_subsystem" for="edge" attr.name="as_tgt_subsystem"
+             attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="as_tgt_uplvl" for="edge" attr.name="as_tgt_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+    <key id="as_src_uplvl" for="edge" attr.name="as_src_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+
+
+    <!-- generation recipe for the tiny cluster         -->
+    <graph id="disaggr" edgedefault="directed">
+
+        <!-- containment subsystem generation recipe    -->
+        <node id="cluster">
+            <data key="root">1</data>
+            <data key="type">cluster</data>
+            <data key="basename">disaggr</data>
+        </node>
+        <node id="cpu_rack">
+            <data key="type">cpu_rack</data>
+            <data key="basename">cpu_rack</data>
+        </node>
+        <node id="gpu_rack">
+            <data key="type">gpu_rack</data>
+            <data key="basename">gpu_rack</data>
+        </node>
+        <node id="mem_rack">
+            <data key="type">mem_rack</data>
+            <data key="basename">mem_rack</data>
+        </node>
+        <node id="bb_rack">
+            <data key="type">bb_rack</data>
+            <data key="basename">bb_rack</data>
+        </node>
+        <node id="storage_rack">
+            <data key="type">storage_rack</data>
+            <data key="basename">storage_rack</data>
+        </node>
+
+        <node id="cpu_group">
+            <data key="type">cpu_group</data>
+            <data key="basename">cpu_group</data>
+        </node>
+        <node id="gpu_group">
+            <data key="type">gpu_group</data>
+            <data key="basename">gpu_group</data>
+        </node>
+        <node id="mem_group">
+            <data key="type">mem_group</data>
+            <data key="basename">mem_group</data>
+        </node>
+        <node id="bb_group">
+            <data key="type">bb_group</data>
+            <data key="basename">bb_group</data>
+        </node>
+        <node id="storage_group">
+            <data key="type">storage_group</data>
+            <data key="basename">storage_group</data>
+        </node>
+
+        <node id="socket">
+            <data key="type">socket</data>
+            <data key="basename">socket</data>
+        </node>
+        <node id="core">
+            <data key="type">core</data>
+            <data key="basename">core</data>
+        </node>
+
+        <node id="gpu">
+            <data key="type">gpu</data>
+            <data key="basename">gpu</data>
+        </node>
+
+        <node id="memory">
+            <data key="type">memory</data>
+            <data key="basename">memory</data>
+            <data key="size">64</data>
+            <data key="unit">GB</data>
+        </node>
+
+        <node id="bb">
+            <data key="type">bb</data>
+            <data key="basename">bb</data>
+            <data key="size">64</data>
+            <data key="unit">GB</data>
+        </node>
+
+        <node id="gpfs">
+            <data key="type">gpfs</data>
+            <data key="basename">gpfs</data>
+            <data key="size">60</data>
+            <data key="unit">TB</data>
+        </node>
+
+
+        <edge id="cluster2cpu_rack" source="cluster" target="cpu_rack">
+            <data key="multi_scale">120</data>
+        </edge>
+        <edge id="cpu_rack2cpu_group" source="cpu_rack" target="cpu_group">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">36</data>
+        </edge>
+        <edge id="cpu_group2socket" source="cpu_group" target="socket">
+            <data key="multi_scale">2</data>
+        </edge>
+        <edge id="socket2core" source="socket" target="core">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">22</data>
+        </edge>
+
+        <edge id="cluster2gpu_rack" source="cluster" target="gpu_rack">
+            <data key="multi_scale">60</data>
+        </edge>
+        <edge id="gpu_rack2gpu_group" source="gpu_rack" target="gpu_group">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">36</data>
+        </edge>
+        <edge id="gpu_group2gpu" source="gpu_group" target="gpu">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">8</data>
+        </edge>
+
+        <edge id="cluster2mem_rack" source="cluster" target="mem_rack">
+            <data key="multi_scale">16</data>
+        </edge>
+        <edge id="mem_rack2mem_group" source="mem_rack" target="mem_group">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">72</data>
+        </edge>
+        <edge id="mem_group2memory" source="mem_group" target="memory">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">15</data>
+        </edge>
+
+        <edge id="cluster2bb_rack" source="cluster" target="bb_rack">
+            <data key="multi_scale">16</data>
+        </edge>
+        <edge id="bb_rack2bb_group" source="bb_rack" target="bb_group">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">72</data>
+        </edge>
+        <edge id="bb_group2bb" source="bb_group" target="bb">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">94</data>
+        </edge>
+
+        <edge id="cluster2storage_rack" source="cluster" target="storage_rack">
+            <data key="multi_scale">24</data>
+        </edge>
+        <edge id="storage_rack2storage_group" source="storage_rack" target="storage_group">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">64</data>
+        </edge>
+        <edge id="storage_group2gpfs" source="storage_group" target="gpfs">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">2</data>
+        </edge>
+
+    </graph>
+</graphml>
