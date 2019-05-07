@@ -571,8 +571,14 @@ void walk_hwloc (const hwloc_obj_t obj, const ggv_t parent, int rank, resource_g
              */
             if (strncmp(obj->name, "cuda", 4) == 0)
                 id = atoi (obj->name + 4);
-            else if (strncmp(obj->name, "opencl", 6) == 0)
-                id = atoi (obj->name + 6);
+            else if (strncmp(obj->name, "opencl", 6) == 0) {
+                /* Naming convention of opencl devices for hwloc:
+		 * "opencl" followed by a platform ID followed by a device ID.
+		 * Then, the letter d delimits platform id and device id.
+		 */
+                const char *delim = strchr (obj->name + 6, 'd');
+                id = atoi (delim + 1);
+            }
             type = "gpu";
             basename = type;
         } else {
