@@ -199,8 +199,6 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
         db.roots[recipe[u].subsystem] = v;
         id = 0;
     } else {
-        // TODO: should add_vertex really be called a second time?
-        v = add_vertex (db.resource_graph);
         id = gen_id (e, recipe, i, sz, j);
         pref = db.resource_graph[src_v].paths[ssys];
     }
@@ -209,6 +207,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     db.resource_graph[v].type = recipe[u].type;
     db.resource_graph[v].basename = recipe[u].basename;
     db.resource_graph[v].size = recipe[u].size;
+    db.resource_graph[v].unit = recipe[u].unit;
     db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
                                                        recipe[u].size,
                                                        recipe[u].type.c_str ());
@@ -219,6 +218,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     db.resource_graph[v].name = recipe[u].basename + istr;
     db.resource_graph[v].paths[ssys] = pref + "/" + db.resource_graph[v].name;
     db.resource_graph[v].idata.member_of[ssys] = "*";
+    db.resource_graph[v].uniq_id = v;
 
     //
     // Indexing for fast look-up...
@@ -471,6 +471,7 @@ ggv_t add_new_vertex(resource_graph_db_t &db, const ggv_t &parent,
     db.resource_graph[v].type = type;
     db.resource_graph[v].basename = basename;
     db.resource_graph[v].size = size;
+    db.resource_graph[v].uniq_id = v;
     db.resource_graph[v].rank = rank;
     db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
                                                        size,

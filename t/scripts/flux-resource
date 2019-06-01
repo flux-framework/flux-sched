@@ -41,6 +41,9 @@ class ResourceModuleInterface:
         payload = {'jobid' : jobid}
         return self.f.rpc ("resource.info", payload).get ()
 
+    def rpc_stat (self):
+        return self.f.rpc ("resource.stat").get ()
+
     def rpc_cancel (self, jobid):
         payload = {'jobid' : jobid}
         return self.f.rpc ("resource.cancel", payload).get ()
@@ -91,6 +94,19 @@ def info_action (args):
     print heading ()
     print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
 
+"""
+    Action for stat sub-command
+"""
+def stat_action (args):
+    r = ResourceModuleInterface ()
+    resp = r.rpc_stat ()
+    print "Num. of Vertices: ", resp['V']
+    print "Num. of Edges: ", resp['E']
+    print "Graph Load Time: ", resp['load-time']
+    print "Num. of Jobs Matched: ", resp['njobs']
+    print "Min. Match Time: ", resp['min-match']
+    print "Max. Match Time: ", resp['max-match']
+    print "Avg. Match Time: ", resp['avg-match']
 
 """
     Main entry point
@@ -115,9 +131,11 @@ def main ():
                                     help='Additional help')
     mstr = "Find the best matching resources for a jobspec"
     istr = "Print info on a single job"
+    sstr = "Print overall performance statistics"
     cstr = "Cancel an allocated or reserved job"
     parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
     parser_i = subpar.add_parser ('info', help=istr, description=istr)
+    parser_s = subpar.add_parser ('stat', help=sstr, description=sstr)
     parser_c = subpar.add_parser ('cancel', help=cstr, description=cstr)
 
     #
@@ -138,6 +156,11 @@ def main ():
     #
     parser_i.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
     parser_i.set_defaults (func=info_action)
+
+    #
+    # Action for stat sub-command
+    #
+    parser_s.set_defaults (func=stat_action)
 
     #
     # Positional argument for cancel sub-command

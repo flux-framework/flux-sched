@@ -51,30 +51,24 @@ command_t commands[] = {
 "resource-query> cancel jobid" },
     { "list", "l", cmd_list, "List all jobs: resource-query> list" },
     { "info", "i", cmd_info, "Print info on a jobid: resource-query> info jobid" },
+    { "stat", "s", cmd_stat, "Print overall stats: resource-query> stat jobid" },
     { "cat", "a", cmd_cat, "Print jobspec file: resource-query> cat jobspec" },
     { "help", "h", cmd_help, "Print help message: resource-query> help" },
     { "quit", "q", cmd_quit, "Quit the session: resource-query> quit" },
     { "NA", "NA", (cmd_func_f *)NULL, "NA" }
 };
 
-static double get_elapse_time (timeval &st, timeval &et)
-{
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
-    return ts2 - ts1;
-}
-
 static int do_remove (resource_context_t *ctx, int64_t jobid)
 {
     int rc = -1;
-    if ((rc = ctx->traverser.remove ((int64_t)jobid)) == 0) {
+    if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::CANCELLED;
         }
     } else {
-        cout << ctx->traverser.err_message ();
-        ctx->traverser.clear_err_message ();
+        cout << ctx->traverser->err_message ();
+        ctx->traverser->clear_err_message ();
     }
     return rc;
 }
@@ -114,6 +108,20 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
     ctx->jobid_counter++;
 }
 
+static void update_match_perf (resource_context_t *ctx, double elapse)
+{
+    ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
+    ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
+    ctx->perf.accum += elapse;
+}
+
+double get_elapse_time (timeval &st, timeval &et)
+{
+    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
+    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
+    return ts2 - ts1;
+}
+
 int cmd_match (resource_context_t *ctx, vector<string> &args)
 {
     if (args.size () != 3) {
@@ -135,25 +143,30 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
         jobspec_in.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         jobspec_in.open (jobspec_fn);
         Flux::Jobspec::Jobspec job {jobspec_in};
-        stringstream r_emitted;
+        stringstream o;
         double elapse = 0.0f;
         struct timeval st, et;
 
         gettimeofday (&st, NULL);
+        ctx->writers->reset ();
+
         if (args[1] == "allocate")
-            rc = ctx->traverser.run (job, match_op_t::MATCH_ALLOCATE,
-                                     (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                      MATCH_ALLOCATE, (int64_t)jobid, &at);
         else if (args[1] == "allocate_orelse_reserve")
-            rc = ctx->traverser.run (job,
-                                     match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                     (int64_t)jobid, &at, r_emitted);
+            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                      MATCH_ALLOCATE_ORELSE_RESERVE,
+                                      (int64_t)jobid, &at);
+
+        ctx->writers->emit (o);
+        ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
+        out << o.str ();
+
         gettimeofday (&et, NULL);
         elapse = get_elapse_time (st, et);
+        update_match_perf (ctx, elapse);
 
-        ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
-        out << r_emitted.str ();
-
-        print_schedule_info (ctx, out, jobid, jobspec_fn, (rc == 0), at, elapse);
+        print_schedule_info (ctx, out, jobid, jobspec_fn, rc == 0, at, elapse);
         jobspec_in.close ();
 
     } catch (ifstream::failure &e) {
@@ -226,6 +239,26 @@ int cmd_info (resource_context_t *ctx, vector<string> &args)
     cout << "INFO: " << info->jobid << ", " << mode << ", "
          << info->scheduled_at << ", " << info->jobspec_fn << ", "
          << info->overhead << endl;
+    return 0;
+}
+
+int cmd_stat (resource_context_t *ctx, vector<string> &args)
+{
+    if (args.size () != 1) {
+        cerr << "ERROR: malformed command" << endl;
+        return 0;
+    }
+    double avg = 0.0f;
+    double min = 0.0f;
+
+    if (ctx->jobs.size ()) {
+        avg = ctx->perf.accum / (double)ctx->jobs.size ();
+        min = ctx->perf.min;
+    }
+    cout << "INFO: Num. of Jobs Matched: " << ctx->jobs.size () << endl;
+    cout << "INFO: Min. Match Time: " << min << endl;
+    cout << "INFO: Max. Match Time: " << ctx->perf.max << endl;
+    cout << "INFO: Avg. Match Time: " << avg << endl;
     return 0;
 }
 

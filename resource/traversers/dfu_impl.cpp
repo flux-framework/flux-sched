@@ -44,7 +44,7 @@ using namespace Flux::resource_model::detail;
 const std::string dfu_impl_t::level () const
 {
     unsigned int i;
-    std::string prefix = "";
+    std::string prefix = "      ";
     for (i = 0; i < m_trav_level; ++i)
         prefix += "---";
     return prefix;
@@ -595,25 +595,22 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
     return rc;
 }
 
-int dfu_impl_t::emit_edge (edg_t e)
+int dfu_impl_t::emit_vtx (vtx_t u, match_writers_t *w, unsigned needs,
+                          bool exclusive)
 {
-    // NYI: We will ultimately need to emit edge info for nested instance
-    // with complex scheduler, pending a discussion on R.
+    w->emit_vtx (level (), (*m_graph), u, needs, exclusive);
     return 0;
 }
 
-int dfu_impl_t::emit_vertex (vtx_t u, unsigned int needs, bool exclusive,
-                             stringstream &ss)
-{
-    string mode = (exclusive)? "x" : "s";
-    ss << "      " << level () << (*m_graph)[u].name << "["
-       << needs << ":" << mode  << "]" << endl;
-    return 0;
+int dfu_impl_t::emit_edg (edg_t e, match_writers_t *w)
+ {
+     w->emit_edg (level (), (*m_graph), e);
+     return 0;
 }
 
 int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
-                           bool excl, const jobmeta_t &meta, int &n,
-                           map<string, int64_t> &to_parent)
+                          bool excl, const jobmeta_t &meta, int &n,
+                          map<string, int64_t> &to_parent)
 {
     int64_t span = 0;
     if (!excl) {
@@ -641,10 +638,11 @@ done:
     return (span == -1)? -1 : 0;
 }
 
-int dfu_impl_t::upd_sched (vtx_t u, const subsystem_t &s, unsigned int needs,
+int dfu_impl_t::upd_sched (vtx_t u, match_writers_t *writers,
+                           const subsystem_t &s, unsigned int needs,
                            bool excl, int n, const jobmeta_t &meta,
                            map<string, int64_t> &dfu,
-                           map<string, int64_t> &to_parent, stringstream &ss)
+                           map<string, int64_t> &to_parent)
 {
     if (upd_plan (u, s, needs, excl, meta, n, to_parent) == -1)
         goto done;
@@ -677,7 +675,7 @@ int dfu_impl_t::upd_sched (vtx_t u, const subsystem_t &s, unsigned int needs,
 
         for (auto &kv : dfu)
             accum_if (s, kv.first, kv.second, to_parent);
-        emit_vertex (u, needs, excl, ss);
+        emit_vtx (u, writers, needs, excl);
     }
     m_trav_level--;
 done:
@@ -692,9 +690,9 @@ int dfu_impl_t::upd_upv (vtx_t u, const subsystem_t &subsystem,
     return 0;
 }
 
-int dfu_impl_t::upd_dfv (vtx_t u, unsigned int needs, bool excl,
-                         const jobmeta_t &meta, map<string, int64_t> &to_parent,
-                         stringstream &ss)
+int dfu_impl_t::upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
+                         bool excl, const jobmeta_t &meta,
+                         map<string, int64_t> &to_parent)
 {
     int n_plans = 0;
     map<string, int64_t> dfu;
@@ -709,20 +707,24 @@ int dfu_impl_t::upd_dfv (vtx_t u, unsigned int needs, bool excl,
             if ((*m_graph)[*ei].idata.best_k_cnt != m_best_k_cnt)
                 continue;
 
+	    int n_plan_sub = 0;
             bool x = (*m_graph)[*ei].idata.exclusive;
             unsigned int needs = (*m_graph)[*ei].idata.needs;
             vtx_t tgt = target (*ei, *m_graph);
             if (subsystem == dom)
-                n_plans += upd_dfv (tgt, needs, x, meta, dfu, ss);
+                n_plan_sub += upd_dfv (tgt, writers, needs, x, meta, dfu);
             else
-                n_plans += upd_upv (tgt, subsystem, needs, x, meta, dfu);
+                n_plan_sub += upd_upv (tgt, subsystem, needs, x, meta, dfu);
 
-            if (n_plans > 0)
-                emit_edge (*ei);
+            if (n_plan_sub > 0) {
+                emit_edg (*ei, writers);
+                n_plans += n_plan_sub;
+	    }
         }
     }
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
-    return upd_sched (u, dom, needs, excl, n_plans, meta, dfu, to_parent, ss);
+    return upd_sched (u, writers, dom, needs,
+                      excl, n_plans, meta, dfu, to_parent);
 }
 
 int dfu_impl_t::rem_upv (vtx_t u, int64_t jobid)
@@ -1018,12 +1020,12 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     return rc;
 }
 
-int dfu_impl_t::update (vtx_t root, jobmeta_t &meta, unsigned int needs,
-                        bool exclusive, stringstream &ss)
+int dfu_impl_t::update (vtx_t root, match_writers_t *writers, jobmeta_t &meta,
+                        unsigned int needs, bool exclusive)
 {
     map<string, int64_t> dfu;
     m_color.reset ();
-    return (upd_dfv (root, needs, exclusive, meta, dfu, ss) > 0)? 0 : -1;
+    return (upd_dfv (root, writers, needs, exclusive, meta, dfu) > 0)? 0 : -1;
 }
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)

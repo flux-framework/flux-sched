@@ -45,7 +45,8 @@ resource_pool_t::resource_pool_t (const resource_pool_t &o)
     name = o.name;
     properties = o.properties;
     id = o.id;
-    memcpy (uuid, o.uuid, sizeof (uuid));
+    uniq_id = o.uniq_id;
+    rank = o.rank;
     size = o.size;
     unit = o.unit;
     schedule = o.schedule;
@@ -60,7 +61,8 @@ resource_pool_t &resource_pool_t::operator= (const resource_pool_t &o)
     name = o.name;
     properties = o.properties;
     id = o.id;
-    memcpy (uuid, o.uuid, sizeof (uuid));
+    uniq_id = o.uniq_id;
+    rank = o.rank;
     size = o.size;
     unit = o.unit;
     schedule = o.schedule;

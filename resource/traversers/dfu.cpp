@@ -185,8 +185,8 @@ int dfu_traverser_t::initialize (f_resource_graph_t *g,
     return initialize ();
 }
 
-int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_op_t op,
-                          int64_t jobid, int64_t *at, stringstream &ss)
+int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
+                          match_op_t op, int64_t jobid, int64_t *at)
 {
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
     if (!get_graph () || !get_roots ()
@@ -206,7 +206,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_op_t op,
     meta.build (jobspec, true, jobid, *at);
     if ( (rc = schedule (jobspec, meta, x, op, root, &needs, dfv)) ==  0) {
         *at = meta.at;
-        rc = detail::dfu_impl_t::update (root, meta, needs, x, ss);
+        rc = detail::dfu_impl_t::update (root, writers, meta, needs, x);
     }
     return rc;
 }
@@ -223,19 +223,6 @@ int dfu_traverser_t::remove (int64_t jobid)
 
     vtx_t root = get_roots ()->at(dom);
     return detail::dfu_impl_t::remove (root, jobid);
-}
-
-namespace Flux {
-namespace resource_model {
-
-bool known_R_format (const string &f)
-{
-    bool rc = true;
-    if (f != R_FORMAT || f != R_LITE_FORMAT || f != R_NATIVE_FORMAT)
-        rc = false;
-    return rc;
-}
-}
 }
 
 /*

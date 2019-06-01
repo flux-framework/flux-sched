@@ -51,7 +51,7 @@ struct resource_pool_t {
     std::string name;
     std::map<std::string, std::string> properties;
     int64_t id = -1;
-    uuid_t uuid;
+    int64_t uniq_id;
     unsigned int size = 0;
     int rank = -1;
     std::string unit;

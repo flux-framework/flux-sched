@@ -83,6 +83,12 @@ AM_CHECK_PYMOD(yaml,
                [StrictVersion(yaml.__version__) >= StrictVersion('3.10')], [],
                [AC_MSG_ERROR([[could not find python module yaml, version 3.10+ required]])])
 
+AM_CHECK_PYMOD(jsonschema,
+               [StrictVersion(jsonschema.__version__) >= StrictVersion ('2.3.0')],
+               ,
+               [AC_MSG_ERROR([could not find python module jsonschema, version 2.3.0+ required])]
+               )
+
 # Checks for header files.
 AC_CHECK_HEADERS([\
   inttypes.h \
@@ -158,6 +164,7 @@ AC_CONFIG_FILES([Makefile
   resource/planner/test/Makefile
   resource/libjobspec/Makefile
   resource/utilities/Makefile
+  resource/utilities/test/Makefile
   resource/modules/Makefile
   etc/Makefile
   t/Makefile])
