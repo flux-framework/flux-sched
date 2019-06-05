@@ -1,0 +1,33 @@
+version: 1
+resources:
+  - type: cpu_group
+    count: 1
+    with:
+      - type: socket
+        count: 2
+        with:
+          - type: slot
+            label: default
+            count: 22
+            with:
+              - type: core
+                count: 1
+  - type: gpu_rack
+    count: 1
+    with:
+      - type: gpu_group
+        count: 2
+        with:
+           - type: gpu
+             count: 8
+             exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: app
+    slot: default
+    count:
+      per_slot: 1
