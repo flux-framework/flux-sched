@@ -542,7 +542,12 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t at,
     }
 
     state = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-    ctx->jobs[id] = new job_info_t (id, state, at, "", jspec, R.str (), elapse);
+    if (!(ctx->jobs[id] = new ((nothrow))job_info_t (id, state, at, "", jspec,
+                                                     R.str (), elapse))) {
+        errno = ENOMEM;
+        return -1;
+    }
+
     if (at == 0)
         ctx->allocations[id] = id;
     else
@@ -567,6 +572,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         Flux::Jobspec::Jobspec j {jstr};
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
         if (rc != 0) {
+            errno = EBUSY;
             flux_log (ctx->h, LOG_INFO,
                       "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
             goto done;
@@ -576,6 +582,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                      jobid, at);
         if (rc != 0) {
+            errno = EBUSY;
             flux_log (ctx->h, LOG_INFO,
                       "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
             goto done;
