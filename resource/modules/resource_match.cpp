@@ -55,6 +55,7 @@ using namespace Flux::resource_model;
 struct resource_args_t {
     string grug;
     string hwloc_xml;
+    string hwloc_whitelist;
     string match_subsystems;
     string match_policy;
     string prune_filters;
@@ -152,6 +153,7 @@ static void set_default_args (resource_args_t &args)
 {
     args.grug = "";
     args.hwloc_xml = "";
+    args.hwloc_whitelist = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
     args.prune_filters = "ALL:pu";
@@ -201,6 +203,9 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
             args.grug = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("hwloc-xml=", argv[i], sizeof ("hwloc-xml"))) {
             args.hwloc_xml = strstr (argv[i], "=") + 1;
+        } else if (!strncmp ("hwloc-whitelist=",
+                             argv[i], sizeof ("hwloc-whitelist"))) {
+            args.hwloc_whitelist = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
             dflt = args.match_subsystems;
             args.match_subsystems = strstr (argv[i], "=") + 1;
@@ -327,15 +332,24 @@ error:
  * Read the hwloc xml stored in Flux's KVS and populate the resource db
  *
  * \param rgen   resource generator
- * \param h      flux handle
+ * \param ctx    resource_ctx_t object
  * \param db     graph database consisting of resource graph and various indices
  * \return       0 on success; non-zero integer on an error
  */
-int read_flux_hwloc (resource_generator_t &rgen, flux_t *h, resource_graph_db_t &db)
+int read_flux_hwloc (resource_generator_t &rgen, resource_ctx_t *ctx)
 {
     int rc = -1;
-    uint32_t rank = 0, size = 0;
+    uint32_t rank = 0;
+    uint32_t size = 0;
+    flux_t *h = ctx->h;
+    resource_graph_db_t &db = ctx->db;
 
+    if (ctx->args.hwloc_whitelist != ""
+        && rgen.set_hwloc_whitelist (ctx->args.hwloc_whitelist) == -1) {
+        flux_log (h, LOG_ERR, "%s: error in setting hwloc whitelist (%s)",
+                  __FUNCTION__, ctx->args.hwloc_whitelist.c_str ());
+        return -1;
+    }
     if (flux_get_size (h, &size) == -1) {
         flux_log (h, LOG_ERR, "%s: error with flux_get_size", __FUNCTION__);
         return -1;
@@ -393,7 +407,7 @@ static int populate_resource_db (resource_ctx_t *ctx)
         flux_log (ctx->h, LOG_INFO, "loaded resources from hwloc xml");
     } else {
         // gather hwloc from Flux's KVS
-        if ( (rc = read_flux_hwloc (rgen, ctx->h, ctx->db)) != 0) {
+        if ( (rc = read_flux_hwloc (rgen, ctx)) != 0) {
             errno = EINVAL;
             rc = -1;
             flux_log (ctx->h, LOG_ERR, "error in generating resources");

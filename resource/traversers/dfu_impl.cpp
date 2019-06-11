@@ -253,21 +253,38 @@ bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
 
 const vector<Resource> &dfu_impl_t::test (vtx_t u,
                                           const vector<Resource> &resources,
-                                          match_kind_t *spec)
+                                          bool &pristine, match_kind_t &spec)
 {
+    /* Note on the purpose of pristine: we differentiate two similar but
+     * distinct cases with this parameter.
+     * Jobspec is allowed to omit the prefix so you can have a spec like
+     *    socket[1]->core[2] which will match
+     *        cluster[1]->node[1]->socket[2]->core[22].
+     * For this case, when you visit the "node" resource vertex, the next
+     * Jobspec resource that should be used at the next recursion should
+     * be socket[1]. And we enable this if pristine is true.
+     * But then once the first match is made, any mis-mismatch afterwards
+     * should result in a match failure. For example,
+     *    socket[1]->core[2] must fail to match
+     *        cluster[1]->socket[1]->numanode[1]->core[22].
+     * pristine is used to detect this case.
+     */
     bool slot = true;
     const vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
     match (u, resources, &slot_resources, &match_resources);
     if ( (slot = slot_match (u, slot_resources))) {
-        *spec = match_kind_t::SLOT_MATCH;
+        spec = match_kind_t::SLOT_MATCH;
+        pristine = false;
         ret = &(slot_resources->with);
     } else if (match_resources) {
-        *spec = match_kind_t::RESOURCE_MATCH;
+        spec = match_kind_t::RESOURCE_MATCH;
+        pristine = false;
         ret = &(match_resources->with);
     } else {
-        *spec = match_kind_t::NONE_MATCH;
+        spec = pristine? match_kind_t::PRESTINE_NONE_MATCH
+                       : match_kind_t::NONE_MATCH;
     }
     return *ret;
 }
@@ -322,8 +339,8 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
 
 int dfu_impl_t::explore (const jobmeta_t &meta, vtx_t u,
                          const subsystem_t &subsystem,
-                         const vector<Resource> &resources, bool *excl,
-                         visit_t direction, scoring_api_t &dfu)
+                         const vector<Resource> &resources, bool pristine,
+                         bool *excl, visit_t direction, scoring_api_t &dfu)
 {
     int rc = -1;
     int rc2 = -1;
@@ -336,11 +353,12 @@ int dfu_impl_t::explore (const jobmeta_t &meta, vtx_t u,
         vtx_t tgt = target (*ei, *m_graph);
         switch (direction) {
         case visit_t::UPV:
-            rc = aux_upv (meta, tgt, subsystem, resources, &x_inout, dfu);
+            rc = aux_upv (meta, tgt, subsystem,
+                          resources, pristine, &x_inout, dfu);
             break;
         case visit_t::DFV:
         default:
-            rc = dom_dfv (meta, tgt, resources, &x_inout, dfu);
+            rc = dom_dfv (meta, tgt, resources, pristine, &x_inout, dfu);
             break;
         }
         if (rc == 0) {
@@ -356,8 +374,8 @@ int dfu_impl_t::explore (const jobmeta_t &meta, vtx_t u,
 }
 
 int dfu_impl_t::aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &aux,
-                         const vector<Resource> &resources, bool *excl,
-                         scoring_api_t &to_parent)
+                         const vector<Resource> &resources, bool pristine,
+                         bool *excl, scoring_api_t &to_parent)
 {
     int rc = -1;
     scoring_api_t upv;
@@ -371,7 +389,7 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &aux,
         goto done;
 
     if (u != (*m_roots)[aux])
-        explore (meta, u, aux, resources, excl, visit_t::UPV, upv);
+        explore (meta, u, aux, resources, pristine, excl, visit_t::UPV, upv);
 
     p = (*m_graph)[u].schedule.plans;
     if ( (avail = planner_avail_resources_during (p, at, duration)) == 0) {
@@ -391,16 +409,18 @@ done:
 }
 
 int dfu_impl_t::dom_exp (const jobmeta_t &meta, vtx_t u,
-                         const vector<Resource> &resources,
+                         const vector<Resource> &resources, bool pristine,
                          bool *excl, scoring_api_t &dfu)
 {
     int rc = -1;
     const subsystem_t &dom = m_match->dom_subsystem ();
     for (auto &s : m_match->subsystems ()) {
         if (s == dom)
-            rc = explore (meta, u, s, resources, excl, visit_t::DFV, dfu);
+            rc = explore (meta, u, s, resources,
+                          pristine, excl, visit_t::DFV, dfu);
         else
-            rc = explore (meta, u, s, resources, excl, visit_t::UPV, dfu);
+            rc = explore (meta, u, s, resources,
+                          pristine, excl, visit_t::UPV, dfu);
     }
     return rc;
 }
@@ -427,7 +447,7 @@ int dfu_impl_t::cnt_slot (const vector<Resource> &slot_shape,
 }
 
 int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
-                          const vector<Resource> &slot_shape,
+                          const vector<Resource> &slot_shape, bool pristine,
                           bool *excl, scoring_api_t &dfu)
 {
     int rc;
@@ -436,7 +456,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
     unsigned int qual_num_slots = 0;
     const subsystem_t &dom = m_match->dom_subsystem ();
 
-    if ( (rc = explore (meta, u, dom, slot_shape,
+    if ( (rc = explore (meta, u, dom, slot_shape, pristine,
                         &x_inout, visit_t::DFV, dfu_slot)) != 0)
         goto done;
     if ((rc = m_match->dom_finish_slot (dom, dfu_slot)) != 0)
@@ -471,8 +491,8 @@ done:
 }
 
 int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
-                         const vector<Resource> &resources, bool *excl,
-                         scoring_api_t &to_parent)
+                         const vector<Resource> &resources, bool pristine,
+                         bool *excl, scoring_api_t &to_parent)
 {
     int rc = -1;
     match_kind_t sm;
@@ -480,6 +500,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     uint64_t duration = meta.duration;
     bool x_in = *excl || exclusivity (resources, u);
     bool x_inout = x_in;
+    bool check_pres = pristine;
     scoring_api_t dfu;
     planner_t *p = NULL;
     const string &dom = m_match->dom_subsystem ();
