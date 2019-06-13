@@ -1,0 +1,16 @@
+      ---------------gpu0[1:x]
+      ------------numanode0[1:x]
+      ---------------gpu0[1:x]
+      ------------numanode1[1:x]
+      ---------socket0[1:s]
+      ------chimera[1:s]
+      ---cluster0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================

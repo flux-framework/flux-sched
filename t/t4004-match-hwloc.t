@@ -29,6 +29,11 @@ hwloc_4core="${hwloc_basepath}/001N/exclusive/04-brokers/0.xml"
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 # 1 broker: 1 node, 2 numanodes, 4 gpus, 44 cores, 176 PUs
 hwloc_4gpu="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2/0.xml"
+# 1 broker: 1 node, 2 numanodes, 4 AMD gpus, 48 cores, 96 PUs
+hwloc_4amdgpu="${hwloc_basepath}/001N/amd_gpu/corona11.xml"
+# 1 broker: 1 node, 2 numanodes, 2 gpus (1 NVIDIA and 1 AMD), 32 cores, 64 PUs
+hwloc_2mtypes="${hwloc_basepath}/001N/multi_gpu_types/chimera.xml"
+
 
 query="../../resource/utilities/resource-query"
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
@@ -56,10 +61,22 @@ test_expect_success 'resource-query works on simple query using xml file' '
     test_cmp 017.R.out ${exp_dir}/017.R.out
 '
 
-test_expect_success 'resource-query works on gpu query using xml file' '
+test_expect_success 'resource-query works on gpu query using xml (NVIDIA)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds10.in > cmds10 &&
     ${query} -X ${hwloc_4gpu} -S CA -P high -t 018.R.out < cmds10 &&
     test_cmp 018.R.out ${exp_dir}/018.R.out
+'
+
+test_expect_success 'resource-query works on gpu query using xml (AMD GPU)' '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
+    ${query} -X ${hwloc_4amdgpu} -S CA -P high -t 019.R.out < cmds11 &&
+    test_cmp 019.R.out ${exp_dir}/019.R.out
+'
+
+test_expect_success 'resource-query works on gpu type query using xml (MIXED)' '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
+    ${query} -X ${hwloc_2mtypes} -S CA -P high -t 020.R.out < cmds11 &&
+    test_cmp 020.R.out ${exp_dir}/020.R.out
 '
 
 # Test using the full resource matching service
