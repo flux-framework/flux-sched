@@ -43,10 +43,14 @@ namespace detail {
 
 enum class visit_t { DFV, UPV };
 
-enum class match_kind_t { RESOURCE_MATCH, SLOT_MATCH, NONE_MATCH };
+enum class match_kind_t { RESOURCE_MATCH,
+                          SLOT_MATCH,
+                          NONE_MATCH,
+                          PRESTINE_NONE_MATCH };
 
 struct jobmeta_t {
     bool allocate = true;
+    bool never_matched = true;
     int64_t jobid = -1;
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
@@ -225,7 +229,8 @@ private:
                 const Jobspec::Resource **match_resource);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
-             const std::vector<Jobspec::Resource> &resources, match_kind_t *ko);
+             const std::vector<Jobspec::Resource> &resources,
+             bool &prestine, match_kind_t &ko);
 
     /*! Accumulate count into accum if type matches with one of the resource
      *  types used in the scheduler-driven aggregate update (SDAU) scheme.
@@ -244,22 +249,22 @@ private:
 
     // Explore for resource matching -- only DFV or UPV
     int explore (const jobmeta_t &meta, vtx_t u, const subsystem_t &subsystem,
-                 const std::vector<Jobspec::Resource> &resources, bool *excl,
-                 visit_t direction, scoring_api_t &to_parent);
+                 const std::vector<Jobspec::Resource> &resources, bool prestine,
+                 bool *excl, visit_t direction, scoring_api_t &to_parent);
     int aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &subsystem,
-                 const std::vector<Jobspec::Resource> &resources, bool *excl,
-                 scoring_api_t &to_parent);
+                 const std::vector<Jobspec::Resource> &resources, bool prestine,
+                 bool *excl, scoring_api_t &to_parent);
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape,
                   scoring_api_t &dfu_slot);
     int dom_slot (const jobmeta_t &meta, vtx_t u,
-                  const std::vector<Jobspec::Resource> &resources, bool *excl,
-                  scoring_api_t &dfu);
+                  const std::vector<Jobspec::Resource> &resources, bool prestine,
+                  bool *excl, scoring_api_t &dfu);
     int dom_exp (const jobmeta_t &meta, vtx_t u,
-                 const std::vector<Jobspec::Resource> &resources, bool *excl,
-                 scoring_api_t &to_parent);
+                 const std::vector<Jobspec::Resource> &resources, bool prestine,
+                 bool *excl, scoring_api_t &to_parent);
     int dom_dfv (const jobmeta_t &meta, vtx_t u,
-                 const std::vector<Jobspec::Resource> &resources, bool *excl,
-                 scoring_api_t &to_parent);
+                 const std::vector<Jobspec::Resource> &resources, bool prestine,
+                 bool *excl, scoring_api_t &to_parent);
 
     // Emit matched resource set
     int emit_vtx (vtx_t u, match_writers_t *w, unsigned int needs,

@@ -504,17 +504,19 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     scoring_api_t dfu;
     planner_t *p = NULL;
     const string &dom = m_match->dom_subsystem ();
-    const vector<Resource> &next = test (u, resources, &sm);
+    const vector<Resource> &next = test (u, resources, check_pres, sm);
 
+    if (sm == match_kind_t::NONE_MATCH)
+        goto done;
     if ((prune (meta, x_in, dom, u, resources) == -1)
         || (m_match->dom_discover_vtx (u, dom, resources, *m_graph) != 0))
         goto done;
 
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
-        dom_slot (meta, u, next, &x_inout, dfu);
+        dom_slot (meta, u, next, check_pres, &x_inout, dfu);
     else
-        dom_exp (meta, u, next, &x_inout, dfu);
+        dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
 
@@ -1030,7 +1032,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     const string &dom = m_match->dom_subsystem ();
 
     tick ();
-    rc = dom_dfv (meta, root, j.resources, &x_in, dfu);
+    rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
     if (rc == 0) {
         eval_edg_t ev_edg (dfu.avail (), dfu.avail (), excl);
         eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
