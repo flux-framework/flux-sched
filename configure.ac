@@ -166,6 +166,9 @@ AC_CONFIG_FILES([Makefile
   resource/utilities/Makefile
   resource/utilities/test/Makefile
   resource/modules/Makefile
+  resource/hlapi/Makefile
+  resource/hlapi/bindings/Makefile
+  resource/hlapi/bindings/c/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT
