@@ -170,6 +170,8 @@ AC_CONFIG_FILES([Makefile
   resource/hlapi/Makefile
   resource/hlapi/bindings/Makefile
   resource/hlapi/bindings/c/Makefile
+  qmanager/Makefile
+  qmanager/modules/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT

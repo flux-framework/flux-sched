@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = src resource etc t
+SUBDIRS = src resource qmanager etc t
 
 EXTRA_DIST= \
 	config/tap-driver.sh \
