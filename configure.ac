@@ -126,18 +126,6 @@ AC_SUBST(fluxlibdir)
 AS_VAR_SET(fluxmoddir, $libdir/flux/modules)
 AC_SUBST(fluxmoddir)
 
-AS_VAR_SET(schedplugindir, $libdir/flux/modules/sched)
-AC_SUBST(schedplugindir)
-
-AS_VAR_SET(fluxschedincludedir, $includedir/flux/sched)
-AC_SUBST(fluxschedincludedir)
-
-AS_VAR_SET(fluxschedrc1dir, $sysconfdir/flux/rc1.d)
-AC_SUBST(fluxschedrc1dir)
-
-AS_VAR_SET(fluxschedrc3dir, $sysconfdir/flux/rc3.d)
-AC_SUBST(fluxschedrc3dir)
-
 AS_VAR_SET(fluxresourcerc1dir, $sysconfdir/flux/rc1.d)
 AC_SUBST(fluxresourcerc1dir)
 
