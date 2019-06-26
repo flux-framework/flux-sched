@@ -1,1 +1,1 @@
-SUBDIRS = libtap libutil librbtree
+SUBDIRS = libtap libutil librbtree libschedutil
