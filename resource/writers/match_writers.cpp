@@ -232,7 +232,7 @@ void rlite_match_writers_t::emit_vtx (const string &prefix,
         if (m_reducer_set ()) {
             stringstream &gout = *(m_gatherer[g[u].type]);
             gout << "{";
-            gout << "\"rank\":" << g[u].rank << ",";
+            gout << "\"rank\":\"" << g[u].rank << "\",";
             gout << "\"node\":\"" << g[u].name << "\",";
             gout << "\"children\":{";
             for (auto &kv : m_reducer) {
@@ -266,15 +266,18 @@ void rv1_match_writers_t::reset ()
 
 void rv1_match_writers_t::emit (stringstream &out)
 {
+    string ver = "\"version\":1";
     string exec_key = "\"execution\":";
     string sched_key = "\"scheduling\":";
     size_t base = out.str ().size ();
-    out << "{" << exec_key;
+    out << "{" << ver;
+    out << "," << exec_key;
     rlite.emit (out, false);
     out << "," << sched_key;
     jgf.emit (out, false);
     out << "}" << endl;
-    if (out.str ().size () <= (base + exec_key.size () + sched_key.size () + 3))
+    if (out.str ().size () <= (base + ver.size () + exec_key.size ()
+                                    + sched_key.size () + 4))
         out.str (out.str ().substr (0, base));
 }
 
@@ -310,12 +313,14 @@ void rv1_nosched_match_writers_t::reset ()
 
 void rv1_nosched_match_writers_t::emit (stringstream &out)
 {
+    string ver = "\"version\":1";
     string exec_key = "\"execution\":";
     size_t base = out.str ().size ();
-    out << "{" << exec_key;
+    out << "{" << ver;
+    out << "," << exec_key;
     rlite.emit (out, false);
     out << "}" << endl;
-    if (out.str ().size () <= (base + exec_key.size () + 2))
+    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 3))
         out.str (out.str ().substr (0, base));
 }
 
@@ -506,7 +511,8 @@ void pretty_rlite_match_writers_t::emit_vtx (const string &prefix,
         if (m_reducer_set ()) {
             stringstream &gout = *(m_gatherer[g[u].type]);
             gout << indent << "    {" << endl;
-            gout << indent << "      \"rank\": " << g[u].rank << "," << endl;
+            gout << indent << "      \"rank\": " << "\"" << g[u].rank << "\""
+                                                         << "," << endl;
             gout << indent << "      \"node\": \"" << g[u].name << "\","
                  << endl;
             gout << indent << "      \"children\": {" << endl;
