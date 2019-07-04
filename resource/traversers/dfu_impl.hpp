@@ -28,6 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include <cstdint>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
 #include "resource/schema/resource_data.hpp"
@@ -60,13 +61,11 @@ struct jobmeta_t {
         at = t;
         jobid = id;
         allocate = alloc;
-        std::string system_key = "system";
-        std::string duration_key = "duration";
-        auto i = jobspec.attributes.find (system_key);
-        if (i->second.find (duration_key) != i->second.end ()) {
-            auto j = i->second.find (duration_key);
-            duration = (uint64_t)std::atoll (j->second.c_str ());
-        }
+        if (jobspec.attributes.system.duration == 0.0f
+            || jobspec.attributes.system.duration > (double)UINT64_MAX)
+            duration = SYSTEM_MAX_DURATION; // need config support ultimately
+        else
+            duration = (int64_t)jobspec.attributes.system.duration;
     }
 };
 
