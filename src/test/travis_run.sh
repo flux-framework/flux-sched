@@ -91,6 +91,10 @@ fi
 if ! test -d $HOME/.flux/curve; then
     travis_fold "flux_keygen" "flux keygen ..." flux keygen
 fi
+
+echo "Starting MUNGE"
+sudo /sbin/runuser -u munge /usr/sbin/munged
+
 travis_fold "autogen.sh" "./autogen.sh..." ./autogen.sh
 travis_fold "configure"  "./configure ${ARGS}..." ./configure ${ARGS}
 travis_fold "make_clean" "make clean..." make clean
