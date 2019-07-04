@@ -2,20 +2,20 @@
 #
 # project-local sharness code for flux-sched
 #
-FLUX_SCHED_RC_NOOP=1
 FLUX_RESOURCE_RC_NOOP=1
+FLUX_QMANAGER_RC_NOOP=1
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
-  # (Assume sched modules installed under PREFIX/lib/flux/modeuls/sched)
+  # (Assume sched modules installed under PREFIX/lib/flux/modules)
   # (We also support testing this when sched is installed
   # another location, but only via make check)
-  FLUX_MODULE_PATH_PREPEND=$(which flux | sed -s 's|/bin/flux|/lib/flux/modules/resource|'):${FLUX_MODULE_PATH_PREPEND}
   FLUX_EXEC_PATH_PREPEND=${SHARNESS_TEST_SRCDIR}/scripts:${FLUX_EXEC_PATH_PREPEND}
 else
   # Set up environment so that we find flux-sched modules,
   #  commands, and Lua libs from the build directories:
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
+  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
   FLUX_EXEC_PATH_PREPEND=":${SHARNESS_TEST_SRCDIR}/scripts"
 fi
 
@@ -34,9 +34,8 @@ sched_src_path () {
 }
 
 export FLUX_EXEC_PATH_PREPEND
-export FLUX_SCHED_RC_NOOP
-export FLUX_SCHED_RC_PATH
 export FLUX_RESOURCE_RC_NOOP
+export FLUX_QMANAGER_RC_NOOP
 export FLUX_RESOURCE_RC_PATH
 export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND
