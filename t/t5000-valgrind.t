@@ -46,6 +46,7 @@ test_expect_success \
 		--wrap=--num-callers=30 \
 		--wrap=--leak-resolution=med \
 		--wrap=--error-exitcode=1 \
+                --wrap=--log-file="valgrind.out" \
 		--wrap=--suppressions=$VALGRIND_SUPPRESSIONS \
 		-o,--shutdown-grace=${VALGRIND_SHUTDOWN_GRACE} \
 		 ${VALGRIND_WORKLOAD}
