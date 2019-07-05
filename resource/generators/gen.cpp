@@ -390,7 +390,7 @@ const string &dfs_emitter_t::err_message () const
 
 /********************************************************************************
  *                                                                              *
- *                   Prive Resource Generator Interface                         *
+ *                   Private Resource Generator Interface                       *
  *                                                                              *
  ********************************************************************************/
 

@@ -22,7 +22,7 @@ jobspec_1core="${jobspec_basepath}/basics/test008.yaml"
 # node[1]->slot[2]->numanode[1]->socket[1]
 jobspec_2socket="${jobspec_basepath}/basics/test009.yaml"
 
-# node[1]->slot[1]->socket[1]->core[24]
+# node[1]->slot[1]->socket[1]->core[22]
 #                 ->gpu[2]
 jobspec_1socket_2gpu="${jobspec_basepath}/basics/test013.yaml"
 
@@ -31,7 +31,7 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 hwloc_4core="${hwloc_basepath}/001N/exclusive/04-brokers/0.xml"
 # 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
-# 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
+# 4 brokers, each (exclusively) have: 1 node, 2 numanodes, 4 gpus, 44 cores, 176 PUs
 excl_4N4B_sierra2="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 # 1 broker: 1 node, 2 numanodes, 4 gpus, 44 cores, 176 PUs
 hwloc_4gpu="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2/0.xml"
