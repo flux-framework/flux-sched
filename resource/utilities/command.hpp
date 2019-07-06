@@ -39,6 +39,7 @@ namespace resource_model {
 struct test_params_t {
     std::string grug;           /* GRUG file name */
     std::string hwloc_xml;      /* hwloc XML file name */
+    std::string hwloc_whitelist;/* hwloc resource whitelist */
     std::string matcher_name;   /* Matcher name */
     std::string matcher_policy; /* Matcher policy name */
     std::string o_fname;        /* Output file to dump the filtered graph */

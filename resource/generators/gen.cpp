@@ -31,8 +31,6 @@
 #include "resource/planner/planner.h"
 
 extern "C" {
-#include <hwloc.h>
-
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -392,6 +390,251 @@ const string &dfs_emitter_t::err_message () const
 
 /********************************************************************************
  *                                                                              *
+ *                   Private Resource Generator Interface                       *
+ *                                                                              *
+ ********************************************************************************/
+
+int resource_generator_t::check_hwloc_version (string &m_err_msg) {
+    unsigned int hwloc_version = hwloc_get_api_version ();
+
+    if ((hwloc_version >> 16) != (HWLOC_API_VERSION >> 16)) {
+        stringstream msg;
+        msg << "Compiled for hwloc API 0x"
+            << std::hex << HWLOC_API_VERSION
+            << " but running on library API 0x"
+            << hwloc_version << "; ";
+        m_err_msg += msg.str ();
+        errno = EINVAL;
+        return -1;
+    }
+
+    return 0;
+}
+
+ggv_t resource_generator_t::add_new_vertex(resource_graph_db_t &db,
+                                           const ggv_t &parent,
+                                           int id, const string &subsys,
+                                           const string &type,
+                                           const string &basename,
+                                           int size, int rank)
+{
+    ggv_t v = boost::add_vertex (db.resource_graph);
+
+    // Set properties of the new vertex
+    bool is_root = parent == boost::graph_traits<resource_graph_t>::null_vertex ();
+    string istr = (id != -1)? to_string (id) : "";
+    string prefix =  is_root ? "" : db.resource_graph[parent].paths[subsys];
+
+    db.resource_graph[v].type = type;
+    db.resource_graph[v].basename = basename;
+    db.resource_graph[v].size = size;
+    db.resource_graph[v].uniq_id = v;
+    db.resource_graph[v].rank = rank;
+    db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
+                                                       size,
+                                                       type.c_str ());
+    db.resource_graph[v].schedule.x_checker = planner_new (0, INT64_MAX,
+                                                           X_CHECKER_NJOBS,
+                                                           X_CHECKER_JOBS_STR);
+    db.resource_graph[v].id = id;
+    db.resource_graph[v].name = basename + istr;
+    db.resource_graph[v].paths[subsys] = prefix + "/" + db.resource_graph[v].name;
+    db.resource_graph[v].idata.member_of[subsys] = "*";
+
+    // Indexing for fast look-up
+    db.by_path[db.resource_graph[v].paths[subsys]].push_back (v);
+    db.by_type[db.resource_graph[v].type].push_back (v);
+    db.by_name[db.resource_graph[v].name].push_back (v);
+    return v;
+}
+
+bool resource_generator_t::in_whitelist (const std::string &resource)
+{
+    return hwloc_whitelist.empty ()
+           || (hwloc_whitelist.find (resource) != hwloc_whitelist.end ());
+}
+
+void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const ggv_t parent,
+                                       int rank, resource_graph_db_t &db)
+{
+    bool supported_resource = true;
+    std::string type, basename;
+    int id = obj->logical_index;
+    unsigned int size = 1;
+
+    switch(obj->type) {
+    case HWLOC_OBJ_MACHINE: {
+        // TODO: add signature to support multiple ranks per node
+        const char *hwloc_name = hwloc_obj_get_info_by_name (obj, "HostName");
+        if (!hwloc_name || !in_whitelist ("node")) {
+            supported_resource = false;
+            break;
+        }
+        type = "node";
+        basename = hwloc_name;
+        id = -1; // TODO: is this the right thing to do?
+        break;
+    }
+    case HWLOC_OBJ_GROUP: {
+        if (!in_whitelist ("group")) {
+            supported_resource = false;
+            break;
+        }
+        type = "group";
+        basename = type;
+        break;
+    }
+    case HWLOC_OBJ_NUMANODE: {
+        if (!in_whitelist ("numanode")) {
+            supported_resource = false;
+            break;
+        }
+        type = "numanode";
+        basename = type;
+        break;
+    }
+    case HWLOC_OBJ_PACKAGE: {
+        if (!in_whitelist ("socket")) {
+            supported_resource = false;
+            break;
+        }
+        type = "socket";
+        basename = type;
+        break;
+    }
+#if HWLOC_API_VERSION < 0x00020000
+    case HWLOC_OBJ_CACHE: {
+        std::string r = "L" + to_string (obj->attr->cache.depth) + "cache";
+        if (!in_whitelist (r)) {
+            supported_resource = false;
+            break;
+        }
+        type = "cache";
+        basename = r;
+        size = obj->attr->cache.size / 1024;
+        break;
+    }
+#else
+    case HWLOC_OBJ_L1CACHE: {
+        if (!in_whitelist ("L1cache")) {
+            supported_resource = false;
+            break;
+        }
+        type = "cache";
+        basename = "L1" + type;
+        size = obj->attr->cache.size / 1024;
+        break;
+    }
+    case HWLOC_OBJ_L2CACHE: {
+        if (!in_whitelist ("L2cache")) {
+            supported_resource = false;
+            break;
+        }
+        type = "cache";
+        basename = "L2" + type;
+        size = obj->attr->cache.size / 1024;
+        break;
+    }
+    case HWLOC_OBJ_L3CACHE: {
+        if (!in_whitelist ("L3cache")) {
+            supported_resource = false;
+            break;
+        }
+        type = "cache";
+        basename = "L3" + type;
+        size = obj->attr->cache.size / 1024;
+        break;
+    }
+#endif
+    case HWLOC_OBJ_CORE: {
+        if (!in_whitelist ("core")) {
+            supported_resource = false;
+            break;
+        }
+        type = "core";
+        basename = type;
+        break;
+    }
+    case HWLOC_OBJ_PU: {
+        if (!in_whitelist ("pu")) {
+            supported_resource = false;
+            break;
+        }
+        type = "pu";
+        basename = type;
+        break;
+    }
+    case HWLOC_OBJ_OS_DEVICE: {
+        if (obj->attr && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+            if (!in_whitelist ("gpu")) {
+                supported_resource = false;
+                break;
+            }
+            /* hwloc doesn't provide the logical index only amongst CoProc
+             * devices so we parse this info from the name until hwloc provide
+             * better support.
+             */
+            if (strncmp(obj->name, "cuda", 4) == 0)
+                id = atoi (obj->name + 4);
+            else if (strncmp(obj->name, "opencl", 6) == 0) {
+                /* Naming convention of opencl devices for hwloc:
+                 * "opencl" followed by a platform ID followed by a device ID.
+                 * Then, the letter d delimits platform id and device id.
+                 */
+                const char *delim = strchr (obj->name + 6, 'd');
+                id = atoi (delim + 1);
+            }
+            type = "gpu";
+            basename = type;
+        } else {
+            supported_resource = false;
+        }
+        break;
+    }
+    default: {
+        supported_resource = false;
+        break;
+    }
+    }
+
+    // A valid ancestor vertex to pass to the recursive call
+    ggv_t valid_ancestor;
+    if (!supported_resource) {
+        valid_ancestor = parent;
+    } else {
+        const string subsys = "containment";
+        ggv_t v = add_new_vertex(db, parent, id,
+                                 subsys, type, basename, size, rank);
+        valid_ancestor = v;
+
+        // Create edge between parent/child
+        if (parent == boost::graph_traits<resource_graph_t>::null_vertex ()) {
+            // is root
+            db.roots[subsys] = v;
+        } else {
+            string relation = "contains";
+            string rev_relation = "in";
+            edg_t e;
+            bool inserted; // set to false when we try and insert a parallel edge
+
+            tie (e, inserted) = add_edge(parent, v, db.resource_graph);
+            db.resource_graph[e].idata.member_of[subsys] = relation;
+            db.resource_graph[e].name += ":" + subsys + "." + relation;
+
+            tie (e, inserted) = add_edge(v, parent, db.resource_graph);
+            db.resource_graph[e].idata.member_of[subsys] = rev_relation;
+            db.resource_graph[e].name += ":" + subsys + "." + rev_relation;
+        }
+    }
+
+    for (unsigned int i = 0; i < obj->arity; i++) {
+        walk_hwloc (obj->children[i], valid_ancestor, rank, db);
+    }
+}
+
+
+/********************************************************************************
+ *                                                                              *
  *                   Public Resource Generator Interface                        *
  *                                                                              *
  ********************************************************************************/
@@ -457,192 +700,6 @@ int resource_generator_t::read_graphml (const string &fn, resource_graph_db_t &d
     return (m_err_msg == "")? rc : -1;
 }
 
-ggv_t add_new_vertex(resource_graph_db_t &db, const ggv_t &parent,
-                     int id, const string &subsys, const string &type,
-                     const string &basename, int size, int rank=-1)
-{
-    ggv_t v = boost::add_vertex (db.resource_graph);
-
-    // Set properties of the new vertex
-    bool is_root = parent == boost::graph_traits<resource_graph_t>::null_vertex ();
-    string istr = (id != -1)? to_string (id) : "";
-    string prefix =  is_root ? "" : db.resource_graph[parent].paths[subsys];
-
-    db.resource_graph[v].type = type;
-    db.resource_graph[v].basename = basename;
-    db.resource_graph[v].size = size;
-    db.resource_graph[v].uniq_id = v;
-    db.resource_graph[v].rank = rank;
-    db.resource_graph[v].schedule.plans = planner_new (0, INT64_MAX,
-                                                       size,
-                                                       type.c_str ());
-    db.resource_graph[v].schedule.x_checker = planner_new (0, INT64_MAX,
-                                                           X_CHECKER_NJOBS,
-                                                           X_CHECKER_JOBS_STR);
-    db.resource_graph[v].id = id;
-    db.resource_graph[v].name = basename + istr;
-    db.resource_graph[v].paths[subsys] = prefix + "/" + db.resource_graph[v].name;
-    db.resource_graph[v].idata.member_of[subsys] = "*";
-
-    // Indexing for fast look-up
-    db.by_path[db.resource_graph[v].paths[subsys]].push_back (v);
-    db.by_type[db.resource_graph[v].type].push_back (v);
-    db.by_name[db.resource_graph[v].name].push_back (v);
-    return v;
-}
-
-void walk_hwloc (const hwloc_obj_t obj, const ggv_t parent, int rank, resource_graph_db_t &db)
-{
-    bool supported_resource = true;
-    std::string type, basename;
-    int id = obj->logical_index;
-    unsigned int size = 1;
-
-    switch(obj->type) {
-    case HWLOC_OBJ_MACHINE: {
-        // TODO: add signature to support multiple ranks per node
-        const char *hwloc_name = hwloc_obj_get_info_by_name (obj, "HostName");
-        if (!hwloc_name) {
-            supported_resource = false;
-            break;
-        }
-        type = "node";
-        basename = hwloc_name;
-        id = -1; // TODO: is this the right thing to do?
-        break;
-    }
-    case HWLOC_OBJ_GROUP: {
-        type = "group";
-        basename = type;
-        break;
-    }
-    case HWLOC_OBJ_NUMANODE: {
-        type = "numanode";
-        basename = type;
-        break;
-    }
-    case HWLOC_OBJ_PACKAGE: {
-        type = "socket";
-        basename = type;
-        break;
-    }
-#if HWLOC_API_VERSION < 0x00020000
-    case HWLOC_OBJ_CACHE: {
-        type = "cache";
-        basename = "L" + to_string (obj->attr->cache.depth) + type;
-        size = obj->attr->cache.size / 1024;
-        break;
-    }
-#else
-    case HWLOC_OBJ_L1CACHE: {
-        type = "cache";
-        basename = "L1" + type;
-        size = obj->attr->cache.size / 1024;
-        break;
-    }
-    case HWLOC_OBJ_L2CACHE: {
-        type = "cache";
-        basename = "L2" + type;
-        size = obj->attr->cache.size / 1024;
-        break;
-    }
-    case HWLOC_OBJ_L3CACHE: {
-        type = "cache";
-        basename = "L3" + type;
-        size = obj->attr->cache.size / 1024;
-        break;
-    }
-#endif
-    case HWLOC_OBJ_CORE: {
-        type = "core";
-        basename = type;
-        break;
-    }
-    case HWLOC_OBJ_PU: {
-        type = "pu";
-        basename = type;
-        break;
-    }
-    case HWLOC_OBJ_OS_DEVICE: {
-        if (obj->attr && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
-            /* hwloc doesn't provide the logical index only amongst CoProc
-             * devices so we parse this info from the name until hwloc provide
-             * better support.
-             */
-            if (strncmp(obj->name, "cuda", 4) == 0)
-                id = atoi (obj->name + 4);
-            else if (strncmp(obj->name, "opencl", 6) == 0) {
-                /* Naming convention of opencl devices for hwloc:
-		 * "opencl" followed by a platform ID followed by a device ID.
-		 * Then, the letter d delimits platform id and device id.
-		 */
-                const char *delim = strchr (obj->name + 6, 'd');
-                id = atoi (delim + 1);
-            }
-            type = "gpu";
-            basename = type;
-        } else {
-            supported_resource = false;
-        }
-        break;
-    }
-    default: {
-        supported_resource = false;
-        break;
-    }
-    }
-
-    // A valid ancestor vertex to pass to the recursive call
-    ggv_t valid_ancestor;
-    if (!supported_resource) {
-        valid_ancestor = parent;
-    } else {
-        const string subsys = "containment";
-        ggv_t v = add_new_vertex(db, parent, id, subsys, type, basename, size, rank);
-        valid_ancestor = v;
-
-        // Create edge between parent/child
-        if (parent == boost::graph_traits<resource_graph_t>::null_vertex ()) {
-            // is root
-            db.roots[subsys] = v;
-        } else {
-            string relation = "contains";
-            string rev_relation = "in";
-            edg_t e;
-            bool inserted; // set to false when we try and insert a parallel edge
-
-            tie (e, inserted) = add_edge(parent, v, db.resource_graph);
-            db.resource_graph[e].idata.member_of[subsys] = relation;
-            db.resource_graph[e].name += ":" + subsys + "." + relation;
-
-            tie (e, inserted) = add_edge(v, parent, db.resource_graph);
-            db.resource_graph[e].idata.member_of[subsys] = rev_relation;
-            db.resource_graph[e].name += ":" + subsys + "." + rev_relation;
-        }
-    }
-
-    for (unsigned int i = 0; i < obj->arity; i++) {
-        walk_hwloc (obj->children[i], valid_ancestor, rank, db);
-    }
-}
-
-int check_hwloc_version (string &m_err_msg) {
-    unsigned int hwloc_version = hwloc_get_api_version ();
-
-    if ((hwloc_version >> 16) != (HWLOC_API_VERSION >> 16)) {
-        stringstream msg;
-        msg << "Compiled for hwloc API 0x"
-            << std::hex << HWLOC_API_VERSION
-            << " but running on library API 0x"
-            << hwloc_version << "; ";
-        m_err_msg += msg.str ();
-        errno = EINVAL;
-        return -1;
-    }
-
-    return 0;
-}
-
 ggv_t resource_generator_t::create_cluster_vertex (resource_graph_db_t &db)
 {
     // generate cluster root vertex
@@ -654,8 +711,10 @@ ggv_t resource_generator_t::create_cluster_vertex (resource_graph_db_t &db)
     return v;
 }
 
-int resource_generator_t::read_ranked_hwloc_xml (const char *hwloc_xml, int rank,
-                                                 const ggv_t &root_vertex, resource_graph_db_t &db)
+int resource_generator_t::read_ranked_hwloc_xml (const char *hwloc_xml,
+                                                 int rank,
+                                                 const ggv_t &root_vertex,
+                                                 resource_graph_db_t &db)
 {
     if (check_hwloc_version (m_err_msg) < 0) {
         return -1;
@@ -685,6 +744,7 @@ int resource_generator_t::read_ranked_hwloc_xml (const char *hwloc_xml, int rank
  * Read a subsystem spec hwloc xml file and generate resource database
  *
  * \param ifn    filename of hwloc xml
+ * \param csl    comma separated hwloc whitelist string
  * \param db     graph database consisting of resource graph and various indices
  * \return       0 on success; non-zero integer on an error
  */
@@ -705,6 +765,45 @@ int resource_generator_t::read_hwloc_xml_file (const char *ifn,
     read_ranked_hwloc_xml (xml_str.c_str(), -1, cluster_vertex, db);
 
     return 0;
+}
+
+/*
+ * Set hwloc whitelist: only resources that are part of whitelist make
+ * into the graph datastore.
+ *
+ * \param csl    comma separated hwloc whitelist string
+ * \return       0 on success; non-zero integer on an error
+ */
+int resource_generator_t::set_hwloc_whitelist (const std::string &csl)
+{
+    if (csl == "")
+        return 0;
+
+    int rc = -1;
+    size_t pos = 0;
+    std::string csl_copy = csl;
+    std::string sep = ",";
+
+    try {
+        while ((pos = csl_copy.find (sep)) != std::string::npos) {
+            std::string resource = csl_copy.substr (0, pos);
+            if (resource != "")
+                hwloc_whitelist.insert (resource);
+            csl_copy.erase (0, pos + sep.length ());
+        }
+        if (csl_copy != "")
+            hwloc_whitelist.insert (csl_copy);
+        errno = EINVAL;
+        rc = hwloc_whitelist.empty ()? -1 : 0;
+    } catch (std::out_of_range &e) {
+        errno = EINVAL;
+        rc = -1;
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        rc = -1;
+    }
+
+    return rc;
 }
 
 /*

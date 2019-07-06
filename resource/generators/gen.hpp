@@ -25,6 +25,9 @@
 #ifndef GEN_HPP
 #define GEN_HPP
 
+extern "C" {
+#include <hwloc.h>
+}
 #include <string>
 #include <boost/graph/depth_first_search.hpp>
 #include "resource/schema/resource_graph.hpp"
@@ -42,11 +45,23 @@ public:
     int read_graphml (const std::string &fn, resource_graph_db_t &db);
     int read_hwloc_xml_file (const char *fn, resource_graph_db_t &db);
     int read_ranked_hwloc_xml (const char *hwloc_xml, int rank,
-                               const ggv_t &root_vertex, resource_graph_db_t &db);
+                               const ggv_t &root_vertex,
+                               resource_graph_db_t &db);
     int read_ranked_hwloc_xmls (char **hwloc_strs, int size, resource_graph_db_t &db);
+    int set_hwloc_whitelist (const std::string &csl);
     ggv_t create_cluster_vertex(resource_graph_db_t &db);
     const std::string &err_message () const;
+
 private:
+    int check_hwloc_version (std::string &m_err_msg);
+    ggv_t add_new_vertex(resource_graph_db_t &db, const ggv_t &parent, int id,
+                         const std::string &subsys, const std::string &type,
+                         const std::string &basename, int size, int rank=-1);
+    bool in_whitelist (const std::string &resource);
+    void walk_hwloc (const hwloc_obj_t obj,
+                     const ggv_t parent, int rank, resource_graph_db_t &db);
+
+    std::set<std::string> hwloc_whitelist;
     resource_gen_spec_t m_gspec;
     // TODO: convert to string stream
     std::string m_err_msg = "";

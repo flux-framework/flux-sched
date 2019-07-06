@@ -48,13 +48,14 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:F:G:X:g:o:p:t:r:edh"
+#define OPTIONS "S:P:F:G:X:W:g:o:p:t:r:edh"
 static const struct option longopts[] = {
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
     {"match-format",     required_argument,  0, 'F'},
     {"grug",             required_argument,  0, 'G'},
     {"hwloc-xml",        required_argument,  0, 'X'},
+    {"hwloc-whitelist",  required_argument,  0, 'W'},
     {"graph-format",     required_argument,  0, 'g'},
     {"graph-output",     required_argument,  0, 'o'},
     {"prune-filters",    required_argument,  0, 'p'},
@@ -112,6 +113,10 @@ static void usage (int code)
 "\n"
 "    -X, --hwloc-xml=<hwloc>.xml\n"
 "            xml output from hwloc\n"
+"\n"
+"    -W, --hwloc-whitelist=<resource1[,resource2[,resource3...]]>\n"
+"            Specify a whitelist of hwloc resource names to be used.\n"
+"            Other hwloc resources will be filtered out.\n"
 "\n"
 "    -S, --match-subsystems="
          "<CA|IBA|IBBA|PFS1BA|PA|C+IBA|C+PFS1BA|C+PA|IB+IBBA|"
@@ -200,6 +205,7 @@ static void set_default_params (resource_context_t *ctx)
 {
     ctx->params.grug = "";
     ctx->params.hwloc_xml = "";
+    ctx->params.hwloc_whitelist = "";
     ctx->params.matcher_name = "CA";
     ctx->params.matcher_policy = "high";
     ctx->params.o_fname = "";
@@ -483,7 +489,13 @@ static int populate_resource_db (resource_context_t *ctx)
             rc = -1;
         }
     } else if (ctx->params.hwloc_xml != "") {
-        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(), ctx->db)) != 0) {
+        if ( (rc = rgen.set_hwloc_whitelist (
+                       ctx->params.hwloc_whitelist)) < 0) {
+            cerr << "ERROR: error in setting hwloc whitelist." << endl;
+            rc = -1;
+        }
+        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(),
+                                             ctx->db)) != 0) {
             cerr << "ERROR: " << rgen.err_message () << endl;
             cerr << "ERROR: error in generating resources" << endl;
             rc = -1;
@@ -581,6 +593,13 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 break;
             case 'X': /* --hwloc-xml*/
                 ctx->params.hwloc_xml = optarg;
+                break;
+            case 'W': /* --hwloc-whitelist */
+                token = optarg;
+                if(token.find_first_not_of(' ') != std::string::npos) {
+                    ctx->params.hwloc_whitelist += "cluster,";
+                    ctx->params.hwloc_whitelist += token;
+                }
                 break;
             case 'S': /* --match-subsystems */
                 ctx->params.matcher_name = optarg;
