@@ -37,6 +37,10 @@ class queue_policy_fcfs_t : public queue_policy_base_t
 public:
     virtual ~queue_policy_fcfs_t ();
     virtual int run_sched_loop (void *h, bool use_alloced_queue);
+
+private:
+    int cancel_completed_jobs (void *h);
+    int allocate_jobs (void *h, bool use_alloced_queue);
 };
 
 } // namespace Flux::queue_manager::detail
