@@ -8,7 +8,7 @@
 # to load in the resource matching service module with non-default options.
 #
 # Finally, if FLUX_RESOURCE_RC_NOOP=1, flux-core
-# won't load in or remove sched as part of runlevel 1 and 3.
+# won't load in or remove resource as part of runlevel 1 and 3.
 #
 
 if [ -z ${FLUX_RESOURCE_RC_NOOP} ]; then

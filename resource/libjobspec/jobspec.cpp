@@ -320,6 +320,45 @@ vector<Resource> parse_yaml_resources (const YAML::Node &resources)
 }
 }
 
+namespace {
+Attributes parse_yaml_attributes (const YAML::Node &attrs)
+{
+    Attributes a;
+
+    if (!attrs.IsMap ()) {
+        throw parse_error (attrs, "\"attributes\" is not a map");
+    }
+    for (auto&& kv : attrs) {
+        if (kv.first.as<string>() == "user") {
+            a.user = kv.second;
+        }
+        else if (kv.first.as<string>() == "system") {
+            for (auto&& s : kv.second) {
+                if (s.first.as<string>() == "duration") {
+                    a.system.duration = s.second.as<double>();
+                }
+                else if (s.first.as<string>() == "cwd") {
+                    a.system.cwd = s.second.as<string>();
+                }
+                else if (s.first.as<string>() == "environment") {
+                    for (auto&& e : s.second) {
+                        a.system.environment[e.first.as<string>()]
+                            = e.second.as<string>();
+                    }
+                }
+                else {
+                    a.system.optional[s.first.as<string>()] = s.second;
+                }
+            }
+        }
+        else {
+            throw parse_error (kv.second, "Unknown key in \"attributes\"");
+        }
+    }
+    return a;
+}
+}
+
 Jobspec::Jobspec(const YAML::Node &top)
 {
     try {
@@ -357,25 +396,9 @@ Jobspec::Jobspec(const YAML::Node &top)
         }
 
         /* Import attributes mappings */
-        YAML::Node attrs = top["attributes"];
-        /* allow attributes to be present and empty */
-        if (!attrs.IsNull()) {
-            if (!attrs.IsMap()) {
-                throw parse_error (attrs, "\"attributes\" is not a mapping");
-            }
-            if (attrs.size() > 0) {
-                for (auto&& i : attrs) {
-                    if (!i.second.IsMap()) {
-                        throw parse_error (i.second,
-                                           "value of attribute is not a mapping");
-                    }
-                    for (auto&& j : i.second) {
-                        attributes[i.first.as<string>()][j.first.as<string>()] =
-                            j.second.as<string>();
-                    }
-                }
-            }
-        }
+        if (!top["attributes"].IsNull ())
+            attributes = parse_yaml_attributes (top["attributes"]);
+
         /* Import resources section */
         resources = parse_yaml_resources (top["resources"]);
 
@@ -465,11 +488,12 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s, Jobspec const& jobspec)
         s << task;
     }
     s << "attributes:" << endl;
-    for (auto&& subattr : jobspec.attributes) {
-        s << "  " << subattr.first << ":" << endl;
-        for (auto&& attr : subattr.second) {
-            s << "    " << attr.first << " = " << attr.second << endl;
-        }
+    s << "  " << "system:" << endl;
+    s << "    " << "duration: " << jobspec.attributes.system.duration << endl;
+    s << "    " << "cwd: " << jobspec.attributes.system.cwd << endl;
+    s << "    " << "environment:" << endl;
+    for (auto&& e : jobspec.attributes.system.environment) {
+        s << "      " << e.first << ": " << e.second << endl;
     }
 
     return s;
@@ -480,7 +504,7 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s,
 {
     s << "- type: " << resource.type << endl;
     s << "  count:" << endl;
-    s << "    min:  " << resource.count.min << endl;
+    s << "    min: " << resource.count.min << endl;
     s << "    max: " << resource.count.max << endl;
     s << "    operator: " << resource.count.oper << endl;
     s << "    operand: " << resource.count.operand << endl;

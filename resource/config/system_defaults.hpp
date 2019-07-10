@@ -29,7 +29,8 @@
 namespace Flux {
 namespace resource_model {
 namespace detail {
-    const uint64_t SYSTEM_DEFAULT_DURATION = 43200;
+    const uint64_t SYSTEM_DEFAULT_DURATION = 43200; // 12 hours
+    const uint64_t SYSTEM_MAX_DURATION = 604800;    //  7 days
 } // namespace detail
 } // namespace resource_model
 } // namespace Flux

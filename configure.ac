@@ -126,23 +126,17 @@ AC_SUBST(fluxlibdir)
 AS_VAR_SET(fluxmoddir, $libdir/flux/modules)
 AC_SUBST(fluxmoddir)
 
-AS_VAR_SET(schedplugindir, $libdir/flux/modules/sched)
-AC_SUBST(schedplugindir)
-
-AS_VAR_SET(fluxschedincludedir, $includedir/flux/sched)
-AC_SUBST(fluxschedincludedir)
-
-AS_VAR_SET(fluxschedrc1dir, $sysconfdir/flux/rc1.d)
-AC_SUBST(fluxschedrc1dir)
-
-AS_VAR_SET(fluxschedrc3dir, $sysconfdir/flux/rc3.d)
-AC_SUBST(fluxschedrc3dir)
-
 AS_VAR_SET(fluxresourcerc1dir, $sysconfdir/flux/rc1.d)
 AC_SUBST(fluxresourcerc1dir)
 
 AS_VAR_SET(fluxresourcerc3dir, $sysconfdir/flux/rc3.d)
 AC_SUBST(fluxresourcerc3dir)
+
+AS_VAR_SET(fluxqmanagerrc1dir, $sysconfdir/flux/rc1.d)
+AC_SUBST(fluxqmanagerrc1dir)
+
+AS_VAR_SET(fluxresourcerc3dir, $sysconfdir/flux/rc3.d)
+AC_SUBST(fluxqmanagerrc3dir)
 
 ##
 # Macros to avoid repetition in Makefiles.am's
@@ -159,6 +153,7 @@ AC_CONFIG_FILES([Makefile
   src/common/libtap/Makefile
   src/common/libutil/Makefile
   src/common/librbtree/Makefile
+  src/common/libschedutil/Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
@@ -166,6 +161,11 @@ AC_CONFIG_FILES([Makefile
   resource/utilities/Makefile
   resource/utilities/test/Makefile
   resource/modules/Makefile
+  resource/hlapi/Makefile
+  resource/hlapi/bindings/Makefile
+  resource/hlapi/bindings/c/Makefile
+  qmanager/Makefile
+  qmanager/modules/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT

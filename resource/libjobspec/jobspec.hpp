@@ -97,13 +97,36 @@ public:
     Task(const YAML::Node&);
 };
 
+struct System {
+    double duration = 0.0f;
+    std::string cwd = "";
+    std::unordered_map<std::string, std::string> environment;
+    std::unordered_map<std::string, YAML::Node> optional;
+
+    System() = default;
+    System(const System &s) = delete; // Force to use move ctor
+    System(System &&s) = default;
+    System& operator=(const System &&a) = delete; // Force to use move operator=
+    System& operator=(System &&a) = default;
+};
+
+struct Attributes {
+    YAML::Node user;
+    System system;
+
+    Attributes() = default;
+    Attributes(const Attributes &a) = delete; // Force to use move ctor
+    Attributes(Attributes &&a) = default;
+    Attributes& operator=(const Attributes &&a) = delete;
+    Attributes& operator=(Attributes &&a) = default;
+};
+
 class Jobspec {
 public:
     unsigned int version;
     std::vector<Resource> resources;
     std::vector<Task> tasks;
-    std::unordered_map<std::string,
-        std::unordered_map<std::string, std::string>> attributes;
+    Attributes attributes;
 
     Jobspec() = default;
     Jobspec(const YAML::Node&);
