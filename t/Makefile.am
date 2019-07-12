@@ -31,6 +31,7 @@ TESTS = \
     t0000-sharness.t \
     t0003-basic-install.t \
     t1001-qmanager-basic.t \
+    t1002-qmanager-reload.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
