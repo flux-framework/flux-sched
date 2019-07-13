@@ -46,7 +46,8 @@ struct command_t {
 
 command_t commands[] = {
     { "match",  "m", cmd_match, "Allocate or reserve matching resources (subcmd:"
-"allocate | allocate_orelse_reserve): resource-query> match allocate jobspec"},
+"allocate | allocate_with_satisfiability | allocate_orelse_reserve): "
+"resource-query> match allocate jobspec"},
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
@@ -80,7 +81,7 @@ static int do_remove (resource_context_t *ctx, int64_t jobid)
 static void print_schedule_info (resource_context_t *ctx, ostream &out,
                                  uint64_t jobid, string &jobspec_fn,
                                  bool matched, int64_t at,
-                                 double elapse)
+                                 double elapse, bool sat)
 {
     if (matched) {
         job_lifecycle_t st;
@@ -104,6 +105,8 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
     } else {
         out << "INFO:" << " =============================" << endl;
         out << "INFO: " << "No matching resources found" << endl;
+        if (!sat)
+            out << "INFO: " << "Unsatisfiable request" << endl;
         out << "INFO:" << " JOBID=" << jobid << endl;
         if (ctx->params.elapse_time)
             out << "INFO:" << " ELAPSE=" << to_string (elapse) << endl;
@@ -133,13 +136,15 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
         return 0;
     }
     string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve")) {
+    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
+          || subcmd == "allocate_with_satisfiability")) {
         cerr << "ERROR: unknown subcmd " << args[1] << endl;
         return 0;
     }
 
     try {
         int rc = 0;
+        bool sat = true;
         int64_t at = 0;
         int64_t jobid = ctx->jobid_counter;
         string &jobspec_fn = args[2];
@@ -157,10 +162,17 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
         if (args[1] == "allocate")
             rc = ctx->traverser->run (job, ctx->writers, match_op_t::
                                       MATCH_ALLOCATE, (int64_t)jobid, &at);
+        else if (args[1] == "allocate_with_satisfiability")
+            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                      MATCH_ALLOCATE_W_SATISFIABILITY,
+                                      (int64_t)jobid, &at);
         else if (args[1] == "allocate_orelse_reserve")
             rc = ctx->traverser->run (job, ctx->writers, match_op_t::
                                       MATCH_ALLOCATE_ORELSE_RESERVE,
                                       (int64_t)jobid, &at);
+
+        if ((rc != 0) && (errno == ENODEV))
+            sat = false;
 
         ctx->writers->emit (o);
         ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
@@ -170,7 +182,8 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
         elapse = get_elapse_time (st, et);
         update_match_perf (ctx, elapse);
 
-        print_schedule_info (ctx, out, jobid, jobspec_fn, rc == 0, at, elapse);
+        print_schedule_info (ctx, out, jobid,
+                             jobspec_fn, rc == 0, at, elapse, sat);
         jobspec_in.close ();
 
     } catch (ifstream::failure &e) {
