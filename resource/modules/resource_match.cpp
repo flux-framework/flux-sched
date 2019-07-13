@@ -274,7 +274,7 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
     }
     process_args (ctx, argc, argv);
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
-        flux_log (h, LOG_ERR, "error registering resource event handler");
+        flux_log_error (h, "error registering resource event handler");
         goto error;
     }
     return ctx;
@@ -508,8 +508,13 @@ static int init_resource_graph (resource_ctx_t *ctx)
     }
 
     // Initialize the DFU traverser
-    ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots), ctx->matcher);
-    return rc;
+    if (ctx->traverser->initialize (ctx->fgraph,
+                                    &(ctx->db.roots), ctx->matcher) < 0) {
+        flux_log (ctx->h, LOG_ERR, "traverser initialization");
+        return -1;
+
+    }
+    return 0;
 }
 
 
@@ -815,7 +820,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         flux_log (h, LOG_ERR, "can't initialize resource module");
         goto done;
     }
-    flux_log (h, LOG_INFO, "resource module starting...");
+    flux_log (h, LOG_DEBUG, "resource module starting...");
 
     if ((rc = init_resource_graph (ctx)) != 0) {
         flux_log (h, LOG_ERR, "can't initialize resource graph database");
