@@ -58,6 +58,37 @@ struct qmanager_ctx_t {
  *                                                                            *
  ******************************************************************************/
 
+static int post_sched_loop (qmanager_ctx_t *ctx)
+{
+    int rc = -1;
+    std::shared_ptr<job_t> job = nullptr;
+
+    while ((job = ctx->queue->alloced_pop ()) != nullptr) {
+        if (schedutil_alloc_respond_R (ctx->h, job->msg,
+                                       job->schedule.R.c_str (), NULL) < 0) {
+            flux_log_error (ctx->h, "%s: schedutil_alloc_respond_R",
+                            __FUNCTION__);
+            goto out;
+        }
+        flux_log (ctx->h, LOG_DEBUG,
+                  "alloc success (id=%jd)", (intmax_t)job->id);
+    }
+    while ((job = ctx->queue->rejected_pop ()) != nullptr) {
+        std::string note = "alloc denied due to type=\"" + job->note + "\"";
+        if (schedutil_alloc_respond_denied (ctx->h, job->msg, note.c_str ()) < 0) {
+            flux_log_error (ctx->h, "%s: schedutil_alloc_respond_denied",
+                            __FUNCTION__);
+            goto out;
+        }
+        flux_log (ctx->h, LOG_DEBUG,
+                  "%s (id=%jd)", note.c_str (), (intmax_t)job->id);
+    }
+    rc = 0;
+
+out:
+    return rc;
+}
+
 // FIXME: This will be expanded when we implement full scheduler
 // resilency schemes: Issue #470.
 extern "C" int jobmanager_hello_cb (flux_t *h,
@@ -104,18 +135,10 @@ extern "C" void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: queue insert", __FUNCTION__);
         return;
     }
-    if (ctx->queue->run_sched_loop ((void *)ctx->h, true) < 0) {
-        flux_log (ctx->h, LOG_DEBUG,
-                  "%s: return code < 0 from schedule loop", __FUNCTION__);
-    }
-    while ((job = ctx->queue->alloced_pop ()) != nullptr) {
-        flux_log (ctx->h, LOG_DEBUG, "jobid (%ju): %s",
-                  (intmax_t)job->id, job->schedule.R.c_str ());
-        if (schedutil_alloc_respond_R (ctx->h, job->msg,
-                                       job->schedule.R.c_str (), NULL) < 0) {
-            flux_log_error (ctx->h, "%s: schedutil_alloc_respond_R",
-                            __FUNCTION__);
-        }
+    if (ctx->queue->run_sched_loop ((void *)ctx->h, true) < 0
+        || post_sched_loop (ctx) < 0) {
+        flux_log_error (ctx->h, "%s: schedule loop", __FUNCTION__);
+        return;
     }
 }
 
@@ -149,14 +172,10 @@ extern "C" void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     if (schedutil_free_respond (h, msg) < 0) {
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
     }
-    while ((job = ctx->queue->alloced_pop ()) != nullptr) {
-        flux_log (ctx->h, LOG_DEBUG, "jobid (%ju): %s",
-                  (intmax_t)job->id, job->schedule.R.c_str ());
-        if (schedutil_alloc_respond_R (ctx->h, job->msg,
-                                       job->schedule.R.c_str (), NULL) < 0) {
-            flux_log_error (ctx->h, "%s: schedutil_alloc_respond_R",
-                            __FUNCTION__);
-        }
+    flux_log (ctx->h, LOG_DEBUG, "free succeeded (id=%jd)", (intmax_t)id);
+    if (post_sched_loop (ctx) < 0) {
+        flux_log_error (ctx->h, "%s: post_sched_loop", __FUNCTION__);
+        return;
     }
 }
 
