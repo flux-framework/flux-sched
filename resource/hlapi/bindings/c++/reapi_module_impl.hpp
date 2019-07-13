@@ -51,7 +51,7 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
     const char *rset = NULL;
     const char *status = NULL;
     const char *cmd = (orelse_reserve)? "allocate_orelse_reserve"
-                                      : "allocate";
+                                      : "allocate_with_satisfiability";
 
     if (!fh || jobspec == "" || jobid > INT64_MAX) {
         errno = EINVAL;
