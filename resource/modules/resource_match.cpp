@@ -717,21 +717,15 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
     job_info_t *info = NULL;
     string status = "";
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "info requested by user (%u).", userid);
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
     if (!is_existent_jobid (ctx, jobid)) {
         errno = ENOENT;
-        flux_log (h, LOG_ERR, "cannot find jobid (%ld)", (intmax_t)jobid);
+        flux_log (h, LOG_DEBUG, "nonexistent job (id=%jd)", (intmax_t)jobid);
         goto error;
     }
 
@@ -744,7 +738,6 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "overhead", info->overhead) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "info request succeeded.");
     return;
 
 error:
@@ -756,14 +749,8 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     double avg = 0.0f;
     double min = 0.0f;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "stat requested by user (%u).", userid);
 
     if (ctx->jobs.size ()) {
         avg = ctx->perf.accum / (double)ctx->jobs.size ();
@@ -777,13 +764,6 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "min-match", min,
                                    "max-match", ctx->perf.max,
                                    "avg-match", avg) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
-
-    flux_log (h, LOG_INFO, "stat request succeeded.");
-    return;
-
-error:
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
@@ -802,23 +782,15 @@ static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "next jobid requested by user (%u).", userid);
 
     if ((jobid = next_jobid (ctx->jobs)) < 0) {
         errno = ERANGE;
         goto error;
     }
-
     if (flux_respond_pack (h, msg, "{s:I}", "jobid", jobid) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "next_jobid request succeeded.");
     return;
 
 error:
