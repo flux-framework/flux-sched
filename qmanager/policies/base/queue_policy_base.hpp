@@ -176,6 +176,7 @@ public:
      *
      *  \param id        jobid of flux_jobid_t type.
      *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
      */
     int remove (flux_jobid_t id);
 
