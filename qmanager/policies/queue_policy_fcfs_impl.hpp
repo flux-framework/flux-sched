@@ -42,42 +42,51 @@ template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::run_sched_loop (void *h,
                                                      bool use_alloced_queue)
 {
-    int rc1 = 0;
-    int rc2 = 0;
+    int rc = 0;
     std::shared_ptr<job_t> job;
-    std::map<uint64_t, flux_jobid_t>::iterator iter = m_pending.begin ();
+    std::map<uint64_t, flux_jobid_t>::iterator iter;
 
     //
     // Pop newly completed jobs (e.g., per a free request from job-manager
     // as received by qmanager) to remove them from the resource infrastructure.
     //
-    while ((job = complete_pop ()) != nullptr) {
-        if ((rc1 = reapi_type::cancel (h, job->id)) < 0)
-            break;
-    }
+    while ((job = complete_pop ()) != nullptr)
+        rc += reapi_type::cancel (h, job->id);
 
     //
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't.
     //
+    int saved_errno = errno;
+    iter = m_pending.begin ();
     while (iter != m_pending.end ()) {
+        errno = 0;
         job = m_jobs[iter->second];
-        if ((rc2 = reapi_type::match_allocate (h, false, job->jobspec, job->id,
-                                               job->schedule.reserved,
-                                               job->schedule.R,
-                                               job->schedule.at,
-                                               job->schedule.ov)) < 0)
-            break;
-
-        // move the job to the running queue and make sure the job
-        // is enqueued into allocated job queue as well.
-        // When this is used within a module (qmanager), it allows the module
-        // to fetch those newly allocated jobs, which have flux_msg_t to
-        // respond to job-manager.
-        iter = to_running (iter, use_alloced_queue);
+        if (reapi_type::match_allocate (h, false, job->jobspec, job->id,
+                                        job->schedule.reserved,
+                                        job->schedule.R,
+                                        job->schedule.at,
+                                        job->schedule.ov) == 0) {
+            // move the job to the running queue and make sure the job
+            // is enqueued into allocated job queue as well.
+            // When this is used within a module (qmanager), it allows the module
+            // to fetch those newly allocated jobs, which have flux_msg_t to
+            // respond to job-manager.
+            iter = to_running (iter, use_alloced_queue);
+        } else {
+            if (errno != EBUSY) {
+                // The request must be rejected. The job is enqueued into
+                // rejected job queue to the upper layer to react on this.
+                iter = to_rejected (iter, (errno == ENODEV)? "unsatisfiable"
+                                                           : "match error");
+            }
+            else {
+                break;
+            }
+        }
     }
-
-    return rc1 + rc2;
+    errno = saved_errno;
+    return rc;
 }
 
 } // namespace Flux::queue_manager::detail
