@@ -42,6 +42,7 @@ namespace queue_manager {
 
 enum class job_state_kind_t { INIT,
                               PENDING,
+                              REJECTED,
                               RUNNING,
                               ALLOC_RUNNING,
                               CANCELED,
@@ -68,6 +69,7 @@ struct schedule_t {
 struct t_stamps_t {
     uint64_t pending_ts = 0;
     uint64_t running_ts = 0;
+    uint64_t rejected_ts = 0;
     uint64_t complete_ts = 0;
 };
 
@@ -95,6 +97,7 @@ public:
     int priority = 0;
     double t_submit = 0.0f;;
     std::string jobspec = "";
+    std::string note = "";
     t_stamps_t t_stamps;
     schedule_t schedule;
 };
@@ -112,20 +115,26 @@ protected:
     int reconstruct (std::shared_ptr<job_t> running_job);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
+    std::shared_ptr<job_t> rejected_pop ();
     std::shared_ptr<job_t> complete_pop ();
     std::map<uint64_t, flux_jobid_t>::iterator to_running (
         std::map<uint64_t, flux_jobid_t>::iterator pending_iter,
         bool use_alloced_queue);
     std::map<uint64_t, flux_jobid_t>::iterator to_complete (
         std::map<uint64_t, flux_jobid_t>::iterator running_iter);
+    std::map<uint64_t, flux_jobid_t>::iterator to_rejected (
+        std::map<uint64_t, flux_jobid_t>::iterator pending_iter,
+        const std::string &note);
 
     uint64_t m_pq_cnt = 0;
     uint64_t m_rq_cnt = 0;
+    uint64_t m_dq_cnt = 0;
     uint64_t m_cq_cnt = 0;
     std::map<uint64_t, flux_jobid_t> m_pending;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
     std::map<uint64_t, flux_jobid_t> m_complete;
+    std::map<uint64_t, flux_jobid_t> m_rejected;
     std::map<flux_jobid_t, std::shared_ptr<job_t>> m_jobs;
 };
 } // namespace Flux::queue_manager::detail
@@ -215,6 +224,13 @@ public:
      *                   on success; nullptr when the queue is empty.
      */
     std::shared_ptr<job_t> alloced_pop ();
+
+    /*! Pop the first job from the rejected job queue.
+     *  The popped is completely graduated from the queue policy layer.
+     *  \return          a shared pointer pointing to a job_t object
+     *                   on success; nullptr when the queue is empty.
+     */
+    std::shared_ptr<job_t> rejected_pop ();
 
     /*! Pop the first job from the internal completed job queue.
      *  The popped is completely graduated from the queue policy layer.
