@@ -106,8 +106,10 @@ class queue_policy_base_impl_t
 public:
     int insert (std::shared_ptr<job_t> job);
     int remove (flux_jobid_t id);
+    const std::shared_ptr<job_t> lookup (flux_jobid_t id);
 
 protected:
+    int reconstruct (std::shared_ptr<job_t> running_job);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> complete_pop ();
@@ -179,6 +181,24 @@ public:
      *                       ENOENT: unknown id.
      */
     int remove (flux_jobid_t id);
+
+    /*! Look up a job whose jobid is id
+     *
+     *  \param id        jobid of flux_jobid_t type.
+     *  \return          a shared pointer pointing to the job on success;
+     *                       nullptr on error. ENOENT: unknown id.
+     */
+    const std::shared_ptr<job_t> lookup (flux_jobid_t id);
+
+    /*! Append a job into the internal running-job queue to reconstruct
+     *  the queue state.
+     *
+     *  \param running_job
+     *                   a shared pointer pointing to a job_t object.
+     *  \return          0 on success; -1 on error.
+     *                       EINVAL: invalid argument.
+     */
+    int reconstruct (std::shared_ptr<job_t> running_job);
 
     /*! Pop the first job from the pending job queue. The popped
      *  job is completely graduated from the queue policy layer.
