@@ -109,6 +109,10 @@ public:
      *                       EINVAL: graph, roots or match callback not set.
      *                       ENOTSUP: roots does not contain a subsystem the
      *                                match callback uses.
+     *                       EBUSY: cannot match because resources/devices
+     *                              are currently in use.
+     *                       ENODEV: unsatifiable jobspec becuase no
+     *                               resources/devices can satisfy the request.
      */
     int run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
              match_op_t op, int64_t id, int64_t *at);
