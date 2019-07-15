@@ -139,6 +139,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
     // requested, we check the validity of the visiting vertex using
     // its x_checker planner.
     if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
+        errno = 0;
         p = (*m_graph)[u].schedule.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
         if (njobs == -1) {
