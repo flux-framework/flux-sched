@@ -51,6 +51,12 @@ enum class job_state_kind_t { INIT,
  *  allocated or reserved (for backfill) resource set (R).
  */
 struct schedule_t {
+    schedule_t () = default;
+    schedule_t (const std::string &r) : R (r) { }
+    schedule_t (schedule_t &&s) = default;
+    schedule_t (const schedule_t &s) = default;
+    schedule_t& operator= (schedule_t &&s) = default;
+    schedule_t& operator= (const schedule_t &s) = default;
     std::string R = "";
     bool reserved = false;
     int64_t at = 0;
@@ -70,6 +76,18 @@ struct t_stamps_t {
 class job_t {
 public:
     ~job_t () { flux_msg_destroy (msg); }
+    job_t () = default;
+    job_t (job_state_kind_t s, flux_jobid_t jid,
+           uint32_t uid, int p, double t_s, const std::string &R)
+	   : state (s), id (jid), userid (uid),
+	     priority (p), t_submit (t_s), schedule (R) { }
+    job_t (job_t &&j) = default;
+    job_t (const job_t &j) = default;
+    job_t& operator= (job_t &&s) = default;
+    job_t& operator= (const job_t &s) = default;
+
+    bool is_pending () { return state == job_state_kind_t::PENDING; }
+
     flux_msg_t *msg = NULL;
     job_state_kind_t state = job_state_kind_t::INIT;
     flux_jobid_t id = 0;
