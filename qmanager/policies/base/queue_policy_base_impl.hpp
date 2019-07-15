@@ -62,6 +62,11 @@ std::shared_ptr<job_t> queue_policy_base_t::alloced_pop ()
     return detail::queue_policy_base_impl_t::alloced_pop ();
 }
 
+std::shared_ptr<job_t> queue_policy_base_t::rejected_pop ()
+{
+    return detail::queue_policy_base_impl_t::rejected_pop ();
+}
+
 std::shared_ptr<job_t> queue_policy_base_t::complete_pop ()
 {
     return detail::queue_policy_base_impl_t::complete_pop ();
@@ -175,6 +180,27 @@ std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
 }
 
 std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
+    to_rejected (std::map<uint64_t, flux_jobid_t>::iterator pending_iter,
+                 const std::string &note)
+{
+    flux_jobid_t id = pending_iter->second;
+    if (m_jobs.find (id) == m_jobs.end ()) {
+        errno = EINVAL;
+        return pending_iter;
+    }
+
+    std::shared_ptr<job_t> job = m_jobs[id];
+    job->state = job_state_kind_t::REJECTED;
+    job->note = note;
+    job->t_stamps.rejected_ts = m_dq_cnt++;
+    m_rejected.insert (std::pair<uint64_t, flux_jobid_t>(
+                          job->t_stamps.rejected_ts, job->id));
+    // Return the next iterator after pending_iter. This way,
+    // the upper layer can modify m_pending while iterating the queue
+    return m_pending.erase (pending_iter);
+}
+
+std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
     to_complete (std::map<uint64_t, flux_jobid_t>::iterator running_iter)
 {
     flux_jobid_t id = running_iter->second;
@@ -219,6 +245,20 @@ std::shared_ptr<job_t> queue_policy_base_impl_t::alloced_pop ()
         return nullptr;
     job = m_jobs[id];
     m_alloced.erase (job->t_stamps.running_ts);
+    return job;
+}
+
+std::shared_ptr<job_t> queue_policy_base_impl_t::rejected_pop ()
+{
+    std::shared_ptr<job_t> job;
+    flux_jobid_t id;
+    if (m_rejected.empty ())
+        return nullptr;
+    id = m_rejected.begin ()->second;
+    if (m_jobs.find (id) == m_jobs.end ())
+        return nullptr;
+    job = m_jobs[id];
+    m_rejected.erase (job->t_stamps.rejected_ts);
     return job;
 }
 
