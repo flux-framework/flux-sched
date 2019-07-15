@@ -51,6 +51,12 @@ enum class job_state_kind_t { INIT,
  *  allocated or reserved (for backfill) resource set (R).
  */
 struct schedule_t {
+    schedule_t () = default;
+    schedule_t (const std::string &r) : R (r) { }
+    schedule_t (schedule_t &&s) = default;
+    schedule_t (const schedule_t &s) = default;
+    schedule_t& operator= (schedule_t &&s) = default;
+    schedule_t& operator= (const schedule_t &s) = default;
     std::string R = "";
     bool reserved = false;
     int64_t at = 0;
@@ -70,6 +76,18 @@ struct t_stamps_t {
 class job_t {
 public:
     ~job_t () { flux_msg_destroy (msg); }
+    job_t () = default;
+    job_t (job_state_kind_t s, flux_jobid_t jid,
+           uint32_t uid, int p, double t_s, const std::string &R)
+	   : state (s), id (jid), userid (uid),
+	     priority (p), t_submit (t_s), schedule (R) { }
+    job_t (job_t &&j) = default;
+    job_t (const job_t &j) = default;
+    job_t& operator= (job_t &&s) = default;
+    job_t& operator= (const job_t &s) = default;
+
+    bool is_pending () { return state == job_state_kind_t::PENDING; }
+
     flux_msg_t *msg = NULL;
     job_state_kind_t state = job_state_kind_t::INIT;
     flux_jobid_t id = 0;
@@ -88,8 +106,10 @@ class queue_policy_base_impl_t
 public:
     int insert (std::shared_ptr<job_t> job);
     int remove (flux_jobid_t id);
+    const std::shared_ptr<job_t> lookup (flux_jobid_t id);
 
 protected:
+    int reconstruct (std::shared_ptr<job_t> running_job);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> complete_pop ();
@@ -146,19 +166,39 @@ public:
 
     /*! Append a job into the internal pending-job queue.
      *
-     *  \param job       a shared pointer pointing to a job_t object.
+     *  \param pending_job
+     *                   a shared pointer pointing to a job_t object.
      *  \return          0 on success; -1 on error.
      *                       EINVAL: invalid argument.
      */
-    int insert (std::shared_ptr<job_t> job);
+    int insert (std::shared_ptr<job_t> pending_job);
 
     /*! Remove a job whose jobid is id from any internal queues
      *  (e.g., pending queue, running queue, and alloced queue.)
      *
      *  \param id        jobid of flux_jobid_t type.
      *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
      */
     int remove (flux_jobid_t id);
+
+    /*! Look up a job whose jobid is id
+     *
+     *  \param id        jobid of flux_jobid_t type.
+     *  \return          a shared pointer pointing to the job on success;
+     *                       nullptr on error. ENOENT: unknown id.
+     */
+    const std::shared_ptr<job_t> lookup (flux_jobid_t id);
+
+    /*! Append a job into the internal running-job queue to reconstruct
+     *  the queue state.
+     *
+     *  \param running_job
+     *                   a shared pointer pointing to a job_t object.
+     *  \return          0 on success; -1 on error.
+     *                       EINVAL: invalid argument.
+     */
+    int reconstruct (std::shared_ptr<job_t> running_job);
 
     /*! Pop the first job from the pending job queue. The popped
      *  job is completely graduated from the queue policy layer.
