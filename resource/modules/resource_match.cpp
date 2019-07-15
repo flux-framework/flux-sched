@@ -556,6 +556,24 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t at,
     return 0;
 }
 
+static int run (resource_ctx_t *ctx, int64_t jobid,
+                const char *cmd, string jstr, int64_t *at)
+{
+    int rc = 0;
+    Flux::Jobspec::Jobspec j {jstr};
+    dfu_traverser_t &tr = *(ctx->traverser);
+
+    if (string ("allocate") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
+    else if (string ("allocate_with_satisfiability") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::
+                     MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
+    else if (string ("allocate_orelse_reserve") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                     jobid, at);
+   return rc;
+}
+
 static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
                       string jstr, int64_t *at, double *ov, stringstream &o)
 {
@@ -563,43 +581,28 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     double elapse = 0.0f;
     struct timeval start;
     struct timeval end;
-    dfu_traverser_t &tr = *(ctx->traverser);
 
     gettimeofday (&start, NULL);
     ctx->writers->reset ();
 
-    if (string ("allocate") == cmd) {
-        Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
-        if (rc != 0) {
-            errno = EBUSY;
-            flux_log (ctx->h, LOG_INFO,
-                      "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
-            goto done;
-        }
-    } else if (string ("allocate_orelse_reserve") == cmd) {
-        Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                     jobid, at);
-        if (rc != 0) {
-            errno = EBUSY;
-            flux_log (ctx->h, LOG_INFO,
-                      "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
-            goto done;
-        }
-    } else {
-        rc = -1;
+    if (strcmp ("allocate", cmd) != 0
+        && strcmp ("allocate_orelse_reserve", cmd) != 0
+        && strcmp ("allocate_with_satisfiability", cmd) != 0) {
         errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "unknown cmd: %s", cmd);
         goto done;
     }
+    if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
+        goto done;
+
     ctx->writers->emit (o);
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
 
     if ((rc = track_schedule_info (ctx, jobid, *at, jstr, o, *ov)) != 0) {
-        flux_log (ctx->h, LOG_ERR, "can't add info for %ld.", (intmax_t)jobid);
+        errno = EINVAL;
+        flux_log_error (ctx->h, "can't add job info (id=%jd)", (intmax_t)jobid);
         goto done;
     }
 
@@ -660,9 +663,9 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     }
 
     if (run_match (ctx, jobid, cmd, js_str, &at, &ov, R) < 0) {
-        flux_log (h, LOG_INFO, "could not resolve match %s for jobid (%ld).",
-                  cmd, (intmax_t)jobid);
-        flux_log (h, LOG_INFO, "error string: %s.", strerror (errno));
+        if (errno != EBUSY && errno != ENODEV)
+            flux_log_error (ctx->h, "match failed due to match error (id=%jd)",
+                           (intmax_t)jobid);
         goto error;
     }
 
