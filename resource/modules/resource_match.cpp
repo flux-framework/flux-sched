@@ -589,7 +589,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         && strcmp ("allocate_orelse_reserve", cmd) != 0
         && strcmp ("allocate_with_satisfiability", cmd) != 0) {
         errno = EINVAL;
-        flux_log (ctx->h, LOG_ERR, "unknown cmd: %s", cmd);
+        flux_log_error (ctx->h, "unknown cmd: %s", cmd);
         goto done;
     }
     if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
@@ -638,7 +638,6 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg)
 {
     int64_t at = 0;
-    uint32_t userid = 0;
     int64_t jobid = -1;
     double ov = 0.0f;
     string status = "";
@@ -647,21 +646,14 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     stringstream R;
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
 
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "match requested by user (%u).", userid);
-
     if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
                              "jobid", &jobid, "jobspec", &js_str) < 0)
         goto error;
-
     if (is_existent_jobid (ctx, jobid)) {
-        flux_log (h, LOG_INFO, "invalid jobid (%ld).", (intmax_t)jobid);
         errno = EINVAL;
+        flux_log_error (h, "existent job (%jd).", (intmax_t)jobid);
         goto error;
     }
-
     if (run_match (ctx, jobid, cmd, js_str, &at, &ov, R) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h, "match failed due to match error (id=%jd)",
@@ -678,7 +670,6 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "match request succeeded.");
     return;
 
 error:
