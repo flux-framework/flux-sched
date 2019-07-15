@@ -162,21 +162,22 @@ static qmanager_ctx_t *qmanager_new (flux_t *h)
         flux_log_error (h, "%s: create_queue_policy", __FUNCTION__);
         goto out;
     }
-    if (schedutil_hello (h, jobmanager_hello_cb, ctx) < 0) {
-        flux_log_error (h, "%s: schedutil_hello", __FUNCTION__);
+    if (!(ctx->ops = schedutil_ops_register (ctx->h,
+                                             jobmanager_alloc_cb,
+                                             jobmanager_free_cb,
+                                             jobmanager_exception_cb, ctx))) {
+        flux_log_error (ctx->h, "%s: schedutil_ops_register", __FUNCTION__);
+        goto out;
+    }
+    if (schedutil_hello (ctx->h, jobmanager_hello_cb, ctx) < 0) {
+        flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
     if (schedutil_ready (h, "single", &queue_depth)) {
         flux_log_error (h, "%s: schedutil_ready", __FUNCTION__);
         goto out;
     }
-    if (!(ctx->ops = schedutil_ops_register (h,
-                                             jobmanager_alloc_cb,
-                                             jobmanager_free_cb,
-                                             jobmanager_exception_cb, ctx))) {
-        flux_log_error (h, "%s: schedutil_ops_register", __FUNCTION__);
-        goto out;
-    }
+
 out:
     return ctx;
 }
