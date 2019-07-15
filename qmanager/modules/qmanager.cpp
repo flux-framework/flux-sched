@@ -145,7 +145,20 @@ extern "C" void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
 static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
                                      const char *t, int s, void *a)
 {
-    return;
+    std::shared_ptr<job_t> job;
+    qmanager_ctx_t *ctx = (qmanager_ctx_t *)a;
+
+    if (s > 0 || (job = ctx->queue->lookup (id)) == nullptr
+        || !job->is_pending ())
+        return;
+    if (ctx->queue->remove (id) < 0) {
+        flux_log_error (h, "%s: remove job (%ju)", __FUNCTION__, (intmax_t)id);
+        return;
+    }
+    std::string note = std::string ("alloc aborted due to exception type=") + t;
+    if (schedutil_alloc_respond_denied (h, job->msg, note.c_str ()) < 0) {
+        flux_log_error (h, "%s: schedutil_alloc_respond_denied", __FUNCTION__);
+    }
 }
 
 static qmanager_ctx_t *qmanager_new (flux_t *h)
