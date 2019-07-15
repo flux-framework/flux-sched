@@ -58,9 +58,27 @@ struct qmanager_ctx_t {
  *                                                                            *
  ******************************************************************************/
 
-extern "C" int jobmanager_hello_cb (flux_t *h, const char *R, void *arg)
+// FIXME: This will be expanded when we implement full scheduler
+// resilency schemes: Issue #470.
+extern "C" int jobmanager_hello_cb (flux_t *h,
+                                    flux_jobid_t id, int prio, uint32_t uid,
+                                    double ts, const char *R, void *arg)
 {
-    return 0;
+    int rc = -1;
+    qmanager_ctx_t *ctx = (qmanager_ctx_t *)arg;
+    std::shared_ptr<job_t> running_job
+        = std::make_shared<job_t> (job_state_kind_t::
+                                   RUNNING, id, uid, prio, ts, R);
+
+    if (ctx->queue->reconstruct (running_job) < 0) {
+        flux_log_error (h, "%s: reconstruct (jobid=%ju)",
+                        __FUNCTION__, (intmax_t)running_job->id);
+        goto out;
+    }
+    rc = 0;
+
+out:
+    return rc;
 }
 
 extern "C" void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
