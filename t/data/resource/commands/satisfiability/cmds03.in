@@ -19,9 +19,8 @@ match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfia
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test014.yaml
 
 # slot[1]->socket[1]->core[1]
-# FIXME: you should not able to allocate this
-#match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
-#match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
 
 # slot[1]->socket[3]->core[1]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test016.yaml
