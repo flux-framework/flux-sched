@@ -119,10 +119,8 @@ extern "C" void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                         __FUNCTION__);
         return;
     }
-    if (ctx->queue->remove (id)) {
-        flux_log_error (h, "%s: remove", __FUNCTION__);
-        return;
-    }
+    if ((ctx->queue->remove (id)) < 0)
+        flux_log_error (h, "%s: remove job (%ju)", __FUNCTION__, (intmax_t)id);
     if (ctx->queue->run_sched_loop ((void *)ctx->h, true) < 0) {
         // TODO: Need to tighten up anomalous conditions
         // returned with a negative return code
