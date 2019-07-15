@@ -1,0 +1,31 @@
+# cluster[1]->rack[1]->node[2]->socket[2]->slot[1]->core[1]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test010.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test010.yaml
+
+# cluster[1]->rack[1]->node[1]->socket[1]->slot[1]->core[19]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test011.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test011.yaml
+
+# slot[1]->core[18]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test012.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test012.yaml
+
+# socket[1]->slot[1]->core[18]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test013.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test013.yaml
+
+# socket[2]->slot[1]->core[18]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test014.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test014.yaml
+
+# slot[1]->socket[1]->core[1]
+# FIXME: you should not able to allocate this
+# Need a bug fix for by_excl()
+#match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
+#match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test015.yaml
+
+# slot[1]->socket[3]->core[1]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test016.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test016.yaml
+
+quit
