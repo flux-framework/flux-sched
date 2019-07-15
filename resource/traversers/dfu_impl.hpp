@@ -190,6 +190,13 @@ public:
     int update (vtx_t root, match_writers_t *writers,
                 jobmeta_t &meta, unsigned int needs, bool excl);
 
+    /*! Update to make the resource state ready for the next selection.
+     *  Ignore the previous select invocation.
+     *
+     *  \return          0 on success.
+     */
+    int update ();
+
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
      *
