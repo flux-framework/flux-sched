@@ -45,6 +45,7 @@ TESTS = \
     t3010-resource-power.t \
     t3011-resource-filt.t \
     t3012-resource-properties.t \
+    t3013-resource-unsat.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
