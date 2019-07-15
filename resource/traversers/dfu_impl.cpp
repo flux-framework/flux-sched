@@ -1066,6 +1066,12 @@ int dfu_impl_t::update (vtx_t root, match_writers_t *writers, jobmeta_t &meta,
     return (upd_dfv (root, writers, needs, exclusive, meta, dfu) > 0)? 0 : -1;
 }
 
+int dfu_impl_t::update ()
+{
+    m_color.reset ();
+    return 0;
+}
+
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 {
     m_color.reset ();
