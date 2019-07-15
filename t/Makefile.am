@@ -51,6 +51,7 @@ TESTS = \
     t4002-match-reserve.t \
     t4003-cancel-info.t \
     t4004-match-hwloc.t \
+    t4005-match-unsat.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t
