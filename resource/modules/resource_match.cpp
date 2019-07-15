@@ -617,20 +617,24 @@ static inline bool is_existent_jobid (const resource_ctx_t *ctx, uint64_t jobid)
 
 static int run_remove (resource_ctx_t *ctx, int64_t jobid)
 {
-    int rc = 0;
+    int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
-    if ((rc = tr.remove (jobid)) == 0) {
-        if (is_existent_jobid (ctx, jobid)) {
-           job_info_t *info = ctx->jobs[jobid];
-           info->state = job_lifecycle_t::CANCELLED;
-        }
-    } else {
+
+    if ((rc = tr.remove (jobid)) < 0) {
         if (is_existent_jobid (ctx, jobid)) {
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::ERROR;
            flux_log (ctx->h, LOG_INFO, "can't remove %ld.", (intmax_t)jobid);
         }
+        goto out;
     }
+
+    if (is_existent_jobid (ctx, jobid)) {
+        job_info_t *info = ctx->jobs[jobid];
+        info->state = job_lifecycle_t::CANCELLED;
+    }
+    rc = 0;
+out:
     return rc;
 }
 
@@ -691,16 +695,19 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
-
-    if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
-        run_remove (ctx, jobid);
+    if (ctx->allocations.find (jobid) != ctx->allocations.end ())
         ctx->allocations.erase (jobid);
-    } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
-        run_remove (ctx, jobid);
+    else if (ctx->reservations.find (jobid) != ctx->reservations.end ())
         ctx->reservations.erase (jobid);
-    } else {
+    else {
         errno = ENOENT;
-        flux_log (h, LOG_ERR, "cannot find jobid (%ld)", (intmax_t)jobid);
+        flux_log (h, LOG_DEBUG, "nonexistent job (id=%jd)", (intmax_t)jobid);
+        goto error;
+    }
+
+    if (run_remove (ctx, jobid) < 0) {
+        flux_log_error (h, "remove fails due to match error (id=%jd)",
+                        (intmax_t)jobid);
         goto error;
     }
     if (flux_respond_pack (h, msg, "{}") < 0)
