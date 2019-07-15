@@ -164,11 +164,12 @@ public:
 
     /*! Append a job into the internal pending-job queue.
      *
-     *  \param job       a shared pointer pointing to a job_t object.
+     *  \param pending_job
+     *                   a shared pointer pointing to a job_t object.
      *  \return          0 on success; -1 on error.
      *                       EINVAL: invalid argument.
      */
-    int insert (std::shared_ptr<job_t> job);
+    int insert (std::shared_ptr<job_t> pending_job);
 
     /*! Remove a job whose jobid is id from any internal queues
      *  (e.g., pending queue, running queue, and alloced queue.)
