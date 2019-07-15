@@ -624,7 +624,6 @@ static int run_remove (resource_ctx_t *ctx, int64_t jobid)
         if (is_existent_jobid (ctx, jobid)) {
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::ERROR;
-           flux_log (ctx->h, LOG_INFO, "can't remove %ld.", (intmax_t)jobid);
         }
         goto out;
     }
@@ -685,13 +684,7 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "cancel requested by user (%u).", userid);
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
@@ -713,7 +706,6 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{}") < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "cancel request succeeded.");
     return;
 
 error:
