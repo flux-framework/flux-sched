@@ -115,14 +115,27 @@ done:
 }
 
 int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
-                         const Jobspec::Resource &resource)
+                         bool exclusive_in, const Jobspec::Resource &resource)
 {
     int rc = -1;
     planner_t *p = NULL;
     int64_t at = meta.at;
     int64_t njobs = -1;
     uint64_t duration = meta.duration;
-    if (resource.exclusive == Jobspec::tristate_t::TRUE) {
+
+    // If an non-exclusive resource request is explicitly given on a
+    // resource that lie under slot, this spec is invalid.
+    if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
+        errno = EINVAL;
+        m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
+        m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
+        goto done;
+    }
+
+    // If a resource request is under slot or an explict exclusivity is
+    // request, we check the validity of the visiting vertex using
+    // its x_checker planner.
+    if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
         p = (*m_graph)[u].schedule.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
         if (njobs == -1) {
@@ -137,6 +150,8 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
             goto done;
         }
     }
+
+    // All cases reached this point indicate further walk is needed.
     rc = 0;
 
 done:
@@ -187,7 +202,7 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
         if ((*m_graph)[u].type != resource.type)
             continue;
         // Prune by exclusivity checker
-        if ( (rc = by_excl (meta, s, u, resource)) == -1)
+        if ( (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
             break;
         // Prune by the subtree planner quantities
         if ( (rc = by_subplan (meta, s, u, resource)) == -1)

@@ -211,7 +211,7 @@ private:
     int by_avail (const jobmeta_t &meta, const std::string &s, vtx_t u,
                   const std::vector<Jobspec::Resource> &resources);
     int by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
-                 const Jobspec::Resource &resource);
+                 bool exclusive_in, const Jobspec::Resource &resource);
     int by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u,
                     const Jobspec::Resource &resource);
     int prune (const jobmeta_t &meta, bool excl, const std::string &subsystem,
