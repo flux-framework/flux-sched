@@ -1,0 +1,7 @@
+set-property /tiny0/rack0/node0 prop1=a
+set-property /tiny0/rack0/node0 prop2=foo
+set-property /tiny0/rack0/node0 prop3=123
+set-property /tiny0/rack0/node0 prop4=bar
+set-property /tiny0/rack0/node0 prop5=baz
+get-property /tiny0/rack0/node0
+quit

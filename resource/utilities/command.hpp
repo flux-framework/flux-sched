@@ -80,6 +80,8 @@ typedef int cmd_func_f (resource_context_t *, std::vector<std::string> &);
 cmd_func_f *find_cmd (const std::string &cmd_str);
 int cmd_match (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_cancel (resource_context_t *ctx, std::vector<std::string> &args);
+int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args);
+int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_list (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_info (resource_context_t *ctx, std::vector<std::string> &args);
 int cmd_stat (resource_context_t *ctx, std::vector<std::string> &args);

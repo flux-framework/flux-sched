@@ -49,6 +49,10 @@ command_t commands[] = {
 "allocate | allocate_orelse_reserve): resource-query> match allocate jobspec"},
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
+    { "set-property", "p", cmd_set_property, "Add a property to a resource: "
+"resource-query> set-property resource PROPERTY=VALUE" },
+{ "get-property", "g", cmd_get_property, "Get all properties of a resource: "
+"resource-query> get-property resource" }, /* May need to be modified to get-property resource PROPERTY*/
     { "list", "l", cmd_list, "List all jobs: resource-query> list" },
     { "info", "i", cmd_info, "Print info on a jobid: resource-query> info jobid" },
     { "stat", "s", cmd_stat, "Print overall stats: resource-query> stat jobid" },
@@ -206,6 +210,86 @@ int cmd_cancel (resource_context_t *ctx, vector<string> &args)
     }
 
 done:
+    return 0;
+}
+
+int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
+{
+    if (args.size () != 3) {
+        cerr << "ERROR: malformed command" << endl;
+        return 0;
+    }
+
+    string resource_path = args[1];
+    string property_key, property_value;
+    ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
+    size_t pos = args[2].find ('=');
+
+    if (pos == 0 || (pos == args[2].size () - 1) || pos == string::npos) {
+        out << "Incorrect input format. " << endl
+            << "Please use `set-property <resource> PROPERTY=VALUE`."
+            << endl;
+        return 0;
+    }
+    else {
+        property_key = args[2].substr (0, pos);
+        property_value = args[2].substr (pos + 1);
+    }
+
+    std::map<std::string, std::vector <vtx_t>>::const_iterator it =
+        ctx->db.by_path.find (resource_path);
+
+    if (it == ctx->db.by_path.end ()) {
+        out << "Couldn't find path " << resource_path
+            << " in resource graph." << endl;
+    }
+    else {
+        vtx_t v = it->second[0];
+
+        /* Note that map.insert () does not insert if the key exists.
+         * Assuming we want to update the value though, we do an erase
+         * before we insert. */
+
+        if (ctx->db.resource_graph[v].properties.find (property_key)
+             != ctx->db.resource_graph[v].properties.end ()) {
+            ctx->db.resource_graph[v].properties.erase (property_key);
+        }
+        ctx->db.resource_graph[v].properties.insert
+            (pair<string,string> (property_key,property_value));
+    }
+    return 0;
+}
+
+int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
+{
+    if (args.size () != 2) {
+        cerr << "ERROR: malformed command" << endl;
+        return 0;
+    }
+
+    string resource_path = args[1];
+    ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
+
+    std::map<std::string, std::vector <vtx_t>>::const_iterator it =
+        ctx->db.by_path.find (resource_path);
+
+    if (it == ctx->db.by_path.end ()) {
+        out << "Could not find path " << resource_path
+            << " in resource graph." << endl;
+    }
+    else {
+        vtx_t v = it->second[0];
+        if (ctx->db.resource_graph[v].properties.size () == 0) {
+            out << "No properties were found for " << resource_path
+                << ". " << endl;
+        }
+        else {
+            std::map<std::string, std::string>::const_iterator p_it;
+            for (p_it = ctx->db.resource_graph[v].properties.begin ();
+                p_it != ctx->db.resource_graph[v].properties.end (); p_it++)
+                    out << p_it->first << "=" << p_it->second << endl;
+        }
+    }
     return 0;
 }
 
