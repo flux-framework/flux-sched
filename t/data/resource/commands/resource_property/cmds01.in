@@ -1,0 +1,3 @@
+set-property /tiny0/rack0/node0 class=1
+get-property /tiny0/rack0/node0
+quit

@@ -1,0 +1,23 @@
+set-property /dont/exist random=1
+
+set-property /tiny0/rack0/node0 class
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 class=
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 =class
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 =
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 class==1
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 class=1=class=random
+get-property /tiny0/rack0/node0
+
+set-property /tiny0/rack0/node0 class=1
+get-property /tiny0/rack0/node0
+quit

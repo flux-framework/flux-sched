@@ -1,0 +1,7 @@
+set-property /tiny0/rack0/node0 class=1
+get-property /tiny0/rack0/node0
+set-property /tiny0/rack0/node0/socket1 sockprop=abc
+get-property /tiny0/rack0/node0/socket1
+set-property /tiny0/rack0/node1/socket0/core17 coreprop=z
+get-property /tiny0/rack0/node1/socket0/core17
+quit
