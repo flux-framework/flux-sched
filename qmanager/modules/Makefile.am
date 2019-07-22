@@ -25,6 +25,8 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/base/queue_policy_base_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_fcfs.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_fcfs_impl.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_bf_base.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_bf_base_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_easy.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_easy_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory.hpp \
