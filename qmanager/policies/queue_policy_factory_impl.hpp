@@ -47,9 +47,9 @@ using namespace resource_model::detail;
 
 bool known_queue_policy (const std::string &policy)
 {
-    bool rc = true;
-    if (policy != "fcfs" && policy != "easy")
-        rc = false;
+    bool rc = false;
+    if (policy == "fcfs" || policy == "easy")
+        rc = true;
     return rc;
 }
 

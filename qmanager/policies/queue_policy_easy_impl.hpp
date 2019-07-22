@@ -25,7 +25,7 @@
 #ifndef QUEUE_POLICY_EASY_IMPL_HPP
 #define QUEUE_POLICY_EASY_IMPL_HPP
 
-#include "qmanager/policies/queue_policy_easy.hpp"
+#include "qmanager/policies/queue_policy_bf_base_impl.hpp"
 
 namespace Flux {
 namespace queue_manager {
@@ -38,10 +38,9 @@ queue_policy_easy_t<reapi_type>::~queue_policy_easy_t ()
 }
 
 template<class reapi_type>
-int queue_policy_easy_t<reapi_type>::run_sched_loop (void *h,
-                                                     bool use_alloced_queue)
+queue_policy_easy_t<reapi_type>::queue_policy_easy_t ()
 {
-    return -1;
+    queue_policy_bf_base_t<reapi_type>::m_reservation_depth = 1;
 }
 
 } // namespace Flux::queue_manager::detail
