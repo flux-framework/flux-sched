@@ -45,8 +45,14 @@ using namespace Flux::queue_manager::detail;
  *                                                                            *
  ******************************************************************************/
 
+struct qmanager_args_t {
+    std::string queue_policy;
+    std::string policy_params;
+};
+
 struct qmanager_ctx_t {
     flux_t *h;
+    qmanager_args_t args;
     ops_context *ops;
     queue_policy_base_t *queue;
 };
@@ -94,6 +100,7 @@ out:
 extern "C" int jobmanager_hello_cb (flux_t *h,
                                     flux_jobid_t id, int prio, uint32_t uid,
                                     double ts, const char *R, void *arg)
+
 {
     int rc = -1;
     qmanager_ctx_t *ctx = (qmanager_ctx_t *)arg;
@@ -186,20 +193,42 @@ static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
     flux_log (h, LOG_DEBUG, "%s (id=%jd)", note.c_str (), (intmax_t)id);
 }
 
-static qmanager_ctx_t *qmanager_new (flux_t *h)
+static int process_args (qmanager_ctx_t *ctx, int argc, char **argv)
 {
-    int queue_depth = 0;
-    qmanager_ctx_t *ctx = NULL;
+    int rc = 0;
+    qmanager_args_t &args = ctx->args;
+    std::string dflt = "";
 
-    if (!(ctx = new (std::nothrow) qmanager_ctx_t ())) {
-        errno = ENOMEM;
-        goto out;
+    for (int i = 0; i < argc; i++) {
+        if (!strncmp ("queue-policy=", argv[i], sizeof ("queue-policy"))) {
+            dflt = args.queue_policy;
+            args.queue_policy = strstr (argv[i], "=") + 1;
+            if (!known_queue_policy (args.queue_policy)) {
+                flux_log (ctx->h, LOG_ERR,
+                          "Unknown queuing policy (%s)! Use default (%s).",
+                           args.queue_policy.c_str (), dflt.c_str ());
+                args.queue_policy = dflt;
+            }
+        }
+        else if (!strncmp ("policy-params=", argv[i],
+                               sizeof ("policy-params"))) {
+            args.policy_params = strstr (argv[i], "=") + 1;
+        }
     }
-    ctx->h = h;
-    if (!(ctx->queue = create_queue_policy ("fcfs", "module"))) {
-        flux_log_error (h, "%s: create_queue_policy", __FUNCTION__);
-        goto out;
-    }
+
+    return rc;
+}
+
+static void set_default_args (qmanager_args_t &args)
+{
+    args.queue_policy = "fcfs";
+    args.policy_params = "";
+}
+
+static int handshake_jobmanager (qmanager_ctx_t *ctx)
+{
+    int rc = -1;
+    int queue_depth = 0;
     if (!(ctx->ops = schedutil_ops_register (ctx->h,
                                              jobmanager_alloc_cb,
                                              jobmanager_free_cb,
@@ -211,10 +240,51 @@ static qmanager_ctx_t *qmanager_new (flux_t *h)
         flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
-    if (schedutil_ready (h, "single", &queue_depth)) {
-        flux_log_error (h, "%s: schedutil_ready", __FUNCTION__);
+    if (schedutil_ready (ctx->h, "single", &queue_depth)) {
+        flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
         goto out;
     }
+    rc = 0;
+out:
+    return rc;
+}
+
+static int enforce_queue_policy (qmanager_ctx_t *ctx)
+{
+    int rc = -1;
+    ctx->queue = create_queue_policy (ctx->args.queue_policy, "module");
+    if (!ctx->queue) {
+        flux_log_error (ctx->h, "%s: create_queue_policy", __FUNCTION__);
+        goto out;
+    }
+    if (ctx->args.policy_params != ""
+        && ctx->queue->set_params (ctx->args.policy_params) < 0) {
+        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
+        goto out;
+    }
+    if (ctx->queue->apply_params () < 0) {
+        flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
+        goto out;
+    }
+    if (handshake_jobmanager (ctx) < 0) {
+        flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
+        goto out;
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
+static qmanager_ctx_t *qmanager_new (flux_t *h)
+{
+    qmanager_ctx_t *ctx = NULL;
+
+    if (!(ctx = new (std::nothrow) qmanager_ctx_t ())) {
+        errno = ENOMEM;
+        goto out;
+    }
+    ctx->h = h;
+    set_default_args (ctx->args);
 
 out:
     return ctx;
@@ -249,8 +319,20 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
     int rc = -1;
     try {
         qmanager_ctx_t *ctx = NULL;
-        if (!(ctx = qmanager_new (h)))
+        if (!(ctx = qmanager_new (h))) {
             flux_log_error (h, "%s: qmanager_new", __FUNCTION__);
+            return rc;
+        }
+        if ((rc = process_args (ctx, argc, argv)) < 0) {
+            flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
+            qmanager_destroy (ctx);
+            return rc;
+        }
+        if ((rc = enforce_queue_policy (ctx)) < 0) {
+            flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+            qmanager_destroy (ctx);
+            return rc;
+        }
         if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
             flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
         qmanager_destroy (ctx);
