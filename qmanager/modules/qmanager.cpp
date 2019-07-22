@@ -228,7 +228,9 @@ static void set_default_args (qmanager_args_t &args)
 static int handshake_jobmanager (qmanager_ctx_t *ctx)
 {
     int rc = -1;
-    int queue_depth = 0;
+    int queue_depth = 0;  /* Not implemented in job-manager */
+    const char *mode = (ctx->args.queue_policy == "fcfs")? "single"
+                                                         : "unlimited";
     if (!(ctx->ops = schedutil_ops_register (ctx->h,
                                              jobmanager_alloc_cb,
                                              jobmanager_free_cb,
@@ -240,7 +242,7 @@ static int handshake_jobmanager (qmanager_ctx_t *ctx)
         flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
-    if (schedutil_ready (ctx->h, "single", &queue_depth)) {
+    if (schedutil_ready (ctx->h, mode, &queue_depth)) {
         flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
         goto out;
     }
@@ -333,6 +335,8 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             qmanager_destroy (ctx);
             return rc;
         }
+        if ((rc = process_args (ctx, argc, argv)) < 0)
+            flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
         if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
             flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
         qmanager_destroy (ctx);
