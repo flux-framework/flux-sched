@@ -27,10 +27,72 @@
 
 #include <iostream>
 #include <cerrno>
+#include <algorithm>
 #include "qmanager/policies/base/queue_policy_base.hpp"
 
 namespace Flux {
 namespace queue_manager {
+
+int queue_policy_base_t::set_param (std::string &p_pair)
+{
+    int rc = -1;
+    size_t pos = 0;
+    std::string k, v;
+    std::string split = "=";
+
+    if ((pos = p_pair.find (split)) == std::string::npos) {
+        errno = EINVAL;
+        goto done;
+    }
+    k = p_pair.substr (0, pos);
+    k.erase (std::remove_if (k.begin (), k.end (), ::isspace), k.end ());
+    if (k.empty ()) {
+        errno = EINVAL;
+        goto done;
+    }
+    v = p_pair.erase (0, pos + split.length ());
+    v.erase (std::remove_if (v.begin (), v.end (), ::isspace), v.end ());
+    if (m_params.find (k) != m_params.end ())
+        m_params.erase (k);
+    m_params.insert (std::pair<std::string, std::string>(k, v));
+    rc = 0;
+done:
+    return rc;
+}
+
+
+int queue_policy_base_t::set_params (const std::string &params)
+{
+    int rc = -1;
+    size_t pos = 0;
+    std::string p_copy = params;
+    std::string delim = ",";
+
+    try {
+        while ((pos = p_copy.find (delim)) != std::string::npos) {
+            std::string p_pair = p_copy.substr (0, pos);
+            if (set_param (p_pair) < 0)
+                goto done;
+            p_copy.erase (0, pos + delim.length ());
+        }
+        if (set_param (p_copy) < 0)
+            goto done;
+        rc = 0;
+    } catch (std::out_of_range &e) {
+        errno = EINVAL;
+        rc = -1;
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        rc = -1;
+    }
+done:
+    return rc;
+}
+
+int queue_policy_base_t::apply_params ()
+{
+    return 0;
+}
 
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
 {
