@@ -4,13 +4,14 @@ import argparse
 import errno
 import yaml
 import flux
+import time
 
 def heading ():
     return '{:20} {:20} {:20} {:20}'.format ('JOBID', 'STATUS',
                                              'AT', 'OVERHEAD (Secs)')
 
 def body (jobid, status, at, overhead):
-    t = "Now" if at == 0 else str (at)
+    t = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime (at))
     o = str (overhead)
     return '{:20} {:20} {:20} {:20}'.format (str (jobid), status, t, o)
 
