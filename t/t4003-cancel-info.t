@@ -41,22 +41,15 @@ test_expect_success 'resource-cancel works' '
     flux resource match allocate ${jobspec} &&
     flux resource cancel 0 &&
     flux resource match allocate ${jobspec} &&
-    flux resource cancel 1 &&
+    flux resource cancel 0 &&
     flux resource match allocate ${jobspec} &&
-    flux resource cancel 2 &&
+    flux resource cancel 0 &&
     flux resource match allocate ${jobspec} &&
-    flux resource cancel 3
+    flux resource cancel 0
 '
 
-test_expect_success 'resource-info on cancelled jobs works' '
-    flux resource info 0 > info.0 &&
-    flux resource info 1 > info.1 &&
-    flux resource info 2 > info.2 &&
-    flux resource info 3 > info.3 &&
-    grep CANCELLED info.0 &&
-    grep CANCELLED info.1 &&
-    grep CANCELLED info.2 &&
-    grep CANCELLED info.3
+test_expect_success 'resource-info will not report for cancelled jobs' '
+    test_must_fail flux resource info 0
 '
 
 test_expect_success 'allocate works with 1-node/1-socket after cancels' '
@@ -67,14 +60,14 @@ test_expect_success 'allocate works with 1-node/1-socket after cancels' '
 '
 
 test_expect_success 'resource-info on allocated jobs works' '
-    flux resource info 4 > info.4 &&
-    flux resource info 5 > info.5 &&
-    flux resource info 6 > info.6 &&
-    flux resource info 7 > info.7 &&
-    grep ALLOCATED info.4 &&
-    grep ALLOCATED info.5 &&
-    grep ALLOCATED info.6 &&
-    grep ALLOCATED info.7
+    flux resource info 0 > info.0 &&
+    flux resource info 1 > info.1 &&
+    flux resource info 2 > info.2 &&
+    flux resource info 3 > info.3 &&
+    grep ALLOCATED info.0 &&
+    grep ALLOCATED info.1 &&
+    grep ALLOCATED info.2 &&
+    grep ALLOCATED info.3
 '
 
 test_expect_success 'cancel on nonexistent jobid is handled gracefully' '

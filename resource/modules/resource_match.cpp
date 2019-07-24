@@ -65,6 +65,7 @@ struct resource_args_t {
 
 struct match_perf_t {
     double load;                   /* Graph load time */
+    uint64_t njobs;                /* Total match count */
     double min;                    /* Min match time */
     double max;                    /* Max match time */
     double accum;                  /* Total match time accumulated */
@@ -174,6 +175,7 @@ static resource_ctx_t *getctx (flux_t *h)
         ctx->handlers = NULL;
         set_default_args (ctx->args);
         ctx->perf.load = 0.0f;
+        ctx->perf.njobs = 0;
         ctx->perf.min = DBL_MAX;
         ctx->perf.max = 0.0f;
         ctx->perf.accum = 0.0f;
@@ -526,6 +528,7 @@ static int init_resource_graph (resource_ctx_t *ctx)
 
 static void update_match_perf (resource_ctx_t *ctx, double elapse)
 {
+    ctx->perf.njobs++;
     ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
     ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
     ctx->perf.accum += elapse;
@@ -627,16 +630,17 @@ static int run_remove (resource_ctx_t *ctx, int64_t jobid)
 
     if ((rc = tr.remove (jobid)) < 0) {
         if (is_existent_jobid (ctx, jobid)) {
+           // When this condition arises, we will be less likley
+           // reuse this jobid. Having the errored job in the
+           // jobs map prevent us from reusing the jobid up front.
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::ERROR;
         }
         goto out;
     }
+    if (is_existent_jobid (ctx, jobid))
+        ctx->jobs.erase (jobid);
 
-    if (is_existent_jobid (ctx, jobid)) {
-        job_info_t *info = ctx->jobs[jobid];
-        info->state = job_lifecycle_t::CANCELLED;
-    }
     rc = 0;
 out:
     return rc;
@@ -757,15 +761,15 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     double avg = 0.0f;
     double min = 0.0f;
 
-    if (ctx->jobs.size ()) {
-        avg = ctx->perf.accum / (double)ctx->jobs.size ();
+    if (ctx->perf.njobs) {
+        avg = ctx->perf.accum / (double)ctx->perf.njobs;
         min = ctx->perf.min;
     }
     if (flux_respond_pack (h, msg, "{s:I s:I s:f s:I s:f s:f s:f}",
                                    "V", num_vertices (ctx->db.resource_graph),
                                    "E", num_edges (ctx->db.resource_graph),
                                    "load-time", ctx->perf.load,
-                                   "njobs", ctx->jobs.size (),
+                                   "njobs", ctx->perf.njobs,
                                    "min-match", min,
                                    "max-match", ctx->perf.max,
                                    "avg-match", avg) < 0)
