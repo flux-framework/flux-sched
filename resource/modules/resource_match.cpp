@@ -534,29 +534,30 @@ static void update_match_perf (resource_ctx_t *ctx, double elapse)
     ctx->perf.accum += elapse;
 }
 
-static inline string get_status_string (int64_t at)
+static inline string get_status_string (int64_t now, int64_t at)
 {
-    return (at == 0)? "ALLOCATED" : "RESERVED";
+    return (at == now)? "ALLOCATED" : "RESERVED";
 }
 
-static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t at,
-                                string &jspec, stringstream &R, double elapse)
+static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
+                                int64_t at, string &jspec, stringstream &R,
+                                double elapse)
 {
     job_lifecycle_t state = job_lifecycle_t::INIT;
 
-    if (id < 0 || at < 0) {
+    if (id < 0 || now < 0 || at < 0) {
         errno = EINVAL;
         return -1;
     }
 
-    state = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+    state = (at == now)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
     if (!(ctx->jobs[id] = new ((nothrow))job_info_t (id, state, at, "", jspec,
                                                      R.str (), elapse))) {
         errno = ENOMEM;
         return -1;
     }
 
-    if (at == 0)
+    if (at == now)
         ctx->allocations[id] = id;
     else
         ctx->reservations[id] = id;
@@ -583,7 +584,8 @@ static int run (resource_ctx_t *ctx, int64_t jobid,
 }
 
 static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
-                      string jstr, int64_t *at, double *ov, stringstream &o)
+                      string jstr, int64_t *now, int64_t *at, double *ov,
+                      stringstream &o)
 {
     int rc = 0;
     double elapse = 0.0f;
@@ -600,6 +602,8 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
         flux_log_error (ctx->h, "unknown cmd: %s", cmd);
         goto done;
     }
+
+    *at = *now = (int64_t)start.tv_sec;
     if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
         goto done;
 
@@ -608,7 +612,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
 
-    if ((rc = track_schedule_info (ctx, jobid, *at, jstr, o, *ov)) != 0) {
+    if ((rc = track_schedule_info (ctx, jobid, *now, *at, jstr, o, *ov)) != 0) {
         errno = EINVAL;
         flux_log_error (ctx->h, "can't add job info (id=%jd)", (intmax_t)jobid);
         goto done;
@@ -650,14 +654,15 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg)
 {
     int64_t at = 0;
+    int64_t now = 0;
     int64_t jobid = -1;
     double ov = 0.0f;
     string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
     stringstream R;
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
 
+    resource_ctx_t *ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
                              "jobid", &jobid, "jobspec", &js_str) < 0)
         goto error;
@@ -666,14 +671,14 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "existent job (%jd).", (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &at, &ov, R) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h, "match failed due to match error (id=%jd)",
                            (intmax_t)jobid);
         goto error;
     }
 
-    status = get_status_string (at);
+    status = get_status_string (now, at);
     if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                    "jobid", jobid,
                                    "status", status.c_str (),
