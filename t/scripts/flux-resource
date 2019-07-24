@@ -122,11 +122,11 @@ def stat_action (args):
     resp = r.rpc_stat ()
     print "Num. of Vertices: ", resp['V']
     print "Num. of Edges: ", resp['E']
-    print "Graph Load Time: ", resp['load-time']
+    print "Graph Load Time: ", resp['load-time'], "Secs"
     print "Num. of Jobs Matched: ", resp['njobs']
-    print "Min. Match Time: ", resp['min-match']
-    print "Max. Match Time: ", resp['max-match']
-    print "Avg. Match Time: ", resp['avg-match']
+    print "Min. Match Time: ", resp['min-match'], "Secs"
+    print "Max. Match Time: ", resp['max-match'], "Secs"
+    print "Avg. Match Time: ", resp['avg-match'], "Secs"
 
 """
     Main entry point
