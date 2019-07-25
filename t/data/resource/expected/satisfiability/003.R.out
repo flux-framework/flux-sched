@@ -1,0 +1,167 @@
+      ---tiny0[1:shared]
+      ------rack0[1:shared]
+      ---------node1[1:shared]
+      ------------socket1[1:shared]
+      ---------------core18[1:exclusive]
+      ------------socket0[1:shared]
+      ---------------core0[1:exclusive]
+      ---------node0[1:shared]
+      ------------socket1[1:shared]
+      ---------------core18[1:exclusive]
+      ------------socket0[1:shared]
+      ---------------core0[1:exclusive]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---tiny0[1:shared]
+      ------rack0[1:shared]
+      ---------node1[1:shared]
+      ------------socket1[1:shared]
+      ---------------core19[1:exclusive]
+      ------------socket0[1:shared]
+      ---------------core1[1:exclusive]
+      ---------node0[1:shared]
+      ------------socket1[1:shared]
+      ---------------core19[1:exclusive]
+      ------------socket0[1:shared]
+      ---------------core1[1:exclusive]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: Unsatisfiable request
+INFO: JOBID=3
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: Unsatisfiable request
+INFO: JOBID=4
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=5
+INFO: =============================
+      ---tiny0[1:shared]
+      ------rack0[1:shared]
+      ---------node0[1:shared]
+      ------------socket0[1:shared]
+      ---------------core17[1:exclusive]
+      ---------------core16[1:exclusive]
+      ---------------core15[1:exclusive]
+      ---------------core14[1:exclusive]
+      ---------------core13[1:exclusive]
+      ---------------core12[1:exclusive]
+      ---------------core11[1:exclusive]
+      ---------------core10[1:exclusive]
+      ---------------core9[1:exclusive]
+      ---------------core8[1:exclusive]
+      ---------------core7[1:exclusive]
+      ---------------core6[1:exclusive]
+      ---------------core5[1:exclusive]
+      ---------------core4[1:exclusive]
+      ---------------core3[1:exclusive]
+      ---------------core2[1:exclusive]
+      ---------------core1[1:exclusive]
+      ---------------core0[1:exclusive]
+INFO: =============================
+INFO: JOBID=6
+INFO: RESOURCES=RESERVED
+INFO: SCHEDULED AT=3600
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=7
+INFO: =============================
+      ---tiny0[1:shared]
+      ------rack0[1:shared]
+      ---------node1[1:shared]
+      ------------socket0[1:shared]
+      ---------------core17[1:exclusive]
+      ---------------core16[1:exclusive]
+      ---------------core15[1:exclusive]
+      ---------------core14[1:exclusive]
+      ---------------core13[1:exclusive]
+      ---------------core12[1:exclusive]
+      ---------------core11[1:exclusive]
+      ---------------core10[1:exclusive]
+      ---------------core9[1:exclusive]
+      ---------------core8[1:exclusive]
+      ---------------core7[1:exclusive]
+      ---------------core6[1:exclusive]
+      ---------------core5[1:exclusive]
+      ---------------core4[1:exclusive]
+      ---------------core3[1:exclusive]
+      ---------------core2[1:exclusive]
+      ---------------core1[1:exclusive]
+      ---------------core0[1:exclusive]
+INFO: =============================
+INFO: JOBID=8
+INFO: RESOURCES=RESERVED
+INFO: SCHEDULED AT=3600
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=9
+INFO: =============================
+      ---tiny0[1:shared]
+      ------rack0[1:shared]
+      ---------node1[1:shared]
+      ------------socket1[1:shared]
+      ---------------core35[1:exclusive]
+      ---------------core34[1:exclusive]
+      ---------------core33[1:exclusive]
+      ---------------core32[1:exclusive]
+      ---------------core31[1:exclusive]
+      ---------------core30[1:exclusive]
+      ---------------core29[1:exclusive]
+      ---------------core28[1:exclusive]
+      ---------------core27[1:exclusive]
+      ---------------core26[1:exclusive]
+      ---------------core25[1:exclusive]
+      ---------------core24[1:exclusive]
+      ---------------core23[1:exclusive]
+      ---------------core22[1:exclusive]
+      ---------------core21[1:exclusive]
+      ---------------core20[1:exclusive]
+      ---------------core19[1:exclusive]
+      ---------------core18[1:exclusive]
+      ---------node0[1:shared]
+      ------------socket1[1:shared]
+      ---------------core35[1:exclusive]
+      ---------------core34[1:exclusive]
+      ---------------core33[1:exclusive]
+      ---------------core32[1:exclusive]
+      ---------------core31[1:exclusive]
+      ---------------core30[1:exclusive]
+      ---------------core29[1:exclusive]
+      ---------------core28[1:exclusive]
+      ---------------core27[1:exclusive]
+      ---------------core26[1:exclusive]
+      ---------------core25[1:exclusive]
+      ---------------core24[1:exclusive]
+      ---------------core23[1:exclusive]
+      ---------------core22[1:exclusive]
+      ---------------core21[1:exclusive]
+      ---------------core20[1:exclusive]
+      ---------------core19[1:exclusive]
+      ---------------core18[1:exclusive]
+INFO: =============================
+INFO: JOBID=10
+INFO: RESOURCES=RESERVED
+INFO: SCHEDULED AT=3600
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: Unsatisfiable request
+INFO: JOBID=11
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: Unsatisfiable request
+INFO: JOBID=12
+INFO: =============================
