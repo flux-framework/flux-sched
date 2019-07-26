@@ -36,6 +36,10 @@
 #include "qmanager/policies/queue_policy_fcfs_impl.hpp"
 #include "qmanager/policies/queue_policy_easy.hpp"
 #include "qmanager/policies/queue_policy_easy_impl.hpp"
+#include "qmanager/policies/queue_policy_hybrid.hpp"
+#include "qmanager/policies/queue_policy_hybrid_impl.hpp"
+#include "qmanager/policies/queue_policy_conservative.hpp"
+#include "qmanager/policies/queue_policy_conservative_impl.hpp"
 #include <string>
 
 namespace Flux {
@@ -48,7 +52,8 @@ using namespace resource_model::detail;
 bool known_queue_policy (const std::string &policy)
 {
     bool rc = false;
-    if (policy == "fcfs" || policy == "easy")
+    if (policy == "fcfs" || policy == "easy"
+        || policy == "hybrid" || policy == "conservative")
         rc = true;
     return rc;
 }
@@ -75,6 +80,26 @@ queue_policy_base_t *create_queue_policy (const std::string &policy,
         else if (reapi == "cli") {
             p = (queue_policy_base_t *)
                     new (std::nothrow)queue_policy_easy_t<reapi_cli_t> ();
+        }
+    }
+    else if (policy == "hybrid") {
+        if (reapi == "module") {
+            p = (queue_policy_base_t *)
+                    new (std::nothrow)queue_policy_hybrid_t<reapi_module_t> ();
+        }
+        else if (reapi == "cli") {
+            p = (queue_policy_base_t *)
+                    new (std::nothrow)queue_policy_hybrid_t<reapi_cli_t> ();
+        }
+    }
+    else if (policy == "conservative") {
+        if (reapi == "module") {
+            p = (queue_policy_base_t *) new (std::nothrow)
+                    queue_policy_conservative_t<reapi_module_t> ();
+        }
+        else if (reapi == "cli") {
+            p = (queue_policy_base_t *) new (std::nothrow)
+                    queue_policy_conservative_t<reapi_cli_t> ();
         }
     }
     return p;
