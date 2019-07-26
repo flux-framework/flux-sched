@@ -21,6 +21,7 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli_impl.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_module.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_module_impl.hpp \
+    $(top_srcdir)/qmanager/config/queue_system_defaults.hpp \
     $(top_srcdir)/qmanager/policies/base/queue_policy_base.hpp \
     $(top_srcdir)/qmanager/policies/base/queue_policy_base_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_fcfs.hpp \
@@ -29,6 +30,10 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/queue_policy_bf_base_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_easy.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_easy_impl.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_hybrid.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_hybrid_impl.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_conservative.hpp \
+    $(top_srcdir)/qmanager/policies/queue_policy_conservative_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp
 
