@@ -33,7 +33,9 @@
 namespace Flux {
 namespace queue_manager {
 
-int queue_policy_base_t::set_param (std::string &p_pair)
+int queue_policy_base_t::set_param (std::string &p_pair,
+                                    std::unordered_map<std::string,
+                                                       std::string> &p_map)
 {
     int rc = -1;
     size_t pos = 0;
@@ -52,16 +54,18 @@ int queue_policy_base_t::set_param (std::string &p_pair)
     }
     v = p_pair.erase (0, pos + split.length ());
     v.erase (std::remove_if (v.begin (), v.end (), ::isspace), v.end ());
-    if (m_params.find (k) != m_params.end ())
-        m_params.erase (k);
-    m_params.insert (std::pair<std::string, std::string>(k, v));
+    if (p_map.find (k) != p_map.end ())
+        p_map.erase (k);
+    p_map.insert (std::pair<std::string, std::string>(k, v));
     rc = 0;
 done:
     return rc;
 }
 
 
-int queue_policy_base_t::set_params (const std::string &params)
+int queue_policy_base_t::set_params (const std::string &params,
+                                     std::unordered_map<std::string,
+                                                        std::string> &p_map)
 {
     int rc = -1;
     size_t pos = 0;
@@ -71,11 +75,11 @@ int queue_policy_base_t::set_params (const std::string &params)
     try {
         while ((pos = p_copy.find (delim)) != std::string::npos) {
             std::string p_pair = p_copy.substr (0, pos);
-            if (set_param (p_pair) < 0)
+            if (set_param (p_pair, p_map) < 0)
                 goto done;
             p_copy.erase (0, pos + delim.length ());
         }
-        if (set_param (p_copy) < 0)
+        if (set_param (p_copy, p_map) < 0)
             goto done;
         rc = 0;
     } catch (std::out_of_range &e) {
@@ -89,9 +93,35 @@ done:
     return rc;
 }
 
+int queue_policy_base_t::set_queue_params (const std::string &params)
+{
+    return set_params (params, m_qparams);
+}
+
+int queue_policy_base_t::set_policy_params (const std::string &params)
+{
+    return set_params (params, m_pparams);
+}
+
 int queue_policy_base_t::apply_params ()
 {
-    return 0;
+    int rc = 0;
+    try {
+        std::unordered_map<std::string, std::string>::const_iterator i;
+        if ((i = queue_policy_base_impl_t::m_qparams.find ("queue-depth"))
+             != queue_policy_base_impl_t::m_qparams.end ()) {
+            unsigned int depth = std::stoi (i->second);
+            if (depth < MAX_QUEUE_DEPTH)
+                queue_policy_base_impl_t::m_queue_depth = depth;
+        }
+    } catch (const std::invalid_argument &e) {
+        rc = -1;
+        errno = EINVAL;
+    } catch (const std::out_of_range &e) {
+        rc = -1;
+        errno = ERANGE;
+    }
+    return rc;
 }
 
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)

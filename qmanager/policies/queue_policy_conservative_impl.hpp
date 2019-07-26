@@ -38,6 +38,18 @@ queue_policy_conservative_t<reapi_type>::~queue_policy_conservative_t ()
 }
 
 template<class reapi_type>
+int queue_policy_conservative_t<reapi_type>::apply_params ()
+{
+    int rc = -1;
+    if ( (rc = queue_policy_base_t::apply_params ()) == 0) {
+        unsigned int depth = queue_policy_bf_base_t<reapi_type>::m_queue_depth;
+        if (queue_policy_bf_base_t<reapi_type>::m_reservation_depth > depth)
+            queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
+    }
+    return rc;
+}
+
+template<class reapi_type>
 queue_policy_conservative_t<reapi_type>::queue_policy_conservative_t ()
 {
     queue_policy_bf_base_t<reapi_type>::

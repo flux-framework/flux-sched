@@ -140,7 +140,7 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     std::map<uint64_t, flux_jobid_t>::iterator iter = m_pending.begin ();
     m_reservation_cnt = 0;
     int saved_errno = errno;
-    while ((iter != m_pending.end ())) {
+    while ((iter != m_pending.end ()) && (i < m_queue_depth)) {
         errno = 0;
         job = m_jobs[iter->second];
         if (m_reservation_cnt < m_reservation_depth)
@@ -164,6 +164,12 @@ template<class reapi_type>
 queue_policy_bf_base_t<reapi_type>::~queue_policy_bf_base_t ()
 {
 
+}
+
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::apply_params ()
+{
+    return 0;
 }
 
 template<class reapi_type>

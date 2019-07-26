@@ -25,7 +25,6 @@
 #ifndef QUEUE_POLICY_CONSERVATIVE_HPP
 #define QUEUE_POLICY_CONSERVATIVE_HPP
 
-#include "qmanager/config/queue_system_defaults.hpp"
 #include "qmanager/policies/queue_policy_bf_base.hpp"
 
 namespace Flux {
@@ -45,6 +44,8 @@ public:
         const queue_policy_conservative_t &p) = default;
     queue_policy_conservative_t &operator= (
         queue_policy_conservative_t &&p) = default;
+
+    virtual int apply_params ();
 };
 
 } // namespace Flux::queue_manager::detail

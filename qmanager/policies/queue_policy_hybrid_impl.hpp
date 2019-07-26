@@ -47,22 +47,16 @@ queue_policy_hybrid_t<reapi_type>::queue_policy_hybrid_t ()
 template<class reapi_type>
 int queue_policy_hybrid_t<reapi_type>::apply_params ()
 {
-    int rc = -1;
+    int rc = queue_policy_base_t::apply_params ();
     try {
         std::unordered_map<std::string, std::string>::const_iterator i;
-        if ((i = queue_policy_base_impl_t::m_params.find ("queue-depth"))
-             != queue_policy_base_impl_t::m_params.end ()) {
-            unsigned int depth = std::stoi (i->second);
-            if (depth < MAX_QUEUE_DEPTH)
-                queue_policy_base_impl_t::m_queue_depth = depth;
-        }
-        if ((i = queue_policy_base_impl_t::m_params.find ("reservation-depth"))
-             != queue_policy_base_impl_t::m_params.end ()) {
+        if ((i = queue_policy_base_impl_t::m_pparams.find ("reservation-depth"))
+             != queue_policy_base_impl_t::m_pparams.end ()) {
             unsigned int depth = std::stoi (i->second);
             if (depth < MAX_RESERVATION_DEPTH)
                 queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
         }
-        rc = 0;
+        rc += 0;
     } catch (const std::invalid_argument &e) {
         errno = EINVAL;
     } catch (const std::out_of_range &e) {

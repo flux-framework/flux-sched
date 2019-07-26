@@ -56,6 +56,7 @@ template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
                                                     bool use_alloced_queue)
 {
+    unsigned int i = 0;
     std::shared_ptr<job_t> job;
     std::map<uint64_t, flux_jobid_t>::iterator iter;
 
@@ -64,7 +65,7 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
     //
     int saved_errno = errno;
     iter = m_pending.begin ();
-    while (iter != m_pending.end ()) {
+    while (iter != m_pending.end () && i < m_queue_depth) {
         errno = 0;
         job = m_jobs[iter->second];
         if (reapi_type::match_allocate (h, false, job->jobspec, job->id,
@@ -89,6 +90,7 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
                 break;
             }
         }
+        i++;
     }
     errno = saved_errno;
     return 0;
@@ -105,6 +107,12 @@ template<class reapi_type>
 queue_policy_fcfs_t<reapi_type>::~queue_policy_fcfs_t ()
 {
 
+}
+
+template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::apply_params ()
+{
+    return queue_policy_base_t::apply_params ();
 }
 
 template<class reapi_type>

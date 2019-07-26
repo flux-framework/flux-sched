@@ -38,6 +38,12 @@ queue_policy_easy_t<reapi_type>::~queue_policy_easy_t ()
 }
 
 template<class reapi_type>
+int queue_policy_easy_t<reapi_type>::apply_params ()
+{
+    return queue_policy_base_t::apply_params ();
+}
+
+template<class reapi_type>
 queue_policy_easy_t<reapi_type>::queue_policy_easy_t ()
 {
     queue_policy_bf_base_t<reapi_type>::m_reservation_depth = 1;
