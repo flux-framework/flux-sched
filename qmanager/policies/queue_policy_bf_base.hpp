@@ -37,6 +37,7 @@ class queue_policy_bf_base_t : public queue_policy_base_t
 public:
     virtual ~queue_policy_bf_base_t ();
     virtual int run_sched_loop (void *h, bool use_alloced_queue);
+    virtual int apply_params ();
 
 protected:
     unsigned int m_reservation_depth;

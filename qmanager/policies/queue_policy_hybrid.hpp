@@ -25,7 +25,6 @@
 #ifndef QUEUE_POLICY_HYBRID_HPP
 #define QUEUE_POLICY_HYBRID_HPP
 
-#include "qmanager/config/queue_system_defaults.hpp"
 #include "qmanager/policies/queue_policy_bf_base.hpp"
 
 namespace Flux {

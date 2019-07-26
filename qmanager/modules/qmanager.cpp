@@ -47,6 +47,7 @@ using namespace Flux::queue_manager::detail;
 
 struct qmanager_args_t {
     std::string queue_policy;
+    std::string queue_params;
     std::string policy_params;
 };
 
@@ -210,6 +211,9 @@ static int process_args (qmanager_ctx_t *ctx, int argc, char **argv)
                 args.queue_policy = dflt;
             }
         }
+        else if (!strncmp ("queue-params=", argv[i], sizeof ("queue-params"))) {
+            args.queue_params = strstr (argv[i], "=") + 1;
+        }
         else if (!strncmp ("policy-params=", argv[i],
                                sizeof ("policy-params"))) {
             args.policy_params = strstr (argv[i], "=") + 1;
@@ -261,6 +265,11 @@ static int enforce_queue_policy (qmanager_ctx_t *ctx)
     }
     if (ctx->args.policy_params != ""
         && ctx->queue->set_params (ctx->args.policy_params) < 0) {
+        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
+        goto out;
+    }
+    if (ctx->args.queue_params != ""
+        && ctx->queue->set_params (ctx->args.queue_params) < 0) {
         flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
         goto out;
     }

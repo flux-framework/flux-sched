@@ -140,7 +140,7 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     std::map<uint64_t, flux_jobid_t>::iterator iter = m_pending.begin ();
     m_reservation_cnt = 0;
     int saved_errno = errno;
-    while ((iter != m_pending.end ())) {
+    while ((iter != m_pending.end ()) && (i < m_queue_depth)) {
         errno = 0;
         job = m_jobs[iter->second];
         if (m_reservation_cnt < m_reservation_depth)
@@ -165,6 +165,28 @@ queue_policy_bf_base_t<reapi_type>::~queue_policy_bf_base_t ()
 {
 
 }
+
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::apply_params ()
+{
+    int rc = -1;
+    try {
+        std::unordered_map<std::string, std::string>::const_iterator i;
+        if ((i = queue_policy_base_impl_t::m_params.find ("queue-depth"))
+             != queue_policy_base_impl_t::m_params.end ()) {
+            unsigned int depth = std::stoi (i->second);
+            if (depth < MAX_QUEUE_DEPTH)
+                queue_policy_base_impl_t::m_queue_depth = depth;
+        }
+        rc = 0;
+    } catch (const std::invalid_argument &e) {
+        errno = EINVAL;
+    } catch (const std::out_of_range &e) {
+        errno = ERANGE;
+    }
+    return rc;
+}
+
 
 template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h,
