@@ -157,7 +157,7 @@ static void set_default_args (resource_args_t &args)
     args.hwloc_whitelist = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
-    args.prune_filters = "ALL:pu";
+    args.prune_filters = "ALL:core";
     args.match_format = "rv1_nosched";
     args.reserve_vtx_vec = 0;
 }
