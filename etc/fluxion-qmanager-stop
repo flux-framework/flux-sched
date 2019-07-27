@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
+    flux module remove fluxion-qmanager
+fi
+

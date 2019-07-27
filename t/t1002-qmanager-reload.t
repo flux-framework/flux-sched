@@ -38,9 +38,9 @@ test_expect_success 'qmanager: hwloc reload works' '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
+    flux module load fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low hwloc-whitelist=node,socket,core,gpu &&
-    flux module load qmanager
+    flux module load fluxion-qmanager
 '
 
 test_expect_success 'qmanager: submit 2 more as many jobs as there are cores ' '
@@ -55,8 +55,8 @@ test_expect_success 'qmanager: submit 2 more as many jobs as there are cores ' '
 '
 
 test_expect_success 'qmanager: restart keeps the main job queue intact' '
-    flux module remove qmanager &&
-    flux module load qmanager &&
+    flux module remove fluxion-qmanager &&
+    flux module load fluxion-qmanager &&
     flux job list > jobs.list2 &&
     diff jobs.list2 jobs.list
 '
@@ -76,8 +76,8 @@ test_expect_success 'qmanager: canceling a pending job works' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove -r 0 qmanager &&
-    flux module remove -r 0 resource
+    flux module remove -r 0 fluxion-qmanager &&
+    flux module remove -r 0 fluxion-resource
 '
 
 test_done

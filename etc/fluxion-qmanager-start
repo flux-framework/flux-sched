@@ -1,0 +1,18 @@
+#!/bin/bash -e
+#
+# If fluxion-qmanager is not installed into flux-core's $prefix,
+# one should set FLUX_RC_EXTRA environment variable to flux-sched's $prefix/etc/flux
+# so that flux start can automatically execute fluxion-qmanager's runlevel 1 and 3.
+#
+# In addition, users can set FLUXION_QMANAGER_OPTIONS if they want flux
+# to load in the queue manager service module with non-default options.
+#
+# Finally, if FLUXION_QMANAGER_RC_NOOP=1, flux-core
+# won't load in or remove qmanager as part of runlevel 1 and 3.
+#
+
+if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
+    flux module remove sched-simple
+    flux module load -r 0 fluxion-qmanager ${FLUXION_QMANAGER_OPTIONS}
+fi
+

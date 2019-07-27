@@ -26,12 +26,12 @@ fi
 test_under_flux ${SIZE}
 
 test_expect_success 'resource: module remove/load works with installed resource' '
-	flux module remove resource &&
-	flux module load resource
+	flux module remove fluxion-resource &&
+	flux module load fluxion-resource
 '
 
 test_expect_success 'resource: module unload' '
-	flux module remove resource
+	flux module remove fluxion-resource
 '
 
 test_done

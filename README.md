@@ -7,20 +7,21 @@ communicate with the developers.
 
 ### flux-sched
 
-flux-sched contains the job scheduling facility for the Flux resource
-manager framework.  It consists of an engine that handles all the
-functionality common to scheduling.  The engine has the ability to
-load one or more scheduling plugins that provide specific scheduling
-behavior.
-
-#### Overview
-
-The `flux wreckrun` command is part of flux-core and provides the
-ability to launch Flux programs on resources within a Flux instance.
-flux-sched adds batch scheduling functionality to Flux.  Jobs are
-submitted to flux-sched using `flux submit` which adds the jobs to a
-queue.  A scheduling plugin selects resources and decides when to run
-the job.
+flux-sched contains **Fluxion**, a graph-based job scheduler for
+the Flux resource manager framework.  It consists of two flux
+modules in support of batch job scheduling:
+`fluxion-resource` and `fluxion-qmanager`. The former is
+our resource matching service that represents
+computing and other resources in a graph and matches a job's
+resource requirements on this graph according to the
+configurable resource match policy.
+On the other hand, `fluxion-qmanager` implements queuing policies
+on the job queues in accordance, again, with to the configurable
+queue policies and parameters.
+Combined, **Fluxion** provides computing sites and end users
+alike many opportunites to create a job scheduling behavior
+specifically tailored to their workflow characteristics and
+the architectural and other constraints of their systems.
 
 #### Building flux-sched
 
@@ -63,9 +64,8 @@ uuid-dev
 
 The sched module contains
 a bifurcated structure of a core framework that has all the basic
-functionality plus a loadable plugin that implements specific
-scheduling behavior.  There are currently two plugins available:
-sched.fcfs and sched.backfill.
+functionality plus the aforementioned modules that implement specific
+scheduling behavior.
 
 To build the sched module, run the following commands:
 
@@ -80,7 +80,7 @@ make check
 make install
 ```
 
-To exercise a functioning sched module in a comms session, follow
+To exercise **Fluxion** in a comms session, follow
 these steps.
 
 ##### Flux comms session
@@ -93,16 +93,14 @@ flag to each flux command below.
 
 Create a comms session comprised of 3 brokers:
 ```
-export LUA_PATH="$HOME/flux-sched/rdl/?.lua;${LUA_PATH};;"
-export LUA_CPATH="$HOME/flux-sched/rdl/?.so;${LUA_CPATH};;"
-export FLUX_MODULE_PATH=$HOME/flux-sched/sched
+export FLUX_MODULE_PATH=$HOME/flux-sched/resource/modules:$HOME/flux-sched/qmanager/modules
 $HOME/local/bin/flux start -s3
 ```
 
-cd to ~/flux-sched and load the sched module specifying the
-appropriate rdl configuration file:
+cd to ~/flux-sched and load the Fluxion modules:
 ```
-flux module load sched rdl-conf=$HOME/flux-sched/conf/hype.lua plugin=sched.fcfs
+flux module load -r 0 fluxion-resource hwloc-whitelist="node,core,gpu"
+flux module load -r 0 fluxion-qmanager"
 ```
 
 Check to see whether the sched module loaded:
@@ -112,12 +110,13 @@ flux module list
 
 Submit a job:
 ```
-flux submit -N3 -n3 sleep 30
+flux jobspec srun -n3 -t 1 sleep 60 > myjobsepc
+flux job submit myjobspec
 ```
 
 Examine the job:
 ```
-flux kvs dir lwj.1
+flux job list
 ```
 
 Examine the ring buffer for details on what happened.

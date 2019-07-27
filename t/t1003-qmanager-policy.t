@@ -40,9 +40,9 @@ test_expect_success 'qmanager: hwloc reload works' '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=easy)' '
     flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
+    flux module load fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low hwloc-whitelist=cluster,node,core &&
-    flux module load qmanager queue-policy=easy
+    flux module load fluxion-qmanager queue-policy=easy
 '
 
 test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
@@ -71,8 +71,8 @@ test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
 '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=hybrid)' '
-    flux module remove qmanager &&
-    flux module load qmanager queue-policy=hybrid \
+    flux module remove fluxion-qmanager &&
+    flux module load fluxion-qmanager queue-policy=hybrid \
 policy-params=reservation-depth=3
 '
 
@@ -102,8 +102,8 @@ test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
 
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=conservative)' '
-    flux module remove qmanager &&
-    flux module load qmanager queue-policy=conservative
+    flux module remove fluxion-qmanager &&
+    flux module load fluxion-qmanager queue-policy=conservative
 '
 
 test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
@@ -131,8 +131,8 @@ test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove -r 0 qmanager &&
-    flux module remove -r 0 resource
+    flux module remove -r 0 fluxion-qmanager &&
+    flux module remove -r 0 fluxion-resource
 '
 
 test_done

@@ -1,5 +1,5 @@
-dist_fluxresourcerc1_SCRIPTS = resource-start
-dist_fluxresourcerc3_SCRIPTS = resource-stop
-dist_fluxqmanagerrc1_SCRIPTS = qmanager-start
-dist_fluxqmanagerrc3_SCRIPTS = qmanager-stop
+dist_fluxionresourcerc1_SCRIPTS = fluxion-resource-start
+dist_fluxionresourcerc3_SCRIPTS = fluxion-resource-stop
+dist_fluxionqmanagerrc1_SCRIPTS = fluxion-qmanager-start
+dist_fluxionqmanagerrc3_SCRIPTS = fluxion-qmanager-stop
 

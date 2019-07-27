@@ -35,8 +35,8 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource grug-conf=${grug} prune-filters=ALL:core \
-subsystems=containment policy=high
+    flux module load fluxion-resource grug-conf=${grug} \
+prune-filters=ALL:core subsystems=containment policy=high
 '
 
 test_expect_success 'match-allocate works with a 1-node, 1-socket jobspec' '
@@ -62,7 +62,7 @@ test_expect_success 'handling of a malformed jobspec works' '
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    flux module remove fluxion-resource
 '
 
 test_done

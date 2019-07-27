@@ -9,12 +9,12 @@ AM_CPPFLAGS = \
     -I$(top_srcdir) \
     $(FLUX_CORE_CFLAGS)
 
-fluxmod_LTLIBRARIES = qmanager.la
+fluxmod_LTLIBRARIES = fluxion-qmanager.la
 
 #
 # queue manager service module
 #
-qmanager_la_SOURCES = \
+fluxion_qmanager_la_SOURCES = \
     qmanager.cpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli.hpp \
@@ -37,17 +37,17 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/queue_policy_factory.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp
 
-qmanager_la_CXXFLAGS = \
+fluxion_qmanager_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
     $(FLUX_CORE_CFLAGS)
 
-qmanager_la_LIBADD = \
+fluxion_qmanager_la_LIBADD = \
     $(top_builddir)/src/common/libschedutil/libschedutil.la \
     $(FLUX_CORE_LIBS) \
     $(CZMQ_LIBS) \
     $(JANSSON_LIBS)
 
-qmanager_la_LDFLAGS = \
+fluxion_qmanager_la_LDFLAGS = \
     $(AM_LDFLAGS) \
     $(fluxmod_ldflags) -module
 

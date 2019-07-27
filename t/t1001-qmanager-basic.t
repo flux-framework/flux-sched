@@ -36,9 +36,9 @@ test_expect_success 'qmanager: hwloc reload works' '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
+    flux module load fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    flux module load qmanager
+    flux module load fluxion-qmanager
 '
 
 test_expect_success 'qmanager: basic job runs in simulated mode' '
@@ -87,8 +87,8 @@ test_expect_success 'qmanager: exception during run is supported' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove -r 0 qmanager &&
-    flux module remove -r 0 resource
+    flux module remove -r 0 fluxion-qmanager &&
+    flux module remove -r 0 fluxion-resource
 '
 
 test_done

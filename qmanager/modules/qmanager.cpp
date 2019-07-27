@@ -356,7 +356,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
     return rc;
 }
 
-MOD_NAME ("qmanager");
+MOD_NAME ("fluxion-qmanager");
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

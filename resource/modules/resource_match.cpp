@@ -109,11 +109,12 @@ static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
 static const struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "fluxion-resource.match", match_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "fluxion-resource.cancel", cancel_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "fluxion-resource.info", info_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "fluxion-resource.stat", stat_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "fluxion-resource.next_jobid", next_jobid_request_cb,
+      0},
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -846,7 +847,7 @@ done:
     return rc;
 }
 
-MOD_NAME ("resource");
+MOD_NAME ("fluxion-resource");
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

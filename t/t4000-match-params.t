@@ -33,59 +33,61 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
-    flux module remove resource &&
-    flux module load -r 0 resource grug-conf=${grug} prune-filters=ALL:core
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource grug-conf=${grug} \
+prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with an XML works' '
-    flux module remove resource &&
-    flux module load -r 0 resource hwloc-xml=${xml} prune-filters=ALL:core
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource hwloc-xml=${xml} \
+prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a GRUG + XML works' '
-    flux module remove resource &&
-    flux module load -r 0 resource grug-conf=${grug} hwloc-xml=${xml} \
-prune-filters=ALL:core
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource grug-conf=${grug} \
+hwloc-xml=${xml} prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with no option works' '
-    flux module remove resource &&
-    flux module load -r 0 resource prune-filters=ALL:core
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
-    flux module remove resource &&
-    test_expect_code 1 flux module load -r 0 resource grug-conf=${ne_grug} \
-prune-filters=ALL:core
+    flux module remove fluxion-resource &&
+    test_expect_code 1 flux module load -r 0 fluxion-resource \
+grug-conf=${ne_grug} prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
-    test_expect_code 1 flux module load -r 0 resource hwloc-xml=${ne_xml} \
-prune-filters=ALL:core
-'
-
-test_expect_success 'loading resource module with a nonexistent GRUG+XML fails' '
-    test_expect_code 1 flux module load -r 0 resource grug-conf=${ne_grug} \
+    test_expect_code 1 flux module load -r 0 fluxion-resource \
 hwloc-xml=${ne_xml} prune-filters=ALL:core
 '
 
+test_expect_success 'loading resource module with a nonexistent GRUG+XML fails' '
+    test_expect_code 1 flux module load -r 0 fluxion-resource \
+grug-conf=${ne_grug} hwloc-xml=${ne_xml} prune-filters=ALL:core
+'
+
 test_expect_success 'loading resource module with known policies works' '
-    flux module load -r 0 resource policy=high &&
-    flux module remove resource &&
-    flux module load -r 0 resource policy=low &&
-    flux module remove resource &&
-    flux module load -r 0 resource policy=locality
+    flux module load -r 0 fluxion-resource policy=high &&
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource policy=low &&
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource policy=locality
 '
 
 test_expect_success 'loading resource module with unknown policies is tolerated' '
-    flux module remove resource &&
-    flux module load -r 0 resource policy=foo &&
-    flux module remove resource &&
-    flux module load -r 0 resource policy=bar
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource policy=foo &&
+    flux module remove fluxion-resource &&
+    flux module load -r 0 fluxion-resource policy=bar
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    flux module remove fluxion-resource
 '
 
 test_done

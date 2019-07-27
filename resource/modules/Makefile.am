@@ -11,18 +11,18 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
           $(BOOST_CPPFLAGS)
 
-fluxmod_LTLIBRARIES = resource.la
+fluxmod_LTLIBRARIES = fluxion-resource.la
 
 #
 # resource service module
 #
-resource_la_SOURCES = \
+fluxion_resource_la_SOURCES = \
     resource_match.cpp
-resource_la_CXXFLAGS = \
+fluxion_resource_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
     $(JOBSPEC_CFLAGS) \
     $(FLUX_CORE_CFLAGS)
-resource_la_LIBADD = \
+fluxion_resource_la_LIBADD = \
     ../libresource.la \
     $(FLUX_CORE_LIBS) \
     $(DL_LIBS) \
@@ -31,7 +31,7 @@ resource_la_LIBADD = \
     $(JANSSON_LIBS) \
     $(CZMQ_LIBS) \
     $(BOOST_LDFLAGS)
-resource_la_LDFLAGS = \
+fluxion_resource_la_LDFLAGS = \
     $(AM_LDFLAGS) \
     $(fluxmod_ldflags) -module
 
