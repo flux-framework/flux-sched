@@ -33,6 +33,7 @@ TESTS = \
     t1001-qmanager-basic.t \
     t1002-qmanager-reload.t \
     t1003-qmanager-policy.t \
+    t1004-qmanager-optimize.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
