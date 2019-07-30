@@ -30,7 +30,7 @@ test_expect_success 'qmanager: generate jobspecs of varying requirements' '
     flux jobspec srun -n4 -t 179 hostname | exec_test > C04.T10800.json && #7
     flux jobspec srun -n4 -t 239 hostname | exec_test > C04.T14400.json && #8
     flux jobspec srun -n2 -t 239 hostname | exec_test > C02.T14400.json && #9
-    flux jobspec srun -n2 -t 299 hostname | exec_test > C02.T18000.json #10
+    flux jobspec srun -n2 -t 299 hostname | exec_test > C02.T18000.json && #10
     flux jobspec srun -n2 -t 59 hostname | exec_test > C02.T3600.json #11
 '
 
