@@ -313,7 +313,7 @@ static void qmanager_destroy (qmanager_ctx_t *ctx)
         delete ctx->queue;
         ctx->queue = NULL;
         schedutil_ops_unregister (ctx->ops);
-        free (ctx);
+        delete (ctx);
         errno = saved_errno;
     }
 }
