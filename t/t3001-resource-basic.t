@@ -152,4 +152,12 @@ test_expect_success "${test016_desc}" '
     test_cmp 016.R.out ${exp_dir}/016.R.out
 '
 
+cmds040="${cmd_dir}/cmds40.in"
+test040_desc="Once all sockets are exclusively allocated, no jobs can match"
+test_expect_success "${test040_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds040} > cmds040 &&
+    ${query} -G ${grugs} -S CA -P low -t 040.R.out < cmds040 &&
+    test_cmp 040.R.out ${exp_dir}/040.R.out
+'
+
 test_done

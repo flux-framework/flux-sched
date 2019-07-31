@@ -55,10 +55,10 @@ test_expect_success 'qmanager: canceling job during execution works' '
     flux job wait-event -vt 2.5 ${jobid} start &&
     flux job cancel ${jobid} &&
     flux job wait-event -t 2.5 ${jobid} exception &&
-    flux job wait-event -t 2.5 ${jobid} finish | grep status=9 &&
+    flux job wait-event -t 2.5 ${jobid} finish | grep status=15 &&
     flux job wait-event -t 2.5 ${jobid} release &&
     flux job wait-event -t 2.5 ${jobid} clean &&
-    exec_eventlog $jobid | grep "complete" | grep "\"status\":9"
+    exec_eventlog $jobid | grep "complete" | grep "\"status\":15"
 '
 
 test_expect_success 'qmanager: exception during initialization is supported' '
@@ -83,7 +83,7 @@ test_expect_success 'qmanager: exception during run is supported' '
 	grep "mock run exception generated" exception.2.out &&
 	flux job wait-event -qt 2.5 ${jobid} clean &&
 	flux job eventlog ${jobid} > eventlog.${jobid}.out &&
-	grep "finish status=9" eventlog.${jobid}.out
+	grep "finish status=15" eventlog.${jobid}.out
 '
 
 test_expect_success 'removing resource and qmanager modules' '
