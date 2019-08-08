@@ -49,30 +49,62 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                vtx_t root, unsigned int *needs,
                                std::unordered_map<string, int64_t> &dfv)
 {
+    int t = 0;
     int rc = -1;
+    size_t len = 0;
+    vector<uint64_t> agg;
+    uint64_t duration = 0;
+    int saved_errno = errno;
+    planner_multi_t *p = NULL;
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
 
-    /* Allocate */
-    rc = detail::dfu_impl_t::select (jobspec, root, meta, x, needs);
-    if ((rc != 0) && (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE)) {
-        /* Or else reserve */
+    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x, needs)) == 0)
+        goto out;
+
+    /* Currently no resources/devices available... Do more... */
+    switch (op) {
+    case match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY: {
+        /* With satisfiability check */
+        errno = EBUSY;
         meta.allocate = false;
-        int64_t t = meta.at + 1;
-        vector<uint64_t> agg;
-        planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
-        size_t len = planner_multi_resources_len (p);
-        uint64_t duration = meta.duration;
+        p = (*get_graph ())[root].idata.subplans.at (dom);
+        meta.at = planner_multi_base_time (p)
+                  + planner_multi_duration (p) - meta.duration - 1;
+        detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
+        if (detail::dfu_impl_t::select (jobspec, root, meta, x, needs) < 0) {
+            errno = (errno == EBUSY)? ENODEV : errno;
+            detail::dfu_impl_t::update ();
+        }
+        break;
+    }
+    case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
+        /* Or else reserve */
+        errno = 0;
+        meta.allocate = false;
+        t = meta.at + 1;
+        p = (*get_graph ())[root].idata.subplans.at (dom);
+        len = planner_multi_resources_len (p);
+        duration = meta.duration;
         detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
         for (t = planner_multi_avail_time_first (p, t, duration, &agg[0], len);
-             (t != -1 && rc != 0); t = planner_multi_avail_time_next (p)) {
+             (t != -1 && rc && !errno); t = planner_multi_avail_time_next (p)) {
             meta.at = t;
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x, needs);
         }
+        // The planner layer returns ENOENT when no scheduleable point exists
+        // Turn this into ENODEV
+        errno = (rc < 0 && errno == ENOENT)? ENODEV : errno;
+        break;
+    }
+    case match_op_t::MATCH_ALLOCATE:
+        errno = EBUSY;
+        break;
+    default:
+        break;
     }
 
-    if ((rc != 0) && (errno == 0))
-        errno = EBUSY;
-
+out:
+    errno = (!errno)? saved_errno : errno;
     return rc;
 }
 

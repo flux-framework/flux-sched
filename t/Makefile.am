@@ -45,11 +45,13 @@ TESTS = \
     t3010-resource-power.t \
     t3011-resource-filt.t \
     t3012-resource-properties.t \
+    t3013-resource-unsat.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
     t4003-cancel-info.t \
     t4004-match-hwloc.t \
+    t4005-match-unsat.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t

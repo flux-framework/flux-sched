@@ -274,7 +274,7 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
     }
     process_args (ctx, argc, argv);
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
-        flux_log (h, LOG_ERR, "error registering resource event handler");
+        flux_log_error (h, "error registering resource event handler");
         goto error;
     }
     return ctx;
@@ -508,8 +508,13 @@ static int init_resource_graph (resource_ctx_t *ctx)
     }
 
     // Initialize the DFU traverser
-    ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots), ctx->matcher);
-    return rc;
+    if (ctx->traverser->initialize (ctx->fgraph,
+                                    &(ctx->db.roots), ctx->matcher) < 0) {
+        flux_log (ctx->h, LOG_ERR, "traverser initialization");
+        return -1;
+
+    }
+    return 0;
 }
 
 
@@ -556,6 +561,24 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t at,
     return 0;
 }
 
+static int run (resource_ctx_t *ctx, int64_t jobid,
+                const char *cmd, string jstr, int64_t *at)
+{
+    int rc = 0;
+    Flux::Jobspec::Jobspec j {jstr};
+    dfu_traverser_t &tr = *(ctx->traverser);
+
+    if (string ("allocate") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
+    else if (string ("allocate_with_satisfiability") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::
+                     MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
+    else if (string ("allocate_orelse_reserve") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                     jobid, at);
+   return rc;
+}
+
 static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
                       string jstr, int64_t *at, double *ov, stringstream &o)
 {
@@ -563,43 +586,28 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     double elapse = 0.0f;
     struct timeval start;
     struct timeval end;
-    dfu_traverser_t &tr = *(ctx->traverser);
 
     gettimeofday (&start, NULL);
     ctx->writers->reset ();
 
-    if (string ("allocate") == cmd) {
-        Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
-        if (rc != 0) {
-            errno = EBUSY;
-            flux_log (ctx->h, LOG_INFO,
-                      "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
-            goto done;
-        }
-    } else if (string ("allocate_orelse_reserve") == cmd) {
-        Flux::Jobspec::Jobspec j {jstr};
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                     jobid, at);
-        if (rc != 0) {
-            errno = EBUSY;
-            flux_log (ctx->h, LOG_INFO,
-                      "%s can't find resources for %ld.", cmd, (intmax_t)jobid);
-            goto done;
-        }
-    } else {
-        rc = -1;
+    if (strcmp ("allocate", cmd) != 0
+        && strcmp ("allocate_orelse_reserve", cmd) != 0
+        && strcmp ("allocate_with_satisfiability", cmd) != 0) {
         errno = EINVAL;
-        flux_log (ctx->h, LOG_ERR, "unknown cmd: %s", cmd);
+        flux_log_error (ctx->h, "unknown cmd: %s", cmd);
         goto done;
     }
+    if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
+        goto done;
+
     ctx->writers->emit (o);
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
 
     if ((rc = track_schedule_info (ctx, jobid, *at, jstr, o, *ov)) != 0) {
-        flux_log (ctx->h, LOG_ERR, "can't add info for %ld.", (intmax_t)jobid);
+        errno = EINVAL;
+        flux_log_error (ctx->h, "can't add job info (id=%jd)", (intmax_t)jobid);
         goto done;
     }
 
@@ -614,20 +622,23 @@ static inline bool is_existent_jobid (const resource_ctx_t *ctx, uint64_t jobid)
 
 static int run_remove (resource_ctx_t *ctx, int64_t jobid)
 {
-    int rc = 0;
+    int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
-    if ((rc = tr.remove (jobid)) == 0) {
-        if (is_existent_jobid (ctx, jobid)) {
-           job_info_t *info = ctx->jobs[jobid];
-           info->state = job_lifecycle_t::CANCELLED;
-        }
-    } else {
+
+    if ((rc = tr.remove (jobid)) < 0) {
         if (is_existent_jobid (ctx, jobid)) {
            job_info_t *info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::ERROR;
-           flux_log (ctx->h, LOG_INFO, "can't remove %ld.", (intmax_t)jobid);
         }
+        goto out;
     }
+
+    if (is_existent_jobid (ctx, jobid)) {
+        job_info_t *info = ctx->jobs[jobid];
+        info->state = job_lifecycle_t::CANCELLED;
+    }
+    rc = 0;
+out:
     return rc;
 }
 
@@ -635,7 +646,6 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg)
 {
     int64_t at = 0;
-    uint32_t userid = 0;
     int64_t jobid = -1;
     double ov = 0.0f;
     string status = "";
@@ -644,25 +654,18 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     stringstream R;
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
 
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "match requested by user (%u).", userid);
-
     if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
                              "jobid", &jobid, "jobspec", &js_str) < 0)
         goto error;
-
     if (is_existent_jobid (ctx, jobid)) {
-        flux_log (h, LOG_INFO, "invalid jobid (%ld).", (intmax_t)jobid);
         errno = EINVAL;
+        flux_log_error (h, "existent job (%jd).", (intmax_t)jobid);
         goto error;
     }
-
     if (run_match (ctx, jobid, cmd, js_str, &at, &ov, R) < 0) {
-        flux_log (h, LOG_INFO, "could not resolve match %s for jobid (%ld).",
-                  cmd, (intmax_t)jobid);
-        flux_log (h, LOG_INFO, "error string: %s.", strerror (errno));
+        if (errno != EBUSY && errno != ENODEV)
+            flux_log_error (ctx->h, "match failed due to match error (id=%jd)",
+                           (intmax_t)jobid);
         goto error;
     }
 
@@ -675,7 +678,6 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "match request succeeded.");
     return;
 
 error:
@@ -687,32 +689,28 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "cancel requested by user (%u).", userid);
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
-
-    if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
-        run_remove (ctx, jobid);
+    if (ctx->allocations.find (jobid) != ctx->allocations.end ())
         ctx->allocations.erase (jobid);
-    } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
-        run_remove (ctx, jobid);
+    else if (ctx->reservations.find (jobid) != ctx->reservations.end ())
         ctx->reservations.erase (jobid);
-    } else {
+    else {
         errno = ENOENT;
-        flux_log (h, LOG_ERR, "cannot find jobid (%ld)", (intmax_t)jobid);
+        flux_log (h, LOG_DEBUG, "nonexistent job (id=%jd)", (intmax_t)jobid);
+        goto error;
+    }
+
+    if (run_remove (ctx, jobid) < 0) {
+        flux_log_error (h, "remove fails due to match error (id=%jd)",
+                        (intmax_t)jobid);
         goto error;
     }
     if (flux_respond_pack (h, msg, "{}") < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "cancel request succeeded.");
     return;
 
 error:
@@ -724,21 +722,15 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
     job_info_t *info = NULL;
     string status = "";
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "info requested by user (%u).", userid);
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
     if (!is_existent_jobid (ctx, jobid)) {
         errno = ENOENT;
-        flux_log (h, LOG_ERR, "cannot find jobid (%ld)", (intmax_t)jobid);
+        flux_log (h, LOG_DEBUG, "nonexistent job (id=%jd)", (intmax_t)jobid);
         goto error;
     }
 
@@ -751,7 +743,6 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "overhead", info->overhead) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "info request succeeded.");
     return;
 
 error:
@@ -763,14 +754,8 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     double avg = 0.0f;
     double min = 0.0f;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "stat requested by user (%u).", userid);
 
     if (ctx->jobs.size ()) {
         avg = ctx->perf.accum / (double)ctx->jobs.size ();
@@ -784,13 +769,6 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    "min-match", min,
                                    "max-match", ctx->perf.max,
                                    "avg-match", avg) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
-
-    flux_log (h, LOG_INFO, "stat request succeeded.");
-    return;
-
-error:
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
@@ -809,23 +787,15 @@ static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    uint32_t userid = 0;
     int64_t jobid = -1;
-
-    if (flux_msg_get_userid (msg, &userid) < 0)
-        goto error;
-
-    flux_log (h, LOG_INFO, "next jobid requested by user (%u).", userid);
 
     if ((jobid = next_jobid (ctx->jobs)) < 0) {
         errno = ERANGE;
         goto error;
     }
-
     if (flux_respond_pack (h, msg, "{s:I}", "jobid", jobid) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
-    flux_log (h, LOG_INFO, "next_jobid request succeeded.");
     return;
 
 error:
@@ -850,7 +820,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         flux_log (h, LOG_ERR, "can't initialize resource module");
         goto done;
     }
-    flux_log (h, LOG_INFO, "resource module starting...");
+    flux_log (h, LOG_DEBUG, "resource module starting...");
 
     if ((rc = init_resource_graph (ctx)) != 0) {
         flux_log (h, LOG_ERR, "can't initialize resource graph database");

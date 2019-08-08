@@ -92,8 +92,10 @@ int dfu_impl_t::by_avail (const jobmeta_t &meta, const std::string &s, vtx_t u,
     int64_t avail = -1;
     planner_t *p = NULL;
     int64_t at = meta.at;
+    int saved_errno = errno;
     uint64_t duration = meta.duration;
 
+    errno = 0;
     // Prune by the visiting resource vertex's availability
     // if rack has been allocated exclusively, no reason to descend further.
     p = (*m_graph)[u].schedule.plans;
@@ -104,13 +106,13 @@ int dfu_impl_t::by_avail (const jobmeta_t &meta, const std::string &s, vtx_t u,
         if (errno != 0) {
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
-            errno = 0;
         }
         goto done;
     }
     rc = 0;
 
 done:
+    errno = saved_errno;
     return rc;
 }
 
@@ -121,6 +123,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
     planner_t *p = NULL;
     int64_t at = meta.at;
     int64_t njobs = -1;
+    int saved_errno = errno;
     uint64_t duration = meta.duration;
 
     // If a non-exclusive resource request is explicitly given on a
@@ -143,17 +146,18 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
             if (errno != 0) {
                 m_err_msg += strerror (errno);
                 m_err_msg += ".\n";
-                errno = 0;
             }
-            goto done;
+            goto restore_errno;
         } else if (njobs < X_CHECKER_NJOBS) {
-            goto done;
+            goto restore_errno;
         }
     }
 
     // All cases reached this point indicate further walk is needed.
     rc = 0;
 
+restore_errno:
+    errno = saved_errno;
 done:
     return rc;
 }
@@ -166,6 +170,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     int64_t at = meta.at;
     uint64_t d = meta.duration;
     vector<uint64_t> aggs;
+    int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
     count_relevant_types (p, resource.user_data, aggs);
@@ -174,18 +179,19 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
         goto done;
     }
 
+    errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, &(aggs[0]), len)) == -1) {
         if (errno != 0) {
             m_err_msg += "by_subplan: planner_multi_avail_during returned -1.\n";
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
-            errno = 0;
         }
         goto done;
     }
 
 done:
+    errno = saved_errno;
     return rc;
 }
 
@@ -775,6 +781,7 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
 {
     int rc = 0;
     int64_t span = -1;
+    int saved_errno = errno;
 
     if ((*m_graph)[u].schedule.allocations.find (jobid)
         != (*m_graph)[u].schedule.allocations.end ()) {
@@ -788,6 +795,7 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
     // No span on either table is an error condition.
 
     if (span != -1) {
+        errno = 0;
         planner_t *plans = (*m_graph)[u].schedule.plans;
         rc = planner_rem_span (plans, span);
         if (rc != 0) {
@@ -796,11 +804,11 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
             if (errno != 0) {
                 m_err_msg += strerror (errno);
                 m_err_msg += ".\n";
-                errno = 0;
             }
         }
     }
 
+    errno = saved_errno;
     return rc;
 }
 
@@ -808,6 +816,7 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
 {
     int rc = 0;
     int64_t span = -1;
+    int saved_errno = errno;
     auto &x_spans = (*m_graph)[u].schedule.x_spans;
     if (x_spans.find (jobid) != x_spans.end ()) {
         span = (*m_graph)[u].schedule.x_spans[jobid];
@@ -818,6 +827,7 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
     }
 
     if (span != -1) {
+        errno = 0;
         planner_t *x_checker = (*m_graph)[u].schedule.x_checker;
         rc = planner_rem_span (x_checker, span);
         if (rc != 0) {
@@ -826,10 +836,10 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
             if (errno != 0) {
                 m_err_msg += strerror (errno);
                 m_err_msg += ".\n";
-                errno = 0;
             }
         }
     }
+    errno = saved_errno;
     return rc;
 }
 
@@ -982,6 +992,7 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
                                       map<string, int64_t> &to_parent)
 {
     int rc = -1;
+    int saved_errno = errno;
     vector<uint64_t> avail;
     vector<const char *> types;
     map<string, int64_t> dfv;
@@ -1007,17 +1018,18 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     }
 
     if (!avail.empty () && !types.empty ()) {
+        errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types)) ) {
             m_err_msg += "prime: error initializing a multi-planner. ";
             m_err_msg += strerror (errno);
-            errno = 0;
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
     }
     rc = 0;
 done:
+    errno = saved_errno;
     (*m_graph)[u].idata.colors[s] = m_color.black ();
     return rc;
 }
@@ -1064,6 +1076,12 @@ int dfu_impl_t::update (vtx_t root, match_writers_t *writers, jobmeta_t &meta,
     map<string, int64_t> dfu;
     m_color.reset ();
     return (upd_dfv (root, writers, needs, exclusive, meta, dfu) > 0)? 0 : -1;
+}
+
+int dfu_impl_t::update ()
+{
+    m_color.reset ();
+    return 0;
 }
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
