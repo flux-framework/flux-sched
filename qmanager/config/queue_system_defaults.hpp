@@ -28,9 +28,9 @@
 // FIXME: These need to be coverted into a scheduler configuration file
 namespace Flux {
 namespace queue_manager {
-    const unsigned int MAX_QUEUE_DEPTH=16384;
-    const unsigned int DEFAULT_QUEUE_DEPTH=8192;
-    const unsigned int MAX_RESERVATION_DEPTH = 4096;
+    const unsigned int MAX_QUEUE_DEPTH = 1000000;
+    const unsigned int DEFAULT_QUEUE_DEPTH = 8192;
+    const unsigned int MAX_RESERVATION_DEPTH = 100000;
     const unsigned int HYBRID_RESERVATION_DEPTH = 64;
 } // namespace resource_model
 } // namespace Flux
