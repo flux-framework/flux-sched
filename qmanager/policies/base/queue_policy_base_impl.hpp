@@ -113,6 +113,8 @@ int queue_policy_base_t::apply_params ()
             unsigned int depth = std::stoi (i->second);
             if (depth < MAX_QUEUE_DEPTH)
                 queue_policy_base_impl_t::m_queue_depth = depth;
+            else
+                queue_policy_base_impl_t::m_queue_depth = MAX_QUEUE_DEPTH;
         }
     } catch (const std::invalid_argument &e) {
         rc = -1;
