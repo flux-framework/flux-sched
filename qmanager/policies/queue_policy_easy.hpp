@@ -25,18 +25,23 @@
 #ifndef QUEUE_POLICY_EASY_HPP
 #define QUEUE_POLICY_EASY_HPP
 
-#include "qmanager/policies/base/queue_policy_base.hpp"
+#include "qmanager/policies/queue_policy_bf_base.hpp"
 
 namespace Flux {
 namespace queue_manager {
 namespace detail {
 
 template<class reapi_type>
-class queue_policy_easy_t : public queue_policy_base_t
+class queue_policy_easy_t : public queue_policy_bf_base_t<reapi_type>
 {
 public:
     virtual ~queue_policy_easy_t ();
-    virtual int run_sched_loop (void *h, bool use_alloced_queue);
+    queue_policy_easy_t ();
+    queue_policy_easy_t (const queue_policy_easy_t &p) = default;
+    queue_policy_easy_t (queue_policy_easy_t &&p) = default;
+    queue_policy_easy_t &operator= (const queue_policy_easy_t &p) = default;
+    queue_policy_easy_t &operator= (queue_policy_easy_t &&p) = default;
+    virtual int apply_params ();
 };
 
 } // namespace Flux::queue_manager::detail

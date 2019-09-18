@@ -12,6 +12,7 @@
 #
 
 if [ -z ${FLUX_RESOURCE_RC_NOOP} ]; then
+    FLUX_RESOURCE_OPTIONS=${FLUX_RESOURCE_OPTIONS:-"hwloc-whitelist=node,core,gpu"}
     flux module load -r 0 resource ${FLUX_RESOURCE_OPTIONS}
 fi
 

@@ -22,33 +22,34 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#ifndef QUEUE_POLICY_FCFS_HPP
-#define QUEUE_POLICY_FCFS_HPP
+#ifndef QUEUE_POLICY_HYBRID_HPP
+#define QUEUE_POLICY_HYBRID_HPP
 
-#include "qmanager/policies/base/queue_policy_base.hpp"
+#include "qmanager/policies/queue_policy_bf_base.hpp"
 
 namespace Flux {
 namespace queue_manager {
 namespace detail {
 
 template<class reapi_type>
-class queue_policy_fcfs_t : public queue_policy_base_t
+class queue_policy_hybrid_t : public queue_policy_bf_base_t<reapi_type>
 {
 public:
-    virtual ~queue_policy_fcfs_t ();
-    virtual int run_sched_loop (void *h, bool use_alloced_queue);
-    virtual int apply_params ();
+    virtual ~queue_policy_hybrid_t ();
+    queue_policy_hybrid_t ();
+    queue_policy_hybrid_t (const queue_policy_hybrid_t &p) = default;
+    queue_policy_hybrid_t (queue_policy_hybrid_t &&p) = default;
+    queue_policy_hybrid_t &operator= (const queue_policy_hybrid_t &p) = default;
+    queue_policy_hybrid_t &operator= (queue_policy_hybrid_t &&p) = default;
 
-private:
-    int cancel_completed_jobs (void *h);
-    int allocate_jobs (void *h, bool use_alloced_queue);
+    virtual int apply_params ();
 };
 
 } // namespace Flux::queue_manager::detail
 } // namespace Flux::queue_manager
 } // namespace Flux
 
-#endif // QUEUE_POLICY_FCFS_HPP
+#endif // QUEUE_POLICY_HYBRID_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

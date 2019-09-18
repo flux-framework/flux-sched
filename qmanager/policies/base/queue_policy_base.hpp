@@ -33,9 +33,12 @@ extern "C" {
 }
 
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <memory>
 #include <cstdint>
+
+#include "qmanager/config/queue_system_defaults.hpp"
 
 namespace Flux {
 namespace queue_manager {
@@ -130,12 +133,16 @@ protected:
     uint64_t m_rq_cnt = 0;
     uint64_t m_dq_cnt = 0;
     uint64_t m_cq_cnt = 0;
+    uint64_t m_oq_cnt = 0;
+    unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     std::map<uint64_t, flux_jobid_t> m_pending;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
     std::map<uint64_t, flux_jobid_t> m_complete;
     std::map<uint64_t, flux_jobid_t> m_rejected;
     std::map<flux_jobid_t, std::shared_ptr<job_t>> m_jobs;
+    std::unordered_map<std::string, std::string> m_qparams;
+    std::unordered_map<std::string, std::string> m_pparams;
 };
 } // namespace Flux::queue_manager::detail
 
@@ -172,6 +179,28 @@ public:
      *                       EINVAL: invalid argument.
      */
     virtual int run_sched_loop (void *h, bool use_alloced_queue) = 0;
+
+    /*! Set queue parameters. Can be called multiple times.
+     *
+     * \param params     comma-delimited key-value pairs string
+     *                   (e.g., "queue-depth=1024,foo=bar")
+     * \return           0 on success; -1 on error.
+     *                       EINVAL: invalid argument.
+     */
+    int set_queue_params (const std::string &params);
+
+    /*! Set queue policy parameters. Can be called multiple times.
+     *
+     * \param params     comma-delimited key-value pairs string
+     *                   (e.g., "reservation-depth=10,foo=bar")
+     * \return           0 on success; -1 on error.
+     *                       EINVAL: invalid argument.
+     */
+    int set_policy_params (const std::string &params);
+
+    /*! Apply the set policy parameters to the queuing policy.
+     */
+    virtual int apply_params ();
 
     /*! Append a job into the internal pending-job queue.
      *
@@ -238,6 +267,12 @@ public:
      *                   on success; nullptr when the queue is empty.
      */
     std::shared_ptr<job_t> complete_pop ();
+
+private:
+    int set_params (const std::string &params,
+                    std::unordered_map<std::string, std::string> &p_map);
+    int set_param (std::string &kv,
+                   std::unordered_map<std::string, std::string> &p_map);
 };
 
 } // namespace Flux::queue_manager

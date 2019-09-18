@@ -4,13 +4,14 @@ import argparse
 import errno
 import yaml
 import flux
+import time
 
 def heading ():
     return '{:20} {:20} {:20} {:20}'.format ('JOBID', 'STATUS',
                                              'AT', 'OVERHEAD (Secs)')
 
 def body (jobid, status, at, overhead):
-    t = "Now" if at == 0 else str (at)
+    t = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime (at))
     o = str (overhead)
     return '{:20} {:20} {:20} {:20}'.format (str (jobid), status, t, o)
 
@@ -122,11 +123,11 @@ def stat_action (args):
     resp = r.rpc_stat ()
     print "Num. of Vertices: ", resp['V']
     print "Num. of Edges: ", resp['E']
-    print "Graph Load Time: ", resp['load-time']
+    print "Graph Load Time: ", resp['load-time'], "Secs"
     print "Num. of Jobs Matched: ", resp['njobs']
-    print "Min. Match Time: ", resp['min-match']
-    print "Max. Match Time: ", resp['max-match']
-    print "Avg. Match Time: ", resp['avg-match']
+    print "Min. Match Time: ", resp['min-match'], "Secs"
+    print "Max. Match Time: ", resp['max-match'], "Secs"
+    print "Avg. Match Time: ", resp['avg-match'], "Secs"
 
 """
     Main entry point
