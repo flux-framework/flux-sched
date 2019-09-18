@@ -27,7 +27,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
-#include "src/common/libschedutil/schedutil.h"
+#include <flux/schedutil.h>
 }
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
@@ -54,7 +54,7 @@ struct qmanager_args_t {
 struct qmanager_ctx_t {
     flux_t *h;
     qmanager_args_t args;
-    ops_context *ops;
+    schedutil_t *schedutil;
     queue_policy_base_t *queue;
 };
 
@@ -71,7 +71,7 @@ static int post_sched_loop (qmanager_ctx_t *ctx)
     std::shared_ptr<job_t> job = nullptr;
 
     while ((job = ctx->queue->alloced_pop ()) != nullptr) {
-        if (schedutil_alloc_respond_R (ctx->h, job->msg,
+        if (schedutil_alloc_respond_R (ctx->schedutil, job->msg,
                                        job->schedule.R.c_str (), NULL) < 0) {
             flux_log_error (ctx->h, "%s: schedutil_alloc_respond_R",
                             __FUNCTION__);
@@ -82,7 +82,9 @@ static int post_sched_loop (qmanager_ctx_t *ctx)
     }
     while ((job = ctx->queue->rejected_pop ()) != nullptr) {
         std::string note = "alloc denied due to type=\"" + job->note + "\"";
-        if (schedutil_alloc_respond_denied (ctx->h, job->msg, note.c_str ()) < 0) {
+        if (schedutil_alloc_respond_denied (ctx->schedutil,
+                                            job->msg,
+                                            note.c_str ()) < 0) {
             flux_log_error (ctx->h, "%s: schedutil_alloc_respond_denied",
                             __FUNCTION__);
             goto out;
@@ -162,7 +164,7 @@ extern "C" void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (ctx->h, "%s: run_sched_loop", __FUNCTION__);
         return;
     }
-    if (schedutil_free_respond (h, msg) < 0) {
+    if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
         return;
     }
@@ -187,7 +189,9 @@ static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
         return;
     }
     std::string note = std::string ("alloc aborted due to exception type=") + t;
-    if (schedutil_alloc_respond_denied (h, job->msg, note.c_str ()) < 0) {
+    if (schedutil_alloc_respond_denied (ctx->schedutil,
+                                        job->msg,
+                                        note.c_str ()) < 0) {
         flux_log_error (h, "%s: schedutil_alloc_respond_denied", __FUNCTION__);
         return;
     }
@@ -235,18 +239,19 @@ static int handshake_jobmanager (qmanager_ctx_t *ctx)
     int queue_depth = 0;  /* Not implemented in job-manager */
     const char *mode = (ctx->args.queue_policy == "fcfs")? "single"
                                                          : "unlimited";
-    if (!(ctx->ops = schedutil_ops_register (ctx->h,
+    if (!(ctx->schedutil = schedutil_create (ctx->h,
                                              jobmanager_alloc_cb,
                                              jobmanager_free_cb,
-                                             jobmanager_exception_cb, ctx))) {
-        flux_log_error (ctx->h, "%s: schedutil_ops_register", __FUNCTION__);
+                                             jobmanager_exception_cb,
+                                             ctx))) {
+        flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
         goto out;
     }
-    if (schedutil_hello (ctx->h, jobmanager_hello_cb, ctx) < 0) {
+    if (schedutil_hello (ctx->schedutil, jobmanager_hello_cb, ctx) < 0) {
         flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
-    if (schedutil_ready (ctx->h, mode, &queue_depth)) {
+    if (schedutil_ready (ctx->schedutil, mode, &queue_depth)) {
         flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
         goto out;
     }
@@ -295,6 +300,7 @@ static qmanager_ctx_t *qmanager_new (flux_t *h)
         goto out;
     }
     ctx->h = h;
+    ctx->schedutil = NULL;
     set_default_args (ctx->args);
 
 out:
@@ -312,7 +318,7 @@ static void qmanager_destroy (qmanager_ctx_t *ctx)
             flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
         delete ctx->queue;
         ctx->queue = NULL;
-        schedutil_ops_unregister (ctx->ops);
+        schedutil_destroy (ctx->schedutil);
         delete (ctx);
         errno = saved_errno;
     }
