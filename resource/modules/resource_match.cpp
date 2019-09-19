@@ -108,12 +108,20 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
+static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
+static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -816,6 +824,121 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
+static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    const char *rp = NULL, *kv = NULL;
+    string resource_path = "", keyval = "";
+    string property_key = "", property_value = "";
+    size_t pos;
+    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::map<std::string, std::vector <vtx_t>>::const_iterator it;
+    std::pair<std::map<std::string,std::string>::iterator, bool> ret;
+    vtx_t v;
+
+    if (flux_request_unpack (msg, NULL, "{s:s s:s}",
+       "sp_resource_path", &rp,
+       "sp_keyval", &kv) < 0)
+        goto error;
+
+    resource_path = rp;
+    keyval = kv;
+
+    pos = keyval.find ('=');
+
+    if (pos == 0 || (pos == keyval.size () - 1) || pos == string::npos) {
+        errno = EINVAL;
+        flux_log_error (h,
+            "Incorrect format.\nUse set-property <resource> PROPERTY=VALUE");
+        goto error;
+    }
+
+    property_key = keyval.substr (0, pos);
+    property_value = keyval.substr (pos + 1);
+
+    it = ctx->db.by_path.find (resource_path);
+
+    if (it == ctx->db.by_path.end ()) {
+        errno = ENOENT;
+        flux_log_error (h, "Couldn't find %s in resource graph.",
+            resource_path.c_str ());
+        goto error;
+     }
+
+    v = it->second[0];
+
+    ret = ctx->db.resource_graph[v].properties.insert (
+        std::pair<std::string, std::string> (property_key,property_value));
+
+    if (ret.second == false) {
+        ctx->db.resource_graph[v].properties.erase (property_key);
+        ctx->db.resource_graph[v].properties.insert (
+            std::pair<std::string, std::string> (property_key,property_value));
+    }
+
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    const char *rp = NULL, *gp_key = NULL;
+    string resource_path = "", property_key = "";
+    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::map<std::string, std::vector <vtx_t>>::const_iterator it;
+    std::map<std::string, std::string>::const_iterator p_it;
+    vtx_t v;
+    string resp_value = "";
+
+    if (flux_request_unpack (msg, NULL, "{s:s s:s}",
+        "gp_resource_path", &rp,
+        "gp_key", &gp_key) < 0)
+        goto error;
+
+    resource_path = rp;
+    property_key = gp_key;
+
+    it = ctx->db.by_path.find (resource_path);
+
+    if (it == ctx->db.by_path.end ()) {
+        errno = ENOENT;
+        flux_log_error (h, "Couldn't find %s in resource graph.",
+            resource_path.c_str ());
+        goto error;
+     }
+
+    v = it->second[0];
+
+    for (p_it = ctx->db.resource_graph[v].properties.begin ();
+         p_it != ctx->db.resource_graph[v].properties.end (); p_it++) {
+
+         if (property_key.compare (p_it->first) == 0)
+             resp_value = p_it->second;
+     }
+
+     if (resp_value.empty ()) {
+         errno = ENOENT;
+         flux_log_error (h,"Property %s was not found for resource %s.",
+             property_key.c_str (), resource_path.c_str ());
+         goto error;
+     }
+
+     if (flux_respond_pack (h, msg, "{s:s}", "value", resp_value.c_str ()) < 0)
+         flux_log_error (h, "%s", __FUNCTION__);
+
+     return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
 
 /******************************************************************************
  *                                                                            *

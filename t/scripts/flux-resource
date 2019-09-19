@@ -53,6 +53,16 @@ class ResourceModuleInterface:
     def rpc_cancel (self, jobid):
         payload = {'jobid' : jobid}
         return self.f.rpc ("resource.cancel", payload).get ()
+   
+    def rpc_set_property (self, sp_resource_path, sp_keyval):
+        payload = {'sp_resource_path' : sp_resource_path, 
+            'sp_keyval' : sp_keyval}
+        return self.f.rpc ("resource.set_property", payload).get ()
+    
+    def rpc_get_property (self, gp_resource_path, gp_key):
+        payload = {'gp_resource_path' : gp_resource_path, 'gp_key' : gp_key}
+        return self.f.rpc ("resource.get_property", payload).get ()
+    
 
 """
     Action for match allocate sub-command
@@ -130,6 +140,25 @@ def stat_action (args):
     print "Avg. Match Time: ", resp['avg-match'], "Secs"
 
 """
+    Action for set-property sub-command
+"""
+def set_property_action (args):
+    r = ResourceModuleInterface ()
+    sp_resource_path = args.sp_resource_path
+    sp_keyval = args.sp_keyval
+    resp = r.rpc_set_property (sp_resource_path, sp_keyval)
+
+"""
+    Action for get-property sub-command
+"""
+def get_property_action (args):
+    r = ResourceModuleInterface ()
+    gp_resource_path = args.gp_resource_path
+    gp_key = args.gp_key
+    resp = r.rpc_get_property (gp_resource_path, gp_key)
+    print args.gp_key, "=", resp['value']
+
+"""
     Main entry point
 """
 def main ():
@@ -154,10 +183,14 @@ def main ():
     istr = "Print info on a single job"
     sstr = "Print overall performance statistics"
     cstr = "Cancel an allocated or reserved job"
+    pstr = "Set property-key=value for specified resource."
+    gstr = "Get value for specified resource and property-key."
     parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
     parser_i = subpar.add_parser ('info', help=istr, description=istr)
     parser_s = subpar.add_parser ('stat', help=sstr, description=sstr)
     parser_c = subpar.add_parser ('cancel', help=cstr, description=cstr)
+    parser_sp = subpar.add_parser ('set-property', help=pstr, description=pstr)
+    parser_gp = subpar.add_parser ('get-property', help=gstr, description=gstr)
 
     #
     # Add subparser for the match sub-command
@@ -213,6 +246,22 @@ def main ():
     parser_mr.add_argument ('jobspec', metavar='Jobspec', type=str,
                             help='Jobspec file name')
     parser_mr.set_defaults (func=match_reserve_action)
+
+    # Positional arguments for set-property sub-command
+    #
+    parser_sp.add_argument ('sp_resource_path', metavar='ResourcePath', 
+            type=str, help='set-property resource_path property-key=val')
+    parser_sp.add_argument ('sp_keyval', metavar='PropertyKeyVal', type=str,
+                            help='set-property resource_path property-key=val')
+    parser_sp.set_defaults (func=set_property_action)
+
+    # Positional argument for get-property sub-command
+    #
+    parser_gp.add_argument ('gp_resource_path', metavar='ResourcePath', 
+                type=str, help='get-property resource_path property-key')
+    parser_gp.add_argument ('gp_key', metavar='PropertyKey', type=str,
+                            help='get-property resource_path property-key')
+    parser_gp.set_defaults (func=get_property_action)
 
     #
     # Parse the args and call an action routine as part of that
