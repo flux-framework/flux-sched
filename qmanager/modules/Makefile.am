@@ -7,7 +7,8 @@ AM_LDFLAGS = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir) \
-    $(FLUX_CORE_CFLAGS)
+    $(FLUX_CORE_CFLAGS) \
+    $(FLUX_SCHEDUTIL_CFLAGS)
 
 fluxmod_LTLIBRARIES = qmanager.la
 
@@ -39,11 +40,12 @@ qmanager_la_SOURCES = \
 
 qmanager_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
-    $(FLUX_CORE_CFLAGS)
+    $(FLUX_CORE_CFLAGS) \
+    $(FLUX_SCHEDUTIL_CFLAGS)
 
 qmanager_la_LIBADD = \
-    $(top_builddir)/src/common/libschedutil/libschedutil.la \
     $(FLUX_CORE_LIBS) \
+    $(FLUX_SCHEDUTIL_LIBS) \
     $(CZMQ_LIBS) \
     $(JANSSON_LIBS)
 

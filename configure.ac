@@ -73,6 +73,7 @@ AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
 AX_BOOST_REGEX
 PKG_CHECK_MODULES([IDSET], [flux-idset], [], [])
+PKG_CHECK_MODULES([FLUX_SCHEDUTIL], [flux-schedutil], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])
               AC_DEFINE([HAVE_LIBREADLINE], [1],
@@ -153,7 +154,6 @@ AC_CONFIG_FILES([Makefile
   src/common/libtap/Makefile
   src/common/libutil/Makefile
   src/common/librbtree/Makefile
-  src/common/libschedutil/Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
