@@ -129,7 +129,7 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
 {
     string x = (exclusive)? "true" : "false";
     m_vout << "{";
-    m_vout <<     "\"id\":\"" << u << "\",";
+    m_vout <<     "\"id\":\"" << g[u].uniq_id << "\",";
     m_vout <<     "\"metadata\":{";
     m_vout <<         "\"type\":" << "\"" << g[u].type << "\"" << ",";
     m_vout <<         "\"basename\":" << "\"" << g[u].basename << "\"" << ",";
@@ -157,8 +157,8 @@ void jgf_match_writers_t::emit_edg (const string &prefix,
                                     const f_resource_graph_t &g, const edg_t &e)
 {
     m_eout << "{";
-    m_eout <<     "\"source\":\"" << source (e, g) << "\",";
-    m_eout <<     "\"target\":\"" << target (e, g) << "\",";
+    m_eout <<     "\"source\":\"" << g[source (e, g)].uniq_id << "\",";
+    m_eout <<     "\"target\":\"" << g[target (e, g)].uniq_id << "\",";
     m_eout <<     "\"metadata\":{";
     m_eout <<         "\"name\":" << "\"" << g[e].name << "\"";
     m_eout <<    "}";
