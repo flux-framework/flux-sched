@@ -277,7 +277,7 @@ void rv1_match_writers_t::emit (stringstream &out)
     jgf.emit (out, false);
     out << "}" << endl;
     if (out.str ().size () <= (base + ver.size () + exec_key.size ()
-                                    + sched_key.size () + 4))
+                                    + sched_key.size () + 5))
         out.str (out.str ().substr (0, base));
 }
 
@@ -320,7 +320,7 @@ void rv1_nosched_match_writers_t::emit (stringstream &out)
     out << "," << exec_key;
     rlite.emit (out, false);
     out << "}" << endl;
-    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 3))
+    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 4))
         out.str (out.str ().substr (0, base));
 }
 
