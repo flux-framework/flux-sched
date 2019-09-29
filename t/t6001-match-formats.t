@@ -27,14 +27,6 @@ test_expect_success "R emitted with -F jgf validates against schema" '
     flux jsonschemalint -v ${schema} o1.json
 '
 
-test_expect_success "R emitted with -F pretty_jgf validates against schema" '
-    echo "match allocate ${jobspec}" > in2.txt &&
-    echo "quit" >> in2.txt &&
-    ${query} -G ${tiny_grug} -F pretty_jgf -d -t o2 < in2.txt &&
-    cat o2 | grep -v "INFO:" > o2.json &&
-    flux jsonschemalint -v ${schema} o2.json
-'
-
 test_expect_success LONGTEST "Large R emitted with -F jgf validates" '
     echo "match allocate ${jobspec2}" > in3.txt &&
     echo "quit" >> in3.txt &&
@@ -57,14 +49,6 @@ test_expect_success "--match-format=rv1 works" '
     ${query} -G ${tiny_grug} -F rv1 -d -t o5 < in5.txt &&
     cat o5 | grep -v "INFO:" | jq ".scheduling" > o5.json &&
     flux jsonschemalint -v ${schema} o5.json
-'
-
-test_expect_success "--match-format=pretty_rv1 works" '
-    echo "match allocate ${jobspec}" > in6.txt &&
-    echo "quit" >> in6.txt &&
-    ${query} -G ${tiny_grug} -F pretty_rv1 -d -t o6 < in6.txt &&
-    cat o6 | grep -v "INFO:" | jq ".scheduling" > o6.json &&
-    flux jsonschemalint -v ${schema} o6.json
 '
 
 test_expect_success "--match-format=rv1_nosched and =rlite works" '
