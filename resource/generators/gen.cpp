@@ -168,15 +168,13 @@ void dfs_emitter_t::emit_edges (gge_t ge, const gg_t &recipe,
         return;
     db.resource_graph[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].relation;
-    db.resource_graph[e].name += ":" + recipe[ge].e_subsystem
-                                     + "." + recipe[ge].relation;
+    db.resource_graph[e].name[recipe[ge].e_subsystem] = recipe[ge].relation;
     e = raw_edge (tgt_v, src_v);
     if (m_err_msg != "")
         return;
     db.resource_graph[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].rrelation;
-    db.resource_graph[e].name += ":" + recipe[ge].e_subsystem
-                                     + "." + recipe[ge].rrelation;
+    db.resource_graph[e].name[recipe[ge].e_subsystem] = recipe[ge].rrelation;
 }
 
 vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
@@ -619,11 +617,11 @@ void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const vtx_t parent
 
             tie (e, inserted) = add_edge(parent, v, db.resource_graph);
             db.resource_graph[e].idata.member_of[subsys] = relation;
-            db.resource_graph[e].name += ":" + subsys + "." + relation;
+            db.resource_graph[e].name[subsys] = relation;
 
             tie (e, inserted) = add_edge(v, parent, db.resource_graph);
             db.resource_graph[e].idata.member_of[subsys] = rev_relation;
-            db.resource_graph[e].name += ":" + subsys + "." + rev_relation;
+            db.resource_graph[e].name[subsys] = rev_relation;
         }
     }
 

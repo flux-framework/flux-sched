@@ -72,7 +72,7 @@ struct resource_relation_t {
     resource_relation_t &operator= (const resource_relation_t &o);
     ~resource_relation_t ();
 
-    std::string name;
+    std::map<std::string, std::string> name; //!< subsystem: relationship
     relation_infra_t idata; //!< scheduling infrastructure data
 };
 

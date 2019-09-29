@@ -170,7 +170,16 @@ void jgf_match_writers_t::emit_edg (const string &prefix,
     m_eout <<     "\"source\":\"" << g[source (e, g)].uniq_id << "\",";
     m_eout <<     "\"target\":\"" << g[target (e, g)].uniq_id << "\",";
     m_eout <<     "\"metadata\":{";
-    m_eout <<         "\"name\":" << "\"" << g[e].name << "\"";
+
+    if (!g[e].name.empty ()) {
+        stringstream names;
+        m_eout <<     "\"name\":{";
+        for (auto &kv : g[e].name)
+            names << "\"" << kv.first << "\":\"" << kv.second << "\",";
+        m_eout << names.str ().substr (0, names.str ().size () - 1);
+        m_eout <<      "}";
+    }
+
     m_eout <<    "}";
     m_eout << "},";
 }
