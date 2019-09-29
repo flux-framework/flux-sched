@@ -34,18 +34,14 @@ test_debug '
 
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
     flux module remove resource &&
-    flux module load -r 0 resource grug-conf=${grug} prune-filters=ALL:core
+    flux module load -r 0 resource load-file=${grug} \
+load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with an XML works' '
     flux module remove resource &&
-    flux module load -r 0 resource hwloc-xml=${xml} prune-filters=ALL:core
-'
-
-test_expect_success 'loading resource module with a GRUG + XML works' '
-    flux module remove resource &&
-    flux module load -r 0 resource grug-conf=${grug} hwloc-xml=${xml} \
-prune-filters=ALL:core
+    flux module load -r 0 resource load-file=${xml} \
+load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with no option works' '
@@ -55,18 +51,13 @@ test_expect_success 'loading resource module with no option works' '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
     flux module remove resource &&
-    test_expect_code 1 flux module load -r 0 resource grug-conf=${ne_grug} \
-prune-filters=ALL:core
+    test_expect_code 1 flux module load -r 0 resource load-file=${ne_grug} \
+load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
-    test_expect_code 1 flux module load -r 0 resource hwloc-xml=${ne_xml} \
-prune-filters=ALL:core
-'
-
-test_expect_success 'loading resource module with a nonexistent GRUG+XML fails' '
-    test_expect_code 1 flux module load -r 0 resource grug-conf=${ne_grug} \
-hwloc-xml=${ne_xml} prune-filters=ALL:core
+    test_expect_code 1 flux module load -r 0 resource load-file=${ne_xml} \
+load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with known policies works' '

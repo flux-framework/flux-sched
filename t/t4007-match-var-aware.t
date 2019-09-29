@@ -35,8 +35,8 @@ test_debug '
 '
 
 test_expect_success 'Loading variation policy on a small config works' '
-	flux module load resource grug-conf=${grug} prune-filters=ALL:core \
-subsystems=containment policy=variation
+	flux module load resource load-file=${grug} load-format=grug \
+prune-filters=ALL:core subsystems=containment policy=variation
 '
 
 test_expect_success 'Variation policy works with resource-match.' '

@@ -82,7 +82,7 @@ echo "quit" >> ${JOBSTREAM_FN}
 cat ${SRC_PATH}/${GRUG_IN_FN} | sed -e "s/@NNODES@/${NNODES}/" \
 	                            -e "s/@NCORES@/${NCORES}/" > ${GRUG}
 
-../resource-query -G ${GRUG} -e -d -t ${SCHED_FN} < ${JOBSTREAM_FN} > ${PERF_FN}
+../resource-query -L ${GRUG} -e -d -t ${SCHED_FN} < ${JOBSTREAM_FN} > ${PERF_FN}
 
 if test $? -ne 0 || test ! -f ${SCHED_FN} || test ! -f ${PERF_FN}
 then

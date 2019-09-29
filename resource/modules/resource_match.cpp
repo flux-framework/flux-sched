@@ -38,7 +38,7 @@ extern "C" {
 }
 
 #include "resource/schema/resource_graph.hpp"
-#include "resource/generators/gen.hpp"
+#include "resource/readers/resource_reader_factory.hpp"
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
@@ -53,9 +53,9 @@ using namespace Flux::resource_model;
  ******************************************************************************/
 
 struct resource_args_t {
-    string grug;
-    string hwloc_xml;
-    string hwloc_whitelist;
+    string load_file;              /* load file name */
+    string load_format;            /* load reader format */
+    string load_whitelist;         /* load resource whitelist */
     string match_subsystems;
     string match_policy;
     string prune_filters;
@@ -160,9 +160,9 @@ static void freectx (void *arg)
 
 static void set_default_args (resource_args_t &args)
 {
-    args.grug = "";
-    args.hwloc_xml = "";
-    args.hwloc_whitelist = "";
+    args.load_file = "";
+    args.load_format = "hwloc";
+    args.load_whitelist = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
     args.prune_filters = "ALL:core";
@@ -209,13 +209,21 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
     string dflt = "";
 
     for (int i = 0; i < argc; i++) {
-        if (!strncmp ("grug-conf=", argv[i], sizeof ("grug-conf"))) {
-            args.grug = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("hwloc-xml=", argv[i], sizeof ("hwloc-xml"))) {
-            args.hwloc_xml = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("hwloc-whitelist=",
-                             argv[i], sizeof ("hwloc-whitelist"))) {
-            args.hwloc_whitelist = strstr (argv[i], "=") + 1;
+        if (!strncmp ("load-file=", argv[i], sizeof ("load-file"))) {
+            args.load_file = strstr (argv[i], "=") + 1;
+        } else if (!strncmp ("load-format=", argv[i], sizeof ("load-format"))) {
+            dflt = args.load_format;
+            args.load_format = strstr (argv[i], "=") + 1;
+            if (!known_resource_reader (args.load_format)) {
+                flux_log (ctx->h, LOG_ERR,
+                          "unknown resource reader (%s)! Use default (%s).",
+                           args.load_format.c_str (), dflt.c_str ());
+                args.load_format = dflt;
+            }
+            args.load_format = strstr (argv[i], "=") + 1;
+        } else if (!strncmp ("load-whitelist=",
+                             argv[i], sizeof ("load-whitelist"))) {
+            args.load_whitelist = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
             dflt = args.match_subsystems;
             args.match_subsystems = strstr (argv[i], "=") + 1;
@@ -337,97 +345,129 @@ error:
     return NULL;
 }
 
-
-/*
- * Read the hwloc xml stored in Flux's KVS and populate the resource db
- *
- * \param rgen   resource generator
- * \param ctx    resource_ctx_t object
- * \param db     graph database consisting of resource graph and various indices
- * \return       0 on success; non-zero integer on an error
- */
-int read_flux_hwloc (resource_generator_t &rgen, resource_ctx_t *ctx)
+static int populate_resource_db_file (resource_ctx_t *ctx,
+                                      std::shared_ptr<resource_reader_base_t> rd)
 {
     int rc = -1;
+    ifstream in_file;
+    std::stringstream buffer{};
+
+    in_file.open (ctx->args.load_file.c_str (), std::ifstream::in);
+    if (!in_file.good ()) {
+        errno = EIO;
+        flux_log (ctx->h, LOG_ERR, "opening %s", ctx->args.load_file.c_str ());
+        goto done;
+    }
+    buffer << in_file.rdbuf ();
+    in_file.close ();
+    if ( (rc = ctx->db.load (buffer.str (), rd)) < 0) {
+        flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
+        goto done;
+    }
+    rc = 0;
+
+done:
+    return rc;
+}
+
+static int populate_resource_db_kvs (resource_ctx_t *ctx,
+                                     std::shared_ptr<resource_reader_base_t> rd)
+{
+    int n = -1;
+    int rc = -1;
+    char k[64] = {0};
     uint32_t rank = 0;
     uint32_t size = 0;
+    json_t *o = NULL;
     flux_t *h = ctx->h;
+    const char *hwloc_xml = NULL;
     resource_graph_db_t &db = ctx->db;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
-    if (ctx->args.hwloc_whitelist != ""
-        && rgen.set_hwloc_whitelist (ctx->args.hwloc_whitelist) == -1) {
-        flux_log (h, LOG_ERR, "%s: error in setting hwloc whitelist (%s)",
-                  __FUNCTION__, ctx->args.hwloc_whitelist.c_str ());
-        return -1;
-    }
     if (flux_get_size (h, &size) == -1) {
-        flux_log (h, LOG_ERR, "%s: error with flux_get_size", __FUNCTION__);
-        return -1;
+        flux_log (h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
+        goto done;
     }
 
-    ggv_t cluster_vertex = rgen.create_cluster_vertex (db);
+    // For 0th rank -- special case to use rd->unpack
+    rank = 0;
+    n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
+    if ((n < 0) || ((unsigned int) n > sizeof (k))) {
+        errno = ENOMEM;
+        goto done;
+    }
+    o = get_string_blocking (h, k);
+    hwloc_xml = json_string_value (o);
+    if ( (rc = ctx->db.load (hwloc_xml, rd, rank)) < 0) {
+        flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
+        goto done;
+    }
+    Jput (o);
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        flux_log (ctx->h, LOG_ERR, "cluster vertex is unavailable");
+        goto done;
+    }
+    v = db.metadata.roots["containment"];
 
-    for (rank=0; rank < size; rank++) {
-        char k[64];
-        int n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
+    // For the rest of the ranks -- general case
+    for (rank=1; rank < size; rank++) {
+        n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
         if ((n < 0) || ((unsigned int) n > sizeof (k))) {
           errno = ENOMEM;
-          return -1;
+          goto done;
         }
-        json_t *o = get_string_blocking (h, k);
-
-        const char *hwloc_xml = json_string_value (o);
-        rgen.read_ranked_hwloc_xml (hwloc_xml, rank, cluster_vertex, db);
+        o = get_string_blocking (h, k);
+        hwloc_xml = json_string_value (o);
+        if ( (rc = ctx->db.load (hwloc_xml, rd, v, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
+            goto done;
+        }
         Jput (o);
     }
+    rc = 0;
 
-    return 0;
+done:
+    return rc;
 }
 
 static int populate_resource_db (resource_ctx_t *ctx)
 {
-    int rc = 0;
+    int rc = -1;
+    double elapse;
     struct timeval st, et;
-    resource_generator_t rgen;
+    std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db.resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-
-    gettimeofday (&st, NULL);
-
-    // TODO: include rgen.err_message()
-    if (ctx->args.grug != "") {
-        if (ctx->args.hwloc_xml != "") {
-            flux_log (ctx->h, LOG_WARNING, "multiple resource inputs provided, using grug");
-        }
-        if ((rc = rgen.read_graphml (ctx->args.grug, ctx->db)) != 0) {
-            errno = EINVAL;
-            rc = -1;
-            flux_log (ctx->h, LOG_ERR, "error in generating resources");
-            goto done;
-        }
-        flux_log (ctx->h, LOG_INFO, "loaded resources from grug");
-    } else if (ctx->args.hwloc_xml != "") {
-        if ( (rc = rgen.read_hwloc_xml_file (ctx->args.hwloc_xml.c_str(), ctx->db)) != 0) {
-            errno = EINVAL;
-            rc = -1;
-            flux_log (ctx->h, LOG_ERR, "error in generating resources");
-            goto done;
-        }
-        flux_log (ctx->h, LOG_INFO, "loaded resources from hwloc xml");
-    } else {
-        // gather hwloc from Flux's KVS
-        if ( (rc = read_flux_hwloc (rgen, ctx)) != 0) {
-            errno = EINVAL;
-            rc = -1;
-            flux_log (ctx->h, LOG_ERR, "error in generating resources");
-            goto done;
-        }
-        flux_log (ctx->h, LOG_INFO, "loaded resources from the hwloc xml in the KVS");
+    if ( (rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
+        flux_log (ctx->h, LOG_ERR, "Can't create load reader");
+        goto done;
+    }
+    if (ctx->args.load_whitelist != "") {
+        if (rd->set_whitelist (ctx->args.load_whitelist) < 0)
+            flux_log (ctx->h, LOG_ERR, "setting whitelist");
+        if (!rd->is_whitelist_supported ())
+            flux_log (ctx->h, LOG_WARNING, "whitelist unsupported");
     }
 
+    gettimeofday (&st, NULL);
+    if (ctx->args.load_file != "") {
+        if (populate_resource_db_file (ctx, rd) < 0) {
+            flux_log (ctx->h, LOG_ERR, "error loading resources from file");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO,
+                  "loaded resources from %s", ctx->args.load_file.c_str ());
+    } else {
+        if (populate_resource_db_kvs (ctx, rd) < 0) {
+            flux_log (ctx->h, LOG_ERR, "loading resources from the KVS");
+            goto done;
+        }
+        flux_log (ctx->h, LOG_INFO, "loaded resources from hwloc in the KVS");
+    }
     gettimeofday (&et, NULL);
     ctx->perf.load = get_elapse_time (st, et);
+    rc = 0;
 
 done:
     return rc;
@@ -522,7 +562,7 @@ static int init_resource_graph (resource_ctx_t *ctx)
 
     // Initialize the DFU traverser
     if (ctx->traverser->initialize (ctx->fgraph,
-                                    &(ctx->db.roots), ctx->matcher) < 0) {
+                                    &(ctx->db.metadata.roots), ctx->matcher) < 0) {
         flux_log (ctx->h, LOG_ERR, "traverser initialization");
         return -1;
 
@@ -859,9 +899,9 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     property_key = keyval.substr (0, pos);
     property_value = keyval.substr (pos + 1);
 
-    it = ctx->db.by_path.find (resource_path);
+    it = ctx->db.metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.by_path.end ()) {
+    if (it == ctx->db.metadata.by_path.end ()) {
         errno = ENOENT;
         flux_log_error (h, "Couldn't find %s in resource graph.",
             resource_path.c_str ());
@@ -908,9 +948,9 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     resource_path = rp;
     property_key = gp_key;
 
-    it = ctx->db.by_path.find (resource_path);
+    it = ctx->db.metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.by_path.end ()) {
+    if (it == ctx->db.metadata.by_path.end ()) {
         errno = ENOENT;
         flux_log_error (h, "Couldn't find %s in resource graph.",
             resource_path.c_str ());

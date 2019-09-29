@@ -33,11 +33,16 @@ libresource_la_SOURCES = \
     traversers/dfu_impl.cpp \
     policies/base/dfu_match_cb.cpp \
     policies/base/matcher.cpp \
-    generators/gen.cpp \
-    generators/spec.cpp \
+    readers/resource_reader_base.cpp \
+    readers/resource_spec_grug.cpp \
+    readers/resource_reader_grug.cpp \
+    readers/resource_reader_hwloc.cpp \
+    readers/resource_reader_jgf.cpp \
+    readers/resource_reader_factory.cpp \
     evaluators/scoring_api.cpp \
     evaluators/edge_eval_api.cpp \
     writers/match_writers.cpp \
+    store/resource_graph_store.cpp \
     utilities/command.hpp \
     policies/dfu_match_high_id_first.hpp \
     policies/dfu_match_low_id_first.hpp \
@@ -55,13 +60,18 @@ libresource_la_SOURCES = \
     traversers/dfu_impl.hpp \
     policies/base/dfu_match_cb.hpp \
     policies/base/matcher.hpp \
-    generators/gen.hpp \
-    generators/spec.hpp \
+    readers/resource_reader_base.hpp \
+    readers/resource_spec_grug.hpp \
+    readers/resource_reader_grug.hpp \
+    readers/resource_reader_hwloc.hpp \
+    readers/resource_reader_jgf.hpp \
+    readers/resource_reader_factory.hpp \
     evaluators/scoring_api.hpp \
     evaluators/edge_eval_api.hpp \
     evaluators/fold.hpp \
     config/system_defaults.hpp \
     writers/match_writers.hpp \
+    store/resource_graph_store.hpp \
     planner/planner.h
 
 libresource_la_CXXFLAGS = \
@@ -77,4 +87,5 @@ libresource_la_LIBADD = \
     $(BOOST_FILESYSTEM_LIB) \
     $(BOOST_GRAPH_LIB) \
     $(BOOST_REGEX_LIB) \
-    $(HWLOC_LIBS)
+    $(HWLOC_LIBS) \
+    $(JANSSON_LIBS)
