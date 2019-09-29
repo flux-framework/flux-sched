@@ -149,6 +149,16 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
         m_vout << props.str ().substr (0, props.str ().size () - 1);
         m_vout <<      "}";
     }
+    if (!g[u].paths.empty ()) {
+        stringstream paths;
+        m_vout <<                         ", ";
+        m_vout <<     "\"paths\":{";
+        for (auto &kv : g[u].paths)
+            paths << "\"" << kv.first << "\":\"" << kv.second << "\",";
+        m_vout << paths.str ().substr (0, paths.str ().size () - 1);
+        m_vout <<      "}";
+    }
+
     m_vout <<    "}";
     m_vout << "},";
 }
