@@ -168,15 +168,13 @@ void dfs_emitter_t::emit_edges (gge_t ge, const gg_t &recipe,
         return;
     db.resource_graph[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].relation;
-    db.resource_graph[e].name += ":" + recipe[ge].e_subsystem
-                                     + "." + recipe[ge].relation;
+    db.resource_graph[e].name[recipe[ge].e_subsystem] = recipe[ge].relation;
     e = raw_edge (tgt_v, src_v);
     if (m_err_msg != "")
         return;
     db.resource_graph[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].rrelation;
-    db.resource_graph[e].name += ":" + recipe[ge].e_subsystem
-                                     + "." + recipe[ge].rrelation;
+    db.resource_graph[e].name[recipe[ge].e_subsystem] = recipe[ge].rrelation;
 }
 
 vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
@@ -411,14 +409,14 @@ int resource_generator_t::check_hwloc_version (string &m_err_msg) {
     return 0;
 }
 
-ggv_t resource_generator_t::add_new_vertex(resource_graph_db_t &db,
-                                           const ggv_t &parent,
-                                           int id, const string &subsys,
-                                           const string &type,
-                                           const string &basename,
-                                           int size, int rank)
+vtx_t resource_generator_t::add_new_vertex (resource_graph_db_t &db,
+                                            const vtx_t &parent,
+                                            int id, const string &subsys,
+                                            const string &type,
+                                            const string &basename,
+                                            int size, int rank)
 {
-    ggv_t v = boost::add_vertex (db.resource_graph);
+    vtx_t v = boost::add_vertex (db.resource_graph);
 
     // Set properties of the new vertex
     bool is_root = parent == boost::graph_traits<resource_graph_t>::null_vertex ();
@@ -454,7 +452,7 @@ bool resource_generator_t::in_whitelist (const std::string &resource)
            || (hwloc_whitelist.find (resource) != hwloc_whitelist.end ());
 }
 
-void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const ggv_t parent,
+void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const vtx_t parent,
                                        int rank, resource_graph_db_t &db)
 {
     bool supported_resource = true;
@@ -598,13 +596,13 @@ void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const ggv_t parent
     }
 
     // A valid ancestor vertex to pass to the recursive call
-    ggv_t valid_ancestor;
+    vtx_t valid_ancestor;
     if (!supported_resource) {
         valid_ancestor = parent;
     } else {
         const string subsys = "containment";
-        ggv_t v = add_new_vertex(db, parent, id,
-                                 subsys, type, basename, size, rank);
+        vtx_t v = add_new_vertex (db, parent, id,
+                                  subsys, type, basename, size, rank);
         valid_ancestor = v;
 
         // Create edge between parent/child
@@ -619,11 +617,11 @@ void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const ggv_t parent
 
             tie (e, inserted) = add_edge(parent, v, db.resource_graph);
             db.resource_graph[e].idata.member_of[subsys] = relation;
-            db.resource_graph[e].name += ":" + subsys + "." + relation;
+            db.resource_graph[e].name[subsys] = relation;
 
             tie (e, inserted) = add_edge(v, parent, db.resource_graph);
             db.resource_graph[e].idata.member_of[subsys] = rev_relation;
-            db.resource_graph[e].name += ":" + subsys + "." + rev_relation;
+            db.resource_graph[e].name[subsys] = rev_relation;
         }
     }
 
@@ -700,11 +698,11 @@ int resource_generator_t::read_graphml (const string &fn, resource_graph_db_t &d
     return (m_err_msg == "")? rc : -1;
 }
 
-ggv_t resource_generator_t::create_cluster_vertex (resource_graph_db_t &db)
+vtx_t resource_generator_t::create_cluster_vertex (resource_graph_db_t &db)
 {
     // generate cluster root vertex
     const string subsys = "containment";
-    ggv_t v = add_new_vertex (db, boost::graph_traits<resource_graph_t>::null_vertex (),
+    vtx_t v = add_new_vertex (db, boost::graph_traits<resource_graph_t>::null_vertex (),
                               0, subsys, "cluster", "cluster", 1);
     db.roots[subsys] = v;
 
@@ -713,7 +711,7 @@ ggv_t resource_generator_t::create_cluster_vertex (resource_graph_db_t &db)
 
 int resource_generator_t::read_ranked_hwloc_xml (const char *hwloc_xml,
                                                  int rank,
-                                                 const ggv_t &root_vertex,
+                                                 const vtx_t &root_vertex,
                                                  resource_graph_db_t &db)
 {
     if (check_hwloc_version (m_err_msg) < 0) {
@@ -755,7 +753,7 @@ int resource_generator_t::read_hwloc_xml_file (const char *ifn,
         return -1;
     }
 
-    ggv_t cluster_vertex = create_cluster_vertex (db);
+    vtx_t cluster_vertex = create_cluster_vertex (db);
     std::ifstream infile (ifn);
     if (!infile.good ())
         return -1;

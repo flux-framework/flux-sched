@@ -37,10 +37,7 @@ enum class match_format_t { SIMPLE,
                             RLITE,
                             RV1,
                             RV1_NOSCHED,
-                            PRETTY_SIMPLE,
-                            PRETTY_JGF,
-                            PRETTY_RLITE,
-                            PRETTY_RV1 };
+                            PRETTY_SIMPLE };
 
 
 /*! Base match writers class for a matched resource set
@@ -161,62 +158,6 @@ public:
                            unsigned int needs, bool exclusive);
 private:
     std::list<std::string> m_out;
-};
-
-
-/*! Human-friendly JGF match writers class for a matched resource set
- */
-class pretty_jgf_match_writers_t : public match_writers_t
-{
-public:
-    virtual void reset ();
-    virtual void emit (std::stringstream &out);
-    virtual void emit_vtx (const std::string &prefix,
-                           const f_resource_graph_t &g, const vtx_t &u,
-                           unsigned int needs, bool exclusive);
-    virtual void emit_edg (const std::string &prefix,
-                           const f_resource_graph_t &g, const edg_t &e);
-private:
-    std::stringstream m_vout;
-    std::stringstream m_eout;
-};
-
-
-/*! Human-friendly RLite match writers class for a matched resource set
- */
-class pretty_rlite_match_writers_t : public match_writers_t
-{
-public:
-    pretty_rlite_match_writers_t ();
-    virtual ~pretty_rlite_match_writers_t ();
-    virtual void reset ();
-    virtual void emit (std::stringstream &out);
-    virtual void emit_vtx (const std::string &prefix,
-                           const f_resource_graph_t &g, const vtx_t &u,
-                           unsigned int needs, bool exclusive);
-private:
-    bool m_reducer_set ();
-    std::map<std::string, std::set<int64_t>> m_reducer;
-    std::map<std::string, std::stringstream *> m_gatherer;
-    std::stringstream m_out;
-};
-
-
-/*! Human-friendly R Version 1 match writers class for a matched resource set
- */
-class pretty_rv1_match_writers_t : public match_writers_t
-{
-public:
-    virtual void reset ();
-    virtual void emit (std::stringstream &out);
-    virtual void emit_vtx (const std::string &prefix,
-                           const f_resource_graph_t &g, const vtx_t &u,
-                           unsigned int needs, bool exclusive);
-    virtual void emit_edg (const std::string &prefix,
-                           const f_resource_graph_t &g, const edg_t &e);
-private:
-    pretty_rlite_match_writers_t rlite;
-    pretty_jgf_match_writers_t jgf;
 };
 
 

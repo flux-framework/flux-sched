@@ -129,7 +129,7 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
 {
     string x = (exclusive)? "true" : "false";
     m_vout << "{";
-    m_vout <<     "\"id\":\"" << u << "\",";
+    m_vout <<     "\"id\":\"" << g[u].uniq_id << "\",";
     m_vout <<     "\"metadata\":{";
     m_vout <<         "\"type\":" << "\"" << g[u].type << "\"" << ",";
     m_vout <<         "\"basename\":" << "\"" << g[u].basename << "\"" << ",";
@@ -149,6 +149,16 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
         m_vout << props.str ().substr (0, props.str ().size () - 1);
         m_vout <<      "}";
     }
+    if (!g[u].paths.empty ()) {
+        stringstream paths;
+        m_vout <<                         ", ";
+        m_vout <<     "\"paths\":{";
+        for (auto &kv : g[u].paths)
+            paths << "\"" << kv.first << "\":\"" << kv.second << "\",";
+        m_vout << paths.str ().substr (0, paths.str ().size () - 1);
+        m_vout <<      "}";
+    }
+
     m_vout <<    "}";
     m_vout << "},";
 }
@@ -157,10 +167,19 @@ void jgf_match_writers_t::emit_edg (const string &prefix,
                                     const f_resource_graph_t &g, const edg_t &e)
 {
     m_eout << "{";
-    m_eout <<     "\"source\":\"" << source (e, g) << "\",";
-    m_eout <<     "\"target\":\"" << target (e, g) << "\",";
+    m_eout <<     "\"source\":\"" << g[source (e, g)].uniq_id << "\",";
+    m_eout <<     "\"target\":\"" << g[target (e, g)].uniq_id << "\",";
     m_eout <<     "\"metadata\":{";
-    m_eout <<         "\"name\":" << "\"" << g[e].name << "\"";
+
+    if (!g[e].name.empty ()) {
+        stringstream names;
+        m_eout <<     "\"name\":{";
+        for (auto &kv : g[e].name)
+            names << "\"" << kv.first << "\":\"" << kv.second << "\",";
+        m_eout << names.str ().substr (0, names.str ().size () - 1);
+        m_eout <<      "}";
+    }
+
     m_eout <<    "}";
     m_eout << "},";
 }
@@ -277,7 +296,7 @@ void rv1_match_writers_t::emit (stringstream &out)
     jgf.emit (out, false);
     out << "}" << endl;
     if (out.str ().size () <= (base + ver.size () + exec_key.size ()
-                                    + sched_key.size () + 4))
+                                    + sched_key.size () + 5))
         out.str (out.str ().substr (0, base));
 }
 
@@ -320,7 +339,7 @@ void rv1_nosched_match_writers_t::emit (stringstream &out)
     out << "," << exec_key;
     rlite.emit (out, false);
     out << "}" << endl;
-    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 3))
+    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 4))
         out.str (out.str ().substr (0, base));
 }
 
@@ -365,220 +384,6 @@ void pretty_sim_match_writers_t::emit_vtx (const string &prefix,
 
 /****************************************************************************
  *                                                                          *
- *    Pretty JSON Graph Format (JGF) Writers Classs Public Definitions      *
- *                                                                          *
- ****************************************************************************/
-
-void pretty_jgf_match_writers_t::emit (stringstream &out)
-{
-    size_t vout_size = m_vout.str ().size ();
-    size_t eout_size = m_eout.str ().size ();
-
-    out << "     {" << endl;
-    out << "      \"graph\": {" << endl;
-    out << "        \"nodes\": [" << endl;
-    if (vout_size > 1)
-        out << m_vout.str ().substr (0, vout_size - 2) << endl;
-    out << "       ]," << endl;
-    out << "        \"edges\": [" << endl;
-    if (eout_size > 1)
-        out << m_eout.str ().substr (0, eout_size - 2) << endl;
-    out << "       ]" << endl;
-    out << "      }" << endl;
-    out << "     }" << endl;
-}
-
-void pretty_jgf_match_writers_t::reset ()
-{
-    m_vout.str ("");
-    m_vout.clear ();
-    m_eout.str ("");
-    m_eout.clear ();
-}
-
-void pretty_jgf_match_writers_t::emit_vtx (const string &prefix,
-                                           const f_resource_graph_t &g,
-                                           const vtx_t &u, unsigned int needs,
-                                           bool exclusive)
-{
-    string x = (exclusive)? "true" : "false";
-    string indent = "        ";
-    m_vout << indent << "  { " << endl;
-    m_vout << indent << "    \"id\": \"" << u << "\", " << endl;
-    m_vout << indent << "    \"metadata\": { " << endl;
-    m_vout << indent << "          \"type\": " << "\"" << g[u].type
-           << "\", " << endl;
-    m_vout << indent << "          \"basename\": " << "\"" << g[u].basename
-           << "\", " << endl;
-    m_vout << indent << "          \"name\": " << "\"" << g[u].name
-           << "\", " << endl;
-    m_vout << indent << "          \"id\": " << g[u].id << ", " << endl;
-    m_vout << indent << "          \"uniq_id\": " << g[u].uniq_id << ", " << endl;
-    m_vout << indent << "          \"rank\": " << g[u].rank << ", " << endl;
-    m_vout << indent << "          \"exclusive\": " << x << ", " << endl;
-    m_vout << indent << "          \"unit\": \"" << g[u].unit << "\", " << endl;
-    m_vout << indent << "          \"size\": " << needs << endl;
-    if (!g[u].properties.empty ()) {
-        stringstream props;
-        m_vout <<                                     ", ";
-        m_vout << indent << "           \"properties\": { ";
-        for (auto &kv : g[u].properties) {
-            props << indent << "                \"" << kv.first << "\": \""
-                            << kv.second << "\"," << endl;
-        }
-        m_vout << props.str ().substr (0, props.str ().size () - 2) << endl;
-        m_vout << indent << "                     }";
-    }
-    m_vout << indent << "    }" << endl;
-    m_vout << indent << "  }," << endl;
-}
-
-void pretty_jgf_match_writers_t::emit_edg (const string &prefix,
-                                           const f_resource_graph_t &g,
-                                           const edg_t &e)
-{
-    string indent = "        ";
-    m_eout << indent << "{ " << endl;
-    m_eout << indent << "    \"source\": \"" << source (e, g) << "\", " << endl;
-    m_eout << indent << "    \"target\": \"" << target (e, g) << "\", " << endl;
-    m_eout << indent << "    \"metadata\": { " << endl;
-    m_eout << indent << "        \"name\": " << "\"" << g[e].name
-           << "\"" << endl;
-    m_eout << indent << "    }" << endl;
-    m_eout << indent << "}," << endl;
-}
-
-
-/****************************************************************************
- *                                                                          *
- *             Pretty RLITE Writers Class Method Definitions                *
- *                                                                          *
- ****************************************************************************/
-
-pretty_rlite_match_writers_t::pretty_rlite_match_writers_t()
-{
-    m_reducer["core"] = set<int64_t> ();
-    m_reducer["gpu"] = set<int64_t> ();
-    m_gatherer["node"] = new stringstream ();
-}
-
-pretty_rlite_match_writers_t::~pretty_rlite_match_writers_t ()
-{
-    for (auto kv : m_gatherer)
-        delete kv.second;
-}
-
-void pretty_rlite_match_writers_t::reset ()
-{
-    m_out.str ("");
-    m_out.clear ();
-}
-
-void pretty_rlite_match_writers_t::emit (stringstream &out)
-{
-    size_t size = m_out.str ().size ();
-    if (size > 1) {
-        out << "    {" << endl;
-        out << "      \"R_lite\": [" << endl;
-        out << m_out.str ().substr (0, size - 2) << endl;
-        out << "      ]" << endl;
-        out << "    }" << endl;
-    }
-}
-
-bool pretty_rlite_match_writers_t::m_reducer_set ()
-{
-    bool set = false;
-    for (auto &kv : m_reducer) {
-        if (!kv.second.empty ()) {
-            set = true;
-            break;
-        }
-    }
-    return set;
-}
-
-void pretty_rlite_match_writers_t::emit_vtx (const string &prefix,
-                                             const f_resource_graph_t &g,
-                                             const vtx_t &u,
-                                             unsigned int needs,
-                                             bool exclusive)
-{
-    string indent = "    ";
-    if (m_reducer.find (g[u].type) != m_reducer.end ()) {
-        m_reducer[g[u].type].insert (g[u].id);
-    } else if (m_gatherer.find (g[u].type) != m_gatherer.end ()) {
-        if (m_reducer_set ()) {
-            stringstream &gout = *(m_gatherer[g[u].type]);
-            gout << indent << "    {" << endl;
-            gout << indent << "      \"rank\": " << "\"" << g[u].rank << "\""
-                                                         << "," << endl;
-            gout << indent << "      \"node\": \"" << g[u].name << "\","
-                 << endl;
-            gout << indent << "      \"children\": {" << endl;
-            for (auto &kv : m_reducer) {
-                if (kv.second.empty ())
-                    continue;
-                gout << indent << "         \"" << kv.first << "\": \"";
-                compress (gout, kv.second);
-                gout << "\"," << endl;
-                kv.second.clear ();
-	        }
-            size_t size = gout.str ().size ();
-            m_out << gout.str ().substr (0, size - 2) << endl;
-            m_out << indent << "      }" << endl;
-            m_out << indent << "    }," << endl;
-            gout.clear ();
-            gout.str ("");
-        }
-    }
-}
-
-
-/****************************************************************************
- *                                                                          *
- *              Pretty RV1 Writers Class Method Definitions                 *
- *                                                                          *
- ****************************************************************************/
-
-void pretty_rv1_match_writers_t::reset ()
-{
-    rlite.reset ();
-    jgf.reset ();
-}
-
-void pretty_rv1_match_writers_t::emit (stringstream &out)
-{
-    out << "{" << endl;
-    out << "  \"execution\": " << endl;
-    rlite.emit (out);
-    out << "     ," << endl;
-    out << "  \"scheduling\": " << endl;
-    jgf.emit (out);
-    out << "}" << endl;
-}
-
-void pretty_rv1_match_writers_t::emit_vtx (const string &prefix,
-                                           const f_resource_graph_t &g,
-                                           const vtx_t &u,
-                                           unsigned int needs,
-                                           bool exclusive)
-{
-    rlite.emit_vtx (prefix, g, u, needs, exclusive);
-    jgf.emit_vtx (prefix, g, u, needs, exclusive);
-}
-
-void pretty_rv1_match_writers_t::emit_edg (const string &prefix,
-                                           const f_resource_graph_t &g,
-                                           const edg_t &e)
-{
-    rlite.emit_edg (prefix, g, e);
-    jgf.emit_edg (prefix, g, e);
-}
-
-
-/****************************************************************************
- *                                                                          *
  *             Match Writers Factory Class Method Definitions               *
  *                                                                          *
  ****************************************************************************/
@@ -602,15 +407,6 @@ match_writers_t *match_writers_factory_t::create (match_format_t f)
         break;
     case match_format_t::PRETTY_SIMPLE:
         w = new (nothrow)pretty_sim_match_writers_t ();
-        break;
-    case match_format_t::PRETTY_JGF:
-        w = new (nothrow)pretty_jgf_match_writers_t ();
-        break;
-    case match_format_t::PRETTY_RLITE:
-        w = new (nothrow)pretty_rlite_match_writers_t ();
-        break;
-    case match_format_t::PRETTY_RV1:
-        w = new (nothrow)pretty_rv1_match_writers_t ();
         break;
     case match_format_t::RV1:
     default:
@@ -637,12 +433,6 @@ match_format_t match_writers_factory_t::get_writers_type (const string &n)
         format = match_format_t::RV1_NOSCHED;
     else if (n == "pretty_simple")
         format = match_format_t::PRETTY_SIMPLE;
-    else if (n == "pretty_jgf")
-        format = match_format_t::PRETTY_JGF;
-    else if (n == "pretty_rlite")
-        format = match_format_t::PRETTY_RLITE;
-    else if (n == "pretty_rv1")
-        format = match_format_t::PRETTY_RV1;
     return format;
 }
 
@@ -653,10 +443,7 @@ bool known_match_format (const string &format)
            || format == "rlite"
            || format == "rv1"
            || format == "rv1_nosched"
-           || format == "pretty_simple"
-           || format == "pretty_jgf"
-           || format == "pretty_rlite"
-           || format == "pretty_rv1");
+           || format == "pretty_simple");
 }
 
 } // namespace resource_model
