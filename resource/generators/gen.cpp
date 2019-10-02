@@ -409,12 +409,12 @@ int resource_generator_t::check_hwloc_version (string &m_err_msg) {
     return 0;
 }
 
-vtx_t resource_generator_t::add_new_vertex(resource_graph_db_t &db,
-                                           const vtx_t &parent,
-                                           int id, const string &subsys,
-                                           const string &type,
-                                           const string &basename,
-                                           int size, int rank)
+vtx_t resource_generator_t::add_new_vertex (resource_graph_db_t &db,
+                                            const vtx_t &parent,
+                                            int id, const string &subsys,
+                                            const string &type,
+                                            const string &basename,
+                                            int size, int rank)
 {
     vtx_t v = boost::add_vertex (db.resource_graph);
 
@@ -601,8 +601,8 @@ void resource_generator_t::walk_hwloc (const hwloc_obj_t obj, const vtx_t parent
         valid_ancestor = parent;
     } else {
         const string subsys = "containment";
-        vtx_t v = add_new_vertex(db, parent, id,
-                                 subsys, type, basename, size, rank);
+        vtx_t v = add_new_vertex (db, parent, id,
+                                  subsys, type, basename, size, rank);
         valid_ancestor = v;
 
         // Create edge between parent/child

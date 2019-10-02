@@ -54,9 +54,9 @@ public:
 
 private:
     int check_hwloc_version (std::string &m_err_msg);
-    vtx_t add_new_vertex(resource_graph_db_t &db, const vtx_t &parent, int id,
-                         const std::string &subsys, const std::string &type,
-                         const std::string &basename, int size, int rank=-1);
+    vtx_t add_new_vertex (resource_graph_db_t &db, const vtx_t &parent, int id,
+                          const std::string &subsys, const std::string &type,
+                          const std::string &basename, int size, int rank=-1);
     bool in_whitelist (const std::string &resource);
     void walk_hwloc (const hwloc_obj_t obj,
                      const vtx_t parent, int rank, resource_graph_db_t &db);
