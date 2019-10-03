@@ -187,7 +187,7 @@ static resource_ctx_t *getctx (flux_t *h)
         ctx->perf.min = DBL_MAX;
         ctx->perf.max = 0.0f;
         ctx->perf.accum = 0.0f;
-        ctx->matcher = create_match_cb (ctx->args.match_policy);
+        ctx->matcher = NULL; /* Cannot be allocated at this point */ 
         ctx->traverser = new (nothrow)dfu_traverser_t ();
         if (!ctx->traverser) {
             errno = ENOMEM;
@@ -475,6 +475,9 @@ done:
 static int init_resource_graph (resource_ctx_t *ctx)
 {
     int rc = 0;
+
+    // Select the appropriate matcher based on CLI policy.
+    ctx->matcher = create_match_cb (ctx->args.match_policy);
 
     if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "can't populate graph resource database");
