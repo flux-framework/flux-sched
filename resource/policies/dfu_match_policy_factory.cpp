@@ -32,7 +32,7 @@ bool known_match_policy (const std::string &policy)
 {
     bool rc = true;
     if (policy != HIGH_ID_FIRST && policy != LOW_ID_FIRST
-        && policy != LOCALITY_AWARE)
+        && policy != LOCALITY_AWARE && policy != VAR_AWARE)
         rc = false;
 
     return rc;
@@ -47,6 +47,8 @@ dfu_match_cb_t *create_match_cb (const std::string &policy)
         matcher = (dfu_match_cb_t *)new low_first_t ();
     else if (policy == LOCALITY_AWARE)
         matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
+    else if (policy == VAR_AWARE)
+        matcher = (dfu_match_cb_t *)new var_aware_t ();
     return matcher;
 }
 
