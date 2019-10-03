@@ -1,0 +1,20 @@
+# Assume three performance perf_classes and 4 jobs. 
+# Best perf_class is perf_class=1, worst perf_class is perf_class=3.
+# Job1 has 2N, Job2 has 1N, Job3 has 4N, Job4 is 1N.
+# In this test case, perf_class of node2 and node 4 is not set, 
+# so the policy will treat these as 9999 (worst efficiency).  
+# Variation aware policy will schedule Job1 on N1 and N3, Job2 on N5,
+# Job3 on N7,N0,N6 and N2; and Job4 on N4.
+#
+set-property /small0/rack0/node0 perf_class=3
+set-property /small0/rack0/node1 perf_class=1
+set-property /small0/rack0/node3 perf_class=1
+set-property /small0/rack0/node5 perf_class=2
+set-property /small0/rack0/node6 perf_class=3
+set-property /small0/rack0/node7 perf_class=2
+#
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/var_aware/job_2N.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/var_aware/job_1N.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/var_aware/job_4N.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/var_aware/job_1N.yaml
+quit
