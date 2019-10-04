@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  Copyright (c) 2019 Lawrence Livermore National Security, LLC.  Produced at
  *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
  *  LLNL-CODE-658032 All rights reserved.
  *
@@ -22,38 +22,43 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include <string>
-#include "resource/policies/dfu_match_policy_factory.hpp"
+#ifndef DFU_MATCH_VAR_AWARE_HPP
+#define DFU_MATCH_VAR_AWARE_HPP
+
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <map>
+#include "resource/policies/base/dfu_match_cb.hpp"
 
 namespace Flux {
 namespace resource_model {
 
-bool known_match_policy (const std::string &policy)
+/*! Variation-aware policy: allocate resources based on
+ * similar performance class.
+ */
+struct var_aware_t : public dfu_match_cb_t
 {
-    bool rc = true;
-    if (policy != HIGH_ID_FIRST && policy != LOW_ID_FIRST
-        && policy != LOCALITY_AWARE && policy != VAR_AWARE)
-        rc = false;
+    var_aware_t ();
+    var_aware_t (const std::string &name);
+    var_aware_t (const var_aware_t &o);
+    var_aware_t &operator= (const var_aware_t &o);
+    ~var_aware_t ();
 
-    return rc;
-}
+    int dom_finish_graph (const subsystem_t &subsystem,
+                          const std::vector<Flux::Jobspec::Resource> &resources,
+                          const f_resource_graph_t &g, scoring_api_t &dfu);
+    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+                        const std::vector<Flux::Jobspec::Resource> &resources,
+                        const f_resource_graph_t &g, scoring_api_t &dfu);
 
-dfu_match_cb_t *create_match_cb (const std::string &policy)
-{
-    dfu_match_cb_t *matcher = NULL;
-    if (policy == HIGH_ID_FIRST)
-        matcher = (dfu_match_cb_t *)new high_first_t ();
-    else if (policy == LOW_ID_FIRST)
-        matcher = (dfu_match_cb_t *)new low_first_t ();
-    else if (policy == LOCALITY_AWARE)
-        matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
-    else if (policy == VAR_AWARE)
-        matcher = (dfu_match_cb_t *)new var_aware_t ();
-    return matcher;
-}
+    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+};
 
 } // resource_model
 } // Flux
+
+#endif // DFU_MATCH_VAR_AWARE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

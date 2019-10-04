@@ -48,6 +48,7 @@ TESTS = \
     t3011-resource-filt.t \
     t3012-resource-properties.t \
     t3013-resource-unsat.t \
+    t3014-resource-var-aware.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
@@ -55,6 +56,7 @@ TESTS = \
     t4004-match-hwloc.t \
     t4005-match-unsat.t \
     t4006-properties.t \
+    t4007-match-var-aware.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t

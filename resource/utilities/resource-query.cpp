@@ -38,6 +38,7 @@
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
 #include "resource/policies/dfu_match_locality.hpp"
+#include "resource/policies/dfu_match_var_aware.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -137,12 +138,14 @@ static void usage (int code)
 "                ALL: Aware of everything.\n"
 "            (default=CA).\n"
 "\n"
-"    -P, --match-policy=<low|high|locality>\n"
+"    -P, --match-policy=<low|high|locality|variation>\n"
 "            Set the resource match selection policy. Available policies are:\n"
 "                high: Select resources with high ID first\n"
 "                low: Select resources with low ID first\n"
 "                locality: Select contiguous resources first in their ID space\n"
-"            (default=high).\n"
+"                variation: Allocate resources based on performance classes. "
+"				 (perf_class must be set using set-property). \n"
+"            	 (default=high).\n"
 "\n"
 "    -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>\n"
 "            Specify the emit format of the matched resource set.\n"
@@ -197,6 +200,9 @@ static dfu_match_cb_t *create_match_cb (const string &policy)
         matcher = (dfu_match_cb_t *)new low_first_t ();
     else if (policy == "locality")
         matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
+    else if (policy == "variation")
+        matcher = (dfu_match_cb_t *)new var_aware_t ();
+
     return matcher;
 }
 
