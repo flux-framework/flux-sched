@@ -35,6 +35,7 @@
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
 #include "resource/utilities/command.hpp"
+#include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
 #include "resource/policies/dfu_match_locality.hpp"
@@ -49,14 +50,14 @@ extern "C" {
 using namespace std;
 using namespace Flux::resource_model;
 
-#define OPTIONS "S:P:F:G:X:W:g:o:p:t:r:edh"
+#define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
 static const struct option longopts[] = {
+    {"load-file",        required_argument,  0, 'L'},
+    {"load-format",      required_argument,  0, 'f'},
+    {"load-whitelist",   required_argument,  0, 'W'},
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
     {"match-format",     required_argument,  0, 'F'},
-    {"grug",             required_argument,  0, 'G'},
-    {"hwloc-xml",        required_argument,  0, 'X'},
-    {"hwloc-whitelist",  required_argument,  0, 'W'},
     {"graph-format",     required_argument,  0, 'g'},
     {"graph-output",     required_argument,  0, 'o'},
     {"prune-filters",    required_argument,  0, 'p'},
@@ -109,15 +110,16 @@ static void usage (int code)
 "    -h, --help\n"
 "            Display this usage information\n"
 "\n"
-"    -G, --grug=<genspec>.graphml\n"
-"            GRUG resource graph generator specification file in graphml\n"
+"    -L, --load-file=filepath\n"
+"            Input file from which to load the resource graph data store\n"
+"            (default=conf/default)\n"
 "\n"
-"    -X, --hwloc-xml=<hwloc>.xml\n"
-"            xml output from hwloc\n"
+"    -f, --load-format=<grug|hwloc|jgf>\n"
+"            Format of the load file (default=grug)\n"
 "\n"
-"    -W, --hwloc-whitelist=<resource1[,resource2[,resource3...]]>\n"
-"            Specify a whitelist of hwloc resource names to be used.\n"
-"            Other hwloc resources will be filtered out.\n"
+"    -W, --load-whitelist=<resource1[,resource2[,resource3...]]>\n"
+"            Whitelist of resource types to be loaded\n"
+"            Resources that are not included in this list will be filtered out\n"
 "\n"
 "    -S, --match-subsystems="
          "<CA|IBA|IBBA|PFS1BA|PA|C+IBA|C+PFS1BA|C+PA|IB+IBBA|"
@@ -208,9 +210,9 @@ static dfu_match_cb_t *create_match_cb (const string &policy)
 
 static void set_default_params (resource_context_t *ctx)
 {
-    ctx->params.grug = "";
-    ctx->params.hwloc_xml = "";
-    ctx->params.hwloc_whitelist = "";
+    ctx->params.load_file = "conf/default";
+    ctx->params.load_format = "grug";
+    ctx->params.load_whitelist = "";
     ctx->params.matcher_name = "CA";
     ctx->params.matcher_policy = "high";
     ctx->params.o_fname = "";
@@ -255,7 +257,7 @@ static int graph_format_to_ext (emit_format_t format, string &st)
 static int subsystem_exist (resource_context_t *ctx, string n)
 {
     int rc = 0;
-    if (ctx->db.roots.find (n) == ctx->db.roots.end ())
+    if (ctx->db.metadata.roots.find (n) == ctx->db.metadata.roots.end ())
         rc = -1;
     return rc;
 }
@@ -472,52 +474,51 @@ static void control_loop (resource_context_t *ctx)
 
 static int populate_resource_db (resource_context_t *ctx)
 {
-    int rc = 0;
-    struct timeval st, et;
+    int rc = -1;
     double elapse;
-    resource_generator_t rgen;
+    ifstream in_file;
+    struct timeval st, et;
+    std::stringstream buffer{};
+    std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->params.reserve_vtx_vec != 0)
         ctx->db.resource_graph.m_vertices.reserve (ctx->params.reserve_vtx_vec);
-    if (ctx->params.grug == "" && ctx->params.hwloc_xml == "")
-        ctx->params.grug = "conf/default";
+    if ( (rd = create_resource_reader (ctx->params.load_format)) == nullptr) {
+        std::cerr << "ERROR: Can't create load reader " << std::endl;
+        goto done;
+    }
+    if (ctx->params.load_whitelist != "") {
+        if (rd->set_whitelist (ctx->params.load_whitelist) < 0)
+            std::cerr << "ERROR: Can't set whitelist" << std::endl;
+        if (!rd->is_whitelist_supported ())
+            std::cout << "WARN: whitelist unsupported" << std::endl;
+    }
+
+    in_file.open (ctx->params.load_file.c_str (), std::ifstream::in);
+    if (!in_file.good ()) {
+        std::cerr << "ERROR: Can't open " << ctx->params.load_file << std::endl;
+        goto done;
+    }
+    buffer << in_file.rdbuf ();
+    in_file.close ();
 
     gettimeofday (&st, NULL);
-
-    if (ctx->params.grug != "") {
-        if (ctx->params.hwloc_xml != "") {
-            cout << "WARN: multiple resource inputs provided, using grug" << endl;
-        }
-        if ( (rc = rgen.read_graphml (ctx->params.grug, ctx->db)) != 0) {
-            cerr << "ERROR: " << rgen.err_message () << endl;
-            cerr << "ERROR: error in generating resources" << endl;
-            rc = -1;
-        }
-    } else if (ctx->params.hwloc_xml != "") {
-        if ( (rc = rgen.set_hwloc_whitelist (
-                       ctx->params.hwloc_whitelist)) < 0) {
-            cerr << "ERROR: error in setting hwloc whitelist." << endl;
-            rc = -1;
-        }
-        if ( (rc = rgen.read_hwloc_xml_file (ctx->params.hwloc_xml.c_str(),
-                                             ctx->db)) != 0) {
-            cerr << "ERROR: " << rgen.err_message () << endl;
-            cerr << "ERROR: error in generating resources" << endl;
-            rc = -1;
-        }
+    if ( (rc = ctx->db.load (buffer.str (), rd)) != 0) {
+        std::cerr << "ERROR: " << rd->err_message () << std::endl;
+        std::cerr << "ERROR: error in generating resources" << std::endl;
+        goto done;
     }
-
     gettimeofday (&et, NULL);
+
     elapse = get_elapse_time (st, et);
     if (ctx->params.elapse_time) {
-        cout << "INFO: Graph Load Time: " << elapse
-             << endl;
-        cout << "INFO: Vertex Count: " << num_vertices (ctx->db.resource_graph)
-             << endl;
-        cout << "INFO: Edge Count: " << num_edges (ctx->db.resource_graph)
-             << endl;
+        resource_graph_t &g = ctx->db.resource_graph;
+        std::cout << "INFO: Graph Load Time: " << elapse << std::endl;
+        std::cout << "INFO: Vertex Count: " << num_vertices (g) << std::endl;
+        std::cout << "INFO: Edge Count: " << num_edges (g) << std::endl;
     }
 
+done:
     return rc;
 }
 
@@ -567,7 +568,7 @@ static int init_resource_graph (resource_context_t *ctx)
         cerr << "ERROR: out of memory allocating traverser" << endl;
         return -1;
     }
-    if ( (rc = ctx->traverser->initialize (ctx->fgraph, &(ctx->db.roots),
+    if ( (rc = ctx->traverser->initialize (ctx->fgraph, &(ctx->db.metadata.roots),
                                            ctx->matcher)) != 0) {
         cerr << "ERROR: initializing traverser" << endl;
         return -1;
@@ -593,17 +594,22 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
             case 'h': /* --help */
                 usage (0);
                 break;
-            case 'G': /* --grug*/
-                ctx->params.grug = optarg;
+            case 'L': /* --load-file */
+                ctx->params.load_file = optarg;
                 break;
-            case 'X': /* --hwloc-xml*/
-                ctx->params.hwloc_xml = optarg;
+            case 'f': /* --load-format */
+                ctx->params.load_format = optarg;
+                if (!known_resource_reader (ctx->params.load_format)) {
+                    std::cerr << "[ERROR] unknown format for --load-format: ";
+                    std::cerr << optarg << endl;
+                    usage (1);
+                }
                 break;
             case 'W': /* --hwloc-whitelist */
                 token = optarg;
                 if(token.find_first_not_of(' ') != std::string::npos) {
-                    ctx->params.hwloc_whitelist += "cluster,";
-                    ctx->params.hwloc_whitelist += token;
+                    ctx->params.load_whitelist += "cluster,";
+                    ctx->params.load_whitelist += token;
                 }
                 break;
             case 'S': /* --match-subsystems */

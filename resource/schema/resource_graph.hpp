@@ -109,22 +109,6 @@ using f_vtx_iterator_t = boost::graph_traits<f_resource_graph_t>::vertex_iterato
 using f_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::edge_iterator;
 using f_out_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::out_edge_iterator;
 
-/*! Resource graph data store.
- *  Adjacency_list graph, roots of this graph and various indexing.
- */
-struct resource_graph_db_t {
-    resource_graph_t resource_graph;
-    std::map<subsystem_t, vtx_t> roots;
-    std::map<std::string, std::vector <vtx_t>> by_type;
-    std::map<std::string, std::vector <vtx_t>> by_name;
-    std::map<std::string, std::vector <vtx_t>> by_path;
-
-    bool known_subsystem (const std::string &s)
-    {
-        return (roots.find (s) != roots.end ())? true : false;
-    }
-};
-
 template<class name_map, class graph_entity>
 class label_writer_t {
 public:

@@ -27,7 +27,7 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/filesystem.hpp>
-#include "resource/generators/spec.hpp"
+#include "resource/readers/resource_spec_grug.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -155,15 +155,25 @@ int resource_gen_spec_t::read_graphml (const string &ifn)
     ifstream in_file (ifn.c_str ());
     if (!in_file.good ())
         return -1;
+    rc = read_graphml (in_file);
+    in_file.close ();
+    return rc;
+}
 
+/*! Load resource generator recipe graph from an input stream
+ *
+ *  \param in            input stream for GRUG graphml
+ *  \return              0 on success; -1 otherwise
+ */
+int resource_gen_spec_t::read_graphml (std::istream &in)
+{
+    int rc = 0;
     try {
-        boost::read_graphml (in_file, g, dp);
-    } catch (boost::graph_exception &e) {
-        cerr << e.what () << endl;
+        boost::read_graphml (in, g, dp);
+    } catch (boost::exception &e) {
+        errno = EPROTO;
         rc = -1;
     }
-
-    in_file.close ();
     return rc;
 }
 
@@ -178,13 +188,13 @@ int resource_gen_spec_t::write_graphviz (const string &ofn, bool simple)
     int rc = 0;
     fstream out_file (ofn, fstream::out);
     try {
-        vtx_basename_map_t v_bn_map = get(&resource_pool_gen_t::basename, g);
-        vtx_size_map_t v_sz_map = get(&resource_pool_gen_t::size, g);
-        //vtx_unit_map_t v_ut_map = get(&resource_pool_gen_t::unit, g);
-        vtx_subsystem_map_t v_ss_map = get(&resource_pool_gen_t::subsystem, g);
-        edg_relation_map_t e_rel_map = get(&relation_gen_t::relation, g);
-        edg_gen_method_map_t e_gen_map = get(&relation_gen_t::gen_method, g);
-        edg_multi_scale_map_t e_ms_map = get(&relation_gen_t::multi_scale, g);
+        vtx_basename_map_t v_bn_map = get (&resource_pool_gen_t::basename, g);
+        vtx_size_map_t v_sz_map = get (&resource_pool_gen_t::size, g);
+        //vtx_unit_map_t v_ut_map = get (&resource_pool_gen_t::unit, g);
+        vtx_subsystem_map_t v_ss_map = get (&resource_pool_gen_t::subsystem, g);
+        edg_relation_map_t e_rel_map = get (&relation_gen_t::relation, g);
+        edg_gen_method_map_t e_gen_map = get (&relation_gen_t::gen_method, g);
+        edg_multi_scale_map_t e_ms_map = get (&relation_gen_t::multi_scale, g);
         if (!simple) {
             gg_label_writer_t<vtx_subsystem_map_t,
                 vtx_basename_map_t, vtx_size_map_t> vwr (

@@ -22,8 +22,8 @@
  *  See also:  http://www.gnu.org/licenses/
  \*****************************************************************************/
 
-#ifndef SPEC_HPP
-#define SPEC_HPP
+#ifndef RESOURCE_SPEC_GRUG_HPP
+#define RESOURCE_SPEC_GRUG_HPP
 
 #include <string>
 #include <boost/graph/adjacency_list.hpp>
@@ -94,6 +94,7 @@ public:
     const gg_t &gen_graph ();
     const gen_meth_t to_gen_method_t (const std::string &s) const;
     int read_graphml (const std::string &ifn);
+    int read_graphml (std::istream &in);
     int write_graphviz (const std::string &ofn, bool simple=false);
 
 private:
@@ -105,7 +106,7 @@ private:
 } // namespace resource_model
 } // namespace Flux
 
-#endif // SPEC_HPP
+#endif // RESOURCE_SPEC_GRUG_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

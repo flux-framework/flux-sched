@@ -63,37 +63,37 @@ test_debug '
 # Test using the resource query command
 test_expect_success 'resource-query works on simple query using xml file' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds09.in > cmds09 &&
-    ${query} -X ${hwloc_4core} -S CA -P high -t 017.R.out < cmds09 &&
+    ${query} -L ${hwloc_4core} -f hwloc -S CA -P high -t 017.R.out < cmds09 &&
     test_cmp 017.R.out ${exp_dir}/017.R.out
 '
 
 test_expect_success 'resource-query works on gpu query using xml (NVIDIA)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds10.in > cmds10 &&
-    ${query} -X ${hwloc_4gpu} -S CA -P high -t 018.R.out < cmds10 &&
+    ${query} -L ${hwloc_4gpu} -f hwloc -S CA -P high -t 018.R.out < cmds10 &&
     test_cmp 018.R.out ${exp_dir}/018.R.out
 '
 
 test_expect_success 'resource-query works on gpu query using xml (AMD GPU)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
-    ${query} -X ${hwloc_4amdgpu} -S CA -P high -t 019.R.out < cmds11 &&
+    ${query} -L ${hwloc_4amdgpu} -f hwloc -S CA -P high -t 019.R.out < cmds11 &&
     test_cmp 019.R.out ${exp_dir}/019.R.out
 '
 
 test_expect_success 'resource-query works on gpu type query using xml (MIXED)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
-    ${query} -X ${hwloc_2mtypes} -S CA -P high -t 020.R.out < cmds11 &&
+    ${query} -L ${hwloc_2mtypes} -f hwloc -S CA -P high -t 020.R.out < cmds11 &&
     test_cmp 020.R.out ${exp_dir}/020.R.out
 '
 
-test_expect_success 'resource-query works with hwloc whitelist' '
+test_expect_success 'resource-query works with whitelist' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds12.in > cmds12 &&
-    ${query} -X ${hwloc_4gpu} -S CA -P high -W node,socket,core,gpu -t 021.R.out < cmds12 &&
+    ${query} -L ${hwloc_4gpu} -f hwloc -S CA -P high -W node,socket,core,gpu -t 021.R.out < cmds12 &&
     test_cmp 021.R.out ${exp_dir}/021.R.out
 '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
-    flux module load -r 0 resource hwloc-xml=${hwloc_4core}
+    flux module load -r 0 resource load-file=${hwloc_4core}
 '
 
 test_expect_success 'match-allocate works with four one-core jobspecs' '
@@ -140,7 +140,7 @@ test_expect_success 'reloading sierra xml and match allocate' '
     flux module remove resource &&
     flux hwloc reload ${excl_4N4B_sierra2} &&
     flux module load -r 0 resource subsystems=containment \
-policy=high hwloc-whitelist=node,socket,core,gpu &&
+policy=high load-whitelist=node,socket,core,gpu &&
     flux resource match allocate ${jobspec_1socket_2gpu} &&
     flux resource match allocate ${jobspec_1socket_2gpu} &&
     flux resource match allocate ${jobspec_1socket_2gpu} &&

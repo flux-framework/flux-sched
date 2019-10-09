@@ -250,9 +250,9 @@ int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
     }
 
     std::map<std::string, std::vector <vtx_t>>::const_iterator it =
-        ctx->db.by_path.find (resource_path);
+        ctx->db.metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.by_path.end ()) {
+    if (it == ctx->db.metadata.by_path.end ()) {
         out << "Couldn't find path " << resource_path
             << " in resource graph." << endl;
     }
@@ -284,9 +284,9 @@ int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
     ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
 
     std::map<std::string, std::vector <vtx_t>>::const_iterator it =
-        ctx->db.by_path.find (resource_path);
+        ctx->db.metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.by_path.end ()) {
+    if (it == ctx->db.metadata.by_path.end ()) {
         out << "Could not find path " << resource_path
             << " in resource graph." << endl;
     }

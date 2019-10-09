@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <getopt.h>
-#include "resource/generators/spec.hpp"
+#include "resource/readers/resource_spec_grug.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H

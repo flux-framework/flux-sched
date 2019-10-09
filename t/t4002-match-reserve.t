@@ -35,8 +35,8 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource grug-conf=${grug} prune-filters=ALL:core \
-subsystems=containment policy=low
+    flux module load resource load-file=${grug} prune-filters=ALL:core \
+load-format=grug subsystems=containment policy=low
 '
 
 test_expect_success 'After all resources are allocated, reserve still works' '

@@ -26,7 +26,8 @@
 #define COMMAND_HPP
 
 #include "resource/schema/resource_graph.hpp"
-#include "resource/generators/gen.hpp"
+#include "resource/store/resource_graph_store.hpp"
+#include "resource/readers/resource_reader_factory.hpp"
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include <cerrno>
@@ -37,9 +38,9 @@ namespace Flux {
 namespace resource_model {
 
 struct test_params_t {
-    std::string grug;           /* GRUG file name */
-    std::string hwloc_xml;      /* hwloc XML file name */
-    std::string hwloc_whitelist;/* hwloc resource whitelist */
+    std::string load_file;      /* load file name */
+    std::string load_format;    /* load reader format */
+    std::string load_whitelist; /* load resource whitelist */
     std::string matcher_name;   /* Matcher name */
     std::string matcher_policy; /* Matcher policy name */
     std::string o_fname;        /* Output file to dump the filtered graph */
