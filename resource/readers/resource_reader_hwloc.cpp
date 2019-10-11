@@ -103,7 +103,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].idata.member_of[subsys] = "*";
 
     // Indexing for fast look-up
-    m.by_path[g[v].paths[subsys]].push_back (v);
+    m.by_path[g[v].paths[subsys]] = v;
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
     return v;

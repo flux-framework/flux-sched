@@ -41,7 +41,7 @@ struct resource_graph_metadata_t {
     std::map<subsystem_t, vtx_t> roots;
     std::map<std::string, std::vector <vtx_t>> by_type;
     std::map<std::string, std::vector <vtx_t>> by_name;
-    std::map<std::string, std::vector <vtx_t>> by_path;
+    std::map<std::string, vtx_t> by_path;
 };
 
 /*! Resource graph data store.
