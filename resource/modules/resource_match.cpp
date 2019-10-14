@@ -120,8 +120,10 @@ static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb,
+      0},
+    { FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb,
+      0},
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -880,8 +882,8 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     vtx_t v;
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}",
-       "sp_resource_path", &rp,
-       "sp_keyval", &kv) < 0)
+                                        "sp_resource_path", &rp,
+                                        "sp_keyval", &kv) < 0)
         goto error;
 
     resource_path = rp;
@@ -941,8 +943,8 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     string resp_value = "";
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}",
-        "gp_resource_path", &rp,
-        "gp_key", &gp_key) < 0)
+                                        "gp_resource_path", &rp,
+                                        "gp_key", &gp_key) < 0)
         goto error;
 
     resource_path = rp;

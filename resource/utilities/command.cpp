@@ -53,10 +53,12 @@ command_t commands[] = {
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
 "resource-query> set-property resource PROPERTY=VALUE" },
 { "get-property", "g", cmd_get_property, "Get all properties of a resource: "
-"resource-query> get-property resource" }, /* May need to be modified to get-property resource PROPERTY*/
+"resource-query> get-property resource" },
     { "list", "l", cmd_list, "List all jobs: resource-query> list" },
-    { "info", "i", cmd_info, "Print info on a jobid: resource-query> info jobid" },
-    { "stat", "s", cmd_stat, "Print overall stats: resource-query> stat jobid" },
+    { "info", "i", cmd_info,
+"Print info on a jobid: resource-query> info jobid" },
+    { "stat", "s", cmd_stat,
+ "Print overall stats: resource-query> stat jobid" },
     { "cat", "a", cmd_cat, "Print jobspec file: resource-query> cat jobspec" },
     { "help", "h", cmd_help, "Print help message: resource-query> help" },
     { "quit", "q", cmd_quit, "Quit the session: resource-query> quit" },

@@ -1008,7 +1008,8 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     for (auto &aggr : dfv)
         accum_if (s, aggr.first, aggr.second, to_parent);
 
-    if (m_match->get_my_pruning_types (s, (*m_graph)[u].type, out_prune_types)) {
+    if (m_match->get_my_pruning_types (s,
+                                       (*m_graph)[u].type, out_prune_types)) {
         for (auto &type : out_prune_types) {
             types.push_back (type.c_str ());
             if (dfv.find (type) != dfv.end ())
