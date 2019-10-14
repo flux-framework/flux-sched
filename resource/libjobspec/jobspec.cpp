@@ -418,7 +418,7 @@ catch (YAML::Exception& e) {
     throw parse_error(e.what());
 }
 
-Jobspec::Jobspec(std::string &s)
+Jobspec::Jobspec(const std::string &s)
 try
     : Jobspec {YAML::Load (s)}
 {
