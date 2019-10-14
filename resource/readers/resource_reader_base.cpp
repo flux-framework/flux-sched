@@ -54,6 +54,11 @@ bool resource_reader_base_t::in_whitelist (const std::string &resource)
  *                                                                              *
  ********************************************************************************/
 
+resource_reader_base_t::~resource_reader_base_t ()
+{
+
+}
+
 int resource_reader_base_t::set_whitelist (const std::string &csl)
 {
     if (csl == "")

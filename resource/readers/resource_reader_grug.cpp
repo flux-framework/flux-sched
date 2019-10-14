@@ -421,6 +421,11 @@ int dfs_emitter_t::get_rank ()
  *                                                                              *
  ********************************************************************************/
 
+resource_reader_grug_t::~resource_reader_grug_t ()
+{
+
+}
+
 int resource_reader_grug_t::unpack (resource_graph_t &g,
                                     resource_graph_metadata_t &m,
                                     const std::string &str, int rank)

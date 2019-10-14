@@ -336,6 +336,11 @@ done:
  *                                                                              *
  ********************************************************************************/
 
+resource_reader_hwloc_t::~resource_reader_hwloc_t ()
+{
+
+}
+
 int resource_reader_hwloc_t::unpack (resource_graph_t &g,
                                      resource_graph_metadata_t &m,
                                      const std::string &str, int rank)
