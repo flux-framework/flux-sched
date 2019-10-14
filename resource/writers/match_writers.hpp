@@ -25,6 +25,7 @@
 #ifndef MATCH_WRITERS_HPP
 #define MATCH_WRITERS_HPP
 
+#include <memory>
 #include <string>
 #include <sstream>
 #include <set>
@@ -108,7 +109,7 @@ public:
 private:
     bool m_reducer_set ();
     std::map<std::string, std::set<int64_t>> m_reducer;
-    std::map<std::string, std::stringstream *> m_gatherer;
+    std::map<std::string, std::shared_ptr<std::stringstream>> m_gatherer;
     std::stringstream m_out;
 };
 

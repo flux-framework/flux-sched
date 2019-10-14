@@ -195,9 +195,7 @@ rlite_match_writers_t::rlite_match_writers_t()
 {
     m_reducer["core"] = set<int64_t> ();
     m_reducer["gpu"] = set<int64_t> ();
-    // Note: GCC 4.8 doesn't support move constructor for stringstream
-    // we use a pointer type although it is not ideal.
-    m_gatherer["node"] = new stringstream ();
+    m_gatherer["node"] = std::make_shared<std::stringstream> ();
 }
 
 rlite_match_writers_t::~rlite_match_writers_t ()
