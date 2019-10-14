@@ -875,7 +875,7 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     string property_key = "", property_value = "";
     size_t pos;
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    std::map<std::string, std::vector <vtx_t>>::const_iterator it;
+    std::map<std::string, vtx_t>::const_iterator it;
     std::pair<std::map<std::string,std::string>::iterator, bool> ret;
     vtx_t v;
 
@@ -908,7 +908,7 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error;
      }
 
-    v = it->second[0];
+    v = it->second;
 
     ret = ctx->db.resource_graph[v].properties.insert (
         std::pair<std::string, std::string> (property_key,property_value));
@@ -935,7 +935,7 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     const char *rp = NULL, *gp_key = NULL;
     string resource_path = "", property_key = "";
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    std::map<std::string, std::vector <vtx_t>>::const_iterator it;
+    std::map<std::string, vtx_t>::const_iterator it;
     std::map<std::string, std::string>::const_iterator p_it;
     vtx_t v;
     string resp_value = "";
@@ -957,7 +957,7 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error;
      }
 
-    v = it->second[0];
+    v = it->second;
 
     for (p_it = ctx->db.resource_graph[v].properties.begin ();
          p_it != ctx->db.resource_graph[v].properties.end (); p_it++) {

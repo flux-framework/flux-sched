@@ -151,7 +151,7 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
 
     for (auto kv : g[v].paths) {
         g[v].idata.member_of[kv.first] = "*";
-        m.by_path[kv.second].push_back (v);
+        m.by_path[kv.second] = v;
         if (std::count(kv.second.begin (), kv.second.end (), '/') == 1)
             m.roots[kv.first] = v;
     }

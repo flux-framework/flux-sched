@@ -249,7 +249,7 @@ int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
         property_value = args[2].substr (pos + 1);
     }
 
-    std::map<std::string, std::vector <vtx_t>>::const_iterator it =
+    std::map<std::string, vtx_t>::const_iterator it =
         ctx->db.metadata.by_path.find (resource_path);
 
     if (it == ctx->db.metadata.by_path.end ()) {
@@ -257,7 +257,7 @@ int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
             << " in resource graph." << endl;
     }
     else {
-        vtx_t v = it->second[0];
+        vtx_t v = it->second;
 
         /* Note that map.insert () does not insert if the key exists.
          * Assuming we want to update the value though, we do an erase
@@ -283,7 +283,7 @@ int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
     string resource_path = args[1];
     ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
 
-    std::map<std::string, std::vector <vtx_t>>::const_iterator it =
+    std::map<std::string, vtx_t>::const_iterator it =
         ctx->db.metadata.by_path.find (resource_path);
 
     if (it == ctx->db.metadata.by_path.end ()) {
@@ -291,7 +291,7 @@ int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
             << " in resource graph." << endl;
     }
     else {
-        vtx_t v = it->second[0];
+        vtx_t v = it->second;
         if (ctx->db.resource_graph[v].properties.size () == 0) {
             out << "No properties were found for " << resource_path
                 << ". " << endl;
