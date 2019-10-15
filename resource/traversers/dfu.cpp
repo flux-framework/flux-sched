@@ -33,7 +33,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 using namespace Flux::Jobspec;
@@ -47,12 +46,12 @@ using namespace Flux::Jobspec;
 int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                detail::jobmeta_t &meta, bool x, match_op_t op,
                                vtx_t root, unsigned int *needs,
-                               std::unordered_map<string, int64_t> &dfv)
+                               std::unordered_map<std::string, int64_t> &dfv)
 {
     int t = 0;
     int rc = -1;
     size_t len = 0;
-    vector<uint64_t> agg;
+    std::vector<uint64_t> agg;
     uint64_t duration = 0;
     int saved_errno = errno;
     planner_multi_t *p = NULL;
@@ -164,7 +163,7 @@ const std::shared_ptr<const dfu_match_cb_t> dfu_traverser_t::
     return detail::dfu_impl_t::get_match_cb ();
 }
 
-const string &dfu_traverser_t::err_message () const
+const std::string &dfu_traverser_t::err_message () const
 {
     return detail::dfu_impl_t::err_message ();
 }
@@ -200,7 +199,7 @@ int dfu_traverser_t::initialize ()
     }
 
     for (auto &subsystem : get_match_cb ()->subsystems ()) {
-        map<string, int64_t> from_dfv;
+        std::map<std::string, int64_t> from_dfv;
         if (get_roots ()->find (subsystem) == get_roots ()->end ()) {
             errno = ENOTSUP;
             rc = -1;
@@ -241,7 +240,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     unsigned int needs = 0;
     vtx_t root = get_roots ()->at(dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
-    std::unordered_map<string, int64_t> dfv;
+    std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     meta.build (jobspec, true, jobid, *at);
     if ( (rc = schedule (jobspec, meta, x, op, root, &needs, dfv)) ==  0) {
