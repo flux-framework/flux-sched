@@ -34,7 +34,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::Jobspec;
 
 parse_error::parse_error(const char *msg)
@@ -130,7 +129,7 @@ void parse_yaml_count (Resource& res, const YAML::Node &cnode)
 }
 
 namespace {
-vector<Resource> parse_yaml_resources (const YAML::Node &resources);
+std::vector<Resource> parse_yaml_resources (const YAML::Node &resources);
 }
 
 Resource::Resource (const YAML::Node &resnode)
@@ -148,7 +147,7 @@ Resource::Resource (const YAML::Node &resnode)
         throw parse_error (resnode["type"],
                            "Value of \"type\" must be a scalar");
     }
-    type = resnode["type"].as<string>();
+    type = resnode["type"].as<std::string>();
     field_count++;
 
     if (!resnode["count"]) {
@@ -163,7 +162,7 @@ Resource::Resource (const YAML::Node &resnode)
                                "Value of \"unit\" must be a scalar");
         }
         field_count++;
-        unit = resnode["unit"].as<string>();
+        unit = resnode["unit"].as<std::string>();
     }
     if (resnode["exclusive"]) {
         if (!resnode["exclusive"].IsScalar()) {
@@ -171,7 +170,7 @@ Resource::Resource (const YAML::Node &resnode)
                                "Value of \"exclusive\" must be a scalar");
         }
         field_count++;
-        string val = resnode["exclusive"].as<string>();
+        std::string val = resnode["exclusive"].as<std::string>();
         if (val == "false") {
             exclusive = tristate_t::FALSE;
         } else if (val == "true") {
@@ -193,7 +192,7 @@ Resource::Resource (const YAML::Node &resnode)
                                "Value of \"label\" must be a scalar");
         }
         field_count++;
-        label = resnode["label"].as<string>();
+        label = resnode["label"].as<std::string>();
     } else if (type == "slot") {
         throw parse_error (resnode, "All slots must be labeled");
     }
@@ -204,7 +203,7 @@ Resource::Resource (const YAML::Node &resnode)
                                "Value of \"id\" must be a scalar");
         }
         field_count++;
-        id = resnode["id"].as<string>();
+        id = resnode["id"].as<std::string>();
     }
 
     if (field_count != resnode.size()) {
@@ -228,9 +227,9 @@ Task::Task (const YAML::Node &tasknode)
         throw parse_error (tasknode, "Key \"command\" missing from task");
     }
     if (tasknode["command"].IsSequence()) {
-        command = tasknode["command"].as<vector<string>>();
+        command = tasknode["command"].as<std::vector<std::string>>();
     } else if (tasknode["command"].IsScalar()) {
-        command.push_back(tasknode["command"].as<string>());
+        command.push_back(tasknode["command"].as<std::string>());
     } else {
         throw parse_error (tasknode["command"],
                            "\"command\" value must be a scalar or a sequence");
@@ -244,7 +243,7 @@ Task::Task (const YAML::Node &tasknode)
         throw parse_error (tasknode["slot"],
                            "Value of task \"slot\" must be a YAML scalar");
     }
-    slot = tasknode["slot"].as<string>();
+    slot = tasknode["slot"].as<std::string>();
 
     /* Import count mapping */
     if (tasknode["count"]) {
@@ -254,7 +253,8 @@ Task::Task (const YAML::Node &tasknode)
                                "\"count\" in task is not a mapping");
         }
         for (auto&& entry : count_node) {
-            count[entry.first.as<string>()] = entry.second.as<string>();
+            count[entry.first.as<std::string>()]
+                = entry.second.as<std::string>();
         }
     }
 
@@ -264,7 +264,7 @@ Task::Task (const YAML::Node &tasknode)
             throw parse_error (tasknode["distribution"],
                                "Value of task \"distribution\" must be a YAML scalar");
         }
-        distribution = tasknode["distribution"].as<string>();
+        distribution = tasknode["distribution"].as<std::string>();
     }
 
     /* Import attributes mapping if it is present */
@@ -274,7 +274,8 @@ Task::Task (const YAML::Node &tasknode)
             throw parse_error (attrs, "\"attributes\" in task is not a mapping");
         }
         for (auto&& attr : attrs) {
-            attributes[attr.first.as<string>()] = attr.second.as<string>();
+            attributes[attr.first.as<std::string>()]
+                = attr.second.as<std::string>();
         }
     }
 
@@ -285,9 +286,9 @@ Task::Task (const YAML::Node &tasknode)
 }
 
 namespace {
-vector<Task> parse_yaml_tasks (const YAML::Node &tasks)
+std::vector<Task> parse_yaml_tasks (const YAML::Node &tasks)
 {
-    vector<Task> taskvec;
+    std::vector<Task> taskvec;
 
     /* "tasks" must be a sequence */
     if (!tasks.IsSequence()) {
@@ -303,9 +304,9 @@ vector<Task> parse_yaml_tasks (const YAML::Node &tasks)
 }
 
 namespace {
-vector<Resource> parse_yaml_resources (const YAML::Node &resources)
+std::vector<Resource> parse_yaml_resources (const YAML::Node &resources)
 {
-    vector<Resource> resvec;
+    std::vector<Resource> resvec;
 
     /* "resources" must be a sequence */
     if (!resources.IsSequence()) {
@@ -329,25 +330,25 @@ Attributes parse_yaml_attributes (const YAML::Node &attrs)
         throw parse_error (attrs, "\"attributes\" is not a map");
     }
     for (auto&& kv : attrs) {
-        if (kv.first.as<string>() == "user") {
+        if (kv.first.as<std::string>() == "user") {
             a.user = kv.second;
         }
-        else if (kv.first.as<string>() == "system") {
+        else if (kv.first.as<std::string>() == "system") {
             for (auto&& s : kv.second) {
-                if (s.first.as<string>() == "duration") {
+                if (s.first.as<std::string>() == "duration") {
                     a.system.duration = s.second.as<double>();
                 }
-                else if (s.first.as<string>() == "cwd") {
-                    a.system.cwd = s.second.as<string>();
+                else if (s.first.as<std::string>() == "cwd") {
+                    a.system.cwd = s.second.as<std::string>();
                 }
-                else if (s.first.as<string>() == "environment") {
+                else if (s.first.as<std::string>() == "environment") {
                     for (auto&& e : s.second) {
-                        a.system.environment[e.first.as<string>()]
-                            = e.second.as<string>();
+                        a.system.environment[e.first.as<std::string>()]
+                            = e.second.as<std::string>();
                     }
                 }
                 else {
-                    a.system.optional[s.first.as<string>()] = s.second;
+                    a.system.optional[s.first.as<std::string>()] = s.second;
                 }
             }
         }
@@ -476,24 +477,25 @@ public:
 
 std::ostream& Flux::Jobspec::operator<<(std::ostream& s, Jobspec const& jobspec)
 {
-    s << "version: " << jobspec.version << endl;
-    s << "resources: " << endl;
+    s << "version: " << jobspec.version << std::endl;
+    s << "resources: " << std::endl;
     for (auto&& resource : jobspec.resources) {
         IndentingOStreambuf indent (s);
         s << resource;
     }
-    s << "tasks: " << endl;
+    s << "tasks: " << std::endl;
     for (auto&& task : jobspec.tasks) {
         IndentingOStreambuf indent (s);
         s << task;
     }
-    s << "attributes:" << endl;
-    s << "  " << "system:" << endl;
-    s << "    " << "duration: " << jobspec.attributes.system.duration << endl;
-    s << "    " << "cwd: " << jobspec.attributes.system.cwd << endl;
-    s << "    " << "environment:" << endl;
+    s << "attributes:" << std::endl;
+    s << "  " << "system:" << std::endl;
+    s << "    " << "duration: " << jobspec.attributes.system.duration
+      << std::endl;
+    s << "    " << "cwd: " << jobspec.attributes.system.cwd << std::endl;
+    s << "    " << "environment:" << std::endl;
     for (auto&& e : jobspec.attributes.system.environment) {
-        s << "      " << e.first << ": " << e.second << endl;
+        s << "      " << e.first << ": " << e.second << std::endl;
     }
 
     return s;
@@ -502,24 +504,24 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s, Jobspec const& jobspec)
 std::ostream& Flux::Jobspec::operator<<(std::ostream& s,
                                         Resource const& resource)
 {
-    s << "- type: " << resource.type << endl;
-    s << "  count:" << endl;
-    s << "    min: " << resource.count.min << endl;
-    s << "    max: " << resource.count.max << endl;
-    s << "    operator: " << resource.count.oper << endl;
-    s << "    operand: " << resource.count.operand << endl;
+    s << "- type: " << resource.type << std::endl;
+    s << "  count:" << std::endl;
+    s << "    min: " << resource.count.min << std::endl;
+    s << "    max: " << resource.count.max << std::endl;
+    s << "    operator: " << resource.count.oper << std::endl;
+    s << "    operand: " << resource.count.operand << std::endl;
     if (resource.unit.size() > 0)
-        s << "  unit: " << resource.unit << endl;
+        s << "  unit: " << resource.unit << std::endl;
     if (resource.label.size() > 0)
-        s << "  label: " << resource.label << endl;
+        s << "  label: " << resource.label << std::endl;
     if (resource.id.size() > 0)
-        s << "  id: " << resource.id << endl;
+        s << "  id: " << resource.id << std::endl;
     if (resource.exclusive == tristate_t::TRUE)
-            s << "  exclusive: true" << endl;
+            s << "  exclusive: true" << std::endl;
     else if (resource.exclusive == tristate_t::FALSE)
-            s << "  exclusive: false" << endl;
+            s << "  exclusive: false" << std::endl;
     if (resource.with.size() > 0) {
-        s << "  with:" << endl;
+        s << "  with:" << std::endl;
         IndentingOStreambuf indent (s, 4);
         for (auto&& child_resource : resource.with) {
             s << child_resource;
@@ -541,19 +543,19 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s,
             first = false;
         s << "\"" << field << "\"";
     }
-    s << " ]" << endl;
-    s << "slot: " << task.slot << endl;
+    s << " ]" << std::endl;
+    s << "slot: " << task.slot << std::endl;
     if (task.count.size() > 0) {
-        s << "count:" << endl;
+        s << "count:" << std::endl;
         IndentingOStreambuf indent (s);
         for (auto&& c : task.count) {
-            s << c.first << ": " << c.second << endl;
+            s << c.first << ": " << c.second << std::endl;
         }
     }
     if (task.distribution.size() > 0)
-        s << "distribution: " << task.distribution << endl;
+        s << "distribution: " << task.distribution << std::endl;
     if (task.attributes.size() > 0) {
-        s << "attributes:" << endl;
+        s << "attributes:" << std::endl;
         IndentingOStreambuf indent (s);
         for (auto&& attr : task.attributes) {
             s << attr.first << ": " << attr.second;
