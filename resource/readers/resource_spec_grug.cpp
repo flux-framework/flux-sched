@@ -35,12 +35,11 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 
 struct str2enum_t
 {
-    string str;
+    std::string str;
     int e;
 };
 
@@ -135,7 +134,8 @@ const gg_t &resource_gen_spec_t::gen_graph ()
  *  \param s             gen_method string from graphml spec
  *  \return              0 on success; -1 otherwise
  */
-const gen_meth_t resource_gen_spec_t::to_gen_method_t (const std::string &s) const
+const gen_meth_t resource_gen_spec_t::to_gen_method_t (
+                                          const std::string &s) const
 {
     int i;
     for (i=0; str2genmeth[i].str != ""; ++i)
@@ -149,10 +149,10 @@ const gen_meth_t resource_gen_spec_t::to_gen_method_t (const std::string &s) con
  *  \param ifn           resource generator recipe file in graphml
  *  \return              0 on success; -1 otherwise
  */
-int resource_gen_spec_t::read_graphml (const string &ifn)
+int resource_gen_spec_t::read_graphml (const std::string &ifn)
 {
     int rc = 0;
-    ifstream in_file (ifn.c_str ());
+    std::ifstream in_file (ifn.c_str ());
     if (!in_file.good ())
         return -1;
     rc = read_graphml (in_file);
@@ -183,10 +183,10 @@ int resource_gen_spec_t::read_graphml (std::istream &in)
  * \param simple         if false, output will have more detailed info
  * \return               0 on success; -1 otherwise
  */
-int resource_gen_spec_t::write_graphviz (const string &ofn, bool simple)
+int resource_gen_spec_t::write_graphviz (const std::string &ofn, bool simple)
 {
     int rc = 0;
-    fstream out_file (ofn, fstream::out);
+    std::fstream out_file (ofn, std::fstream::out);
     try {
         vtx_basename_map_t v_bn_map = get (&resource_pool_gen_t::basename, g);
         vtx_size_map_t v_sz_map = get (&resource_pool_gen_t::size, g);
@@ -209,7 +209,6 @@ int resource_gen_spec_t::write_graphviz (const string &ofn, bool simple)
             boost::write_graphviz (out_file, g, vwr, ewr);
         }
     } catch (boost::graph_exception &e) {
-        cerr << e.what () << endl;
         rc = -1;
     }
     out_file.close ();

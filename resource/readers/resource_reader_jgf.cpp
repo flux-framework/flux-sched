@@ -35,7 +35,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux;
 using namespace Flux::resource_model;
 
