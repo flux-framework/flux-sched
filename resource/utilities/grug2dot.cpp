@@ -32,7 +32,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 
 #define OPTIONS "hm"
@@ -44,7 +43,7 @@ static const struct option longopts[] = {
 
 void usage (int code)
 {
-    cerr <<
+    std::cerr <<
 "Usage: grug2dot <genspec>.graphml\n"
 "    Convert a resource-graph generator spec (<genspec>.graphml)\n"
 "    to AT&T GraphViz format (<genspec>.dot). The output\n"
@@ -83,15 +82,15 @@ int main (int argc, char *argv[])
         usage (1);
 
     resource_gen_spec_t gspec;
-    string fn (argv[optind]);
+    std::string fn (argv[optind]);
     boost::filesystem::path path = fn;
-    string base = path.stem ().string ();
+    std::string base = path.stem ().string ();
 
     if (gspec.read_graphml (fn) != 0) {
-        cerr << "Error in reading " << fn << endl;
+        std::cerr << "Error in reading " << fn << std::endl;
         rc = -1;
     } else if (gspec.write_graphviz (base + ".dot", simple) != 0) {
-        cerr << "Error in writing " << base + ".dot" << endl;
+        std::cerr << "Error in writing " << base + ".dot" << std::endl;
         rc = -1;
     }
 
