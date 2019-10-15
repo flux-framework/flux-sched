@@ -200,8 +200,7 @@ rlite_match_writers_t::rlite_match_writers_t()
 
 rlite_match_writers_t::~rlite_match_writers_t ()
 {
-    for (auto kv : m_gatherer)
-        delete kv.second;
+
 }
 
 void rlite_match_writers_t::reset ()
@@ -386,34 +385,37 @@ void pretty_sim_match_writers_t::emit_vtx (const string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-match_writers_t *match_writers_factory_t::create (match_format_t f)
+std::shared_ptr<match_writers_t> match_writers_factory_t::
+                                     create (match_format_t f)
 {
-    match_writers_t *w = NULL;
+    std::shared_ptr<match_writers_t> w = nullptr;
 
-    switch (f) {
-    case match_format_t::SIMPLE:
-        w = new (nothrow)sim_match_writers_t ();
-        break;
-    case match_format_t::JGF:
-        w = new (nothrow)jgf_match_writers_t ();
-        break;
-    case match_format_t::RLITE:
-        w = new (nothrow)rlite_match_writers_t ();
-        break;
-    case match_format_t::RV1_NOSCHED:
-        w = new (nothrow)rv1_nosched_match_writers_t ();
-        break;
-    case match_format_t::PRETTY_SIMPLE:
-        w = new (nothrow)pretty_sim_match_writers_t ();
-        break;
-    case match_format_t::RV1:
-    default:
-        w = new (nothrow)rv1_match_writers_t ();
-        break;
-    }
-
-    if (!w)
+    try {
+        switch (f) {
+        case match_format_t::SIMPLE:
+            w = std::make_shared<sim_match_writers_t> ();
+            break;
+        case match_format_t::JGF:
+            w = std::make_shared<jgf_match_writers_t> ();
+            break;
+        case match_format_t::RLITE:
+            w = std::make_shared<rlite_match_writers_t> ();
+            break;
+        case match_format_t::RV1_NOSCHED:
+            w = std::make_shared<rv1_nosched_match_writers_t> ();
+            break;
+        case match_format_t::PRETTY_SIMPLE:
+            w = std::make_shared<pretty_sim_match_writers_t> ();
+            break;
+        case match_format_t::RV1:
+        default:
+            w = std::make_shared<rv1_match_writers_t> ();
+            break;
+        }
+    } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        w = nullptr;
+    }
 
     return w;
 }

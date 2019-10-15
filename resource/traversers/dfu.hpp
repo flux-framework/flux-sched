@@ -41,20 +41,23 @@ class dfu_traverser_t : protected detail::dfu_impl_t
 {
 public:
     dfu_traverser_t ();
-    dfu_traverser_t (f_resource_graph_t *g,
-                     dfu_match_cb_t *m, std::map<subsystem_t, vtx_t> *roots);
+    dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
+                     std::shared_ptr<dfu_match_cb_t> m,
+                     std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
     dfu_traverser_t (const dfu_traverser_t &o);
+    dfu_traverser_t (dfu_traverser_t &&o) = default;
     dfu_traverser_t &operator= (const dfu_traverser_t &o);
+    dfu_traverser_t &operator= (dfu_traverser_t &&o) = default;
     ~dfu_traverser_t ();
 
-    const f_resource_graph_t *get_graph () const;
-    const std::map<subsystem_t, vtx_t> *get_roots () const;
-    const dfu_match_cb_t *get_match_cb () const;
+    const std::shared_ptr<const f_resource_graph_t> get_graph () const;
+    const std::shared_ptr<const std::map<subsystem_t, vtx_t>> get_roots () const;
+    const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
 
-    void set_graph (f_resource_graph_t *g);
-    void set_roots (std::map<subsystem_t, vtx_t> *roots);
-    void set_match_cb (dfu_match_cb_t *m);
+    void set_graph (std::shared_ptr<f_resource_graph_t> g);
+    void set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+    void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
 
     /*! Prime the resource graph with subtree plans. Assume that resource graph,
@@ -90,8 +93,9 @@ public:
      *                       ENOTSUP: roots does not contain a subsystem
      *                                the match callback uses.
      */
-    int initialize (f_resource_graph_t *g, std::map<subsystem_t, vtx_t> *roots,
-                    dfu_match_cb_t *m);
+    int initialize (std::shared_ptr<f_resource_graph_t> g,
+                    std::shared_ptr<std::map<subsystem_t, vtx_t>> roots,
+                    std::shared_ptr<dfu_match_cb_t> m);
 
     /*! Begin a graph traversal for the jobspec and either allocate or
      *  reserve the resources in the resource graph. Best-matching resources
@@ -114,7 +118,8 @@ public:
      *                       ENODEV: unsatifiable jobspec becuase no
      *                               resources/devices can satisfy the request.
      */
-    int run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
+    int run (Jobspec::Jobspec &jobspec,
+             std::shared_ptr<match_writers_t> writers,
              match_op_t op, int64_t id, int64_t *at);
 
     /*! Remove the allocation/reservation referred to by jobid and update

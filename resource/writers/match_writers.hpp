@@ -167,7 +167,7 @@ private:
 class match_writers_factory_t {
 public:
     static match_format_t get_writers_type (const std::string &n);
-    static match_writers_t *create (match_format_t f);
+    static std::shared_ptr<match_writers_t> create (match_format_t f);
 };
 
 bool known_match_format (const std::string &format);

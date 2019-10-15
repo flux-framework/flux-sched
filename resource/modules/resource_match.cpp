@@ -72,20 +72,25 @@ struct match_perf_t {
 };
 
 struct resource_ctx_t {
+    ~resource_ctx_t ();
     flux_t *h;                     /* Flux handle */
     flux_msg_handler_t **handlers; /* Message handlers */
     resource_args_t args;          /* Module load options */
-    dfu_match_cb_t *matcher;       /* Match callback object */
-    dfu_traverser_t *traverser;    /* Graph traverser object */
+    std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
+    std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     resource_graph_db_t db;        /* Resource graph data store */
-    f_resource_graph_t *fgraph;    /* Graph filtered by subsystems to use */
-    match_writers_t *writers;      /* Vertex/Edge writers for a match */
+    std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
+    std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
     match_perf_t perf;             /* Match performance stats */
-    map<uint64_t, job_info_t *> jobs;     /* Jobs table */
+    map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     map<uint64_t, uint64_t> allocations;  /* Allocation table */
     map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
 
+resource_ctx_t::~resource_ctx_t ()
+{
+    flux_msg_handler_delvec (handlers);
+}
 
 /******************************************************************************
  *                                                                            *
@@ -140,26 +145,6 @@ static double get_elapse_time (timeval &st, timeval &et)
  *                                                                            *
  ******************************************************************************/
 
-static void freectx (void *arg)
-{
-    resource_ctx_t *ctx = (resource_ctx_t *)arg;
-    if (ctx) {
-        flux_msg_handler_delvec (ctx->handlers);
-        delete ctx->matcher;
-        delete ctx->traverser;
-        delete ctx->fgraph;
-        for (auto &kv : ctx->jobs) {
-            delete kv.second;    /* job_info_t* type */
-            ctx->jobs.erase (kv.first);
-        }
-        delete ctx->writers;
-        ctx->jobs.clear ();
-        ctx->allocations.clear ();
-        ctx->reservations.clear ();
-        delete ctx;
-    }
-}
-
 static void set_default_args (resource_args_t &args)
 {
     args.load_file = "";
@@ -172,12 +157,18 @@ static void set_default_args (resource_args_t &args)
     args.reserve_vtx_vec = 0;
 }
 
-static resource_ctx_t *getctx (flux_t *h)
+static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
 {
-    resource_ctx_t *ctx = (resource_ctx_t *)flux_aux_get (h, "resource");
+    void *d = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = nullptr;
+
+    if ( (d = flux_aux_get (h, "resource")) != NULL)
+        ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *>(d));
     if (!ctx) {
-        ctx = new (nothrow)resource_ctx_t;
-        if (!ctx) {
+        try {
+            ctx = std::make_shared<resource_ctx_t> ();
+            ctx->traverser = std::make_shared<dfu_traverser_t> ();
+        } catch (std::bad_alloc &e) {
             errno = ENOMEM;
             goto done;
         }
@@ -189,22 +180,17 @@ static resource_ctx_t *getctx (flux_t *h)
         ctx->perf.min = DBL_MAX;
         ctx->perf.max = 0.0f;
         ctx->perf.accum = 0.0f;
-        ctx->matcher = NULL; /* Cannot be allocated at this point */ 
-        ctx->traverser = new (nothrow)dfu_traverser_t ();
-        if (!ctx->traverser) {
-            errno = ENOMEM;
-            goto done;
-        }
-        ctx->fgraph = NULL;  /* Cannot be allocated at this point */
-        ctx->writers = NULL; /* Cannot be allocated at this point */
-        flux_aux_set (h, "resource", ctx, freectx);
+        ctx->matcher = nullptr; /* Cannot be allocated at this point */
+        ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
+        ctx->writers = nullptr; /* Cannot be allocated at this point */
     }
 
 done:
     return ctx;
 }
 
-static int process_args (resource_ctx_t *ctx, int argc, char **argv)
+static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
+                         int argc, char **argv)
 {
     int rc = 0;
     resource_args_t &args = ctx->args;
@@ -275,14 +261,15 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
     return rc;
 }
 
-static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
+static std::shared_ptr<resource_ctx_t> init_module (flux_t *h,
+                                                    int argc, char **argv)
 {
-    resource_ctx_t *ctx = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = nullptr;
     uint32_t rank = 1;
 
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "can't allocate the context");
-        goto error;
+        return nullptr;
     }
     if (flux_get_rank (h, &rank) < 0) {
         flux_log (h, LOG_ERR, "can't determine rank");
@@ -300,8 +287,7 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
     return ctx;
 
 error:
-    freectx (ctx);
-    return NULL;
+    return nullptr;
 }
 
 
@@ -347,7 +333,7 @@ error:
     return NULL;
 }
 
-static int populate_resource_db_file (resource_ctx_t *ctx,
+static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
                                       std::shared_ptr<resource_reader_base_t> rd)
 {
     int rc = -1;
@@ -372,7 +358,7 @@ done:
     return rc;
 }
 
-static int populate_resource_db_kvs (resource_ctx_t *ctx,
+static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
                                      std::shared_ptr<resource_reader_base_t> rd)
 {
     int n = -1;
@@ -405,11 +391,11 @@ static int populate_resource_db_kvs (resource_ctx_t *ctx,
         goto done;
     }
     Jput (o);
-    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         flux_log (ctx->h, LOG_ERR, "cluster vertex is unavailable");
+    if (db.metadata.roots->find ("containment") == db.metadata.roots->end ()) {
         goto done;
     }
-    v = db.metadata.roots["containment"];
+    v = db.metadata.roots->at ("containment");
 
     // For the rest of the ranks -- general case
     for (rank=1; rank < size; rank++) {
@@ -432,7 +418,7 @@ done:
     return rc;
 }
 
-static int populate_resource_db (resource_ctx_t *ctx)
+static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     double elapse;
@@ -475,7 +461,7 @@ done:
     return rc;
 }
 
-static int select_subsystems (resource_ctx_t *ctx)
+static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
 {
     /*
      * Format of match_subsystems
@@ -514,44 +500,58 @@ done:
     return rc;
 }
 
-static int init_resource_graph (resource_ctx_t *ctx)
+static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
+                                               std::shared_ptr<
+                                                   resource_ctx_t> &ctx)
+{
+    std::shared_ptr<f_resource_graph_t> fg = nullptr;
+    resource_graph_t &g = ctx->db.resource_graph;
+
+    try {
+        // Set vertex and edge maps
+        vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
+        edg_infra_map_t emap = get (&resource_relation_t::idata, g);
+
+        // Set vertex and edge filters based on subsystems to use
+        const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
+        subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
+        subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
+        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        fg = nullptr;
+    }
+
+    return fg;
+}
+
+static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
 
     // Select the appropriate matcher based on CLI policy.
-    ctx->matcher = create_match_cb (ctx->args.match_policy);
+    if ( !(ctx->matcher = create_match_cb (ctx->args.match_policy))) {
+        flux_log (ctx->h, LOG_ERR, "%s: can't create match callback",
+                  __FUNCTION__);
+        return -1;
 
-    if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "can't populate graph resource database");
+    }
+    if ( (rc = populate_resource_db (ctx)) != 0) {
         return rc;
     }
-    if ((rc = select_subsystems (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "error processing subsystems %s",
                   ctx->args.match_subsystems.c_str ());
+    if ( (rc = select_subsystems (ctx)) != 0) {
         return rc;
     }
-
-    resource_graph_t &g = ctx->db.resource_graph;
-
-    // Set vertex and edge maps
-    vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-    edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-
-    // Set vertex and edge filters based on subsystems to use
-    const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
-    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
-
-    // Create a filtered graph based on the filters
-    if (!(ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel))) {
-        errno = ENOMEM;
+    if ( !(ctx->fgraph = create_filtered_graph (ctx)))
         return -1;
-     }
 
     // Create a writers object for matched vertices and edges
     match_format_t format = match_writers_factory_t::
                                 get_writers_type (ctx->args.match_format);
-    if (!(ctx->writers = match_writers_factory_t::create (format)))
+    if ( !(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
     if (ctx->args.prune_filters != ""
@@ -564,8 +564,8 @@ static int init_resource_graph (resource_ctx_t *ctx)
 
     // Initialize the DFU traverser
     if (ctx->traverser->initialize (ctx->fgraph,
-                                    &(ctx->db.metadata.roots), ctx->matcher) < 0) {
         flux_log (ctx->h, LOG_ERR, "traverser initialization");
+                                    ctx->db.metadata.roots, ctx->matcher) < 0) {
         return -1;
 
     }
@@ -579,7 +579,8 @@ static int init_resource_graph (resource_ctx_t *ctx)
  *                                                                            *
  ******************************************************************************/
 
-static void update_match_perf (resource_ctx_t *ctx, double elapse)
+static void update_match_perf (std::shared_ptr<resource_ctx_t> &ctx,
+                               double elapse)
 {
     ctx->perf.njobs++;
     ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
@@ -592,9 +593,10 @@ static inline string get_status_string (int64_t now, int64_t at)
     return (at == now)? "ALLOCATED" : "RESERVED";
 }
 
-static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
-                                int64_t at, string &jspec, stringstream &R,
-                                double elapse)
+static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
+                                int64_t id, int64_t now, int64_t at,
+                                const std::string &jspec,
+                                std::stringstream &R, double elapse)
 {
     job_lifecycle_t state = job_lifecycle_t::INIT;
 
@@ -604,8 +606,10 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
     }
 
     state = (at == now)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-    if (!(ctx->jobs[id] = new ((nothrow))job_info_t (id, state, at, "", jspec,
-                                                     R.str (), elapse))) {
+    try {
+        ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "",
+                                                      jspec, R.str (), elapse);
+    } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         return -1;
     }
@@ -618,8 +622,8 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
     return 0;
 }
 
-static int run (resource_ctx_t *ctx, int64_t jobid,
-                const char *cmd, string jstr, int64_t *at)
+static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                const char *cmd, const std::string &jstr, int64_t *at)
 {
     int rc = 0;
     Flux::Jobspec::Jobspec j {jstr};
@@ -636,9 +640,9 @@ static int run (resource_ctx_t *ctx, int64_t jobid,
    return rc;
 }
 
-static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
-                      string jstr, int64_t *now, int64_t *at, double *ov,
-                      stringstream &o)
+static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                      const char *cmd, const std::string &jstr, int64_t *now,
+                      int64_t *at, double *ov, stringstream &o)
 {
     int rc = 0;
     double elapse = 0.0f;
@@ -675,12 +679,14 @@ done:
     return rc;
 }
 
-static inline bool is_existent_jobid (const resource_ctx_t *ctx, uint64_t jobid)
+static inline bool is_existent_jobid (
+                       const std::shared_ptr<resource_ctx_t> &ctx,
+                       uint64_t jobid)
 {
     return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
 }
 
-static int run_remove (resource_ctx_t *ctx, int64_t jobid)
+static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
 {
     int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
@@ -694,7 +700,7 @@ static int run_remove (resource_ctx_t *ctx, int64_t jobid)
            // removed multiple times by the upper queuing layer
            // as part of providing advanced queueing policies
            // (e.g., conservative backfill).
-           job_info_t *info = ctx->jobs[jobid];
+           std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::ERROR;
         }
         goto out;
@@ -719,7 +725,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     const char *js_str = NULL;
     stringstream R;
 
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
                              "jobid", &jobid, "jobspec", &js_str) < 0)
         goto error;
@@ -754,7 +760,7 @@ error:
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg)
 {
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
@@ -787,9 +793,9 @@ error:
 static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
-    job_info_t *info = NULL;
+    std::shared_ptr<job_info_t> info = NULL;
     string status = "";
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
@@ -819,7 +825,7 @@ error:
 static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     double avg = 0.0f;
     double min = 0.0f;
 
@@ -838,7 +844,8 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
-static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
+static inline int64_t next_jobid (const std::map<uint64_t,
+                                            std::shared_ptr<job_info_t>> &m)
 {
     int64_t jobid = -1;
     if (m.empty ())
@@ -852,7 +859,7 @@ static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
 static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg)
 {
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
 
     if ((jobid = next_jobid (ctx->jobs)) < 0) {
@@ -876,7 +883,7 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     string resource_path = "", keyval = "";
     string property_key = "", property_value = "";
     size_t pos;
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, vtx_t>::const_iterator it;
     std::pair<std::map<std::string,std::string>::iterator, bool> ret;
     vtx_t v;
@@ -932,11 +939,11 @@ error:
 }
 
 static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg)
+                                     const flux_msg_t *msg, void *arg)
 {
     const char *rp = NULL, *gp_key = NULL;
     string resource_path = "", property_key = "";
-    resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, vtx_t>::const_iterator it;
     std::map<std::string, std::string>::const_iterator p_it;
     vtx_t v;
@@ -994,24 +1001,36 @@ error:
 extern "C" int mod_main (flux_t *h, int argc, char **argv)
 {
     int rc = -1;
-    resource_ctx_t *ctx = NULL;
-    uint32_t rank = 1;
+    try {
+        std::shared_ptr<resource_ctx_t> ctx = nullptr;
+        uint32_t rank = 1;
 
-    if (!(ctx = init_module (h, argc, argv))) {
-        flux_log (h, LOG_ERR, "can't initialize resource module");
-        goto done;
+        if ( !(ctx = init_module (h, argc, argv))) {
+            flux_log (h, LOG_ERR, "%s: can't initialize resource module",
+                      __FUNCTION__);
+            goto done;
+        }
+        // Because mod_main is always active, the following is safe.
+        flux_aux_set (h, "resource", &ctx, NULL);
+        flux_log (h, LOG_DEBUG, "%s: resource module starting", __FUNCTION__);
+
+        if ( (rc = init_resource_graph (ctx)) != 0) {
+            flux_log (h, LOG_ERR,
+                      "%s: can't initialize resource graph database",
+                      __FUNCTION__);
+            goto done;
+        }
+        flux_log (h, LOG_DEBUG, "%s: resource graph database loaded",
+                  __FUNCTION__);
+
+        if (( rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0) {
+            flux_log (h, LOG_ERR, "%s: flux_reactor_run: %s",
+                      __FUNCTION__, strerror (errno));
+            goto done;
+        }
     }
-    flux_log (h, LOG_DEBUG, "resource module starting...");
-
-    if ((rc = init_resource_graph (ctx)) != 0) {
-        flux_log (h, LOG_ERR, "can't initialize resource graph database");
-        goto done;
-    }
-    flux_log (h, LOG_INFO, "resource graph database loaded");
-
-    if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0) {
-        flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        goto done;
+    catch (std::exception &e) {
+        flux_log_error (h, "%s: %s", __FUNCTION__, e.what ());
     }
 
 done:

@@ -65,12 +65,12 @@ command_t commands[] = {
     { "NA", "NA", (cmd_func_f *)NULL, "NA" }
 };
 
-static int do_remove (resource_context_t *ctx, int64_t jobid)
+static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
 {
     int rc = -1;
     if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
-           job_info_t *info = ctx->jobs[jobid];
+           std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::CANCELLED;
         }
     } else {
@@ -80,9 +80,9 @@ static int do_remove (resource_context_t *ctx, int64_t jobid)
     return rc;
 }
 
-static void print_schedule_info (resource_context_t *ctx, ostream &out,
-                                 uint64_t jobid, string &jobspec_fn,
-                                 bool matched, int64_t at,
+static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
+                                 ostream &out, uint64_t jobid,
+                                 string &jobspec_fn, bool matched, int64_t at,
                                  double elapse, bool sat)
 {
     if (matched) {
@@ -98,8 +98,9 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
 
         out << "INFO:" << " =============================" << endl;
         st = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-        ctx->jobs[jobid] = new job_info_t (jobid, st,
-                                           at, jobspec_fn, "", elapse);
+        ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at,
+                                                         jobspec_fn,
+                                                         "", elapse);
         if (at == 0)
             ctx->allocations[jobid] = jobid;
         else
@@ -117,7 +118,8 @@ static void print_schedule_info (resource_context_t *ctx, ostream &out,
     ctx->jobid_counter++;
 }
 
-static void update_match_perf (resource_context_t *ctx, double elapse)
+static void update_match_perf (std::shared_ptr<resource_context_t> &ctx,
+                               double elapse)
 {
     ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
     ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
@@ -131,7 +133,7 @@ double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-int cmd_match (resource_context_t *ctx, vector<string> &args)
+int cmd_match (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     if (args.size () != 3) {
         cerr << "ERROR: malformed command" << endl;
@@ -197,7 +199,7 @@ int cmd_match (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_cancel (resource_context_t *ctx, vector<string> &args)
+int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     if (args.size () != 2) {
         cerr << "ERROR: malformed command" << endl;
@@ -228,7 +230,8 @@ done:
     return 0;
 }
 
-int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
+int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args)
 {
     if (args.size () != 3) {
         cerr << "ERROR: malformed command" << endl;
@@ -275,7 +278,8 @@ int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args)
     return 0;
 }
 
-int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
+int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args)
 {
     if (args.size () != 2) {
         cerr << "ERROR: malformed command" << endl;
@@ -308,10 +312,10 @@ int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args)
     return 0;
 }
 
-int cmd_list (resource_context_t *ctx, vector<string> &args)
+int cmd_list (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     for (auto &kv: ctx->jobs) {
-        job_info_t *info = kv.second;
+        std::shared_ptr<job_info_t> info = kv.second;
         string mode;
         get_jobstate_str (info->state, mode);
         cout << "INFO: " << info->jobid << ", " << mode << ", "
@@ -321,7 +325,7 @@ int cmd_list (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_info (resource_context_t *ctx, vector<string> &args)
+int cmd_info (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     if (args.size () != 2) {
         cerr << "ERROR: malformed command" << endl;
@@ -333,7 +337,7 @@ int cmd_info (resource_context_t *ctx, vector<string> &args)
        return 0;
     }
     string mode;
-    job_info_t *info = ctx->jobs[jobid];
+    std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
     get_jobstate_str (info->state, mode);
     cout << "INFO: " << info->jobid << ", " << mode << ", "
          << info->scheduled_at << ", " << info->jobspec_fn << ", "
@@ -341,7 +345,7 @@ int cmd_info (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_stat (resource_context_t *ctx, vector<string> &args)
+int cmd_stat (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     if (args.size () != 1) {
         cerr << "ERROR: malformed command" << endl;
@@ -361,7 +365,7 @@ int cmd_stat (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_cat (resource_context_t *ctx, vector<string> &args)
+int cmd_cat (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     string &jspec_filename = args[1];
     ifstream jspec_in;
@@ -374,7 +378,7 @@ int cmd_cat (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_help (resource_context_t *ctx, vector<string> &args)
+int cmd_help (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     bool multi = true;
     bool found = false;
@@ -398,7 +402,7 @@ int cmd_help (resource_context_t *ctx, vector<string> &args)
     return 0;
 }
 
-int cmd_quit (resource_context_t *ctx, vector<string> &args)
+int cmd_quit (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 {
     return -1;
 }

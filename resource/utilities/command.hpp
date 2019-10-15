@@ -30,6 +30,7 @@
 #include "resource/readers/resource_reader_factory.hpp"
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
+#include <memory>
 #include <cerrno>
 #include <vector>
 #include <map>
@@ -65,30 +66,41 @@ struct match_perf_t {
 struct resource_context_t {
     test_params_t params;        /* Parameters for resource-query */
     uint64_t jobid_counter;      /* Hold the current jobid value */
-    dfu_match_cb_t *matcher;     /* Match callback object */
-    dfu_traverser_t *traverser;  /* Graph traverser object */
+    std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
+    std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     resource_graph_db_t db;      /* Resource graph data store */
-    f_resource_graph_t *fgraph;  /* Graph filtered by subsystems to use */
-    match_writers_t *writers;    /* Vertex/Edge writers for a match */
+    std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
+    std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
     match_perf_t perf;           /* Match performance stats */
-    std::map<uint64_t, job_info_t *> jobs;     /* Jobs table */
+    std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
 
-typedef int cmd_func_f (resource_context_t *, std::vector<std::string> &);
+typedef int cmd_func_f (std::shared_ptr<resource_context_t> &,
+                        std::vector<std::string> &);
 
 cmd_func_f *find_cmd (const std::string &cmd_str);
-int cmd_match (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_cancel (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_set_property (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_get_property (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_list (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_info (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_stat (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_cat (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_quit (resource_context_t *ctx, std::vector<std::string> &args);
-int cmd_help (resource_context_t *ctx, std::vector<std::string> &args);
+int cmd_match (std::shared_ptr<resource_context_t> &ctx,
+               std::vector<std::string> &args);
+int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args);
+int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args);
+int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args);
+int cmd_list (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args);
+int cmd_info (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args);
+int cmd_stat (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args);
+int cmd_cat (std::shared_ptr<resource_context_t> &ctx,
+             std::vector<std::string> &args);
+int cmd_quit (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args);
+int cmd_help (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args);
 double get_elapse_time (timeval &st, timeval &et);
 
 } // namespace resource_model

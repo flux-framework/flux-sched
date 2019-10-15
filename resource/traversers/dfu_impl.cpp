@@ -640,14 +640,14 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
     return rc;
 }
 
-int dfu_impl_t::emit_vtx (vtx_t u, match_writers_t *w, unsigned needs,
-                          bool exclusive)
+int dfu_impl_t::emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> w,
+                          unsigned needs, bool exclusive)
 {
     w->emit_vtx (level (), (*m_graph), u, needs, exclusive);
     return 0;
 }
 
-int dfu_impl_t::emit_edg (edg_t e, match_writers_t *w)
+int dfu_impl_t::emit_edg (edg_t e, std::shared_ptr<match_writers_t> w)
  {
      w->emit_edg (level (), (*m_graph), e);
      return 0;
@@ -683,7 +683,7 @@ done:
     return (span == -1)? -1 : 0;
 }
 
-int dfu_impl_t::upd_sched (vtx_t u, match_writers_t *writers,
+int dfu_impl_t::upd_sched (vtx_t u, std::shared_ptr<match_writers_t> writers,
                            const subsystem_t &s, unsigned int needs,
                            bool excl, int n, const jobmeta_t &meta,
                            map<string, int64_t> &dfu,
@@ -735,9 +735,9 @@ int dfu_impl_t::upd_upv (vtx_t u, const subsystem_t &subsystem,
     return 0;
 }
 
-int dfu_impl_t::upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
-                         bool excl, const jobmeta_t &meta,
-                         map<string, int64_t> &to_parent)
+int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> writers,
+                         unsigned int needs, bool excl, const jobmeta_t &meta,
+                         std::map<string, int64_t> &to_parent)
 {
     int n_plans = 0;
     map<string, int64_t> dfu;
@@ -914,8 +914,9 @@ dfu_impl_t::dfu_impl_t ()
 
 }
 
-dfu_impl_t::dfu_impl_t (f_resource_graph_t *g, dfu_match_cb_t *m,
-                        map<subsystem_t, vtx_t> *roots)
+dfu_impl_t::dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
+                        std::shared_ptr<dfu_match_cb_t> m,
+                        std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
     : m_roots (roots), m_graph (g), m_match (m)
 {
 
@@ -949,17 +950,18 @@ dfu_impl_t::~dfu_impl_t ()
 
 }
 
-const f_resource_graph_t *dfu_impl_t::get_graph () const
+const std::shared_ptr<const f_resource_graph_t> dfu_impl_t::get_graph () const
 {
     return m_graph;
 }
 
-const map<subsystem_t, vtx_t> *dfu_impl_t::get_roots () const
+const std::shared_ptr<const std::map<subsystem_t,
+                                     vtx_t>> dfu_impl_t::get_roots () const
 {
     return m_roots;
 }
 
-const dfu_match_cb_t *dfu_impl_t::get_match_cb () const
+const std::shared_ptr<const dfu_match_cb_t> dfu_impl_t::get_match_cb () const
 {
     return m_match;
 }
@@ -969,17 +971,17 @@ const string &dfu_impl_t::err_message () const
     return m_err_msg;
 }
 
-void dfu_impl_t::set_graph (f_resource_graph_t *g)
+void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
 }
 
-void dfu_impl_t::set_roots (map<subsystem_t, vtx_t> *roots)
+void dfu_impl_t::set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
 {
     m_roots = roots;
 }
 
-void dfu_impl_t::set_match_cb (dfu_match_cb_t *m)
+void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     m_match = m;
 }
@@ -1072,8 +1074,8 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     return rc;
 }
 
-int dfu_impl_t::update (vtx_t root, match_writers_t *writers, jobmeta_t &meta,
-                        unsigned int needs, bool exclusive)
+int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> writers,
+                        jobmeta_t &meta, unsigned int needs, bool exclusive)
 {
     map<string, int64_t> dfu;
     m_color.reset ();
