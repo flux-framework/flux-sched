@@ -34,14 +34,13 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-using namespace std;
 using namespace Flux::Jobspec;
 
 struct command_t {
-    string name;
-    string abbr;
+    std::string name;
+    std::string abbr;
     cmd_func_f *cmd;
-    string note;
+    std::string note;
 };
 
 command_t commands[] = {
@@ -74,29 +73,30 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
            info->state = job_lifecycle_t::CANCELLED;
         }
     } else {
-        cout << ctx->traverser->err_message ();
+        std::cout << ctx->traverser->err_message ();
         ctx->traverser->clear_err_message ();
     }
     return rc;
 }
 
 static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
-                                 ostream &out, uint64_t jobid,
-                                 string &jobspec_fn, bool matched, int64_t at,
-                                 double elapse, bool sat)
+                                 std::ostream &out, uint64_t jobid,
+                                 std::string &jobspec_fn, bool matched,
+                                 int64_t at, double elapse, bool sat)
 {
     if (matched) {
         job_lifecycle_t st;
-        string mode = (at == 0)? "ALLOCATED" : "RESERVED";
-        string scheduled_at = (at == 0)? "Now" : to_string (at);
-        out << "INFO:" << " =============================" << endl;
-        out << "INFO:" << " JOBID=" << jobid << endl;
-        out << "INFO:" << " RESOURCES=" << mode << endl;
-        out << "INFO:" << " SCHEDULED AT=" << scheduled_at << endl;
+        std::string mode = (at == 0)? "ALLOCATED" : "RESERVED";
+        std::string scheduled_at = (at == 0)? "Now" : std::to_string (at);
+        out << "INFO:" << " =============================" << std::endl;
+        out << "INFO:" << " JOBID=" << jobid << std::endl;
+        out << "INFO:" << " RESOURCES=" << mode << std::endl;
+        out << "INFO:" << " SCHEDULED AT=" << scheduled_at << std::endl;
         if (ctx->params.elapse_time)
-            out << "INFO:" << " ELAPSE=" << to_string (elapse) << endl;
+            std::cout << "INFO:" << " ELAPSE=" << std::to_string (elapse)
+                      << std::endl;
 
-        out << "INFO:" << " =============================" << endl;
+        out << "INFO:" << " =============================" << std::endl;
         st = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
         ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at,
                                                          jobspec_fn,
@@ -106,14 +106,15 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
         else
             ctx->reservations[jobid] = jobid;
     } else {
-        out << "INFO:" << " =============================" << endl;
-        out << "INFO: " << "No matching resources found" << endl;
+        out << "INFO:" << " =============================" << std::endl;
+        out << "INFO: " << "No matching resources found" << std::endl;
         if (!sat)
-            out << "INFO: " << "Unsatisfiable request" << endl;
-        out << "INFO:" << " JOBID=" << jobid << endl;
+            out << "INFO: " << "Unsatisfiable request" << std::endl;
+        out << "INFO:" << " JOBID=" << jobid << std::endl;
         if (ctx->params.elapse_time)
-            out << "INFO:" << " ELAPSE=" << to_string (elapse) << endl;
-        out << "INFO:" << " =============================" << endl;
+            out << "INFO:" << " ELAPSE=" << std::to_string (elapse)
+                << std::endl;
+        out << "INFO:" << " =============================" << std::endl;
     }
     ctx->jobid_counter++;
 }
@@ -133,16 +134,17 @@ double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-int cmd_match (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_match (std::shared_ptr<resource_context_t> &ctx,
+               std::vector<std::string> &args)
 {
     if (args.size () != 3) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
-    string subcmd = args[1];
+    std::string subcmd = args[1];
     if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
           || subcmd == "allocate_with_satisfiability")) {
-        cerr << "ERROR: unknown subcmd " << args[1] << endl;
+        std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
@@ -151,12 +153,12 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
         bool sat = true;
         int64_t at = 0;
         int64_t jobid = ctx->jobid_counter;
-        string &jobspec_fn = args[2];
-        ifstream jobspec_in;
+        std::string &jobspec_fn = args[2];
+        std::ifstream jobspec_in;
         jobspec_in.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         jobspec_in.open (jobspec_fn);
         Flux::Jobspec::Jobspec job {jobspec_in};
-        stringstream o;
+        std::stringstream o;
         double elapse = 0.0f;
         struct timeval st, et;
 
@@ -179,7 +181,8 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
             sat = false;
 
         ctx->writers->emit (o);
-        ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out : cout;
+        std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
+                                                       : std::cout;
         out << o.str ();
 
         gettimeofday (&et, NULL);
@@ -190,24 +193,26 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
                              jobspec_fn, rc == 0, at, elapse, sat);
         jobspec_in.close ();
 
-    } catch (ifstream::failure &e) {
-        cerr << "ERROR: Exception occurs for input file I/O" << e.what () << endl;
+    } catch (std::ifstream::failure &e) {
+        std::cerr << "ERROR: Exception occurs for input file I/O"
+                  << e.what () << std::endl;
     } catch (parse_error &e) {
-        cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
-             << e.what () << endl;
+        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
+                  << e.what () << std::endl;
     }
     return 0;
 }
 
-int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args)
 {
     if (args.size () != 2) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
 
     int rc = -1;
-    string jobid_str = args[1];
+    std::string jobid_str = args[1];
     uint64_t jobid = (uint64_t)std::strtoll (jobid_str.c_str (), NULL, 10);
 
     if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
@@ -217,13 +222,14 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
         if ( (rc = do_remove (ctx, jobid)) == 0)
             ctx->reservations.erase (jobid);
     } else {
-        cerr << "ERROR: nonexistent job " << jobid << endl;
+        std::cerr << "ERROR: nonexistent job " << jobid << std::endl;
         goto done;
     }
 
     if (rc != 0) {
-        cerr << "ERROR: error encountered while removing job " << jobid << endl;
-        cerr << "ERROR: " << strerror (errno) << endl;
+        std::cerr << "ERROR: error encountered while removing job "
+                  << jobid << std::endl;
+        std::cerr << "ERROR: " << strerror (errno) << std::endl;
     }
 
 done:
@@ -234,19 +240,20 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
                       std::vector<std::string> &args)
 {
     if (args.size () != 3) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
 
-    string resource_path = args[1];
-    string property_key, property_value;
-    ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
+    std::string resource_path = args[1];
+    std::string property_key, property_value;
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
     size_t pos = args[2].find ('=');
 
-    if (pos == 0 || (pos == args[2].size () - 1) || pos == string::npos) {
-        out << "Incorrect input format. " << endl
+    if (pos == 0 || (pos == args[2].size () - 1) || pos == std::string::npos) {
+        out << "Incorrect input format. " << std::endl
             << "Please use `set-property <resource> PROPERTY=VALUE`."
-            << endl;
+            << std::endl;
         return 0;
     }
     else {
@@ -259,7 +266,7 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
 
     if (it == ctx->db.metadata.by_path.end ()) {
         out << "Couldn't find path " << resource_path
-            << " in resource graph." << endl;
+            << " in resource graph." << std::endl;
     }
     else {
         vtx_t v = it->second;
@@ -272,8 +279,9 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
              != ctx->db.resource_graph[v].properties.end ()) {
             ctx->db.resource_graph[v].properties.erase (property_key);
         }
-        ctx->db.resource_graph[v].properties.insert
-            (pair<string,string> (property_key,property_value));
+        ctx->db.resource_graph[v].properties.insert (
+            std::pair<std::string, std::string> (property_key,
+                                                 property_value));
     }
     return 0;
 }
@@ -282,73 +290,77 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
                       std::vector<std::string> &args)
 {
     if (args.size () != 2) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
 
-    string resource_path = args[1];
-    ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : cout;
+    std::string resource_path = args[1];
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
 
     std::map<std::string, vtx_t>::const_iterator it =
         ctx->db.metadata.by_path.find (resource_path);
 
     if (it == ctx->db.metadata.by_path.end ()) {
         out << "Could not find path " << resource_path
-            << " in resource graph." << endl;
+            << " in resource graph." << std::endl;
     }
     else {
         vtx_t v = it->second;
         if (ctx->db.resource_graph[v].properties.size () == 0) {
             out << "No properties were found for " << resource_path
-                << ". " << endl;
+                << ". " << std::endl;
         }
         else {
             std::map<std::string, std::string>::const_iterator p_it;
             for (p_it = ctx->db.resource_graph[v].properties.begin ();
                 p_it != ctx->db.resource_graph[v].properties.end (); p_it++)
-                    out << p_it->first << "=" << p_it->second << endl;
+                    out << p_it->first << "=" << p_it->second << std::endl;
         }
     }
     return 0;
 }
 
-int cmd_list (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_list (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args)
 {
     for (auto &kv: ctx->jobs) {
         std::shared_ptr<job_info_t> info = kv.second;
-        string mode;
+        std::string mode;
         get_jobstate_str (info->state, mode);
-        cout << "INFO: " << info->jobid << ", " << mode << ", "
-             << info->scheduled_at << ", " << info->jobspec_fn << ", "
-             << info->overhead << endl;
+        std::cout << "INFO: " << info->jobid << ", " << mode << ", "
+                  << info->scheduled_at << ", " << info->jobspec_fn << ", "
+                  << info->overhead << std::endl;
     }
     return 0;
 }
 
-int cmd_info (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_info (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args)
 {
     if (args.size () != 2) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     uint64_t jobid = (uint64_t)std::atoll(args[1].c_str ());
     if (ctx->jobs.find (jobid) == ctx->jobs.end ()) {
-       cout << "ERROR: jobid doesn't exist: " << args[1] << endl;
+       std::cout << "ERROR: jobid doesn't exist: " << args[1] << std::endl;
        return 0;
     }
-    string mode;
+    std::string mode;
     std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
     get_jobstate_str (info->state, mode);
-    cout << "INFO: " << info->jobid << ", " << mode << ", "
-         << info->scheduled_at << ", " << info->jobspec_fn << ", "
-         << info->overhead << endl;
+    std::cout << "INFO: " << info->jobid << ", " << mode << ", "
+              << info->scheduled_at << ", " << info->jobspec_fn << ", "
+              << info->overhead << std::endl;
     return 0;
 }
 
-int cmd_stat (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_stat (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args)
 {
     if (args.size () != 1) {
-        cerr << "ERROR: malformed command" << endl;
+        std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     double avg = 0.0f;
@@ -358,31 +370,35 @@ int cmd_stat (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
         avg = ctx->perf.accum / (double)ctx->jobs.size ();
         min = ctx->perf.min;
     }
-    cout << "INFO: Num. of Jobs Matched: " << ctx->jobs.size () << endl;
-    cout << "INFO: Min. Match Time: " << min << endl;
-    cout << "INFO: Max. Match Time: " << ctx->perf.max << endl;
-    cout << "INFO: Avg. Match Time: " << avg << endl;
+    std::cout << "INFO: Num. of Jobs Matched: " << ctx->jobs.size ()
+              << std::endl;
+    std::cout << "INFO: Min. Match Time: " << min << std::endl;
+    std::cout << "INFO: Max. Match Time: " << ctx->perf.max << std::endl;
+    std::cout << "INFO: Avg. Match Time: " << avg << std::endl;
     return 0;
 }
 
-int cmd_cat (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_cat (std::shared_ptr<resource_context_t> &ctx,
+             std::vector<std::string> &args)
 {
-    string &jspec_filename = args[1];
-    ifstream jspec_in;
+    std::string &jspec_filename = args[1];
+    std::ifstream jspec_in;
     jspec_in.open (jspec_filename);
-    string line;
+    std::string line;
     while (getline (jspec_in, line))
-        cout << line << endl;
-    cout << "INFO: " << "Jobspec in " << jspec_filename << endl;
+        std::cout << line << std::endl;
+    std::cout << "INFO: " << "Jobspec in " << jspec_filename
+              << std::endl;
     jspec_in.close ();
     return 0;
 }
 
-int cmd_help (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_help (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args)
 {
     bool multi = true;
     bool found = false;
-    string cmd = "unknown";
+    std::string cmd = "unknown";
 
     if (args.size () == 2) {
         multi = false;
@@ -391,23 +407,25 @@ int cmd_help (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
 
     for (int i = 0; commands[i].name != "NA"; ++i) {
         if (multi || cmd == commands[i].name || cmd == commands[i].abbr) {
-            cout << "INFO: " << commands[i].name << " (" << commands[i].abbr
-                      << ")" << " -- " << commands[i].note << endl;
+            std::cout << "INFO: " << commands[i].name << " ("
+                      << commands[i].abbr << ")" << " -- "
+                      << commands[i].note << std::endl;
             found = true;
         }
     }
     if (!multi && !found)
-        cout << "ERROR: unknown command: " << cmd << endl;
+        std::cout << "ERROR: unknown command: " << cmd << std::endl;
 
     return 0;
 }
 
-int cmd_quit (std::shared_ptr<resource_context_t> &ctx, vector<string> &args)
+int cmd_quit (std::shared_ptr<resource_context_t> &ctx,
+              std::vector<std::string> &args)
 {
     return -1;
 }
 
-cmd_func_f *find_cmd (const string &cmd_str)
+cmd_func_f *find_cmd (const std::string &cmd_str)
 {
     for (int i = 0; commands[i].name != "NA"; ++i) {
         if (cmd_str == commands[i].name)
