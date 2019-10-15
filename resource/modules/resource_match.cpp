@@ -43,7 +43,6 @@ extern "C" {
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 
-using namespace std;
 using namespace Flux::resource_model;
 
 /******************************************************************************
@@ -53,13 +52,13 @@ using namespace Flux::resource_model;
  ******************************************************************************/
 
 struct resource_args_t {
-    string load_file;              /* load file name */
-    string load_format;            /* load reader format */
-    string load_whitelist;         /* load resource whitelist */
-    string match_subsystems;
-    string match_policy;
-    string prune_filters;
-    string match_format;
+    std::string load_file;          /* load file name */
+    std::string load_format;        /* load reader format */
+    std::string load_whitelist;     /* load resource whitelist */
+    std::string match_subsystems;
+    std::string match_policy;
+    std::string prune_filters;
+    std::string match_format;
     int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
 };
 
@@ -82,9 +81,9 @@ struct resource_ctx_t {
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
     match_perf_t perf;             /* Match performance stats */
-    map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
-    map<uint64_t, uint64_t> allocations;  /* Allocation table */
-    map<uint64_t, uint64_t> reservations; /* Reservation table */
+    std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
+    std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
+    std::map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
 
 resource_ctx_t::~resource_ctx_t ()
@@ -194,7 +193,7 @@ static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
 {
     int rc = 0;
     resource_args_t &args = ctx->args;
-    string dflt = "";
+    std::string dflt = "";
 
     for (int i = 0; i < argc; i++) {
         if (!strncmp ("load-file=", argv[i], sizeof ("load-file"))) {
@@ -345,7 +344,7 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
                                       std::shared_ptr<resource_reader_base_t> rd)
 {
     int rc = -1;
-    ifstream in_file;
+    std::ifstream in_file;
     std::stringstream buffer{};
 
     in_file.open (ctx->args.load_file.c_str (), std::ifstream::in);
@@ -487,9 +486,9 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
      * subsystem1[:relation1[:relation2...]],subsystem2[...
      */
     int rc = 0;
-    stringstream ss (ctx->args.match_subsystems);
+    std::stringstream ss (ctx->args.match_subsystems);
     subsystem_t subsystem;
-    string token;
+    std::string token;
 
     while (getline (ss, token, ',')) {
         size_t found = token.find_first_of (":");
@@ -508,8 +507,9 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
                 errno = EINVAL;
                 goto done;
             }
-            stringstream relations (token.substr (found+1, std::string::npos));
-            string relation;
+            std::stringstream relations (token.substr (found+1,
+                                                       std::string::npos));
+            std::string relation;
             while (getline (relations, relation, ':'))
                 ctx->matcher->add_subsystem (subsystem, relation);
         }
@@ -610,7 +610,7 @@ static void update_match_perf (std::shared_ptr<resource_ctx_t> &ctx,
     ctx->perf.accum += elapse;
 }
 
-static inline string get_status_string (int64_t now, int64_t at)
+static inline std::string get_status_string (int64_t now, int64_t at)
 {
     return (at == now)? "ALLOCATED" : "RESERVED";
 }
@@ -651,12 +651,12 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     Flux::Jobspec::Jobspec j {jstr};
     dfu_traverser_t &tr = *(ctx->traverser);
 
-    if (string ("allocate") == cmd)
+    if (std::string ("allocate") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
-    else if (string ("allocate_with_satisfiability") == cmd)
+    else if (std::string ("allocate_with_satisfiability") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::
                      MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
-    else if (string ("allocate_orelse_reserve") == cmd)
+    else if (std::string ("allocate_orelse_reserve") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                      jobid, at);
    return rc;
@@ -664,7 +664,7 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
 static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       const char *cmd, const std::string &jstr, int64_t *now,
-                      int64_t *at, double *ov, stringstream &o)
+                      int64_t *at, double *ov, std::stringstream &o)
 {
     int rc = 0;
     double elapse = 0.0f;
@@ -743,10 +743,10 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     int64_t now = 0;
     int64_t jobid = -1;
     double ov = 0.0f;
-    string status = "";
+    std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
-    stringstream R;
+    std::stringstream R;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
@@ -822,7 +822,7 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
     std::shared_ptr<job_info_t> info = NULL;
-    string status = "";
+    std::string status = "";
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
@@ -907,12 +907,12 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg)
 {
     const char *rp = NULL, *kv = NULL;
-    string resource_path = "", keyval = "";
-    string property_key = "", property_value = "";
+    std::string resource_path = "", keyval = "";
+    std::string property_key = "", property_value = "";
     size_t pos;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, vtx_t>::const_iterator it;
-    std::pair<std::map<std::string,std::string>::iterator, bool> ret;
+    std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}",
@@ -925,7 +925,7 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     pos = keyval.find ('=');
 
-    if (pos == 0 || (pos == keyval.size () - 1) || pos == string::npos) {
+    if (pos == 0 || (pos == keyval.size () - 1) || pos == std::string::npos) {
         errno = EINVAL;
         flux_log_error (h, "%s: Incorrect format.", __FUNCTION__);
         flux_log_error (h, "%s: Use set-property <resource> PROPERTY=VALUE",
@@ -970,12 +970,12 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
                                      const flux_msg_t *msg, void *arg)
 {
     const char *rp = NULL, *gp_key = NULL;
-    string resource_path = "", property_key = "";
+    std::string resource_path = "", property_key = "";
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, vtx_t>::const_iterator it;
     std::map<std::string, std::string>::const_iterator p_it;
     vtx_t v;
-    string resp_value = "";
+    std::string resp_value = "";
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}",
                                         "gp_resource_path", &rp,
