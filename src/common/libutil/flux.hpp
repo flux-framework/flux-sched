@@ -91,4 +91,9 @@ nlohmann::json request_to_json (const flux_msg_t* msg)
     return nlohmann::json::parse (data);
 }
 
+int respond_pack(flux_t *h, flux_msg_t const *request, nlohmann::json const &j){
+  std::string s = j.dump();
+  return flux_respond_raw(h, request, s.c_str(), s.size() + 1);
+}
+
 };  // namespace flux

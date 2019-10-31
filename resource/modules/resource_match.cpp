@@ -661,19 +661,13 @@ static void match_request_cb (flux_t *h,
     }
 
     status = get_status_string (now, at);
-    if (flux_respond_pack (h,
-                           msg,
-                           "{s:I s:s s:f s:s s:I}",
-                           "jobid",
-                           jobid,
-                           "status",
-                           status.c_str (),
-                           "overhead",
-                           ov,
-                           "R",
-                           R.str ().c_str (),
-                           "at",
-                           at)
+    if (flux::respond_pack (h,
+                            msg,
+                            {{"jobid", jobid},
+                             {"status", status},
+                             {"overhead", ov},
+                             {"R", R.str ()},
+                             {"at", at}})
         < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
@@ -734,17 +728,12 @@ static void info_request_cb (flux_t *h,
 
     info = &ctx->jobs.at (jobid);
     get_jobstate_str (info->state, status);
-    if (flux_respond_pack (h,
-                           msg,
-                           "{s:I s:s s:I s:f}",
-                           "jobid",
-                           jobid,
-                           "status",
-                           status.c_str (),
-                           "at",
-                           info->scheduled_at,
-                           "overhead",
-                           info->overhead)
+    if (flux::respond_pack (h,
+                            msg,
+                            {{"jobid", jobid},
+                             {"status", status.c_str ()},
+                             {"at", info->scheduled_at},
+                             {"overhead", info->overhead}})
         < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
@@ -768,23 +757,15 @@ static void stat_request_cb (flux_t *h,
         avg = ctx->perf.accum / (double)ctx->perf.njobs;
         min = ctx->perf.min;
     }
-    if (flux_respond_pack (h,
-                           msg,
-                           "{s:I s:I s:f s:I s:f s:f s:f}",
-                           "V",
-                           num_vertices (ctx->db.resource_graph),
-                           "E",
-                           num_edges (ctx->db.resource_graph),
-                           "load-time",
-                           ctx->perf.load,
-                           "njobs",
-                           ctx->perf.njobs,
-                           "min-match",
-                           min,
-                           "max-match",
-                           ctx->perf.max,
-                           "avg-match",
-                           avg)
+    if (flux::respond_pack (h,
+                            msg,
+                            {{"V", num_vertices (ctx->db.resource_graph)},
+                             {"E", num_edges (ctx->db.resource_graph)},
+                             {"load-time", ctx->perf.load},
+                             {"njobs", ctx->perf.njobs},
+                             {"min-match", min},
+                             {"max-match", ctx->perf.max},
+                             {"avg-match", avg}})
         < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
