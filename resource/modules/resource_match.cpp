@@ -37,6 +37,8 @@ extern "C" {
 #include "src/common/libutil/shortjansson.h"
 }
 
+#include "src/common/libutil/flux.hpp"
+
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
@@ -127,15 +129,15 @@ static void get_property_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg);
 
-static const struct flux_msg_handler_spec htab[] =
-    {{FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
-     FLUX_MSGHANDLER_TABLE_END};
+// static const struct flux_msg_handler_spec htab[] =
+//     {{FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
+//      {FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
+//      FLUX_MSGHANDLER_TABLE_END};
 
 static double get_elapse_time (timeval &st, timeval &et)
 {
@@ -154,7 +156,7 @@ static void freectx (void *arg)
 {
     resource_ctx_t *ctx = (resource_ctx_t *)arg;
     if (ctx) {
-        flux_msg_handler_delvec (ctx->handlers);
+        // flux_msg_handler_delvec (ctx->handlers);
         delete ctx->matcher;
         delete ctx->traverser;
         delete ctx->fgraph;
@@ -306,10 +308,10 @@ static resource_ctx_t *init_module (flux_t *h, int argc, char **argv)
         goto error;
     }
     process_args (ctx, argc, argv);
-    if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
-        flux_log_error (h, "error registering resource event handler");
-        goto error;
-    }
+    // if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
+    //     flux_log_error (h, "error registering resource event handler");
+    //     goto error;
+    // }
     return ctx;
 
 error:
@@ -1096,23 +1098,32 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
 
     if (!(ctx = init_module (h, argc, argv))) {
         flux_log (h, LOG_ERR, "can't initialize resource module");
-        goto done;
+        return rc;
     }
+
+    flux::msg_handler_wrapper handlers[] =
+        {{h, "resource.match", match_request_cb, h},
+         {h, "resource.cancel", cancel_request_cb, h},
+         {h, "resource.info", info_request_cb, h},
+         {h, "resource.stat", stat_request_cb, h},
+         {h, "resource.next_jobid", next_jobid_request_cb, h},
+         {h, "resource.set_property", set_property_request_cb, h},
+         {h, "resource.get_property", get_property_request_cb, h}};
+
     flux_log (h, LOG_DEBUG, "resource module starting...");
 
     if ((rc = init_resource_graph (ctx)) != 0) {
         flux_log (h, LOG_ERR, "can't initialize resource graph database");
-        goto done;
+        return rc;
     }
     flux_log (h, LOG_INFO, "resource graph database loaded");
 
     if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0) {
         flux_log (h, LOG_ERR, "flux_reactor_run: %s", strerror (errno));
-        goto done;
+        return rc;
     }
 
-done:
-    return rc;
+    return 0;
 }
 
 MOD_NAME ("resource");
