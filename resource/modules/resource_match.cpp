@@ -449,10 +449,7 @@ static int init_resource_graph (resource_ctx_t *ctx)
     subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
 
     // Create a filtered graph based on the filters
-    if (!(ctx->fgraph = new (nothrow) f_resource_graph_t (g, edgsel, vtxsel))) {
-        errno = ENOMEM;
-        return -1;
-    }
+    ctx->fgraph = new f_resource_graph_t (g, edgsel, vtxsel);
 
     // Create a writers object for matched vertices and edges
     match_format_t format =
