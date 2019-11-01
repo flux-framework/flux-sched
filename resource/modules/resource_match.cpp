@@ -889,11 +889,12 @@ static void get_property_request_cb (flux_t *h,
                                      void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
+    string resp_value = "";
+    vtx_t v;
 
     auto j = flux::request_to_json (msg);
     string resource_path = j["gp_resource_path"], property_key = j["gp_key"];
 
-    vtx_t v;
     try {
         v = ctx->db.metadata.by_path.at (resource_path);
     } catch (std::out_of_range const &e) {
@@ -904,7 +905,6 @@ static void get_property_request_cb (flux_t *h,
         goto error;
     }
 
-    string resp_value = "";
     try {
         resp_value = ctx->db.resource_graph[v].properties.at (property_key);
     } catch (std::out_of_range const &e) {
