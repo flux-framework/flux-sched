@@ -262,16 +262,6 @@ static int process_args (resource_ctx_t *ctx, std::vector<std::string> const &av
     return rc;
 }
 
-static resource_ctx_t *init_module (flux_t *h,
-                                    resource_ctx_t &ctx,
-                                    int argc,
-                                    char **argv)
-{
-    uint32_t rank = 1;
-
-    return &ctx;
-}
-
 /******************************************************************************
  *                                                                            *
  *              Resource Graph and Traverser Initialization                   *
@@ -1045,8 +1035,8 @@ error:
 
 extern "C" int mod_main (flux_t *h, int argc, char **argv)
 {
-    int rc = -1;
     uint32_t rank = 1;
+    int rc = -1;
 
     try {
         if (flux_get_rank (h, &rank) < 0) {
@@ -1061,10 +1051,6 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         resource_ctx_t ctx{h};
         std::vector<std::string> args (argv, argv + argc);
         process_args (&ctx, args);
-        if (!init_module (h, ctx, argc, argv)) {
-            flux_log (h, LOG_ERR, "can't initialize resource module");
-            return rc;
-        }
 
         flux::msg_handler_wrapper handlers[] =
             {{h, "resource.match", match_request_cb, &ctx},
@@ -1089,6 +1075,12 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         }
     } catch (const std::bad_alloc &e) {
         flux_log_error (h, "Allocation failed: %s", e.what ());
+    } catch (const std::system_error &e) {
+        errno = e.code ().value ();
+        flux_log_error (h,
+                        "system_error with code %d meaning: %s",
+                        e.code ().value (),
+                        e.what ());
     } catch (...) {
         flux_log_error (h, "unknown exception thrown in resource_match service");
     }
