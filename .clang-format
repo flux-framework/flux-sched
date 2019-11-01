@@ -24,3 +24,5 @@ BinPackArguments : false
 AlignOperands : true
 BreakBeforeTernaryOperators : true
 AllowAllParametersOfDeclarationOnNextLine : false
+PointerAlignment : Right
+DerivePointerAlignment : false

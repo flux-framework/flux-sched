@@ -40,6 +40,8 @@ extern "C" {
 }
 
 #include "src/common/libutil/flux.hpp"
+#include "src/common/libutil/json.hpp"
+using json = nlohmann::json;
 
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
@@ -83,10 +85,6 @@ struct resource_ctx_t {
     {
         delete this->matcher;
         delete this->fgraph;
-        for (auto &kv : this->jobs) {
-            delete kv.second; /* job_info_t* type */
-            this->jobs.erase (kv.first);
-        }
         delete this->writers;
         this->jobs.clear ();
         this->allocations.clear ();
@@ -102,62 +100,10 @@ struct resource_ctx_t {
     f_resource_graph_t *fgraph{nullptr};  /* Graph filtered by subsystems to use */
     match_writers_t *writers{nullptr};    /* Vertex/Edge writers for a match */
     match_perf_t perf{};                  /* Match performance stats */
-    map<uint64_t, job_info_t *> jobs;     /* Jobs table */
+    map<uint64_t, job_info_t> jobs;       /* Jobs table */
     map<uint64_t, uint64_t> allocations;  /* Allocation table */
     map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
-
-/******************************************************************************
- *                                                                            *
- *                          Request Handler Prototypes                        *
- *                                                                            *
- ******************************************************************************/
-
-static void match_request_cb (flux_t *h,
-                              flux_msg_handler_t *w,
-                              const flux_msg_t *msg,
-                              void *arg);
-
-static void cancel_request_cb (flux_t *h,
-                               flux_msg_handler_t *w,
-                               const flux_msg_t *msg,
-                               void *arg);
-
-static void info_request_cb (flux_t *h,
-                             flux_msg_handler_t *w,
-                             const flux_msg_t *msg,
-                             void *arg);
-
-static void stat_request_cb (flux_t *h,
-                             flux_msg_handler_t *w,
-                             const flux_msg_t *msg,
-                             void *arg);
-
-static void next_jobid_request_cb (flux_t *h,
-                                   flux_msg_handler_t *w,
-                                   const flux_msg_t *msg,
-                                   void *arg);
-
-static void set_property_request_cb (flux_t *h,
-                                     flux_msg_handler_t *w,
-                                     const flux_msg_t *msg,
-                                     void *arg);
-
-static void get_property_request_cb (flux_t *h,
-                                     flux_msg_handler_t *w,
-                                     const flux_msg_t *msg,
-                                     void *arg);
-
-// static const struct flux_msg_handler_spec htab[] = {
-//     { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
-//     { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
-//     { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
-//     { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
-//     { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
-//     { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb,
-//     0}, { FLUX_MSGTYPE_REQUEST, "resource.get_property",
-//     get_property_request_cb, 0}, FLUX_MSGHANDLER_TABLE_END
-// };
 
 static double get_elapse_time (timeval &st, timeval &et)
 {
@@ -559,7 +505,7 @@ static int track_schedule_info (resource_ctx_t *ctx,
                                 int64_t id,
                                 int64_t now,
                                 int64_t at,
-                                string &jspec,
+                                string const &jspec,
                                 stringstream &R,
                                 double elapse)
 {
@@ -571,11 +517,7 @@ static int track_schedule_info (resource_ctx_t *ctx,
     }
 
     state = (at == now) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-    if (!(ctx->jobs[id] = new ((nothrow))
-              job_info_t (id, state, at, "", jspec, R.str (), elapse))) {
-        errno = ENOMEM;
-        return -1;
-    }
+    ctx->jobs.emplace (id, job_info_t (id, state, at, "", jspec, R.str (), elapse));
 
     if (at == now)
         ctx->allocations[id] = id;
@@ -614,8 +556,8 @@ static int run (resource_ctx_t *ctx,
 
 static int run_match (resource_ctx_t *ctx,
                       int64_t jobid,
-                      const char *cmd,
-                      string jstr,
+                      string const &cmd,
+                      string const &jstr,
                       int64_t *now,
                       int64_t *at,
                       double *ov,
@@ -629,15 +571,15 @@ static int run_match (resource_ctx_t *ctx,
     gettimeofday (&start, NULL);
     ctx->writers->reset ();
 
-    if (strcmp ("allocate", cmd) != 0 && strcmp ("allocate_orelse_reserve", cmd) != 0
-        && strcmp ("allocate_with_satisfiability", cmd) != 0) {
+    if (cmd.compare ("allocate") != 0 && cmd.compare ("allocate_orelse_reserve") != 0
+        && cmd.compare ("allocate_with_satisfiability") != 0) {
         errno = EINVAL;
-        flux_log_error (ctx->h, "unknown cmd: %s", cmd);
+        flux_log_error (ctx->h, "unknown cmd: %s", cmd.c_str ());
         goto done;
     }
 
     *at = *now = (int64_t)start.tv_sec;
-    if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
+    if ((rc = run (ctx, jobid, cmd.c_str (), jstr, at)) < 0)
         goto done;
 
     ctx->writers->emit (o);
@@ -674,7 +616,7 @@ static int run_remove (resource_ctx_t *ctx, int64_t jobid)
             // removed multiple times by the upper queuing layer
             // as part of providing advanced queueing policies
             // (e.g., conservative backfill).
-            job_info_t *info = ctx->jobs[jobid];
+            job_info_t *info = &ctx->jobs.at (jobid);
             info->state = job_lifecycle_t::ERROR;
         }
         goto out;
@@ -694,25 +636,17 @@ static void match_request_cb (flux_t *h,
 {
     int64_t at = 0;
     int64_t now = 0;
-    int64_t jobid = -1;
     double ov = 0.0f;
     string status = "";
-    const char *cmd = NULL;
-    const char *js_str = NULL;
     stringstream R;
 
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    if (flux_request_unpack (msg,
-                             NULL,
-                             "{s:s s:I s:s}",
-                             "cmd",
-                             &cmd,
-                             "jobid",
-                             &jobid,
-                             "jobspec",
-                             &js_str)
-        < 0)
-        goto error;
+    json j = flux::request_to_json (msg);
+
+    int64_t jobid = j["jobid"];
+    std::string cmd = j["cmd"];
+    std::string js_str = j["jobspec"];
+
     if (is_existent_jobid (ctx, jobid)) {
         errno = EINVAL;
         flux_log_error (h, "existent job (%jd).", (intmax_t)jobid);
@@ -756,10 +690,8 @@ static void cancel_request_cb (flux_t *h,
                                void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    int64_t jobid = -1;
+    int64_t jobid = flux::request_to_json (msg).at ("jobid");
 
-    if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
-        goto error;
     if (ctx->allocations.find (jobid) != ctx->allocations.end ())
         ctx->allocations.erase (jobid);
     else if (ctx->reservations.find (jobid) != ctx->reservations.end ())
@@ -790,19 +722,17 @@ static void info_request_cb (flux_t *h,
                              void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    int64_t jobid = -1;
+    int64_t jobid = flux::request_to_json (msg).at ("jobid");
     job_info_t *info = NULL;
     string status = "";
 
-    if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
-        goto error;
     if (!is_existent_jobid (ctx, jobid)) {
         errno = ENOENT;
         flux_log (h, LOG_DEBUG, "nonexistent job (id=%jd)", (intmax_t)jobid);
         goto error;
     }
 
-    info = ctx->jobs[jobid];
+    info = &ctx->jobs.at (jobid);
     get_jobstate_str (info->state, status);
     if (flux_respond_pack (h,
                            msg,
@@ -859,7 +789,7 @@ static void stat_request_cb (flux_t *h,
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
-static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
+static inline int64_t next_jobid (const std::map<uint64_t, job_info_t> &m)
 {
     int64_t jobid = -1;
     if (m.empty ())
@@ -897,8 +827,6 @@ static void set_property_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg)
 {
-    const char *rp = NULL, *kv = NULL;
-    string resource_path = "", keyval = "";
     string property_key = "", property_value = "";
     size_t pos;
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
@@ -906,18 +834,10 @@ static void set_property_request_cb (flux_t *h,
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg,
-                             NULL,
-                             "{s:s s:s}",
-                             "sp_resource_path",
-                             &rp,
-                             "sp_keyval",
-                             &kv)
-        < 0)
-        goto error;
+    auto j = flux::request_to_json (msg);
+    string resource_path = j["sp_resource_path"], keyval = j["sp_keyval"];
 
-    resource_path = rp;
-    keyval = kv;
+    flux_log_error (h, "rp: %s, kv: %s", resource_path.c_str (), keyval.c_str ());
 
     pos = keyval.find ('=');
 
@@ -968,30 +888,15 @@ static void get_property_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg)
 {
-    const char *rp = NULL, *gp_key = NULL;
-    string resource_path = "", property_key = "";
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    std::map<std::string, vtx_t>::const_iterator it;
-    std::map<std::string, std::string>::const_iterator p_it;
+
+    auto j = flux::request_to_json (msg);
+    string resource_path = j["gp_resource_path"], property_key = j["gp_key"];
+
     vtx_t v;
-    string resp_value = "";
-
-    if (flux_request_unpack (msg,
-                             NULL,
-                             "{s:s s:s}",
-                             "gp_resource_path",
-                             &rp,
-                             "gp_key",
-                             &gp_key)
-        < 0)
-        goto error;
-
-    resource_path = rp;
-    property_key = gp_key;
-
-    it = ctx->db.metadata.by_path.find (resource_path);
-
-    if (it == ctx->db.metadata.by_path.end ()) {
+    try {
+        v = ctx->db.metadata.by_path.at (resource_path);
+    } catch (std::out_of_range const &e) {
         errno = ENOENT;
         flux_log_error (h,
                         "Couldn't find %s in resource graph.",
@@ -999,16 +904,10 @@ static void get_property_request_cb (flux_t *h,
         goto error;
     }
 
-    v = it->second;
-
-    for (p_it = ctx->db.resource_graph[v].properties.begin ();
-         p_it != ctx->db.resource_graph[v].properties.end ();
-         p_it++) {
-        if (property_key.compare (p_it->first) == 0)
-            resp_value = p_it->second;
-    }
-
-    if (resp_value.empty ()) {
+    string resp_value = "";
+    try {
+        resp_value = ctx->db.resource_graph[v].properties.at (property_key);
+    } catch (std::out_of_range const &e) {
         errno = ENOENT;
         flux_log_error (h,
                         "Property %s was not found for resource %s.",
@@ -1074,15 +973,27 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             return rc;
         }
     } catch (const std::bad_alloc &e) {
-        flux_log_error (h, "Allocation failed: %s", e.what ());
+        flux_log_error (h,
+                        "Allocation failed under %s: %s",
+                        __PRETTY_FUNCTION__,
+                        e.what ());
+        return rc;
     } catch (const std::system_error &e) {
         errno = e.code ().value ();
         flux_log_error (h,
                         "system_error with code %d meaning: %s",
                         e.code ().value (),
                         e.what ());
+        return rc;
+    } catch (const std::exception &e) {
+        flux_log_error (h,
+                        "std::exception caught in %s: %s",
+                        __PRETTY_FUNCTION__,
+                        e.what ());
+        return rc;
     } catch (...) {
         flux_log_error (h, "unknown exception thrown in resource_match service");
+        return rc;
     }
 
     return 0;
