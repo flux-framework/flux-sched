@@ -22,11 +22,11 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include <cstdint>
-#include <sstream>
 #include <cerrno>
-#include <map>
 #include <cinttypes>
+#include <cstdint>
+#include <map>
+#include <sstream>
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -37,11 +37,11 @@ extern "C" {
 #include "src/common/libutil/shortjansson.h"
 }
 
-#include "resource/schema/resource_graph.hpp"
-#include "resource/readers/resource_reader_factory.hpp"
-#include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
+#include "resource/readers/resource_reader_factory.hpp"
+#include "resource/schema/resource_graph.hpp"
+#include "resource/traversers/dfu.hpp"
 
 using namespace std;
 using namespace Flux::resource_model;
@@ -53,39 +53,38 @@ using namespace Flux::resource_model;
  ******************************************************************************/
 
 struct resource_args_t {
-    string load_file;              /* load file name */
-    string load_format;            /* load reader format */
-    string load_whitelist;         /* load resource whitelist */
+    string load_file;      /* load file name */
+    string load_format;    /* load reader format */
+    string load_whitelist; /* load resource whitelist */
     string match_subsystems;
     string match_policy;
     string prune_filters;
     string match_format;
-    int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
+    int reserve_vtx_vec; /* Allow for reserving vertex vector size */
 };
 
 struct match_perf_t {
-    double load;                   /* Graph load time */
-    uint64_t njobs;                /* Total match count */
-    double min;                    /* Min match time */
-    double max;                    /* Max match time */
-    double accum;                  /* Total match time accumulated */
+    double load;    /* Graph load time */
+    uint64_t njobs; /* Total match count */
+    double min;     /* Min match time */
+    double max;     /* Max match time */
+    double accum;   /* Total match time accumulated */
 };
 
 struct resource_ctx_t {
-    flux_t *h;                     /* Flux handle */
-    flux_msg_handler_t **handlers; /* Message handlers */
-    resource_args_t args;          /* Module load options */
-    dfu_match_cb_t *matcher;       /* Match callback object */
-    dfu_traverser_t *traverser;    /* Graph traverser object */
-    resource_graph_db_t db;        /* Resource graph data store */
-    f_resource_graph_t *fgraph;    /* Graph filtered by subsystems to use */
-    match_writers_t *writers;      /* Vertex/Edge writers for a match */
-    match_perf_t perf;             /* Match performance stats */
+    flux_t *h;                            /* Flux handle */
+    flux_msg_handler_t **handlers;        /* Message handlers */
+    resource_args_t args;                 /* Module load options */
+    dfu_match_cb_t *matcher;              /* Match callback object */
+    dfu_traverser_t *traverser;           /* Graph traverser object */
+    resource_graph_db_t db;               /* Resource graph data store */
+    f_resource_graph_t *fgraph;           /* Graph filtered by subsystems to use */
+    match_writers_t *writers;             /* Vertex/Edge writers for a match */
+    match_perf_t perf;                    /* Match performance stats */
     map<uint64_t, job_info_t *> jobs;     /* Jobs table */
     map<uint64_t, uint64_t> allocations;  /* Allocation table */
     map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
-
 
 /******************************************************************************
  *                                                                            *
@@ -93,42 +92,55 @@ struct resource_ctx_t {
  *                                                                            *
  ******************************************************************************/
 
-static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
-                              const flux_msg_t *msg, void *arg);
+static void match_request_cb (flux_t *h,
+                              flux_msg_handler_t *w,
+                              const flux_msg_t *msg,
+                              void *arg);
 
-static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
-                               const flux_msg_t *msg, void *arg);
+static void cancel_request_cb (flux_t *h,
+                               flux_msg_handler_t *w,
+                               const flux_msg_t *msg,
+                               void *arg);
 
-static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
-                             const flux_msg_t *msg, void *arg);
+static void info_request_cb (flux_t *h,
+                             flux_msg_handler_t *w,
+                             const flux_msg_t *msg,
+                             void *arg);
 
-static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
-                             const flux_msg_t *msg, void *arg);
+static void stat_request_cb (flux_t *h,
+                             flux_msg_handler_t *w,
+                             const flux_msg_t *msg,
+                             void *arg);
 
-static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg);
+static void next_jobid_request_cb (flux_t *h,
+                                   flux_msg_handler_t *w,
+                                   const flux_msg_t *msg,
+                                   void *arg);
 
-static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg);
+static void set_property_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg);
 
-static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg);
+static void get_property_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg);
 
-static const struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
-    FLUX_MSGHANDLER_TABLE_END
-};
+static const struct flux_msg_handler_spec htab[] =
+    {{FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb, 0},
+     FLUX_MSGHANDLER_TABLE_END};
 
 static double get_elapse_time (timeval &st, timeval &et)
 {
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
+    double ts1 = (double)st.tv_sec + (double)st.tv_usec / 1000000.0f;
+    double ts2 = (double)et.tv_sec + (double)et.tv_usec / 1000000.0f;
     return ts2 - ts1;
 }
 
@@ -147,7 +159,7 @@ static void freectx (void *arg)
         delete ctx->traverser;
         delete ctx->fgraph;
         for (auto &kv : ctx->jobs) {
-            delete kv.second;    /* job_info_t* type */
+            delete kv.second; /* job_info_t* type */
             ctx->jobs.erase (kv.first);
         }
         delete ctx->writers;
@@ -174,7 +186,7 @@ static resource_ctx_t *getctx (flux_t *h)
 {
     resource_ctx_t *ctx = (resource_ctx_t *)flux_aux_get (h, "resource");
     if (!ctx) {
-        ctx = new (nothrow)resource_ctx_t;
+        ctx = new (nothrow) resource_ctx_t;
         if (!ctx) {
             errno = ENOMEM;
             goto done;
@@ -187,8 +199,8 @@ static resource_ctx_t *getctx (flux_t *h)
         ctx->perf.min = DBL_MAX;
         ctx->perf.max = 0.0f;
         ctx->perf.accum = 0.0f;
-        ctx->matcher = NULL; /* Cannot be allocated at this point */ 
-        ctx->traverser = new (nothrow)dfu_traverser_t ();
+        ctx->matcher = NULL; /* Cannot be allocated at this point */
+        ctx->traverser = new (nothrow) dfu_traverser_t ();
         if (!ctx->traverser) {
             errno = ENOMEM;
             goto done;
@@ -215,14 +227,15 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
             dflt = args.load_format;
             args.load_format = strstr (argv[i], "=") + 1;
             if (!known_resource_reader (args.load_format)) {
-                flux_log (ctx->h, LOG_ERR,
+                flux_log (ctx->h,
+                          LOG_ERR,
                           "unknown resource reader (%s)! Use default (%s).",
-                           args.load_format.c_str (), dflt.c_str ());
+                          args.load_format.c_str (),
+                          dflt.c_str ());
                 args.load_format = dflt;
             }
             args.load_format = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("load-whitelist=",
-                             argv[i], sizeof ("load-whitelist"))) {
+        } else if (!strncmp ("load-whitelist=", argv[i], sizeof ("load-whitelist"))) {
             args.load_whitelist = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
             dflt = args.match_subsystems;
@@ -231,34 +244,36 @@ static int process_args (resource_ctx_t *ctx, int argc, char **argv)
             dflt = args.match_policy;
             args.match_policy = strstr (argv[i], "=") + 1;
             if (!known_match_policy (args.match_policy)) {
-                flux_log (ctx->h, LOG_ERR,
+                flux_log (ctx->h,
+                          LOG_ERR,
                           "Unknown match policy (%s)! Use default (%s).",
-                           args.match_policy.c_str (), dflt.c_str ());
+                          args.match_policy.c_str (),
+                          dflt.c_str ());
                 args.match_policy = dflt;
             }
-        } else if (!strncmp ("prune-filters=",
-                             argv[i], sizeof ("prune-filters"))) {
+        } else if (!strncmp ("prune-filters=", argv[i], sizeof ("prune-filters"))) {
             std::string token = strstr (argv[i], "=") + 1;
-            if(token.find_first_not_of(' ') != std::string::npos) {
+            if (token.find_first_not_of (' ') != std::string::npos) {
                 args.prune_filters += ",";
                 args.prune_filters += token;
             }
-        } else if (!strncmp ("match-format=",
-                             argv[i], sizeof ("match-format"))) {
+        } else if (!strncmp ("match-format=", argv[i], sizeof ("match-format"))) {
             dflt = args.match_format;
             args.match_format = strstr (argv[i], "=") + 1;
             if (!known_match_format (args.match_format)) {
                 args.match_format = dflt;
-                flux_log (ctx->h, LOG_ERR,
+                flux_log (ctx->h,
+                          LOG_ERR,
                           "Unknown match format (%s)! Use default (%s).",
-                           args.match_format.c_str (), dflt.c_str ());
+                          args.match_format.c_str (),
+                          dflt.c_str ());
                 args.match_format = dflt;
             }
-        } else if (!strncmp ("reserve-vtx-vec=",
-                             argv[i], sizeof ("reserve-vtx-vec"))) {
+        } else if (!strncmp ("reserve-vtx-vec=", argv[i], sizeof ("reserve-vtx-vec"))) {
             args.reserve_vtx_vec = atoi (strstr (argv[i], "=") + 1);
-            if ( args.reserve_vtx_vec <= 0 || args.reserve_vtx_vec > 2000000) {
-                flux_log (ctx->h, LOG_ERR,
+            if (args.reserve_vtx_vec <= 0 || args.reserve_vtx_vec > 2000000) {
+                flux_log (ctx->h,
+                          LOG_ERR,
                           "out of range specified for reserve-vtx-vec (%d)",
                           args.reserve_vtx_vec);
                 args.reserve_vtx_vec = 0;
@@ -302,7 +317,6 @@ error:
     return NULL;
 }
 
-
 /******************************************************************************
  *                                                                            *
  *              Resource Graph and Traverser Initialization                   *
@@ -330,8 +344,7 @@ static json_t *get_string_blocking (flux_t *h, const char *key)
         goto error;
     }
 
-    if (!json_str || !(o = Jfromstr (json_str))
-                  || !json_is_string (o)) {
+    if (!json_str || !(o = Jfromstr (json_str)) || !json_is_string (o)) {
         saved_errno = EPROTO;
         goto error;
     }
@@ -360,7 +373,7 @@ static int populate_resource_db_file (resource_ctx_t *ctx,
     }
     buffer << in_file.rdbuf ();
     in_file.close ();
-    if ( (rc = ctx->db.load (buffer.str (), rd)) < 0) {
+    if ((rc = ctx->db.load (buffer.str (), rd)) < 0) {
         flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
         goto done;
     }
@@ -392,13 +405,13 @@ static int populate_resource_db_kvs (resource_ctx_t *ctx,
     // For 0th rank -- special case to use rd->unpack
     rank = 0;
     n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
-    if ((n < 0) || ((unsigned int) n > sizeof (k))) {
+    if ((n < 0) || ((unsigned int)n > sizeof (k))) {
         errno = ENOMEM;
         goto done;
     }
     o = get_string_blocking (h, k);
     hwloc_xml = json_string_value (o);
-    if ( (rc = ctx->db.load (hwloc_xml, rd, rank)) < 0) {
+    if ((rc = ctx->db.load (hwloc_xml, rd, rank)) < 0) {
         flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
         goto done;
     }
@@ -410,15 +423,15 @@ static int populate_resource_db_kvs (resource_ctx_t *ctx,
     v = db.metadata.roots["containment"];
 
     // For the rest of the ranks -- general case
-    for (rank=1; rank < size; rank++) {
+    for (rank = 1; rank < size; rank++) {
         n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
-        if ((n < 0) || ((unsigned int) n > sizeof (k))) {
-          errno = ENOMEM;
-          goto done;
+        if ((n < 0) || ((unsigned int)n > sizeof (k))) {
+            errno = ENOMEM;
+            goto done;
         }
         o = get_string_blocking (h, k);
         hwloc_xml = json_string_value (o);
-        if ( (rc = ctx->db.load (hwloc_xml, rd, v, rank)) < 0) {
+        if ((rc = ctx->db.load (hwloc_xml, rd, v, rank)) < 0) {
             flux_log (ctx->h, LOG_ERR, "reader: %s", rd->err_message ().c_str ());
             goto done;
         }
@@ -439,7 +452,7 @@ static int populate_resource_db (resource_ctx_t *ctx)
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db.resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-    if ( (rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
+    if ((rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
         flux_log (ctx->h, LOG_ERR, "Can't create load reader");
         goto done;
     }
@@ -456,8 +469,10 @@ static int populate_resource_db (resource_ctx_t *ctx)
             flux_log (ctx->h, LOG_ERR, "error loading resources from file");
             goto done;
         }
-        flux_log (ctx->h, LOG_INFO,
-                  "loaded resources from %s", ctx->args.load_file.c_str ());
+        flux_log (ctx->h,
+                  LOG_INFO,
+                  "loaded resources from %s",
+                  ctx->args.load_file.c_str ());
     } else {
         if (populate_resource_db_kvs (ctx, rd) < 0) {
             flux_log (ctx->h, LOG_ERR, "loading resources from the KVS");
@@ -501,7 +516,7 @@ static int select_subsystems (resource_ctx_t *ctx)
                 errno = EINVAL;
                 goto done;
             }
-            stringstream relations (token.substr (found+1, std::string::npos));
+            stringstream relations (token.substr (found + 1, std::string::npos));
             string relation;
             while (getline (relations, relation, ':'))
                 ctx->matcher->add_subsystem (subsystem, relation);
@@ -524,7 +539,9 @@ static int init_resource_graph (resource_ctx_t *ctx)
         return rc;
     }
     if ((rc = select_subsystems (ctx)) != 0) {
-        flux_log (ctx->h, LOG_ERR, "error processing subsystems %s",
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "error processing subsystems %s",
                   ctx->args.match_subsystems.c_str ());
         return rc;
     }
@@ -541,35 +558,38 @@ static int init_resource_graph (resource_ctx_t *ctx)
     subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
 
     // Create a filtered graph based on the filters
-    if (!(ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel))) {
+    if (!(ctx->fgraph = new (nothrow) f_resource_graph_t (g, edgsel, vtxsel))) {
         errno = ENOMEM;
         return -1;
-     }
+    }
 
     // Create a writers object for matched vertices and edges
-    match_format_t format = match_writers_factory_t::
-                                get_writers_type (ctx->args.match_format);
+    match_format_t format =
+        match_writers_factory_t::get_writers_type (ctx->args.match_format);
     if (!(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
     if (ctx->args.prune_filters != ""
         && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->args.prune_filters) < 0) {
-        flux_log (ctx->h, LOG_ERR, "error setting pruning types with: %s",
+                                                   ctx->args.prune_filters)
+               < 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "error setting pruning types with: %s",
                   ctx->args.prune_filters.c_str ());
         return -1;
     }
 
     // Initialize the DFU traverser
     if (ctx->traverser->initialize (ctx->fgraph,
-                                    &(ctx->db.metadata.roots), ctx->matcher) < 0) {
+                                    &(ctx->db.metadata.roots),
+                                    ctx->matcher)
+        < 0) {
         flux_log (ctx->h, LOG_ERR, "traverser initialization");
         return -1;
-
     }
     return 0;
 }
-
 
 /******************************************************************************
  *                                                                            *
@@ -580,18 +600,22 @@ static int init_resource_graph (resource_ctx_t *ctx)
 static void update_match_perf (resource_ctx_t *ctx, double elapse)
 {
     ctx->perf.njobs++;
-    ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
-    ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
+    ctx->perf.min = (ctx->perf.min > elapse) ? elapse : ctx->perf.min;
+    ctx->perf.max = (ctx->perf.max < elapse) ? elapse : ctx->perf.max;
     ctx->perf.accum += elapse;
 }
 
 static inline string get_status_string (int64_t now, int64_t at)
 {
-    return (at == now)? "ALLOCATED" : "RESERVED";
+    return (at == now) ? "ALLOCATED" : "RESERVED";
 }
 
-static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
-                                int64_t at, string &jspec, stringstream &R,
+static int track_schedule_info (resource_ctx_t *ctx,
+                                int64_t id,
+                                int64_t now,
+                                int64_t at,
+                                string &jspec,
+                                stringstream &R,
                                 double elapse)
 {
     job_lifecycle_t state = job_lifecycle_t::INIT;
@@ -601,9 +625,9 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
         return -1;
     }
 
-    state = (at == now)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-    if (!(ctx->jobs[id] = new ((nothrow))job_info_t (id, state, at, "", jspec,
-                                                     R.str (), elapse))) {
+    state = (at == now) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+    if (!(ctx->jobs[id] = new ((nothrow))
+              job_info_t (id, state, at, "", jspec, R.str (), elapse))) {
         errno = ENOMEM;
         return -1;
     }
@@ -616,26 +640,40 @@ static int track_schedule_info (resource_ctx_t *ctx, int64_t id, int64_t now,
     return 0;
 }
 
-static int run (resource_ctx_t *ctx, int64_t jobid,
-                const char *cmd, string jstr, int64_t *at)
+static int run (resource_ctx_t *ctx,
+                int64_t jobid,
+                const char *cmd,
+                string jstr,
+                int64_t *at)
 {
     int rc = 0;
-    Flux::Jobspec::Jobspec j {jstr};
+    Flux::Jobspec::Jobspec j{jstr};
     dfu_traverser_t &tr = *(ctx->traverser);
 
     if (string ("allocate") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
     else if (string ("allocate_with_satisfiability") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::
-                     MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
+        rc = tr.run (j,
+                     ctx->writers,
+                     match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY,
+                     jobid,
+                     at);
     else if (string ("allocate_orelse_reserve") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                     jobid, at);
-   return rc;
+        rc = tr.run (j,
+                     ctx->writers,
+                     match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                     jobid,
+                     at);
+    return rc;
 }
 
-static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
-                      string jstr, int64_t *now, int64_t *at, double *ov,
+static int run_match (resource_ctx_t *ctx,
+                      int64_t jobid,
+                      const char *cmd,
+                      string jstr,
+                      int64_t *now,
+                      int64_t *at,
+                      double *ov,
                       stringstream &o)
 {
     int rc = 0;
@@ -646,8 +684,7 @@ static int run_match (resource_ctx_t *ctx, int64_t jobid, const char *cmd,
     gettimeofday (&start, NULL);
     ctx->writers->reset ();
 
-    if (strcmp ("allocate", cmd) != 0
-        && strcmp ("allocate_orelse_reserve", cmd) != 0
+    if (strcmp ("allocate", cmd) != 0 && strcmp ("allocate_orelse_reserve", cmd) != 0
         && strcmp ("allocate_with_satisfiability", cmd) != 0) {
         errno = EINVAL;
         flux_log_error (ctx->h, "unknown cmd: %s", cmd);
@@ -675,7 +712,7 @@ done:
 
 static inline bool is_existent_jobid (const resource_ctx_t *ctx, uint64_t jobid)
 {
-    return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
+    return (ctx->jobs.find (jobid) != ctx->jobs.end ()) ? true : false;
 }
 
 static int run_remove (resource_ctx_t *ctx, int64_t jobid)
@@ -685,15 +722,15 @@ static int run_remove (resource_ctx_t *ctx, int64_t jobid)
 
     if ((rc = tr.remove (jobid)) < 0) {
         if (is_existent_jobid (ctx, jobid)) {
-           // When this condition arises, we will be less likely
-           // to be able to reuse this jobid. Having the errored job
-           // in the jobs map will prevent us from reusing the jobid
-           // up front.  Note that a same jobid can be reserved and
-           // removed multiple times by the upper queuing layer
-           // as part of providing advanced queueing policies
-           // (e.g., conservative backfill).
-           job_info_t *info = ctx->jobs[jobid];
-           info->state = job_lifecycle_t::ERROR;
+            // When this condition arises, we will be less likely
+            // to be able to reuse this jobid. Having the errored job
+            // in the jobs map will prevent us from reusing the jobid
+            // up front.  Note that a same jobid can be reserved and
+            // removed multiple times by the upper queuing layer
+            // as part of providing advanced queueing policies
+            // (e.g., conservative backfill).
+            job_info_t *info = ctx->jobs[jobid];
+            info->state = job_lifecycle_t::ERROR;
         }
         goto out;
     }
@@ -705,8 +742,10 @@ out:
     return rc;
 }
 
-static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
-                              const flux_msg_t *msg, void *arg)
+static void match_request_cb (flux_t *h,
+                              flux_msg_handler_t *w,
+                              const flux_msg_t *msg,
+                              void *arg)
 {
     int64_t at = 0;
     int64_t now = 0;
@@ -718,8 +757,16 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     stringstream R;
 
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
-    if (flux_request_unpack (msg, NULL, "{s:s s:I s:s}", "cmd", &cmd,
-                             "jobid", &jobid, "jobspec", &js_str) < 0)
+    if (flux_request_unpack (msg,
+                             NULL,
+                             "{s:s s:I s:s}",
+                             "cmd",
+                             &cmd,
+                             "jobid",
+                             &jobid,
+                             "jobspec",
+                             &js_str)
+        < 0)
         goto error;
     if (is_existent_jobid (ctx, jobid)) {
         errno = EINVAL;
@@ -728,18 +775,27 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     }
     if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R) < 0) {
         if (errno != EBUSY && errno != ENODEV)
-            flux_log_error (ctx->h, "match failed due to match error (id=%jd)",
-                           (intmax_t)jobid);
+            flux_log_error (ctx->h,
+                            "match failed due to match error (id=%jd)",
+                            (intmax_t)jobid);
         goto error;
     }
 
     status = get_status_string (now, at);
-    if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
-                                   "jobid", jobid,
-                                   "status", status.c_str (),
-                                   "overhead", ov,
-                                   "R", R.str ().c_str (),
-                                   "at", at) < 0)
+    if (flux_respond_pack (h,
+                           msg,
+                           "{s:I s:s s:f s:s s:I}",
+                           "jobid",
+                           jobid,
+                           "status",
+                           status.c_str (),
+                           "overhead",
+                           ov,
+                           "R",
+                           R.str ().c_str (),
+                           "at",
+                           at)
+        < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
     return;
@@ -749,8 +805,10 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
-                               const flux_msg_t *msg, void *arg)
+static void cancel_request_cb (flux_t *h,
+                               flux_msg_handler_t *w,
+                               const flux_msg_t *msg,
+                               void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
@@ -768,8 +826,7 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
     }
 
     if (run_remove (ctx, jobid) < 0) {
-        flux_log_error (h, "remove fails due to match error (id=%jd)",
-                        (intmax_t)jobid);
+        flux_log_error (h, "remove fails due to match error (id=%jd)", (intmax_t)jobid);
         goto error;
     }
     if (flux_respond_pack (h, msg, "{}") < 0)
@@ -782,8 +839,10 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
-                             const flux_msg_t *msg, void *arg)
+static void info_request_cb (flux_t *h,
+                             flux_msg_handler_t *w,
+                             const flux_msg_t *msg,
+                             void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
@@ -800,11 +859,18 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     info = ctx->jobs[jobid];
     get_jobstate_str (info->state, status);
-    if (flux_respond_pack (h, msg, "{s:I s:s s:I s:f}",
-                                   "jobid", jobid,
-                                   "status", status.c_str (),
-                                   "at", info->scheduled_at,
-                                   "overhead", info->overhead) < 0)
+    if (flux_respond_pack (h,
+                           msg,
+                           "{s:I s:s s:I s:f}",
+                           "jobid",
+                           jobid,
+                           "status",
+                           status.c_str (),
+                           "at",
+                           info->scheduled_at,
+                           "overhead",
+                           info->overhead)
+        < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
     return;
@@ -814,8 +880,10 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
-                             const flux_msg_t *msg, void *arg)
+static void stat_request_cb (flux_t *h,
+                             flux_msg_handler_t *w,
+                             const flux_msg_t *msg,
+                             void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
     double avg = 0.0f;
@@ -825,14 +893,24 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         avg = ctx->perf.accum / (double)ctx->perf.njobs;
         min = ctx->perf.min;
     }
-    if (flux_respond_pack (h, msg, "{s:I s:I s:f s:I s:f s:f s:f}",
-                                   "V", num_vertices (ctx->db.resource_graph),
-                                   "E", num_edges (ctx->db.resource_graph),
-                                   "load-time", ctx->perf.load,
-                                   "njobs", ctx->perf.njobs,
-                                   "min-match", min,
-                                   "max-match", ctx->perf.max,
-                                   "avg-match", avg) < 0)
+    if (flux_respond_pack (h,
+                           msg,
+                           "{s:I s:I s:f s:I s:f s:f s:f}",
+                           "V",
+                           num_vertices (ctx->db.resource_graph),
+                           "E",
+                           num_edges (ctx->db.resource_graph),
+                           "load-time",
+                           ctx->perf.load,
+                           "njobs",
+                           ctx->perf.njobs,
+                           "min-match",
+                           min,
+                           "max-match",
+                           ctx->perf.max,
+                           "avg-match",
+                           avg)
+        < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 }
 
@@ -847,8 +925,10 @@ static inline int64_t next_jobid (const std::map<uint64_t, job_info_t *> &m)
 }
 
 /* Needed for testing only */
-static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg)
+static void next_jobid_request_cb (flux_t *h,
+                                   flux_msg_handler_t *w,
+                                   const flux_msg_t *msg,
+                                   void *arg)
 {
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
@@ -867,8 +947,10 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg)
+static void set_property_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg)
 {
     const char *rp = NULL, *kv = NULL;
     string resource_path = "", keyval = "";
@@ -876,12 +958,17 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     size_t pos;
     resource_ctx_t *ctx = getctx ((flux_t *)arg);
     std::map<std::string, vtx_t>::const_iterator it;
-    std::pair<std::map<std::string,std::string>::iterator, bool> ret;
+    std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}",
-       "sp_resource_path", &rp,
-       "sp_keyval", &kv) < 0)
+    if (flux_request_unpack (msg,
+                             NULL,
+                             "{s:s s:s}",
+                             "sp_resource_path",
+                             &rp,
+                             "sp_keyval",
+                             &kv)
+        < 0)
         goto error;
 
     resource_path = rp;
@@ -892,7 +979,8 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (pos == 0 || (pos == keyval.size () - 1) || pos == string::npos) {
         errno = EINVAL;
         flux_log_error (h,
-            "Incorrect format.\nUse set-property <resource> PROPERTY=VALUE");
+                        "Incorrect format.\nUse set-property <resource> "
+                        "PROPERTY=VALUE");
         goto error;
     }
 
@@ -903,20 +991,21 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     if (it == ctx->db.metadata.by_path.end ()) {
         errno = ENOENT;
-        flux_log_error (h, "Couldn't find %s in resource graph.",
-            resource_path.c_str ());
+        flux_log_error (h,
+                        "Couldn't find %s in resource graph.",
+                        resource_path.c_str ());
         goto error;
-     }
+    }
 
     v = it->second;
 
     ret = ctx->db.resource_graph[v].properties.insert (
-        std::pair<std::string, std::string> (property_key,property_value));
+        std::pair<std::string, std::string> (property_key, property_value));
 
     if (ret.second == false) {
         ctx->db.resource_graph[v].properties.erase (property_key);
         ctx->db.resource_graph[v].properties.insert (
-            std::pair<std::string, std::string> (property_key,property_value));
+            std::pair<std::string, std::string> (property_key, property_value));
     }
 
     if (flux_respond_pack (h, msg, "{}") < 0)
@@ -929,8 +1018,10 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
-                                   const flux_msg_t *msg, void *arg)
+static void get_property_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg)
 {
     const char *rp = NULL, *gp_key = NULL;
     string resource_path = "", property_key = "";
@@ -940,9 +1031,14 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     vtx_t v;
     string resp_value = "";
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}",
-        "gp_resource_path", &rp,
-        "gp_key", &gp_key) < 0)
+    if (flux_request_unpack (msg,
+                             NULL,
+                             "{s:s s:s}",
+                             "gp_resource_path",
+                             &rp,
+                             "gp_key",
+                             &gp_key)
+        < 0)
         goto error;
 
     resource_path = rp;
@@ -952,31 +1048,34 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     if (it == ctx->db.metadata.by_path.end ()) {
         errno = ENOENT;
-        flux_log_error (h, "Couldn't find %s in resource graph.",
-            resource_path.c_str ());
+        flux_log_error (h,
+                        "Couldn't find %s in resource graph.",
+                        resource_path.c_str ());
         goto error;
-     }
+    }
 
     v = it->second;
 
     for (p_it = ctx->db.resource_graph[v].properties.begin ();
-         p_it != ctx->db.resource_graph[v].properties.end (); p_it++) {
+         p_it != ctx->db.resource_graph[v].properties.end ();
+         p_it++) {
+        if (property_key.compare (p_it->first) == 0)
+            resp_value = p_it->second;
+    }
 
-         if (property_key.compare (p_it->first) == 0)
-             resp_value = p_it->second;
-     }
+    if (resp_value.empty ()) {
+        errno = ENOENT;
+        flux_log_error (h,
+                        "Property %s was not found for resource %s.",
+                        property_key.c_str (),
+                        resource_path.c_str ());
+        goto error;
+    }
 
-     if (resp_value.empty ()) {
-         errno = ENOENT;
-         flux_log_error (h,"Property %s was not found for resource %s.",
-             property_key.c_str (), resource_path.c_str ());
-         goto error;
-     }
+    if (flux_respond_pack (h, msg, "{s:s}", "value", resp_value.c_str ()) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
 
-     if (flux_respond_pack (h, msg, "{s:s}", "value", resp_value.c_str ()) < 0)
-         flux_log_error (h, "%s", __FUNCTION__);
-
-     return;
+    return;
 
 error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
