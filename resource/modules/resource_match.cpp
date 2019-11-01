@@ -930,13 +930,13 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         process_args (&ctx, args);
 
         flux::msg_handler_wrapper handlers[] =
-            {{h, "resource.match", match_request_cb, &ctx},
-             {h, "resource.cancel", cancel_request_cb, &ctx},
-             {h, "resource.info", info_request_cb, &ctx},
-             {h, "resource.stat", stat_request_cb, &ctx},
-             {h, "resource.next_jobid", next_jobid_request_cb, &ctx},
-             {h, "resource.set_property", set_property_request_cb, &ctx},
-             {h, "resource.get_property", get_property_request_cb, &ctx}};
+            {{h, {"resource.match"}, match_request_cb, &ctx},
+             {h, {"resource.cancel"}, cancel_request_cb, &ctx},
+             {h, {"resource.info"}, info_request_cb, &ctx},
+             {h, {"resource.stat"}, stat_request_cb, &ctx},
+             {h, {"resource.next_jobid"}, next_jobid_request_cb, &ctx},
+             {h, {"resource.set_property"}, set_property_request_cb, &ctx},
+             {h, {"resource.get_property"}, get_property_request_cb, &ctx}};
 
         flux_log (h, LOG_DEBUG, "resource module starting...");
 
