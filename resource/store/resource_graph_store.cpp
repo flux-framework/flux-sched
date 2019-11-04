@@ -28,14 +28,9 @@
 using namespace Flux;
 using namespace Flux::resource_model;
 
-resource_graph_metadata_t::resource_graph_metadata_t()
-{
-    roots = std::make_shared<std::map<subsystem_t, vtx_t>> ();
-}
-
 bool resource_graph_db_t::known_subsystem (const std::string &s)
 {
-    return (metadata.roots->find (s) != metadata.roots->end ())? true : false;
+    return (metadata.roots.find (s) != metadata.roots.end ())? true : false;
 }
 
 int resource_graph_db_t::load (const std::string &str,

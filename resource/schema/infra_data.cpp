@@ -131,17 +131,17 @@ relation_infra_t::relation_infra_t ()
 
 relation_infra_t::relation_infra_t (const relation_infra_t &o): infra_base_t (o)
 {
-    needs = o.needs;
-    best_k_cnt = o.best_k_cnt;
-    exclusive = o.exclusive;
+    m_needs = o.m_needs;
+    m_trav_token = o.m_trav_token;
+    m_exclusive = o.m_exclusive;
 }
 
 relation_infra_t &relation_infra_t::operator= (const relation_infra_t &o)
 {
     infra_base_t::operator= (o);
-    needs = o.needs;
-    best_k_cnt = o.best_k_cnt;
-    exclusive = o.exclusive;
+    m_needs = o.m_needs;
+    m_trav_token = o.m_trav_token;
+    m_exclusive = o.m_exclusive;
     return *this;
 }
 
@@ -152,11 +152,33 @@ relation_infra_t::~relation_infra_t ()
 
 void relation_infra_t::scrub ()
 {
-    needs = 0;
-    best_k_cnt = 0;
-    exclusive = 0;
+    m_needs = 0;
+    m_trav_token = 0;
+    m_exclusive = 0;
 }
 
+void relation_infra_t::set_for_trav_update (uint64_t needs, int exclusive,
+                                            uint64_t trav_token)
+{
+    m_needs = needs;
+    m_trav_token = trav_token;
+    m_exclusive = exclusive;
+}
+
+uint64_t relation_infra_t::get_needs () const
+{
+    return m_needs;
+}
+
+int relation_infra_t::get_exclusive () const
+{
+    return m_exclusive;
+}
+
+uint64_t relation_infra_t::get_trav_token () const
+{
+    return m_trav_token;
+}
 
 } // resource_model
 } // Flux

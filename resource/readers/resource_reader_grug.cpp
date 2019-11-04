@@ -188,8 +188,8 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     resource_graph_t &g = *m_g_p;
     resource_graph_metadata_t &m = *m_gm_p;
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ())
-        if (m.roots->find (recipe[u].subsystem) != m.roots->end ())
-            return (*(m.roots))[recipe[u].subsystem];
+        if (m.roots.find (recipe[u].subsystem) != m.roots.end ())
+            return (m.roots)[recipe[u].subsystem];
 
     vtx_t v = add_vertex (g);;
     std::string pref = "";
@@ -198,7 +198,8 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
 
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
         // ROOT vertex of graph
-        (*(m.roots))[recipe[u].subsystem] = v;
+        m.roots.emplace (recipe[u].subsystem, v);
+        m.v_rt_edges.emplace (recipe[u].subsystem, relation_infra_t ());
         id = 0;
     } else {
         id = gen_id (e, recipe, i, sz, j);

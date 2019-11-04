@@ -627,9 +627,9 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
                     continue;
                 const eval_egroup_t &egroup = dfu.at (subsystem, t, i);
                 for (auto &e : egroup.edges) {
-                    (*m_graph)[e.edge].idata.needs = e.needs;
-                    (*m_graph)[e.edge].idata.best_k_cnt = m_best_k_cnt;
-                    (*m_graph)[e.edge].idata.exclusive = e.exclusive;
+                    (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
+                                                                  e.exclusive,
+                                                                  m_best_k_cnt);
                 }
             }
         }
@@ -749,12 +749,12 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> writers,
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
                 continue;
-            if ((*m_graph)[*ei].idata.best_k_cnt != m_best_k_cnt)
+            if ((*m_graph)[*ei].idata.get_trav_token () != m_best_k_cnt)
                 continue;
 
 	    int n_plan_sub = 0;
-            bool x = (*m_graph)[*ei].idata.exclusive;
-            unsigned int needs = (*m_graph)[*ei].idata.needs;
+            bool x = (*m_graph)[*ei].idata.get_exclusive ();
+            unsigned int needs = (*m_graph)[*ei].idata.get_needs ();
             vtx_t tgt = target (*ei, *m_graph);
             if (subsystem == dom)
                 n_plan_sub += upd_dfv (tgt, writers, needs, x, meta, dfu);
@@ -915,9 +915,9 @@ dfu_impl_t::dfu_impl_t ()
 }
 
 dfu_impl_t::dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
-                        std::shared_ptr<dfu_match_cb_t> m,
-                        std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
-    : m_roots (roots), m_graph (g), m_match (m)
+                        std::shared_ptr<resource_graph_db_t> db,
+                        std::shared_ptr<dfu_match_cb_t> m)
+    : m_graph (g), m_graph_db (db), m_match (m)
 {
 
 }
@@ -927,8 +927,8 @@ dfu_impl_t::dfu_impl_t (const dfu_impl_t &o)
     m_color = o.m_color;
     m_best_k_cnt = o.m_best_k_cnt;
     m_trav_level = o.m_trav_level;
-    m_roots = o.m_roots;
     m_graph = o.m_graph;
+    m_graph_db = o.m_graph_db;
     m_match = o.m_match;
     m_err_msg = o.m_err_msg;
 }
@@ -938,8 +938,8 @@ dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o)
     m_color = o.m_color;
     m_best_k_cnt = o.m_best_k_cnt;
     m_trav_level = o.m_trav_level;
-    m_roots = o.m_roots;
     m_graph = o.m_graph;
+    m_graph_db = o.m_graph_db;
     m_match = o.m_match;
     m_err_msg = o.m_err_msg;
     return *this;
@@ -955,10 +955,10 @@ const std::shared_ptr<const f_resource_graph_t> dfu_impl_t::get_graph () const
     return m_graph;
 }
 
-const std::shared_ptr<const std::map<subsystem_t,
-                                     vtx_t>> dfu_impl_t::get_roots () const
+const std::shared_ptr<const
+                      resource_graph_db_t> dfu_impl_t::get_graph_db () const
 {
-    return m_roots;
+    return m_graph_db;
 }
 
 const std::shared_ptr<const dfu_match_cb_t> dfu_impl_t::get_match_cb () const
@@ -976,9 +976,9 @@ void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
     m_graph = g;
 }
 
-void dfu_impl_t::set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
+void dfu_impl_t::set_graph_db (std::shared_ptr<resource_graph_db_t> db)
 {
-    m_roots = roots;
+    m_graph_db = db;
 }
 
 void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
@@ -1056,7 +1056,7 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
 }
 
 int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
-                        bool excl, unsigned int *needs)
+                        bool excl)
 {
     int rc = -1;
     scoring_api_t dfu;
@@ -1066,21 +1066,32 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     tick ();
     rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
     if (rc == 0) {
+        unsigned int needs = 0;
         eval_edg_t ev_edg (dfu.avail (), dfu.avail (), excl);
         eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
-        rc = resolve (root, j.resources, dfu, excl, needs);
+        rc = resolve (root, j.resources, dfu, excl, &needs);
+        m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in,
+                                                                  m_best_k_cnt);
     }
     return rc;
 }
 
-int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> writers,
-                        jobmeta_t &meta, unsigned int needs, bool exclusive)
+int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
+                        jobmeta_t &meta)
 {
+    int rc = -1;
     std::map<std::string, int64_t> dfu;
+    const std::string &dom = m_match->dom_subsystem ();
+
+    unsigned int excl = m_graph_db->metadata.v_rt_edges[dom].get_exclusive ();
+    bool x = (excl == 0)? false : true;
+    unsigned int needs = m_graph_db->metadata.v_rt_edges[dom].get_needs ();
     m_color.reset ();
-    return (upd_dfv (root, writers, needs, exclusive, meta, dfu) > 0)? 0 : -1;
+
+    rc = upd_dfv (root, writers, needs, x, meta, dfu);
+    return (rc > 0)? 0 : -1;
 }
 
 int dfu_impl_t::update ()
@@ -1094,6 +1105,7 @@ int dfu_impl_t::remove (vtx_t root, int64_t jobid)
     m_color.reset ();
     return rem_dfv (root, jobid);
 }
+
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -240,7 +240,7 @@ static int subsystem_exist (std::shared_ptr<resource_context_t> &ctx,
                             std::string n)
 {
     int rc = 0;
-    if (ctx->db.metadata.roots->find (n) == ctx->db.metadata.roots->end ())
+    if (ctx->db->metadata.roots.find (n) == ctx->db->metadata.roots.end ())
         rc = -1;
     return rc;
 }
@@ -459,7 +459,8 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
     std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->params.reserve_vtx_vec != 0)
-        ctx->db.resource_graph.m_vertices.reserve (ctx->params.reserve_vtx_vec);
+        ctx->db->resource_graph.m_vertices.reserve (
+            ctx->params.reserve_vtx_vec);
     if ( (rd = create_resource_reader (ctx->params.load_format)) == nullptr) {
         std::cerr << "ERROR: Can't create load reader " << std::endl;
         goto done;
@@ -480,7 +481,7 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
     in_file.close ();
 
     gettimeofday (&st, NULL);
-    if ( (rc = ctx->db.load (buffer.str (), rd)) != 0) {
+    if ( (rc = ctx->db->load (buffer.str (), rd)) != 0) {
         std::cerr << "ERROR: " << rd->err_message () << std::endl;
         std::cerr << "ERROR: error in generating resources" << std::endl;
         goto done;
@@ -489,7 +490,7 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
 
     elapse = get_elapse_time (st, et);
     if (ctx->params.elapse_time) {
-        resource_graph_t &g = ctx->db.resource_graph;
+        resource_graph_t &g = ctx->db->resource_graph;
         std::cout << "INFO: Graph Load Time: " << elapse << std::endl;
         std::cout << "INFO: Vertex Count: " << num_vertices (g) << std::endl;
         std::cout << "INFO: Edge Count: " << num_edges (g) << std::endl;
@@ -504,7 +505,7 @@ static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
 {
     std::shared_ptr<f_resource_graph_t> fg = nullptr;
 
-    resource_graph_t &g = ctx->db.resource_graph;
+    resource_graph_t &g = ctx->db->resource_graph;
     vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
     edg_infra_map_t emap = get (&resource_relation_t::idata, g);
     const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
@@ -533,7 +534,7 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
         return rc;
     }
 
-    resource_graph_t &g = ctx->db.resource_graph;
+    resource_graph_t &g = ctx->db->resource_graph;
     // Configure the matcher and its subsystem selector
     std::cout << "INFO: Loading a matcher: " << ctx->params.matcher_name
               << std::endl;
@@ -569,7 +570,7 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
         return -1;
     }
 
-    if ( (rc = ctx->traverser->initialize (ctx->fgraph, ctx->db.metadata.roots,
+    if ( (rc = ctx->traverser->initialize (ctx->fgraph, ctx->db,
                                            ctx->matcher)) != 0) {
         std::cerr << "ERROR: initializing traverser" << std::endl;
         return -1;
@@ -685,6 +686,7 @@ static std::shared_ptr<resource_context_t> init_resource_query (int c,
 
     try {
         ctx = std::make_shared<resource_context_t> ();
+	ctx->db = std::make_shared<resource_graph_db_t> ();
     } catch (std::bad_alloc &e) {
         std::cerr << "ERROR: out of memory allocating resource context"
                   << std::endl;

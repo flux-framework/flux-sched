@@ -262,9 +262,9 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
     }
 
     std::map<std::string, vtx_t>::const_iterator it =
-        ctx->db.metadata.by_path.find (resource_path);
+        ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         out << "Couldn't find path " << resource_path
             << " in resource graph." << std::endl;
     }
@@ -275,11 +275,11 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
          * Assuming we want to update the value though, we do an erase
          * before we insert. */
 
-        if (ctx->db.resource_graph[v].properties.find (property_key)
-             != ctx->db.resource_graph[v].properties.end ()) {
-            ctx->db.resource_graph[v].properties.erase (property_key);
+        if (ctx->db->resource_graph[v].properties.find (property_key)
+             != ctx->db->resource_graph[v].properties.end ()) {
+            ctx->db->resource_graph[v].properties.erase (property_key);
         }
-        ctx->db.resource_graph[v].properties.insert (
+        ctx->db->resource_graph[v].properties.insert (
             std::pair<std::string, std::string> (property_key,
                                                  property_value));
     }
@@ -299,22 +299,22 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
                                                     : std::cout;
 
     std::map<std::string, vtx_t>::const_iterator it =
-        ctx->db.metadata.by_path.find (resource_path);
+        ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << resource_path
             << " in resource graph." << std::endl;
     }
     else {
         vtx_t v = it->second;
-        if (ctx->db.resource_graph[v].properties.size () == 0) {
+        if (ctx->db->resource_graph[v].properties.size () == 0) {
             out << "No properties were found for " << resource_path
                 << ". " << std::endl;
         }
         else {
             std::map<std::string, std::string>::const_iterator p_it;
-            for (p_it = ctx->db.resource_graph[v].properties.begin ();
-                p_it != ctx->db.resource_graph[v].properties.end (); p_it++)
+            for (p_it = ctx->db->resource_graph[v].properties.begin ();
+                p_it != ctx->db->resource_graph[v].properties.end (); p_it++)
                     out << p_it->first << "=" << p_it->second << std::endl;
         }
     }

@@ -56,16 +56,25 @@ struct pool_infra_t : public infra_base_t {
     std::map<subsystem_t, uint64_t> colors;
 };
 
-struct relation_infra_t : public infra_base_t {
+class relation_infra_t : public infra_base_t {
+public:
     relation_infra_t ();
     relation_infra_t (const relation_infra_t &o);
     relation_infra_t &operator= (const relation_infra_t &o);
     virtual ~relation_infra_t ();
     virtual void scrub ();
 
-    uint64_t needs = 0;
-    uint64_t best_k_cnt = 0;
-    int exclusive = 0;
+    void set_for_trav_update (uint64_t needs, int exclusive,
+                              uint64_t trav_token);
+
+    uint64_t get_needs () const;
+    int get_exclusive () const;
+    uint64_t get_trav_token () const;
+
+private:
+    uint64_t m_needs = 0;
+    uint64_t m_trav_token = 0;
+    int m_exclusive = 0;
 };
 
 } // Flux::resource_model
