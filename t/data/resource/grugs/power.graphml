@@ -111,7 +111,9 @@
         <edge id="cluster2rack" source="cluster" target="rack">
             <data key="multi_scale">4</data>
         </edge>
-        <edge id="rack2pdu" source="rack" target="pdu"/>
+        <edge id="rack2pdu" source="rack" target="pdu">
+            <data key="id_scope">1</data>
+        </edge>
         <edge id="rack2node" source="rack" target="node">
             <data key="id_scope">1</data>
             <data key="multi_scale">18</data>

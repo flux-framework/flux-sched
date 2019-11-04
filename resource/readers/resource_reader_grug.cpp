@@ -331,6 +331,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
+                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);
@@ -360,6 +361,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
+                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);
