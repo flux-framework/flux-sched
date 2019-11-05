@@ -213,7 +213,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     g[v].unit = recipe[u].unit;
     g[v].schedule.plans = planner_new (0, INT64_MAX,
                                        recipe[u].size, recipe[u].type.c_str ());
-    g[v].schedule.x_checker = planner_new (0, INT64_MAX,
+    g[v].idata.x_checker = planner_new (0, INT64_MAX,
                                            X_CHECKER_NJOBS, X_CHECKER_JOBS_STR);
     g[v].id = id;
     g[v].name = recipe[u].basename + istr;

@@ -137,9 +137,9 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
         m_err_msg += "planner_new returned NULL ";
         goto done;
     }
-    if ( !(g[v].schedule.x_checker = planner_new (0, INT64_MAX,
-                                                  X_CHECKER_NJOBS,
-                                                  X_CHECKER_JOBS_STR))) {
+    if ( !(g[v].idata.x_checker = planner_new (0, INT64_MAX,
+                                               X_CHECKER_NJOBS,
+                                               X_CHECKER_JOBS_STR))) {
         m_err_msg += "planner_new returned NULL ";
         goto done;
     }

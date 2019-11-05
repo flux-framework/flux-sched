@@ -139,7 +139,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
     // its x_checker planner.
     if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
         errno = 0;
-        p = (*m_graph)[u].schedule.x_checker;
+        p = (*m_graph)[u].idata.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
         if (njobs == -1) {
             m_err_msg += "by_excl: planner_avail_resources_during.\n";
@@ -696,11 +696,11 @@ int dfu_impl_t::upd_sched (vtx_t u, std::shared_ptr<match_writers_t> writers,
         int64_t span = -1;
         const uint64_t njobs = 1;
         // Tag on a vertex with exclusive access or all of its ancestors
-        (*m_graph)[u].schedule.tags[meta.jobid] = meta.jobid;
+        (*m_graph)[u].idata.tags[meta.jobid] = meta.jobid;
         // Update x_checker used for quick exclusivity check during matching
-        planner_t *x_checkers = (*m_graph)[u].schedule.x_checker;
+        planner_t *x_checkers = (*m_graph)[u].idata.x_checker;
         span = planner_add_span (x_checkers, meta.at, meta.duration, njobs);
-        (*m_graph)[u].schedule.x_spans[meta.jobid] = span;
+        (*m_graph)[u].idata.x_spans[meta.jobid] = span;
 
         // Update subtree plan
         planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
@@ -818,10 +818,10 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
     int rc = 0;
     int64_t span = -1;
     int saved_errno = errno;
-    auto &x_spans = (*m_graph)[u].schedule.x_spans;
+    auto &x_spans = (*m_graph)[u].idata.x_spans;
     if (x_spans.find (jobid) != x_spans.end ()) {
-        span = (*m_graph)[u].schedule.x_spans[jobid];
-        (*m_graph)[u].schedule.x_spans.erase (jobid);
+        span = (*m_graph)[u].idata.x_spans[jobid];
+        (*m_graph)[u].idata.x_spans.erase (jobid);
     } else {
         m_err_msg += "rem_x_checker: jobid isn't found in x_spans table.\n";
         rc = -1;
@@ -829,7 +829,7 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
 
     if (span != -1) {
         errno = 0;
-        planner_t *x_checker = (*m_graph)[u].schedule.x_checker;
+        planner_t *x_checker = (*m_graph)[u].idata.x_checker;
         rc = planner_rem_span (x_checker, span);
         if (rc != 0) {
             m_err_msg += "rem_x_checker: planner_rem_span returned -1.\n";
@@ -874,12 +874,12 @@ int dfu_impl_t::rem_dfv (vtx_t u, int64_t jobid)
 {
     int rc = 0;
     const std::string &dom = m_match->dom_subsystem ();
-    auto &tags = (*m_graph)[u].schedule.tags;
+    auto &tags = (*m_graph)[u].idata.tags;
     f_out_edg_iterator_t ei, ei_end;
 
     if (tags.find (jobid) == tags.end ())
         goto done;
-    (*m_graph)[u].schedule.tags.erase (jobid);
+    (*m_graph)[u].idata.tags.erase (jobid);
     if ( (rc = rem_x_checker (u, jobid)) != 0)
         goto done;
     if ( (rc = rem_plan (u, jobid)) != 0)

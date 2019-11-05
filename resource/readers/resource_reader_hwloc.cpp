@@ -96,7 +96,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].uniq_id = v;
     g[v].rank = rank;
     g[v].schedule.plans = planner_new (0, INT64_MAX, size, type.c_str ());
-    g[v].schedule.x_checker = planner_new (0, INT64_MAX,
+    g[v].idata.x_checker = planner_new (0, INT64_MAX,
                                            X_CHECKER_NJOBS, X_CHECKER_JOBS_STR);
     g[v].id = id;
     g[v].name = basename + istr;
@@ -264,25 +264,18 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         vtx_t v = add_new_vertex (g, m, parent,
                                   id, subsys, type, basename, size, rank);
         valid_ancestor = v;
+        std::string relation = "contains";
+        std::string rev_relation = "in";
+        edg_t e;
+        bool inserted; // set to false when we try and insert a parallel edge
 
-        // Create edge between parent/child
-        if (parent == boost::graph_traits<resource_graph_t>::null_vertex ()) {
-            // is root
-            m.roots.emplace (subsys, v);
-        } else {
-            std::string relation = "contains";
-            std::string rev_relation = "in";
-            edg_t e;
-            bool inserted; // set to false when we try and insert a parallel edge
+        tie (e, inserted) = add_edge (parent, v, g);
+        g[e].idata.member_of[subsys] = relation;
+        g[e].name[subsys] = relation;
 
-            tie (e, inserted) = add_edge (parent, v, g);
-            g[e].idata.member_of[subsys] = relation;
-            g[e].name[subsys] = relation;
-
-            tie (e, inserted) = add_edge (v, parent, g);
-            g[e].idata.member_of[subsys] = rev_relation;
-            g[e].name[subsys] = rev_relation;
-        }
+        tie (e, inserted) = add_edge (v, parent, g);
+        g[e].idata.member_of[subsys] = rev_relation;
+        g[e].name[subsys] = rev_relation;
     }
 
     for (unsigned int i = 0; i < obj->arity; i++) {

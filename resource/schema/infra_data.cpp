@@ -67,6 +67,9 @@ pool_infra_t::pool_infra_t ()
 
 pool_infra_t::pool_infra_t (const pool_infra_t &o): infra_base_t (o)
 {
+    int64_t base_time = 0;
+    uint64_t duration = 0;
+
     // don't copy the content of infrastructure tables and subtree
     // planner objects.
     colors = o.colors;
@@ -74,17 +77,27 @@ pool_infra_t::pool_infra_t (const pool_infra_t &o): infra_base_t (o)
         planner_multi_t *p = kv.second;
         if (!p)
             continue;
-        int64_t base_time = planner_multi_base_time (p);
-        uint64_t duration = planner_multi_duration (p);
+        base_time = planner_multi_base_time (p);
+        duration = planner_multi_duration (p);
         size_t len = planner_multi_resources_len (p);
         subplans[kv.first] = planner_multi_new (base_time, duration,
                                  planner_multi_resource_totals (p),
                                  planner_multi_resource_types (p), len);
     }
+    if (o.x_checker) {
+        base_time = planner_base_time (o.x_checker);
+        duration = planner_duration (o.x_checker);
+        x_checker = planner_new (base_time, duration,
+                                 planner_resource_total (o.x_checker),
+                                 planner_resource_type (o.x_checker));
+    }
 }
 
 pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
 {
+    int64_t base_time = 0;
+    uint64_t duration = 0;
+
     // don't copy the content of infrastructure tables and subtree
     // planner objects.
     infra_base_t::operator= (o);
@@ -93,12 +106,19 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
         planner_multi_t *p = kv.second;
         if (!p)
             continue;
-        int64_t base_time = planner_multi_base_time (p);
-        uint64_t duration = planner_multi_duration (p);
+        base_time = planner_multi_base_time (p);
+        duration = planner_multi_duration (p);
         size_t len = planner_multi_resources_len (p);
         subplans[kv.first] = planner_multi_new (base_time, duration,
                                  planner_multi_resource_totals (p),
                                  planner_multi_resource_types (p), len);
+    }
+    if (o.x_checker) {
+        base_time = planner_base_time (o.x_checker);
+        duration = planner_duration (o.x_checker);
+        x_checker = planner_new (base_time, duration,
+                                 planner_resource_total (o.x_checker),
+                                 planner_resource_type (o.x_checker));
     }
     return *this;
 }
@@ -107,14 +127,20 @@ pool_infra_t::~pool_infra_t ()
 {
     for (auto &kv : subplans)
         planner_multi_destroy (&(kv.second));
+    if (x_checker)
+        planner_destroy (&x_checker);
 }
 
 void pool_infra_t::scrub ()
 {
+    tags.clear ();
+    x_spans.clear ();
     job2span.clear ();
     for (auto &kv : subplans)
         planner_multi_destroy (&(kv.second));
     colors.clear ();
+    if (x_checker)
+        planner_destroy (&x_checker);
 }
 
 
