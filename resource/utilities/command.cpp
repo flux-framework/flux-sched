@@ -154,9 +154,11 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
         int64_t at = 0;
         int64_t jobid = ctx->jobid_counter;
         std::string &jobspec_fn = args[2];
-        std::ifstream jobspec_in;
-        jobspec_in.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-        jobspec_in.open (jobspec_fn);
+        std::ifstream jobspec_in (jobspec_fn);
+        if (!jobspec_in) {
+            std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
+            return 0;
+        }
         Flux::Jobspec::Jobspec job {jobspec_in};
         std::stringstream o;
         double elapse = 0.0f;
@@ -193,9 +195,6 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
                              jobspec_fn, rc == 0, at, elapse, sat);
         jobspec_in.close ();
 
-    } catch (std::ifstream::failure &e) {
-        std::cerr << "ERROR: Exception occurs for input file I/O"
-                  << e.what () << std::endl;
     } catch (parse_error &e) {
         std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
                   << e.what () << std::endl;
