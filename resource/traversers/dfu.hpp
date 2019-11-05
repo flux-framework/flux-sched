@@ -122,6 +122,23 @@ public:
              std::shared_ptr<match_writers_t> &writers,
              match_op_t op, int64_t id, int64_t *at);
 
+    /*! Read str which is a serialized allocation data (e.g., written in JGF)
+     *  with rd, and traverse the resource graph to update it with this data.
+     *
+     *  \param str       allocation string such as written in JGF.
+     *  \param writers   vertex/edge writers to emit the matched labels
+     *  \param reader    reader object that deserialize str to update the graph
+     *  \param id        job ID to use for the schedule operation.
+     *  \param at        the starting time of this job.
+     *  \param duration  the duration of this job
+     *  \return          0 on success; -1 on error.
+     *                   TODO: Fill in errnos
+     */
+    int run (const std::string &str,
+             std::shared_ptr<match_writers_t> &writers,
+             std::shared_ptr<resource_reader_base_t> &reader,
+             int64_t id, int64_t at, uint64_t duration);
+
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
      *

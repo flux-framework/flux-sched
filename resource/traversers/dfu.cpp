@@ -248,6 +248,33 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     return rc;
 }
 
+int dfu_traverser_t::run (const std::string &str,
+                          std::shared_ptr<match_writers_t> &writers,
+                          std::shared_ptr<resource_reader_base_t> &reader,
+                          int64_t id, int64_t at, uint64_t duration)
+{
+    if (!get_match_cb () || !get_graph ()
+        || !get_graph_db () || !reader || at < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    if (get_graph_db ()->metadata.roots.find (dom)
+        == get_graph_db ()->metadata.roots.end ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    vtx_t root = get_graph_db ()->metadata.roots.at (dom);
+    detail::jobmeta_t meta;
+    meta.jobid = id;
+    meta.at = at;
+    meta.duration = duration;
+
+    return detail::dfu_impl_t::update (root, writers, str, reader, meta);
+}
+
 int dfu_traverser_t::remove (int64_t jobid)
 {
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();

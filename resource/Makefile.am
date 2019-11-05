@@ -31,6 +31,7 @@ libresource_la_SOURCES = \
     schema/color.cpp \
     traversers/dfu.cpp \
     traversers/dfu_impl.cpp \
+    traversers/dfu_impl_update.cpp \
     policies/base/dfu_match_cb.cpp \
     policies/base/matcher.cpp \
     readers/resource_reader_base.cpp \
