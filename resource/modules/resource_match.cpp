@@ -79,7 +79,7 @@ struct resource_ctx_t {
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
-    std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
+    std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
     match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
@@ -418,7 +418,7 @@ static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
         }
         o = get_string_blocking (h, k);
         hwloc_xml = json_string_value (o);
-        if ( (rc = ctx->db->load (hwloc_xml, rd, v, rank)) < 0) {
+        if ( (rc = db.load (hwloc_xml, rd, v, rank)) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                       __FUNCTION__,  rd->err_message ().c_str ());
             goto done;
