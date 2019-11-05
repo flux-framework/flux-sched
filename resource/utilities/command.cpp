@@ -229,7 +229,6 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
     if (rc != 0) {
         std::cerr << "ERROR: error encountered while removing job "
                   << jobid << std::endl;
-        std::cerr << "ERROR: " << strerror (errno) << std::endl;
     }
 
 done:
