@@ -358,6 +358,16 @@ int resource_reader_hwloc_t::unpack_at (resource_graph_t &g,
     return unpack_internal (g, m, vtx, str, rank);
 }
 
+int resource_reader_hwloc_t::update (resource_graph_t &g,
+                                     resource_graph_metadata_t &m,
+                                     const std::string &str, int64_t jobid,
+                                     int64_t at, uint64_t dur, bool rsv,
+                                     uint64_t token)
+{
+    errno = ENOTSUP; // GRUG reader currently does not support update
+    return -1;
+}
+
 bool resource_reader_hwloc_t::is_whitelist_supported ()
 {
     return true;

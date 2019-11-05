@@ -464,6 +464,16 @@ int resource_reader_grug_t::unpack_at (resource_graph_t &g,
     return -1;
 }
 
+int resource_reader_grug_t::update (resource_graph_t &g,
+                                    resource_graph_metadata_t &m,
+                                    const std::string &str, int64_t jobid,
+                                    int64_t at, uint64_t dur, bool rsv,
+                                    uint64_t token)
+{
+    errno = ENOTSUP; // GRUG reader currently does not support update
+    return -1;
+}
+
 bool resource_reader_grug_t::is_whitelist_supported ()
 {
     return false;

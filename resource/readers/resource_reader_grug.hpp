@@ -66,6 +66,23 @@ public:
     virtual int unpack_at (resource_graph_t &g, resource_graph_metadata_t &m,
                            vtx_t &vtx, const std::string &str, int rank = -1);
 
+   /*! Update resource graph g with str.
+     *
+     * \param g      resource graph
+     * \param m      resource graph meta data
+     * \param str    resource set string
+     * \param jobid  jobid of str
+     * \param at     start time of this job
+     * \param dur    duration of this job
+     * \param rsv    true if this update is for a reservation.
+     * \param trav_token
+     *               token to be used by traverser
+     * \return       0 on success; non-zero integer on an error
+     */
+    virtual int update (resource_graph_t &g, resource_graph_metadata_t &m,
+                        const std::string &str, int64_t jobid, int64_t at,
+                        uint64_t dur, bool rsv, uint64_t trav_token);
+
     /*! Is the selected reader format support whitelist
      *
      * \return       false
