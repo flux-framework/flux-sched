@@ -70,7 +70,7 @@ struct resource_context_t {
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
-    std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
+    std::shared_ptr<match_writers_t> writers;  /* Vertex/Edge writers */
     match_perf_t perf;           /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
@@ -83,6 +83,8 @@ typedef int cmd_func_f (std::shared_ptr<resource_context_t> &,
 cmd_func_f *find_cmd (const std::string &cmd_str);
 int cmd_match (std::shared_ptr<resource_context_t> &ctx,
                std::vector<std::string> &args);
+int cmd_update (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args);
 int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
 int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
