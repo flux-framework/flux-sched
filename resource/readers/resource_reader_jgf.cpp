@@ -69,13 +69,15 @@ int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
 
     if ( (json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
         errno = EPROTO;
-        m_err_msg = "JGF vertex id key is not found in an node";
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": JGF vertex id key is not found in an node.\n";
         goto done;
     }
     if ( (metadata = json_object_get (element, "metadata")) == NULL) {
         errno = EPROTO;
-        m_err_msg = "key (metadata) is not found in an JGF node: ";
-        m_err_msg += f.vertex_id;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": key (metadata) is not found in an JGF node for ";
+        m_err_msg += std::string (f.vertex_id) + ".\n";
         goto done;
     }
     // Note: Discard the exclusive field. A resource that is exlusively
@@ -86,14 +88,16 @@ int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
                                  "uniq_id", &f.uniq_id, "rank", &f.rank,
                                  "unit", &f.unit, "size", &f.size)) < 0) {
         errno = EPROTO;
-        m_err_msg = "malformed metadata in an JGF node: ";
-        m_err_msg += f.vertex_id;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": malformed metadata in an JGF node for ";
+        m_err_msg += std::string (f.vertex_id) + "\n";
         goto done;
     }
     if ( (p = json_object_get (metadata, "paths")) == NULL) {
         errno = EPROTO;
-        m_err_msg = "key (paths) does not exist in an JGF node: ";
-        m_err_msg += f.vertex_id;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": key (paths) does not exist in an JGF node for ";
+        m_err_msg += std::string (f.vertex_id) + ".\n";
         goto done;
     }
     json_object_foreach (p, key, value) {
@@ -202,7 +206,8 @@ int resource_reader_jgf_t::unpack_edg (json_t *element,
     if ( (json_unpack (element, "{ s:s s:s }", "source", &src,
                                                "target", &tgt)) < 0) {
         errno = EPROTO;
-        m_err_msg = "encountered a malformed edge: ";
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": encountered a malformed edge.\n";
         goto done;
     }
     source = src;
@@ -210,19 +215,22 @@ int resource_reader_jgf_t::unpack_edg (json_t *element,
     if (vmap.find (source) == vmap.end ()
         || vmap.find (target) == vmap.end ()) {
         errno = EPROTO;
-        m_err_msg = "source and/or target vertex not found: ";
-        m_err_msg += source + std::string (" -> ") + target;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": source and/or target vertex not found";
+        m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
     if ( (metadata = json_object_get (element, "metadata")) == NULL) {
         errno = EPROTO;
-        m_err_msg = "metadata key not found in an edge: ";
-        m_err_msg += source + std::string (" -> ") + target;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": metadata key not found in an edge for ";
+        m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
     if ( (*name = json_object_get (metadata, "name")) == NULL) {
         errno = EPROTO;
-        m_err_msg = "name key not found in edge metadata";
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": name key not found in edge metadata.\n";
         goto done;
     }
     rc = 0;
@@ -254,8 +262,9 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
         tie (e, inserted) = add_edge (vmap[source], vmap[target], g);
         if (inserted == false) {
             errno = EPROTO;
-            m_err_msg = "couldn't add an edge to the graph: ";
-            m_err_msg += source + std::string (" -> ") + target;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": couldn't add an edge to the graph for ";
+            m_err_msg += source + std::string (" -> ") + target + ".\n";
             goto done;
         }
         json_object_foreach (name, key, value) {
