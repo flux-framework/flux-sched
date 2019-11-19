@@ -29,6 +29,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstdint>
+#include <memory>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
 #include "resource/schema/resource_data.hpp"
@@ -51,7 +52,6 @@ enum class match_kind_t { RESOURCE_MATCH,
 
 struct jobmeta_t {
     bool allocate = true;
-    bool never_matched = true;
     int64_t jobid = -1;
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
@@ -74,21 +74,24 @@ struct jobmeta_t {
 class dfu_impl_t {
 public:
     dfu_impl_t ();
-    dfu_impl_t (f_resource_graph_t *g, dfu_match_cb_t *m,
-                std::map<subsystem_t, vtx_t> *roots);
+    dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
+                std::shared_ptr<dfu_match_cb_t> m,
+                std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
     dfu_impl_t (const dfu_impl_t &o);
+    dfu_impl_t (dfu_impl_t &&o) = default;
     dfu_impl_t &operator= (const dfu_impl_t &o);
+    dfu_impl_t &operator= (dfu_impl_t &&o) = default;
     ~dfu_impl_t ();
 
     //! Accessors
-    const f_resource_graph_t *get_graph () const;
-    const std::map<subsystem_t, vtx_t> *get_roots () const;
-    const dfu_match_cb_t *get_match_cb () const;
+    const std::shared_ptr<const f_resource_graph_t> get_graph () const;
+    const std::shared_ptr<const std::map<subsystem_t, vtx_t>> get_roots () const;
+    const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
 
-    void set_graph (f_resource_graph_t *g);
-    void set_roots (std::map<subsystem_t, vtx_t> *roots);
-    void set_match_cb (dfu_match_cb_t *m);
+    void set_graph (std::shared_ptr<f_resource_graph_t> g);
+    void set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+    void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
 
     /*! Exclusive request? Return true if a resource in resources vector
@@ -187,7 +190,7 @@ public:
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int update (vtx_t root, match_writers_t *writers,
+    int update (vtx_t root, std::shared_ptr<match_writers_t> writers,
                 jobmeta_t &meta, unsigned int needs, bool excl);
 
     /*! Update to make the resource state ready for the next selection.
@@ -273,15 +276,15 @@ private:
                  bool *excl, scoring_api_t &to_parent);
 
     // Emit matched resource set
-    int emit_vtx (vtx_t u, match_writers_t *w, unsigned int needs,
-                  bool exclusive);
-    int emit_edg (edg_t e, match_writers_t *w);
+    int emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> w,
+                  unsigned int needs, bool exclusive);
+    int emit_edg (edg_t e, std::shared_ptr<match_writers_t> w);
 
     // Update resource graph data store
     int upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                   bool excl, const jobmeta_t &meta, int &n_p,
                   std::map<std::string, int64_t> &to_parent);
-    int upd_sched (vtx_t u, match_writers_t *writers,
+    int upd_sched (vtx_t u, std::shared_ptr<match_writers_t> writers,
                    const subsystem_t &subsystem, unsigned int needs,
                    bool excl, int n, const jobmeta_t &meta,
                    std::map<std::string, int64_t> &dfu,
@@ -289,8 +292,8 @@ private:
     int upd_upv (vtx_t u, const subsystem_t &subsystem, unsigned int needs,
                  bool excl, const jobmeta_t &meta,
                  std::map<std::string, int64_t> &to_parent);
-    int upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
-                 bool excl, const jobmeta_t &meta,
+    int upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> writers,
+                 unsigned int needs, bool excl, const jobmeta_t &meta,
                  std::map<std::string, int64_t> &to_parent);
 
     // Remove allocation or reservations
@@ -310,9 +313,9 @@ private:
     color_t m_color;
     uint64_t m_best_k_cnt = 0;
     unsigned int m_trav_level = 0;
-    std::map<subsystem_t, vtx_t> *m_roots = NULL;
-    f_resource_graph_t *m_graph = NULL;
-    dfu_match_cb_t *m_match = NULL;
+    std::shared_ptr<std::map<subsystem_t, vtx_t>> m_roots = nullptr;
+    std::shared_ptr<f_resource_graph_t> m_graph = nullptr;
+    std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     std::string m_err_msg = "";
 }; // the end of class dfu_impl_t
 

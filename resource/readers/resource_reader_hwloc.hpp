@@ -37,6 +37,9 @@ namespace resource_model {
  */
 class resource_reader_hwloc_t : public resource_reader_base_t {
 public:
+
+    virtual ~resource_reader_hwloc_t ();
+
     /*! Unpack str into a resource graph.
      *
      * \param g      resource graph

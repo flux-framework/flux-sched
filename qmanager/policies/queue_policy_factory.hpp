@@ -25,13 +25,16 @@
 #ifndef QUEUE_POLICY_FACTORY_HPP
 #define QUEUE_POLICY_FACTORY_HPP
 
+#include <memory>
 #include <string>
 
 namespace Flux {
 namespace queue_manager {
 
 bool known_queue_policy (const std::string &policy);
-queue_policy_base_t *create_queue_policy (const std::string &policy);
+std::shared_ptr<queue_policy_base_t> create_queue_policy (
+                                         const std::string &policy,
+                                         const std::string &reapi);
 
 } // namespace Flux::queue_manager
 } // namespace Flux

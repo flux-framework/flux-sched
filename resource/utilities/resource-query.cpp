@@ -31,15 +31,13 @@
 #include <iterator>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
-#include "resource/policies/dfu_match_high_id_first.hpp"
-#include "resource/policies/dfu_match_low_id_first.hpp"
-#include "resource/policies/dfu_match_locality.hpp"
-#include "resource/policies/dfu_match_var_aware.hpp"
+#include "resource/policies/dfu_match_policy_factory.hpp"
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -47,7 +45,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 
 #define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
@@ -71,7 +68,7 @@ static const struct option longopts[] = {
 
 static void usage (int code)
 {
-    cerr <<
+    std::cerr <<
 "usage: resource-query [OPTIONS...]\n"
 "\n"
 "Command-line utility that takes in an HPC resource request written in\n"
@@ -193,22 +190,7 @@ static void usage (int code)
     exit (code);
 }
 
-static dfu_match_cb_t *create_match_cb (const string &policy)
-{
-    dfu_match_cb_t *matcher = NULL;
-    if (policy == "high")
-        matcher = (dfu_match_cb_t *)new high_first_t ();
-    else if (policy == "low")
-        matcher = (dfu_match_cb_t *)new low_first_t ();
-    else if (policy == "locality")
-        matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
-    else if (policy == "variation")
-        matcher = (dfu_match_cb_t *)new var_aware_t ();
-
-    return matcher;
-}
-
-static void set_default_params (resource_context_t *ctx)
+static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
 {
     ctx->params.load_file = "conf/default";
     ctx->params.load_format = "grug";
@@ -226,19 +208,19 @@ static void set_default_params (resource_context_t *ctx)
     ctx->params.disable_prompt = false;
 }
 
-static int string_to_graph_format (string st, emit_format_t &format)
+static int string_to_graph_format (std::string st, emit_format_t &format)
 {
     int rc = 0;
-    if (boost::iequals (st, string ("dot")))
+    if (boost::iequals (st, std::string ("dot")))
         format = emit_format_t::GRAPHVIZ_DOT;
-    else if (boost::iequals (st, string ("graphml")))
+    else if (boost::iequals (st, std::string ("graphml")))
         format = emit_format_t::GRAPH_ML;
     else
         rc = -1;
     return rc;
 }
 
-static int graph_format_to_ext (emit_format_t format, string &st)
+static int graph_format_to_ext (emit_format_t format, std::string &st)
 {
     int rc = 0;
     switch (format) {
@@ -254,72 +236,74 @@ static int graph_format_to_ext (emit_format_t format, string &st)
     return rc;
 }
 
-static int subsystem_exist (resource_context_t *ctx, string n)
+static int subsystem_exist (std::shared_ptr<resource_context_t> &ctx,
+                            std::string n)
 {
     int rc = 0;
-    if (ctx->db.metadata.roots.find (n) == ctx->db.metadata.roots.end ())
+    if (ctx->db.metadata.roots->find (n) == ctx->db.metadata.roots->end ())
         rc = -1;
     return rc;
 }
 
-static int set_subsystems_use (resource_context_t *ctx, string n)
+static int set_subsystems_use (std::shared_ptr<resource_context_t> &ctx,
+                               std::string n)
 {
     int rc = 0;
     ctx->matcher->set_matcher_name (n);
     dfu_match_cb_t &matcher = *(ctx->matcher);
-    const string &matcher_type = matcher.matcher_name ();
+    const std::string &matcher_type = matcher.matcher_name ();
 
-    if (boost::iequals (matcher_type, string ("CA"))) {
+    if (boost::iequals (matcher_type, std::string ("CA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
-    } else if (boost::iequals (matcher_type, string ("IBA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("IBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "*");
-    } else if (boost::iequals (matcher_type, string ("IBBA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("IBBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnetbw")) == 0)
             matcher.add_subsystem ("ibnetbw", "*");
-    } else if (boost::iequals (matcher_type, string ("PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, string ("PA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("PA"))) {
         if ( (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "*");
-    } else if (boost::iequals (matcher_type, string ("C+PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("C+PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( !rc && (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, string ("C+IBA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("C+IBA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_up");
-    } else if (boost::iequals (matcher_type, string ("C+PA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("C+PA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "draws_from");
-    } else if (boost::iequals (matcher_type, string ("IB+IBBA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("IB+IBBA"))) {
         if ( (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_down");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnetbw")) == 0)
             matcher.add_subsystem ("ibnetbw", "*");
-    } else if (boost::iequals (matcher_type, string ("C+P+IBA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("C+P+IBA"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "contains");
         if ( (rc = subsystem_exist (ctx, "power")) == 0)
             matcher.add_subsystem ("power", "draws_from");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
             matcher.add_subsystem ("ibnet", "connected_up");
-    } else if (boost::iequals (matcher_type, string ("V+PFS1BA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("V+PFS1BA"))) {
         if ( (rc = subsystem_exist (ctx, "virtual1")) == 0)
             matcher.add_subsystem ("virtual1", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "pfs1bw")) == 0)
             matcher.add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, string ("VA"))) {
+    } else if (boost::iequals (matcher_type, std::string ("VA"))) {
         if ( (rc = subsystem_exist (ctx, "virtual1")) == 0)
             matcher.add_subsystem ("virtual1", "*");
-    } else if (boost::iequals (matcher_type, string ("ALL"))) {
+    } else if (boost::iequals (matcher_type, std::string ("ALL"))) {
         if ( (rc = subsystem_exist (ctx, "containment")) == 0)
             matcher.add_subsystem ("containment", "*");
         if ( !rc && (rc = subsystem_exist (ctx, "ibnet")) == 0)
@@ -337,7 +321,7 @@ static int set_subsystems_use (resource_context_t *ctx, string n)
 }
 
 static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
-                               fstream &o)
+                               std::fstream &o)
 {
     f_res_name_map_t vmap = get (&resource_pool_t::name, fg);
     f_edg_infra_map_t emap = get (&resource_relation_t::idata, fg);
@@ -346,9 +330,10 @@ static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
     write_graphviz (o, fg, vwr, ewr);
 }
 
-static void flatten (f_resource_graph_t &fg, map<vtx_t, string> &paths,
-                     map<vtx_t, string> &subsystems,
-                     map<edg_t, string> &esubsystems)
+static void flatten (f_resource_graph_t &fg,
+                     std::map<vtx_t, std::string> &paths,
+                     std::map<vtx_t, std::string> &subsystems,
+                     std::map<edg_t, std::string> &esubsystems)
 {
     f_vtx_iterator_t vi, v_end;
     f_edg_iterator_t ei, e_end;
@@ -374,15 +359,19 @@ static void flatten (f_resource_graph_t &fg, map<vtx_t, string> &paths,
     }
 }
 
-static void write_to_graphml (f_resource_graph_t &fg, fstream &o)
+static void write_to_graphml (f_resource_graph_t &fg, std::fstream &o)
 {
     boost::dynamic_properties dp;
-    map<edg_t, string> esubsystems;
-    map<vtx_t, string> subsystems, properties, paths;
-    boost::associative_property_map<map<vtx_t, string>> subsystems_map (subsystems);
-    boost::associative_property_map<map<edg_t, string>> esubsystems_map (esubsystems);
-    boost::associative_property_map<map<vtx_t, string>> props_map (properties);
-    boost::associative_property_map<map<vtx_t, string>> paths_map (paths);
+    std::map<edg_t, std::string> esubsystems;
+    std::map<vtx_t, std::string> subsystems, properties, paths;
+    boost::associative_property_map<
+        std::map<vtx_t, std::string>> subsystems_map (subsystems);
+    boost::associative_property_map<
+        std::map<edg_t, std::string>> esubsystems_map (esubsystems);
+    boost::associative_property_map<
+        std::map<vtx_t, std::string>> props_map (properties);
+    boost::associative_property_map<
+        std::map<vtx_t, std::string>> paths_map (paths);
 
     flatten (fg, paths, subsystems, esubsystems);
 
@@ -403,15 +392,16 @@ static void write_to_graphml (f_resource_graph_t &fg, fstream &o)
     write_graphml (o, fg, dp, true);
 }
 
-static void write_to_graph (resource_context_t *ctx)
+static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
 {
-    fstream o;
-    string fn, mn;
+    std::fstream o;
+    std::string fn, mn;
     mn = ctx->matcher->matcher_name ();
     fn = ctx->params.o_fname + "." + ctx->params.o_fext;
 
-    cout << "INFO: Write the target graph of the matcher..." << endl;
-    o.open (fn, fstream::out);
+    std::cout << "INFO: Write the target graph of the matcher..."
+              << std::endl;
+    o.open (fn, std::fstream::out);
 
     switch (ctx->params.o_format) {
     case emit_format_t::GRAPHVIZ_DOT:
@@ -421,31 +411,17 @@ static void write_to_graph (resource_context_t *ctx)
         write_to_graphml (*(ctx->fgraph), o);
         break;
     default:
-        cout << "ERROR: Unknown graph format" << endl;
+        std::cout << "ERROR: Unknown graph format" << std::endl;
         break;
     }
     if (o.bad ()) {
-        cerr << "ERROR: Failure encountered in writing" << endl;
+        std::cerr << "ERROR: Failure encountered in writing" << std::endl;
         o.clear ();
     }
     o.close ();
 }
 
-static void destory_resource_ctx (resource_context_t *ctx)
-{
-    delete ctx->matcher;
-    delete ctx->traverser;
-    delete ctx->fgraph;
-    delete ctx->writers;
-    for (auto &kv : ctx->jobs)
-        delete kv.second;    /* job_info_t* type */
-    ctx->jobs.clear ();
-    ctx->allocations.clear ();
-    ctx->reservations.clear ();
-    delete ctx;
-}
-
-static void control_loop (resource_context_t *ctx)
+static void control_loop (std::shared_ptr<resource_context_t> &ctx)
 {
     cmd_func_f *cmd = NULL;
     while (1) {
@@ -453,18 +429,19 @@ static void control_loop (resource_context_t *ctx)
                                                : readline ("resource-query> ");
         if (line == NULL)
             continue;
-        else if(*line)
+        else if (*line)
             add_history (line);
 
-        vector<string> tokens;
-        istringstream iss (line);
-        copy(istream_iterator<string>(iss), istream_iterator<string>(),
+        std::vector<std::string> tokens;
+        std::istringstream iss (line);
+        std::copy (std::istream_iterator<std::string> (iss),
+                   std::istream_iterator<std::string> (),
              back_inserter (tokens));
         free(line);
         if (tokens.empty ())
             continue;
 
-        string &cmd_str = tokens[0];
+        std::string &cmd_str = tokens[0];
         if (!(cmd = find_cmd (cmd_str)))
             continue;
         if (cmd (ctx, tokens) != 0)
@@ -472,11 +449,11 @@ static void control_loop (resource_context_t *ctx)
     }
 }
 
-static int populate_resource_db (resource_context_t *ctx)
+static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
 {
     int rc = -1;
     double elapse;
-    ifstream in_file;
+    std::ifstream in_file;
     struct timeval st, et;
     std::stringstream buffer{};
     std::shared_ptr<resource_reader_base_t> rd;
@@ -522,40 +499,59 @@ done:
     return rc;
 }
 
-static int init_resource_graph (resource_context_t *ctx)
+static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
+           std::shared_ptr<resource_context_t> &ctx)
 {
-    int rc = 0;
-
-    if ( (rc = populate_resource_db (ctx)) != 0) {
-        cerr << "ERROR: can't populate graph resource database" << endl;
-        return rc;
-    }
+    std::shared_ptr<f_resource_graph_t> fg = nullptr;
 
     resource_graph_t &g = ctx->db.resource_graph;
-    // Configure the matcher and its subsystem selector
-    cout << "INFO: Loading a matcher: " << ctx->params.matcher_name << endl;
-    if ( (rc = set_subsystems_use (ctx, ctx->params.matcher_name)) != 0) {
-        cerr << "ERROR: Not all subsystems found" << endl;
-        return rc;
-    }
-
     vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
     edg_infra_map_t emap = get (&resource_relation_t::idata, g);
     const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
     subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
     subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
 
-    if (!(ctx->fgraph = new (nothrow)f_resource_graph_t (g, edgsel, vtxsel))) {
-        cerr << "ERROR: out of memory allocating f_resource_graph_t" << endl;
-        return -1;
+    try {
+        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        std::cerr << "ERROR: out of memory allocating f_resource_graph_t"
+                  << std::endl;
+        fg = nullptr;
     }
+
+    return fg;
+}
+
+static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
+{
+    int rc = 0;
+
+    if ( (rc = populate_resource_db (ctx)) != 0) {
+        std::cerr << "ERROR: can't populate graph resource database"
+                  << std::endl;
+        return rc;
+    }
+
+    resource_graph_t &g = ctx->db.resource_graph;
+    // Configure the matcher and its subsystem selector
+    std::cout << "INFO: Loading a matcher: " << ctx->params.matcher_name
+              << std::endl;
+    if ( (rc = set_subsystems_use (ctx, ctx->params.matcher_name)) != 0) {
+        std::cerr << "ERROR: Not all subsystems found" << std::endl;
+        return rc;
+    }
+    if ( !(ctx->fgraph = create_filtered_graph (ctx)))
+        return -1;
+
     ctx->jobid_counter = 1;
     if (ctx->params.prune_filters != ""
         && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
                                                    ctx->params.prune_filters)
                                                    < 0) {
-        cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
-             << ctx->params.prune_filters << endl;
+        std::cerr
+            << "ERROR: setting pruning filters with ctx->params.prune_filters: "
+            << ctx->params.prune_filters << std::endl;
         return -1;
     }
 
@@ -564,26 +560,33 @@ static int init_resource_graph (resource_context_t *ctx)
                                           | std::ofstream::badbit);
         ctx->params.r_out.open (ctx->params.r_fname);
     }
-    if ( !(ctx->traverser = new (nothrow)dfu_traverser_t ())) {
-        cerr << "ERROR: out of memory allocating traverser" << endl;
+
+    try {
+        ctx->traverser = std::make_shared<dfu_traverser_t> ();
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        std::cerr << "ERROR: out of memory allocating traverser" << std::endl;
         return -1;
     }
-    if ( (rc = ctx->traverser->initialize (ctx->fgraph, &(ctx->db.metadata.roots),
+
+    if ( (rc = ctx->traverser->initialize (ctx->fgraph, ctx->db.metadata.roots,
                                            ctx->matcher)) != 0) {
-        cerr << "ERROR: initializing traverser" << endl;
+        std::cerr << "ERROR: initializing traverser" << std::endl;
         return -1;
     }
     match_format_t format = match_writers_factory_t::
                                 get_writers_type (ctx->params.match_format);
-    if (!(ctx->writers = match_writers_factory_t::create (format))) {
-        cerr << "ERROR: out of memory allocating traverser" << endl;
+    if ( !(ctx->writers = match_writers_factory_t::create (format))) {
+        std::cerr << "ERROR: out of memory allocating traverser"
+                  << std::endl;
         return -1;
     }
 
     return rc;
 }
 
-static void process_args (resource_context_t *ctx, int argc, char *argv[])
+static void process_args (std::shared_ptr<resource_context_t> &ctx,
+                          int argc, char *argv[])
 {
     int rc = 0;
     int ch = 0;
@@ -601,7 +604,7 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 ctx->params.load_format = optarg;
                 if (!known_resource_reader (ctx->params.load_format)) {
                     std::cerr << "[ERROR] unknown format for --load-format: ";
-                    std::cerr << optarg << endl;
+                    std::cerr << optarg << std::endl;
                     usage (1);
                 }
                 break;
@@ -621,16 +624,16 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
             case 'F': /* --match-format */
                 ctx->params.match_format = optarg;
                 if (!known_match_format (ctx->params.match_format)) {
-                    cerr << "[ERROR] unknown format for --match-format: ";
-                    cerr << optarg << endl;
+                    std::cerr << "[ERROR] unknown format for --match-format: ";
+                    std::cerr << optarg << std::endl;
                     usage (1);
                 }
                 break;
             case 'g': /* --graph-format */
                 rc = string_to_graph_format (optarg, ctx->params.o_format);
                 if ( rc != 0) {
-                    cerr << "[ERROR] unknown format for --graph-format: ";
-                    cerr << optarg << endl;
+                    std::cerr << "[ERROR] unknown format for --graph-format: ";
+                    std::cerr << optarg << std::endl;
                     usage (1);
                 }
                 graph_format_to_ext (ctx->params.o_format, ctx->params.o_fext);
@@ -654,8 +657,9 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
                 if ( (ctx->params.reserve_vtx_vec < 0)
                     || (ctx->params.reserve_vtx_vec > 2000000)) {
                     ctx->params.reserve_vtx_vec = 0;
-                    cerr << "WARN: out of range specified for --reserve-vtx-vec: ";
-                    cerr << optarg << endl;
+                    std::cerr
+                        << "WARN: out of range specified for --reserve-vtx-vec: ";
+                    std::cerr << optarg << std::endl;
                 }
                 break;
             case 'e': /* --elapse-time */
@@ -674,49 +678,52 @@ static void process_args (resource_context_t *ctx, int argc, char *argv[])
         usage (1);
 }
 
-static int init_resource_query (resource_context_t **ctx, int c, char *v[])
+static std::shared_ptr<resource_context_t> init_resource_query (int c,
+                                                                char *v[])
 {
-    int rc = 0;
+    std::shared_ptr<resource_context_t> ctx = nullptr;
 
-    if (!(*ctx = new (nothrow)resource_context_t ())) {
-        cerr << "ERROR: out of memory allocating resource context" << endl;
+    try {
+        ctx = std::make_shared<resource_context_t> ();
+    } catch (std::bad_alloc &e) {
+        std::cerr << "ERROR: out of memory allocating resource context"
+                  << std::endl;
         errno = ENOMEM;
-        rc = -1;
         goto done;
     }
-    set_default_params (*ctx);
-    process_args (*ctx, c, v);
-    (*ctx)->perf.min = DBL_MAX;
-    (*ctx)->perf.max = 0.0f;
-    (*ctx)->perf.accum = 0.0f;
-    if ( !((*ctx)->matcher = create_match_cb ((*ctx)->params.matcher_policy))) {
-        cerr << "ERROR: unknown match policy " << endl;
-        cerr << "ERROR: " << (*ctx)->params.matcher_policy << endl;
-        rc = -1;
+
+    set_default_params (ctx);
+    process_args (ctx, c, v);
+    ctx->perf.min = DBL_MAX;
+    ctx->perf.max = 0.0f;
+    ctx->perf.accum = 0.0f;
+    if ( !(ctx->matcher = create_match_cb (ctx->params.matcher_policy))) {
+        std::cerr << "ERROR: unknown match policy " << std::endl;
+        std::cerr << "ERROR: " << ctx->params.matcher_policy << std::endl;
+        ctx = nullptr;
     }
-    if (init_resource_graph (*ctx) != 0) {
-        cerr << "ERROR: resource graph initialization" << endl;
-        rc = -1;
+    if (init_resource_graph (ctx) != 0) {
+        std::cerr << "ERROR: resource graph initialization" << std::endl;
+        ctx = nullptr;
     }
 
 done:
-    return rc;
+    return ctx;
 }
 
-static void fini_resource_query (resource_context_t *ctx)
+static void fini_resource_query (std::shared_ptr<resource_context_t> &ctx)
 {
     if (ctx->params.r_fname != "")
         ctx->params.r_out.close ();
     if (ctx->params.o_fname != "")
         write_to_graph (ctx);
-    destory_resource_ctx (ctx);
 }
 
 int main (int argc, char *argv[])
 {
-    resource_context_t *ctx = NULL;
-    if (init_resource_query (&ctx, argc, argv) != 0) {
-        cerr << "ERROR: resource query initialization" << endl;
+    std::shared_ptr<resource_context_t> ctx = nullptr;
+    if ( !(ctx = init_resource_query (argc, argv))) {
+        std::cerr << "ERROR: resource query initialization" << std::endl;
         return EXIT_FAILURE;
     }
 

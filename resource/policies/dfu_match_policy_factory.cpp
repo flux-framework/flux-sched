@@ -38,17 +38,24 @@ bool known_match_policy (const std::string &policy)
     return rc;
 }
 
-dfu_match_cb_t *create_match_cb (const std::string &policy)
+std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy)
 {
-    dfu_match_cb_t *matcher = NULL;
+    std::shared_ptr<dfu_match_cb_t> matcher = nullptr;
+
+    try {
     if (policy == HIGH_ID_FIRST)
-        matcher = (dfu_match_cb_t *)new high_first_t ();
+        matcher = std::make_shared<high_first_t> ();
     else if (policy == LOW_ID_FIRST)
-        matcher = (dfu_match_cb_t *)new low_first_t ();
+        matcher = std::make_shared<low_first_t> ();
     else if (policy == LOCALITY_AWARE)
-        matcher = (dfu_match_cb_t *)new greater_interval_first_t ();
+        matcher = std::make_shared<greater_interval_first_t> ();
     else if (policy == VAR_AWARE)
-        matcher = (dfu_match_cb_t *)new var_aware_t ();
+        matcher = std::make_shared<var_aware_t> ();
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        matcher = nullptr;
+    }
+
     return matcher;
 }
 

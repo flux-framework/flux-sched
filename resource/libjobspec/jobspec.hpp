@@ -131,7 +131,7 @@ public:
     Jobspec() = default;
     Jobspec(const YAML::Node&);
     Jobspec(std::istream &is);
-    Jobspec(std::string &s);
+    Jobspec(const std::string &s);
 };
 
 std::ostream& operator<<(std::ostream& s, Jobspec const& js);
