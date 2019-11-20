@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/flux-framework/flux-sched.svg?branch=master)](https://travis-ci.org/flux-framework/flux-sched)
-[![Coverage Status](https://coveralls.io/repos/flux-framework/flux-sched/badge.svg?branch=master&service=github)](https://coveralls.io/github/flux-framework/flux-sched?branch=master)
+[![Build Status](https://travis-ci.org/flux-framework/flux-sched.svg?branch=master)](https://travis-ci.org/flux-framework/flux-sched) [![Coverage Status](https://coveralls.io/repos/flux-framework/flux-sched/badge.svg?branch=master&service=github)](https://coveralls.io/github/flux-framework/flux-sched?branch=master)
 
 *NOTE: The interfaces of flux-sched are being actively developed and
 are not yet stable.* The github issue tracker is the primary way to
@@ -7,20 +6,36 @@ communicate with the developers.
 
 ### flux-sched
 
-flux-sched contains the job scheduling facility for the Flux resource
-manager framework.  It consists of an engine that handles all the
-functionality common to scheduling.  The engine has the ability to
-load one or more scheduling plugins that provide specific scheduling
-behavior.
+flux-sched contains an advanced job scheduling facility for the Flux resource
+manager framework.
 
-#### Overview
+### Overview
 
-The `flux wreckrun` command is part of flux-core and provides the
-ability to launch Flux programs on resources within a Flux instance.
-flux-sched adds batch scheduling functionality to Flux.  Jobs are
-submitted to flux-sched using `flux submit` which adds the jobs to a
-queue.  A scheduling plugin selects resources and decides when to run
-the job.
+flux-sched introduces queuing and resource matching services to extend Flux
+to provide advanced batch scheduling. Jobs are submitted to flux-sched via
+`flux job submit` which are then added to our queues for scheduling.
+
+At the core of its functionality lie its two service modules: `qmanager` and
+`resource`. The `qmanager` module is designed to manage our job queues and
+to enforce queueing policies that are configurable (e.g.,
+first-come-first-served, EASY, conservative backfilling policies etc).
+The `resource` module uses a graph to represent resources of arbitrary types
+as well as their complex relationships and to match the highly sophisticated
+resource requirements of a Flux jobspec to the compute and other resources
+on this graph. Both of these modules are loaded into a Flux instance and
+work in tandem to provide highly effective scheduling.
+
+Clearly, we recognize that a single scheduling policy will not sufficiently
+optimize the scheduling of different kinds of workflows. In fact, one of the
+main design points of flux-sched is its ability to customize the scheduling
+behaviors. Users can use environment variables or module-load time options
+to select and to tune the policies as to how resources are selected
+and when to run their jobs.
+
+Overall, the advanced job scheduling facility within flux-sched offers vastly
+many opportunities for modern HPC and other worfklows to meet their highly
+challenging scheduling objectives.
+
 
 #### Building flux-sched
 
@@ -58,14 +73,12 @@ libboost packages == 1.53 or > 1.58
 libxml2-dev >= 2.9.1
 yaml-cpp-dev >= 0.5.1
 python-yaml >= 3.10
-uuid-dev
 ```
 
 The sched module contains
 a bifurcated structure of a core framework that has all the basic
-functionality plus a loadable plugin that implements specific
-scheduling behavior.  There are currently two plugins available:
-sched.fcfs and sched.backfill.
+functionality plus loadable modules that implement specific
+scheduling behaviors.
 
 To build the sched module, run the following commands:
 
@@ -80,10 +93,10 @@ make check
 make install
 ```
 
-To exercise a functioning sched module in a comms session, follow
+To exercise functioning flux-sched modules in a Flux instance, follow
 these steps.
 
-##### Flux comms session
+##### Flux Instance
 
 To run the example below, you will have to manually add flux-sched
 directories to the pertinent environment variables.  The following
@@ -93,31 +106,28 @@ flag to each flux command below.
 
 Create a comms session comprised of 3 brokers:
 ```
-export LUA_PATH="$HOME/flux-sched/rdl/?.lua;${LUA_PATH};;"
-export LUA_CPATH="$HOME/flux-sched/rdl/?.so;${LUA_CPATH};;"
-export FLUX_MODULE_PATH=$HOME/flux-sched/sched
 $HOME/local/bin/flux start -s3
 ```
 
-cd to ~/flux-sched and load the sched module specifying the
-appropriate rdl configuration file:
-```
-flux module load sched rdl-conf=$HOME/flux-sched/conf/hype.lua plugin=sched.fcfs
-```
-
-Check to see whether the sched module loaded:
+Check to see whether the qmanager and resource modules are loaded:
 ```
 flux module list
 ```
 
-Submit a job:
+Submit jobs:
 ```
-flux submit -N3 -n3 sleep 30
+flux mini submit -N3 -n3 hostname
+flux mini submit -N3 -n3 sleep 30
 ```
 
-Examine the job:
+Examine the currently running job:
 ```
-flux kvs dir lwj.1
+flux job list
+```
+
+Examine the output of the first job
+```
+flux job attach <jobid printed from the first submit>
 ```
 
 Examine the ring buffer for details on what happened.
@@ -125,7 +135,7 @@ Examine the ring buffer for details on what happened.
 flux dmesg
 ```
 
-Exit the session:
+Exit the Flux instance
 ```
 exit
 ```
