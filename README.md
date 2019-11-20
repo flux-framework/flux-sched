@@ -108,6 +108,8 @@ Create a comms session comprised of 3 brokers:
 ```
 $HOME/local/bin/flux start -s3
 ```
+This will create a new shell in which you can issue various
+flux commands such as following.
 
 Check to see whether the qmanager and resource modules are loaded:
 ```

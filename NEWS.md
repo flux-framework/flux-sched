@@ -1,3 +1,39 @@
+flux-sched version 0.8.0 - 2019-11-20
+-------------------------------------
+
+### Fixes
+ * resource/sched/simulator: update KVS API usage (#435)
+ * build: fix build issues for priority_mod_fair_tree.so (#434)
+ * api: sync flux-sched with removed interfaces in flux-core (#440)
+ * resource: update for kvs watch API removal (#442)
+ * API: remove the use of deprecated Python API (#450)
+ * resource: update to flux_respond_error() (#457)
+ * resource: bug fix for incorrectly handling implicit exclusivity (#502)
+ * libschedutil: remove vendored copy and use flux-core's exported lib (#516)
+ * testsuite: update flux-sharness.sh to version from flux-core (#523)
+ * rc3: Fix a bug in RC3 dir definition within configure.ac (#525)
+ * resource: fix buffer overflow when handling slot type in a jobspec (#548)
+
+### Features
+ * qmanager: integrate with the new exec system (#481)
+ * qmanager: add hello/exception callback support (#493)
+ * qmanager: add EASY/HYBRID/CONSERVATIVE policies (#504)
+ * resource: RFC20 resource set specification version 1 support (#455)
+ * resource: add hwloc whitelist support (#467)
+ * resource: add set- and get-property support (#490, #513)
+ * resource: add support for checking a job's satisfiability (#503)
+ * resource: support for variation-aware scheduler (#517)
+ * resource: add JGF reader support (#521)
+ * resource: resource graph metadata (by_path) optimization (#536)
+ * libjobspec: update command to be list instead of list or string (#549)
+ * resource: add resource update support (#543)
+ * add smart pointer support and misc. cleanup (#537)
+ * test: add test cases to support systems with disaggregated resources (#460)
+ * test: add test cases for AMD GPUs (#464)
+
+### Cleanup
+ * resource: tidy up JGF match writer support (#520)
+
 flux-sched version 0.7.0 - 2019-01-20
 -------------------------------------
 
