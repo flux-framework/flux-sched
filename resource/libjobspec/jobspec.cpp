@@ -228,11 +228,9 @@ Task::Task (const YAML::Node &tasknode)
     }
     if (tasknode["command"].IsSequence()) {
         command = tasknode["command"].as<std::vector<std::string>>();
-    } else if (tasknode["command"].IsScalar()) {
-        command.push_back(tasknode["command"].as<std::string>());
     } else {
         throw parse_error (tasknode["command"],
-                           "\"command\" value must be a scalar or a sequence");
+                           "\"command\" value must be a sequence");
     }
 
     /* Import slot */
