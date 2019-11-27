@@ -58,6 +58,7 @@ public:
     const eval_egroup_t &at (const subsystem_t &s, const std::string &r,
                              unsigned int i);
     unsigned int qualified_count (const subsystem_t &s, const std::string &r);
+    unsigned int qualified_granules (const subsystem_t &s, const std::string &r);
     unsigned int total_count (const subsystem_t &s, const std::string &r);
     unsigned int best_k (const subsystem_t &s, const std::string &r);
     unsigned int best_i (const subsystem_t &s, const std::string &r);

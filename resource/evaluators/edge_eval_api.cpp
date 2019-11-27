@@ -149,6 +149,11 @@ unsigned int evals_t::qualified_count () const
     return m_qual_count;
 }
 
+unsigned int evals_t::qualified_granules () const
+{
+    return m_eval_egroups.size ();
+}
+
 unsigned int evals_t::total_count () const
 {
     return m_total_count;

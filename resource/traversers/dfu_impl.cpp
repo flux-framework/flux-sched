@@ -449,17 +449,29 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape,
                           scoring_api_t &dfu_slot)
 {
     unsigned int qc = 0;
+    unsigned int qg = 0;
     unsigned int fit = 0;
     unsigned int count = 0;
     unsigned int qual_num_slots = UINT_MAX;
     const subsystem_t &dom = m_match->dom_subsystem ();
 
     // qualifed slot count is determined by the most constrained resource type
+    // both in terms of the amounts available as well as the number of edges into
+    // that resource because that represent the match granularity.
+    // Say you have 128 units of memory available across two memory resource
+    // vertices each with 64 units of memory and you request 1 unit of memory.
+    // In this case, you don't have 128 slots available because the match
+    // granularity is 64 units. Instead, you have only 2 slots available each
+    // with 64 units, and your request will get 1 whole resource vertex.
     qual_num_slots = UINT_MAX;
     for (auto &slot_elem : slot_shape) {
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
+        qg = dfu_slot.qualified_granules (dom, slot_elem.type);
         count = m_match->calc_count (slot_elem, qc);
+        // constraint check against qualified amounts
         fit = (count == 0)? count : (qc / count);
+        // constraint check against qualified granules
+        fit = (fit > qg)? qg : fit;
         qual_num_slots = (qual_num_slots > fit)? fit : qual_num_slots;
         dfu_slot.rewind_iter_cur (dom, slot_elem.type);
     }

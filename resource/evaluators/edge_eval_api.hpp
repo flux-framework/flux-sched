@@ -73,6 +73,7 @@ public:
     // This can throw out_of_range exception
     const eval_egroup_t &at (unsigned int i) const;
     unsigned int qualified_count () const;
+    unsigned int qualified_granules () const;
     unsigned int total_count () const;
     int64_t cutline () const;
     int64_t set_cutline (int64_t cutline);

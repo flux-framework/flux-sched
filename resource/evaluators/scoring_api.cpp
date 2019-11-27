@@ -180,6 +180,14 @@ unsigned int scoring_api_t::qualified_count (const subsystem_t &s,
     return res_evals->qualified_count ();
 }
 
+unsigned int scoring_api_t::qualified_granules (const subsystem_t &s,
+                                                const std::string &r)
+{
+    handle_new_keys (s, r);
+    auto res_evals = (*m_ssys_map[s])[r];
+    return res_evals->qualified_granules ();
+}
+
 unsigned int scoring_api_t::total_count (const subsystem_t &s,
                                          const std::string &r)
 {
