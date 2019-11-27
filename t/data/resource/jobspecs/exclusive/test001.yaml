@@ -26,7 +26,7 @@ attributes:
   system:
     duration: 3600
 tasks:
-  - command: app
+  - command: [ "app" ]
     slot: socketlevel
     count:
       per_slot: 1
