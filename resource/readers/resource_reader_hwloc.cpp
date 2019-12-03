@@ -67,7 +67,7 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (
                               graph_traits<resource_graph_t>::
                               null_vertex (),
                               0, subsys, "cluster", "cluster", 1);
-    m.roots[subsys] = v;
+    (*(m.roots))[subsys] = v;
 
     return v;
 }
@@ -267,7 +267,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         // Create edge between parent/child
         if (parent == boost::graph_traits<resource_graph_t>::null_vertex ()) {
             // is root
-            m.roots[subsys] = v;
+            (*(m.roots))[subsys] = v;
         } else {
             std::string relation = "contains";
             std::string rev_relation = "in";
@@ -335,6 +335,11 @@ done:
  *                         Public HWLOC Reader API                              *
  *                                                                              *
  ********************************************************************************/
+
+resource_reader_hwloc_t::~resource_reader_hwloc_t ()
+{
+
+}
 
 int resource_reader_hwloc_t::unpack (resource_graph_t &g,
                                      resource_graph_metadata_t &m,

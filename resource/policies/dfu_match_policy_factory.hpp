@@ -26,6 +26,7 @@
 #define DFU_MATCH_POLICY_FACTORY_HPP
 
 #include <string>
+#include <memory>
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
@@ -45,7 +46,7 @@ bool known_match_policy (const std::string &policy);
 /*! Factory method for creating a matching callback
  *  object, representing a matching policy.
  */
-dfu_match_cb_t *create_match_cb (const std::string &policy);
+std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy);
 
 } // resource_model
 } // Flux

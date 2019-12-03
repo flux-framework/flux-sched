@@ -30,7 +30,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
@@ -71,7 +70,7 @@ bool dfu_impl_t::stop_explore (edg_t e, const subsystem_t &subsystem) const
             || m_color.is_black ((*m_graph)[u].idata.colors[subsystem]));
 }
 
-bool dfu_impl_t::exclusivity (const vector<Jobspec::Resource> &resources,
+bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources,
                               vtx_t u)
 {
     // If one of the resources matches with the visiting vertex, u
@@ -170,7 +169,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     size_t len = 0;
     int64_t at = meta.at;
     uint64_t d = meta.duration;
-    vector<uint64_t> aggs;
+    std::vector<uint64_t> aggs;
     int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
@@ -220,8 +219,8 @@ done:
     return rc;
 }
 
-planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, vector<uint64_t> &av,
-                                           vector<const char *> &tp)
+planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, std::vector<uint64_t> &av,
+                                           std::vector<const char *> &tp)
 {
     size_t len = av.size ();
     int64_t base_time = planner_base_time ((*m_graph)[u].schedule.plans);
@@ -229,7 +228,7 @@ planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, vector<uint64_t> &av,
     return planner_multi_new (base_time, duration, &av[0], &tp[0], len);
 }
 
-void dfu_impl_t::match (vtx_t u, const vector<Resource> &resources,
+void dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
                        const Resource **slot_resource,
                        const Resource **match_resource)
 {
@@ -273,9 +272,9 @@ bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
     return slot_match;
 }
 
-const vector<Resource> &dfu_impl_t::test (vtx_t u,
-                                          const vector<Resource> &resources,
-                                          bool &pristine, match_kind_t &spec)
+const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
+                                 const std::vector<Resource> &resources,
+                                 bool &pristine, match_kind_t &spec)
 {
     /* Note on the purpose of pristine: we differentiate two similar but
      * distinct cases with this parameter.
@@ -292,7 +291,7 @@ const vector<Resource> &dfu_impl_t::test (vtx_t u,
      * pristine is used to detect this case.
      */
     bool slot = true;
-    const vector<Resource> *ret = &resources;
+    const std::vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
     match (u, resources, &slot_resources, &match_resources);
@@ -314,8 +313,9 @@ const vector<Resource> &dfu_impl_t::test (vtx_t u,
 /* Accumulate counts into accum[type] if the type is one of the pruning
  * filter type.
  */
-int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
-                          unsigned int counts, map<string, int64_t> &accum)
+int dfu_impl_t::accum_if (const subsystem_t &subsystem, const std::string &type,
+                          unsigned int counts,
+                          std::map<std::string, int64_t> &accum)
 {
     int rc = -1;
     if (m_match->is_pruning_type (subsystem, type)) {
@@ -329,9 +329,9 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
 }
 
 /* Same as above except that accum is unorder_map */
-int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
+int dfu_impl_t::accum_if (const subsystem_t &subsystem, const std::string &type,
                           unsigned int counts,
-                          std::unordered_map<string, int64_t> &accum)
+                          std::unordered_map<std::string, int64_t> &accum)
 {
     int rc = -1;
     if (m_match->is_pruning_type (subsystem, type)) {
@@ -345,7 +345,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem, const string &type,
 }
 
 int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
-                           map<string, int64_t> &dfv)
+                           std::map<std::string, int64_t> &dfv)
 {
     int rc = 0;
     f_out_edg_iterator_t ei, ei_end;
@@ -361,7 +361,7 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
 
 int dfu_impl_t::explore (const jobmeta_t &meta, vtx_t u,
                          const subsystem_t &subsystem,
-                         const vector<Resource> &resources, bool pristine,
+                         const std::vector<Resource> &resources, bool pristine,
                          bool *excl, visit_t direction, scoring_api_t &dfu)
 {
     int rc = -1;
@@ -396,7 +396,7 @@ int dfu_impl_t::explore (const jobmeta_t &meta, vtx_t u,
 }
 
 int dfu_impl_t::aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &aux,
-                         const vector<Resource> &resources, bool pristine,
+                         const std::vector<Resource> &resources, bool pristine,
                          bool *excl, scoring_api_t &to_parent)
 {
     int rc = -1;
@@ -431,7 +431,7 @@ done:
 }
 
 int dfu_impl_t::dom_exp (const jobmeta_t &meta, vtx_t u,
-                         const vector<Resource> &resources, bool pristine,
+                         const std::vector<Resource> &resources, bool pristine,
                          bool *excl, scoring_api_t &dfu)
 {
     int rc = -1;
@@ -447,7 +447,7 @@ int dfu_impl_t::dom_exp (const jobmeta_t &meta, vtx_t u,
     return rc;
 }
 
-int dfu_impl_t::cnt_slot (const vector<Resource> &slot_shape,
+int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape,
                           scoring_api_t &dfu_slot)
 {
     unsigned int qc = 0;
@@ -469,7 +469,7 @@ int dfu_impl_t::cnt_slot (const vector<Resource> &slot_shape,
 }
 
 int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
-                          const vector<Resource> &slot_shape, bool pristine,
+                          const std::vector<Resource> &slot_shape, bool pristine,
                           bool *excl, scoring_api_t &dfu)
 {
     int rc;
@@ -506,14 +506,14 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
         edg_group.score = score;
         edg_group.count = 1;
         edg_group.exclusive = 1;
-        dfu.add (dom, string ("slot"), edg_group);
+        dfu.add (dom, std::string ("slot"), edg_group);
     }
 done:
     return (qual_num_slots)? 0 : -1;
 }
 
 int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
-                         const vector<Resource> &resources, bool pristine,
+                         const std::vector<Resource> &resources, bool pristine,
                          bool *excl, scoring_api_t &to_parent)
 {
     int rc = -1;
@@ -525,8 +525,8 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     bool check_pres = pristine;
     scoring_api_t dfu;
     planner_t *p = NULL;
-    const string &dom = m_match->dom_subsystem ();
-    const vector<Resource> &next = test (u, resources, check_pres, sm);
+    const std::string &dom = m_match->dom_subsystem ();
+    const std::vector<Resource> &next = test (u, resources, check_pres, sm);
 
     if (sm == match_kind_t::NONE_MATCH)
         goto done;
@@ -561,7 +561,7 @@ done:
     return rc;
 }
 
-int dfu_impl_t::resolve (vtx_t root, vector<Resource> &resources,
+int dfu_impl_t::resolve (vtx_t root, std::vector<Resource> &resources,
                          scoring_api_t &dfu, bool excl, unsigned int *needs)
 {
     int rc = -1;
@@ -583,7 +583,7 @@ int dfu_impl_t::resolve (vtx_t root, vector<Resource> &resources,
 
     // resolve remaining unconstrained resource types
     for (auto &subsystem : m_match->subsystems ()) {
-        vector<string> types;
+        std::vector<std::string> types;
         dfu.resrc_types (subsystem, types);
         for (auto &type : types) {
             if (dfu.qualified_count (subsystem, type) == 0)
@@ -618,7 +618,7 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
 {
     int rc = 0;
     try {
-        vector<string> resource_types;
+        std::vector<std::string> resource_types;
         dfu.resrc_types (subsystem, resource_types);
         for (auto &t : resource_types) {
             int best_i = dfu.best_i (subsystem, t);
@@ -633,21 +633,21 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
                 }
             }
         }
-    } catch (const out_of_range &exception) {
+    } catch (const std::out_of_range &exception) {
         errno = ERANGE;
         rc = -1;
     }
     return rc;
 }
 
-int dfu_impl_t::emit_vtx (vtx_t u, match_writers_t *w, unsigned needs,
-                          bool exclusive)
+int dfu_impl_t::emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> w,
+                          unsigned needs, bool exclusive)
 {
     w->emit_vtx (level (), (*m_graph), u, needs, exclusive);
     return 0;
 }
 
-int dfu_impl_t::emit_edg (edg_t e, match_writers_t *w)
+int dfu_impl_t::emit_edg (edg_t e, std::shared_ptr<match_writers_t> w)
  {
      w->emit_edg (level (), (*m_graph), e);
      return 0;
@@ -655,7 +655,7 @@ int dfu_impl_t::emit_edg (edg_t e, match_writers_t *w)
 
 int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                           bool excl, const jobmeta_t &meta, int &n,
-                          map<string, int64_t> &to_parent)
+                          std::map<std::string, int64_t> &to_parent)
 {
     int64_t span = 0;
     if (!excl) {
@@ -683,11 +683,11 @@ done:
     return (span == -1)? -1 : 0;
 }
 
-int dfu_impl_t::upd_sched (vtx_t u, match_writers_t *writers,
+int dfu_impl_t::upd_sched (vtx_t u, std::shared_ptr<match_writers_t> writers,
                            const subsystem_t &s, unsigned int needs,
                            bool excl, int n, const jobmeta_t &meta,
-                           map<string, int64_t> &dfu,
-                           map<string, int64_t> &to_parent)
+                           std::map<std::string, int64_t> &dfu,
+                           std::map<std::string, int64_t> &to_parent)
 {
     if (upd_plan (u, s, needs, excl, meta, n, to_parent) == -1)
         goto done;
@@ -705,7 +705,7 @@ int dfu_impl_t::upd_sched (vtx_t u, match_writers_t *writers,
         // Update subtree plan
         planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
         if (subtree_plan) {
-            vector<uint64_t> aggregate;
+            std::vector<uint64_t> aggregate;
             count_relevant_types (subtree_plan, dfu, aggregate);
             span = planner_multi_add_span (subtree_plan, meta.at, meta.duration,
                                            &(aggregate[0]), aggregate.size ());
@@ -729,19 +729,19 @@ done:
 
 int dfu_impl_t::upd_upv (vtx_t u, const subsystem_t &subsystem,
                          unsigned int needs, bool excl, const jobmeta_t &meta,
-                         map<string, int64_t> &to_parent)
+                         std::map<std::string, int64_t> &to_parent)
 {
     //NYI: update resources on the UPV direction
     return 0;
 }
 
-int dfu_impl_t::upd_dfv (vtx_t u, match_writers_t *writers, unsigned int needs,
-                         bool excl, const jobmeta_t &meta,
-                         map<string, int64_t> &to_parent)
+int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> writers,
+                         unsigned int needs, bool excl, const jobmeta_t &meta,
+                         std::map<std::string, int64_t> &to_parent)
 {
     int n_plans = 0;
-    map<string, int64_t> dfu;
-    const string &dom = m_match->dom_subsystem ();
+    std::map<std::string, int64_t> dfu;
+    const std::string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
     m_trav_level++;
@@ -845,7 +845,7 @@ int dfu_impl_t::rem_x_checker (vtx_t u, int64_t jobid)
 }
 
 int dfu_impl_t::rem_subtree_plan (vtx_t u, int64_t jobid,
-                                  const string &subsystem)
+                                  const std::string &subsystem)
 {
     int rc = 0;
     int span = -1;
@@ -873,7 +873,7 @@ done:
 int dfu_impl_t::rem_dfv (vtx_t u, int64_t jobid)
 {
     int rc = 0;
-    const string &dom = m_match->dom_subsystem ();
+    const std::string &dom = m_match->dom_subsystem ();
     auto &tags = (*m_graph)[u].schedule.tags;
     f_out_edg_iterator_t ei, ei_end;
 
@@ -914,8 +914,9 @@ dfu_impl_t::dfu_impl_t ()
 
 }
 
-dfu_impl_t::dfu_impl_t (f_resource_graph_t *g, dfu_match_cb_t *m,
-                        map<subsystem_t, vtx_t> *roots)
+dfu_impl_t::dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
+                        std::shared_ptr<dfu_match_cb_t> m,
+                        std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
     : m_roots (roots), m_graph (g), m_match (m)
 {
 
@@ -949,37 +950,38 @@ dfu_impl_t::~dfu_impl_t ()
 
 }
 
-const f_resource_graph_t *dfu_impl_t::get_graph () const
+const std::shared_ptr<const f_resource_graph_t> dfu_impl_t::get_graph () const
 {
     return m_graph;
 }
 
-const map<subsystem_t, vtx_t> *dfu_impl_t::get_roots () const
+const std::shared_ptr<const std::map<subsystem_t,
+                                     vtx_t>> dfu_impl_t::get_roots () const
 {
     return m_roots;
 }
 
-const dfu_match_cb_t *dfu_impl_t::get_match_cb () const
+const std::shared_ptr<const dfu_match_cb_t> dfu_impl_t::get_match_cb () const
 {
     return m_match;
 }
 
-const string &dfu_impl_t::err_message () const
+const std::string &dfu_impl_t::err_message () const
 {
     return m_err_msg;
 }
 
-void dfu_impl_t::set_graph (f_resource_graph_t *g)
+void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
 }
 
-void dfu_impl_t::set_roots (map<subsystem_t, vtx_t> *roots)
+void dfu_impl_t::set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots)
 {
     m_roots = roots;
 }
 
-void dfu_impl_t::set_match_cb (dfu_match_cb_t *m)
+void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     m_match = m;
 }
@@ -990,14 +992,14 @@ void dfu_impl_t::clear_err_message ()
 }
 
 int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
-                                      map<string, int64_t> &to_parent)
+                                      std::map<std::string, int64_t> &to_parent)
 {
     int rc = -1;
     int saved_errno = errno;
-    vector<uint64_t> avail;
-    vector<const char *> types;
-    map<string, int64_t> dfv;
-    string type = (*m_graph)[u].type;
+    std::vector<uint64_t> avail;
+    std::vector<const char *> types;
+    std::map<std::string, int64_t> dfv;
+    std::string type = (*m_graph)[u].type;
     std::vector<std::string> out_prune_types;
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
@@ -1008,7 +1010,8 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
     for (auto &aggr : dfv)
         accum_if (s, aggr.first, aggr.second, to_parent);
 
-    if (m_match->get_my_pruning_types (s, (*m_graph)[u].type, out_prune_types)) {
+    if (m_match->get_my_pruning_types (s,
+                                       (*m_graph)[u].type, out_prune_types)) {
         for (auto &type : out_prune_types) {
             types.push_back (type.c_str ());
             if (dfv.find (type) != dfv.end ())
@@ -1035,8 +1038,9 @@ done:
     return rc;
 }
 
-void dfu_impl_t::prime_jobspec (vector<Resource> &resources,
-                                std::unordered_map<string, int64_t> &to_parent)
+void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
+                                std::unordered_map<std::string,
+                                                   int64_t> &to_parent)
 {
     const subsystem_t &subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
@@ -1057,7 +1061,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     int rc = -1;
     scoring_api_t dfu;
     bool x_in = excl;
-    const string &dom = m_match->dom_subsystem ();
+    const std::string &dom = m_match->dom_subsystem ();
 
     tick ();
     rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
@@ -1071,10 +1075,10 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     return rc;
 }
 
-int dfu_impl_t::update (vtx_t root, match_writers_t *writers, jobmeta_t &meta,
-                        unsigned int needs, bool exclusive)
+int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> writers,
+                        jobmeta_t &meta, unsigned int needs, bool exclusive)
 {
-    map<string, int64_t> dfu;
+    std::map<std::string, int64_t> dfu;
     m_color.reset ();
     return (upd_dfv (root, writers, needs, exclusive, meta, dfu) > 0)? 0 : -1;
 }

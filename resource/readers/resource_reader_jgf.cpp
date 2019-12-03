@@ -35,7 +35,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux;
 using namespace Flux::resource_model;
 
@@ -153,7 +152,7 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
         g[v].idata.member_of[kv.first] = "*";
         m.by_path[kv.second] = v;
         if (std::count(kv.second.begin (), kv.second.end (), '/') == 1)
-            m.roots[kv.first] = v;
+            (*(m.roots))[kv.first] = v;
     }
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
@@ -278,6 +277,11 @@ done:
  *                   Public JGF Resource Reader Interface                       *
  *                                                                              *
  ********************************************************************************/
+
+resource_reader_jgf_t::~resource_reader_jgf_t ()
+{
+
+}
 
 int resource_reader_jgf_t::unpack (resource_graph_t &g,
                                    resource_graph_metadata_t &m,

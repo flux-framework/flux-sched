@@ -33,7 +33,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 using namespace Flux::Jobspec;
@@ -47,12 +46,12 @@ using namespace Flux::Jobspec;
 int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                detail::jobmeta_t &meta, bool x, match_op_t op,
                                vtx_t root, unsigned int *needs,
-                               std::unordered_map<string, int64_t> &dfv)
+                               std::unordered_map<std::string, int64_t> &dfv)
 {
     int t = 0;
     int rc = -1;
     size_t len = 0;
-    vector<uint64_t> agg;
+    std::vector<uint64_t> agg;
     uint64_t duration = 0;
     int saved_errno = errno;
     planner_multi_t *p = NULL;
@@ -120,8 +119,10 @@ dfu_traverser_t::dfu_traverser_t ()
 
 }
 
-dfu_traverser_t::dfu_traverser_t (f_resource_graph_t *g, dfu_match_cb_t *m,
-                                  map<subsystem_t, vtx_t> *roots)
+dfu_traverser_t::dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
+                                  std::shared_ptr<dfu_match_cb_t> m,
+                                  std::shared_ptr<std::map<subsystem_t,
+                                                           vtx_t>> roots)
     : detail::dfu_impl_t (g, m, roots)
 {
 
@@ -144,37 +145,41 @@ dfu_traverser_t::~dfu_traverser_t ()
 
 }
 
-const f_resource_graph_t *dfu_traverser_t::get_graph () const
+const std::shared_ptr<const f_resource_graph_t> dfu_traverser_t::
+                                                    get_graph () const
 {
    return detail::dfu_impl_t::get_graph ();
 }
 
-const map<subsystem_t, vtx_t> *dfu_traverser_t::get_roots () const
+const std::shared_ptr<const std::map<subsystem_t,
+                                     vtx_t>> dfu_traverser_t::get_roots () const
 {
     return detail::dfu_impl_t::get_roots ();
 }
 
-const dfu_match_cb_t *dfu_traverser_t::get_match_cb () const
+const std::shared_ptr<const dfu_match_cb_t> dfu_traverser_t::
+                                                get_match_cb () const
 {
     return detail::dfu_impl_t::get_match_cb ();
 }
 
-const string &dfu_traverser_t::err_message () const
+const std::string &dfu_traverser_t::err_message () const
 {
     return detail::dfu_impl_t::err_message ();
 }
 
-void dfu_traverser_t::set_graph (f_resource_graph_t *g)
+void dfu_traverser_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     detail::dfu_impl_t::set_graph (g);
 }
 
-void dfu_traverser_t::set_roots (map<subsystem_t, vtx_t> *roots)
+void dfu_traverser_t::set_roots (std::shared_ptr<std::map<subsystem_t,
+                                                          vtx_t>> roots)
 {
     detail::dfu_impl_t::set_roots (roots);
 }
 
-void dfu_traverser_t::set_match_cb (dfu_match_cb_t *m)
+void dfu_traverser_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     detail::dfu_impl_t::set_match_cb (m);
 }
@@ -194,7 +199,7 @@ int dfu_traverser_t::initialize ()
     }
 
     for (auto &subsystem : get_match_cb ()->subsystems ()) {
-        map<string, int64_t> from_dfv;
+        std::map<std::string, int64_t> from_dfv;
         if (get_roots ()->find (subsystem) == get_roots ()->end ()) {
             errno = ENOTSUP;
             rc = -1;
@@ -207,9 +212,10 @@ int dfu_traverser_t::initialize ()
     return rc;
 }
 
-int dfu_traverser_t::initialize (f_resource_graph_t *g,
-                                 map<subsystem_t, vtx_t> *roots,
-                                 dfu_match_cb_t *m)
+int dfu_traverser_t::initialize (std::shared_ptr<f_resource_graph_t> g,
+                                 std::shared_ptr<std::map<subsystem_t,
+                                                          vtx_t>> roots,
+                                 std::shared_ptr<dfu_match_cb_t> m)
 {
     set_graph (g);
     set_roots (roots);
@@ -217,7 +223,8 @@ int dfu_traverser_t::initialize (f_resource_graph_t *g,
     return initialize ();
 }
 
-int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
+int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
+                          std::shared_ptr<match_writers_t> writers,
                           match_op_t op, int64_t jobid, int64_t *at)
 {
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
@@ -233,7 +240,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec, match_writers_t *writers,
     unsigned int needs = 0;
     vtx_t root = get_roots ()->at(dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
-    std::unordered_map<string, int64_t> dfv;
+    std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     meta.build (jobspec, true, jobid, *at);
     if ( (rc = schedule (jobspec, meta, x, op, root, &needs, dfv)) ==  0) {

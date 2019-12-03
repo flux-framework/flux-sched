@@ -31,7 +31,6 @@
 namespace Flux {
 namespace resource_model {
 
-using namespace std;
 
 /****************************************************************************
  *                                                                          *
@@ -39,7 +38,8 @@ using namespace std;
  *                                                                          *
  ****************************************************************************/
 
-void match_writers_t::compress (stringstream &o, const set<int64_t> &ids)
+void match_writers_t::compress (std::stringstream &o,
+                                const std::set<int64_t> &ids)
 {
     int64_t base = INT64_MIN;
     int64_t runlen = 0;
@@ -49,7 +49,7 @@ void match_writers_t::compress (stringstream &o, const set<int64_t> &ids)
             runlen++;
         } else {
             if (runlen != 0)
-                o << "-" + to_string (base + runlen) + ",";
+                o << "-" + std::to_string (base + runlen) + ",";
             else if (base != INT64_MIN)
                 o << ",";
             o << id;
@@ -68,7 +68,7 @@ void match_writers_t::compress (stringstream &o, const set<int64_t> &ids)
  *                                                                          *
  ****************************************************************************/
 
-void sim_match_writers_t::emit (stringstream &out)
+void sim_match_writers_t::emit (std::stringstream &out)
 {
     out << m_out.str ();
 }
@@ -79,12 +79,13 @@ void sim_match_writers_t::reset ()
     m_out.clear ();
 }
 
-void sim_match_writers_t::emit_vtx (const string &prefix,
+void sim_match_writers_t::emit_vtx (const std::string &prefix,
                                     const f_resource_graph_t &g, const vtx_t &u,
                                     unsigned int needs, bool exclusive)
 {
-    string mode = (exclusive)? "x" : "s";
-    m_out << prefix << g[u].name << "[" << needs << ":" << mode  << "]" << endl;
+    std::string mode = (exclusive)? "x" : "s";
+    m_out << prefix << g[u].name << "[" << needs << ":" << mode  << "]"
+          << std::endl;
 }
 
 
@@ -94,7 +95,7 @@ void sim_match_writers_t::emit_vtx (const string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-void jgf_match_writers_t::emit (stringstream &out, bool newline)
+void jgf_match_writers_t::emit (std::stringstream &out, bool newline)
 {
     size_t vout_size = m_vout.str ().size ();
     size_t eout_size = m_eout.str ().size ();
@@ -106,11 +107,11 @@ void jgf_match_writers_t::emit (stringstream &out, bool newline)
         out << m_eout.str ().substr (0, eout_size - 1);
         out << "]}}";
         if (newline)
-           out << endl;
+           out << std::endl;
     }
 }
 
-void jgf_match_writers_t::emit (stringstream &out)
+void jgf_match_writers_t::emit (std::stringstream &out)
 {
     emit (out, true);
 }
@@ -123,11 +124,11 @@ void jgf_match_writers_t::reset ()
     m_eout.clear ();
 }
 
-void jgf_match_writers_t::emit_vtx (const string &prefix,
+void jgf_match_writers_t::emit_vtx (const std::string &prefix,
                                     const f_resource_graph_t &g, const vtx_t &u,
                                     unsigned int needs, bool exclusive)
 {
-    string x = (exclusive)? "true" : "false";
+    std::string x = (exclusive)? "true" : "false";
     m_vout << "{";
     m_vout <<     "\"id\":\"" << g[u].uniq_id << "\",";
     m_vout <<     "\"metadata\":{";
@@ -141,7 +142,7 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
     m_vout <<         "\"unit\":\"" << g[u].unit << "\",";
     m_vout <<         "\"size\":" << needs;
     if (!g[u].properties.empty ()) {
-        stringstream props;
+        std::stringstream props;
         m_vout <<                         ", ";
         m_vout <<     "\"properties\":{";
         for (auto &kv : g[u].properties)
@@ -150,7 +151,7 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
         m_vout <<      "}";
     }
     if (!g[u].paths.empty ()) {
-        stringstream paths;
+        std::stringstream paths;
         m_vout <<                         ", ";
         m_vout <<     "\"paths\":{";
         for (auto &kv : g[u].paths)
@@ -163,7 +164,7 @@ void jgf_match_writers_t::emit_vtx (const string &prefix,
     m_vout << "},";
 }
 
-void jgf_match_writers_t::emit_edg (const string &prefix,
+void jgf_match_writers_t::emit_edg (const std::string &prefix,
                                     const f_resource_graph_t &g, const edg_t &e)
 {
     m_eout << "{";
@@ -172,7 +173,7 @@ void jgf_match_writers_t::emit_edg (const string &prefix,
     m_eout <<     "\"metadata\":{";
 
     if (!g[e].name.empty ()) {
-        stringstream names;
+        std::stringstream names;
         m_eout <<     "\"name\":{";
         for (auto &kv : g[e].name)
             names << "\"" << kv.first << "\":\"" << kv.second << "\",";
@@ -193,17 +194,14 @@ void jgf_match_writers_t::emit_edg (const string &prefix,
 
 rlite_match_writers_t::rlite_match_writers_t()
 {
-    m_reducer["core"] = set<int64_t> ();
-    m_reducer["gpu"] = set<int64_t> ();
-    // Note: GCC 4.8 doesn't support move constructor for stringstream
-    // we use a pointer type although it is not ideal.
-    m_gatherer["node"] = new stringstream ();
+    m_reducer["core"] = std::set<int64_t> ();
+    m_reducer["gpu"] = std::set<int64_t> ();
+    m_gatherer["node"] = std::make_shared<std::stringstream> ();
 }
 
 rlite_match_writers_t::~rlite_match_writers_t ()
 {
-    for (auto kv : m_gatherer)
-        delete kv.second;
+
 }
 
 void rlite_match_writers_t::reset ()
@@ -212,17 +210,17 @@ void rlite_match_writers_t::reset ()
     m_out.clear ();
 }
 
-void rlite_match_writers_t::emit (stringstream &out, bool newline)
+void rlite_match_writers_t::emit (std::stringstream &out, bool newline)
 {
     size_t size = m_out.str ().size ();
     if (size > 1) {
         out << "{\"R_lite\":[" << m_out.str ().substr (0, size - 1) << "]}";
         if (newline)
-            out << endl;
+            out << std::endl;
     }
 }
 
-void rlite_match_writers_t::emit (stringstream &out)
+void rlite_match_writers_t::emit (std::stringstream &out)
 {
     emit (out, true);
 }
@@ -239,7 +237,7 @@ bool rlite_match_writers_t::m_reducer_set ()
     return set;
 }
 
-void rlite_match_writers_t::emit_vtx (const string &prefix,
+void rlite_match_writers_t::emit_vtx (const std::string &prefix,
                                       const f_resource_graph_t &g,
                                       const vtx_t &u,
                                       unsigned int needs,
@@ -249,7 +247,7 @@ void rlite_match_writers_t::emit_vtx (const string &prefix,
         m_reducer[g[u].type].insert (g[u].id);
     } else if (m_gatherer.find (g[u].type) != m_gatherer.end ()) {
         if (m_reducer_set ()) {
-            stringstream &gout = *(m_gatherer[g[u].type]);
+            std::stringstream &gout = *(m_gatherer[g[u].type]);
             gout << "{";
             gout << "\"rank\":\"" << g[u].rank << "\",";
             gout << "\"node\":\"" << g[u].name << "\",";
@@ -283,24 +281,24 @@ void rv1_match_writers_t::reset ()
     jgf.reset ();
 }
 
-void rv1_match_writers_t::emit (stringstream &out)
+void rv1_match_writers_t::emit (std::stringstream &out)
 {
-    string ver = "\"version\":1";
-    string exec_key = "\"execution\":";
-    string sched_key = "\"scheduling\":";
+    std::string ver = "\"version\":1";
+    std::string exec_key = "\"execution\":";
+    std::string sched_key = "\"scheduling\":";
     size_t base = out.str ().size ();
     out << "{" << ver;
     out << "," << exec_key;
     rlite.emit (out, false);
     out << "," << sched_key;
     jgf.emit (out, false);
-    out << "}" << endl;
+    out << "}" << std::endl;
     if (out.str ().size () <= (base + ver.size () + exec_key.size ()
                                     + sched_key.size () + 5))
         out.str (out.str ().substr (0, base));
 }
 
-void rv1_match_writers_t::emit_vtx (const string &prefix,
+void rv1_match_writers_t::emit_vtx (const std::string &prefix,
                                     const f_resource_graph_t &g,
                                     const vtx_t &u,
                                     unsigned int needs,
@@ -310,7 +308,7 @@ void rv1_match_writers_t::emit_vtx (const string &prefix,
     jgf.emit_vtx (prefix, g, u, needs, exclusive);
 }
 
-void rv1_match_writers_t::emit_edg (const string &prefix,
+void rv1_match_writers_t::emit_edg (const std::string &prefix,
                                     const f_resource_graph_t &g,
                                     const edg_t &e)
 {
@@ -330,20 +328,20 @@ void rv1_nosched_match_writers_t::reset ()
     rlite.reset ();
 }
 
-void rv1_nosched_match_writers_t::emit (stringstream &out)
+void rv1_nosched_match_writers_t::emit (std::stringstream &out)
 {
-    string ver = "\"version\":1";
-    string exec_key = "\"execution\":";
+    std::string ver = "\"version\":1";
+    std::string exec_key = "\"execution\":";
     size_t base = out.str ().size ();
     out << "{" << ver;
     out << "," << exec_key;
     rlite.emit (out, false);
-    out << "}" << endl;
+    out << "}" << std::endl;
     if (out.str ().size () <= (base + ver.size () + exec_key.size () + 4))
         out.str (out.str ().substr (0, base));
 }
 
-void rv1_nosched_match_writers_t::emit_vtx (const string &prefix,
+void rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
                                             const f_resource_graph_t &g,
                                             const vtx_t &u,
                                             unsigned int needs,
@@ -359,7 +357,7 @@ void rv1_nosched_match_writers_t::emit_vtx (const string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-void pretty_sim_match_writers_t::emit (stringstream &out)
+void pretty_sim_match_writers_t::emit (std::stringstream &out)
 {
     for (auto &s: m_out)
         out << s;
@@ -370,14 +368,15 @@ void pretty_sim_match_writers_t::reset ()
     m_out.clear ();
 }
 
-void pretty_sim_match_writers_t::emit_vtx (const string &prefix,
+void pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
                                            const f_resource_graph_t &g,
                                            const vtx_t &u,
                                            unsigned int needs, bool exclusive)
 {
-    stringstream out;
-    string mode = (exclusive)? "exclusive" : "shared";
-    out << prefix << g[u].name << "[" << needs << ":" << mode  << "]" << endl;
+    std::stringstream out;
+    std::string mode = (exclusive)? "exclusive" : "shared";
+    out << prefix << g[u].name << "[" << needs << ":" << mode  << "]"
+        << std::endl;
     m_out.push_front (out.str ());
 }
 
@@ -388,39 +387,42 @@ void pretty_sim_match_writers_t::emit_vtx (const string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-match_writers_t *match_writers_factory_t::create (match_format_t f)
+std::shared_ptr<match_writers_t> match_writers_factory_t::
+                                     create (match_format_t f)
 {
-    match_writers_t *w = NULL;
+    std::shared_ptr<match_writers_t> w = nullptr;
 
-    switch (f) {
-    case match_format_t::SIMPLE:
-        w = new (nothrow)sim_match_writers_t ();
-        break;
-    case match_format_t::JGF:
-        w = new (nothrow)jgf_match_writers_t ();
-        break;
-    case match_format_t::RLITE:
-        w = new (nothrow)rlite_match_writers_t ();
-        break;
-    case match_format_t::RV1_NOSCHED:
-        w = new (nothrow)rv1_nosched_match_writers_t ();
-        break;
-    case match_format_t::PRETTY_SIMPLE:
-        w = new (nothrow)pretty_sim_match_writers_t ();
-        break;
-    case match_format_t::RV1:
-    default:
-        w = new (nothrow)rv1_match_writers_t ();
-        break;
-    }
-
-    if (!w)
+    try {
+        switch (f) {
+        case match_format_t::SIMPLE:
+            w = std::make_shared<sim_match_writers_t> ();
+            break;
+        case match_format_t::JGF:
+            w = std::make_shared<jgf_match_writers_t> ();
+            break;
+        case match_format_t::RLITE:
+            w = std::make_shared<rlite_match_writers_t> ();
+            break;
+        case match_format_t::RV1_NOSCHED:
+            w = std::make_shared<rv1_nosched_match_writers_t> ();
+            break;
+        case match_format_t::PRETTY_SIMPLE:
+            w = std::make_shared<pretty_sim_match_writers_t> ();
+            break;
+        case match_format_t::RV1:
+        default:
+            w = std::make_shared<rv1_match_writers_t> ();
+            break;
+        }
+    } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        w = nullptr;
+    }
 
     return w;
 }
 
-match_format_t match_writers_factory_t::get_writers_type (const string &n)
+match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
 {
     match_format_t format = match_format_t::SIMPLE;
     if (n == "jgf")
@@ -436,7 +438,7 @@ match_format_t match_writers_factory_t::get_writers_type (const string &n)
     return format;
 }
 
-bool known_match_format (const string &format)
+bool known_match_format (const std::string &format)
 {
    return (format == "simple"
            || format == "jgf"

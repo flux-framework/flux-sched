@@ -31,7 +31,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 
 
@@ -53,6 +52,11 @@ bool resource_reader_base_t::in_whitelist (const std::string &resource)
  *                         Public Base Reader API                               *
  *                                                                              *
  ********************************************************************************/
+
+resource_reader_base_t::~resource_reader_base_t ()
+{
+
+}
 
 int resource_reader_base_t::set_whitelist (const std::string &csl)
 {

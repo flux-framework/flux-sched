@@ -38,7 +38,6 @@ extern "C" {
 #endif
 }
 
-using namespace std;
 using namespace Flux::resource_model;
 
 /*! Note that this class must be copy-constructible
@@ -56,7 +55,7 @@ public:
 
     void tree_edge (gge_t e, const gg_t &recipe);
     void finish_vertex (ggv_t u, const gg_t &recipe);
-    const string &err_message () const;
+    const std::string &err_message () const;
 
     void set_rank (int rank);
     int get_rank ();
@@ -72,13 +71,13 @@ private:
     int gen_id (gge_t e, const gg_t &recipe,
                 int i, int sz, int j);
 
-    map<ggv_t, vector<vtx_t>> m_gen_src_vtx;
-    deque<int> m_hier_scales;
+    std::map<ggv_t, std::vector<vtx_t>> m_gen_src_vtx;
+    std::deque<int> m_hier_scales;
     resource_graph_t *m_g_p = NULL;
     resource_graph_metadata_t *m_gm_p = NULL;
     resource_gen_spec_t *m_gspec_p = NULL;
     int m_rank = -1;
-    string m_err_msg = "";
+    std::string m_err_msg = "";
 };
 
 
@@ -88,7 +87,8 @@ private:
  *                                                                              *
  ********************************************************************************/
 
-int dfs_emitter_t::path_prefix (const string &path, int uplevel, string &prefix)
+int dfs_emitter_t::path_prefix (const std::string &path,
+                                int uplevel, std::string &prefix)
 {
     size_t pos = 0;
     unsigned int occurrence = 0;
@@ -97,12 +97,12 @@ int dfs_emitter_t::path_prefix (const string &path, int uplevel, string &prefix)
       return -1;
     while (occurrence != (num_slashes - uplevel + 1)) {
         pos = path.find ("/", pos);
-        if (pos == string::npos)
+        if (pos == std::string::npos)
             break;
         pos += 1;
         occurrence++;
     }
-    string new_prefix = path.substr (0, pos);
+    std::string new_prefix = path.substr (0, pos);
     if (new_prefix.back () != '/')
         new_prefix.push_back ('/');
     prefix = std::move (new_prefix);
@@ -133,7 +133,7 @@ int dfs_emitter_t::gen_id (gge_t e, const gg_t &recipe, int i, int sz, int j)
     if (scope > (int) m_hier_scales.size ())
         scope = m_hier_scales.size ();
     j_dim_wrap = 1;
-    deque<int>::const_iterator iter;
+    std::deque<int>::const_iterator iter;
     for (h = 0; h < scope; ++h)
         j_dim_wrap *= m_hier_scales[h];
 
@@ -188,24 +188,24 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     resource_graph_t &g = *m_g_p;
     resource_graph_metadata_t &m = *m_gm_p;
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ())
-        if (m.roots.find (recipe[u].subsystem) != m.roots.end ())
-            return m.roots[recipe[u].subsystem];
+        if (m.roots->find (recipe[u].subsystem) != m.roots->end ())
+            return (*(m.roots))[recipe[u].subsystem];
 
     vtx_t v = add_vertex (g);;
-    string pref = "";
-    string ssys = recipe[u].subsystem;
+    std::string pref = "";
+    std::string ssys = recipe[u].subsystem;
     int id = 0;
 
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
         // ROOT vertex of graph
-        m.roots[recipe[u].subsystem] = v;
+        (*(m.roots))[recipe[u].subsystem] = v;
         id = 0;
     } else {
         id = gen_id (e, recipe, i, sz, j);
         pref = g[src_v].paths[ssys];
     }
 
-    string istr = (id != -1)? to_string (id) : "";
+    std::string istr = (id != -1)? std::to_string (id) : "";
     g[v].type = recipe[u].type;
     g[v].basename = recipe[u].basename;
     g[v].size = recipe[u].size;
@@ -286,10 +286,10 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
     vtx_t src_vtx, tgt_vtx;
     ggv_t src_ggv = source (e, recipe);
     ggv_t tgt_ggv = target (e, recipe);
-    vector<vtx_t>::iterator src_it, tgt_it;
+    std::vector<vtx_t>::iterator src_it, tgt_it;
     resource_graph_t &g = *m_g_p;
     resource_graph_metadata_t &m = *m_gm_p;
-    string in;
+    std::string in;
     int i = 0, j = 0;;
 
     if (recipe[src_ggv].root) {
@@ -301,7 +301,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
         }
     }
 
-    m_gen_src_vtx[tgt_ggv] = vector<vtx_t>();
+    m_gen_src_vtx[tgt_ggv] = std::vector<vtx_t>();
 
     switch (m_gspec_p->to_gen_method_t (recipe[e].gen_method)) {
     case MULTIPLY:
@@ -347,7 +347,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
             src_vtx = *src_it;
             for (tgt_it = m.by_type[recipe[tgt_ggv].type].begin ();
                  tgt_it != m.by_type[recipe[tgt_ggv].type].end (); tgt_it++) {
-                string comp_pth1, comp_pth2;
+                std::string comp_pth1, comp_pth2;
                 tgt_vtx = (*tgt_it);
                 path_prefix (g[tgt_vtx].paths[in],
                              recipe[e].as_tgt_uplvl, comp_pth1);
@@ -391,7 +391,7 @@ void dfs_emitter_t::finish_vertex (ggv_t u, const gg_t &recipe)
  *
  *  \return       error message
  */
-const string &dfs_emitter_t::err_message () const
+const std::string &dfs_emitter_t::err_message () const
 {
     return m_err_msg;
 }
@@ -421,13 +421,18 @@ int dfs_emitter_t::get_rank ()
  *                                                                              *
  ********************************************************************************/
 
+resource_reader_grug_t::~resource_reader_grug_t ()
+{
+
+}
+
 int resource_reader_grug_t::unpack (resource_graph_t &g,
                                     resource_graph_metadata_t &m,
                                     const std::string &str, int rank)
 
 {
     int rc = 0;
-    istringstream in;
+    std::istringstream in;
     in.str (str);
 
     if (m_gspec.read_graphml (in) != 0) {

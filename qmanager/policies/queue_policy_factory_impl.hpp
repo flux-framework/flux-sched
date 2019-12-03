@@ -58,50 +58,46 @@ bool known_queue_policy (const std::string &policy)
     return rc;
 }
 
-queue_policy_base_t *create_queue_policy (const std::string &policy,
-                                          const std::string &reapi)
+std::shared_ptr<queue_policy_base_t> create_queue_policy (
+                                         const std::string &policy,
+                                         const std::string &reapi)
 {
-    queue_policy_base_t *p = NULL;
-    if (policy == "fcfs") {
-        if (reapi == "module") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_fcfs_t<reapi_module_t> ();
+    std::shared_ptr<queue_policy_base_t> p = nullptr;
+
+    try {
+        if (policy == "fcfs") {
+            if (reapi == "module")
+                p = std::make_shared<queue_policy_fcfs_t<reapi_module_t>> ();
+            else if (reapi == "cli")
+                p = std::make_shared<queue_policy_fcfs_t<reapi_cli_t>> ();
         }
-        else if (reapi == "cli") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_fcfs_t<reapi_cli_t> ();
+        else if (policy == "easy") {
+            if (reapi == "module")
+                p = std::make_shared<queue_policy_easy_t<reapi_module_t>> ();
+            else if (reapi == "cli")
+                p = std::make_shared<queue_policy_easy_t<reapi_cli_t>> ();
         }
+        else if (policy == "hybrid") {
+            if (reapi == "module")
+                p = std::make_shared<queue_policy_hybrid_t<reapi_module_t>> ();
+            else if (reapi == "cli")
+                p = std::make_shared<queue_policy_hybrid_t<reapi_cli_t>> ();
+        }
+        else if (policy == "conservative") {
+            if (reapi == "module") {
+                p = std::make_shared<queue_policy_conservative_t<
+                                         reapi_module_t>> ();
+            }
+            else if (reapi == "cli") {
+                p = std::make_shared<queue_policy_conservative_t<
+                                         reapi_cli_t>> ();
+            }
+        }
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        p = nullptr;
     }
-    else if (policy == "easy") {
-        if (reapi == "module") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_easy_t<reapi_module_t> ();
-        }
-        else if (reapi == "cli") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_easy_t<reapi_cli_t> ();
-        }
-    }
-    else if (policy == "hybrid") {
-        if (reapi == "module") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_hybrid_t<reapi_module_t> ();
-        }
-        else if (reapi == "cli") {
-            p = (queue_policy_base_t *)
-                    new (std::nothrow)queue_policy_hybrid_t<reapi_cli_t> ();
-        }
-    }
-    else if (policy == "conservative") {
-        if (reapi == "module") {
-            p = (queue_policy_base_t *) new (std::nothrow)
-                    queue_policy_conservative_t<reapi_module_t> ();
-        }
-        else if (reapi == "cli") {
-            p = (queue_policy_base_t *) new (std::nothrow)
-                    queue_policy_conservative_t<reapi_cli_t> ();
-        }
-    }
+
     return p;
 }
 
