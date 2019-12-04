@@ -422,9 +422,9 @@ int dfu_impl_t::rem_exv (int64_t jobid)
     // that uses a different dominant subsystem. If this code is used
     // in Flux's resource module, this condition can arise when this module
     // is reloaded with a different match policy and the job-manager wants
-    // to reconstruct a previous allocated job.
+    // to reconstruct a previously allocated job.
     // In this case, you can't find allocated resources from an accelerated
-    // depth first visit (dfv). There shouldn't be no idata for the allocation.
+    // depth first visit (dfv). There won't be no idata for that allocation.
     for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
         if (g[*vi].schedule.allocations.find (jobid)
             != g[*vi].schedule.allocations.end ()) {
