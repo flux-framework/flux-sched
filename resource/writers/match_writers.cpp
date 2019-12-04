@@ -318,8 +318,8 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
-                                    const f_resource_graph_t &g,
-                                    const edg_t &e)
+                                   const f_resource_graph_t &g,
+                                   const edg_t &e)
 {
     int rc = rlite.emit_edg (prefix, g, e);
     rc += jgf.emit_edg (prefix, g, e);
@@ -353,10 +353,10 @@ int rv1_nosched_match_writers_t::emit (std::stringstream &out)
 }
 
 int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
-                                            const f_resource_graph_t &g,
-                                            const vtx_t &u,
-                                            unsigned int needs,
-                                            bool exclusive)
+                                           const f_resource_graph_t &g,
+                                           const vtx_t &u,
+                                           unsigned int needs,
+                                           bool exclusive)
 {
     return rlite.emit_vtx (prefix, g, u, needs, exclusive);
 }
