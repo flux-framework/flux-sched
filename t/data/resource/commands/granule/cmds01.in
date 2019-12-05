@@ -1,0 +1,8 @@
+# 5x cluster[1]->rack[1]->node[1]->socket[1]->slot[4]->core[1]
+#                                                    ->memory[1]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/granule/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/granule/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/granule/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/granule/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/granule/test001.yaml
+quit
