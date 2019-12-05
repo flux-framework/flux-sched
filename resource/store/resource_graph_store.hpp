@@ -38,9 +38,8 @@ class resource_reader_base_t;
  *  Adjacency_list graph, roots of this graph and various indexing.
  */
 struct resource_graph_metadata_t {
-    resource_graph_metadata_t ();
-
-    std::shared_ptr<std::map<subsystem_t, vtx_t>> roots;
+    std::map<subsystem_t, vtx_t> roots;
+    std::map<subsystem_t, relation_infra_t> v_rt_edges;
     std::map<std::string, std::vector <vtx_t>> by_type;
     std::map<std::string, std::vector <vtx_t>> by_name;
     std::map<std::string, vtx_t> by_path;

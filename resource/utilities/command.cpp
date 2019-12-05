@@ -47,6 +47,9 @@ command_t commands[] = {
     { "match",  "m", cmd_match, "Allocate or reserve matching resources (subcmd:"
 "allocate | allocate_with_satisfiability | allocate_orelse_reserve): "
 "resource-query> match allocate jobspec"},
+    { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
+"allocate | reserv): "
+"resource-query> update allocate jgf_file jobid starttime duration" },
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
@@ -81,7 +84,7 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
 
 static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
                                  std::ostream &out, uint64_t jobid,
-                                 std::string &jobspec_fn, bool matched,
+                                 const std::string &jobspec_fn, bool matched,
                                  int64_t at, double elapse, bool sat)
 {
     if (matched) {
@@ -154,9 +157,11 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
         int64_t at = 0;
         int64_t jobid = ctx->jobid_counter;
         std::string &jobspec_fn = args[2];
-        std::ifstream jobspec_in;
-        jobspec_in.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-        jobspec_in.open (jobspec_fn);
+        std::ifstream jobspec_in (jobspec_fn);
+        if (!jobspec_in) {
+            std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
+            return 0;
+        }
         Flux::Jobspec::Jobspec job {jobspec_in};
         std::stringstream o;
         double elapse = 0.0f;
@@ -193,12 +198,104 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
                              jobspec_fn, rc == 0, at, elapse, sat);
         jobspec_in.close ();
 
-    } catch (std::ifstream::failure &e) {
-        std::cerr << "ERROR: Exception occurs for input file I/O"
-                  << e.what () << std::endl;
     } catch (parse_error &e) {
         std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
                   << e.what () << std::endl;
+    }
+    return 0;
+}
+
+static int update_run (std::shared_ptr<resource_context_t> &ctx,
+                       const std::string &fn, const std::string &str,
+                       int64_t id, int64_t at, uint64_t d)
+{
+    int rc = -1;
+    double elapse = 0.0f;
+    std::stringstream o;
+    struct timeval st, et;
+    std::shared_ptr<resource_reader_base_t> rd;
+
+    if ( (rd = create_resource_reader ("jgf")) == nullptr) {
+        std::cerr << "ERROR: can't create JGF reader " << std::endl;
+        return -1;
+    }
+
+    gettimeofday (&st, NULL);
+    if ( (rc = ctx->traverser->run (str, ctx->writers, rd, id, at, d)) != 0) {
+        std::cerr << "ERROR: traverser run () returned error " << std::endl;
+        if (ctx->traverser->err_message () != "") {
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            ctx->traverser->clear_err_message ();
+        }
+    }
+    ctx->writers->emit (o);
+    std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
+                                                   : std::cout;
+    out << o.str ();
+    gettimeofday (&et, NULL);
+
+    elapse = get_elapse_time (st, et);
+    update_match_perf (ctx, elapse);
+    ctx->jobid_counter = id;
+    print_schedule_info (ctx, out, id, fn, rc == 0, at, elapse, true);
+
+    return 0;
+}
+
+static int update (std::shared_ptr<resource_context_t> &ctx,
+                   std::vector<std::string> &args)
+{
+    uint64_t d = 0;
+    int64_t at = 0;
+    int64_t jobid = 0;
+    std::string subcmd = args[1];
+    std::stringstream buffer{};
+
+    if (!(subcmd == "allocate" || subcmd == "reserve")) {
+        std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
+        return -1;
+    }
+    std::ifstream jgf_file (args[2]);
+    if (!jgf_file) {
+        std::cerr << "ERROR: can't open " << args[2] << std::endl;
+        return -1;
+    }
+
+    jobid = static_cast<int64_t> (std::strtoll (args[3].c_str (), NULL, 10));
+    if (ctx->allocations.find (jobid) != ctx->allocations.end ()
+        || ctx->reservations.find (jobid) != ctx->reservations.end ()) {
+        std::cerr << "ERROR: existing Jobid " << std::endl;
+        return -1;
+    }
+    at = static_cast<int64_t> (std::strtoll (args[4].c_str (), NULL, 10));
+    d = static_cast<int64_t> (std::strtoll (args[5].c_str (), NULL, 10));
+    if (at < 0 || d == 0) {
+        std::cerr << "ERROR: invalid time ("
+                  << at << ", " << d << ")" << std::endl;
+        return -1;
+    }
+
+    buffer << jgf_file.rdbuf ();
+    ctx->writers->reset ();
+    jgf_file.close ();
+
+    return update_run (ctx, args[2], buffer.str (), jobid, at, d);
+}
+
+int cmd_update (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args)
+{
+    try {
+        if (args.size () != 6) {
+            std::cerr << "ERROR: malformed command" << std::endl;
+            return 0;
+        }
+        update (ctx, args);
+
+    } catch (std::ifstream::failure &e) {
+        std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
+    } catch (std::out_of_range &e) {
+        std::cerr << "ERROR: " << e.what () << std::endl;
     }
     return 0;
 }
@@ -229,7 +326,6 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
     if (rc != 0) {
         std::cerr << "ERROR: error encountered while removing job "
                   << jobid << std::endl;
-        std::cerr << "ERROR: " << strerror (errno) << std::endl;
     }
 
 done:
@@ -262,9 +358,9 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
     }
 
     std::map<std::string, vtx_t>::const_iterator it =
-        ctx->db.metadata.by_path.find (resource_path);
+        ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         out << "Couldn't find path " << resource_path
             << " in resource graph." << std::endl;
     }
@@ -275,11 +371,11 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
          * Assuming we want to update the value though, we do an erase
          * before we insert. */
 
-        if (ctx->db.resource_graph[v].properties.find (property_key)
-             != ctx->db.resource_graph[v].properties.end ()) {
-            ctx->db.resource_graph[v].properties.erase (property_key);
+        if (ctx->db->resource_graph[v].properties.find (property_key)
+             != ctx->db->resource_graph[v].properties.end ()) {
+            ctx->db->resource_graph[v].properties.erase (property_key);
         }
-        ctx->db.resource_graph[v].properties.insert (
+        ctx->db->resource_graph[v].properties.insert (
             std::pair<std::string, std::string> (property_key,
                                                  property_value));
     }
@@ -299,22 +395,22 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
                                                     : std::cout;
 
     std::map<std::string, vtx_t>::const_iterator it =
-        ctx->db.metadata.by_path.find (resource_path);
+        ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << resource_path
             << " in resource graph." << std::endl;
     }
     else {
         vtx_t v = it->second;
-        if (ctx->db.resource_graph[v].properties.size () == 0) {
+        if (ctx->db->resource_graph[v].properties.size () == 0) {
             out << "No properties were found for " << resource_path
                 << ". " << std::endl;
         }
         else {
             std::map<std::string, std::string>::const_iterator p_it;
-            for (p_it = ctx->db.resource_graph[v].properties.begin ();
-                p_it != ctx->db.resource_graph[v].properties.end (); p_it++)
+            for (p_it = ctx->db->resource_graph[v].properties.begin ();
+                p_it != ctx->db->resource_graph[v].properties.end (); p_it++)
                     out << p_it->first << "=" << p_it->second << std::endl;
         }
     }

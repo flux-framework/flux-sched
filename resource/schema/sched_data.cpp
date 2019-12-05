@@ -44,13 +44,6 @@ schedule_t::schedule_t (const schedule_t &o)
                              planner_resource_total (o.plans),
                              planner_resource_type (o.plans));
     }
-    if (o.x_checker) {
-        base_time = planner_base_time (o.x_checker);
-        duration = planner_duration (o.x_checker);
-        x_checker = planner_new (base_time, duration,
-                                 planner_resource_total (o.x_checker),
-                                 planner_resource_type (o.x_checker));
-    }
 }
 
 schedule_t &schedule_t::operator= (const schedule_t &o)
@@ -68,13 +61,6 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
                              planner_resource_total (o.plans),
                              planner_resource_type (o.plans));
     }
-    if (o.x_checker) {
-        base_time = planner_base_time (o.x_checker);
-        duration = planner_duration (o.x_checker);
-        x_checker = planner_new (base_time, duration,
-                                 planner_resource_total (o.x_checker),
-                                 planner_resource_type (o.x_checker));
-    }
     return *this;
 }
 
@@ -82,8 +68,6 @@ schedule_t::~schedule_t ()
 {
     if (plans)
         planner_destroy (&plans);
-    if (x_checker)
-        planner_destroy (&x_checker);
 }
 
 } // resource_model

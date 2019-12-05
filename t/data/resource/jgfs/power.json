@@ -109,16 +109,16 @@
         "metadata": {
           "type": "pdu",
           "basename": "pdu",
-          "name": "pdu0",
-          "id": 0,
+          "name": "pdu1",
+          "id": 1,
           "uniq_id": 6,
           "rank": -1,
           "exclusive": false,
           "unit": "",
           "size": 1,
           "paths": {
-            "containment": "/power0/rack1/pdu0",
-            "power": "/powerpanel0/pdu0"
+            "containment": "/power0/rack1/pdu1",
+            "power": "/powerpanel0/pdu1"
           }
         }
       },
@@ -127,16 +127,16 @@
         "metadata": {
           "type": "pdu",
           "basename": "pdu",
-          "name": "pdu0",
-          "id": 0,
+          "name": "pdu2",
+          "id": 2,
           "uniq_id": 7,
           "rank": -1,
           "exclusive": false,
           "unit": "",
           "size": 1,
           "paths": {
-            "containment": "/power0/rack2/pdu0",
-            "power": "/powerpanel0/pdu0"
+            "containment": "/power0/rack2/pdu2",
+            "power": "/powerpanel0/pdu2"
           }
         }
       },
@@ -145,16 +145,16 @@
         "metadata": {
           "type": "pdu",
           "basename": "pdu",
-          "name": "pdu0",
-          "id": 0,
+          "name": "pdu3",
+          "id": 3,
           "uniq_id": 8,
           "rank": -1,
           "exclusive": false,
           "unit": "",
           "size": 1,
           "paths": {
-            "containment": "/power0/rack3/pdu0",
-            "power": "/powerpanel0/pdu0"
+            "containment": "/power0/rack3/pdu3",
+            "power": "/powerpanel0/pdu3"
           }
         }
       },
@@ -496,7 +496,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node18",
-            "power": "/powerpanel0/pdu0/node18"
+            "power": "/powerpanel0/pdu1/node18"
           }
         }
       },
@@ -514,7 +514,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node19",
-            "power": "/powerpanel0/pdu0/node19"
+            "power": "/powerpanel0/pdu1/node19"
           }
         }
       },
@@ -532,7 +532,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node20",
-            "power": "/powerpanel0/pdu0/node20"
+            "power": "/powerpanel0/pdu1/node20"
           }
         }
       },
@@ -550,7 +550,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node21",
-            "power": "/powerpanel0/pdu0/node21"
+            "power": "/powerpanel0/pdu1/node21"
           }
         }
       },
@@ -568,7 +568,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node22",
-            "power": "/powerpanel0/pdu0/node22"
+            "power": "/powerpanel0/pdu1/node22"
           }
         }
       },
@@ -586,7 +586,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node23",
-            "power": "/powerpanel0/pdu0/node23"
+            "power": "/powerpanel0/pdu1/node23"
           }
         }
       },
@@ -604,7 +604,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node24",
-            "power": "/powerpanel0/pdu0/node24"
+            "power": "/powerpanel0/pdu1/node24"
           }
         }
       },
@@ -622,7 +622,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node25",
-            "power": "/powerpanel0/pdu0/node25"
+            "power": "/powerpanel0/pdu1/node25"
           }
         }
       },
@@ -640,7 +640,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node26",
-            "power": "/powerpanel0/pdu0/node26"
+            "power": "/powerpanel0/pdu1/node26"
           }
         }
       },
@@ -658,7 +658,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node27",
-            "power": "/powerpanel0/pdu0/node27"
+            "power": "/powerpanel0/pdu1/node27"
           }
         }
       },
@@ -676,7 +676,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node28",
-            "power": "/powerpanel0/pdu0/node28"
+            "power": "/powerpanel0/pdu1/node28"
           }
         }
       },
@@ -694,7 +694,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node29",
-            "power": "/powerpanel0/pdu0/node29"
+            "power": "/powerpanel0/pdu1/node29"
           }
         }
       },
@@ -712,7 +712,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node30",
-            "power": "/powerpanel0/pdu0/node30"
+            "power": "/powerpanel0/pdu1/node30"
           }
         }
       },
@@ -730,7 +730,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node31",
-            "power": "/powerpanel0/pdu0/node31"
+            "power": "/powerpanel0/pdu1/node31"
           }
         }
       },
@@ -748,7 +748,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node32",
-            "power": "/powerpanel0/pdu0/node32"
+            "power": "/powerpanel0/pdu1/node32"
           }
         }
       },
@@ -766,7 +766,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node33",
-            "power": "/powerpanel0/pdu0/node33"
+            "power": "/powerpanel0/pdu1/node33"
           }
         }
       },
@@ -784,7 +784,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node34",
-            "power": "/powerpanel0/pdu0/node34"
+            "power": "/powerpanel0/pdu1/node34"
           }
         }
       },
@@ -802,7 +802,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack1/node35",
-            "power": "/powerpanel0/pdu0/node35"
+            "power": "/powerpanel0/pdu1/node35"
           }
         }
       },
@@ -820,7 +820,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node36",
-            "power": "/powerpanel0/pdu0/node36"
+            "power": "/powerpanel0/pdu2/node36"
           }
         }
       },
@@ -838,7 +838,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node37",
-            "power": "/powerpanel0/pdu0/node37"
+            "power": "/powerpanel0/pdu2/node37"
           }
         }
       },
@@ -856,7 +856,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node38",
-            "power": "/powerpanel0/pdu0/node38"
+            "power": "/powerpanel0/pdu2/node38"
           }
         }
       },
@@ -874,7 +874,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node39",
-            "power": "/powerpanel0/pdu0/node39"
+            "power": "/powerpanel0/pdu2/node39"
           }
         }
       },
@@ -892,7 +892,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node40",
-            "power": "/powerpanel0/pdu0/node40"
+            "power": "/powerpanel0/pdu2/node40"
           }
         }
       },
@@ -910,7 +910,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node41",
-            "power": "/powerpanel0/pdu0/node41"
+            "power": "/powerpanel0/pdu2/node41"
           }
         }
       },
@@ -928,7 +928,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node42",
-            "power": "/powerpanel0/pdu0/node42"
+            "power": "/powerpanel0/pdu2/node42"
           }
         }
       },
@@ -946,7 +946,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node43",
-            "power": "/powerpanel0/pdu0/node43"
+            "power": "/powerpanel0/pdu2/node43"
           }
         }
       },
@@ -964,7 +964,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node44",
-            "power": "/powerpanel0/pdu0/node44"
+            "power": "/powerpanel0/pdu2/node44"
           }
         }
       },
@@ -982,7 +982,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node45",
-            "power": "/powerpanel0/pdu0/node45"
+            "power": "/powerpanel0/pdu2/node45"
           }
         }
       },
@@ -1000,7 +1000,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node46",
-            "power": "/powerpanel0/pdu0/node46"
+            "power": "/powerpanel0/pdu2/node46"
           }
         }
       },
@@ -1018,7 +1018,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node47",
-            "power": "/powerpanel0/pdu0/node47"
+            "power": "/powerpanel0/pdu2/node47"
           }
         }
       },
@@ -1036,7 +1036,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node48",
-            "power": "/powerpanel0/pdu0/node48"
+            "power": "/powerpanel0/pdu2/node48"
           }
         }
       },
@@ -1054,7 +1054,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node49",
-            "power": "/powerpanel0/pdu0/node49"
+            "power": "/powerpanel0/pdu2/node49"
           }
         }
       },
@@ -1072,7 +1072,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node50",
-            "power": "/powerpanel0/pdu0/node50"
+            "power": "/powerpanel0/pdu2/node50"
           }
         }
       },
@@ -1090,7 +1090,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node51",
-            "power": "/powerpanel0/pdu0/node51"
+            "power": "/powerpanel0/pdu2/node51"
           }
         }
       },
@@ -1108,7 +1108,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node52",
-            "power": "/powerpanel0/pdu0/node52"
+            "power": "/powerpanel0/pdu2/node52"
           }
         }
       },
@@ -1126,7 +1126,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack2/node53",
-            "power": "/powerpanel0/pdu0/node53"
+            "power": "/powerpanel0/pdu2/node53"
           }
         }
       },
@@ -1144,7 +1144,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node54",
-            "power": "/powerpanel0/pdu0/node54"
+            "power": "/powerpanel0/pdu3/node54"
           }
         }
       },
@@ -1162,7 +1162,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node55",
-            "power": "/powerpanel0/pdu0/node55"
+            "power": "/powerpanel0/pdu3/node55"
           }
         }
       },
@@ -1180,7 +1180,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node56",
-            "power": "/powerpanel0/pdu0/node56"
+            "power": "/powerpanel0/pdu3/node56"
           }
         }
       },
@@ -1198,7 +1198,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node57",
-            "power": "/powerpanel0/pdu0/node57"
+            "power": "/powerpanel0/pdu3/node57"
           }
         }
       },
@@ -1216,7 +1216,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node58",
-            "power": "/powerpanel0/pdu0/node58"
+            "power": "/powerpanel0/pdu3/node58"
           }
         }
       },
@@ -1234,7 +1234,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node59",
-            "power": "/powerpanel0/pdu0/node59"
+            "power": "/powerpanel0/pdu3/node59"
           }
         }
       },
@@ -1252,7 +1252,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node60",
-            "power": "/powerpanel0/pdu0/node60"
+            "power": "/powerpanel0/pdu3/node60"
           }
         }
       },
@@ -1270,7 +1270,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node61",
-            "power": "/powerpanel0/pdu0/node61"
+            "power": "/powerpanel0/pdu3/node61"
           }
         }
       },
@@ -1288,7 +1288,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node62",
-            "power": "/powerpanel0/pdu0/node62"
+            "power": "/powerpanel0/pdu3/node62"
           }
         }
       },
@@ -1306,7 +1306,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node63",
-            "power": "/powerpanel0/pdu0/node63"
+            "power": "/powerpanel0/pdu3/node63"
           }
         }
       },
@@ -1324,7 +1324,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node64",
-            "power": "/powerpanel0/pdu0/node64"
+            "power": "/powerpanel0/pdu3/node64"
           }
         }
       },
@@ -1342,7 +1342,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node65",
-            "power": "/powerpanel0/pdu0/node65"
+            "power": "/powerpanel0/pdu3/node65"
           }
         }
       },
@@ -1360,7 +1360,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node66",
-            "power": "/powerpanel0/pdu0/node66"
+            "power": "/powerpanel0/pdu3/node66"
           }
         }
       },
@@ -1378,7 +1378,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node67",
-            "power": "/powerpanel0/pdu0/node67"
+            "power": "/powerpanel0/pdu3/node67"
           }
         }
       },
@@ -1396,7 +1396,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node68",
-            "power": "/powerpanel0/pdu0/node68"
+            "power": "/powerpanel0/pdu3/node68"
           }
         }
       },
@@ -1414,7 +1414,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node69",
-            "power": "/powerpanel0/pdu0/node69"
+            "power": "/powerpanel0/pdu3/node69"
           }
         }
       },
@@ -1432,7 +1432,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node70",
-            "power": "/powerpanel0/pdu0/node70"
+            "power": "/powerpanel0/pdu3/node70"
           }
         }
       },
@@ -1450,7 +1450,7 @@
           "size": 1,
           "paths": {
             "containment": "/power0/rack3/node71",
-            "power": "/powerpanel0/pdu0/node71"
+            "power": "/powerpanel0/pdu3/node71"
           }
         }
       },
@@ -60848,7 +60848,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node18/power0"
+            "power": "/powerpanel0/pdu1/node18/power0"
           }
         }
       },
@@ -60865,7 +60865,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node18/power1"
+            "power": "/powerpanel0/pdu1/node18/power1"
           }
         }
       },
@@ -60882,7 +60882,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node19/power0"
+            "power": "/powerpanel0/pdu1/node19/power0"
           }
         }
       },
@@ -60899,7 +60899,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node19/power1"
+            "power": "/powerpanel0/pdu1/node19/power1"
           }
         }
       },
@@ -60916,7 +60916,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node20/power0"
+            "power": "/powerpanel0/pdu1/node20/power0"
           }
         }
       },
@@ -60933,7 +60933,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node20/power1"
+            "power": "/powerpanel0/pdu1/node20/power1"
           }
         }
       },
@@ -60950,7 +60950,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node21/power0"
+            "power": "/powerpanel0/pdu1/node21/power0"
           }
         }
       },
@@ -60967,7 +60967,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node21/power1"
+            "power": "/powerpanel0/pdu1/node21/power1"
           }
         }
       },
@@ -60984,7 +60984,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node22/power0"
+            "power": "/powerpanel0/pdu1/node22/power0"
           }
         }
       },
@@ -61001,7 +61001,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node22/power1"
+            "power": "/powerpanel0/pdu1/node22/power1"
           }
         }
       },
@@ -61018,7 +61018,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node23/power0"
+            "power": "/powerpanel0/pdu1/node23/power0"
           }
         }
       },
@@ -61035,7 +61035,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node23/power1"
+            "power": "/powerpanel0/pdu1/node23/power1"
           }
         }
       },
@@ -61052,7 +61052,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node24/power0"
+            "power": "/powerpanel0/pdu1/node24/power0"
           }
         }
       },
@@ -61069,7 +61069,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node24/power1"
+            "power": "/powerpanel0/pdu1/node24/power1"
           }
         }
       },
@@ -61086,7 +61086,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node25/power0"
+            "power": "/powerpanel0/pdu1/node25/power0"
           }
         }
       },
@@ -61103,7 +61103,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node25/power1"
+            "power": "/powerpanel0/pdu1/node25/power1"
           }
         }
       },
@@ -61120,7 +61120,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node26/power0"
+            "power": "/powerpanel0/pdu1/node26/power0"
           }
         }
       },
@@ -61137,7 +61137,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node26/power1"
+            "power": "/powerpanel0/pdu1/node26/power1"
           }
         }
       },
@@ -61154,7 +61154,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node27/power0"
+            "power": "/powerpanel0/pdu1/node27/power0"
           }
         }
       },
@@ -61171,7 +61171,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node27/power1"
+            "power": "/powerpanel0/pdu1/node27/power1"
           }
         }
       },
@@ -61188,7 +61188,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node28/power0"
+            "power": "/powerpanel0/pdu1/node28/power0"
           }
         }
       },
@@ -61205,7 +61205,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node28/power1"
+            "power": "/powerpanel0/pdu1/node28/power1"
           }
         }
       },
@@ -61222,7 +61222,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node29/power0"
+            "power": "/powerpanel0/pdu1/node29/power0"
           }
         }
       },
@@ -61239,7 +61239,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node29/power1"
+            "power": "/powerpanel0/pdu1/node29/power1"
           }
         }
       },
@@ -61256,7 +61256,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node30/power0"
+            "power": "/powerpanel0/pdu1/node30/power0"
           }
         }
       },
@@ -61273,7 +61273,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node30/power1"
+            "power": "/powerpanel0/pdu1/node30/power1"
           }
         }
       },
@@ -61290,7 +61290,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node31/power0"
+            "power": "/powerpanel0/pdu1/node31/power0"
           }
         }
       },
@@ -61307,7 +61307,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node31/power1"
+            "power": "/powerpanel0/pdu1/node31/power1"
           }
         }
       },
@@ -61324,7 +61324,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node32/power0"
+            "power": "/powerpanel0/pdu1/node32/power0"
           }
         }
       },
@@ -61341,7 +61341,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node32/power1"
+            "power": "/powerpanel0/pdu1/node32/power1"
           }
         }
       },
@@ -61358,7 +61358,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node33/power0"
+            "power": "/powerpanel0/pdu1/node33/power0"
           }
         }
       },
@@ -61375,7 +61375,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node33/power1"
+            "power": "/powerpanel0/pdu1/node33/power1"
           }
         }
       },
@@ -61392,7 +61392,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node34/power0"
+            "power": "/powerpanel0/pdu1/node34/power0"
           }
         }
       },
@@ -61409,7 +61409,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node34/power1"
+            "power": "/powerpanel0/pdu1/node34/power1"
           }
         }
       },
@@ -61426,7 +61426,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node35/power0"
+            "power": "/powerpanel0/pdu1/node35/power0"
           }
         }
       },
@@ -61443,7 +61443,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node35/power1"
+            "power": "/powerpanel0/pdu1/node35/power1"
           }
         }
       },
@@ -61460,7 +61460,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node36/power0"
+            "power": "/powerpanel0/pdu2/node36/power0"
           }
         }
       },
@@ -61477,7 +61477,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node36/power1"
+            "power": "/powerpanel0/pdu2/node36/power1"
           }
         }
       },
@@ -61494,7 +61494,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node37/power0"
+            "power": "/powerpanel0/pdu2/node37/power0"
           }
         }
       },
@@ -61511,7 +61511,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node37/power1"
+            "power": "/powerpanel0/pdu2/node37/power1"
           }
         }
       },
@@ -61528,7 +61528,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node38/power0"
+            "power": "/powerpanel0/pdu2/node38/power0"
           }
         }
       },
@@ -61545,7 +61545,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node38/power1"
+            "power": "/powerpanel0/pdu2/node38/power1"
           }
         }
       },
@@ -61562,7 +61562,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node39/power0"
+            "power": "/powerpanel0/pdu2/node39/power0"
           }
         }
       },
@@ -61579,7 +61579,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node39/power1"
+            "power": "/powerpanel0/pdu2/node39/power1"
           }
         }
       },
@@ -61596,7 +61596,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node40/power0"
+            "power": "/powerpanel0/pdu2/node40/power0"
           }
         }
       },
@@ -61613,7 +61613,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node40/power1"
+            "power": "/powerpanel0/pdu2/node40/power1"
           }
         }
       },
@@ -61630,7 +61630,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node41/power0"
+            "power": "/powerpanel0/pdu2/node41/power0"
           }
         }
       },
@@ -61647,7 +61647,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node41/power1"
+            "power": "/powerpanel0/pdu2/node41/power1"
           }
         }
       },
@@ -61664,7 +61664,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node42/power0"
+            "power": "/powerpanel0/pdu2/node42/power0"
           }
         }
       },
@@ -61681,7 +61681,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node42/power1"
+            "power": "/powerpanel0/pdu2/node42/power1"
           }
         }
       },
@@ -61698,7 +61698,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node43/power0"
+            "power": "/powerpanel0/pdu2/node43/power0"
           }
         }
       },
@@ -61715,7 +61715,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node43/power1"
+            "power": "/powerpanel0/pdu2/node43/power1"
           }
         }
       },
@@ -61732,7 +61732,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node44/power0"
+            "power": "/powerpanel0/pdu2/node44/power0"
           }
         }
       },
@@ -61749,7 +61749,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node44/power1"
+            "power": "/powerpanel0/pdu2/node44/power1"
           }
         }
       },
@@ -61766,7 +61766,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node45/power0"
+            "power": "/powerpanel0/pdu2/node45/power0"
           }
         }
       },
@@ -61783,7 +61783,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node45/power1"
+            "power": "/powerpanel0/pdu2/node45/power1"
           }
         }
       },
@@ -61800,7 +61800,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node46/power0"
+            "power": "/powerpanel0/pdu2/node46/power0"
           }
         }
       },
@@ -61817,7 +61817,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node46/power1"
+            "power": "/powerpanel0/pdu2/node46/power1"
           }
         }
       },
@@ -61834,7 +61834,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node47/power0"
+            "power": "/powerpanel0/pdu2/node47/power0"
           }
         }
       },
@@ -61851,7 +61851,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node47/power1"
+            "power": "/powerpanel0/pdu2/node47/power1"
           }
         }
       },
@@ -61868,7 +61868,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node48/power0"
+            "power": "/powerpanel0/pdu2/node48/power0"
           }
         }
       },
@@ -61885,7 +61885,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node48/power1"
+            "power": "/powerpanel0/pdu2/node48/power1"
           }
         }
       },
@@ -61902,7 +61902,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node49/power0"
+            "power": "/powerpanel0/pdu2/node49/power0"
           }
         }
       },
@@ -61919,7 +61919,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node49/power1"
+            "power": "/powerpanel0/pdu2/node49/power1"
           }
         }
       },
@@ -61936,7 +61936,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node50/power0"
+            "power": "/powerpanel0/pdu2/node50/power0"
           }
         }
       },
@@ -61953,7 +61953,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node50/power1"
+            "power": "/powerpanel0/pdu2/node50/power1"
           }
         }
       },
@@ -61970,7 +61970,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node51/power0"
+            "power": "/powerpanel0/pdu2/node51/power0"
           }
         }
       },
@@ -61987,7 +61987,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node51/power1"
+            "power": "/powerpanel0/pdu2/node51/power1"
           }
         }
       },
@@ -62004,7 +62004,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node52/power0"
+            "power": "/powerpanel0/pdu2/node52/power0"
           }
         }
       },
@@ -62021,7 +62021,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node52/power1"
+            "power": "/powerpanel0/pdu2/node52/power1"
           }
         }
       },
@@ -62038,7 +62038,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node53/power0"
+            "power": "/powerpanel0/pdu2/node53/power0"
           }
         }
       },
@@ -62055,7 +62055,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node53/power1"
+            "power": "/powerpanel0/pdu2/node53/power1"
           }
         }
       },
@@ -62072,7 +62072,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node54/power0"
+            "power": "/powerpanel0/pdu3/node54/power0"
           }
         }
       },
@@ -62089,7 +62089,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node54/power1"
+            "power": "/powerpanel0/pdu3/node54/power1"
           }
         }
       },
@@ -62106,7 +62106,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node55/power0"
+            "power": "/powerpanel0/pdu3/node55/power0"
           }
         }
       },
@@ -62123,7 +62123,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node55/power1"
+            "power": "/powerpanel0/pdu3/node55/power1"
           }
         }
       },
@@ -62140,7 +62140,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node56/power0"
+            "power": "/powerpanel0/pdu3/node56/power0"
           }
         }
       },
@@ -62157,7 +62157,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node56/power1"
+            "power": "/powerpanel0/pdu3/node56/power1"
           }
         }
       },
@@ -62174,7 +62174,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node57/power0"
+            "power": "/powerpanel0/pdu3/node57/power0"
           }
         }
       },
@@ -62191,7 +62191,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node57/power1"
+            "power": "/powerpanel0/pdu3/node57/power1"
           }
         }
       },
@@ -62208,7 +62208,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node58/power0"
+            "power": "/powerpanel0/pdu3/node58/power0"
           }
         }
       },
@@ -62225,7 +62225,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node58/power1"
+            "power": "/powerpanel0/pdu3/node58/power1"
           }
         }
       },
@@ -62242,7 +62242,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node59/power0"
+            "power": "/powerpanel0/pdu3/node59/power0"
           }
         }
       },
@@ -62259,7 +62259,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node59/power1"
+            "power": "/powerpanel0/pdu3/node59/power1"
           }
         }
       },
@@ -62276,7 +62276,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node60/power0"
+            "power": "/powerpanel0/pdu3/node60/power0"
           }
         }
       },
@@ -62293,7 +62293,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node60/power1"
+            "power": "/powerpanel0/pdu3/node60/power1"
           }
         }
       },
@@ -62310,7 +62310,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node61/power0"
+            "power": "/powerpanel0/pdu3/node61/power0"
           }
         }
       },
@@ -62327,7 +62327,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node61/power1"
+            "power": "/powerpanel0/pdu3/node61/power1"
           }
         }
       },
@@ -62344,7 +62344,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node62/power0"
+            "power": "/powerpanel0/pdu3/node62/power0"
           }
         }
       },
@@ -62361,7 +62361,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node62/power1"
+            "power": "/powerpanel0/pdu3/node62/power1"
           }
         }
       },
@@ -62378,7 +62378,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node63/power0"
+            "power": "/powerpanel0/pdu3/node63/power0"
           }
         }
       },
@@ -62395,7 +62395,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node63/power1"
+            "power": "/powerpanel0/pdu3/node63/power1"
           }
         }
       },
@@ -62412,7 +62412,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node64/power0"
+            "power": "/powerpanel0/pdu3/node64/power0"
           }
         }
       },
@@ -62429,7 +62429,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node64/power1"
+            "power": "/powerpanel0/pdu3/node64/power1"
           }
         }
       },
@@ -62446,7 +62446,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node65/power0"
+            "power": "/powerpanel0/pdu3/node65/power0"
           }
         }
       },
@@ -62463,7 +62463,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node65/power1"
+            "power": "/powerpanel0/pdu3/node65/power1"
           }
         }
       },
@@ -62480,7 +62480,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node66/power0"
+            "power": "/powerpanel0/pdu3/node66/power0"
           }
         }
       },
@@ -62497,7 +62497,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node66/power1"
+            "power": "/powerpanel0/pdu3/node66/power1"
           }
         }
       },
@@ -62514,7 +62514,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node67/power0"
+            "power": "/powerpanel0/pdu3/node67/power0"
           }
         }
       },
@@ -62531,7 +62531,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node67/power1"
+            "power": "/powerpanel0/pdu3/node67/power1"
           }
         }
       },
@@ -62548,7 +62548,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node68/power0"
+            "power": "/powerpanel0/pdu3/node68/power0"
           }
         }
       },
@@ -62565,7 +62565,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node68/power1"
+            "power": "/powerpanel0/pdu3/node68/power1"
           }
         }
       },
@@ -62582,7 +62582,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node69/power0"
+            "power": "/powerpanel0/pdu3/node69/power0"
           }
         }
       },
@@ -62599,7 +62599,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node69/power1"
+            "power": "/powerpanel0/pdu3/node69/power1"
           }
         }
       },
@@ -62616,7 +62616,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node70/power0"
+            "power": "/powerpanel0/pdu3/node70/power0"
           }
         }
       },
@@ -62633,7 +62633,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node70/power1"
+            "power": "/powerpanel0/pdu3/node70/power1"
           }
         }
       },
@@ -62650,7 +62650,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node71/power0"
+            "power": "/powerpanel0/pdu3/node71/power0"
           }
         }
       },
@@ -62667,7 +62667,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/node71/power1"
+            "power": "/powerpanel0/pdu3/node71/power1"
           }
         }
       },
@@ -63364,7 +63364,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power0"
+            "power": "/powerpanel0/pdu1/power0"
           }
         }
       },
@@ -63381,7 +63381,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power1"
+            "power": "/powerpanel0/pdu1/power1"
           }
         }
       },
@@ -63398,7 +63398,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power2"
+            "power": "/powerpanel0/pdu1/power2"
           }
         }
       },
@@ -63415,7 +63415,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power3"
+            "power": "/powerpanel0/pdu1/power3"
           }
         }
       },
@@ -63432,7 +63432,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power4"
+            "power": "/powerpanel0/pdu1/power4"
           }
         }
       },
@@ -63449,7 +63449,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power5"
+            "power": "/powerpanel0/pdu1/power5"
           }
         }
       },
@@ -63466,7 +63466,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power6"
+            "power": "/powerpanel0/pdu1/power6"
           }
         }
       },
@@ -63483,7 +63483,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power7"
+            "power": "/powerpanel0/pdu1/power7"
           }
         }
       },
@@ -63500,7 +63500,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power8"
+            "power": "/powerpanel0/pdu1/power8"
           }
         }
       },
@@ -63517,7 +63517,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power9"
+            "power": "/powerpanel0/pdu1/power9"
           }
         }
       },
@@ -63534,7 +63534,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power10"
+            "power": "/powerpanel0/pdu1/power10"
           }
         }
       },
@@ -63551,7 +63551,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power11"
+            "power": "/powerpanel0/pdu1/power11"
           }
         }
       },
@@ -63568,7 +63568,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power12"
+            "power": "/powerpanel0/pdu1/power12"
           }
         }
       },
@@ -63585,7 +63585,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power13"
+            "power": "/powerpanel0/pdu1/power13"
           }
         }
       },
@@ -63602,7 +63602,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power14"
+            "power": "/powerpanel0/pdu1/power14"
           }
         }
       },
@@ -63619,7 +63619,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power15"
+            "power": "/powerpanel0/pdu1/power15"
           }
         }
       },
@@ -63636,7 +63636,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power16"
+            "power": "/powerpanel0/pdu1/power16"
           }
         }
       },
@@ -63653,7 +63653,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power17"
+            "power": "/powerpanel0/pdu1/power17"
           }
         }
       },
@@ -63670,7 +63670,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power18"
+            "power": "/powerpanel0/pdu1/power18"
           }
         }
       },
@@ -63687,7 +63687,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power19"
+            "power": "/powerpanel0/pdu1/power19"
           }
         }
       },
@@ -63704,7 +63704,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power20"
+            "power": "/powerpanel0/pdu1/power20"
           }
         }
       },
@@ -63721,7 +63721,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power21"
+            "power": "/powerpanel0/pdu1/power21"
           }
         }
       },
@@ -63738,7 +63738,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power22"
+            "power": "/powerpanel0/pdu1/power22"
           }
         }
       },
@@ -63755,7 +63755,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power23"
+            "power": "/powerpanel0/pdu1/power23"
           }
         }
       },
@@ -63772,7 +63772,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power24"
+            "power": "/powerpanel0/pdu1/power24"
           }
         }
       },
@@ -63789,7 +63789,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power25"
+            "power": "/powerpanel0/pdu1/power25"
           }
         }
       },
@@ -63806,7 +63806,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power26"
+            "power": "/powerpanel0/pdu1/power26"
           }
         }
       },
@@ -63823,7 +63823,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power27"
+            "power": "/powerpanel0/pdu1/power27"
           }
         }
       },
@@ -63840,7 +63840,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power28"
+            "power": "/powerpanel0/pdu1/power28"
           }
         }
       },
@@ -63857,7 +63857,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power29"
+            "power": "/powerpanel0/pdu1/power29"
           }
         }
       },
@@ -63874,7 +63874,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power30"
+            "power": "/powerpanel0/pdu1/power30"
           }
         }
       },
@@ -63891,7 +63891,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power31"
+            "power": "/powerpanel0/pdu1/power31"
           }
         }
       },
@@ -63908,7 +63908,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power32"
+            "power": "/powerpanel0/pdu1/power32"
           }
         }
       },
@@ -63925,7 +63925,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power33"
+            "power": "/powerpanel0/pdu1/power33"
           }
         }
       },
@@ -63942,7 +63942,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power34"
+            "power": "/powerpanel0/pdu1/power34"
           }
         }
       },
@@ -63959,7 +63959,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power35"
+            "power": "/powerpanel0/pdu1/power35"
           }
         }
       },
@@ -63976,7 +63976,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power36"
+            "power": "/powerpanel0/pdu1/power36"
           }
         }
       },
@@ -63993,7 +63993,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power37"
+            "power": "/powerpanel0/pdu1/power37"
           }
         }
       },
@@ -64010,7 +64010,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power38"
+            "power": "/powerpanel0/pdu1/power38"
           }
         }
       },
@@ -64027,7 +64027,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power39"
+            "power": "/powerpanel0/pdu1/power39"
           }
         }
       },
@@ -64044,7 +64044,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power0"
+            "power": "/powerpanel0/pdu2/power0"
           }
         }
       },
@@ -64061,7 +64061,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power1"
+            "power": "/powerpanel0/pdu2/power1"
           }
         }
       },
@@ -64078,7 +64078,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power2"
+            "power": "/powerpanel0/pdu2/power2"
           }
         }
       },
@@ -64095,7 +64095,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power3"
+            "power": "/powerpanel0/pdu2/power3"
           }
         }
       },
@@ -64112,7 +64112,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power4"
+            "power": "/powerpanel0/pdu2/power4"
           }
         }
       },
@@ -64129,7 +64129,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power5"
+            "power": "/powerpanel0/pdu2/power5"
           }
         }
       },
@@ -64146,7 +64146,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power6"
+            "power": "/powerpanel0/pdu2/power6"
           }
         }
       },
@@ -64163,7 +64163,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power7"
+            "power": "/powerpanel0/pdu2/power7"
           }
         }
       },
@@ -64180,7 +64180,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power8"
+            "power": "/powerpanel0/pdu2/power8"
           }
         }
       },
@@ -64197,7 +64197,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power9"
+            "power": "/powerpanel0/pdu2/power9"
           }
         }
       },
@@ -64214,7 +64214,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power10"
+            "power": "/powerpanel0/pdu2/power10"
           }
         }
       },
@@ -64231,7 +64231,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power11"
+            "power": "/powerpanel0/pdu2/power11"
           }
         }
       },
@@ -64248,7 +64248,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power12"
+            "power": "/powerpanel0/pdu2/power12"
           }
         }
       },
@@ -64265,7 +64265,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power13"
+            "power": "/powerpanel0/pdu2/power13"
           }
         }
       },
@@ -64282,7 +64282,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power14"
+            "power": "/powerpanel0/pdu2/power14"
           }
         }
       },
@@ -64299,7 +64299,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power15"
+            "power": "/powerpanel0/pdu2/power15"
           }
         }
       },
@@ -64316,7 +64316,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power16"
+            "power": "/powerpanel0/pdu2/power16"
           }
         }
       },
@@ -64333,7 +64333,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power17"
+            "power": "/powerpanel0/pdu2/power17"
           }
         }
       },
@@ -64350,7 +64350,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power18"
+            "power": "/powerpanel0/pdu2/power18"
           }
         }
       },
@@ -64367,7 +64367,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power19"
+            "power": "/powerpanel0/pdu2/power19"
           }
         }
       },
@@ -64384,7 +64384,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power20"
+            "power": "/powerpanel0/pdu2/power20"
           }
         }
       },
@@ -64401,7 +64401,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power21"
+            "power": "/powerpanel0/pdu2/power21"
           }
         }
       },
@@ -64418,7 +64418,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power22"
+            "power": "/powerpanel0/pdu2/power22"
           }
         }
       },
@@ -64435,7 +64435,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power23"
+            "power": "/powerpanel0/pdu2/power23"
           }
         }
       },
@@ -64452,7 +64452,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power24"
+            "power": "/powerpanel0/pdu2/power24"
           }
         }
       },
@@ -64469,7 +64469,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power25"
+            "power": "/powerpanel0/pdu2/power25"
           }
         }
       },
@@ -64486,7 +64486,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power26"
+            "power": "/powerpanel0/pdu2/power26"
           }
         }
       },
@@ -64503,7 +64503,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power27"
+            "power": "/powerpanel0/pdu2/power27"
           }
         }
       },
@@ -64520,7 +64520,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power28"
+            "power": "/powerpanel0/pdu2/power28"
           }
         }
       },
@@ -64537,7 +64537,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power29"
+            "power": "/powerpanel0/pdu2/power29"
           }
         }
       },
@@ -64554,7 +64554,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power30"
+            "power": "/powerpanel0/pdu2/power30"
           }
         }
       },
@@ -64571,7 +64571,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power31"
+            "power": "/powerpanel0/pdu2/power31"
           }
         }
       },
@@ -64588,7 +64588,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power32"
+            "power": "/powerpanel0/pdu2/power32"
           }
         }
       },
@@ -64605,7 +64605,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power33"
+            "power": "/powerpanel0/pdu2/power33"
           }
         }
       },
@@ -64622,7 +64622,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power34"
+            "power": "/powerpanel0/pdu2/power34"
           }
         }
       },
@@ -64639,7 +64639,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power35"
+            "power": "/powerpanel0/pdu2/power35"
           }
         }
       },
@@ -64656,7 +64656,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power36"
+            "power": "/powerpanel0/pdu2/power36"
           }
         }
       },
@@ -64673,7 +64673,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power37"
+            "power": "/powerpanel0/pdu2/power37"
           }
         }
       },
@@ -64690,7 +64690,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power38"
+            "power": "/powerpanel0/pdu2/power38"
           }
         }
       },
@@ -64707,7 +64707,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power39"
+            "power": "/powerpanel0/pdu2/power39"
           }
         }
       },
@@ -64724,7 +64724,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power0"
+            "power": "/powerpanel0/pdu3/power0"
           }
         }
       },
@@ -64741,7 +64741,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power1"
+            "power": "/powerpanel0/pdu3/power1"
           }
         }
       },
@@ -64758,7 +64758,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power2"
+            "power": "/powerpanel0/pdu3/power2"
           }
         }
       },
@@ -64775,7 +64775,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power3"
+            "power": "/powerpanel0/pdu3/power3"
           }
         }
       },
@@ -64792,7 +64792,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power4"
+            "power": "/powerpanel0/pdu3/power4"
           }
         }
       },
@@ -64809,7 +64809,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power5"
+            "power": "/powerpanel0/pdu3/power5"
           }
         }
       },
@@ -64826,7 +64826,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power6"
+            "power": "/powerpanel0/pdu3/power6"
           }
         }
       },
@@ -64843,7 +64843,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power7"
+            "power": "/powerpanel0/pdu3/power7"
           }
         }
       },
@@ -64860,7 +64860,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power8"
+            "power": "/powerpanel0/pdu3/power8"
           }
         }
       },
@@ -64877,7 +64877,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power9"
+            "power": "/powerpanel0/pdu3/power9"
           }
         }
       },
@@ -64894,7 +64894,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power10"
+            "power": "/powerpanel0/pdu3/power10"
           }
         }
       },
@@ -64911,7 +64911,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power11"
+            "power": "/powerpanel0/pdu3/power11"
           }
         }
       },
@@ -64928,7 +64928,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power12"
+            "power": "/powerpanel0/pdu3/power12"
           }
         }
       },
@@ -64945,7 +64945,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power13"
+            "power": "/powerpanel0/pdu3/power13"
           }
         }
       },
@@ -64962,7 +64962,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power14"
+            "power": "/powerpanel0/pdu3/power14"
           }
         }
       },
@@ -64979,7 +64979,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power15"
+            "power": "/powerpanel0/pdu3/power15"
           }
         }
       },
@@ -64996,7 +64996,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power16"
+            "power": "/powerpanel0/pdu3/power16"
           }
         }
       },
@@ -65013,7 +65013,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power17"
+            "power": "/powerpanel0/pdu3/power17"
           }
         }
       },
@@ -65030,7 +65030,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power18"
+            "power": "/powerpanel0/pdu3/power18"
           }
         }
       },
@@ -65047,7 +65047,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power19"
+            "power": "/powerpanel0/pdu3/power19"
           }
         }
       },
@@ -65064,7 +65064,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power20"
+            "power": "/powerpanel0/pdu3/power20"
           }
         }
       },
@@ -65081,7 +65081,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power21"
+            "power": "/powerpanel0/pdu3/power21"
           }
         }
       },
@@ -65098,7 +65098,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power22"
+            "power": "/powerpanel0/pdu3/power22"
           }
         }
       },
@@ -65115,7 +65115,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power23"
+            "power": "/powerpanel0/pdu3/power23"
           }
         }
       },
@@ -65132,7 +65132,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power24"
+            "power": "/powerpanel0/pdu3/power24"
           }
         }
       },
@@ -65149,7 +65149,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power25"
+            "power": "/powerpanel0/pdu3/power25"
           }
         }
       },
@@ -65166,7 +65166,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power26"
+            "power": "/powerpanel0/pdu3/power26"
           }
         }
       },
@@ -65183,7 +65183,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power27"
+            "power": "/powerpanel0/pdu3/power27"
           }
         }
       },
@@ -65200,7 +65200,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power28"
+            "power": "/powerpanel0/pdu3/power28"
           }
         }
       },
@@ -65217,7 +65217,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power29"
+            "power": "/powerpanel0/pdu3/power29"
           }
         }
       },
@@ -65234,7 +65234,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power30"
+            "power": "/powerpanel0/pdu3/power30"
           }
         }
       },
@@ -65251,7 +65251,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power31"
+            "power": "/powerpanel0/pdu3/power31"
           }
         }
       },
@@ -65268,7 +65268,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power32"
+            "power": "/powerpanel0/pdu3/power32"
           }
         }
       },
@@ -65285,7 +65285,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power33"
+            "power": "/powerpanel0/pdu3/power33"
           }
         }
       },
@@ -65302,7 +65302,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power34"
+            "power": "/powerpanel0/pdu3/power34"
           }
         }
       },
@@ -65319,7 +65319,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power35"
+            "power": "/powerpanel0/pdu3/power35"
           }
         }
       },
@@ -65336,7 +65336,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power36"
+            "power": "/powerpanel0/pdu3/power36"
           }
         }
       },
@@ -65353,7 +65353,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power37"
+            "power": "/powerpanel0/pdu3/power37"
           }
         }
       },
@@ -65370,7 +65370,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power38"
+            "power": "/powerpanel0/pdu3/power38"
           }
         }
       },
@@ -65387,7 +65387,7 @@
           "unit": "KW",
           "size": 10,
           "paths": {
-            "power": "/powerpanel0/pdu0/power39"
+            "power": "/powerpanel0/pdu3/power39"
           }
         }
       },

@@ -60,6 +60,8 @@ TESTS = \
     t4006-properties.t \
     t4007-match-var-aware.t \
     t4008-match-jgf.t \
+    t4009-update-basic.t \
+    t4010-update-multi.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t

@@ -77,9 +77,9 @@ struct resource_ctx_t {
     resource_args_t args;          /* Module load options */
     std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
-    resource_graph_db_t db;        /* Resource graph data store */
+    std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
-    std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
+    std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
     match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
@@ -167,6 +167,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         try {
             ctx = std::make_shared<resource_ctx_t> ();
             ctx->traverser = std::make_shared<dfu_traverser_t> ();
+            ctx->db = std::make_shared<resource_graph_db_t> ();
         } catch (std::bad_alloc &e) {
             errno = ENOMEM;
             goto done;
@@ -356,7 +357,7 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
     }
     buffer << in_file.rdbuf ();
     in_file.close ();
-    if ( (rc = ctx->db.load (buffer.str (), rd)) < 0) {
+    if ( (rc = ctx->db->load (buffer.str (), rd)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                   __FUNCTION__, rd->err_message ().c_str ());
         goto done;
@@ -378,7 +379,7 @@ static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
     json_t *o = NULL;
     flux_t *h = ctx->h;
     const char *hwloc_xml = NULL;
-    resource_graph_db_t &db = ctx->db;
+    resource_graph_db_t &db = *(ctx->db);
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
     if (flux_get_size (h, &size) == -1) {
@@ -395,18 +396,18 @@ static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
     }
     o = get_string_blocking (h, k);
     hwloc_xml = json_string_value (o);
-    if ( (rc = ctx->db.load (hwloc_xml, rd, rank)) < 0) {
+    if ( (rc = db.load (hwloc_xml, rd, rank)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                   __FUNCTION__,  rd->err_message ().c_str ());
         goto done;
     }
     Jput (o);
-    if (db.metadata.roots->find ("containment") == db.metadata.roots->end ()) {
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         flux_log (ctx->h, LOG_ERR, "%s: cluster vertex is unavailable",
                   __FUNCTION__);
         goto done;
     }
-    v = db.metadata.roots->at ("containment");
+    v = db.metadata.roots.at ("containment");
 
     // For the rest of the ranks -- general case
     for (rank=1; rank < size; rank++) {
@@ -417,7 +418,7 @@ static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
         }
         o = get_string_blocking (h, k);
         hwloc_xml = json_string_value (o);
-        if ( (rc = ctx->db.load (hwloc_xml, rd, v, rank)) < 0) {
+        if ( (rc = db.load (hwloc_xml, rd, v, rank)) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                       __FUNCTION__,  rd->err_message ().c_str ());
             goto done;
@@ -438,7 +439,7 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->args.reserve_vtx_vec != 0)
-        ctx->db.resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
+        ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
     if ( (rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create load reader",
                   __FUNCTION__);
@@ -494,7 +495,7 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
         size_t found = token.find_first_of (":");
         if (found == std::string::npos) {
             subsystem = token;
-            if (!ctx->db.known_subsystem (subsystem)) {
+            if (!ctx->db->known_subsystem (subsystem)) {
                 rc = -1;
                 errno = EINVAL;
                 goto done;
@@ -502,7 +503,7 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
             ctx->matcher->add_subsystem (subsystem, "*");
         } else {
             subsystem = token.substr (0, found);
-            if (!ctx->db.known_subsystem (subsystem)) {
+            if (!ctx->db->known_subsystem (subsystem)) {
                 rc = -1;
                 errno = EINVAL;
                 goto done;
@@ -524,7 +525,7 @@ static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
                                                    resource_ctx_t> &ctx)
 {
     std::shared_ptr<f_resource_graph_t> fg = nullptr;
-    resource_graph_t &g = ctx->db.resource_graph;
+    resource_graph_t &g = ctx->db->resource_graph;
 
     try {
         // Set vertex and edge maps
@@ -584,8 +585,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     // Initialize the DFU traverser
-    if (ctx->traverser->initialize (ctx->fgraph,
-                                    ctx->db.metadata.roots, ctx->matcher) < 0) {
+    if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: traverser initialization",
                   __FUNCTION__);
         return -1;
@@ -861,8 +861,8 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         min = ctx->perf.min;
     }
     if (flux_respond_pack (h, msg, "{s:I s:I s:f s:I s:f s:f s:f}",
-                                   "V", num_vertices (ctx->db.resource_graph),
-                                   "E", num_edges (ctx->db.resource_graph),
+                                   "V", num_vertices (ctx->db->resource_graph),
+                                   "E", num_edges (ctx->db->resource_graph),
                                    "load-time", ctx->perf.load,
                                    "njobs", ctx->perf.njobs,
                                    "min-match", min,
@@ -936,9 +936,9 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     property_key = keyval.substr (0, pos);
     property_value = keyval.substr (pos + 1);
 
-    it = ctx->db.metadata.by_path.find (resource_path);
+    it = ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         errno = ENOENT;
         flux_log_error (h, "%s: Couldn't find %s in resource graph.",
                         __FUNCTION__, resource_path.c_str ());
@@ -947,12 +947,12 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     v = it->second;
 
-    ret = ctx->db.resource_graph[v].properties.insert (
+    ret = ctx->db->resource_graph[v].properties.insert (
         std::pair<std::string, std::string> (property_key,property_value));
 
     if (ret.second == false) {
-        ctx->db.resource_graph[v].properties.erase (property_key);
-        ctx->db.resource_graph[v].properties.insert (
+        ctx->db->resource_graph[v].properties.erase (property_key);
+        ctx->db->resource_graph[v].properties.insert (
             std::pair<std::string, std::string> (property_key,property_value));
     }
 
@@ -985,9 +985,9 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     resource_path = rp;
     property_key = gp_key;
 
-    it = ctx->db.metadata.by_path.find (resource_path);
+    it = ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db.metadata.by_path.end ()) {
+    if (it == ctx->db->metadata.by_path.end ()) {
         errno = ENOENT;
         flux_log_error (h, "%s: Couldn't find %s in resource graph.",
                         __FUNCTION__, resource_path.c_str ());
@@ -996,8 +996,8 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
     v = it->second;
 
-    for (p_it = ctx->db.resource_graph[v].properties.begin ();
-         p_it != ctx->db.resource_graph[v].properties.end (); p_it++) {
+    for (p_it = ctx->db->resource_graph[v].properties.begin ();
+         p_it != ctx->db->resource_graph[v].properties.end (); p_it++) {
 
          if (property_key.compare (p_it->first) == 0)
              resp_value = p_it->second;

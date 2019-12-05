@@ -37,12 +37,9 @@ struct schedule_t {
     schedule_t &operator= (const schedule_t &o);
     ~schedule_t ();
 
-    std::map<int64_t, int64_t> tags;
     std::map<int64_t, int64_t> allocations;
     std::map<int64_t, int64_t> reservations;
-    std::map<int64_t, int64_t> x_spans;
     planner_t *plans = NULL;
-    planner_t *x_checker = NULL;
 };
 
 } // Flux::resource_model

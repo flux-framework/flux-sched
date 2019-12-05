@@ -31,6 +31,7 @@
 #include "resource/readers/resource_reader_base.hpp"
 
 struct fetch_helper_t;
+struct vmap_val_t;
 
 namespace Flux {
 namespace resource_model {
@@ -69,6 +70,23 @@ public:
     virtual int unpack_at (resource_graph_t &g, resource_graph_metadata_t &m,
                            vtx_t &vtx, const std::string &str, int rank = -1);
 
+    /*! Update resource graph g with str.
+     *
+     * \param g      resource graph
+     * \param m      resource graph meta data
+     * \param str    resource set string
+     * \param jobid  jobid of str
+     * \param at     start time of this job
+     * \param dur    duration of this job
+     * \param rsv    true if this update is for a reservation.
+     * \param trav_token
+     *               token to be used by traverser
+     * \return       0 on success; non-zero integer on an error
+     */
+    virtual int update (resource_graph_t &g, resource_graph_metadata_t &m,
+                        const std::string &str, int64_t jobid, int64_t at,
+                        uint64_t dur, bool rsv, uint64_t trav_token);
+
     /*! Is the selected reader format support whitelist
      *
      * \return       false
@@ -76,16 +94,53 @@ public:
     virtual bool is_whitelist_supported ();
 
 private:
+    int fetch_jgf (const std::string &str,
+                   json_t **jgf_p, json_t **nodes_p, json_t **edges_p);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
-    int unpack_edg (json_t *element, std::map<std::string, vtx_t> &vmap,
-                    std::string &source, std::string &target, json_t **name);
+    vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
+    bool is_root (const std::string &path);
+    int check_root (vtx_t v, resource_graph_t &g,
+                    std::map<std::string, bool> &is_roots);
+    int add_graph_metadata (vtx_t v, resource_graph_t &g,
+                            resource_graph_metadata_t &m);
     int add_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
-                 std::map<std::string, vtx_t> &vmap,
+                 std::map<std::string, vmap_val_t> &vmap,
                  const fetch_helper_t &fetcher);
+    int find_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
+                  std::map<std::string, vmap_val_t> &vmap,
+                  const fetch_helper_t &fetcher, vtx_t &ret_v);
+    int update_vtx_plan (vtx_t v, resource_graph_t &g,
+                         const fetch_helper_t &fetcher, uint64_t jobid,
+                         int64_t at, uint64_t dur, bool rsv);
+    int update_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
+                    std::map<std::string, vmap_val_t> &vmap,
+                    const fetch_helper_t &fetcher, uint64_t jobid, int64_t at,
+                    uint64_t dur, bool rsv);
     int unpack_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vtx_t> &vmap, json_t *nodes);
+                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes);
+    int undo_vertices (resource_graph_t &g,
+                       std::map<std::string, vmap_val_t> &vmap,
+                       uint64_t jobid, bool rsv);
+    int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes,
+                         int64_t jobid, int64_t at, uint64_t dur, bool rsv);
+    int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes,
+                         int64_t jobid, int64_t at, uint64_t dur);
+    int unpack_edge (json_t *element, std::map<std::string, vmap_val_t> &vmap,
+                     std::string &source, std::string &target, json_t **name);
+    int update_src_edge (resource_graph_t &g, resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap,
+                         std::string &source, uint64_t token);
+    int update_tgt_edge (resource_graph_t &g, resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap,
+                         std::string &source, std::string &target,
+                         uint64_t token);
     int unpack_edges (resource_graph_t &g, resource_graph_metadata_t &m,
-                      std::map<std::string, vtx_t> &vmap, json_t *edges);
+                      std::map<std::string, vmap_val_t> &vmap, json_t *edges);
+    int update_edges (resource_graph_t &g, resource_graph_metadata_t &m,
+                      std::map<std::string, vmap_val_t> &vmap,
+                      json_t *edges, uint64_t token);
 };
 
 } // namespace resource_model

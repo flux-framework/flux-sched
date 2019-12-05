@@ -188,8 +188,8 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     resource_graph_t &g = *m_g_p;
     resource_graph_metadata_t &m = *m_gm_p;
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ())
-        if (m.roots->find (recipe[u].subsystem) != m.roots->end ())
-            return (*(m.roots))[recipe[u].subsystem];
+        if (m.roots.find (recipe[u].subsystem) != m.roots.end ())
+            return (m.roots)[recipe[u].subsystem];
 
     vtx_t v = add_vertex (g);;
     std::string pref = "";
@@ -198,7 +198,8 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
 
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
         // ROOT vertex of graph
-        (*(m.roots))[recipe[u].subsystem] = v;
+        m.roots.emplace (recipe[u].subsystem, v);
+        m.v_rt_edges.emplace (recipe[u].subsystem, relation_infra_t ());
         id = 0;
     } else {
         id = gen_id (e, recipe, i, sz, j);
@@ -212,7 +213,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     g[v].unit = recipe[u].unit;
     g[v].schedule.plans = planner_new (0, INT64_MAX,
                                        recipe[u].size, recipe[u].type.c_str ());
-    g[v].schedule.x_checker = planner_new (0, INT64_MAX,
+    g[v].idata.x_checker = planner_new (0, INT64_MAX,
                                            X_CHECKER_NJOBS, X_CHECKER_JOBS_STR);
     g[v].id = id;
     g[v].name = recipe[u].basename + istr;
@@ -331,6 +332,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
+                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);
@@ -360,6 +362,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
+                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);
@@ -458,6 +461,16 @@ int resource_reader_grug_t::unpack_at (resource_graph_t &g,
                                        const std::string &str, int rank)
 {
     errno = ENOTSUP; // GRUG reader does not support unpack_at
+    return -1;
+}
+
+int resource_reader_grug_t::update (resource_graph_t &g,
+                                    resource_graph_metadata_t &m,
+                                    const std::string &str, int64_t jobid,
+                                    int64_t at, uint64_t dur, bool rsv,
+                                    uint64_t token)
+{
+    errno = ENOTSUP; // GRUG reader currently does not support update
     return -1;
 }
 

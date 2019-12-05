@@ -42,8 +42,8 @@ class dfu_traverser_t : protected detail::dfu_impl_t
 public:
     dfu_traverser_t ();
     dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
-                     std::shared_ptr<dfu_match_cb_t> m,
-                     std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+                     std::shared_ptr<resource_graph_db_t> db,
+                     std::shared_ptr<dfu_match_cb_t> m);
     dfu_traverser_t (const dfu_traverser_t &o);
     dfu_traverser_t (dfu_traverser_t &&o) = default;
     dfu_traverser_t &operator= (const dfu_traverser_t &o);
@@ -51,12 +51,12 @@ public:
     ~dfu_traverser_t ();
 
     const std::shared_ptr<const f_resource_graph_t> get_graph () const;
-    const std::shared_ptr<const std::map<subsystem_t, vtx_t>> get_roots () const;
+    const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
-    void set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+    void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
 
@@ -94,7 +94,7 @@ public:
      *                                the match callback uses.
      */
     int initialize (std::shared_ptr<f_resource_graph_t> g,
-                    std::shared_ptr<std::map<subsystem_t, vtx_t>> roots,
+                    std::shared_ptr<resource_graph_db_t> db,
                     std::shared_ptr<dfu_match_cb_t> m);
 
     /*! Begin a graph traversal for the jobspec and either allocate or
@@ -119,8 +119,25 @@ public:
      *                               resources/devices can satisfy the request.
      */
     int run (Jobspec::Jobspec &jobspec,
-             std::shared_ptr<match_writers_t> writers,
+             std::shared_ptr<match_writers_t> &writers,
              match_op_t op, int64_t id, int64_t *at);
+
+    /*! Read str which is a serialized allocation data (e.g., written in JGF)
+     *  with rd, and traverse the resource graph to update it with this data.
+     *
+     *  \param str       allocation string such as written in JGF.
+     *  \param writers   vertex/edge writers to emit the matched labels
+     *  \param reader    reader object that deserialize str to update the graph
+     *  \param id        job ID to use for the schedule operation.
+     *  \param at        the starting time of this job.
+     *  \param duration  the duration of this job
+     *  \return          0 on success; -1 on error.
+     *                   TODO: Fill in errnos
+     */
+    int run (const std::string &str,
+             std::shared_ptr<match_writers_t> &writers,
+             std::shared_ptr<resource_reader_base_t> &reader,
+             int64_t id, int64_t at, uint64_t duration);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
@@ -132,9 +149,8 @@ public:
     int remove (int64_t jobid);
 
 private:
-    int schedule (Jobspec::Jobspec &jobspec,
-                  detail::jobmeta_t &meta, bool x, match_op_t op,
-                  vtx_t root, unsigned int *needs,
+    int schedule (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
+                  bool x, match_op_t op, vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);
 };
 

@@ -37,6 +37,8 @@
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/evaluators/scoring_api.hpp"
 #include "resource/writers/match_writers.hpp"
+#include "resource/store/resource_graph_store.hpp"
+#include "resource/readers/resource_reader_base.hpp"
 #include "resource/planner/planner.h"
 
 namespace Flux {
@@ -75,8 +77,8 @@ class dfu_impl_t {
 public:
     dfu_impl_t ();
     dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
-                std::shared_ptr<dfu_match_cb_t> m,
-                std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+                std::shared_ptr<resource_graph_db_t> db,
+                std::shared_ptr<dfu_match_cb_t> m);
     dfu_impl_t (const dfu_impl_t &o);
     dfu_impl_t (dfu_impl_t &&o) = default;
     dfu_impl_t &operator= (const dfu_impl_t &o);
@@ -85,12 +87,12 @@ public:
 
     //! Accessors
     const std::shared_ptr<const f_resource_graph_t> get_graph () const;
-    const std::shared_ptr<const std::map<subsystem_t, vtx_t>> get_roots () const;
+    const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
-    void set_roots (std::shared_ptr<std::map<subsystem_t, vtx_t>> roots);
+    void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
 
@@ -177,7 +179,7 @@ public:
      *                   for detail.
      */
     int select (Jobspec::Jobspec &jobspec, vtx_t root, jobmeta_t &meta,
-                bool exclusive, unsigned int *needs);
+                bool exclusive);
 
     /*! Update the resource state based on the previous select invocation
      *  and emit the allocation/reservation information.
@@ -190,8 +192,24 @@ public:
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int update (vtx_t root, std::shared_ptr<match_writers_t> writers,
-                jobmeta_t &meta, unsigned int needs, bool excl);
+    int update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
+                jobmeta_t &meta);
+
+    /*! Update the resource state based on the allocation data (str)
+     *  as deserialized by reader and meta.
+     *
+     *  \param root      root resource vertex.
+     *  \param writers   vertex/edge writers to emit the matched resources
+     *  \param str       allocation string such as written in JGF.
+     *  \param reader    reader object that deserialize str to update the graph
+     *  \param meta      metadata on the job.
+     *  \return          0 on success; -1 on error -- call err_message ()
+     *                   for detail.
+     */
+    int update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
+                const std::string &str,
+                std::shared_ptr<resource_reader_base_t> &reader,
+                jobmeta_t &meta);
 
     /*! Update to make the resource state ready for the next selection.
      *  Ignore the previous select invocation.
@@ -210,6 +228,12 @@ public:
     int remove (vtx_t root, int64_t jobid);
 
 private:
+
+    /************************************************************************
+     *                                                                      *
+     *                 Private Match and Util API                           *
+     *                                                                      *
+     ************************************************************************/
     const std::string level () const;
 
     void tick ();
@@ -275,46 +299,72 @@ private:
                  const std::vector<Jobspec::Resource> &resources, bool prestine,
                  bool *excl, scoring_api_t &to_parent);
 
-    // Emit matched resource set
-    int emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> w,
-                  unsigned int needs, bool exclusive);
-    int emit_edg (edg_t e, std::shared_ptr<match_writers_t> w);
-
-    // Update resource graph data store
-    int upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
-                  bool excl, const jobmeta_t &meta, int &n_p,
-                  std::map<std::string, int64_t> &to_parent);
-    int upd_sched (vtx_t u, std::shared_ptr<match_writers_t> writers,
-                   const subsystem_t &subsystem, unsigned int needs,
-                   bool excl, int n, const jobmeta_t &meta,
-                   std::map<std::string, int64_t> &dfu,
-                   std::map<std::string, int64_t> &to_parent);
-    int upd_upv (vtx_t u, const subsystem_t &subsystem, unsigned int needs,
-                 bool excl, const jobmeta_t &meta,
-                 std::map<std::string, int64_t> &to_parent);
-    int upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> writers,
-                 unsigned int needs, bool excl, const jobmeta_t &meta,
-                 std::map<std::string, int64_t> &to_parent);
-
-    // Remove allocation or reservations
-    int rem_subtree_plan (vtx_t u, int64_t jobid, const std::string &subsystem);
-    int rem_x_checker (vtx_t u, int64_t jobid);
-    int rem_plan (vtx_t u, int64_t jobid);
-    int rem_dfv (vtx_t u, int64_t jobid);
-    int rem_upv (vtx_t u, int64_t jobid);
-
     // Resolve and enforce hierarchical constraints
     int resolve (vtx_t root, std::vector<Jobspec::Resource> &resources,
                  scoring_api_t &dfu, bool excl, unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
     int enforce (const subsystem_t &subsystem, scoring_api_t &dfu);
 
-    // member data
+
+    /************************************************************************
+     *                                                                      *
+     *               Private Update/Emit/Remove API                         *
+     *                                                                      *
+     ************************************************************************/
+    // Emit matched resource set
+    int emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> &w,
+                  unsigned int needs, bool exclusive);
+    int emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w);
+
+    // Update resource graph data store
+    int upd_txfilter (vtx_t u, const jobmeta_t &jobmeta,
+                      const std::map<std::string, int64_t> &dfu);
+    int upd_agfilter (vtx_t u, const subsystem_t &s, const jobmeta_t &jobmeta,
+                      const std::map<std::string, int64_t> &dfu);
+    int upd_idata (vtx_t u, const subsystem_t &s, const jobmeta_t &jobmeta,
+                   const std::map<std::string, int64_t> &dfu);
+    int upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
+                  bool excl, const jobmeta_t &jobmeta, bool full, int &n);
+    int accum_to_parent (vtx_t u, const subsystem_t &s, unsigned int needs,
+                         bool excl, const std::map<std::string, int64_t> &dfu,
+                         std::map<std::string, int64_t> &to_parent);
+    int upd_meta (vtx_t u, const subsystem_t &s, unsigned int needs, bool excl,
+                  int n, const jobmeta_t &jobmeta,
+                  const std::map<std::string, int64_t> &dfu,
+                  std::map<std::string, int64_t> &to_parent);
+    int upd_sched (vtx_t u, std::shared_ptr<match_writers_t> &writers,
+                   const subsystem_t &s, unsigned int needs,
+                   bool excl, int n, const jobmeta_t &jobmeta, bool full,
+                   const std::map<std::string, int64_t> &dfu,
+                   std::map<std::string, int64_t> &to_parent);
+    int upd_upv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
+                 const subsystem_t &subsystem, unsigned int needs, bool excl,
+                 const jobmeta_t &jobmeta, bool full,
+                 std::map<std::string, int64_t> &to_parent);
+    int upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
+                 unsigned int needs, bool excl, const jobmeta_t &jobmeta,
+                 bool full, std::map<std::string, int64_t> &to_parent);
+
+    int rem_txfilter (vtx_t u, int64_t jobid, bool &stop);
+    int rem_agfilter (vtx_t u, int64_t jobid, const std::string &s);
+    int rem_idata (vtx_t u, int64_t jobid, const std::string &s, bool &stop);
+    int rem_plan (vtx_t u, int64_t jobid);
+    int rem_upv (vtx_t u, int64_t jobid);
+    int rem_dfv (vtx_t u, int64_t jobid);
+    int rem_exv (int64_t jobid);
+
+
+    /************************************************************************
+     *                                                                      *
+     *                     Private Member Data                              *
+     *                                                                      *
+     ************************************************************************/
     color_t m_color;
     uint64_t m_best_k_cnt = 0;
     unsigned int m_trav_level = 0;
     std::shared_ptr<std::map<subsystem_t, vtx_t>> m_roots = nullptr;
     std::shared_ptr<f_resource_graph_t> m_graph = nullptr;
+    std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     std::string m_err_msg = "";
 }; // the end of class dfu_impl_t
