@@ -23,7 +23,7 @@ attributes:
   system:
     duration: 57600
 tasks:
-  - command: default
+  - command: [ "default" ]
     slot: socketlevel
     count:
       per_slot: 1

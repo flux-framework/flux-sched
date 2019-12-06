@@ -41,11 +41,11 @@ resources:
                       - type: core
                         count: 8
 tasks:
-  - command: app1
+  - command: [ "app1" ]
     slot: gpunode
     count:
       per_slot: 1
-  - command: app2
+  - command: [ "app2" ]
     slot: octcorenode
     count:
       per_slot: 1
