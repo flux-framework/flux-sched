@@ -34,45 +34,45 @@ test_debug '
 
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
     flux module remove resource &&
-    flux module load -r 0 resource load-file=${grug} \
+    flux module load resource load-file=${grug} \
 load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with an XML works' '
     flux module remove resource &&
-    flux module load -r 0 resource load-file=${xml} \
+    flux module load resource load-file=${xml} \
 load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with no option works' '
     flux module remove resource &&
-    flux module load -r 0 resource prune-filters=ALL:core
+    flux module load resource prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
     flux module remove resource &&
-    test_expect_code 1 flux module load -r 0 resource load-file=${ne_grug} \
+    test_expect_code 1 flux module load resource load-file=${ne_grug} \
 load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
-    test_expect_code 1 flux module load -r 0 resource load-file=${ne_xml} \
+    test_expect_code 1 flux module load resource load-file=${ne_xml} \
 load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with known policies works' '
-    flux module load -r 0 resource policy=high &&
+    flux module load resource policy=high &&
     flux module remove resource &&
-    flux module load -r 0 resource policy=low &&
+    flux module load resource policy=low &&
     flux module remove resource &&
-    flux module load -r 0 resource policy=locality
+    flux module load resource policy=locality
 '
 
 test_expect_success 'loading resource module with unknown policies is tolerated' '
     flux module remove resource &&
-    flux module load -r 0 resource policy=foo &&
+    flux module load resource policy=foo &&
     flux module remove resource &&
-    flux module load -r 0 resource policy=bar
+    flux module load resource policy=bar
 '
 
 test_expect_success 'removing resource works' '
