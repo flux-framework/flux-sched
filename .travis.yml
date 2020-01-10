@@ -34,6 +34,12 @@ matrix:
        - ARGS="--prefix=/usr"
        - IMG=centos7
        - DOCKER_TAG=t
+    - name: "Centos 8: docker-deploy"
+      compiler: gcc
+      env:
+       - ARGS="--prefix=/usr"
+       - IMG=centos8
+       - DOCKER_TAG=t
 
 env:
   global:
