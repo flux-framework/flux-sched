@@ -13,6 +13,6 @@
 
 if [ -z ${FLUX_QMANAGER_RC_NOOP} ]; then
     flux module remove sched-simple
-    flux module load -r 0 qmanager ${FLUX_QMANAGER_OPTIONS}
+    flux module load qmanager ${FLUX_QMANAGER_OPTIONS}
 fi
 

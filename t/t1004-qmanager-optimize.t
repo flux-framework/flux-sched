@@ -123,8 +123,8 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove -r 0 qmanager &&
-    flux module remove -r 0 resource
+    flux module remove qmanager &&
+    flux module remove resource
 '
 
 test_done

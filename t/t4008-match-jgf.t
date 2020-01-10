@@ -35,7 +35,7 @@ test_debug '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny jgf file works' '
-    flux module load -r 0 resource load-file=${jgf_4core} load-format=jgf
+    flux module load resource load-file=${jgf_4core} load-format=jgf
 '
 
 test_expect_success 'JGF: allocate works with four one-core jobspecs' '
