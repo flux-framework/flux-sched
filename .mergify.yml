@@ -1,0 +1,18 @@
+pull_request_rules:
+  - name: rebase and merge when passing all checks
+    conditions:
+      - base=master
+      - status-success=continuous-integration/travis-ci/pr
+      - status-success="validate commits"
+      - label="merge-when-passing"
+      - label!="work-in-progress"
+      - "approved-reviews-by=@flux-framework/core"
+      - "#approved-reviews-by>0"
+      - "#changes-requested-reviews-by=0"
+      - -title~=^\[*[Ww][Ii][Pp]
+    actions:
+      merge:
+        method: merge
+        strict: smart
+        strict_method: rebase
+
