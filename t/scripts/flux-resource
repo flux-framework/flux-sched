@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import argparse
 import errno
 import yaml
@@ -72,11 +73,11 @@ def match_alloc_action (args):
         jobspec_str = yaml.dump (yaml.load (stream))
         r = ResourceModuleInterface ()
         resp = r.rpc_allocate (r.rpc_next_jobid (), jobspec_str)
-        print heading ()
-        print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+        print (heading ())
+        print (body (resp['jobid'], resp['status'], resp['at'], resp['overhead']))
         print ("=" * width ())
-        print "MATCHED RESOURCES:"
-        print resp['R']
+        print ("MATCHED RESOURCES:")
+        print (resp['R'])
 
 """
     Action for match allocate_with_satisfiability sub-command
@@ -87,11 +88,11 @@ def match_alloc_sat_action (args):
         r = ResourceModuleInterface ()
         resp = r.rpc_allocate_with_satisfiability (r.rpc_next_jobid (),
                                                    jobspec_str)
-        print heading ()
-        print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+        print (heading ())
+        print (body (resp['jobid'], resp['status'], resp['at'], resp['overhead']))
         print ("=" * width ())
-        print "MATCHED RESOURCES:"
-        print resp['R']
+        print ("MATCHED RESOURCES:")
+        print (resp['R'])
 
 """
     Action for match allocate_orelse_reserve sub-command
@@ -101,11 +102,11 @@ def match_reserve_action (args):
         jobspec_str = yaml.dump (yaml.load (stream))
         r = ResourceModuleInterface ()
         resp = r.rpc_reserve (r.rpc_next_jobid (), jobspec_str)
-        print heading ()
-        print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+        print (heading ())
+        print (body (resp['jobid'], resp['status'], resp['at'], resp['overhead']))
         print ("=" * width ())
-        print "MATCHED RESOURCES:"
-        print resp['R']
+        print ("MATCHED RESOURCES:")
+        print (resp['R'])
 
 """
     Action for cancel sub-command
@@ -122,8 +123,8 @@ def info_action (args):
     r = ResourceModuleInterface ()
     jobid = args.jobid
     resp = r.rpc_info (jobid)
-    print heading ()
-    print body (resp['jobid'], resp['status'], resp['at'], resp['overhead'])
+    print (heading ())
+    print (body (resp['jobid'], resp['status'], resp['at'], resp['overhead']))
 
 """
     Action for stat sub-command
@@ -131,13 +132,13 @@ def info_action (args):
 def stat_action (args):
     r = ResourceModuleInterface ()
     resp = r.rpc_stat ()
-    print "Num. of Vertices: ", resp['V']
-    print "Num. of Edges: ", resp['E']
-    print "Graph Load Time: ", resp['load-time'], "Secs"
-    print "Num. of Jobs Matched: ", resp['njobs']
-    print "Min. Match Time: ", resp['min-match'], "Secs"
-    print "Max. Match Time: ", resp['max-match'], "Secs"
-    print "Avg. Match Time: ", resp['avg-match'], "Secs"
+    print ("Num. of Vertices: ", resp['V'])
+    print ("Num. of Edges: ", resp['E'])
+    print ("Graph Load Time: ", resp['load-time'], "Secs")
+    print ("Num. of Jobs Matched: ", resp['njobs'])
+    print ("Min. Match Time: ", resp['min-match'], "Secs")
+    print ("Max. Match Time: ", resp['max-match'], "Secs")
+    print ("Avg. Match Time: ", resp['avg-match'], "Secs")
 
 """
     Action for set-property sub-command
@@ -156,7 +157,7 @@ def get_property_action (args):
     gp_resource_path = args.gp_resource_path
     gp_key = args.gp_key
     resp = r.rpc_get_property (gp_resource_path, gp_key)
-    print args.gp_key, "=", resp['value']
+    print (args.gp_key, "=", resp['value'])
 
 """
     Main entry point
@@ -271,11 +272,11 @@ def main ():
         args.func (args)
 
     except IOError as e:
-        print "I/O error({0}): {1}".format (e.errno, e.strerror)
+        print ("I/O error({0}): {1}".format (e.errno, e.strerror))
         exit (3)
 
     except EnvironmentError as e:
-        print "Environment error({0}): {1}".format (e.errno, e.strerror)
+        print ("Environment error({0}): {1}".format (e.errno, e.strerror))
         if e.errno == errno.EBUSY:  # resource currently unavailable
             exit (16)
         if e.errno == errno.ENODEV: # unsatisfiable jobspec
@@ -284,7 +285,7 @@ def main ():
             exit (1)
 
     except yaml.YAMLError as e:
-        print "Parsing error: ", e
+        print ("Parsing error: ", e)
         exit (2)
 
 if __name__ == "__main__":

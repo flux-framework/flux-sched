@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import argparse
 import errno
 import json
@@ -9,16 +11,16 @@ import jsonschema
     Print json document and schema as a verbose option
 """
 def print_verbose (doc, schema):
-    print "=============================================="
-    print " Jsonschema "
-    print "=============================================="
-    print (json.dumps (schema, indent=4, sort_keys=True))
-    print ""
-    print "=============================================="
-    print " Json document "
-    print "=============================================="
-    print (json.dumps (doc, indent=4, sort_keys=True))
-    print ""
+    print("==============================================")
+    print(" Jsonschema ")
+    print("==============================================")
+    print(json.dumps (schema, indent=4, sort_keys=True))
+    print("")
+    print("==============================================")
+    print(" Json document ")
+    print("==============================================")
+    print(json.dumps (doc, indent=4, sort_keys=True))
+    print("")
 
 
 """
@@ -44,22 +46,22 @@ def main ():
 
         jsonschema.validate (doc, schema)
         valstr = "Document(\"{0}\") validates against schema (\"{1}\")"
-        print valstr.format (args.json, args.schema)
+        print (valstr.format (args.json, args.schema))
 
     except IOError as e:
-        print "I/O error({0}): {1}".format (e.errno, e.strerror)
+        print ("I/O error({0}): {1}".format (e.errno, e.strerror))
         exit (1)
     except EnvironmentError as e:
-        print "Environment error({0}): {1}".format (e.errno, e.strerror)
+        print ("Environment error({0}): {1}".format (e.errno, e.strerror))
         exit (1)
     except ValueError as estr:
-        print "Value error: {0}".format (str (estr))
+        print ("Value error: {0}".format (str (estr)))
         exit (1)
     except jsonschema.exceptions.ValidationError as e:
-        print "Jsonschema validation error: {0}".format (e.message)
+        print ("Jsonschema validation error: {0}".format (e.message))
         exit (1)
     except jsonschema.exceptions.SchemaError as e:
-        print "Jsonschema schema error: {0}".format (e.message)
+        print ("Jsonschema schema error: {0}".format (e.message))
         exit (1)
 
 if __name__ == "__main__":
