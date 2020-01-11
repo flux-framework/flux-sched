@@ -32,35 +32,48 @@ test_debug '
     echo ${malform}
 '
 
+# Unload the resource module
+# If module is not loaded, suppress error.
+unload_resource() {
+    flux module remove resource 2>rmmod.out
+    if test $? -ne 0; then
+        grep -q "No such file or directory" rmmod.out && return 0
+        cat rmmod.out >&2
+        return 1
+    fi
+}
+
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
-    flux module remove resource &&
+    unload_resource &&
     flux module load resource load-file=${grug} \
 load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with an XML works' '
-    flux module remove resource &&
+    unload_resource &&
     flux module load resource load-file=${xml} \
 load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with no option works' '
-    flux module remove resource &&
+    unload_resource &&
     flux module load resource prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
-    flux module remove resource &&
+    unload_resource &&
     test_expect_code 1 flux module load resource load-file=${ne_grug} \
 load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
+    unload_resource &&
     test_expect_code 1 flux module load resource load-file=${ne_xml} \
 load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with known policies works' '
+    unload_resource &&
     flux module load resource policy=high &&
     flux module remove resource &&
     flux module load resource policy=low &&
@@ -69,7 +82,7 @@ test_expect_success 'loading resource module with known policies works' '
 '
 
 test_expect_success 'loading resource module with unknown policies is tolerated' '
-    flux module remove resource &&
+    unload_resource &&
     flux module load resource policy=foo &&
     flux module remove resource &&
     flux module load resource policy=bar
