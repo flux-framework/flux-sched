@@ -271,12 +271,11 @@ def main ():
         args = parser.parse_args ()
         args.func (args)
 
-    except IOError as e:
-        print ("I/O error({0}): {1}".format (e.errno, e.strerror))
-        exit (3)
-
-    except EnvironmentError as e:
-        print ("Environment error({0}): {1}".format (e.errno, e.strerror))
+    except (IOError,EnvironmentError) as e:
+        name = e.__class__.__name__
+        print ("{}: error({}): {}".format (name, e.errno, e.strerror))
+        if e.errno == errno.ENOENT:
+            exit (3)
         if e.errno == errno.EBUSY:  # resource currently unavailable
             exit (16)
         if e.errno == errno.ENODEV: # unsatisfiable jobspec
