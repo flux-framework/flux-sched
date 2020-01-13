@@ -71,7 +71,7 @@ test_expect_success 'resource-info on allocated jobs works' '
 '
 
 test_expect_success 'cancel on nonexistent jobid is handled gracefully' '
-    test_expect_code 1 flux resource cancel 100000
+    test_expect_code 3 flux resource cancel 100000
 '
 
 test_expect_success 'removing resource works' '

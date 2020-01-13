@@ -80,22 +80,22 @@ test_expect_success 'set/get property multiple properties works' '
 '
 
 test_expect_success 'test with no path works' '
-	test_expect_code 1 flux resource set-property /dont/exist random=1
+	test_expect_code 3 flux resource set-property /dont/exist random=1
 '
 
 test_expect_success 'test with no property works' '
-	test_expect_code 1 flux resource get-property /tiny0/rack0/node0 dontexist
+	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 dontexist
 '
 
 test_expect_success 'test with malformed inputs works' '
 	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 badprop &&
-	test_expect_code 1 flux resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 badprop= &&
-	test_expect_code 1 flux resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 =badprop &&
-	test_expect_code 1 flux resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 = && 
-	test_expect_code 1 flux resource get-property /tiny0/rack0/node0 badprop
+	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop
 '
 
 test_expect_success 'test with complex inputs works' '
