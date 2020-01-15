@@ -1,5 +1,8 @@
-#!/usr/bin/env python
-
+#
+#  Run script as `flux jsonschemalint` with properly configured
+#   FLUX_EXEC_PATH or `flux python flux-jsonschemalint` if not to
+#   avoid python version mismatch
+#
 from __future__ import print_function
 
 import argparse
