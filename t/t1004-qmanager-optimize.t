@@ -64,9 +64,9 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
     flux job wait-event -t 2 ${jobid7} start &&
     flux job cancel ${jobid7} &&
     flux job wait-event -t 2 ${jobid8} start &&
-    test $(flux job list | wc -l) -eq 10 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 2 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 9 &&
+    test $(flux job list --states=running | wc -l) -eq 2 &&
+    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid11} clean
 '
 
@@ -90,9 +90,9 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
     jobid11=$(flux job submit C02.T3600.json) &&
 
     flux job wait-event -t 2 ${jobid1} start &&
-    test $(flux job list | wc -l) -eq 12 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 1 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 11 &&
+    test $(flux job list --states=running| wc -l) -eq 1 &&
+    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid11} clean
 '
 
@@ -116,9 +116,9 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
     jobid11=$(flux job submit C02.T3600.json) &&
 
     flux job wait-event -t 2 ${jobid1} start &&
-    test $(flux job list | wc -l) -eq 12 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 1 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 11 &&
+    test $(flux job list --states=running | wc -l) -eq 1 &&
+    flux job list | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid11} clean
 '
 
