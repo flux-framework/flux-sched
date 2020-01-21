@@ -64,9 +64,9 @@ test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
     flux job cancel ${jobid6} &&
     flux job wait-event -t 2 ${jobid7} start &&
     flux job wait-event -t 2 ${jobid9} start &&
-    test $(flux job list | wc -l) -eq 11 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 4 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 10 &&
+    test $(flux job list --states=running| wc -l) -eq 4 &&
+    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid10} clean
 '
 
@@ -94,9 +94,9 @@ test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
     flux job wait-event -t 2 ${jobid11} start &&
     flux job cancel ${jobid7} &&
     flux job wait-event -t 2 ${jobid9} start &&
-    test $(flux job list | wc -l) -eq 11 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 3 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 10 &&
+    test $(flux job list --states=running| wc -l) -eq 3 &&
+    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid11} clean
 '
 
@@ -124,9 +124,9 @@ test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
     flux job wait-event -t 2 ${jobid11} start &&
     flux job cancel ${jobid7} &&
     flux job wait-event -t 2 ${jobid7} clean &&
-    test $(flux job list | wc -l) -eq 11 &&
-    test $(flux job list | grep -v USERID | grep R | wc -l) -eq 2 &&
-    flux job list | grep -v USERID | xargs -L 1 flux job cancel &&
+    test $(flux job list --states=active | wc -l) -eq 10 &&
+    test $(flux job list --states=running| wc -l) -eq 2 &&
+    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
     flux job wait-event -t 2 ${jobid11} clean
 '
 
