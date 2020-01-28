@@ -72,8 +72,15 @@ libboost packages == 1.53 or > 1.58
   -  libboost-regex-dev
 libxml2-dev >= 2.9.1
 yaml-cpp-dev >= 0.5.1
-python-yaml >= 3.10
+python3-yaml >= 3.10
 ```
+
+##### Installing Ubuntu Packages
+
+```
+apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
+```
+
 
 The sched module contains
 a bifurcated structure of a core framework that has all the basic
