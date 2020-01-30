@@ -30,6 +30,22 @@
 namespace Flux {
 namespace resource_model {
 
+struct spantype_t {
+    int64_t span;
+    std::string jobtype;
+};
+
+struct allotment_t {
+    void erase (const int64_t jobid) {
+    	if (spantype[jobid].jobtype == "elastic")
+    	    --elasticcount;
+        spantype.erase(jobid);
+    }
+
+    std::map<int64_t, spantype_t> spantype;
+    int64_t elasticcount = 0;
+};
+
 //! Type to keep track of current schedule state
 struct schedule_t {
     schedule_t ();
@@ -37,8 +53,8 @@ struct schedule_t {
     schedule_t &operator= (const schedule_t &o);
     ~schedule_t ();
 
-    std::map<int64_t, int64_t> allocations;
-    std::map<int64_t, int64_t> reservations;
+    allotment_t allocations;
+    allotment_t reservations;
     planner_t *plans = NULL;
 };
 

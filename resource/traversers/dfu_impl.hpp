@@ -57,6 +57,7 @@ struct jobmeta_t {
     int64_t jobid = -1;
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
+    std::string jobtype = "static";
 
     void build (Jobspec::Jobspec &jobspec, bool alloc, int64_t id, int64_t t)
     {
@@ -68,6 +69,11 @@ struct jobmeta_t {
             duration = SYSTEM_MAX_DURATION; // need config support ultimately
         else
             duration = (int64_t)jobspec.attributes.system.duration;
+
+        std::unordered_map<std::string, YAML::Node>::const_iterator jtype =
+                jobspec.attributes.system.optional.find ("jobtype");
+        if (jtype != jobspec.attributes.system.optional.end ())
+            jobtype = jtype->second.as<std::string> ();
     }
 };
 
