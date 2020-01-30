@@ -148,10 +148,17 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
             }
             return -1;
         }
-        if (jobmeta.allocate)
-            (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-        else
-            (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
+        if (jobmeta.allocate) {
+            (*m_graph)[u].schedule.allocations.spantype[jobmeta.jobid].span = span;
+            (*m_graph)[u].schedule.allocations.spantype[jobmeta.jobid].jobtype = jobmeta.jobtype;
+
+            if (jobmeta.jobtype == "elastic")
+                ++(*m_graph)[u].schedule.allocations.elasticcount;
+       }
+        else {
+            (*m_graph)[u].schedule.reservations.spantype[jobmeta.jobid].span = span;
+            (*m_graph)[u].schedule.reservations.spantype[jobmeta.jobid].jobtype = jobmeta.jobtype;
+        }
     }
     return 0;
 }
@@ -352,13 +359,13 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
     int64_t span = -1;
     planner_t *plans = NULL;
 
-    if ((*m_graph)[u].schedule.allocations.find (jobid)
-        != (*m_graph)[u].schedule.allocations.end ()) {
-        span = (*m_graph)[u].schedule.allocations[jobid];
+    if ((*m_graph)[u].schedule.allocations.spantype.find (jobid)
+        != (*m_graph)[u].schedule.allocations.spantype.end ()) {
+        span = (*m_graph)[u].schedule.allocations.spantype[jobid].span;
         (*m_graph)[u].schedule.allocations.erase (jobid);
-    } else if ((*m_graph)[u].schedule.reservations.find (jobid)
-               != (*m_graph)[u].schedule.reservations.end ()) {
-        span = (*m_graph)[u].schedule.reservations[jobid];
+    } else if ((*m_graph)[u].schedule.reservations.spantype.find (jobid)
+               != (*m_graph)[u].schedule.reservations.spantype.end ()) {
+        span = (*m_graph)[u].schedule.reservations.spantype[jobid].span;
         (*m_graph)[u].schedule.reservations.erase (jobid);
     } else {
         goto done;
@@ -426,13 +433,13 @@ int dfu_impl_t::rem_exv (int64_t jobid)
     // In this case, you can't find allocated resources from an accelerated
     // depth first visit (dfv). There won't be no idata for that allocation.
     for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
-        if (g[*vi].schedule.allocations.find (jobid)
-            != g[*vi].schedule.allocations.end ()) {
-            span = g[*vi].schedule.allocations[jobid];
+        if (g[*vi].schedule.allocations.spantype.find (jobid)
+            != g[*vi].schedule.allocations.spantype.end ()) {
+            span = g[*vi].schedule.allocations.spantype[jobid].span;
             g[*vi].schedule.allocations.erase (jobid);
-        } else if (g[*vi].schedule.reservations.find (jobid)
-                   != g[*vi].schedule.reservations.end ()) {
-            span = g[*vi].schedule.reservations[jobid];
+        } else if (g[*vi].schedule.reservations.spantype.find (jobid)
+                   != g[*vi].schedule.reservations.spantype.end ()) {
+            span = g[*vi].schedule.reservations.spantype[jobid].span;
             g[*vi].schedule.reservations.erase (jobid);
         } else {
             continue;
