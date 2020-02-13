@@ -16,7 +16,7 @@ else
   #  and commands from the build directories:
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
-  FLUX_EXEC_PATH_PREPEND=":${SHARNESS_TEST_SRCDIR}/scripts"
+  FLUX_EXEC_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/scripts":"${SHARNESS_TEST_SRCDIR}/../src/cmd"
   export FLUX_CONF_DIR=${SHARNESS_TEST_SRCDIR}/../etc
 fi
 
