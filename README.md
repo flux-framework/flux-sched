@@ -39,13 +39,11 @@ challenging scheduling objectives.
 
 #### Building flux-sched
 
-flux-sched can only be built against an installed flux-core build.  Instructions
+flux-sched requires an installed flux-core package.  Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
-
-The next step is to build the sched module.
-flux-sched requires the following packages to build:
+flux-sched also requires the following packages to build:
 
 ```
 libhwloc-dev >= 1.11.1
@@ -98,14 +96,13 @@ make check
 make install
 ```
 
-To exercise functioning flux-sched modules in a Flux instance, follow
-these steps.
-
 ##### Flux Instance
 
-The following example assumes that flux-core and flux-sched were both installed
-into `${FLUX_CORE_PREFIX}`. For greater insight into what is happening, add the
--v flag to each flux command below.
+The examples below walk through exercising functioning flux-sched modules (i.e.,
+`qmanager` and `resource`) in a Flux instance. The following examples assume
+that flux-core and flux-sched were both installed into
+`${FLUX_CORE_PREFIX}`. For greater insight into what is happening, add the -v
+flag to each flux command below.
 
 Create a comms session comprised of 3 brokers:
 ```
