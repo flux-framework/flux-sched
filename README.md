@@ -67,12 +67,6 @@ python3-yaml >= 3.10
 apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
 ```
 
-
-The sched module contains
-a bifurcated structure of a core framework that has all the basic
-functionality plus loadable modules that implement specific
-scheduling behaviors.
-
 If you did not provide an install prefix when building flux-core or are building
 against a system-installed flux-core, then you can build flux-sched with:
 
