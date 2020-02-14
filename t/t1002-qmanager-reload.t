@@ -80,4 +80,10 @@ test_expect_success 'removing resource and qmanager modules' '
     flux module remove resource
 '
 
+# Reload the core scheduler so that rc3 won't hang waiting for
+# queue to become idle after jobs are canceled.
+test_expect_success 'load sched-simple module' '
+    flux module load sched-simple
+'
+
 test_done
