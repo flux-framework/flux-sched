@@ -39,24 +39,10 @@ challenging scheduling objectives.
 
 #### Building flux-sched
 
-flux-sched can only be built against an installed flux-core build.  If
-the flux-core is side installed, the PKG_CONFIG_PATH environment
-variable must include the location to flux-core's pkgconfig directory.
+flux-sched can only be built against an installed flux-core build.  Instructions
+for installing flux-core can be found in [the flux-core
+README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
-The example below is of a side install of flux-core.  In this example,
-the flux-core and flux-sched repos are under the $HOME directory.  The
-flux-core repo is cloned, configured with a prefix that identifies the
-install directory ($HOME/local), built and installed into that
-directory.
-
-```
-git clone <flux-core repo of your choice>
-cd ~/flux-core
-./autogen.sh
-./configure --prefix=$HOME/local
-make
-make install
-```
 
 The next step is to build the sched module.
 flux-sched requires the following packages to build:
@@ -87,14 +73,32 @@ a bifurcated structure of a core framework that has all the basic
 functionality plus loadable modules that implement specific
 scheduling behaviors.
 
-To build the sched module, run the following commands:
+If you did not provide an install prefix when building flux-core or are building
+against a system-installed flux-core, then you can build flux-sched with:
 
 ```
-export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$PKG_CONFIG_PATH
 git clone <flux-sched repo of your choice>
 cd ~/flux-sched
 ./autogen.sh
-./configure --prefix=$HOME/local
+./configure
+make
+make check
+make install
+```
+
+If you did provide an install prefix when building flux-core (i.e., flux-core is
+side installed), then the PKG_CONFIG_PATH environment variable must include the
+location to flux-core's pkgconfig directory.  The below example assumes that the
+flux-core is installed in `${FLUX_CORE_PREFIX}`. Note: It is advisable to
+install flux-sched into the same prefix as flux-core; this enables flux to
+auto-load the flux-sched modules when a new flux instance starts.
+
+```
+export PKG_CONFIG_PATH=${FLUX_CORE_PREFIX}/lib/pkgconfig:$PKG_CONFIG_PATH
+git clone <flux-sched repo of your choice>
+cd ~/flux-sched
+./autogen.sh
+./configure --prefix=${FLUX_CORE_PREFIX}
 make
 make check
 make install
@@ -105,15 +109,13 @@ these steps.
 
 ##### Flux Instance
 
-To run the example below, you will have to manually add flux-sched
-directories to the pertinent environment variables.  The following
-example assumes that flux-core and flux-sched live under your home
-directory.  For greater insight into what is happening, add the -v
-flag to each flux command below.
+The following example assumes that flux-core and flux-sched were both installed
+into `${FLUX_CORE_PREFIX}`. For greater insight into what is happening, add the
+-v flag to each flux command below.
 
 Create a comms session comprised of 3 brokers:
 ```
-$HOME/local/bin/flux start -s3
+${FLUX_CORE_PREFIX}/bin/flux start -s3
 ```
 This will create a new shell in which you can issue various
 flux commands such as following.
