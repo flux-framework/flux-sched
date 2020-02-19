@@ -317,9 +317,9 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
     if (ctx) {
         int saved_errno = errno;
         std::shared_ptr<job_t> job;
-        while ((job = ctx->queue->pending_pop ()) != nullptr)
+        while (ctx->queue && (job = ctx->queue->pending_pop ()) != nullptr)
             flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
-        while ((job = ctx->queue->complete_pop ()) != nullptr)
+        while (ctx->queue && (job = ctx->queue->complete_pop ()) != nullptr)
             flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
         schedutil_destroy (ctx->schedutil);
         errno = saved_errno;
