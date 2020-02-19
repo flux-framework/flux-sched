@@ -41,6 +41,7 @@ public:
 
 protected:
     unsigned int m_reservation_depth;
+    unsigned int m_max_reservation_depth = MAX_RESERVATION_DEPTH;
 
 private:
     int cancel_completed_jobs (void *h);

@@ -25,7 +25,6 @@
 #ifndef QUEUE_SYSTEM_DEFAULT_HPP
 #define QUEUE_SYSTEM_DEFAULT_HPP
 
-// FIXME: These need to be coverted into a scheduler configuration file
 namespace Flux {
 namespace queue_manager {
     const unsigned int MAX_QUEUE_DEPTH = 1000000;
