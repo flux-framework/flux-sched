@@ -24,6 +24,7 @@
 #define SCHED_DATA_H
 
 #include <map>
+#include <set>
 #include <cstdint>
 #include "resource/planner/planner.h"
 
@@ -36,14 +37,14 @@ struct spantype_t {
 };
 
 struct allotment_t {
-    void erase (const int64_t jobid) {
-    	if (spantype[jobid].jobtype == "elastic")
-    	    --elasticcount;
-        spantype.erase(jobid);
-    }
+    allotment_t ();
+    void insert (const int64_t jobid, const int64_t span,
+                 const std::string &jobtype);
+    void erase (const int64_t jobid);
+    ~allotment_t ();
 
-    std::map<int64_t, spantype_t> spantype;
-    int64_t elasticcount = 0;
+    std::map<int64_t, spantype_t> id2spantype;
+    std::map<std::string, std::set<int64_t>> type2id;
 };
 
 //! Type to keep track of current schedule state

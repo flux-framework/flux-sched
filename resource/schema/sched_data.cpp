@@ -25,6 +25,34 @@
 namespace Flux {
 namespace resource_model {
 
+allotment_t::allotment_t ()
+{
+
+}
+
+void allotment_t::insert (const int64_t jobid, const int64_t span,
+                         const std::string &jobtype)
+{
+    id2spantype[jobid].span = span;
+    id2spantype[jobid].jobtype = jobtype;
+
+    type2id[jobtype].insert (jobid);
+
+}
+
+void allotment_t::erase (const int64_t jobid)
+{
+    std::string jtype = id2spantype[jobid].jobtype;
+
+    type2id[jtype].erase (jobid);
+    id2spantype.erase (jobid);
+}
+
+allotment_t::~allotment_t ()
+{
+
+}
+
 schedule_t::schedule_t ()
 {
 
@@ -50,7 +78,6 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
 {
     int64_t base_time = 0;
     uint64_t duration = 0;
-    size_t len = 0;
 
     // assign operator does not copy the contents
     // of the schedule tables and of the planner objects.

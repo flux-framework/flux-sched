@@ -373,7 +373,7 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v, resource_graph_t &g,
     int64_t span = -1;
     int64_t avail = -1;
     planner_t *plans = NULL;
-    std::string jobtype = "static";
+    std::string jobtype = "rigid";
 
     if ( (plans = g[v].schedule.plans) == NULL) {
         errno = EINVAL;
@@ -397,14 +397,12 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v, resource_graph_t &g,
             m_err_msg += ": can't add span into " + g[v].name + ".\n";
             goto done;
         }
-        if (rsv) {
-            g[v].schedule.reservations.spantype[jobid].span = span;
-            g[v].schedule.reservations.spantype[jobid].jobtype = jobtype;
-       }
-        else {
-            g[v].schedule.allocations.spantype[jobid].span = span;
-            g[v].schedule.allocations.spantype[jobid].jobtype = jobtype;
-       }
+        if (rsv)
+            g[v].schedule.reservations.insert (jobid, span, jobtype);
+
+        else
+            g[v].schedule.allocations.insert (jobid, span, jobtype);
+
     } else {
         if (avail < g[v].size) {
             // if g[v] has already been allocated/reserved, this is an error
@@ -473,10 +471,10 @@ int resource_reader_jgf_t::undo_vertices (resource_graph_t &g,
         try {
             v = kv.second.v;
             if (rsv) {
-                span = g[v].schedule.reservations.spantype.at (jobid).span;
+                span = g[v].schedule.reservations.id2spantype.at (jobid).span;
                 g[v].schedule.reservations.erase (jobid);
             } else {
-                span = g[v].schedule.allocations.spantype.at (jobid).span;
+                span = g[v].schedule.allocations.id2spantype.at (jobid).span;
                 g[v].schedule.allocations.erase (jobid);
             }
 

@@ -57,7 +57,7 @@ struct jobmeta_t {
     int64_t jobid = -1;
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
-    std::string jobtype = "static";
+    std::string jobtype = "rigid";
 
     void build (Jobspec::Jobspec &jobspec, bool alloc, int64_t id, int64_t t)
     {
