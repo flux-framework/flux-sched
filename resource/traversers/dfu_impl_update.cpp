@@ -61,21 +61,24 @@ int dfu_impl_t::upd_txfilter (vtx_t u, const jobmeta_t &jobmeta,
 
     // Tag on a vertex with exclusive access or all of its ancestors
     (*m_graph)[u].idata.tags[jobmeta.jobid] = jobmeta.jobid;
-    // Update x_checker used for quick exclusivity check during matching
-    if ( (x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": x_checker not installed.\n";
-        return -1;
+    (*m_graph)[u].idata.job2type[jobmeta.jobid] = jobmeta.job_type;
+    if (jobmeta.job_type == "rigid") {
+        // Update x_checker used for quick exclusivity check during matching
+        if ( (x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": x_checker not installed.\n";
+            return -1;
+        }
+        if ( (span = planner_add_span (x_checker, jobmeta.at,
+                                       jobmeta.duration, 1)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_add_span returned -1.\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
+            return -1;
+        }
+        (*m_graph)[u].idata.x_spans[jobmeta.jobid] = span;
     }
-    if ( (span = planner_add_span (x_checker, jobmeta.at,
-                                   jobmeta.duration, 1)) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": planner_add_span returned -1.\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += "\n";
-        return -1;
-    }
-    (*m_graph)[u].idata.x_spans[jobmeta.jobid] = span;
     return 0;
 }
 
@@ -132,25 +135,38 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
         }
 
         int64_t span = -1;
-        planner_t *plans = NULL;
+        if (jobmeta.job_type == "rigid") {
+            planner_t *plans = NULL;
 
-        if ( (plans = (*m_graph)[u].schedule.plans) == NULL) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": plans not installed.\n";
-        }
-        if ( (span = planner_add_span (plans, jobmeta.at, jobmeta.duration,
-                                       (const uint64_t)needs)) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_add_span returned -1.\n";
-            if (errno != 0) {
-                m_err_msg += strerror (errno);
-                m_err_msg += "\n";
+            if ( (plans = (*m_graph)[u].schedule.plans) == NULL) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": plans not installed.\n";
             }
-            return -1;
+            if ( (span = planner_add_span (plans, jobmeta.at, jobmeta.duration,
+                                           (const uint64_t)needs)) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_add_span returned -1.\n";
+                if (errno != 0) {
+                    m_err_msg += strerror (errno);
+                    m_err_msg += "\n";
+                }
+                return -1;
+            }
         }
-        if (jobmeta.allocate)
+
+        if (jobmeta.allocate) {
             (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-        else
+            // update the allocated elastic job metadata
+            if (jobmeta.job_type == "elastic") {
+                (*m_graph)[u].schedule.elastic_job = true;
+                (*m_graph)[u].schedule.elastic_at = jobmeta.at;
+                (*m_graph)[u].schedule.elastic_duration = jobmeta.duration;
+            } else {
+                (*m_graph)[u].schedule.elastic_job = false;
+                (*m_graph)[u].schedule.elastic_at = -1;
+                (*m_graph)[u].schedule.elastic_duration = 0;                
+            }
+        } else
             (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
     }
     return 0;
@@ -276,29 +292,44 @@ int dfu_impl_t::rem_txfilter (vtx_t u, int64_t jobid, bool &stop)
     planner_t *x_checker = NULL;
     auto &x_spans = (*m_graph)[u].idata.x_spans;
     auto &tags = (*m_graph)[u].idata.tags;
+    auto &job2type = (*m_graph)[u].idata.job2type;
+    std::string job_type = "rigid";
 
     if (tags.find (jobid) == tags.end ()) {
         stop = true;
         rc = 0;
         goto done;
     }
-    if (x_spans.find (jobid) == x_spans.end ()) {
+
+    if (job2type.find (jobid) == job2type.end ()) {
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": jobid isn't found in x_spans table.\n ";
+        m_err_msg += ": jobid isn't found in job2type table.\n ";
         goto done;
     }
 
-    x_checker = (*m_graph)[u].idata.x_checker;
     (*m_graph)[u].idata.tags.erase (jobid);
-    span = (*m_graph)[u].idata.x_spans[jobid];
-    (*m_graph)[u].idata.x_spans.erase (jobid);
-    if ( (rc = planner_rem_span (x_checker, span)) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += "planner_rem_span returned -1.\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
-    }
+    job_type = (*m_graph)[u].idata.job2type[jobid];
+    (*m_graph)[u].idata.job2type.erase (jobid);
+    if (job_type == "rigid") {
+        if (x_spans.find (jobid) == x_spans.end ()) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": jobid isn't found in x_spans table.\n ";
+            goto done;
+        }
+
+        span = (*m_graph)[u].idata.x_spans[jobid];
+        (*m_graph)[u].idata.x_spans.erase (jobid);
+
+        x_checker = (*m_graph)[u].idata.x_checker;
+        if ( (rc = planner_rem_span (x_checker, span)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += "planner_rem_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        }
+    } else
+        rc = 0;
 
 done:
     return rc;
@@ -351,11 +382,16 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
     int rc = 0;
     int64_t span = -1;
     planner_t *plans = NULL;
+    bool iselastic = false;
 
     if ((*m_graph)[u].schedule.allocations.find (jobid)
         != (*m_graph)[u].schedule.allocations.end ()) {
         span = (*m_graph)[u].schedule.allocations[jobid];
         (*m_graph)[u].schedule.allocations.erase (jobid);
+        iselastic = (*m_graph)[u].schedule.elastic_job;
+        (*m_graph)[u].schedule.elastic_job = false;
+        (*m_graph)[u].schedule.elastic_at = -1;
+        (*m_graph)[u].schedule.elastic_duration = 0;
     } else if ((*m_graph)[u].schedule.reservations.find (jobid)
                != (*m_graph)[u].schedule.reservations.end ()) {
         span = (*m_graph)[u].schedule.reservations[jobid];
@@ -364,13 +400,15 @@ int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
         goto done;
     }
 
-    plans = (*m_graph)[u].schedule.plans;
-    if ( (rc = planner_rem_span (plans, span)) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": planner_rem_span returned -1.\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
+    if (!iselastic) {
+        plans = (*m_graph)[u].schedule.plans;
+        if ( (rc = planner_rem_span (plans, span)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_rem_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        }
     }
 
 done:
@@ -416,6 +454,7 @@ int dfu_impl_t::rem_exv (int64_t jobid)
     vtx_iterator_t vi, v_end;
     edg_iterator_t ei, e_end;
     resource_graph_t &g = m_graph_db->resource_graph;
+    bool iselastic = false;
 
     // Exhausitive visit (exv) is required when jobid came from an allocation
     // created by a traverser different from this traverser, for example, one
@@ -430,21 +469,27 @@ int dfu_impl_t::rem_exv (int64_t jobid)
             != g[*vi].schedule.allocations.end ()) {
             span = g[*vi].schedule.allocations[jobid];
             g[*vi].schedule.allocations.erase (jobid);
+            iselastic = g[*vi].schedule.elastic_job;
+            g[*vi].schedule.elastic_job = false;
         } else if (g[*vi].schedule.reservations.find (jobid)
                    != g[*vi].schedule.reservations.end ()) {
             span = g[*vi].schedule.reservations[jobid];
             g[*vi].schedule.reservations.erase (jobid);
+            // need to reset in case previous vertex was elastic
+            iselastic = false;
         } else {
             continue;
         }
 
-        if ( (rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_rem_span returned -1.\n";
-            m_err_msg += "name=" + g[*vi].name + "uniq_id=";
-            m_err_msg + std::to_string (g[*vi].uniq_id) + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
+        if (!iselastic) {
+            if ( (rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_rem_span returned -1.\n";
+                m_err_msg += "name=" + g[*vi].name + "uniq_id=";
+                m_err_msg + std::to_string (g[*vi].uniq_id) + ".\n";
+                m_err_msg += strerror (errno);
+                m_err_msg += ".\n";
+            }
         }
     }
 
@@ -498,6 +543,13 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int needs = 0;
     std::map<std::string, int64_t> dfu;
     const std::string &dom = m_match->dom_subsystem ();
+
+    if ( (jobmeta.job_type != "rigid") && (jobmeta.job_type != "elastic")) {
+        errno = ENOTSUP;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += "Unsupported job type: " + jobmeta.job_type + ".\n";
+        return rc;
+    }
 
     tick ();
     if ( (rc = reader->update (m_graph_db->resource_graph,

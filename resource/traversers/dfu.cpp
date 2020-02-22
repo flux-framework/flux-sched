@@ -78,22 +78,27 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     }
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
         /* Or else reserve */
-        errno = 0;
-        meta.allocate = false;
-        t = meta.at + 1;
-        p = (*get_graph ())[root].idata.subplans.at (dom);
-        len = planner_multi_resources_len (p);
-        duration = meta.duration;
-        detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
-        for (t = planner_multi_avail_time_first (p, t, duration, &agg[0], len);
-             (t != -1 && rc && !errno); t = planner_multi_avail_time_next (p)) {
-            meta.at = t;
-            rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
+        if (meta.job_type == "rigid") {
+            errno = 0;
+            meta.allocate = false;
+            t = meta.at + 1;
+            p = (*get_graph ())[root].idata.subplans.at (dom);
+            len = planner_multi_resources_len (p);
+            duration = meta.duration;
+            detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
+            for (t = planner_multi_avail_time_first (p, t, duration, &agg[0], len);
+                 (t != -1 && rc && !errno); t = planner_multi_avail_time_next (p)) {
+                meta.at = t;
+                rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
+            }
+            // The planner layer returns ENOENT when no scheduleable point exists
+            // Turn this into ENODEV
+            errno = (rc < 0 && errno == ENOENT)? ENODEV : errno;
+            break;
+        } else {
+            errno = EINVAL;
+            break;
         }
-        // The planner layer returns ENOENT when no scheduleable point exists
-        // Turn this into ENODEV
-        errno = (rc < 0 && errno == ENOENT)? ENODEV : errno;
-        break;
     }
     case match_op_t::MATCH_ALLOCATE:
         errno = EBUSY;
@@ -241,6 +246,12 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     meta.build (jobspec, true, jobid, *at);
+
+    if ( (meta.job_type != "rigid") && (meta.job_type != "elastic")) {
+        errno = ENOTSUP;
+        return -1;
+    }
+
     if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
         rc = detail::dfu_impl_t::update (root, writers, meta);
