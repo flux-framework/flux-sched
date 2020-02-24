@@ -22,14 +22,11 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 TESTS_ENVIRONMENT = \
     FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
     FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
-    FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
-    FLUX_RESOURCE_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
     FLUX_SCHED_CO_INST=`sh -c 'if [ $(FLUX_PREFIX) = $(prefix) ]; then echo co; fi'` \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
     t0000-sharness.t \
-    t0003-basic-install.t \
     t1001-qmanager-basic.t \
     t1002-qmanager-reload.t \
     t1003-qmanager-policy.t \
