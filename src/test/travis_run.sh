@@ -69,7 +69,8 @@ elif test "$TEST_INSTALL" = "t"; then
     ARGS="$ARGS --prefix=/usr --sysconfdir=/etc"
     MAKECMDS="make -j $JOBS && sudo make install && \
               /usr/bin/flux keygen --force && \
-              FLUX_TEST_INSTALLED_PATH=/usr/bin make -j $JOBS check"
+              FLUX_TEST_INSTALLED_PATH=/usr/bin \
+              FLUX_SCHED_TEST_INSTALLED=t make -j $JOBS check"
 fi
 
 # Travis has limited resources, even though number of processors might
