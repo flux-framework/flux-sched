@@ -34,6 +34,7 @@ TESTS = \
     t1002-qmanager-reload.t \
     t1003-qmanager-policy.t \
     t1004-qmanager-optimize.t \
+    t1005-qmanager-conf.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
@@ -77,7 +78,9 @@ EXTRA_DIST= \
 	scripts \
 	sharness.sh \
 	sharness.d \
-	schemas
+	schemas \
+	conf.d \
+	rc
 
 clean-local:
 	rm -rf *.o test-results trash-directory*
