@@ -329,6 +329,8 @@ out:
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
+    std::string res_qp;
+    std::string res_pp;
 
     if (ctx->conf.queue_policy != "")
         ctx->queue_policy = ctx->conf.queue_policy;
@@ -336,6 +338,8 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
         ctx->queue_policy = ctx->args.queue_policy;
 
     ctx->queue = create_queue_policy (ctx->queue_policy, "module");
+    flux_log (ctx->h, LOG_DEBUG,
+              "enforced policy: %s", ctx->queue_policy.c_str ());
     if (!ctx->queue) {
         errno = EINVAL;
         flux_log_error (ctx->h, "%s: create_queue_policy (%s)",
@@ -349,6 +353,17 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
     // Apply module load-time policy and params.
     if ((rc = enforce_args_queue_policy (ctx)) < 0)
         goto out;
+
+    ctx->queue->get_params (res_qp, res_pp);
+    if (res_qp.empty ())
+        res_qp = std::string ("default");
+    if (res_pp.empty ())
+        res_pp = std::string ("default");
+    flux_log (ctx->h, LOG_DEBUG,
+              "effective queue params: %s", res_qp.c_str ());
+    flux_log (ctx->h, LOG_DEBUG,
+              "effective policy params: %s", res_pp.c_str ());
+
     if (handshake_jobmanager (ctx) < 0) {
         flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
         goto out;
