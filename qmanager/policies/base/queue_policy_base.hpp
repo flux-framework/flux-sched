@@ -203,6 +203,15 @@ public:
      */
     virtual int apply_params ();
 
+    /*! Get queue and policy parameters.
+     *
+     * \param q_p        string to which to print queue parameters
+     *                   (e.g., "queue-depth=1024,foo=bar")
+     * \param p_p        string to which to print queue parameters
+     *                   (e.g., "reservation-depth=1024,foo=bar")
+     */
+    void get_params (std::string &q_p, std::string &p_p);
+
     /*! Append a job into the internal pending-job queue.
      *
      *  \param pending_job

@@ -136,6 +136,23 @@ int queue_policy_base_t::apply_params ()
     return rc;
 }
 
+void queue_policy_base_t::get_params (std::string &q_p, std::string &p_p)
+{
+    std::unordered_map<std::string, std::string>::const_iterator i;
+    for (i = queue_policy_base_impl_t::m_qparams.begin ();
+         i != queue_policy_base_impl_t::m_qparams.end (); i++) {
+        if (!q_p.empty ())
+            q_p += std::string (",");
+        q_p += i->first + std::string ("=") + i->second;
+    }
+    for (i = queue_policy_base_impl_t::m_pparams.begin ();
+         i != queue_policy_base_impl_t::m_pparams.end (); i++) {
+        if (!p_p.empty ())
+            p_p += std::string (",");
+        p_p += i->first + std::string ("=") + i->second;
+    }
+}
+
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
 {
     return detail::queue_policy_base_impl_t::insert (job);
