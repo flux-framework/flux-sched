@@ -191,6 +191,7 @@ echo "
   CPPFLAGS.......... $CPPFLAGS
   CXXFLAGS.......... $CXXFLAGS
   FLUX.............: $FLUX
+  FLUX_VERSION.....: $($FLUX version | sed -n 's/libflux-core:\t*//p')
   FLUX_CORE_CFLAGS.: $FLUX_CORE_CFLAGS
   FLUX_CORE_LIBS...: $FLUX_CORE_LIBS
   FLUX_PREFIX......: $FLUX_PREFIX
