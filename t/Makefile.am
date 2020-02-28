@@ -6,12 +6,7 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 	$(top_srcdir)/config/tap-driver.sh
 
 #
-# Set up paths for fluxometer-based Lua tests.
-# LUA_PATH is set to find fluxometer.lua itself.
-# The PREPEND versions are required so that in-tree versions of
-#  modules are found instead of the lua modules in the path
-#  of the flux installation we're using for testing. If
-#  $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
+#  If $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
 #  export the $(prefix) PREPEND variables so that they can
 #  be picked up from the sched install directiories which
 #  may or may not be the same as $(FLUX_PREFIX).
