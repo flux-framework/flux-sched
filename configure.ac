@@ -16,6 +16,8 @@ AM_MAINTAINER_MODE([enable])
 #LT_PREREQ([2.4.2])
 LT_INIT([dlopen])
 
+AC_PREFIX_PROGRAM([flux])
+
 # Checks for programs.
 AC_DEFINE([_GNU_SOURCE], 1,
           [Define _GNU_SOURCE so that we get all necessary prototypes])
