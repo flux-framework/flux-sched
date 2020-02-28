@@ -13,7 +13,7 @@ if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   FLUX_EXEC_PATH_PREPEND=${SHARNESS_TEST_SRCDIR}/scripts:${FLUX_EXEC_PATH_PREPEND}
 else
   # Set up environment so that we find flux-sched modules,
-  #  commands, and Lua libs from the build directories:
+  #  and commands from the build directories:
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
   FLUX_EXEC_PATH_PREPEND=":${SHARNESS_TEST_SRCDIR}/scripts"
