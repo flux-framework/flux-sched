@@ -37,15 +37,33 @@
 #
 
 AC_DEFUN([AX_FLUX_CORE], [
+  # prepend PREFIX/lib/pkgconfig to PKG_CONFIG_PATH.
+  # Allows flux-core in the destination PREFIX to be found by pkg-config
+  #  by default, assuming in 99% of cases this is what we want.
+
+  saved_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+  PKG_CONFIG_PATH=${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}
+  export PKG_CONFIG_PATH
+
   PKG_CHECK_MODULES([FLUX_CORE], [flux-core],
-    [ AC_CHECK_PROG(FLUX,[flux],[flux])
+    [
       FLUX_PREFIX=`pkg-config --variable=prefix flux-core`
-      if test -z "${FLUX_PREFIX}" && test -n "${FLUX}" ; then
-        FLUX_PREFIX=`echo ${FLUX} | sed 's/\/bin\/flux//'`
+      if test -z "${FLUX_PREFIX}" ; then
+        AC_MSG_ERROR([failed to determine flux-core prefix from pkg-config])
       fi
       AC_SUBST(FLUX_PREFIX)
+
+      #  Ensure we find the same flux executable as corresponds to
+      #  to libflux-core found by pkg-config by puting FLUX_PREFIX/bin
+      #  first in AC_PATH_PROG's path
+      #
+      AC_PATH_PROG(FLUX,[flux],
+                   [AC_MSG_ERROR([failed to find flux executable])],
+                   [$FLUX_PREFIX/bin:$PATH])
     ],
     AC_MSG_ERROR([flux-core package not installed]))
   ]
+  PKG_CONFIG_PATH=$saved_PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH
 )
 
