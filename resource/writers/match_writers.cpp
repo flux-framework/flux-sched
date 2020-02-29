@@ -297,11 +297,12 @@ int rv1_match_writers_t::emit (std::stringstream &out)
     out << "{" << ver;
     out << "," << exec_key;
     rlite.emit (out, false);
+    out << "," << m_tmout.str ();
     out << "," << sched_key;
     jgf.emit (out, false);
     out << "}" << std::endl;
     if (out.str ().size () <= (base + ver.size () + exec_key.size ()
-                                    + sched_key.size () + 5))
+                                    + sched_key.size () + 6))
         out.str (out.str ().substr (0, base));
     return 0;
 }
@@ -324,6 +325,13 @@ int rv1_match_writers_t::emit_edg (const std::string &prefix,
     int rc = rlite.emit_edg (prefix, g, e);
     rc += jgf.emit_edg (prefix, g, e);
     return (!rc)? 0 : -1;
+}
+
+int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
+{
+    m_tmout << "\"starttime:\"" << start_tm << ",";
+    m_tmout << "\"expiration:\"" << end_tm;
+    return 0;
 }
 
 

@@ -55,6 +55,9 @@ public:
                           const f_resource_graph_t &g, const edg_t &e) {
         return 0;
     }
+    virtual int emit_tm (uint64_t start_tm, uint64_t end_tm) {
+        return 0;
+    }
     void compress (std::stringstream &o, const std::set<int64_t> &ids);
 };
 
@@ -128,8 +131,10 @@ public:
                           unsigned int needs, bool exclusive);
     virtual int emit_edg (const std::string &prefix,
                           const f_resource_graph_t &g, const edg_t &e);
+    virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 private:
     rlite_match_writers_t rlite;
+    std::stringstream m_tmout;
     jgf_match_writers_t jgf;
 };
 
