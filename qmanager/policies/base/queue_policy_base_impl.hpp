@@ -108,13 +108,23 @@ int queue_policy_base_t::apply_params ()
     int rc = 0;
     try {
         std::unordered_map<std::string, std::string>::const_iterator i;
+        if ((i = queue_policy_base_impl_t::m_qparams.find ("max-queue-depth"))
+             != queue_policy_base_impl_t::m_qparams.end ()) {
+            unsigned int depth = std::stoi (i->second);
+            queue_policy_base_impl_t::m_max_queue_depth = depth;
+            if (depth < queue_policy_base_impl_t::m_queue_depth) {
+                queue_policy_base_impl_t::m_queue_depth = depth;
+            }
+        }
         if ((i = queue_policy_base_impl_t::m_qparams.find ("queue-depth"))
              != queue_policy_base_impl_t::m_qparams.end ()) {
             unsigned int depth = std::stoi (i->second);
-            if (depth < MAX_QUEUE_DEPTH)
+            if (depth < m_max_queue_depth) {
                 queue_policy_base_impl_t::m_queue_depth = depth;
-            else
-                queue_policy_base_impl_t::m_queue_depth = MAX_QUEUE_DEPTH;
+            } else {
+                queue_policy_base_impl_t::m_queue_depth
+                    = queue_policy_base_impl_t::m_max_queue_depth;
+            }
         }
     } catch (const std::invalid_argument &e) {
         rc = -1;
@@ -124,6 +134,23 @@ int queue_policy_base_t::apply_params ()
         errno = ERANGE;
     }
     return rc;
+}
+
+void queue_policy_base_t::get_params (std::string &q_p, std::string &p_p)
+{
+    std::unordered_map<std::string, std::string>::const_iterator i;
+    for (i = queue_policy_base_impl_t::m_qparams.begin ();
+         i != queue_policy_base_impl_t::m_qparams.end (); i++) {
+        if (!q_p.empty ())
+            q_p += std::string (",");
+        q_p += i->first + std::string ("=") + i->second;
+    }
+    for (i = queue_policy_base_impl_t::m_pparams.begin ();
+         i != queue_policy_base_impl_t::m_pparams.end (); i++) {
+        if (!p_p.empty ())
+            p_p += std::string (",");
+        p_p += i->first + std::string ("=") + i->second;
+    }
 }
 
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)

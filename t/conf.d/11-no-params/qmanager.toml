@@ -1,0 +1,8 @@
+#
+# Configuration for the qmanager module
+#
+
+[qmanager]
+
+policy = "fcfs"                 # queueing policy type
+

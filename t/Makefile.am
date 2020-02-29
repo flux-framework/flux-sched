@@ -22,18 +22,16 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 TESTS_ENVIRONMENT = \
     FLUX_EXEC_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/libexec/flux/cmd}" \
     FLUX_MODULE_PATH_PREPEND="$${FLUX_SCHED_TEST_INSTALLED:+$(prefix)/lib/flux/modules}" \
-    FLUX_SCHED_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
-    FLUX_RESOURCE_RC_PATH="$${FLUX_SCHED_TEST_INSTALLED:+$(sysconf)/flux}" \
     FLUX_SCHED_CO_INST=`sh -c 'if [ $(FLUX_PREFIX) = $(prefix) ]; then echo co; fi'` \
     PATH="$(FLUX_PREFIX)/bin:$(PATH)"
 
 TESTS = \
     t0000-sharness.t \
-    t0003-basic-install.t \
     t1001-qmanager-basic.t \
     t1002-qmanager-reload.t \
     t1003-qmanager-policy.t \
     t1004-qmanager-optimize.t \
+    t1005-qmanager-conf.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
@@ -77,7 +75,9 @@ EXTRA_DIST= \
 	scripts \
 	sharness.sh \
 	sharness.d \
-	schemas
+	schemas \
+	conf.d \
+	rc
 
 clean-local:
 	rm -rf *.o test-results trash-directory*

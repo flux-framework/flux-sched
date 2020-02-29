@@ -135,6 +135,7 @@ protected:
     uint64_t m_cq_cnt = 0;
     uint64_t m_oq_cnt = 0;
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
+    unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
     std::map<uint64_t, flux_jobid_t> m_pending;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
@@ -201,6 +202,15 @@ public:
     /*! Apply the set policy parameters to the queuing policy.
      */
     virtual int apply_params ();
+
+    /*! Get queue and policy parameters.
+     *
+     * \param q_p        string to which to print queue parameters
+     *                   (e.g., "queue-depth=1024,foo=bar")
+     * \param p_p        string to which to print queue parameters
+     *                   (e.g., "reservation-depth=1024,foo=bar")
+     */
+    void get_params (std::string &q_p, std::string &p_p);
 
     /*! Append a job into the internal pending-job queue.
      *

@@ -1,0 +1,16 @@
+#
+# Configuration for the qmanager module
+#
+
+[qmanager]
+
+policy = "hybrid"              # queueing policy type
+
+    [qmanager.queue-params]        # general queue parameters
+    max-queue-depth = 1000000      # max queue depth (applied to all policies)
+    queue-depth = 8192             # queue-depth (applied to all policies)
+
+    [qmanager.policy-params]       # queue policy parameters
+    max-reservation-depth = 128    # max depth for "conservative" and "hybrid"
+    reservation-depth = 64         # reservation depth for HYBRID
+

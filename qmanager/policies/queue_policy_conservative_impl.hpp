@@ -46,6 +46,26 @@ int queue_policy_conservative_t<reapi_type>::apply_params ()
         if (queue_policy_bf_base_t<reapi_type>::m_reservation_depth > depth)
             queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
     }
+
+    try {
+        std::unordered_map<std::string, std::string>::const_iterator i;
+
+        if ((i = queue_policy_base_impl_t
+                     ::m_pparams.find ("max-reservation-depth"))
+             != queue_policy_base_impl_t::m_pparams.end ()) {
+            unsigned int depth = std::stoi (i->second);
+            queue_policy_bf_base_t<reapi_type>::m_max_reservation_depth = depth;
+            if (depth < queue_policy_bf_base_t<reapi_type>
+                            ::m_reservation_depth) {
+                queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
+            }
+        }
+    } catch (const std::invalid_argument &e) {
+        errno = EINVAL;
+    } catch (const std::out_of_range &e) {
+        errno = ERANGE;
+    }
+
     return rc;
 }
 

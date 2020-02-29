@@ -17,6 +17,7 @@ else
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs"
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
   FLUX_EXEC_PATH_PREPEND=":${SHARNESS_TEST_SRCDIR}/scripts"
+  export FLUX_CONF_DIR=${SHARNESS_TEST_SRCDIR}/../etc
 fi
 
 ## Set up environment using flux(1) in PATH
