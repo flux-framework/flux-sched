@@ -7,9 +7,25 @@
 #
 # DESCRIPTION
 #
-#   Find flux-core with pkg-config, setting FLUX_CORE_LIBS, _CFLAGS, and:
-#   - FLUX            flux(1) command path
-#   - FLUX_PREFIX     flux-core configured prefix
+#   This macro attempts to find the installed flux-core prefix,
+#   the flux(1) command, as well as flux-core associated libraries
+#   using pkg-config(1).
+#
+#   The macro prepends PREFIX/lib/pkgconfig to PKG_CONFIG_PATH
+#   so that the flux-core in destination --prefix is found by default.
+#
+#   After the macro runs, the following variables will be defined:
+#
+#   - FLUX                 flux(1) command path
+#   - FLUX_PREFIX          flux-core configured prefix
+#   - FLUX_PYTHON          flux-core configured Python version
+#   - LIBFLUX_VERSION      libflux-core version
+#   - FLUX_CORE_LIBS       libflux-core LIBS
+#   - FLUX_CORE_CFLAGS     libflux-core CFLAGS
+#   - FLUX_IDSET_LIBS      libflux-idset LIBS
+#   - FLUX_IDSET_CFLAGS    libflux-idset CFLAGS
+#   - FLUX_OPTPARSE_LIBS   libflux-optparse LIBS
+#   - FLUX_OPTPARSE_CFLAGS libflux-optparse CFLAGS
 #
 # LICENSE
 #
