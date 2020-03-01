@@ -48,10 +48,12 @@ AC_DEFUN([AX_FLUX_CORE], [
   PKG_CHECK_MODULES([FLUX_CORE], [flux-core],
     [
       FLUX_PREFIX=`pkg-config --variable=prefix flux-core`
+      LIBFLUX_VERSION=`pkg-config --modversion flux-core`
       if test -z "${FLUX_PREFIX}" ; then
         AC_MSG_ERROR([failed to determine flux-core prefix from pkg-config])
       fi
       AC_SUBST(FLUX_PREFIX)
+      AC_SUBST(LIBFLUX_VERSION)
 
       #  Ensure we find the same flux executable as corresponds to
       #  to libflux-core found by pkg-config by puting FLUX_PREFIX/bin

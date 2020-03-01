@@ -194,6 +194,7 @@ echo "
   FLUX_VERSION.....: $($FLUX version | sed -n 's/libflux-core:\t*//p')
   FLUX_CORE_CFLAGS.: $FLUX_CORE_CFLAGS
   FLUX_CORE_LIBS...: $FLUX_CORE_LIBS
+  LIBFLUX_VERSION..: $LIBFLUX_VERSION
   FLUX_PREFIX......: $FLUX_PREFIX
   LDFLAGS..........: $LDFLAGS
   LIBS.............: $LIBS
