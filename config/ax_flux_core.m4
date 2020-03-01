@@ -63,6 +63,12 @@ AC_DEFUN([AX_FLUX_CORE], [
     ],
     AC_MSG_ERROR([flux-core package not installed]))
   ]
+
+  #  Check for other flux-core libraries
+  PKG_CHECK_MODULES([FLUX_IDSET], [flux-idset], [], [])
+  PKG_CHECK_MODULES([FLUX_SCHEDUTIL], [flux-schedutil], [], [])
+  PKG_CHECK_MODULES([FLUX_OPTPARSE], [flux-optparse], [], [])
+
   PKG_CONFIG_PATH=$saved_PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
 )
