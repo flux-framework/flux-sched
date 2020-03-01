@@ -65,31 +65,25 @@ python3-yaml >= 3.10
 apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
 ```
 
-If you did not provide an install prefix when building flux-core or are building
-against a system-installed flux-core, then you can build flux-sched with:
-
+Clone flux-sched from an upstream repo and prepare for configure:
 ```
 git clone <flux-sched repo of your choice>
-cd ~/flux-sched
+cd flux-sched
 ./autogen.sh
-./configure
-make
-make check
-make install
 ```
 
-If you did provide an install prefix when building flux-core (i.e., flux-core is
-side installed), then the PKG_CONFIG_PATH environment variable must include the
-location to flux-core's pkgconfig directory.  The below example assumes that the
-flux-core is installed in `${FLUX_CORE_PREFIX}`. Note: It is advisable to
-install flux-sched into the same prefix as flux-core; this enables flux to
-auto-load the flux-sched modules when a new flux instance starts.
+The flux-sched `configure` will attempt to find a flux-core in the
+same `--prefix` as specified on the command line. If `--prefix` is
+not specified, then it will default to the same prefix as was used
+to install the first `flux` executable found in `PATH`. Therefore,
+if `which flux` returns the version of flux-core against which
+flux-sched should be compiled, then `./configure` may be run without
+any arguments. If flux-core is side-installed, then `--prefix` should
+be set to the same prefix as was used to install the target flux-core.
+
+For example, if flux-core was installed in `$FLUX_CORE_PREFIX`:
 
 ```
-export PKG_CONFIG_PATH=${FLUX_CORE_PREFIX}/lib/pkgconfig:$PKG_CONFIG_PATH
-git clone <flux-sched repo of your choice>
-cd ~/flux-sched
-./autogen.sh
 ./configure --prefix=${FLUX_CORE_PREFIX}
 make
 make check
