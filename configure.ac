@@ -67,13 +67,6 @@ AC_CHECK_LIB([readline], [readline],
                         [Define if you have libreadline])],
              [AC_MSG_ERROR([Please install GNU readline])])
 
-#  Edit PATH to remove $PWD/src/cmd so that AM_PATH_PYTHON doesn't find
-#  flux python script (thus creating a link to itself.) This needs to be
-#  done *before* AX_PYTHON_DEVEL.
-#
-saved_PATH=$PATH
-export PATH=$(echo $PATH | sed "s|$(pwd)/src/cmd:*||")
-
 #  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
 PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
 AX_PYTHON_DEVEL([>='2.7'])
@@ -82,8 +75,6 @@ AM_PATH_PYTHON([$ac_python_version])
 if test "X$PYTHON" = "X"; then
   AC_MSG_ERROR([could not find python])
 fi
-#  Restore original PATH:
-export PATH=${saved_PATH}
 
 # Flag for PYTHON_LDFLAGS workaround below.
 if test -n "$PYTHON_LDFLAGS"; then
