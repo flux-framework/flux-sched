@@ -16,6 +16,8 @@ AM_MAINTAINER_MODE([enable])
 #LT_PREREQ([2.4.2])
 LT_INIT([dlopen])
 
+AC_PREFIX_PROGRAM([flux])
+
 # Checks for programs.
 AC_DEFINE([_GNU_SOURCE], 1,
           [Define _GNU_SOURCE so that we get all necessary prototypes])
@@ -59,29 +61,20 @@ AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
 AX_BOOST_REGEX
-PKG_CHECK_MODULES([IDSET], [flux-idset], [], [])
-PKG_CHECK_MODULES([FLUX_SCHEDUTIL], [flux-schedutil], [], [])
 AC_CHECK_LIB([readline], [readline],
              [AC_SUBST([READLINE_LIBS], ["-lreadline"])
               AC_DEFINE([HAVE_LIBREADLINE], [1],
                         [Define if you have libreadline])],
              [AC_MSG_ERROR([Please install GNU readline])])
 
-#  Edit PATH to remove $PWD/src/cmd so that AM_PATH_PYTHON doesn't find
-#  flux python script (thus creating a link to itself.) This needs to be
-#  done *before* AX_PYTHON_DEVEL.
-#
-saved_PATH=$PATH
-export PATH=$(echo $PATH | sed "s|$(pwd)/src/cmd:*||")
-
+#  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
+PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
 AX_PYTHON_DEVEL([>='2.7'])
 
 AM_PATH_PYTHON([$ac_python_version])
 if test "X$PYTHON" = "X"; then
   AC_MSG_ERROR([could not find python])
 fi
-#  Restore original PATH:
-export PATH=${saved_PATH}
 
 # Flag for PYTHON_LDFLAGS workaround below.
 if test -n "$PYTHON_LDFLAGS"; then
@@ -191,8 +184,10 @@ echo "
   CPPFLAGS.......... $CPPFLAGS
   CXXFLAGS.......... $CXXFLAGS
   FLUX.............: $FLUX
+  FLUX_VERSION.....: $($FLUX version | sed -n 's/libflux-core:\t*//p')
   FLUX_CORE_CFLAGS.: $FLUX_CORE_CFLAGS
   FLUX_CORE_LIBS...: $FLUX_CORE_LIBS
+  LIBFLUX_VERSION..: $LIBFLUX_VERSION
   FLUX_PREFIX......: $FLUX_PREFIX
   LDFLAGS..........: $LDFLAGS
   LIBS.............: $LIBS
