@@ -62,6 +62,10 @@ AC_DEFUN([AX_FLUX_CORE], [
       AC_PATH_PROG(FLUX,[flux],
                    [AC_MSG_ERROR([failed to find flux executable])],
                    [$FLUX_PREFIX/bin:$PATH])
+
+      #  Set FLUX_PYTHON_VERSION to the version of Python used by flux-core
+      FLUX_PYTHON_VERSION=$($FLUX python -c 'import sys; print(".".join(map(str, sys.version_info[[:2]])))')
+      AC_SUBST(FLUX_PYTHON_VERSION)
     ],
     AC_MSG_ERROR([flux-core package not installed]))
   ]

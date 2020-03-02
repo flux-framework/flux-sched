@@ -74,6 +74,8 @@ AC_CHECK_LIB([readline], [readline],
 saved_PATH=$PATH
 export PATH=$(echo $PATH | sed "s|$(pwd)/src/cmd:*||")
 
+#  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
+PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
 AX_PYTHON_DEVEL([>='2.7'])
 
 AM_PATH_PYTHON([$ac_python_version])
