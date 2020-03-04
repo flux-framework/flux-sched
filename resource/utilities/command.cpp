@@ -1,5 +1,6 @@
 /*****************************************************************************\
- *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  Copyright (c) 2014 - 2020 Lawrence Livermore National Security, LLC.
+ *  Produced at
  *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
  *  LLNL-CODE-658032 All rights reserved.
  *
@@ -168,7 +169,6 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
         struct timeval st, et;
 
         gettimeofday (&st, NULL);
-        ctx->writers->reset ();
 
         if (args[1] == "allocate")
             rc = ctx->traverser->run (job, ctx->writers, match_op_t::
@@ -276,7 +276,6 @@ static int update (std::shared_ptr<resource_context_t> &ctx,
     }
 
     buffer << jgf_file.rdbuf ();
-    ctx->writers->reset ();
     jgf_file.close ();
 
     return update_run (ctx, args[2], buffer.str (), jobid, at, d);

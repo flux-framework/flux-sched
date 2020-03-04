@@ -46,8 +46,11 @@ enum class match_format_t { SIMPLE,
 class match_writers_t {
 public:
     virtual ~match_writers_t () {}
+    virtual int initialize () {
+        return 0;
+    }
+    virtual bool empty () = 0;
     virtual int emit (std::stringstream &out) = 0;
-    virtual void reset () = 0;
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive) = 0;
@@ -68,8 +71,8 @@ class sim_match_writers_t : public match_writers_t
 {
 public:
     virtual ~sim_match_writers_t () {}
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
-    virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
@@ -83,9 +86,10 @@ private:
 class jgf_match_writers_t : public match_writers_t
 {
 public:
-    virtual ~jgf_match_writers_t () {}
-    virtual void reset ();
-    virtual int emit (std::stringstream &out, bool newline);
+    virtual ~jgf_match_writers_t ();
+    virtual int initialize ();
+    virtual bool empty ();
+    json_t *emit_json ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -93,8 +97,16 @@ public:
     virtual int emit_edg (const std::string &prefix,
                           const f_resource_graph_t &g, const edg_t &e);
 private:
-    std::stringstream m_vout;
-    std::stringstream m_eout;
+    json_t *emit_vtx_base (const f_resource_graph_t &g, const vtx_t &u,
+                           unsigned int needs, bool exclusive);
+    int emit_vtx_prop (json_t *o, const f_resource_graph_t &g,
+                       const vtx_t &u, unsigned int needs, bool exclusive);
+    int emit_vtx_path (json_t *o, const f_resource_graph_t &g,
+                       const vtx_t &u, unsigned int needs, bool exclusive);
+    int emit_edg_meta (json_t *o, const f_resource_graph_t &g, const edg_t &e);
+
+    json_t *m_vout = NULL;
+    json_t *m_eout = NULL;
 };
 
 
@@ -103,19 +115,21 @@ private:
 class rlite_match_writers_t : public match_writers_t
 {
 public:
-    rlite_match_writers_t ();
     virtual ~rlite_match_writers_t ();
-    virtual void reset ();
-    virtual int emit (std::stringstream &out, bool newline);
+    virtual int initialize ();
+    virtual bool empty ();
+    json_t *emit_json ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
     bool m_reducer_set ();
+    int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
+
     std::map<std::string, std::set<int64_t>> m_reducer;
-    std::map<std::string, std::shared_ptr<std::stringstream>> m_gatherer;
-    std::stringstream m_out;
+    std::set<std::string> m_gatherer;
+    json_t *m_out = NULL;
 };
 
 
@@ -124,7 +138,8 @@ private:
 class rv1_match_writers_t : public match_writers_t
 {
 public:
-    virtual void reset ();
+    virtual int initialize ();
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -134,7 +149,8 @@ public:
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 private:
     rlite_match_writers_t rlite;
-    std::stringstream m_tmout;
+    int64_t m_starttime = 0;
+    int64_t m_expiration = 0;
     jgf_match_writers_t jgf;
 };
 
@@ -144,13 +160,17 @@ private:
 class rv1_nosched_match_writers_t : public match_writers_t
 {
 public:
-    virtual void reset ();
+    virtual int initialize ();
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
+    virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 private:
     rlite_match_writers_t rlite;
+    int64_t m_starttime = 0;
+    int64_t m_expiration = 0;
 };
 
 
@@ -159,8 +179,8 @@ private:
 class pretty_sim_match_writers_t : public match_writers_t
 {
 public:
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
-    virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);

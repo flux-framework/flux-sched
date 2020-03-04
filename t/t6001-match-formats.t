@@ -38,7 +38,7 @@ test_expect_success LONGTEST "Large R emitted with -F jgf validates" '
 test_expect_success LONGTEST "Large R emitted with -F pretty_jgf validates" '
     echo "match allocate ${jobspec2}" > in4.txt &&
     echo "quit" >> in4.txt &&
-    ${query} -L ${large_grug} -r 400000 -F pretty_jgf -d -t o4 < in4.txt &&
+    ${query} -L ${large_grug} -r 400000 -F jgf -d -t o4 < in4.txt &&
     cat o4 | grep -v "INFO:" > o4.json &&
     flux jsonschemalint -v ${schema} o4.json
 '
@@ -56,7 +56,7 @@ test_expect_success "--match-format=rv1_nosched and =rlite works" '
     echo "quit" >> in7.txt &&
     ${query} -L ${tiny_grug} -F rv1_nosched -d -t o7 < in7.txt &&
     ${query} -L ${tiny_grug} -F rlite -d -t o8 < in7.txt &&
-    cat o7 | grep -v "INFO:" | jq ".execution" > o7.json &&
+    cat o7 | grep -v "INFO:" | jq ".execution.R_lite" > o7.json &&
     cat o8 | grep -v "INFO:" | jq "" > o8.json &&
     diff o7.json o8.json
 '

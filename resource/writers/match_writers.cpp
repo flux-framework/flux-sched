@@ -1,5 +1,6 @@
 /*****************************************************************************\
- *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  Copyright (c) 2014 - 2020 Lawrence Livermore National Security, LLC.
+ *  Produced at
  *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
  *  LLNL-CODE-658032 All rights reserved.
  *
@@ -68,16 +69,17 @@ void match_writers_t::compress (std::stringstream &o,
  *                                                                          *
  ****************************************************************************/
 
+bool sim_match_writers_t::empty ()
+{
+    return m_out.str ().empty ();
+}
+
 int sim_match_writers_t::emit (std::stringstream &out)
 {
     out << m_out.str ();
-    return 0;
-}
-
-void sim_match_writers_t::reset ()
-{
     m_out.str ("");
     m_out.clear ();
+    return 0;
 }
 
 int sim_match_writers_t::emit_vtx (const std::string &prefix,
@@ -97,139 +99,375 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-int jgf_match_writers_t::emit (std::stringstream &out, bool newline)
+jgf_match_writers_t::~jgf_match_writers_t ()
 {
-    size_t vout_size = m_vout.str ().size ();
-    size_t eout_size = m_eout.str ().size ();
+    json_decref (m_vout);
+    m_vout = NULL;
+    json_decref (m_eout);
+    m_eout = NULL;
+}
 
-    if (vout_size > 0 && eout_size > 0) {
-        out << "{\"graph\":{\"nodes\":[";
-        out << m_vout.str ().substr (0, vout_size - 1);
-        out << "],\"edges\":[ ";
-        out << m_eout.str ().substr (0, eout_size - 1);
-        out << "]}}";
-        if (newline)
-           out << std::endl;
+int jgf_match_writers_t::initialize ()
+{
+    if (!(m_vout = json_array ())) {
+        errno = ENOMEM;
+        return -1;
+    }
+    if (!(m_eout = json_array ())) {
+        errno = ENOMEM;
+        return -1;
     }
     return 0;
 }
 
-int jgf_match_writers_t::emit (std::stringstream &out)
+bool jgf_match_writers_t::empty ()
 {
-    return emit (out, true);
+    size_t v_size = json_array_size (m_vout);
+    size_t e_size = json_array_size (m_eout);
+    return (v_size == 0) && (e_size == 0);
 }
 
-void jgf_match_writers_t::reset ()
+json_t *jgf_match_writers_t::emit_json ()
 {
-    m_vout.str ("");
-    m_vout.clear ();
-    m_eout.str ("");
-    m_eout.clear ();
+    json_t *o = NULL;
+    if (json_array_size (m_vout) == 0)
+        return NULL;
+    if (!(o = json_pack ("{s:{s:o s:o}}",
+                             "graph",
+                                 "nodes", m_vout,
+                                 "edges", m_eout))) {
+        errno = ENOMEM;
+        goto ret;
+    }
+    if (!(m_vout = json_array ())) {
+        errno = ENOMEM;
+    }
+    if (!(m_eout = json_array ())) {
+        errno = ENOMEM;
+    }
+ret:
+    return o;
+}
+
+int jgf_match_writers_t::emit (std::stringstream &out)
+{
+    json_t *o = NULL;
+    if ((o = emit_json ()) != NULL) {
+        char *json_str = NULL;
+        if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+            goto out;
+        }
+        out << json_str << std::endl;
+        free (json_str);
+        json_decref (o);
+    }
+out:
+    return (!o && errno == ENOMEM)? -1 : 0;
 }
 
 int jgf_match_writers_t::emit_vtx (const std::string &prefix,
                                    const f_resource_graph_t &g, const vtx_t &u,
                                    unsigned int needs, bool exclusive)
 {
-    std::string x = (exclusive)? "true" : "false";
-    m_vout << "{";
-    m_vout <<     "\"id\":\"" << g[u].uniq_id << "\",";
-    m_vout <<     "\"metadata\":{";
-    m_vout <<         "\"type\":" << "\"" << g[u].type << "\"" << ",";
-    m_vout <<         "\"basename\":" << "\"" << g[u].basename << "\"" << ",";
-    m_vout <<         "\"name\":" << "\"" << g[u].name << "\"" << ",";
-    m_vout <<         "\"id\":" << g[u].id << ",";
-    m_vout <<         "\"uniq_id\":" << g[u].uniq_id << ",";
-    m_vout <<         "\"rank\":" << g[u].rank << ",";
-    m_vout <<         "\"exclusive\":" << x << ",";
-    m_vout <<         "\"unit\":\"" << g[u].unit << "\",";
-    m_vout <<         "\"size\":" << needs;
-    if (!g[u].properties.empty ()) {
-        std::stringstream props;
-        m_vout <<                         ", ";
-        m_vout <<     "\"properties\":{";
-        for (auto &kv : g[u].properties)
-            props << "\"" << kv.first << "\":\"" << kv.second << "\",";
-        m_vout << props.str ().substr (0, props.str ().size () - 1);
-        m_vout <<      "}";
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *b = NULL;
+
+    if (!m_vout) {
+        errno = EINVAL;
+        rc = -1;
+        goto out;
     }
-    if (!g[u].paths.empty ()) {
-        std::stringstream paths;
-        m_vout <<                         ", ";
-        m_vout <<     "\"paths\":{";
-        for (auto &kv : g[u].paths)
-            paths << "\"" << kv.first << "\":\"" << kv.second << "\",";
-        m_vout << paths.str ().substr (0, paths.str ().size () - 1);
-        m_vout <<      "}";
+    if (!(b = emit_vtx_base (g, u, needs, exclusive)))
+        goto out;
+    if ((rc = emit_vtx_prop (b, g, u, needs, exclusive)) < 0)
+        goto out;
+    if ((rc = emit_vtx_path (b, g, u, needs, exclusive)) < 0)
+        goto out;
+    if ((o = json_pack ("{s:s s:o}",
+                            "id", std::to_string (g[u].uniq_id).c_str (),
+                            "metadata", b)) == NULL) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    if ((rc = json_array_append_new (m_vout, o)) < 0) {
+        errno = ENOMEM;
+        goto out;
     }
 
-    m_vout <<    "}";
-    m_vout << "},";
-    return 0;
+out:
+    return rc;
 }
 
 int jgf_match_writers_t::emit_edg (const std::string &prefix,
                                    const f_resource_graph_t &g, const edg_t &e)
 {
-    m_eout << "{";
-    m_eout <<     "\"source\":\"" << g[source (e, g)].uniq_id << "\",";
-    m_eout <<     "\"target\":\"" << g[target (e, g)].uniq_id << "\",";
-    m_eout <<     "\"metadata\":{";
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *m = NULL;
 
-    if (!g[e].name.empty ()) {
-        std::stringstream names;
-        m_eout <<     "\"name\":{";
-        for (auto &kv : g[e].name)
-            names << "\"" << kv.first << "\":\"" << kv.second << "\",";
-        m_eout << names.str ().substr (0, names.str ().size () - 1);
-        m_eout <<      "}";
+    if (!m_eout) {
+        errno = EINVAL;
+        rc = -1;
+        goto out;
+    }
+    if (!(m = json_object ())) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    if ((rc = emit_edg_meta (m, g, e)) < 0) {
+        errno = ENOMEM;
+        goto out;
+    }
+    if (!(o = json_pack ("{s:s s:s s:o}",
+                  "source", std::to_string (g[source (e, g)].uniq_id).c_str (),
+                  "target", std::to_string (g[target (e, g)].uniq_id).c_str (),
+                  "metadata", m))) {
+        rc = -1;
+        errno = ENOMEM;
+        goto out;
+    }
+    if ((rc = json_array_append_new (m_eout, o)) == -1) {
+        errno = ENOMEM;
+        goto out;
     }
 
-    m_eout <<    "}";
-    m_eout << "},";
-    return 0;
+out:
+    return rc;
 }
 
 
 /****************************************************************************
  *                                                                          *
- *                 RLITE Writers Class Method Definitions                   *
+ *       JSON Graph Format (JGF) Writers Classs Private Definitions         *
  *                                                                          *
  ****************************************************************************/
 
-rlite_match_writers_t::rlite_match_writers_t()
+json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
+                                            const vtx_t &u,
+                                            unsigned int needs, bool exclusive)
 {
-    m_reducer["core"] = std::set<int64_t> ();
-    m_reducer["gpu"] = std::set<int64_t> ();
-    m_gatherer["node"] = std::make_shared<std::stringstream> ();
+    json_t *o = NULL;
+
+    if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:b s:s s:I}",
+                            "type", g[u].type.c_str (),
+                            "basename", g[u].basename.c_str (),
+                            "name", g[u].name.c_str (),
+                            "id", g[u].id,
+                            "uniq_id", g[u].uniq_id,
+                            "rank", g[u].rank,
+                            "exclusive", (exclusive)? 1 : 0,
+                            "unit", g[u].unit.c_str (),
+                            "size", needs))) {
+        errno = ENOMEM;
+    }
+    return o;
 }
+
+
+int jgf_match_writers_t::emit_vtx_prop (json_t *o, const f_resource_graph_t &g,
+                                        const vtx_t &u,
+                                        unsigned int needs, bool exclusive)
+{
+    int rc = 0;
+    if (!g[u].properties.empty ()) {
+        json_t *p = NULL;
+        if (!(p = json_object ())) {
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        for (auto &kv : g[u].properties) {
+            json_t *vo = NULL;
+            if (!(vo = json_string (kv.second.c_str ()))) {
+                rc = -1;
+                errno = ENOMEM;
+                goto out;
+            }
+            if ((rc = json_object_set_new (p, kv.first.c_str (), vo)) == -1) {
+                errno = ENOMEM;
+                goto out;
+            }
+        }
+        if ((rc = json_object_set_new (o, "properties", p)) == -1) {
+            json_decref (p);
+            errno = ENOMEM;
+            goto out;
+        }
+    }
+
+out:
+    return rc;
+}
+
+int jgf_match_writers_t::emit_vtx_path (json_t *o, const f_resource_graph_t &g,
+                                        const vtx_t &u,
+                                        unsigned int needs, bool exclusive)
+{
+    int rc = 0;
+    if (!g[u].paths.empty ()) {
+        json_t *p = NULL;
+        if (!(p = json_object ())) {
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        for (auto &kv : g[u].paths) {
+            json_t *vo = NULL;
+            if (!(vo = json_string (kv.second.c_str ()))) {
+                rc = -1;
+                errno = ENOMEM;
+                goto out;
+            }
+            if ((rc = json_object_set_new (p, kv.first.c_str (), vo)) == -1) {
+                errno = ENOMEM;
+                goto out;
+            }
+        }
+        if ((rc = json_object_set_new (o, "paths", p)) == -1) {
+            json_decref (p);
+            errno = ENOMEM;
+            goto out;
+        }
+    }
+
+out:
+    return rc;
+}
+
+int jgf_match_writers_t::emit_edg_meta (json_t *o, const f_resource_graph_t &g,
+                                        const edg_t &e)
+{
+    int rc = 0;
+    if (!o) {
+        errno = EINVAL;
+        rc = -1;
+        goto out;
+    }
+    if (!g[e].name.empty ()) {
+        json_t *n = NULL;
+        if (!(n = json_object ())) {
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        for (auto &kv : g[e].name) {
+            json_t *vo = NULL;
+            if (!(vo = json_string (kv.second.c_str ()))) {
+                errno = ENOMEM;
+                goto out;
+            }
+            if ((rc = json_object_set_new (n, kv.first.c_str (), vo) == -1) {
+                errno = ENOMEM;
+                goto out;
+            }
+        }
+        if ((rc = json_object_set_new (o, "name", n)) == -1) {
+            errno = ENOMEM;
+            goto out;
+        }
+    }
+
+out:
+    return rc;
+}
+
+
+/****************************************************************************
+ *                                                                          *
+ *            RLITE Writers Class Public Method Definitions                 *
+ *                                                                          *
+ ****************************************************************************/
 
 rlite_match_writers_t::~rlite_match_writers_t ()
 {
-
+    json_decref (m_out);
 }
 
-void rlite_match_writers_t::reset ()
+int rlite_match_writers_t::initialize ()
 {
-    m_out.str ("");
-    m_out.clear ();
-}
-
-int rlite_match_writers_t::emit (std::stringstream &out, bool newline)
-{
-    size_t size = m_out.str ().size ();
-    if (size > 1) {
-        out << "{\"R_lite\":[" << m_out.str ().substr (0, size - 1) << "]}";
-        if (newline)
-            out << std::endl;
+    m_reducer["core"] = std::set<int64_t> ();
+    m_reducer["gpu"] = std::set<int64_t> ();
+    m_gatherer.insert ("node");
+    if (!(m_out = json_array ())) {
+        errno = ENOMEM;
+        return -1;
     }
     return 0;
 }
 
+bool rlite_match_writers_t::empty ()
+{
+    return (json_array_size (m_out) == 0)? true : false;
+}
+
+json_t *rlite_match_writers_t::emit_json ()
+{
+    json_t *o = NULL;
+    if (json_array_size (m_out) != 0) {
+        o = m_out;
+        if (!(m_out = json_array ())) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+        }
+    }
+    return o;
+}
+
 int rlite_match_writers_t::emit (std::stringstream &out)
 {
-    return emit (out, true);
+    json_t *o = NULL;
+    if ((o = emit_json ()) != NULL) {
+        char *json_str = NULL;
+        if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+            goto out;
+        }
+        out << json_str << std::endl;
+        free (json_str);
+        json_decref (o);
+     }
+out:
+    return (!o && errno == ENOMEM)? -1 : 0;
 }
+
+int rlite_match_writers_t::emit_vtx (const std::string &prefix,
+                                     const f_resource_graph_t &g,
+                                     const vtx_t &u,
+                                     unsigned int needs,
+                                     bool exclusive)
+{
+    int rc = 0;
+
+    if (!m_out) {
+        errno = EINVAL;
+        rc = -1;
+        goto out;
+    }
+    if (m_reducer.find (g[u].type) != m_reducer.end ()) {
+        m_reducer[g[u].type].insert (g[u].id);
+    } else if (m_gatherer.find (g[u].type) != m_gatherer.end ()) {
+        if ((rc = emit_gatherer (g, u)) < 0)
+            goto out;
+    }
+out:
+    return rc;
+}
+
+
+/****************************************************************************
+ *                                                                          *
+ *            RLITE Writers Class Private Method Definitions                *
+ *                                                                          *
+ ****************************************************************************/
 
 bool rlite_match_writers_t::m_reducer_set ()
 {
@@ -243,34 +481,48 @@ bool rlite_match_writers_t::m_reducer_set ()
     return set;
 }
 
-int rlite_match_writers_t::emit_vtx (const std::string &prefix,
-                                     const f_resource_graph_t &g,
-                                     const vtx_t &u,
-                                     unsigned int needs,
-                                     bool exclusive)
+int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
+                                          const vtx_t &u)
 {
-    if (m_reducer.find (g[u].type) != m_reducer.end ()) {
-        m_reducer[g[u].type].insert (g[u].id);
-    } else if (m_gatherer.find (g[u].type) != m_gatherer.end ()) {
-        if (m_reducer_set ()) {
-            std::stringstream &gout = *(m_gatherer[g[u].type]);
-            gout << "{";
-            gout << "\"rank\":\"" << g[u].rank << "\",";
-            gout << "\"node\":\"" << g[u].name << "\",";
-            gout << "\"children\":{";
-            for (auto &kv : m_reducer) {
-                if (kv.second.empty ())
-                    continue;
-                gout << "\"" << kv.first << "\":\"";
-                compress (gout, kv.second);
-                gout << "\",";
-                kv.second.clear ();
-            }
-            size_t size = gout.str ().size ();
-            m_out << gout.str ().substr (0, size - 1) << "}},";
-            gout.clear ();
-            gout.str ("");
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *co = NULL;
+
+    if (!m_reducer_set ())
+        goto out;
+    if (!(co = json_object ())) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    for (auto &kv : m_reducer) {
+        if (kv.second.empty ())
+            continue;
+        std::stringstream s;
+        compress (s, kv.second);
+        json_t *vo = NULL;
+        if (!(vo = json_string (kv.second.c_str ()))) {
+            rc = -1;
+            errno = ENOMEM;
+            goto out;
         }
+        if ((rc = json_object_set_new (co, kv.first.c_str (), vo)) < 0) {
+            errno = ENOMEM;
+            goto out;
+        }
+        kv.second.clear ();
+    }
+    if (!(o = json_pack ("{s:s s:s s:o}",
+                             "rank", std::to_string (g[u].rank).c_str (),
+                             "node", g[u].name.c_str (),
+                             "children", co))) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    if ((rc = json_array_append_new (m_out, o)) != 0) {
+        errno = ENOMEM;
+        goto out;
     }
     return 0;
 }
@@ -282,29 +534,61 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-void rv1_match_writers_t::reset ()
+int rv1_match_writers_t::initialize ()
 {
-    rlite.reset ();
-    jgf.reset ();
+    int rc = rlite.initialize ();
+    rc += jgf.initialize ();
+    return 0;
+}
+
+bool rv1_match_writers_t::empty ()
+{
+    return (rlite.empty () && jgf.empty ());
 }
 
 int rv1_match_writers_t::emit (std::stringstream &out)
 {
-    std::string ver = "\"version\":1";
-    std::string exec_key = "\"execution\":";
-    std::string sched_key = "\"scheduling\":";
-    size_t base = out.str ().size ();
-    out << "{" << ver;
-    out << "," << exec_key;
-    rlite.emit (out, false);
-    out << "," << m_tmout.str ();
-    out << "," << sched_key;
-    jgf.emit (out, false);
-    out << "}" << std::endl;
-    if (out.str ().size () <= (base + ver.size () + exec_key.size ()
-                                    + sched_key.size () + 6))
-        out.str (out.str ().substr (0, base));
-    return 0;
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *rlite_o = NULL;
+    json_t *jgf_o = NULL;
+    char *json_str = NULL;
+
+    if (empty ())
+        goto out;
+
+    if (!(rlite_o = rlite.emit_json ()) && errno == ENOMEM) {
+        rc = -1;
+        goto out;
+    }
+    if (!(jgf_o = jgf.emit_json ()) && errno == ENOMEM) {
+        rc = -1;
+        goto out;
+    }
+    if (!(o = json_pack ("{s:i s:{s:o s:I s:I} s:o}",
+                             "version", 1,
+                             "execution",
+                             "R_lite",  rlite_o,
+                             "starttime", m_starttime,
+                             "expiration", m_expiration,
+                             "scheduling", jgf_o))) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+        json_decref (o);
+        o = NULL;
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    out << json_str << std::endl;
+    free (json_str);
+    json_decref (o);
+
+out:
+    return rc;
 }
 
 int rv1_match_writers_t::emit_vtx (const std::string &prefix,
@@ -313,24 +597,26 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
                                    unsigned int needs,
                                    bool exclusive)
 {
-    int rc = rlite.emit_vtx (prefix, g, u, needs, exclusive);
-    rc += jgf.emit_vtx (prefix, g, u, needs, exclusive);
-    return (!rc)? 0 : -1;
+    int rc = 0;
+    if ((rc = rlite.emit_vtx (prefix, g, u, needs, exclusive)) == 0)
+        rc = jgf.emit_vtx (prefix, g, u, needs, exclusive);
+    return rc;
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
                                    const f_resource_graph_t &g,
                                    const edg_t &e)
 {
-    int rc = rlite.emit_edg (prefix, g, e);
-    rc += jgf.emit_edg (prefix, g, e);
-    return (!rc)? 0 : -1;
+    int rc = 0;
+    if ((rc = rlite.emit_edg (prefix, g, e)) == 0)
+        rc = jgf.emit_edg (prefix, g, e);
+    return rc;
 }
 
 int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
 {
-    m_tmout << "\"starttime:\"" << start_tm << ",";
-    m_tmout << "\"expiration:\"" << end_tm;
+    m_starttime = start_tm;
+    m_expiration = end_tm;
     return 0;
 }
 
@@ -341,23 +627,52 @@ int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
  *                                                                          *
  ****************************************************************************/
 
-void rv1_nosched_match_writers_t::reset ()
+int rv1_nosched_match_writers_t::initialize ()
 {
-    rlite.reset ();
+    return rlite.initialize ();
+}
+
+bool rv1_nosched_match_writers_t::empty ()
+{
+    return rlite.empty ();
 }
 
 int rv1_nosched_match_writers_t::emit (std::stringstream &out)
 {
-    std::string ver = "\"version\":1";
-    std::string exec_key = "\"execution\":";
-    size_t base = out.str ().size ();
-    out << "{" << ver;
-    out << "," << exec_key;
-    rlite.emit (out, false);
-    out << "}" << std::endl;
-    if (out.str ().size () <= (base + ver.size () + exec_key.size () + 4))
-        out.str (out.str ().substr (0, base));
-    return 0;
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *rlite_o = NULL;
+    char *json_str = NULL;
+
+    if (rlite.empty ())
+        goto out;
+    if (!(rlite_o = rlite.emit_json ()) && errno == ENOMEM) {
+        rc = -1;
+        goto out;
+    }
+    if (!(o = json_pack ("{s:i s:{s:o s:I s:I}}",
+                             "version", 1,
+                             "execution",
+                             "R_lite",  rlite_o,
+                             "starttime", m_starttime,
+                             "expiration", m_expiration))) {
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+        json_decref (o);
+        o = NULL;
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+    out << json_str << std::endl;
+    free (json_str);
+    json_decref (o);
+
+out:
+    return rc;
 }
 
 int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
@@ -369,6 +684,13 @@ int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
     return rlite.emit_vtx (prefix, g, u, needs, exclusive);
 }
 
+int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
+{
+    m_starttime = start_tm;
+    m_expiration = end_tm;
+    return 0;
+}
+
 
 /****************************************************************************
  *                                                                          *
@@ -376,16 +698,24 @@ int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
  *                                                                          *
  ****************************************************************************/
 
+bool pretty_sim_match_writers_t::empty ()
+{
+    bool empty = true;
+    for (auto &s: m_out) {
+        if (!s.empty ()) {
+            empty = false;
+            break;
+        }
+    }
+    return empty;
+}
+
 int pretty_sim_match_writers_t::emit (std::stringstream &out)
 {
     for (auto &s: m_out)
         out << s;
-    return 0;
-}
-
-void pretty_sim_match_writers_t::reset ()
-{
     m_out.clear ();
+    return 0;
 }
 
 int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
@@ -435,6 +765,7 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::
             w = std::make_shared<rv1_match_writers_t> ();
             break;
         }
+        w->initialize ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         w = nullptr;
