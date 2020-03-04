@@ -69,4 +69,14 @@ test_expect_success "--match-format=pretty_simple works" '
     test -s o9.simple
 '
 
+test_expect_success "rv1 contains starttime and expiration keys" '
+    echo "match allocate ${jobspec}" > in10.txt &&
+    echo "quit" >> in10.txt &&
+    ${query} -L ${tiny_grug} -F rv1_nosched -d -t o10 < in10.txt &&
+    starttime=$(cat o10 | grep -v "INFO:" | jq ".execution.starttime") &&
+    expiration=$(cat o10 | grep -v "INFO:" | jq ".execution.expiration") &&
+    test ${starttime} -eq 0 &&
+    test ${expiration} -eq 3600
+'
+
 test_done
