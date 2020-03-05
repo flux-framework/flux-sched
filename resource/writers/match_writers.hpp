@@ -30,6 +30,10 @@
 #include <sstream>
 #include <set>
 
+extern "C" {
+#include <jansson.h>
+}
+
 namespace Flux {
 namespace resource_model {
 
@@ -101,8 +105,13 @@ class rlite_match_writers_t : public match_writers_t
 {
 public:
     rlite_match_writers_t ();
+    rlite_match_writers_t (const rlite_match_writers_t &w);
+    rlite_match_writers_t &operator=(const rlite_match_writers_t &w);
     virtual ~rlite_match_writers_t ();
-    virtual void reset ();
+
+    virtual void reset () { }
+    virtual bool empty ();
+    int emit_json (json_t **o);
     virtual int emit (std::stringstream &out, bool newline);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
@@ -110,9 +119,11 @@ public:
                           unsigned int needs, bool exclusive);
 private:
     bool m_reducer_set ();
+    int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
+
     std::map<std::string, std::set<int64_t>> m_reducer;
-    std::map<std::string, std::shared_ptr<std::stringstream>> m_gatherer;
-    std::stringstream m_out;
+    std::set<std::string> m_gatherer;
+    json_t *m_out = NULL;
 };
 
 
