@@ -35,14 +35,6 @@ test_expect_success LONGTEST "Large R emitted with -F jgf validates" '
     flux jsonschemalint -v ${schema} o3.json
 '
 
-test_expect_success LONGTEST "Large R emitted with -F pretty_jgf validates" '
-    echo "match allocate ${jobspec2}" > in4.txt &&
-    echo "quit" >> in4.txt &&
-    ${query} -L ${large_grug} -r 400000 -F pretty_jgf -d -t o4 < in4.txt &&
-    cat o4 | grep -v "INFO:" > o4.json &&
-    flux jsonschemalint -v ${schema} o4.json
-'
-
 test_expect_success "--match-format=rv1 works" '
     echo "match allocate ${jobspec}" > in5.txt &&
     echo "quit" >> in5.txt &&
