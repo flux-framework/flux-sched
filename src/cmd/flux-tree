@@ -1,0 +1,865 @@
+#! /bin/bash
+#
+###############################################################################
+#   Copyright (c) 2020 Lawrence Livermore National Security, LLC.  Produced at
+#   the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
+#   LLNL-CODE-658032 All rights reserved.
+# 
+#   This file is part of the Flux resource manager framework.
+#   For details, see https://github.com/flux-framework.
+# 
+#   This program is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the Free
+#   Software Foundation; either version 2 of the license, or (at your option)
+#   any later version.
+# 
+#   Flux is distributed in the hope that it will be useful, but WITHOUT
+#   ANY WARRANTY; without even the IMPLIED WARRANTY OF MERCHANTABILITY or
+#   FITNESS FOR A PARTICULAR PURPOSE.  See the terms and conditions of the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License along
+#   with this program; if not, write to the Free Software Foundation, Inc.,
+#   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#   See also:  http://www.gnu.org/licenses/
+###############################################################################
+
+set -o errexit
+set -o pipefail
+#set -o xtrace
+
+FT_TOPO='1'                    # store arg to --topology (e.g., 2x2)
+FT_QUEUE='default'             # store arg to --queue-policy (e.g., fcfs:easy)
+FT_PARAMS='default'            # store arg to --queue-params
+FT_MATCH='default'             # store arg to --match-policy (e.g., low:high)
+FT_PERF_OUT='%^+_no'           # store perf-out filename given by --perf-out
+FT_FXLOGS='%^+_no'             # dir in which flux logs are produced
+FT_LEAF='no'                   # is this a leaf instance (given by --leaf)?
+FT_G_PREFIX='tree'             # store hierarchical path given by --prefix
+FT_DRY_RUN='no'                # --dry-run for testing?
+FT_INTER='no'                  # is an option for internal levels given?      
+FT_MAX_EXIT_CODE=0             # maximum exit code detected
+FT_MAX_FLUX_JOBID=0            # maximum flux jobid that reports max exit code
+FT_MAX_TREE_ID=""              # FLUX_TREE_ID that reports max exit code
+FT_MAX_JOBSCRIPT_IX=""         # FLUX_TREE_JOBSCRIPT_INDEX reporting max code
+                               # --prefix is an internal-use-only option
+ORIG_FLUX_QMANAGER_OPTIONS=''  # 
+ORIG_FLUX_RESOURCE_OPTIONS=''  # to apply and unapply QMANAGER and RESOURCE
+ORIG_FLUX_QMANAGER_RC_NOOP=''  # module load options.
+ORIG_FLUX_RESOURCE_RC_NOOP=''  #
+
+declare -i FT_NJOBS=1          # store num of jobs to run, given by --njobs
+declare -i FT_NNODES=1         # store num of nodes assigned, given by --nnodes
+declare -i FT_NCORES=1         # store num of cores per node (--ncores-per-node)
+declare -i FT_NGPUS=0          # store num of gpus per node (--ngpus-per-node)
+declare -r top_prefix='tree'   # prefix name to identify the top Flux instance
+declare -r t_delim='x'         # topology delimiter
+declare -r p_delim=':'         # match policy delimiter
+declare -r perf_format='%-15s %20s %20s %20s %15s %15s %5s %4s %4s'
+declare -r perf_keys=' .treeid, .perf.elapse, .perf.begin, .perf.end,'\
+' .perf.match, .njobs, .my_nodes, .my_cores, .my_gpus '
+declare -r perf_heading=' TreeID Elapse(sec) Begin(Epoch) End(Epoch) Match(usec)'\
+' NJobs NNodes CPN GPN '
+declare -A mp_policies=(       # make sure to update this when match
+    [low]=1                    # policies are updated.
+    [high]=1
+    [locality]=1
+    [variation]=1
+    [default]=1
+)
+declare -A qp_policies=(       # make sure to update this when
+    [fcfs]=1                   # queuing policies are updated.
+    [easy]=1
+    [hybrid]=1
+    [conservative]=1
+    [default]=1
+)
+declare -A q_params=(          # make sure to update this when
+    [queue-depth]=1            # queuing parameters are updated.
+    [reservation-depth]=1
+    [default]=1
+)
+declare -a jobids             # array to store a set of submitted job IDs
+
+declare -r long_opts='help,leaf,flux-logs:,nnodes:,ncores-per-node:'\
+',ngpus-per-node:,topology:,queue-policy:,queue-params:,match-policy:'\
+',njobs:,perf-out:,prefix:,dry-run'
+
+declare -r short_opts='hlf:N:c:g:T:Q:P:M:J:o:X:d'
+declare -r prog=${0##*/}
+declare -r usage="
+Usage: ${prog} [OPTIONS] -- Jobscript\n\
+\n\
+Create a Flux instance hierarchy according to the specified\n\
+policies and schedule/run the specified number\n\
+of Jobscripts at the last level of this hierarchy.\n\
+\n\
+If --topology=2x4 and --njobs=32 are given, for instance,\n\
+2 Flux instances will be spawned from within the current instance,\n\
+each of which will in turn spawn 4 child Flux instances, totaling\n\
+8 instances at the last level of this hierarchy.\n\
+Once this is done, 4 jobs (of Jobscripts) will be scheduled\n\
+and executed at each of these 8 last-level Flux instances.\n\
+\n\
+The resources specified by --nnodes (total number of nodes) and\n\
+--ncores-per-node (total number of cores per node)\n\
+are recursively divided such that each sibling Flux instance\n\
+will be assigned to an equal split of the resources of their\n\
+parent instance. In addition, --ngpus-per-node can be given,\n\
+in which case the given GPU count will also be split.\n\
+If not given, it is assumed that there is no GPU on nodes.\n\
+\n\
+Jobscript is expected to submit one or more programs through\n\
+the flux-job submit command or its variants.\n\
+Jobscript is passed with five environment variables:\n\
+FLUX_TREE_ID, FLUX_TREE_JOBSCRIPT_INDEX, FLUX_TREE_NNODES,\n\
+FLUX_TREE_NCORES_PER_NODE and FLUX_TREE_NGPUS_PER_NODE.\n\
+FLUX_TREE_ID is an ID string uniquely identifing the hierarchical\n\
+path of the Flux instance on which Jobscript is being executed.\n\
+FLUX_TREE_JOBSCRIPT_INDEX is the integer ID of each jobscript\n\
+invocation local to the Flux instance. It starts from 1 and\n\
+sequentially increases.\n\
+FLUX_TREE_NNODES is the number nodes assigned to the instance.\n\
+FLUX_TREE_NCORES_PER_NODE is the number of cores per node\n\
+assigned to the instance.\n\
+FLUX_TREE_NGPUS_PER_NODE is the number of GPUs per node\n\
+assigned to the instance.\n\
+\n\
+If --queue-policy (additionally --queue-params) and/or\n\
+--match-policy are given, each level of this hierarchy will\n\
+be set to the specified queuing and matching policies and\n\
+parameters. Otherwise, all levels will be configured\n\
+to be used either the default policies or policies specified\n\
+through the FLUX_RESOURCE_OPTIONS and/or FLUX_QMANAGER_OPTIONS\n\
+environment variables.\n\
+\n\
+If any one of Jobscripts returns a non-zero exit code, flux-tree\n\
+detects the script invocation exited with the highest code and print\n\
+both that exit code and the outputs printed from executing the script.\n\
+In this case, FLUX_TREE_ID and FLUX_TREE_JOBSCRIPT_INDEX are also\n\
+reported in the from of \${FLUX_TREE_ID}@index[\${FLUX_TREE_JOBSCRIPT_INDEX}]\n\
+\n\
+Options:\n\
+ -h, --help                    Display this message\n\
+ -l, --leaf                    Leaf instance. Directly submit jobs\n\
+                               to enclosing Flux instance. Mutually-exclusive\n\
+                               with internal tree-node options like -T.\n\
+                                   (default=${FT_LEAF})\n\
+ -f, --flux-logs=DIR           Dump Flux logs for all instances into DIR\n\
+ -N, --nnodes=NNODES           Total num of nodes to use\n\
+                                   (default=${FT_NNODES})\n\
+ -c, --ncores-per-node=NCORES  Total num of cores per node to use\n\
+                                   (default=${FT_NCORES})\n\
+ -g, --ngpus-per-node=NGPUS    Total num of gpus per node to use\n\
+                                   (default=${FT_NGPUS})\n\
+ -T, --topology=HPOLICY        Topology of Flux instance hierarchy:\n\
+                                   e.g., 2x2 (default=${FT_TOPO})\n\
+ -Q, --queue-policy=QPOLICY    Queuing policy for each level of\n\
+                                   the hierarchy: e.g., easy:fcfs\n\
+ -P, --queue-params=QPARAMS    Queuing parameters for each level of\n\
+                                   the hierarchy: e.g.,\n\
+                                   queue-depth=5:reservation-depth=5\n\
+ -M, --match-policy=MPOLICY    Match policy for each level of\n\
+                                   the hierarchy: e.g., low:high\n\
+ -J, --njobs=NJOBS             Total num of Jobscripts to run\n\
+                                   (default=${FT_NJOBS})\n\
+ -o, --perf-out=FILENAME       Dump the performance data into\n\
+                                   the given file (default: don't print)\n\
+     --                        Stop parsing options after this\n\
+"
+
+die() { echo -e "${prog}:" "$@"; exit 1; }
+warn() { echo -e "${prog}: warning:" "$@"; }
+dr_print() { echo -e "${prog}: dry-run:" "$@"; }
+
+#
+# Write the performance data into the given file.  Should be called
+# by the upper layer when the performance data record for each and every
+# Flux instance has been aggregated. Then, this is recursively invoked.
+#
+dump_perf() {
+    local blurb="${1}"
+    local out="${2}"
+
+    [[ "x${blurb}" = "x" ]] && die "empty json"
+
+    # Parse perf json for the given level into a record
+    local tuple=''
+    local length=0
+    tuple=$(echo "${blurb}" | jq "${perf_keys}") || die "invalid json"
+    length=$(echo "${blurb}" | jq ' .child | length ') || die "invalid json"
+
+    # Print the record for this level Didn't quote $tuple to remove new lines
+    printf "${perf_format}\n" ${tuple} >> "${out}"
+
+    # Recurse down to parse the record for each child Flux instance
+    for i in $(seq 0 $(( length - 1 )))
+    do
+        local new_o=''
+        new_o=$(echo "${blurb}" | jq " .child[${i}] ")
+        dump_perf "${new_o}" "${out}"
+    done
+}
+
+
+#
+# Roll up the performance records for each Flux instance to the KVS
+# guest namesapce of the parent Flux instance or print them out if top level.
+#
+rollup() {
+    local prefix="${1}"
+    local blurb="${2}"
+    local out="${3}"
+
+    if [[ "${out}" != "%^+_no" ]]
+    then
+        # If output filename is given (e.g., top-level), dump the data
+        # to the file. Didn't quote $perf_heanding on purpose below.
+        rm -f "${out}"
+        printf "${perf_format}\n" ${perf_heading} > "${out}"
+        dump_perf "${blurb}" "${out}"
+    else
+        if [[ "${prefix}" != "${top_prefix}" ]]
+        then
+            if [[ "x${FT_DRY_RUN}" = "xno" ]]
+            then
+                # Put it to KVS parent namespace except when we are at top level
+                flux --parent kvs put -j "tree-perf=${blurb}" || warn "KVS error"
+            fi
+        fi
+    fi
+}
+
+
+#
+# Return a JSON string out of the performance data passed.
+#
+jsonify() {
+    local prefix="${1}"
+    local njobs="${2}"
+    local nnodes="${3}"
+    local ncores="${4}"
+    local ngpus="${5}"
+    local begin="${6}"
+    local end="${7}"
+    local avg=0
+    local avail="no"
+    local el_match=0
+
+    # Print resource match time only for internal study
+    # flux-resource isn't a public command
+    if [[ "x${FT_DRY_RUN}" = "xno" ]]
+    then
+        flux resource -h > /dev/null 2>&1 && avail="yes"
+    fi
+
+    if [[ "${avail}" = "yes" ]]
+    then
+        avg=$(flux resource stat | grep "Avg" | awk '{print $4}')
+        el_match=$(awk "BEGIN {print ${avg}*${njobs}*1000000.0}")
+    fi
+
+    local elapse=0
+    elapse=$(awk "BEGIN {print ${end} - ${begin}}")
+    echo "{\"treeid\":\"${prefix}\",\"njobs\":${njobs},\"my_nodes\":${nnodes},\
+\"my_cores\":${ncores},\"my_gpus\":${ngpus},\"perf\":{\"begin\":${begin},\
+\"end\":${end},\"elapse\":${elapse},\"match\":${el_match}}}"
+}
+
+
+#
+# Fetch the next topology parameter that will be passed to
+# the next-level Flux instances. E.g., If the current level topology
+# is 2x3x4, the topology handled at the next level will be 3x4. 
+#
+next_topo() {
+    local topo="${1}"
+    local nx=''
+    local nfields=0
+    nfields=$(echo "${topo}" | awk -F"${t_delim}" '{print NF}')
+    # Remove the first topo parameter 
+    [[ ${nfields} -gt 1 ]] && nx="${topo#*${t_delim}}"
+    echo "${nx}"
+}
+
+
+#
+# Fetch the next policy parameter that will be passed to
+# the next-level Flux instances. E.g., If the current policy parameter 
+# is high:low:locality, the policies handled at the next level
+# will be low:locality. 
+#
+next_policy_or_param() {
+    local policy_or_param="${1}"
+    local nx=""
+    local nfields=0
+    nfields=$(echo "${policy_or_param}" | awk -F"${p_delim}" '{print NF}')
+    [[ ${nfields} -gt 1 ]] && nx="${policy_or_param#*${p_delim}}"
+    echo "${nx}"
+}
+
+
+#
+# Check if the given queuing policy is valid 
+#
+qpolicy_check() {
+    local policy=${1%%${p_delim}*}
+    [[ "x${policy}" = "x" ]] && return 1
+    [[ "${qp_policies["${policy}"]:-missing}" = "missing" ]] && return 1
+    return 0
+}
+
+
+#
+# Check if the given match policy is valid 
+#
+mpolicy_check() {
+    local policy=${1%%${p_delim}*}
+    [[ "x${policy}" = "x" ]] && return 1
+    [[ "${mp_policies["${policy}"]:-missing}" = "missing" ]] && return 1
+    return 0
+}
+
+
+#
+# Check if the given queue param is valid 
+#
+qparams_check() {
+    local param=''
+    param=$(echo "${1}" | awk -F"${p_delim}" '{print $1}')
+    param=${1%%${p_delim}*}
+    local final_param=''
+    final_param=${param##*,}
+
+    for i in $(seq 1 10)
+    do
+        local token1=${param%%,*}
+        local token2=${token1%=*}
+        [[ "x${token2}" = "x" ]] && return 1
+        [[ "${q_params["${token2}"]:-missing}" = "missing" ]] && return 1
+        [[ "x${token1}" = "x${final_param}" ]] && break
+        param=${param#*,}
+    done
+    return 0
+}
+
+
+#
+# Calculate the number of jobs to execute based on the number of Flux instances
+# being used at a level and the rank of the instance amongst its siblings.
+#
+get_my_njobs(){
+    local njobs="${1}"
+    local size="${2}"          # rank starts from 1
+    local rank="${3}"
+    echo $(( njobs / size + (size + njobs % size)/(size + rank) ))
+}
+
+
+#
+# Calculate the total number of cores that will be assigned to a child
+# Flux instance based on the total number of nodes and cores per node
+# assigned to the current Flux instance as well as the size and rank parameter.
+#
+get_my_cores(){
+    local nnodes="${1}"
+    local ncores="${2}"
+    local size="${3}"
+    local rank="${4}"
+    local t_cores=$(( nnodes * ncores ))
+    echo $(( t_cores / size + (size + t_cores % size) / (size + rank) ))
+}
+
+
+#
+# Calculate the total number of GPUs that will be assigned to a child
+# Flux instance based on the total number of nodes and GPUs per node
+# assigned to the current Flux instance as well as the size and rank parameter.
+#
+get_my_gpus(){
+    local nnodes="${1}"
+    local ngpus="${2}"
+    local size="${3}"
+    local rank="${4}"
+    local t_gpus=$(( nnodes * ngpus ))
+    echo $(( t_gpus / size + (size + t_gpus % size) / (size + rank) ))
+}
+
+
+#
+# Adjust the number of Flux instances to spawn at the next level
+# if the amount of resources managed by the parent instance is small.
+#
+get_effective_size(){
+    local ncores="${1}"
+    local ngpus="${2}"
+    local size="${3}"
+    [[ ${ngpus} -ne 0 && ${ngpus} -lt ${size} ]] && size=${ngpus}
+    [[ ${ncores} -lt ${size} ]] && size=${ncores}
+    echo "${size}"
+}
+
+
+#
+# Calculate the total number of nodes that will be assigned to a child
+# Flux instance based on the total number of cores per node as well as
+# the total number of cores assigned to this child instance. Returns
+# minimum num of nodes required.
+#
+get_my_nodes(){
+    local ncores="${1}"
+    local m_cores="${2}"
+    echo $(( m_cores / ncores + (ncores + m_cores % ncores) / (ncores + 1 )))
+}
+
+
+#
+# Apply all of the policies for the target Flux instance
+# by setting environment variables.
+#
+apply_policies() {
+    local queue_policy="${1%%${p_delim}*}"
+    local queue_param="${2%%${p_delim}*}"
+    local match_policy="${3%%${p_delim}*}"
+
+    ORIG_FLUX_QMANAGER_OPTIONS=${FLUX_QMANAGER_OPTIONS:-none}
+    ORIG_FLUX_RESOURCE_OPTIONS=${FLUX_RESOURCE_OPTIONS:-none}
+    ORIG_FLUX_QMANAGER_RC_NOOP=${FLUX_QMANAGER_RC_NOOP:-none}
+    ORIG_FLUX_RESOURCE_RC_NOOP=${FLUX_RESOURCE_RC_NOOP:-none}
+    unset FLUX_QMANAGER_RC_NOOP
+    unset FLUX_RESOURCE_RC_NOOP
+
+    if [[ "${queue_policy}" != "default" ]]
+    then
+        export FLUX_QMANAGER_OPTIONS="queue-policy=${queue_policy}"
+    fi
+    if [[ "${queue_param}" != "default" ]]
+    then
+        local qo="${FLUX_QMANAGER_OPTIONS}"
+        export FLUX_QMANAGER_OPTIONS="${qo:+${qo},}queue-params=${queue_param}"
+    fi
+    if [[ "${match_policy}" != "default" ]]
+    then
+        export FLUX_RESOURCE_OPTIONS="hwloc-whitelist=node,core,gpu \
+policy=${match_policy}"
+    fi
+    if [[ "x${FT_DRY_RUN}" = "xyes" ]]
+    then
+        dr_print "FLUX_QMANAGER_OPTIONS:${FLUX_QMANAGER_OPTIONS}"
+        dr_print "FLUX_RESOURCE_OPTIONS:${FLUX_RESOURCE_OPTIONS}"
+    fi
+}
+
+
+#
+# Undo all of the policies set for the target Flux instance
+# by unsetting environment variables.
+#
+unapply_policies() {
+    unset FLUX_QMANAGER_OPTIONS
+    unset FLUX_RESOURCE_OPTIONS
+
+    if [ "${ORIG_FLUX_QMANAGER_OPTIONS}" != "none" ]
+    then
+        export FLUX_QMANAGER_OPTIONS="${ORIG_FLUX_QMANAGER_OPTIONS}"
+    fi
+    if [ "${ORIG_FLUX_RESOURCE_OPTIONS}" != "none" ]
+    then
+        export FLUX_RESOURCE_OPTIONS="${ORIG_FLUX_RESOURCE_OPTIONS}"
+    fi
+    if [ "${ORIG_FLUX_QMANAGER_RC_NOOP}" != "none" ]
+    then
+        export FLUX_QMANAGER_RC_NOOP="${ORIG_FLUX_QMANAGER_RC_NOOP}"
+    fi
+    if [ "${ORIG_FLUX_RESOURCE_RC_NOOP}" != "none" ]
+    then
+        export FLUX_RESOURCE_RC_NOOP="${ORIG_FLUX_RESOURCE_RC_NOOP}"
+    fi
+    if [[ "x${FT_DRY_RUN}" = "xyes" ]]
+    then
+        dr_print "FLUX_QMANAGER_OPTIONS:${FLUX_QMANAGER_OPTIONS}"
+        dr_print "FLUX_RESOURCE_OPTIONS:${FLUX_RESOURCE_OPTIONS}"
+        dr_print "FLUX_QMANAGER_RC_NOOP:${FLUX_QMANAGER_RC_NOOP}"
+        dr_print "FLUX_RESOURCE_RC_NOOP:${FLUX_RESOURCE_RC_NOOP}"
+    fi
+}
+
+
+
+################################################################################
+#                                                                              #
+#                   Handle Leaf or Internal Flux Instances                     #
+#                                                                              #
+################################################################################
+
+#
+# Execute the script. Export a predefined set of
+# environment variables and execute the given jobscript.
+#
+execute() {
+    local prefix="${1}"
+    local nnodes="${2}"
+    local ncores="${3}"
+    local ngpus="${4}"
+    local njobs="${5}"
+    local jobscript_cl="${6}"
+    local rc=0
+
+    for job in $(seq 1 "${njobs}");
+    do
+        export FLUX_TREE_ID="${prefix}"
+        export FLUX_TREE_JOBSCRIPT_INDEX="${job}"
+        export FLUX_TREE_NNODES="${nnodes}"
+        export FLUX_TREE_NCORES_PER_NODE="${ncores}"
+        export FLUX_TREE_NGPUS_PER_NODE="${ngpus}"
+
+        if [[ "x${FT_DRY_RUN}" = "xyes" ]]
+        then
+            dr_print "FLUX_TREE_ID=${FLUX_TREE_ID}"
+            dr_print "FLUX_TREE_JOBSCRIPT_INDEX=${FLUX_TREE_JOBSCRIPT_INDEX}"
+            dr_print "FLUX_TREE_NCORES_PER_NODE=${FLUX_TREE_NCORES_PER_NODE}"
+            dr_print "FLUX_TREE_NGPUS_PER_NODE=${FLUX_TREE_NGPUS_PER_NODE}"
+            dr_print "FLUX_TREE_NNODES=${FLUX_TREE_NNODES}"
+            dr_print "eval ${jobscript_cl}"
+            continue
+        else
+            rc=0
+            eval ${jobscript_cl} || rc=$?
+            if [[ ${rc} -gt ${FT_MAX_EXIT_CODE} ]]
+            then
+                FT_MAX_EXIT_CODE=${rc}
+                FT_MAX_TREE_ID="${FLUX_TREE_ID}"
+                FT_MAX_JOBSCRIPT_IX="${FLUX_TREE_JOBSCRIPT_INDEX}"
+            fi
+        fi
+    done
+
+    [[ "x${FT_DRY_RUN}" = "xno" ]] && flux queue drain
+
+    if [[ "x${FT_MAX_TREE_ID}" != "x" ]]
+    then
+        warn "${jobscript_cl}: exited with exit code (${FT_MAX_EXIT_CODE})"
+        warn "invocation id: ${FT_MAX_TREE_ID}@index[${FT_MAX_JOBSCRIPT_IX}]"
+        warn "output displayed above, if any"
+    fi
+
+    unset FLUX_TREE_ID
+    unset FLUX_TREE_NNODES
+    unset FLUX_TREE_NCORES_PER_NODE
+}
+
+
+#
+# Entry point to execute the job script. When this is invoke,
+# the parent Flux instance has already been started.
+# Measure the elapse time of the job script execution, and
+# dump the performance data.
+#
+leaf() {
+    local prefix="${1}"
+    local nnodes="${2}"
+    local ncores="${3}"
+    local ngpus="${4}"
+    local njobs="${5}"
+    local cl="${6}"
+    local perfout="${7}"
+
+    # Begin Time Stamp
+    local B=''
+    B=$(date +%s.%N)
+
+    execute "$@"
+
+    # End Time Stamp
+    local E=''
+    E=$(date +%s.%N)
+
+    local o=''
+
+    o=$(jsonify "${prefix}" "${njobs}" "${nnodes}" "${ncores}" \
+"${ngpus}" "${B}" "${E}")
+    rollup "${prefix}" "${o}" "${perfout}"
+}
+
+
+#
+# Roll up exit code from child instances
+#
+rollup_exit_code() {
+    local rc=0
+    for job in "${jobids[@]}"
+    do
+        rc=0
+        flux job status --exception-exit-code=255 ${job} || rc=$?
+        if [[ ${rc} -gt ${FT_MAX_EXIT_CODE} ]]
+        then
+            FT_MAX_EXIT_CODE=${rc}
+            FT_MAX_FLUX_JOBID=${job}
+        fi
+    done
+
+    if [[ ${FT_MAX_FLUX_JOBID} -ne 0 ]]
+    then
+        flux job attach ${FT_MAX_FLUX_JOBID} || true
+    fi
+}
+
+#
+# Submit the specified number of Flux instances at the next level
+# of the calling instance. Use flux-tree recursively.
+#
+submit() {
+    local prefix="${1}"
+    local nx_topo=$(next_topo "${2}")
+    local nx_queue=$(next_policy_or_param "${3}")
+    local nx_q_params=$(next_policy_or_param "${4}")
+    local nx_match=$(next_policy_or_param "${5}")
+    local nnodes="${6}"
+    local ncores="${7}"
+    local ngpus="${8}"
+    local size="${9}"
+    local njobs="${10}"
+    local cl="${11}"
+    local log="${12}"
+    local out="${13}"
+
+    # Flux instance rank-agnostic command-line options for the next level
+    local T="${nx_topo:+--topology=${nx_topo}}"
+    T="${T:---leaf}"
+    local Q="${nx_queue:+--queue-policy=${nx_queue}}"
+    local P="${nx_q_params:+--queue-params=${nx_q_params}}"
+    local M="${nx_match:+--match-policy=${nx_match}}"
+    local F=''
+    [[ "x${log}" != "x%^+_no" ]] && F="--flux-logs=${log}"
+    local S="${cl}"
+    local rank=0
+
+    # Main Loop to Submit the Next-Level Flux Instances
+    size=$(get_effective_size "${ncores}" "${ngpus}" "${size}")
+    apply_policies "${3}" "${4}" "${5}"
+    for rank in $(seq 1 "${size}"); do
+        local my_cores=0
+        my_cores=$(get_my_cores "${nnodes}" "${ncores}" "${size}" "${rank}")
+        local my_gpus=0
+        my_gpus=$(get_my_gpus "${nnodes}" "${ngpus}" "${size}" "${rank}")
+        local my_njobs=0
+        my_njobs=$(get_my_njobs "${njobs}" "${size}" "${rank}")
+
+        [[ "${my_njobs}" -eq 0 ]] && break
+
+        # Flux instance rank-aware command-line options
+        local J="--njobs=${my_njobs}"
+        local o=''
+        if [[ x"${log}" != "x%^+_no" ]]
+        then
+            mkdir -p "${log}"
+            o="-o,-S,log-filename=${log}/${prefix}.${rank}.log"
+        fi
+        local N=0
+        N=$(get_my_nodes "${ncores}" "${my_cores}")
+        local c=0
+        c=$((my_cores/N + (my_cores + my_cores % N)/(my_cores + 1)))
+        local g=0
+        g=$((my_gpus/N + (my_gpus + my_gpus % N)/(my_gpus + 1)))
+        local G=''
+        [[ ${g} -gt 0 ]] && G="-g ${g}"
+        local X="--prefix=${prefix}.${rank}"
+
+        if [[ "x${FT_DRY_RUN}" = "xyes" ]]
+        then
+            dr_print "Rank=${rank}: N=${N} c=${c} ${G:+g=${G}} ${o:+o=${o}}"
+            dr_print "Rank=${rank}: ${T:+T=${T}}"
+            dr_print "Rank=${rank}: ${Q:+Q=${Q}} ${P:+P=${P}} ${M:+M=${M}}" 
+            dr_print "Rank=${rank}: ${X:+X=${X}} ${J:+J=${J}} ${S:+S=${S}}"
+            dr_print ""
+            continue
+        fi
+        jobid=$(\
+flux mini submit -N${N} -n${N} -c${c} ${G} flux start ${o} \
+flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
+        jobids["${rank}"]="${jobid}"
+    done
+
+    [[ "x${FT_DRY_RUN}" = "xno" ]] && flux queue drain && rollup_exit_code
+    unapply_policies
+}
+
+
+#
+# Collect the performance record for sibling Flux instances at one level.
+# For each child instance, get the performance record from the guest KVS
+# namespace, which had all of the records gathered for the subtree rooted
+# at this instance, and add that to the current record with its child key.
+#
+coll_perf() {
+    local prefix="${1}"
+    local nnodes="${2}"
+    local ncores="${3}"
+    local ngpus="${4}"
+    local njobs="${5}"
+    local begin="${6}"
+    local end="${7}"
+    local perfout="${8}"
+
+    #
+    # Make a JSON string from the performance data
+    #
+    local blurb=''
+    blurb=$(jsonify "${prefix}" "${njobs}" "${nnodes}" "${ncores}" "${ngpus}" "${begin}" "${end}")
+    local child=''
+    local rank=0
+
+    for rank in $(seq 1 "${njobs}");
+    do
+        [[ "x${jobids[${rank}]}" = "x" || "x${FT_DRY_RUN}" = "xyes" ]] && break
+        child=$(flux job info ${jobids[${rank}]} guest.tree-perf)
+        blurb=$(echo "${blurb}" | jq " .child += [${child}]")
+    done
+
+    rollup "${prefix}" "${blurb}" "${perfout}"
+}
+
+
+#
+# Entry point to submit child Flux instances at the next level from the
+# calling Flux instance. Measure the elapse time of running all of these
+# Flux instances. Collect the performance record for that level at the end.
+#
+internal() {
+    local prefix="${1}"
+    local nnodes="${6}"
+    local ncores="${7}"
+    local ngpus="${8}"
+    local njobs="${10}"
+    local perfout="${13}"
+
+    # Begin Time Stamp
+    local B=''
+    B=$(date +%s.%N)
+
+    submit "$@"
+
+    # End Time Stamp
+    local E=''
+    E=$(date +%s.%N)
+
+    coll_perf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" \
+"${njobs}" "${B}" "${E}" "${perfout}"
+}
+
+
+################################################################################
+#                                                                              #
+#                                  Main                                        #
+#                                                                              #
+################################################################################
+
+main() {
+    local leaf="${1}"          # is this a leaf Flux instance?
+    local prefix="${2}"        # id showing hierarchical path of the instance
+    local topo="${3}"          # topology shape at the invoked level
+    local queue="${4}"         # queuing policies at the invoked level and below
+    local param="${5}"         # queue parameters at the invoked level and below
+    local match="${6}"         # match policy shape at the invoked level
+    local nnodes="${7}"        # num of nodes allocated to this instance
+    local ncores="${8}"        # num of cores per node
+    local ngpus="${9}"         # num of gpus per node
+    local njobs="${10}"        # num of jobs assigned to this Flux instance
+    local cl="${11}"           # jobscript commandline
+    local flogs="${12}"        # flux log output option
+    local out="${13}"          # perf output filename
+    local size=0
+
+    if [[ ${leaf} = "yes" ]]
+    then
+        #
+        # flux-tree is invoked for a leaf: all of the internal Flux instances
+        # leading to this leaf have been instantiated and ${script} should
+        # be executed on the last-level Flux instance. 
+        #
+        leaf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" "${njobs}" \
+             "${cl}" "${out}"
+    else
+        #
+        # flux-tree is invoked to instantate ${size} internal Flux instances
+        # at the next level of the calling instance.
+        #
+        size=${topo%%${t_delim}*}
+        internal "${prefix}" "${topo}" "${queue}" "${param}" "${match}" \
+                 "${nnodes}" "${ncores}" "${ngpus}" "${size}" "${njobs}" \
+                 "${cl}" "${flogs}" "${out}"
+    fi
+
+    exit ${FT_MAX_EXIT_CODE}
+}
+
+
+################################################################################
+#                                                                              #
+#               Commandline Parsing and Validate Options                       #
+#                                                                              #
+################################################################################
+
+GETOPTS=$(/usr/bin/getopt -u -o ${short_opts} -l ${long_opts} -n "${prog}" -- "${@}")
+eval set -- "${GETOPTS}"
+rcopt=$?
+
+while true; do
+    case "${1}" in
+      -h|--help)                   echo -ne "${usage}";          exit 0  ;;
+      -l|--leaf)                   FT_LEAF="yes";                shift 1 ;;
+      -d|--dry-run)                FT_DRY_RUN="yes";             shift 1 ;;
+      -f|--flux-logs)              FT_FXLOGS="${2}";             shift 2 ;;
+      -N|--nnodes)                 FT_NNODES=${2};               shift 2 ;;
+      -c|--ncores-per-node)        FT_NCORES=${2};               shift 2 ;;
+      -g|--ngpus-per-node)         FT_NGPUS=${2};                shift 2 ;;
+      -T|--topology)               FT_TOPO="${2}"; FT_INTER="yes";     shift 2 ;;
+      -Q|--queue-policy)           FT_QUEUE="${2}"; FT_INTER="yes";    shift 2 ;;
+      -P|--queue-params)           FT_PARAMS="${2}"; FT_INTER="yes";   shift 2 ;;
+      -M|--match-policy)           FT_MATCH="${2}"; FT_INTER="yes";    shift 2 ;;
+      -J|--njobs)                  FT_NJOBS=${2};                shift 2 ;;
+      -o|--perf-out)               FT_PERF_OUT="${2}";           shift 2 ;;
+      -X|--prefix)                 FT_G_PREFIX="${2}";           shift 2 ;;
+      --)                          shift; break;                         ;;
+      *)                           die "Invalid option '${1}'\n${usage}" ;;
+    esac
+done
+
+FT_SCRIPT="${1}"
+FT_CL="${@}"
+
+[[ "$#" -lt 1 || "${rcopt}" -ne 0 ]] && die "${usage}"
+
+[[ ! -x $(which ${FT_SCRIPT}) ]] && die "cannot execute ${FT_SCRIPT}!"
+
+[[ "${FT_NNODES}" -le 0 ]] && die "nnodes must be greater than 0!"
+
+[[ "${FT_NCORES}" -le 0 ]] && die "ncores must be greater than 0!"
+
+[[ "${FT_NGPUS}" -lt 0 ]] && die "incorrect ngpus!"
+
+qpolicy_check "${FT_QUEUE}" || die "invalid queue policy!"
+
+mpolicy_check "${FT_MATCH}" || die "invalid match policy!"
+
+qparams_check "${FT_PARAMS}" || die "invalid queue params!"
+
+if [[ "${FT_INTER}" = "yes" && "${FT_LEAF}" = "yes" ]]
+then
+    die "--leaf must not be used together with internal tree-node options!"
+fi
+
+
+################################################################################
+#                                                                              #
+#                      Invoke the Main Entry Level                             #
+#                                                                              #
+################################################################################
+
+main "${FT_LEAF}" "${FT_G_PREFIX}" "${FT_TOPO}" "${FT_QUEUE}" "${FT_PARAMS}" \
+     "${FT_MATCH}" "${FT_NNODES}" "${FT_NCORES}" "${FT_NGPUS}" "${FT_NJOBS}" \
+     "${FT_CL}" "${FT_FXLOGS}" "${FT_PERF_OUT}"
+
+#
+# vi:tabstop=4 shiftwidth=4 expandtab
+#

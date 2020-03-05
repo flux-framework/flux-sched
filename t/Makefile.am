@@ -27,6 +27,7 @@ TESTS = \
     t1003-qmanager-policy.t \
     t1004-qmanager-optimize.t \
     t1005-qmanager-conf.t \
+    t2000-tree-basic.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
