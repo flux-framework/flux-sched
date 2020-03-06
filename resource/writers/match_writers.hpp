@@ -84,9 +84,14 @@ private:
 class jgf_match_writers_t : public match_writers_t
 {
 public:
-    virtual ~jgf_match_writers_t () {}
-    virtual void reset ();
-    virtual int emit (std::stringstream &out, bool newline);
+    jgf_match_writers_t ();
+    jgf_match_writers_t (const jgf_match_writers_t &w);
+    jgf_match_writers_t &operator=(const jgf_match_writers_t &w);
+    virtual ~jgf_match_writers_t ();
+
+    virtual void reset () { }
+    virtual bool empty ();
+    int emit_json (json_t **o);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -94,8 +99,20 @@ public:
     virtual int emit_edg (const std::string &prefix,
                           const f_resource_graph_t &g, const edg_t &e);
 private:
-    std::stringstream m_vout;
-    std::stringstream m_eout;
+    json_t *emit_vtx_base (const f_resource_graph_t &g, const vtx_t &u,
+                           unsigned int needs, bool exclusive);
+    int emit_vtx_prop (json_t *o, const f_resource_graph_t &g,
+                       const vtx_t &u, unsigned int needs, bool exclusive);
+    int emit_vtx_path (json_t *o, const f_resource_graph_t &g,
+                       const vtx_t &u, unsigned int needs, bool exclusive);
+    int map2json (json_t *o, const std::map<std::string, std::string> &mp,
+                  const char *key);
+    int emit_edg_meta (json_t *o, const f_resource_graph_t &g, const edg_t &e);
+    int alloc_json_arrays ();
+    int check_array_sizes ();
+
+    json_t *m_vout = NULL;
+    json_t *m_eout = NULL;
 };
 
 
