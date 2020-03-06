@@ -185,7 +185,13 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
         if ((rc != 0) && (errno == ENODEV))
             sat = false;
 
-        ctx->writers->emit (o);
+        if (ctx->traverser->err_message () != "") {
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            ctx->traverser->clear_err_message ();
+        }
+        if (ctx->writers->emit (o) < 0)
+            std::cerr << "ERROR: match writer emit: " << strerror (errno) << std::endl;
+
         std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
                                                        : std::cout;
         out << o.str ();
