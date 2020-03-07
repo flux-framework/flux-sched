@@ -1,0 +1,15 @@
+# 9x node[1]->slot[1]->socket[1]->core[18]
+#                               ->gpu[2]
+#                               ->memory[128]
+#                    ->ssd[1024]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+# this must fail to match
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/test001.yaml
+quit
