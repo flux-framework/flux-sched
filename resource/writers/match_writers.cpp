@@ -68,6 +68,11 @@ void match_writers_t::compress (std::stringstream &o,
  *                                                                          *
  ****************************************************************************/
 
+bool sim_match_writers_t::empty ()
+{
+    return m_out.str ().empty ();
+}
+
 int sim_match_writers_t::emit (std::stringstream &out)
 {
     out << m_out.str ();
@@ -770,6 +775,18 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
  *         PRETTY Simple Writers Class Public Method Definitions            *
  *                                                                          *
  ****************************************************************************/
+
+bool pretty_sim_match_writers_t::empty ()
+{
+    bool empty = true;
+    for (auto &s: m_out) {
+        if (!s.empty ()) {
+            empty = false;
+            break;
+        }
+    }
+    return empty;
+}
 
 int pretty_sim_match_writers_t::emit (std::stringstream &out)
 {

@@ -50,6 +50,7 @@ enum class match_format_t { SIMPLE,
 class match_writers_t {
 public:
     virtual ~match_writers_t () {}
+    virtual bool empty () = 0;
     virtual int emit (std::stringstream &out) = 0;
     virtual void reset () = 0;
     virtual int emit_vtx (const std::string &prefix,
@@ -72,6 +73,7 @@ class sim_match_writers_t : public match_writers_t
 {
 public:
     virtual ~sim_match_writers_t () {}
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
@@ -193,6 +195,7 @@ private:
 class pretty_sim_match_writers_t : public match_writers_t
 {
 public:
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
