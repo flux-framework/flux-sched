@@ -690,6 +690,13 @@ int rv1_match_writers_t::emit_edg (const std::string &prefix,
     return rc;
 }
 
+int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
+{
+    m_starttime = start_tm;
+    m_expiration = end_tm;
+    return 0;
+}
+
 
 /****************************************************************************
  *                                                                          *
@@ -744,6 +751,13 @@ int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
                                            bool exclusive)
 {
     return rlite.emit_vtx (prefix, g, u, needs, exclusive);
+}
+
+int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
+{
+    m_starttime = start_tm;
+    m_expiration = end_tm;
+    return 0;
 }
 
 
