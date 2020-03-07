@@ -675,26 +675,43 @@ int rv1_match_writers_t::emit_edg (const std::string &prefix,
  *                                                                          *
  ****************************************************************************/
 
-void rv1_nosched_match_writers_t::reset ()
+bool rv1_nosched_match_writers_t::empty ()
 {
-    rlite.reset ();
+    return rlite.empty ();
 }
 
 int rv1_nosched_match_writers_t::emit (std::stringstream &out)
 {
     int rc = 0;
-    std::string ver = "\"version\":1";
-    std::string exec_key = "\"execution\":";
-    std::string rlite_key = "\"R_lite\":";
-    size_t base = out.str ().size ();
-    out << "{" << ver;
-    out << "," << exec_key;
-    out << "{" << rlite_key;
-    rc = rlite.emit (out);
-    out << "}}" << std::endl;
-    if (out.str ().size () <= (base + ver.size ()
-                               + exec_key.size () + rlite_key.size () + 6))
-        out.str (out.str ().substr (0, base));
+    json_t *o = NULL;
+    json_t *rlite_o = NULL;
+    char *json_str = NULL;
+
+    if (rlite.empty ())
+        goto ret;
+    if ((rc = rlite.emit_json (&rlite_o)) < 0)
+        goto ret;
+    if (!(o = json_pack ("{s:i s:{s:o}}",
+                             "version", 1,
+                             "execution",
+                             "R_lite",  rlite_o))) {
+        json_decref (rlite_o);
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+        json_decref (o);
+        o = NULL;
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    out << json_str << std::endl;
+    free (json_str);
+    json_decref (o);
+
+ret:
     return rc;
 }
 
