@@ -477,7 +477,15 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int needs = m_graph_db->metadata.v_rt_edges[dom].get_needs ();
     m_color.reset ();
 
-    rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu);
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu)) > 0) {
+         uint64_t starttime = jobmeta.at;
+         uint64_t endtime = jobmeta.at + jobmeta.duration;
+         if (writers->emit_tm (starttime, endtime) == -1) {
+             m_err_msg += __FUNCTION__;
+             m_err_msg += ": emit_tm returned -1.\n";
+         }
+     }
+
     return (rc > 0)? 0 : -1;
 }
 
