@@ -52,7 +52,6 @@ public:
     virtual ~match_writers_t () {}
     virtual bool empty () = 0;
     virtual int emit (std::stringstream &out) = 0;
-    virtual void reset () = 0;
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive) = 0;
@@ -75,7 +74,6 @@ public:
     virtual ~sim_match_writers_t () {}
     virtual bool empty ();
     virtual int emit (std::stringstream &out);
-    virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
@@ -94,7 +92,6 @@ public:
     jgf_match_writers_t &operator=(const jgf_match_writers_t &w);
     virtual ~jgf_match_writers_t ();
 
-    virtual void reset () { }
     virtual bool empty ();
     int emit_json (json_t **o);
     virtual int emit (std::stringstream &out);
@@ -131,7 +128,6 @@ public:
     rlite_match_writers_t &operator=(const rlite_match_writers_t &w);
     virtual ~rlite_match_writers_t ();
 
-    virtual void reset () { }
     virtual bool empty ();
     int emit_json (json_t **o);
     virtual int emit (std::stringstream &out, bool newline);
@@ -154,7 +150,6 @@ private:
 class rv1_match_writers_t : public match_writers_t
 {
 public:
-    virtual void reset () { }
     virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
@@ -176,7 +171,6 @@ private:
 class rv1_nosched_match_writers_t : public match_writers_t
 {
 public:
-    virtual void reset () { }
     virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
@@ -197,7 +191,6 @@ class pretty_sim_match_writers_t : public match_writers_t
 public:
     virtual bool empty ();
     virtual int emit (std::stringstream &out);
-    virtual void reset ();
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);

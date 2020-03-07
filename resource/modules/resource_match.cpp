@@ -672,7 +672,6 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     struct timeval end;
 
     gettimeofday (&start, NULL);
-    ctx->writers->reset ();
 
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0

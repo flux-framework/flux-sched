@@ -76,13 +76,9 @@ bool sim_match_writers_t::empty ()
 int sim_match_writers_t::emit (std::stringstream &out)
 {
     out << m_out.str ();
-    return 0;
-}
-
-void sim_match_writers_t::reset ()
-{
     m_out.str ("");
     m_out.clear ();
+    return 0;
 }
 
 int sim_match_writers_t::emit_vtx (const std::string &prefix,
@@ -792,12 +788,8 @@ int pretty_sim_match_writers_t::emit (std::stringstream &out)
 {
     for (auto &s: m_out)
         out << s;
-    return 0;
-}
-
-void pretty_sim_match_writers_t::reset ()
-{
     m_out.clear ();
+    return 0;
 }
 
 int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
