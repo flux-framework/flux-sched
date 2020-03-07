@@ -29,7 +29,7 @@ submit_jobs()   {
 }
 
 test_expect_success 'qmanager: generate jobspec for a simple test job' '
-    flux jobspec srun -n1 -t 1 hostname | exec_test > basic.json
+    flux jobspec srun -n1 -t 100 hostname | exec_test > basic.json
 '
 
 test_expect_success 'qmanager: hwloc reload works' '
