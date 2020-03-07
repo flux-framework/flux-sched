@@ -224,7 +224,7 @@ rollup() {
             if [[ "x${FT_DRY_RUN}" = "xno" ]]
             then
                 # Put it to KVS parent namespace except when we are at top level
-                flux --parent kvs put -j "tree-perf=${blurb}" || warn "KVS error"
+                flux --parent kvs put --raw "tree-perf=-" <<< "${blurb}" || warn "KVS error"
             fi
         fi
     fi
