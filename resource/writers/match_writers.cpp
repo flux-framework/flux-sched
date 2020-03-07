@@ -642,10 +642,12 @@ int rv1_match_writers_t::emit (std::stringstream &out)
         json_decref (rlite_o);
         goto ret;
     }
-    if (!(o = json_pack ("{s:i s:{s:o s:o}}",
+    if (!(o = json_pack ("{s:i s:{s:o s:I s:I} s:o}",
                              "version", 1,
                              "execution",
                              "R_lite", rlite_o,
+                             "starttime", m_starttime,
+                             "expiration", m_expiration,
                              "scheduling", jgf_o))) {
         json_decref (rlite_o);
         json_decref (jgf_o);
@@ -720,10 +722,12 @@ int rv1_nosched_match_writers_t::emit (std::stringstream &out)
         goto ret;
     if ((rc = rlite.emit_json (&rlite_o)) < 0)
         goto ret;
-    if (!(o = json_pack ("{s:i s:{s:o}}",
+    if (!(o = json_pack ("{s:i s:{s:o s:I s:I}}",
                              "version", 1,
                              "execution",
-                             "R_lite",  rlite_o))) {
+                             "R_lite",  rlite_o,
+                             "starttime", m_starttime,
+                             "expiration", m_expiration))) {
         json_decref (rlite_o);
         rc = -1;
         errno = ENOMEM;
