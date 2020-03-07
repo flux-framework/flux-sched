@@ -621,31 +621,51 @@ ret:
  *                                                                          *
  ****************************************************************************/
 
-void rv1_match_writers_t::reset ()
+bool rv1_match_writers_t::empty ()
 {
-    rlite.reset ();
-    jgf.reset ();
+    return (rlite.empty () && jgf.empty ());
 }
 
 int rv1_match_writers_t::emit (std::stringstream &out)
 {
-    std::string ver = "\"version\":1";
-    std::string exec_key = "\"execution\":";
-    std::string rlite_key = "\"R_lite\":";
-    std::string sched_key = "\"scheduling\":";
-    size_t base = out.str ().size ();
-    out << "{" << ver;
-    out << "," << exec_key;
-    out << "{" << rlite_key;
-    rlite.emit (out, false);
-    out << "}";
-    out << "," << sched_key;
-    jgf.emit (out);
-    out << "}" << std::endl;
-    if (out.str ().size () <= (base + ver.size () + exec_key.size ()
-                                    + rlite_key.size () + sched_key.size () + 7))
-        out.str (out.str ().substr (0, base));
-    return 0;
+    int rc = 0;
+    json_t *o = NULL;
+    json_t *rlite_o = NULL;
+    json_t *jgf_o = NULL;
+    char *json_str = NULL;
+
+    if (rlite.empty () || jgf.empty ())
+        goto ret;
+    if ((rc = rlite.emit_json (&rlite_o)) < 0)
+        goto ret;
+    if ((rc = jgf.emit_json (&jgf_o)) < 0) {
+        json_decref (rlite_o);
+        goto ret;
+    }
+    if (!(o = json_pack ("{s:i s:{s:o s:o}}",
+                             "version", 1,
+                             "execution",
+                             "R_lite", rlite_o,
+                             "scheduling", jgf_o))) {
+        json_decref (rlite_o);
+        json_decref (jgf_o);
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+        json_decref (o);
+        o = NULL;
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    out << json_str << std::endl;
+    free (json_str);
+    json_decref (o);
+
+ret:
+    return rc;
 }
 
 int rv1_match_writers_t::emit_vtx (const std::string &prefix,
@@ -654,18 +674,20 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
                                    unsigned int needs,
                                    bool exclusive)
 {
-    int rc = rlite.emit_vtx (prefix, g, u, needs, exclusive);
-    rc += jgf.emit_vtx (prefix, g, u, needs, exclusive);
-    return (!rc)? 0 : -1;
+    int rc = 0;
+    if ((rc = rlite.emit_vtx (prefix, g, u, needs, exclusive)) == 0)
+        rc = jgf.emit_vtx (prefix, g, u, needs, exclusive);
+    return rc;
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
                                    const f_resource_graph_t &g,
                                    const edg_t &e)
 {
-    int rc = rlite.emit_edg (prefix, g, e);
-    rc += jgf.emit_edg (prefix, g, e);
-    return (!rc)? 0 : -1;
+    int rc = 0;
+    if ((rc = rlite.emit_edg (prefix, g, e)) == 0)
+        rc = jgf.emit_edg (prefix, g, e);
+    return rc;
 }
 
 

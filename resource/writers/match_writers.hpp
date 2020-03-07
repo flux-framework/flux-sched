@@ -149,7 +149,8 @@ private:
 class rv1_match_writers_t : public match_writers_t
 {
 public:
-    virtual void reset ();
+    virtual void reset () { }
+    virtual bool empty ();
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
