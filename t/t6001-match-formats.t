@@ -54,11 +54,11 @@ test_expect_success "--match-format=rv1_nosched and =rlite works" '
 '
 
 test_expect_success "--match-format=pretty_simple works" '
-    echo "match allocate ${jobspec}" > in8.txt &&
-    echo "quit" >> in8.txt &&
-    ${query} -L ${tiny_grug} -F pretty_simple -d -t o8 < in8.txt &&
-    cat o8 | grep -v "INFO:" > o8.simple &&
-    test -s o8.simple
+    echo "match allocate ${jobspec}" > in9.txt &&
+    echo "quit" >> in9.txt &&
+    ${query} -L ${tiny_grug} -F pretty_simple -d -t o9 < in9.txt &&
+    cat o9 | grep -v "INFO:" > o9.simple &&
+    test -s o9.simple
 '
 
 test_done
