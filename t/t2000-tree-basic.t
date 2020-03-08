@@ -301,6 +301,17 @@ test_expect_success 'flux-tree: --perf-out generates a perf output file' '
     test ${wcount} -eq 18
 '
 
+test_expect_success 'flux-tree: --perf-format works with custom format' '
+    flux tree --dry-run -T 2 -N 2 -c 4 -J 2 -o perf.out \
+         --perf-format="{treeid}\ {elapse:f}\ {my_nodes:d}" \
+         /bin/hostname &&
+    test -f perf.out &&
+    lcount=$(wc -l perf.out | awk "{print \$1}") &&
+    test ${lcount} -eq 2 && 
+    wcount=$(wc -w perf.out | awk "{print \$1}") &&
+    test ${wcount} -eq 6
+'
+
 test_expect_success 'flux-tree: -T4x2 on 4 nodes/4 cores work' '
     cat >cmp.11 <<-EOF &&
 	FLUX_QMANAGER_OPTIONS:
