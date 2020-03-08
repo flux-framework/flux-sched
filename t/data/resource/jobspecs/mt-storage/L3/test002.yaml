@@ -1,0 +1,40 @@
+version: 1
+resources:
+  - type: rack
+    count: 1
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: slot
+            label: default
+            count: 1
+            with:
+              - type: socket
+                count: 1
+                with:
+                  - type: core
+                    count: 18
+                  - type: gpu
+                    count: 2
+                  - type: memory
+                    count: 128
+  - type: mtl2unit
+    count: 1
+    with:
+      - type: mtl1unit
+        count: 1
+        with:
+          - type: ssd
+            count: 1024
+            exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: [ "default" ]
+    slot: default
+    count:
+      per_slot: 1
