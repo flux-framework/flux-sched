@@ -1,0 +1,21 @@
+# 16x rack[1]->node[1]->slot[1]->socket[1]->core[18]
+#                                         ->gpu[2]
+#                                         ->memory[128]
+#     mtl2unit[1]->ssd[1024]
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L2/test001.yaml
+quit

@@ -1,0 +1,11 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test002.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test002.yaml
+# this must fail to match
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L3/test001.yaml
+quit

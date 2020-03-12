@@ -46,6 +46,10 @@ TESTS = \
     t3015-resource-basic-jgf.t \
     t3016-resource-power-jgf.t \
     t3017-resource-granule.t \
+    t3018-resource-mtl0.t \
+    t3019-resource-mtl1.t \
+    t3020-resource-mtl2.t \
+    t3021-resource-mtl3.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
