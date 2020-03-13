@@ -46,7 +46,8 @@ FT_MAX_FLUX_JOBID=0            # maximum flux jobid that reports max exit code
 FT_MAX_TREE_ID=""              # FLUX_TREE_ID that reports max exit code
 FT_MAX_JOBSCRIPT_IX=""         # FLUX_TREE_JOBSCRIPT_INDEX reporting max code
                                # --prefix is an internal-use-only option
-ORIG_FLUX_QMANAGER_OPTIONS=''  # 
+FT_JOB_NAME='%^+_no'           # job name to use when submitting children
+ORIG_FLUX_QMANAGER_OPTIONS=''  #
 ORIG_FLUX_RESOURCE_OPTIONS=''  # to apply and unapply QMANAGER and RESOURCE
 ORIG_FLUX_QMANAGER_RC_NOOP=''  # module load options.
 ORIG_FLUX_RESOURCE_RC_NOOP=''  #
@@ -82,7 +83,7 @@ declare -a jobids             # array to store a set of submitted job IDs
 
 declare -r long_opts='help,leaf,flux-logs:,nnodes:,ncores-per-node:'\
 ',ngpus-per-node:,topology:,queue-policy:,queue-params:,match-policy:'\
-',njobs:,perf-out:,perf-format:,prefix:,dry-run'
+',njobs:,perf-out:,perf-format:,prefix:,job-name:,dry-run'
 
 declare -r short_opts='hlf:N:c:g:T:Q:P:M:J:o:X:d'
 declare -r prog=${0##*/}
@@ -168,6 +169,7 @@ Options:\n\
                                    format. Uses the python format\n\
                                    specification mini-language.\n\
                                    Example: \"{treeid:<15s},{elapse:>20f}\"\n\
+ --job-name=NAME               Name to use when submitting child jobs\n\
      --                        Stop parsing options after this\n\
 "
 
@@ -188,9 +190,10 @@ rollup() {
 
     if [[ "${prefix}" == "${top_prefix}" &&  "${out}" != "%^+_no" ]]; then
         flux tree-helper --perf-out="${out}" --perf-format="${format}" \
-             ${num_children} "tree-perf" <<< "${blurb}"
+             ${num_children} "tree-perf" "${FT_JOB_NAME}" <<< "${blurb}"
     else
-        flux tree-helper ${num_children} "tree-perf" <<< "${blurb}"
+        flux tree-helper ${num_children} "tree-perf" "${FT_JOB_NAME}" \
+             <<< "${blurb}"
     fi
 }
 
@@ -641,8 +644,9 @@ submit() {
             continue
         fi
         jobid=$(\
-flux mini submit -N${N} -n${N} -c${c} ${G} flux start ${o} \
-flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
+flux mini submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
+     flux start ${o} \
+     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
         jobids["${rank}"]="${jobid}"
     done
 
@@ -786,6 +790,7 @@ while true; do
       -o|--perf-out)               FT_PERF_OUT="${2}";           shift 2 ;;
       --perf-format)               FT_PERF_FORMAT="${2}";        shift 2 ;;
       -X|--prefix)                 FT_G_PREFIX="${2}";           shift 2 ;;
+      --job-name)                  FT_JOB_NAME="${2}";           shift 2 ;;
       --)                          shift; break;                         ;;
       *)                           die "Invalid option '${1}'\n${usage}" ;;
     esac
@@ -813,6 +818,15 @@ qparams_check "${FT_PARAMS}" || die "invalid queue params!"
 if [[ "${FT_INTER}" = "yes" && "${FT_LEAF}" = "yes" ]]
 then
     die "--leaf must not be used together with internal tree-node options!"
+fi
+
+# if the user did not set a name, then use a partially random string to prevent
+# conflicts with other flux-tree instances during performance data collection
+# via flux-tree-helper
+if [[ "$FT_JOB_NAME" == '%^+_no' ]]; then
+    # code copied from:
+    # https://unix.stackexchange.com/questions/230673/how-to-generate-a-random-string
+    FT_JOB_NAME="flux-tree-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
 fi
 
 

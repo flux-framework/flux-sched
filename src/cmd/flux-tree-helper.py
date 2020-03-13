@@ -25,7 +25,7 @@ import flux.job
 logger = logging.getLogger("flux-tree-helper")
 
 
-def get_child_jobids(flux_handle, num_children):
+def get_child_jobids(flux_handle, num_children, child_name):
     """
     Get the jobids of num_children instances.  Will repeatedly query the
     job-info module until num_children jobids are collected, with sleeps
@@ -33,10 +33,14 @@ def get_child_jobids(flux_handle, num_children):
     """
     jobids = set()
     since = 0.0
-    logger.debug("Getting inactive children's IDs")
+    logger.debug("Getting IDs of inactive children with name == {}".format(child_name))
     while True:
         for job in flux.job.job_list_inactive(
-            flux_handle, max_entries=num_children, since=since, attrs=["t_inactive"]
+            flux_handle,
+            max_entries=num_children,
+            since=since,
+            attrs=["t_inactive"],
+            name=child_name,
         ).get_jobs():
             jobid = job["id"]
             since = max(since, job["t_inactive"])
@@ -57,9 +61,9 @@ def get_this_instance_data():
     return data
 
 
-def get_child_data(flux_handle, num_children, kvs_key):
+def get_child_data(flux_handle, num_children, child_name, kvs_key):
     child_data = []
-    jobids = get_child_jobids(flux_handle, num_children)
+    jobids = get_child_jobids(flux_handle, num_children, child_name)
     for jobid in jobids:
         kvs_dir = flux.job.job_kvs_guest(flux_handle, jobid)
         child_data.append(kvs_dir[kvs_key])
@@ -156,6 +160,11 @@ def parse_args():
         "kvs_key", type=str, help="key to use when propagating data up through the tree"
     )
     parser.add_argument(
+        "job_name",
+        type=str,
+        help="name of the child jobs to use when filtering the inactive jobs",
+    )
+    parser.add_argument(
         "--perf-out",
         type=str,
         help="Dump the performance data into the given file. Assumed to be given at the root instance.",
@@ -177,7 +186,9 @@ def main():
     this_data = get_this_instance_data()
     if args.num_children > 0:
         logger.debug("Getting children's data")
-        child_data = get_child_data(flux_handle, args.num_children, args.kvs_key)
+        child_data = get_child_data(
+            flux_handle, args.num_children, args.job_name, args.kvs_key
+        )
     else:
         child_data = []
     logger.debug("Combining data")

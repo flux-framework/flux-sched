@@ -739,6 +739,29 @@ EOF
     test_cmp cmp.23 out.23
 '
 
+PERF_FORMAT="{treeid}"
+PERF_BLOB='{"treeid":"tree", "perf": {}}'
+JOB_NAME="foobar"
+test_expect_success 'flux-tree: successfully runs alongside other jobs' '
+    flux tree -T 1 -N 1 -c 1 -J 1 -o p.out5 --perf-format="$PERF_FORMAT" \
+         --job-name="${JOB_NAME}" -- hostname &&
+    flux mini run -N1 -c1 hostname &&
+    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out6 \
+         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
+    test_cmp p.out5 p.out6
+'
+
+JOB_NAME="foobar2"
+test_expect_success 'flux-tree: successfully runs alongside other flux-trees' '
+    run_timeout 20 \
+    flux tree -T 1x1 -N 1 -c 1 -J 1 -o p.out7 --perf-format="$PERF_FORMAT" \
+         --job-name="${JOB_NAME}" -- hostname &&
+    flux tree -T 1 -N 1 -c 1 -J 1 -- hostname &&
+    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out8 \
+         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
+    test_cmp p.out7 p.out8
+'
+
 test_expect_success 'flux-tree: removing qmanager/resource works' '
      flux module remove resource &&
      flux module remove qmanager
