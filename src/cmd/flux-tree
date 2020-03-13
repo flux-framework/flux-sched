@@ -165,11 +165,11 @@ Options:\n\
                                    (default=${FT_NJOBS})\n\
  -o, --perf-out=FILENAME       Dump the performance data into\n\
                                    the given file (default: don't print)\n\
- --perf-format=FORMAT          Dump the performance data with the given\n\
+     --perf-format=FORMAT      Dump the performance data with the given\n\
                                    format. Uses the python format\n\
                                    specification mini-language.\n\
                                    Example: \"{treeid:<15s},{elapse:>20f}\"\n\
- --job-name=NAME               Name to use when submitting child jobs\n\
+     --job-name=NAME           Name to use when submitting child jobs\n\
      --                        Stop parsing options after this\n\
 "
 
