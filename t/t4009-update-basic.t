@@ -327,5 +327,28 @@ EOF
     test_cmp 010.R.out2 010.R.out
 '
 
+test011_desc="match-allocate/update-allocate result in same output in RV1"
+test_expect_success "${test011_desc}" '
+    cat >cmds011 <<-EOF &&
+        match allocate ${unit_job}
+        match allocate ${unit_job}
+        match allocate ${unit_job}
+        match allocate ${unit_job}
+        quit
+EOF
+    ${query} -L ${grugs} -S CA -P high -F rv1 -t 011.R.out < cmds011 &&
+    cat 011.R.out | grep -v INFO | \
+split -l 1 --additional-suffix=".json" - cmds011_ &&
+    cat >upd_cmds011 <<-EOF &&
+        update allocate cmds001_aa.json 1 0 3600
+        update allocate cmds001_ab.json 2 0 3600
+        update allocate cmds001_ac.json 3 0 3600
+        update allocate cmds001_ad.json 4 0 3600
+        quit
+EOF
+    ${query} -L ${grugs} -S CA -P high -F rv1 -t 011.R.out2 < upd_cmds011 &&
+    test_cmp 011.R.out2 011.R.out
+'
+
 test_done
 
