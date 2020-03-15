@@ -100,6 +100,9 @@ resource_ctx_t::~resource_ctx_t ()
 static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg);
 
+static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
 
@@ -120,6 +123,7 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
+    { FLUX_MSGTYPE_REQUEST, "resource.update", update_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
@@ -769,6 +773,29 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
    return rc;
 }
 
+static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                const std::string &jgf, int64_t at, uint64_t duration)
+{
+    int rc = 0;
+    dfu_traverser_t &tr = *(ctx->traverser);
+    std::shared_ptr<resource_reader_base_t> rd;
+    if ((rd = create_resource_reader ("jgf")) == nullptr) {
+        rc = -1;
+        flux_log (ctx->h, LOG_ERR, "%s: create_resource_reader (id=%jd)",
+                  __FUNCTION__, static_cast<intmax_t> (jobid));
+        goto out;
+    }
+    if ((rc = tr.run (jgf, ctx->writers, rd, jobid, at, duration)) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: dfu_traverser_t::run (id=%jd): %s",
+                  __FUNCTION__, static_cast<intmax_t> (jobid),
+                  ctx->traverser->err_message ().c_str ());
+        goto out;
+    }
+
+out:
+   return rc;
+}
+
 static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       const char *cmd, const std::string &jstr, int64_t *now,
                       int64_t *at, double *ov, std::stringstream &o)
@@ -817,6 +844,112 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
 done:
     return rc;
+}
+
+static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                       const char *R, int64_t &at, double &ov,
+                       std::stringstream &o)
+{
+    int rc = 0;
+    uint64_t duration = 0;
+    double elapse = 0.0f;
+    struct timeval start;
+    struct timeval end;
+    std::string jgf;
+    std::string R2;
+
+    if ( (rc = gettimeofday (&start, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = parse_R (ctx, R, jgf, at, duration)) < 0) {
+        flux_log_error (ctx->h, "%s: parsing R", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = run (ctx, jobid, jgf, at, duration)) < 0) {
+        flux_log_error (ctx->h, "%s: run", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = ctx->writers->emit (o)) < 0) {
+        flux_log_error (ctx->h, "%s: writers->emit", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = gettimeofday (&end, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
+    ov = get_elapse_time (start, end);
+    update_match_perf (ctx, ov);
+    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, ov)) != 0) {
+        flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
+                        __FUNCTION__, (intmax_t)jobid);
+        goto done;
+    }
+
+done:
+    return rc;
+}
+
+static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0f;
+    int64_t jobid = 0;
+    uint64_t duration = 0;
+    std::string status = "";
+    std::stringstream o;
+
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    if (flux_request_unpack (msg, NULL, "{s:I s:s}",
+                                            "jobid", &jobid,
+                                            "R", &R) < 0) {
+        flux_log_error (ctx->h, "%s: flux_request_unpack", __FUNCTION__);
+        goto error;
+    }
+    if (is_existent_jobid (ctx, jobid)) {
+        int rc = 0;
+        if ( (rc = R_equal (ctx, R, ctx->jobs[jobid]->R.c_str ())) < 0) {
+            flux_log_error (ctx->h, "%s: R_equal", __FUNCTION__);
+            goto error;
+        } else if (rc == 1) {
+            errno=EINVAL;
+            flux_log (ctx->h, LOG_ERR,
+                      "%s: jobid (%jd) with different R exists!",
+                      __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto error;
+        }
+        // If a jobid with matching R exists, no need to update
+        ov = ctx->jobs[jobid]->overhead;
+        get_jobstate_str (ctx->jobs[jobid]->state, status);
+        o << ctx->jobs[jobid]->R;
+        at = ctx->jobs[jobid]->scheduled_at;
+        flux_log (ctx->h, LOG_DEBUG, "%s: jobid (%jd) with matching R exists",
+                  __FUNCTION__, static_cast<intmax_t> (jobid));
+    } else if (run_update (ctx, jobid, R, at, ov, o) < 0) {
+        flux_log_error (ctx->h,
+                        "%s: update failed (id=%jd)",
+                        __FUNCTION__, static_cast<intmax_t> (jobid));
+        goto error;
+    }
+
+    if ( status == "")
+        status = get_status_string (at, at);
+
+    if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
+                                       "jobid", jobid,
+                                       "status", status.c_str (),
+                                       "overhead", ov,
+                                       "R", o.str ().c_str (),
+                                       "at", at) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
