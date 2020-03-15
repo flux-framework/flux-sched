@@ -668,29 +668,37 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     struct timeval end;
     bool rsv = false;
 
-    gettimeofday (&start, NULL);
-
+    if ( (rc = gettimeofday (&start, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0
         && strcmp ("allocate_with_satisfiability", cmd) != 0) {
+        rc = -1;
         errno = EINVAL;
-        flux_log_error (ctx->h, "%s: unknown cmd: %s", __FUNCTION__, cmd);
+        flux_log (ctx->h, LOG_ERR, "%s: unknown cmd: %s", __FUNCTION__, cmd);
         goto done;
     }
 
     *at = *now = (int64_t)start.tv_sec;
-    if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
+    if ( (rc = run (ctx, jobid, cmd, jstr, at)) < 0) {
         goto done;
-
-    if ((rc = ctx->writers->emit (o)) < 0) {
+    }
+    if ( (rc = ctx->writers->emit (o)) < 0) {
         flux_log_error (ctx->h, "%s: writer can't emit", __FUNCTION__);
         goto done;
     }
+
     rsv = (*now != *at)? true : false;
-    gettimeofday (&end, NULL);
+    if ( (rc = gettimeofday (&end, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
-    if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *ov)) != 0) {
+
+    if ( (rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *ov)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto done;
