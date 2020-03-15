@@ -621,31 +621,28 @@ static inline std::string get_status_string (int64_t now, int64_t at)
 }
 
 static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
-                                int64_t id, int64_t now, int64_t at,
+                                int64_t id, bool reserved, int64_t at,
                                 const std::string &jspec,
-                                std::stringstream &R, double elapse)
+                                const std::stringstream &R, double elapse)
 {
-    job_lifecycle_t state = job_lifecycle_t::INIT;
-
-    if (id < 0 || now < 0 || at < 0) {
+    if (id < 0 || at < 0) {
         errno = EINVAL;
         return -1;
     }
-
-    state = (at == now)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
     try {
+        job_lifecycle_t state = (!reserved)? job_lifecycle_t::ALLOCATED
+                                           : job_lifecycle_t::RESERVED;
         ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "",
                                                       jspec, R.str (), elapse);
-    } catch (std::bad_alloc &e) {
+        if (!reserved)
+            ctx->allocations[id] = id;
+        else
+            ctx->reservations[id] = id;
+    }
+    catch (std::bad_alloc &e) {
         errno = ENOMEM;
         return -1;
     }
-
-    if (at == now)
-        ctx->allocations[id] = id;
-    else
-        ctx->reservations[id] = id;
-
     return 0;
 }
 
@@ -675,6 +672,7 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     double elapse = 0.0f;
     struct timeval start;
     struct timeval end;
+    bool rsv = false;
 
     gettimeofday (&start, NULL);
 
@@ -694,13 +692,11 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         flux_log_error (ctx->h, "%s: writer can't emit", __FUNCTION__);
         goto done;
     }
-
+    rsv = (*now != *at)? true : false;
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
-
-    if ((rc = track_schedule_info (ctx, jobid, *now, *at, jstr, o, *ov)) != 0) {
-        errno = EINVAL;
+    if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *ov)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto done;
