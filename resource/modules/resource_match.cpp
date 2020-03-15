@@ -614,6 +614,13 @@ static inline std::string get_status_string (int64_t now, int64_t at)
     return (at == now)? "ALLOCATED" : "RESERVED";
 }
 
+static inline bool is_existent_jobid (
+                       const std::shared_ptr<resource_ctx_t> &ctx,
+                       uint64_t jobid)
+{
+    return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
+}
+
 static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
                                 int64_t id, bool reserved, int64_t at,
                                 const std::string &jspec,
@@ -706,13 +713,6 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
 done:
     return rc;
-}
-
-static inline bool is_existent_jobid (
-                       const std::shared_ptr<resource_ctx_t> &ctx,
-                       uint64_t jobid)
-{
-    return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
 }
 
 static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
