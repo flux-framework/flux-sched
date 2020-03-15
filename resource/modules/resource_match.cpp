@@ -647,6 +647,110 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
     return 0;
 }
 
+static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
+                    std::string &jgf, int64_t &starttime, uint64_t &duration)
+{
+    int rc = 0;
+    int version = 0;
+    int64_t st = 0;
+    int64_t et = 0;
+    json_t *o = NULL;
+    json_t *graph = NULL;
+    json_error_t error;
+    char *jgf_str = NULL;
+
+    if ( (o = json_loads (R, 0, &error)) == NULL) {
+        rc = -1;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error.text);
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (rc = json_unpack (o, "{s:i s:{s:I s:I} s?:o}",
+                                   "version", &version,
+                                   "execution",
+                                       "starttime", &st,
+                                       "expiration", &et,
+                                   "scheduling", &graph)) < 0) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: json_unpack", __FUNCTION__);
+        goto freemem_out;
+    }
+    if (version != 1 || st < 0 || et < st) {
+        rc = -1;
+        errno = EPROTO;
+        flux_log (ctx->h, LOG_ERR,
+                  "%s: version=%d, starttime=%jd, expiration=%jd",
+                  __FUNCTION__, version,
+                  static_cast<intmax_t> (st), static_cast<intmax_t> (et));
+        goto freemem_out;
+    }
+    if (graph == NULL) {
+        rc = -1;
+        errno = ENOENT;
+        flux_log (ctx->h, LOG_ERR, "%s: no scheduling key in R", __FUNCTION__);
+        goto freemem_out;
+    }
+    if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
+        rc = -1;
+        errno = ENOMEM;
+        flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+        goto freemem_out;
+    }
+    jgf = jgf_str;
+    free (jgf_str);
+    starttime = static_cast<uint64_t> (st);
+    duration = static_cast<uint64_t> (et) - static_cast<uint64_t> (st);
+
+freemem_out:
+    json_decref (o);
+    json_decref (graph);
+out:
+    return rc;
+}
+
+static int R_equal (const std::shared_ptr<resource_ctx_t> &ctx,
+                    const char *R1, const char *R2)
+{
+    int rc = -1;
+    json_t *o1 = NULL;
+    json_t *o2 = NULL;
+    json_t *rlite1 = NULL;
+    json_t *rlite2 = NULL;
+    json_error_t error1;
+    json_error_t error2;
+
+    if ( (o1 = json_loads (R1, 0, &error1)) == NULL) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error1.text);
+        goto out;
+    }
+    if ( (rc = json_unpack (o1, "{s:{s:o}}",
+                                    "execution",
+                                    "R_lite", &rlite1)) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (o2 = json_loads (R2, 0, &error2)) == NULL) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error2.text);
+        goto out;
+    }
+    if ( (rc = json_unpack (o2, "{s:{s:o}}",
+                                    "execution",
+                                    "R_lite", &rlite2)) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    rc = (json_equal (rlite1, rlite2) == 1)? 0 : 1;
+
+out:
+    json_decref (o1);
+    json_decref (o2);
+    json_decref (rlite1);
+    json_decref (rlite2);
+    return rc;
+}
+
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                 const char *cmd, const std::string &jstr, int64_t *at)
 {
