@@ -179,7 +179,7 @@ const std::shared_ptr<job_t> queue_policy_base_t::lookup (flux_jobid_t id)
 
 int queue_policy_base_t::reconstruct (std::shared_ptr<job_t> running_job)
 {
-    return detail::queue_policy_base_impl_t::reconstruct (running_job);
+    return detail::queue_policy_base_impl_t::reconstruct_queue (running_job);
 }
 
 std::shared_ptr<job_t> queue_policy_base_t::pending_pop ()
@@ -267,18 +267,35 @@ const std::shared_ptr<job_t> queue_policy_base_impl_t::lookup (flux_jobid_t id)
     return m_jobs[id];
 }
 
-int queue_policy_base_impl_t::reconstruct (std::shared_ptr<job_t> job)
+int queue_policy_base_impl_t::reconstruct_queue (std::shared_ptr<job_t> job)
 {
     int rc = -1;
+    std::pair<std::map<uint64_t, flux_jobid_t>::iterator, bool> ret;
+    std::pair<std::map<flux_jobid_t,
+                       std::shared_ptr<job_t>>::iterator, bool> ret2;
+
     if (job == nullptr || m_jobs.find (job->id) != m_jobs.end ()) {
         errno = EINVAL;
         goto out;
     }
     job->t_stamps.running_ts = m_rq_cnt++;
-    m_running.insert (std::pair<uint64_t, flux_jobid_t>(job->t_stamps.running_ts,
-                                                        job->id));
-    m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
-                                                                    job));
+
+    ret = m_running.insert (std::pair<uint64_t, flux_jobid_t>(
+                                job->t_stamps.running_ts, job->id));
+    if (ret.second == false) {
+        rc = -1;
+        errno = ENOMEM;
+        goto out;
+    }
+    ret2 = m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (
+                             job->id, job));
+    if (ret2.second == false) {
+        m_running.erase (ret.first);
+        rc = -1;
+        errno = ENOMEM;
+        goto out;
+    }
+
     rc = 0;
 out:
     return rc;

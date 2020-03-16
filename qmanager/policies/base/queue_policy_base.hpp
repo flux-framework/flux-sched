@@ -115,7 +115,7 @@ public:
     const std::shared_ptr<job_t> lookup (flux_jobid_t id);
 
 protected:
-    int reconstruct (std::shared_ptr<job_t> running_job);
+    int reconstruct_queue (std::shared_ptr<job_t> running_job);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
