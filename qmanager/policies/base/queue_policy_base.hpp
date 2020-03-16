@@ -181,6 +181,28 @@ public:
      */
     virtual int run_sched_loop (void *h, bool use_alloced_queue) = 0;
 
+    /*! Resource reconstruct interface that must be implemented by
+     *  derived classes.
+     *
+     * \param h          Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
+     * \param job        shared pointer to a running job whose resource
+     *                   state is being requested to be reconstructed.
+     *                   job->schedule.R is the requested R.
+     * \param ret_R      Replied R (must be equal to job->schedule.R
+     *                   if succeeded).
+     * \return           0 on success; -1 on error.
+     *                       EINVAL: invalid argument.
+     *                       ENOMEM: out of memory.
+     *                       ERANGE: out of range request.
+     *                       EPROTO: job->schedule.R doesn't comply.
+     *                       ENOTSUP: job->schedule.R has unsupported feature.
+     */
+    virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
+                                      std::string &ret_R) = 0;
+
     /*! Set queue parameters. Can be called multiple times.
      *
      * \param params     comma-delimited key-value pairs string
@@ -241,12 +263,26 @@ public:
     /*! Append a job into the internal running-job queue to reconstruct
      *  the queue state.
      *
-     *  \param running_job
-     *                   a shared pointer pointing to a job_t object.
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
+     * \param job        shared pointer to a running job whose resource
+     *                   state is being requested to be reconstructed.
+     *                   job->schedule.R is the requested R.
+     * \param full       recover full (both running queue and resource state)
+     *                   or partially (only queue).
+     * \param ret_R      replied R (must be equal to job->schedule.R
+     *                   if succeeded).
      *  \return          0 on success; -1 on error.
      *                       EINVAL: invalid argument.
+     *                       ENOMEM: out of memory.
+     *                       ERANGE: out of range request.
+     *                       EPROTO: job->schedule.R doesn't comply.
+     *                       ENOTSUP: job->schedule.R has unsupported feature.
      */
-    int reconstruct (std::shared_ptr<job_t> running_job);
+    int reconstruct (void *h,
+                     std::shared_ptr<job_t> job, bool full, std::string &R_out);
 
     /*! Pop the first job from the pending job queue. The popped
      *  job is completely graduated from the queue policy layer.
