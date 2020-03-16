@@ -125,6 +125,16 @@ int queue_policy_fcfs_t<reapi_type>::run_sched_loop (void *h,
     return rc;
 }
 
+template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::reconstruct_resource (
+        void *h, std::shared_ptr<job_t> job, std::string &R_out)
+{
+    return reapi_type::update_allocate (h, job->id, job->schedule.R,
+                                        job->schedule.at,
+                                        job->schedule.ov, R_out);
+}
+
+
 } // namespace Flux::queue_manager::detail
 } // namespace Flux::queue_manager
 } // namespace Flux

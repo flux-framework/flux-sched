@@ -177,9 +177,13 @@ const std::shared_ptr<job_t> queue_policy_base_t::lookup (flux_jobid_t id)
     return detail::queue_policy_base_impl_t::lookup (id);
 }
 
-int queue_policy_base_t::reconstruct (std::shared_ptr<job_t> running_job)
+int queue_policy_base_t::reconstruct (void *h, std::shared_ptr<job_t> job,
+                                      std::string &R_out)
 {
-    return detail::queue_policy_base_impl_t::reconstruct_queue (running_job);
+    int rc = 0;
+    if ( (rc = reconstruct_resource (h, job, R_out)) < 0)
+        return rc;
+    return detail::queue_policy_base_impl_t::reconstruct_queue (job);
 }
 
 std::shared_ptr<job_t> queue_policy_base_t::pending_pop ()
