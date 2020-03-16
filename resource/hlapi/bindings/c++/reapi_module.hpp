@@ -46,6 +46,9 @@ public:
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,
                                std::string &R, int64_t &at, double &ov);
+    static int update_allocate (void *h, const uint64_t jobid,
+                                const std::string &R, int64_t &at, double &ov,
+                                std::string &R_out);
     static int cancel (void *h, const uint64_t jobid);
     static int info (void *h, const uint64_t jobid,
                      bool &reserved, int64_t &at, double &ov);
