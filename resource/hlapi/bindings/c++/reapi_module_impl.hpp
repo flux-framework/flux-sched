@@ -83,6 +83,53 @@ out:
     return rc;
 }
 
+int reapi_module_t::update_allocate (void *h, const uint64_t jobid,
+                                    const std::string &R, int64_t &at,
+                                    double &ov, std::string &R_out)
+{
+    int rc = -1;
+    int64_t rj = -1;
+    flux_t *fh = (flux_t *)h;
+    flux_future_t *f = NULL;
+    int64_t scheduled_at = -1;
+    double overhead = 0.0f;
+    const char *rset = NULL;
+    const char *status = NULL;
+
+    if (!fh || R == "" || jobid > INT64_MAX) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( !(f = flux_rpc_pack (fh, "resource.update", FLUX_NODEID_ANY, 0,
+                                  "{s:I s:s}",
+                                      "jobid", jobid,
+                                      "R", R.c_str ())))
+        goto out;
+    if ( (rc = flux_rpc_get_unpack (f, "{s:I s:s s:f s:s s:I}",
+                                           "jobid", &rj,
+                                           "status", &status,
+                                           "overhead", &overhead,
+                                           "R", &rset,
+                                           "at", &scheduled_at)) < 0)
+        goto out;
+    if (rj != static_cast<int64_t> (jobid)
+        || rset == NULL
+        || status == NULL
+        || std::string ("ALLOCATED") != status) {
+        rc = -1;
+        errno = EPROTO;
+        flux_future_destroy (f);
+        goto out;
+    }
+    R_out = rset;
+    ov = overhead;
+    at = scheduled_at;
+    flux_future_destroy (f);
+
+out:
+    return rc;
+}
+
 int reapi_module_t::cancel (void *h, const uint64_t jobid)
 {
     int rc = -1;

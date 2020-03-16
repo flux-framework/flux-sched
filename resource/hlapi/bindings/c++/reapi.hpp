@@ -76,6 +76,28 @@ public:
         return -1;
     }
 
+    /*! Update the resource state with R.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param jobid     jobid of the uint64_t type.
+     *  \param R         R String of std::string.
+     *  \param at        return the scheduled time.
+     *  \param ov        return the performance overhead
+     *                   in terms of elapse time needed to complete
+     *                   the update operation.
+     *  \param R_out     return the updated R string.
+     *  \return          0 on success; -1 on error.
+     */
+    static int update_allocate (void *h, const uint64_t jobid,
+                                const std::string &R, int64_t &at, double &ov,
+                                std::string &R_out)
+    {
+        return -1;
+    }
+
     /*! Cancel the allocation or reservation corresponding to jobid.
      *
      *  \param h         Opaque handle. How it is used is an implementation

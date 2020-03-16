@@ -83,6 +83,27 @@ out:
     return rc;
 }
 
+extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
+                                             const uint64_t jobid, const char *R,
+                                             int64_t *at, double *ov,
+                                             const char **R_out)
+{
+    int rc = -1;
+    std::string R_buf = "";
+    if (!ctx || !ctx->h || !R) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (rc = reapi_module_t::update_allocate (ctx->h, jobid, R,
+                                                *at, *ov, R_buf)) < 0) {
+        goto out;
+    }
+    (*R_out) = strdup (R_buf.c_str ());
+out:
+    return rc;
+
+}
+
 extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx, const uint64_t jobid)
 {
     if (!ctx || !ctx->h) {
