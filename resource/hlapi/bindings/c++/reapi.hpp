@@ -105,9 +105,10 @@ public:
      *                   service module, it is expected to be a pointer
      *                   to a flux_t object.
      *  \param jobid     jobid of the uint64_t type.
+     *  \param noent_ok  don't return an error with nonexistent jobid
      *  \return          0 on success; -1 on error.
      */
-    static int cancel (void *h, const uint64_t jobid)
+    static int cancel (void *h, const uint64_t jobid, bool noent_ok)
     {
         return -1;
     }

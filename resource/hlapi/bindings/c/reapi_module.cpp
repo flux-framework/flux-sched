@@ -104,13 +104,14 @@ out:
 
 }
 
-extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx, const uint64_t jobid)
+extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx,
+                                    const uint64_t jobid, bool noent_ok)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_module_t::cancel (ctx->h, jobid);    
+    return reapi_module_t::cancel (ctx->h, jobid, noent_ok);
 }
 
 extern "C" int reapi_module_info (reapi_module_ctx_t *ctx, const uint64_t jobid,

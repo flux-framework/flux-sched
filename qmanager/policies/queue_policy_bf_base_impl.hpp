@@ -46,7 +46,7 @@ int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void *h)
     // Pop newly completed jobs (e.g., per a free request from job-manager
     // as received by qmanager) to remove them from the resource infrastructure.
     while ((job = complete_pop ()) != nullptr)
-        rc += reapi_type::cancel (h, job->id);
+        rc += reapi_type::cancel (h, job->id, true);
     return rc;
 }
 
@@ -56,7 +56,7 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
     int rc = 0;
     std::map<uint64_t, flux_jobid_t>::const_iterator citer;
     for (citer = m_reserved.begin (); citer != m_reserved.end (); citer++)
-        rc += reapi_type::cancel (h, citer->second);
+        rc += reapi_type::cancel (h, citer->second, false);
     m_reserved.clear ();
     return rc;
 }

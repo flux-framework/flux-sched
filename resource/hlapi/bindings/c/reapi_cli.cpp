@@ -102,13 +102,14 @@ out:
     return rc;
 }
 
-extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid)
+extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
+                                 const uint64_t jobid, bool noent_ok)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::cancel (ctx->h, jobid);    
+    return reapi_cli_t::cancel (ctx->h, jobid, noent_ok);
 }
 
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
