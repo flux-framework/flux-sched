@@ -387,7 +387,7 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
 
 static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
-    if (ctx) {
+    if (ctx != nullptr) {
         int saved_errno = errno;
         std::shared_ptr<job_t> job;
         while (ctx->queue && (job = ctx->queue->pending_pop ()) != nullptr)
