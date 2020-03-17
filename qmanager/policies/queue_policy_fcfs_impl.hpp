@@ -48,7 +48,7 @@ int queue_policy_fcfs_t<reapi_type>::cancel_completed_jobs (void *h)
     // Pop newly completed jobs (e.g., per a free request from job-manager
     // as received by qmanager) to remove them from the resource infrastructure.
     while ((job = complete_pop ()) != nullptr)
-        rc += reapi_type::cancel (h, job->id);
+        rc += reapi_type::cancel (h, job->id, true);
     return rc;
 }
 

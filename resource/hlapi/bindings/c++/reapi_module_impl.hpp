@@ -131,11 +131,12 @@ out:
     return rc;
 }
 
-int reapi_module_t::cancel (void *h, const uint64_t jobid)
+int reapi_module_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
 {
     int rc = -1;
     flux_t *fh = (flux_t *)h;
     flux_future_t *f = NULL;
+    int saved_errno;
 
     if (!fh || jobid > INT64_MAX) {
         errno = EINVAL;
@@ -146,7 +147,12 @@ int reapi_module_t::cancel (void *h, const uint64_t jobid)
                              "{s:I}", "jobid", (const int64_t)jobid))) {
         goto out;
     }
+    saved_errno = errno;
     if ((rc = flux_rpc_get (f, NULL)) < 0) {
+        if (noent_ok && errno == ENOENT) {
+            errno = saved_errno;
+            rc = 0;
+	}
         goto out;
     }
     rc = 0;

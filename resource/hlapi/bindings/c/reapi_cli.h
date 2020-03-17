@@ -92,9 +92,11 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobid     jobid of the uint64_t type.
+ *  \param noent_ok  don't return an error on nonexistent jobid
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid);
+int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
+                      const uint64_t jobid, bool noent_ok);
 
 /*! Get the information on the allocation or reservation corresponding
  *  to jobid.
