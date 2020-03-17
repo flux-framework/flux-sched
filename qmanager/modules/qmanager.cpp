@@ -49,12 +49,14 @@ struct qmanager_conf_t {
     std::string queue_policy;
     std::string queue_params;
     std::string policy_params;
+    std::string resource_recovery;
 };
 
 struct qmanager_args_t {
     std::string queue_policy;
     std::string queue_params;
     std::string policy_params;
+    std::string resource_recovery;
 };
 
 struct qmanager_ctx_t {
@@ -62,6 +64,7 @@ struct qmanager_ctx_t {
     qmanager_conf_t conf;
     qmanager_args_t args;
     std::string queue_policy;
+    std::string resource_recovery;
     schedutil_t *schedutil;
     std::shared_ptr<queue_policy_base_t> queue;
 };
@@ -106,25 +109,30 @@ out:
     return rc;
 }
 
-// FIXME: This will be expanded when we implement full scheduler
-// resilency schemes: Issue #470.
 extern "C" int jobmanager_hello_cb (flux_t *h,
                                     flux_jobid_t id, int prio, uint32_t uid,
                                     double ts, const char *R, void *arg)
-
 {
-    int rc = -1;
+    int rc = 0;
     std::shared_ptr<qmanager_ctx_t> ctx = nullptr;
+    std::shared_ptr<job_t> running_job = nullptr;
+    std::string R_out;
     ctx = *(static_cast<std::shared_ptr<qmanager_ctx_t> *>(arg));
-    std::shared_ptr<job_t> running_job
-        = std::make_shared<job_t> (job_state_kind_t::
-                                   RUNNING, id, uid, prio, ts, R);
+    bool full = (ctx->resource_recovery == "true")? true : false;
 
-    if (ctx->queue->reconstruct (running_job) < 0) {
-        flux_log_error (h, "%s: reconstruct (id=%jd)", __FUNCTION__, (intmax_t)id);
+    running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
+                                           id, uid, prio, ts, R);
+    if (!full) {
+        flux_log (h, LOG_DEBUG,
+                  "%s: the resource stat of job (id=%jd) may not be recovered",
+                  __FUNCTION__, static_cast<intmax_t> (id));
+    }
+    if ((rc = ctx->queue->reconstruct ((void *)ctx->h,
+                                       running_job, full, R_out)) < 0) {
+        flux_log_error (h, "%s: reconstruct (id=%jd)",
+                        __FUNCTION__, static_cast<intmax_t> (id));
         goto out;
     }
-    rc = 0;
 
 out:
     return rc;
@@ -236,6 +244,20 @@ static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
                                sizeof ("policy-params"))) {
             args.policy_params = strstr (argv[i], "=") + 1;
         }
+        else if (!strncmp ("resource-recovery-on-load=", argv[i],
+                               sizeof ("resource-recovery-on-load"))) {
+            dflt = args.resource_recovery;
+            args.resource_recovery = strstr (argv[i], "=") + 1;
+            if (args.resource_recovery != "true"
+                && args.resource_recovery != "false") {
+                flux_log (ctx->h, LOG_ERR,
+                          "Unknown value (%s) for resource-recovery-on-load! "
+                          "Use default (%s).",
+                          args.resource_recovery.c_str (),
+                          dflt.c_str ());
+                args.resource_recovery = dflt;
+            }
+        }
     }
 
     return rc;
@@ -244,10 +266,13 @@ static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
 static void set_default (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     ctx->queue_policy = "fcfs";
+    ctx->resource_recovery = "true";
     ctx->conf.queue_policy = "";
     ctx->conf.policy_params = "";
+    ctx->args.resource_recovery = "";
     ctx->args.queue_policy = "";
     ctx->args.policy_params = "";
+    ctx->args.resource_recovery = "";
 }
 
 static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
@@ -296,6 +321,7 @@ static int enforce_conf_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
         goto out;
     }
+
     rc = 0;
 out:
     return rc;
@@ -326,7 +352,7 @@ out:
     return rc;
 }
 
-static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
+static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     std::string res_qp;
     std::string res_pp;
@@ -362,6 +388,15 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
               "effective queue params: %s", res_qp.c_str ());
     flux_log (ctx->h, LOG_DEBUG,
               "effective policy params: %s", res_pp.c_str ());
+
+    // Apply configuration file-time resource-recovery-on-load
+    if (ctx->conf.resource_recovery != "")
+        ctx->resource_recovery = ctx->conf.resource_recovery;
+    // Apply module load-time resource-recovery-on-load
+    if (ctx->args.resource_recovery != "")
+        ctx->resource_recovery = ctx->args.resource_recovery;
+    flux_log (ctx->h, LOG_DEBUG, "effective resource recovery: %s",
+              ctx->resource_recovery.c_str ());
 
     if (handshake_jobmanager (ctx) < 0) {
         flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
@@ -502,6 +537,27 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
     return 0;
 }
 
+static int process_config_other_options (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    flux_conf_error_t error;
+    int resource_recovery = -1;
+
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
+            &error,
+            "{s?:{s?:b}}",
+            "qmanager",
+                "resource-recovery-on-load", &resource_recovery) < 0) {
+        flux_log_error (ctx->h,
+            "%s: config file error [qmanager.resource-recovery-on-load]: %s",
+            __FUNCTION__, error.errbuf);
+        return -1;
+    }
+    if (resource_recovery != -1) {
+        ctx->conf.resource_recovery = resource_recovery ? "true" : "false";
+    }
+    return 0;
+}
+
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
@@ -511,6 +567,8 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     if ((rc = process_config_queue_params (ctx)) < 0)
         return rc;
     if ((rc = process_config_policy_params (ctx)) < 0)
+        return rc;
+    if ((rc = process_config_other_options (ctx)) < 0)
         return rc;
     return rc;
 }
@@ -541,8 +599,8 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             qmanager_destroy (ctx);
             return rc;
         }
-        if ((rc = enforce_queue_policy (ctx)) < 0) {
-            flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+        if ((rc = enforce_options (ctx)) < 0) {
+            flux_log_error (h, "%s: enforce_options", __FUNCTION__);
             qmanager_destroy (ctx);
             return rc;
         }
