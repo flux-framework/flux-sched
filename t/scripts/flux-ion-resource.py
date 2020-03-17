@@ -7,6 +7,7 @@ from __future__ import print_function
 import argparse
 import errno
 import yaml
+import json
 import flux
 import time
 
@@ -36,6 +37,10 @@ class ResourceModuleInterface:
     def rpc_allocate (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate', 'jobid' : jobid, 'jobspec' : jobspec_str}
         return self.f.rpc ("sched-fluxion-resource.match", payload).get ()
+
+    def rpc_update (self, jobid, R):
+        payload = {'jobid' : jobid, 'R' : R}
+        return self.f.rpc ("sched-fluxion-resource.update", payload).get ()
 
     def rpc_allocate_with_satisfiability (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate_with_satisfiability',
@@ -112,6 +117,20 @@ def match_reserve_action (args):
         print (resp['R'])
 
 """
+    Action for update sub-command
+"""
+def update_action (args):
+    with open (args.RV1, 'r') as stream:
+        RV1 = json.dumps (json.load (stream))
+        r = ResourceModuleInterface ()
+        resp = r.rpc_update (args.jobid, RV1)
+        print (heading ())
+        print (body (resp['jobid'], resp['status'], resp['at'], resp['overhead']))
+        print ("=" * width ())
+        print ("UPDATED RESOURCES:")
+        print (resp['R'])
+
+"""
     Action for cancel sub-command
 """
 def cancel_action (args):
@@ -184,12 +203,14 @@ def main ():
                                     description='Valid commands',
                                     help='Additional help')
     mstr = "Find the best matching resources for a jobspec"
+    ustr = "Update the resource database"
     istr = "Print info on a single job"
     sstr = "Print overall performance statistics"
     cstr = "Cancel an allocated or reserved job"
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
     parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
+    parser_u = subpar.add_parser ('update', help=ustr, description=ustr)
     parser_i = subpar.add_parser ('info', help=istr, description=istr)
     parser_s = subpar.add_parser ('stat', help=sstr, description=sstr)
     parser_c = subpar.add_parser ('cancel', help=cstr, description=cstr)
@@ -212,6 +233,13 @@ def main ():
     parser_ms = subparsers_m.add_parser ('allocate_with_satisfiability',
                                           help=msstr)
     parser_mr = subparsers_m.add_parser ('allocate_orelse_reserve', help=mrstr)
+
+    #
+    # Positional argument for update sub-command
+    #
+    parser_u.add_argument ('RV1', metavar='RV1', type=str, help='RV1 file name')
+    parser_u.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_u.set_defaults (func=update_action)
 
     #
     # Positional argument for info sub-command
