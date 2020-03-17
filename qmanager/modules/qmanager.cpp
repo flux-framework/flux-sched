@@ -546,8 +546,6 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             qmanager_destroy (ctx);
             return rc;
         }
-        if ((rc = process_args (ctx, argc, argv)) < 0)
-            flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
         if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
             flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
         qmanager_destroy (ctx);
