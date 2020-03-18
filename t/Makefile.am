@@ -27,6 +27,9 @@ TESTS = \
     t1003-qmanager-policy.t \
     t1004-qmanager-optimize.t \
     t1005-qmanager-conf.t \
+    t1006-recovery-full.t \
+    t1007-recovery-partial.t \
+    t1008-recovery-none.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
@@ -62,6 +65,7 @@ TESTS = \
     t4006-properties.t \
     t4007-match-var-aware.t \
     t4008-match-jgf.t \
+    t4009-match-update.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t
