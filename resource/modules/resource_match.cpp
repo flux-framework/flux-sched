@@ -238,7 +238,6 @@ static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
             dflt = args.match_format;
             args.match_format = strstr (argv[i], "=") + 1;
             if (!known_match_format (args.match_format)) {
-                args.match_format = dflt;
                 flux_log (ctx->h, LOG_ERR,
                           "%s: unknown match format (%s)! use default (%s).",
                           __FUNCTION__,
