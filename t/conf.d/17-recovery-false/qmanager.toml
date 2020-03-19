@@ -1,0 +1,17 @@
+#
+# Configuration for the qmanager module
+#
+
+[qmanager]
+
+policy = "fcfs"                    # queueing policy type
+resource-recovery-on-load = false  # resource recovery shouldn't be attempted
+
+    [qmanager.queue-params]        # general queue parameters
+    max-queue-depth = 1000000      # max queue depth (applied to all policies)
+    queue-depth = 8192             # queue-depth (applied to all policies)
+
+    [qmanager.policy-params]       # queue policy parameters
+    max-reservation-depth = 100000 # max depth for "conservative" and "hybrid"
+    reservation-depth = 64         # reservation depth for HYBRID
+
