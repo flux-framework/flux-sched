@@ -40,6 +40,10 @@ check_queue_params() {
 check_policy_params() {
     test "$(grep "policy params" <$1 | awk "{ print \$6}" )" = $2
 }
+# Usage: check_policy_params outfile expected
+check_recovery() {
+    test "$(grep "resource recovery" <$1 | awk "{ print \$6}" )" = $2
+}
 
 test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
 	cat <<-EOT >rc1 &&
@@ -205,6 +209,28 @@ test_expect_success 'qmanager: load succeeds on no qmanager category' '
 	"queue-depth=8192,max-queue-depth=1000000" &&
     check_policy_params ${outfile} \
 	"reservation-depth=64,max-reservation-depth=100000"
+'
+
+test_expect_success 'qmanager: resource recovery option is set true' '
+    conf_name="16-recovery-true" &&
+    outfile=${conf_name}.out &&
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_recovery ${outfile} "true"
+'
+
+test_expect_success 'qmanager: resource recovery option is set false' '
+    conf_name="17-recovery-false" &&
+    outfile=${conf_name}.out &&
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_recovery ${outfile} "false"
+'
+
+test_expect_success 'qmanager: resource recover option precedence' '
+    conf_name="16-recovery-true" &&
+    outfile=${conf_name}2.out &&
+    start_qmanager ${conf_base}/${conf_name} \
+	"resource-recovery-on-load=false" >${outfile} &&
+    check_recovery ${outfile} "false"
 '
 
 test_done
