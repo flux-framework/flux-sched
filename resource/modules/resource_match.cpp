@@ -672,7 +672,6 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     struct timeval end;
 
     gettimeofday (&start, NULL);
-    ctx->writers->reset ();
 
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0
@@ -686,7 +685,11 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
         goto done;
 
-    ctx->writers->emit (o);
+    if ((rc = ctx->writers->emit (o)) < 0) {
+        flux_log_error (ctx->h, "%s: writer can't emit", __FUNCTION__);
+        goto done;
+    }
+
     gettimeofday (&end, NULL);
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);

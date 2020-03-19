@@ -142,7 +142,7 @@ int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
     if ( (json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
         errno = EPROTO;
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": JGF vertex id key is not found in an node.\n";
+        m_err_msg += ": JGF vertex id key is not found in a node.\n";
         goto done;
     }
     if ( (metadata = json_object_get (element, "metadata")) == NULL) {

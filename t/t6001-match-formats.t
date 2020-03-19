@@ -35,14 +35,6 @@ test_expect_success LONGTEST "Large R emitted with -F jgf validates" '
     flux jsonschemalint -v ${schema} o3.json
 '
 
-test_expect_success LONGTEST "Large R emitted with -F pretty_jgf validates" '
-    echo "match allocate ${jobspec2}" > in4.txt &&
-    echo "quit" >> in4.txt &&
-    ${query} -L ${large_grug} -r 400000 -F pretty_jgf -d -t o4 < in4.txt &&
-    cat o4 | grep -v "INFO:" > o4.json &&
-    flux jsonschemalint -v ${schema} o4.json
-'
-
 test_expect_success "--match-format=rv1 works" '
     echo "match allocate ${jobspec}" > in5.txt &&
     echo "quit" >> in5.txt &&
@@ -56,17 +48,37 @@ test_expect_success "--match-format=rv1_nosched and =rlite works" '
     echo "quit" >> in7.txt &&
     ${query} -L ${tiny_grug} -F rv1_nosched -d -t o7 < in7.txt &&
     ${query} -L ${tiny_grug} -F rlite -d -t o8 < in7.txt &&
-    cat o7 | grep -v "INFO:" | jq ".execution" > o7.json &&
+    cat o7 | grep -v "INFO:" | jq ".execution.R_lite" > o7.json &&
     cat o8 | grep -v "INFO:" | jq "" > o8.json &&
     diff o7.json o8.json
 '
 
 test_expect_success "--match-format=pretty_simple works" '
-    echo "match allocate ${jobspec}" > in8.txt &&
-    echo "quit" >> in8.txt &&
-    ${query} -L ${tiny_grug} -F pretty_simple -d -t o8 < in8.txt &&
-    cat o8 | grep -v "INFO:" > o8.simple &&
-    test -s o8.simple
+    echo "match allocate ${jobspec}" > in9.txt &&
+    echo "quit" >> in9.txt &&
+    ${query} -L ${tiny_grug} -F pretty_simple -d -t o9 < in9.txt &&
+    cat o9 | grep -v "INFO:" > o9.simple &&
+    test -s o9.simple
+'
+
+test_expect_success "rv1 contains starttime and expiration keys" '
+    echo "match allocate ${jobspec}" > in10.txt &&
+    echo "quit" >> in10.txt &&
+    ${query} -L ${tiny_grug} -F rv1_nosched -d -t o10 < in10.txt &&
+    starttime=$(cat o10 | grep -v "INFO:" | jq ".execution.starttime") &&
+    expiration=$(cat o10 | grep -v "INFO:" | jq ".execution.expiration") &&
+    test ${starttime} -eq 0 &&
+    test ${expiration} -eq 3600
+'
+
+test_expect_success "rv1_nosched contains starttime and expiration keys" '
+    echo "match allocate ${jobspec}" > in11.txt &&
+    echo "quit" >> in11.txt &&
+    ${query} -L ${tiny_grug} -F rv1 -d -t o11 < in11.txt &&
+    starttime=$(cat o11 | grep -v "INFO:" | jq ".execution.starttime") &&
+    expiration=$(cat o11 | grep -v "INFO:" | jq ".execution.expiration") &&
+    test ${starttime} -eq 0 &&
+    test ${expiration} -eq 3600
 '
 
 test_done
