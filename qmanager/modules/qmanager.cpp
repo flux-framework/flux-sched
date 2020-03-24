@@ -407,7 +407,7 @@ static int process_config_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
     flux_conf_error_t error;
     const char *policy = NULL;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
                           "{s:{s?:s}}",
                           "qmanager",
@@ -429,7 +429,7 @@ static int process_config_queue_params (std::shared_ptr<qmanager_ctx_t> &ctx)
     int queue_depth = 0;
     int max_queue_depth = 0;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
                           "{s:{s:{s?:i s?:i}}}",
                           "qmanager",
@@ -469,7 +469,7 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
     int reservation_depth = 0;
     int max_reservation_depth = 0;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
                           "{s:{s:{s?:i s?:i}}}",
                           "qmanager",
@@ -508,15 +508,7 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
-    flux_conf_error_t error;
 
-    // calling flux_get_conf first time reads in the configuration
-    // file and perform error checks
-    if (!flux_get_conf (ctx->h, &error)) {
-        flux_log (ctx->h, LOG_ERR, "%s: %s: %d: %s", __FUNCTION__,
-                  error.filename, error.lineno, error.errbuf);
-        return -1;
-    }
     if ((rc = process_config_queue_policy (ctx)) < 0)
         return rc;
     if ((rc = process_config_queue_params (ctx)) < 0)
