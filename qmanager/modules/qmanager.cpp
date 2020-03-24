@@ -406,7 +406,7 @@ static int process_config_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s?:s}}",
+                          "{s?:{s?:s}}",
                           "qmanager",
                               "policy", &policy) < 0) {
         flux_log_error (ctx->h,
@@ -428,7 +428,7 @@ static int process_config_queue_params (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s:{s?:i s?:i}}}",
+                          "{s?:{s?:{s?:i s?:i}}}",
                           "qmanager",
                               "queue-params",
                                   "max-queue-depth", &max_queue_depth,
@@ -468,7 +468,7 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s:{s?:i s?:i}}}",
+                          "{s?:{s?:{s?:i s?:i}}}",
                           "qmanager",
                             "policy-params",
                                 "max-reservation-depth", &max_reservation_depth,

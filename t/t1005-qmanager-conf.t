@@ -23,6 +23,11 @@ start_qmanager () {
 	--config-path=${config} \
 	flux dmesg
 }
+start_qmanager_noconfig () {
+    QMANAGER_OPTIONS=$* flux broker \
+	-Sbroker.rc1_path=./rc1 -Sbroker.rc3_path=./rc3 \
+	flux dmesg
+}
 # Usage: check_enforced_policy outfile expected
 check_enforced_policy() {
     test "$(grep "enforced policy" <$1 | awk "{ print \$5}" )" = $2
@@ -48,6 +53,13 @@ test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
 	flux module remove -f kvs
 	EOT
 	chmod +x rc1 rc3
+'
+
+test_expect_success 'qmanager: load qmanager works with no config' '
+    outfile=noconfig.out &&
+    start_qmanager_noconfig >${outfile} &&
+    check_queue_params ${outfile} default &&
+    check_policy_params ${outfile} default
 '
 
 test_expect_success 'qmanager: load qmanager works with valid qmanager.toml' '
@@ -156,16 +168,19 @@ test_expect_success 'qmanager: load must fail on negative value' '
     test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
 '
 
-test_expect_success 'qmanager: load must fail on no params categories' '
+test_expect_success 'qmanager: load works with no params categories' '
     conf_name="11-no-params" &&
     outfile=${conf_name}.out &&
-    test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_queue_params ${outfile} default &&
+    check_policy_params ${outfile} default
 '
 
-test_expect_success 'qmanager: load must fail on no policy-params category' '
+test_expect_success 'qmanager: load works with no policy-params category' '
     conf_name="12-no-policy-params" &&
     outfile=${conf_name}.out &&
-    test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_policy_params ${outfile} default
 '
 
 test_expect_success 'qmanager: load must fail on a bad value' '
@@ -174,10 +189,11 @@ test_expect_success 'qmanager: load must fail on a bad value' '
     test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
 '
 
-test_expect_success 'qmanager: load must fail on no queue-params category' '
+test_expect_success 'qmanager: load works with no queue-params category' '
     conf_name="14-no-queue-params" &&
     outfile=${conf_name}.out &&
-    test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_queue_params ${outfile} default
 '
 
 # because required sub categories exist, this should succeed
