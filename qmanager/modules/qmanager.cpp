@@ -328,7 +328,6 @@ out:
 
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
-    int rc = -1;
     std::string res_qp;
     std::string res_pp;
 
@@ -344,15 +343,15 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
         errno = EINVAL;
         flux_log_error (ctx->h, "%s: create_queue_policy (%s)",
                         __FUNCTION__, ctx->queue_policy.c_str ());
-        goto out;
+        return -1;
     }
 
     // Apply configuration file-time policy and params.
-    if ((rc = enforce_conf_queue_policy (ctx)) < 0)
-        goto out;
+    if (enforce_conf_queue_policy (ctx))
+        return -1;
     // Apply module load-time policy and params.
-    if ((rc = enforce_args_queue_policy (ctx)) < 0)
-        goto out;
+    if (enforce_args_queue_policy (ctx) < 0)
+        return -1;
 
     ctx->queue->get_params (res_qp, res_pp);
     if (res_qp.empty ())
@@ -366,11 +365,9 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if (handshake_jobmanager (ctx) < 0) {
         flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
-        goto out;
+        return -1;
     }
-    rc = 0;
-out:
-    return rc;
+    return 0;
 }
 
 static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
