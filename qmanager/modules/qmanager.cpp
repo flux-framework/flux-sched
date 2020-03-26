@@ -328,7 +328,6 @@ out:
 
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
-    int rc = -1;
     std::string res_qp;
     std::string res_pp;
 
@@ -344,15 +343,15 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
         errno = EINVAL;
         flux_log_error (ctx->h, "%s: create_queue_policy (%s)",
                         __FUNCTION__, ctx->queue_policy.c_str ());
-        goto out;
+        return -1;
     }
 
     // Apply configuration file-time policy and params.
-    if ((rc = enforce_conf_queue_policy (ctx)) < 0)
-        goto out;
+    if (enforce_conf_queue_policy (ctx))
+        return -1;
     // Apply module load-time policy and params.
-    if ((rc = enforce_args_queue_policy (ctx)) < 0)
-        goto out;
+    if (enforce_args_queue_policy (ctx) < 0)
+        return -1;
 
     ctx->queue->get_params (res_qp, res_pp);
     if (res_qp.empty ())
@@ -366,11 +365,9 @@ static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if (handshake_jobmanager (ctx) < 0) {
         flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
-        goto out;
+        return -1;
     }
-    rc = 0;
-out:
-    return rc;
+    return 0;
 }
 
 static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
@@ -407,9 +404,9 @@ static int process_config_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
     flux_conf_error_t error;
     const char *policy = NULL;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s?:s}}",
+                          "{s?:{s?:s}}",
                           "qmanager",
                               "policy", &policy) < 0) {
         flux_log_error (ctx->h,
@@ -429,9 +426,9 @@ static int process_config_queue_params (std::shared_ptr<qmanager_ctx_t> &ctx)
     int queue_depth = 0;
     int max_queue_depth = 0;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s:{s?:i s?:i}}}",
+                          "{s?:{s?:{s?:i s?:i}}}",
                           "qmanager",
                               "queue-params",
                                   "max-queue-depth", &max_queue_depth,
@@ -469,9 +466,9 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
     int reservation_depth = 0;
     int max_reservation_depth = 0;
 
-    if (flux_conf_unpack (flux_get_conf (ctx->h, NULL),
+    if (flux_conf_unpack (flux_get_conf (ctx->h),
                           &error,
-                          "{s:{s:{s?:i s?:i}}}",
+                          "{s?:{s?:{s?:i s?:i}}}",
                           "qmanager",
                             "policy-params",
                                 "max-reservation-depth", &max_reservation_depth,
@@ -508,15 +505,7 @@ static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
-    flux_conf_error_t error;
 
-    // calling flux_get_conf first time reads in the configuration
-    // file and perform error checks
-    if (!flux_get_conf (ctx->h, &error)) {
-        flux_log (ctx->h, LOG_ERR, "%s: %s: %d: %s", __FUNCTION__,
-                  error.filename, error.lineno, error.errbuf);
-        return -1;
-    }
     if ((rc = process_config_queue_policy (ctx)) < 0)
         return rc;
     if ((rc = process_config_queue_params (ctx)) < 0)
