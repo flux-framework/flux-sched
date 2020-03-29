@@ -33,6 +33,9 @@ FT_QUEUE='default'             # store arg to --queue-policy (e.g., fcfs:easy)
 FT_PARAMS='default'            # store arg to --queue-params
 FT_MATCH='default'             # store arg to --match-policy (e.g., low:high)
 FT_PERF_OUT='%^+_no'           # store perf-out filename given by --perf-out
+FT_PERF_FORMAT='{treeid:<15s} {elapse:>20f} {begin:>20f} {end:>20f} {match:>15f} '\
+'{njobs:>15d} {my_nodes:>5d} {my_cores:>4d} {my_gpus:>4d}'
+                               # store perf-out with format given by --perf-format
 FT_FXLOGS='%^+_no'             # dir in which flux logs are produced
 FT_LEAF='no'                   # is this a leaf instance (given by --leaf)?
 FT_G_PREFIX='tree'             # store hierarchical path given by --prefix
@@ -43,7 +46,8 @@ FT_MAX_FLUX_JOBID=0            # maximum flux jobid that reports max exit code
 FT_MAX_TREE_ID=""              # FLUX_TREE_ID that reports max exit code
 FT_MAX_JOBSCRIPT_IX=""         # FLUX_TREE_JOBSCRIPT_INDEX reporting max code
                                # --prefix is an internal-use-only option
-ORIG_FLUX_QMANAGER_OPTIONS=''  # 
+FT_JOB_NAME='%^+_no'           # job name to use when submitting children
+ORIG_FLUX_QMANAGER_OPTIONS=''  #
 ORIG_FLUX_RESOURCE_OPTIONS=''  # to apply and unapply QMANAGER and RESOURCE
 ORIG_FLUX_QMANAGER_RC_NOOP=''  # module load options.
 ORIG_FLUX_RESOURCE_RC_NOOP=''  #
@@ -56,10 +60,6 @@ declare -r top_prefix='tree'   # prefix name to identify the top Flux instance
 declare -r t_delim='x'         # topology delimiter
 declare -r p_delim=':'         # match policy delimiter
 declare -r perf_format='%-15s %20s %20s %20s %15s %15s %5s %4s %4s'
-declare -r perf_keys=' .treeid, .perf.elapse, .perf.begin, .perf.end,'\
-' .perf.match, .njobs, .my_nodes, .my_cores, .my_gpus '
-declare -r perf_heading=' TreeID Elapse(sec) Begin(Epoch) End(Epoch) Match(usec)'\
-' NJobs NNodes CPN GPN '
 declare -A mp_policies=(       # make sure to update this when match
     [low]=1                    # policies are updated.
     [high]=1
@@ -83,7 +83,7 @@ declare -a jobids             # array to store a set of submitted job IDs
 
 declare -r long_opts='help,leaf,flux-logs:,nnodes:,ncores-per-node:'\
 ',ngpus-per-node:,topology:,queue-policy:,queue-params:,match-policy:'\
-',njobs:,perf-out:,prefix:,dry-run'
+',njobs:,perf-out:,perf-format:,prefix:,job-name:,dry-run'
 
 declare -r short_opts='hlf:N:c:g:T:Q:P:M:J:o:X:d'
 declare -r prog=${0##*/}
@@ -165,42 +165,17 @@ Options:\n\
                                    (default=${FT_NJOBS})\n\
  -o, --perf-out=FILENAME       Dump the performance data into\n\
                                    the given file (default: don't print)\n\
+     --perf-format=FORMAT      Dump the performance data with the given\n\
+                                   format. Uses the python format\n\
+                                   specification mini-language.\n\
+                                   Example: \"{treeid:<15s},{elapse:>20f}\"\n\
+     --job-name=NAME           Name to use when submitting child jobs\n\
      --                        Stop parsing options after this\n\
 "
 
 die() { echo -e "${prog}:" "$@"; exit 1; }
 warn() { echo -e "${prog}: warning:" "$@"; }
 dr_print() { echo -e "${prog}: dry-run:" "$@"; }
-
-#
-# Write the performance data into the given file.  Should be called
-# by the upper layer when the performance data record for each and every
-# Flux instance has been aggregated. Then, this is recursively invoked.
-#
-dump_perf() {
-    local blurb="${1}"
-    local out="${2}"
-
-    [[ "x${blurb}" = "x" ]] && die "empty json"
-
-    # Parse perf json for the given level into a record
-    local tuple=''
-    local length=0
-    tuple=$(echo "${blurb}" | jq "${perf_keys}") || die "invalid json"
-    length=$(echo "${blurb}" | jq ' .child | length ') || die "invalid json"
-
-    # Print the record for this level Didn't quote $tuple to remove new lines
-    printf "${perf_format}\n" ${tuple} >> "${out}"
-
-    # Recurse down to parse the record for each child Flux instance
-    for i in $(seq 0 $(( length - 1 )))
-    do
-        local new_o=''
-        new_o=$(echo "${blurb}" | jq " .child[${i}] ")
-        dump_perf "${new_o}" "${out}"
-    done
-}
-
 
 #
 # Roll up the performance records for each Flux instance to the KVS
@@ -210,23 +185,15 @@ rollup() {
     local prefix="${1}"
     local blurb="${2}"
     local out="${3}"
+    local num_children="${4}"
+    local format="${5}"
 
-    if [[ "${out}" != "%^+_no" ]]
-    then
-        # If output filename is given (e.g., top-level), dump the data
-        # to the file. Didn't quote $perf_heanding on purpose below.
-        rm -f "${out}"
-        printf "${perf_format}\n" ${perf_heading} > "${out}"
-        dump_perf "${blurb}" "${out}"
+    if [[ "${prefix}" == "${top_prefix}" &&  "${out}" != "%^+_no" ]]; then
+        flux tree-helper --perf-out="${out}" --perf-format="${format}" \
+             ${num_children} "tree-perf" "${FT_JOB_NAME}" <<< "${blurb}"
     else
-        if [[ "${prefix}" != "${top_prefix}" ]]
-        then
-            if [[ "x${FT_DRY_RUN}" = "xno" ]]
-            then
-                # Put it to KVS parent namespace except when we are at top level
-                flux --parent kvs put --raw "tree-perf=-" <<< "${blurb}" || warn "KVS error"
-            fi
-        fi
+        flux tree-helper ${num_children} "tree-perf" "${FT_JOB_NAME}" \
+             <<< "${blurb}"
     fi
 }
 
@@ -563,6 +530,7 @@ leaf() {
     local njobs="${5}"
     local cl="${6}"
     local perfout="${7}"
+    local format="${8}"
 
     # Begin Time Stamp
     local B=''
@@ -578,7 +546,7 @@ leaf() {
 
     o=$(jsonify "${prefix}" "${njobs}" "${nnodes}" "${ncores}" \
 "${ngpus}" "${B}" "${E}")
-    rollup "${prefix}" "${o}" "${perfout}"
+    rollup "${prefix}" "${o}" "${perfout}" "0" "${format}"
 }
 
 
@@ -605,8 +573,9 @@ rollup_exit_code() {
 }
 
 #
-# Submit the specified number of Flux instances at the next level
-# of the calling instance. Use flux-tree recursively.
+# Submit the specified number of Flux instances at the next level of the calling
+# instance. Use flux-tree recursively. Instances that have 0 jobs assigned are
+# not launched.
 #
 submit() {
     local prefix="${1}"
@@ -675,8 +644,9 @@ submit() {
             continue
         fi
         jobid=$(\
-flux mini submit -N${N} -n${N} -c${c} ${G} flux start ${o} \
-flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
+flux mini submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
+     flux start ${o} \
+     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
         jobids["${rank}"]="${jobid}"
     done
 
@@ -700,23 +670,15 @@ coll_perf() {
     local begin="${6}"
     local end="${7}"
     local perfout="${8}"
+    local nchildren="${9}"
+    local format="${10}"
 
     #
     # Make a JSON string from the performance data
     #
     local blurb=''
     blurb=$(jsonify "${prefix}" "${njobs}" "${nnodes}" "${ncores}" "${ngpus}" "${begin}" "${end}")
-    local child=''
-    local rank=0
-
-    for rank in $(seq 1 "${njobs}");
-    do
-        [[ "x${jobids[${rank}]}" = "x" || "x${FT_DRY_RUN}" = "xyes" ]] && break
-        child=$(flux job info ${jobids[${rank}]} guest.tree-perf)
-        blurb=$(echo "${blurb}" | jq " .child += [${child}]")
-    done
-
-    rollup "${prefix}" "${blurb}" "${perfout}"
+    rollup "${prefix}" "${blurb}" "${perfout}" "${nchildren}" "${format}"
 }
 
 
@@ -732,6 +694,7 @@ internal() {
     local ngpus="${8}"
     local njobs="${10}"
     local perfout="${13}"
+    local format="${14}"
 
     # Begin Time Stamp
     local B=''
@@ -743,8 +706,13 @@ internal() {
     local E=''
     E=$(date +%s.%N)
 
+    if [[ "x${FT_DRY_RUN}" = "xyes" ]]; then
+        nchildren=0
+    else
+        nchildren=${#jobids[@]}
+    fi
     coll_perf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" \
-"${njobs}" "${B}" "${E}" "${perfout}"
+"${njobs}" "${B}" "${E}" "${perfout}" "${nchildren}" "${format}"
 }
 
 
@@ -768,6 +736,7 @@ main() {
     local cl="${11}"           # jobscript commandline
     local flogs="${12}"        # flux log output option
     local out="${13}"          # perf output filename
+    local format="${14}"      # perf output format
     local size=0
 
     if [[ ${leaf} = "yes" ]]
@@ -778,7 +747,7 @@ main() {
         # be executed on the last-level Flux instance. 
         #
         leaf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" "${njobs}" \
-             "${cl}" "${out}"
+             "${cl}" "${out}" "${format}"
     else
         #
         # flux-tree is invoked to instantate ${size} internal Flux instances
@@ -787,7 +756,7 @@ main() {
         size=${topo%%${t_delim}*}
         internal "${prefix}" "${topo}" "${queue}" "${param}" "${match}" \
                  "${nnodes}" "${ncores}" "${ngpus}" "${size}" "${njobs}" \
-                 "${cl}" "${flogs}" "${out}"
+                 "${cl}" "${flogs}" "${out}" "${format}"
     fi
 
     exit ${FT_MAX_EXIT_CODE}
@@ -819,7 +788,9 @@ while true; do
       -M|--match-policy)           FT_MATCH="${2}"; FT_INTER="yes";    shift 2 ;;
       -J|--njobs)                  FT_NJOBS=${2};                shift 2 ;;
       -o|--perf-out)               FT_PERF_OUT="${2}";           shift 2 ;;
+      --perf-format)               FT_PERF_FORMAT="${2}";        shift 2 ;;
       -X|--prefix)                 FT_G_PREFIX="${2}";           shift 2 ;;
+      --job-name)                  FT_JOB_NAME="${2}";           shift 2 ;;
       --)                          shift; break;                         ;;
       *)                           die "Invalid option '${1}'\n${usage}" ;;
     esac
@@ -849,6 +820,15 @@ then
     die "--leaf must not be used together with internal tree-node options!"
 fi
 
+# if the user did not set a name, then use a partially random string to prevent
+# conflicts with other flux-tree instances during performance data collection
+# via flux-tree-helper
+if [[ "$FT_JOB_NAME" == '%^+_no' ]]; then
+    # code copied from:
+    # https://unix.stackexchange.com/questions/230673/how-to-generate-a-random-string
+    FT_JOB_NAME="flux-tree-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
+fi
+
 
 ################################################################################
 #                                                                              #
@@ -858,7 +838,7 @@ fi
 
 main "${FT_LEAF}" "${FT_G_PREFIX}" "${FT_TOPO}" "${FT_QUEUE}" "${FT_PARAMS}" \
      "${FT_MATCH}" "${FT_NNODES}" "${FT_NCORES}" "${FT_NGPUS}" "${FT_NJOBS}" \
-     "${FT_CL}" "${FT_FXLOGS}" "${FT_PERF_OUT}"
+     "${FT_CL}" "${FT_FXLOGS}" "${FT_PERF_OUT}" "${FT_PERF_FORMAT}"
 
 #
 # vi:tabstop=4 shiftwidth=4 expandtab

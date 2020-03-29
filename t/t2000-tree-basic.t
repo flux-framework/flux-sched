@@ -301,6 +301,17 @@ test_expect_success 'flux-tree: --perf-out generates a perf output file' '
     test ${wcount} -eq 18
 '
 
+test_expect_success 'flux-tree: --perf-format works with custom format' '
+    flux tree --dry-run -T 2 -N 2 -c 4 -J 2 -o perf.out \
+         --perf-format="{treeid}\ {elapse:f}\ {my_nodes:d}" \
+         /bin/hostname &&
+    test -f perf.out &&
+    lcount=$(wc -l perf.out | awk "{print \$1}") &&
+    test ${lcount} -eq 2 && 
+    wcount=$(wc -w perf.out | awk "{print \$1}") &&
+    test ${wcount} -eq 6
+'
+
 test_expect_success 'flux-tree: -T4x2 on 4 nodes/4 cores work' '
     cat >cmp.11 <<-EOF &&
 	FLUX_QMANAGER_OPTIONS:
@@ -726,6 +737,29 @@ EOF
     test_expect_code 4 flux tree -T2 -N 1 -c 2 -J 2 \
 ./jobscript.sh > out.23 &&
     test_cmp cmp.23 out.23
+'
+
+PERF_FORMAT="{treeid}"
+PERF_BLOB='{"treeid":"tree", "perf": {}}'
+JOB_NAME="foobar"
+test_expect_success 'flux-tree: successfully runs alongside other jobs' '
+    flux tree -T 1 -N 1 -c 1 -J 1 -o p.out5 --perf-format="$PERF_FORMAT" \
+         --job-name="${JOB_NAME}" -- hostname &&
+    flux mini run -N1 -c1 hostname &&
+    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out6 \
+         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
+    test_cmp p.out5 p.out6
+'
+
+JOB_NAME="foobar2"
+test_expect_success 'flux-tree: successfully runs alongside other flux-trees' '
+    run_timeout 20 \
+    flux tree -T 1x1 -N 1 -c 1 -J 1 -o p.out7 --perf-format="$PERF_FORMAT" \
+         --job-name="${JOB_NAME}" -- hostname &&
+    flux tree -T 1 -N 1 -c 1 -J 1 -- hostname &&
+    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out8 \
+         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
+    test_cmp p.out7 p.out8
 '
 
 test_expect_success 'flux-tree: removing qmanager/resource works' '
