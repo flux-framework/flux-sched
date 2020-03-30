@@ -679,4 +679,56 @@ EOF
     test_cmp cmp.22 out.22.2
 '
 
+test_expect_success 'flux-tree: --flux-rundir=DIR works in dry-run' '
+    cat >cmp.23 <<-EOF &&
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	Rank=1: N=1 c=2 o=-o,-Srundir=DIR/tree.1.pfs
+	Rank=1: T=--leaf
+	Rank=1:
+	Rank=1: X=--prefix=tree.1 J=--njobs=5 S=/bin/hostname
+	
+	Rank=2: N=1 c=2 o=-o,-Srundir=DIR/tree.2.pfs
+	Rank=2: T=--leaf
+	Rank=2:
+	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
+	
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	FLUX_QMANAGER_RC_NOOP:1
+	FLUX_RESOURCE_RC_NOOP:1
+EOF
+    flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR \
+/bin/hostname > out.23 &&
+    remove_prefix out.23 out.23.2 &&
+    sed -i "s/[ \t]*$//g" out.23.2 &&
+    test_cmp cmp.23 out.23.2
+'
+
+test_expect_success 'flux-tree: --flux-rundir=DIR works along with -f' '
+    cat >cmp.24 <<-EOF &&
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	Rank=1: N=1 c=2 o=-o,-Slog-filename=DIR2/tree.1.log -o,-Srundir=DIR/tree.1.pfs
+	Rank=1: T=--leaf
+	Rank=1:
+	Rank=1: X=--prefix=tree.1 J=--njobs=5 S=/bin/hostname
+	
+	Rank=2: N=1 c=2 o=-o,-Slog-filename=DIR2/tree.2.log -o,-Srundir=DIR/tree.2.pfs
+	Rank=2: T=--leaf
+	Rank=2:
+	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
+	
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	FLUX_QMANAGER_RC_NOOP:1
+	FLUX_RESOURCE_RC_NOOP:1
+EOF
+    flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR -f DIR2 \
+/bin/hostname > out.24 &&
+    remove_prefix out.24 out.24.2 &&
+    sed -i "s/[ \t]*$//g" out.24.2 &&
+    test_cmp cmp.24 out.24.2
+'
+
 test_done
