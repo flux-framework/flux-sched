@@ -137,7 +137,7 @@ test_expect_success 'flux-tree: --topology=1 works' '
 EOF
     flux tree --dry-run --topology=1 /bin/hostname > out.04 &&
     remove_prefix out.04 out.04.2 &&
-    sed -i "s/[ \t]*$//g" out.04.2 && 
+    sed -i "s/[ \t]*$//g" out.04.2 &&
     test_cmp cmp.04 out.04.2
 '
 
@@ -296,7 +296,7 @@ test_expect_success 'flux-tree: --perf-out generates a perf output file' '
     flux tree --dry-run -T 4 -N 4 -c 4 -J 10 -o p.out /bin/hostname &&
     test -f p.out &&
     lcount=$(wc -l p.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 && 
+    test ${lcount} -eq 2 &&
     wcount=$(wc -w p.out | awk "{print \$1}") &&
     test ${wcount} -eq 18
 '
@@ -307,7 +307,7 @@ test_expect_success 'flux-tree: --perf-format works with custom format' '
          /bin/hostname &&
     test -f perf.out &&
     lcount=$(wc -l perf.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 && 
+    test ${lcount} -eq 2 &&
     wcount=$(wc -w perf.out | awk "{print \$1}") &&
     test ${wcount} -eq 6
 '
@@ -569,7 +569,7 @@ EOF
     unset FLUX_RESOURCE_OPTIONS &&
     remove_prefix out.18 out.18.2 &&
     sed -i "s/[ \t]*$//g" out.18.2 &&
-    test_cmp cmp.18 out.18.2 
+    test_cmp cmp.18 out.18.2
 '
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/4 GPUs work' '
