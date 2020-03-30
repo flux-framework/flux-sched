@@ -100,6 +100,11 @@ test_expect_success 'flux-tree: successfully runs alongside other flux-trees' '
     test_cmp p.out6 p.out7
 '
 
+test_expect_success 'flux-tree: works with pre-existing rundir subdirectories' '
+    flux tree -T 1 -N 1 -c 1 -r DIR -- hostname &&
+    flux tree -T 1 -N 1 -c 1 -r DIR -- hostname
+'
+
 test_expect_success 'flux-tree: removing qmanager/resource works' '
      flux module remove resource &&
      flux module remove qmanager
