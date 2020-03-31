@@ -61,6 +61,7 @@ declare -r top_prefix='tree'   # prefix name to identify the top Flux instance
 declare -r t_delim='x'         # topology delimiter
 declare -r p_delim=':'         # match policy delimiter
 declare -r perf_format='%-15s %20s %20s %20s %15s %15s %5s %4s %4s'
+declare -a FT_CL=()            # save the jobscript command into an array
 declare -A mp_policies=(       # make sure to update this when match
     [low]=1                    # policies are updated.
     [high]=1
@@ -472,7 +473,6 @@ execute() {
     local ncores="${3}"
     local ngpus="${4}"
     local njobs="${5}"
-    local jobscript_cl="${6}"
     local rc=0
 
     for job in $(seq 1 "${njobs}");
@@ -490,11 +490,11 @@ execute() {
             dr_print "FLUX_TREE_NCORES_PER_NODE=${FLUX_TREE_NCORES_PER_NODE}"
             dr_print "FLUX_TREE_NGPUS_PER_NODE=${FLUX_TREE_NGPUS_PER_NODE}"
             dr_print "FLUX_TREE_NNODES=${FLUX_TREE_NNODES}"
-            dr_print "eval ${jobscript_cl}"
+            dr_print "eval ${FT_CL[@]}"
             continue
         else
             rc=0
-            eval ${jobscript_cl} || rc=$?
+            "${FT_CL[@]}" || rc=$?
             if [[ ${rc} -gt ${FT_MAX_EXIT_CODE} ]]
             then
                 FT_MAX_EXIT_CODE=${rc}
@@ -508,7 +508,7 @@ execute() {
 
     if [[ "x${FT_MAX_TREE_ID}" != "x" ]]
     then
-        warn "${jobscript_cl}: exited with exit code (${FT_MAX_EXIT_CODE})"
+        warn "${FT_CL[@]}: exited with exit code (${FT_MAX_EXIT_CODE})"
         warn "invocation id: ${FT_MAX_TREE_ID}@index[${FT_MAX_JOBSCRIPT_IX}]"
         warn "output displayed above, if any"
     fi
@@ -531,9 +531,8 @@ leaf() {
     local ncores="${3}"
     local ngpus="${4}"
     local njobs="${5}"
-    local cl="${6}"
-    local perfout="${7}"
-    local format="${8}"
+    local perfout="${6}"
+    local format="${7}"
 
     # Begin Time Stamp
     local B=''
@@ -591,9 +590,8 @@ submit() {
     local ngpus="${8}"
     local size="${9}"
     local njobs="${10}"
-    local cl="${11}"
-    local log="${12}"
-    local rdir="${13}"
+    local log="${11}"
+    local rdir="${12}"
 
     # Flux instance rank-agnostic command-line options for the next level
     local T="${nx_topo:+--topology=${nx_topo}}"
@@ -603,7 +601,6 @@ submit() {
     local M="${nx_match:+--match-policy=${nx_match}}"
     local F=''
     [[ "x${log}" != "x%^+_no" ]] && F="--flux-logs=${log}"
-    local S="${cl}"
     local R=''
     [[ "x${rdir}" != "x%^+_no" ]] && R="--flux-rundir=${rdir}"
     local rank=0
@@ -656,14 +653,15 @@ submit() {
             dr_print "Rank=${rank}: N=${N} c=${c} ${G:+g=${G}} ${o:+o=${o}}"
             dr_print "Rank=${rank}: ${T:+T=${T}}"
             dr_print "Rank=${rank}: ${Q:+Q=${Q}} ${P:+P=${P}} ${M:+M=${M}}" 
-            dr_print "Rank=${rank}: ${X:+X=${X}} ${J:+J=${J}} ${S:+S=${S}}"
+            dr_print "Rank=${rank}: ${X:+X=${X}} ${J:+J=${J}} ${FT_CL:+S=${FT_CL[@]}}"
             dr_print ""
             continue
         fi
         jobid=$(\
 flux mini submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
      flux start ${o} \
-     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${R} ${X} ${J} -- ${S})
+     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${R} ${X} ${J} \
+     -- "${FT_CL[@]}")
         jobids["${rank}"]="${jobid}"
     done
 
@@ -710,8 +708,8 @@ internal() {
     local ncores="${7}"
     local ngpus="${8}"
     local njobs="${10}"
-    local perfout="${14}"
-    local format="${15}"
+    local perfout="${13}"
+    local format="${14}"
 
     # Begin Time Stamp
     local B=''
@@ -750,11 +748,10 @@ main() {
     local ncores="${8}"        # num of cores per node
     local ngpus="${9}"         # num of gpus per node
     local njobs="${10}"        # num of jobs assigned to this Flux instance
-    local cl="${11}"           # jobscript commandline
-    local flogs="${12}"        # flux log output option
-    local frdir="${13}"        # flux rundir attribute
-    local out="${14}"          # perf output filename
-    local format="${15}"      # perf output format
+    local flogs="${11}"        # flux log output option
+    local frdir="${12}"        # flux rundir attribute
+    local out="${13}"          # perf output filename
+    local format="${14}"      # perf output format
     local size=0
 
     if [[ ${leaf} = "yes" ]]
@@ -765,7 +762,7 @@ main() {
         # be executed on the last-level Flux instance. 
         #
         leaf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" "${njobs}" \
-             "${cl}" "${out}" "${format}"
+             "${out}" "${format}"
     else
         #
         # flux-tree is invoked to instantate ${size} internal Flux instances
@@ -774,7 +771,7 @@ main() {
         size=${topo%%${t_delim}*}
         internal "${prefix}" "${topo}" "${queue}" "${param}" "${match}" \
                  "${nnodes}" "${ncores}" "${ngpus}" "${size}" "${njobs}" \
-                 "${cl}" "${flogs}" "${frdir}" "${out}" "${format}"
+                 "${flogs}" "${frdir}" "${out}" "${format}"
     fi
 
     exit ${FT_MAX_EXIT_CODE}
@@ -787,7 +784,7 @@ main() {
 #                                                                              #
 ################################################################################
 
-GETOPTS=$(/usr/bin/getopt -u -o ${short_opts} -l ${long_opts} -n "${prog}" -- "${@}")
+GETOPTS=$(/usr/bin/getopt -o ${short_opts} -l ${long_opts} -n "${prog}" -- "${@}")
 eval set -- "${GETOPTS}"
 rcopt=$?
 
@@ -816,7 +813,7 @@ while true; do
 done
 
 FT_SCRIPT="${1}"
-FT_CL="${@}"
+FT_CL=( "${@}" )
 
 [[ "$#" -lt 1 || "${rcopt}" -ne 0 ]] && die "${usage}"
 
@@ -857,7 +854,7 @@ fi
 
 main "${FT_LEAF}" "${FT_G_PREFIX}" "${FT_TOPO}" "${FT_QUEUE}" "${FT_PARAMS}" \
      "${FT_MATCH}" "${FT_NNODES}" "${FT_NCORES}" "${FT_NGPUS}" "${FT_NJOBS}" \
-     "${FT_CL}" "${FT_FXLOGS}" "${FT_FXRDIR}" "${FT_PERF_OUT}" "${FT_PERF_FORMAT}"
+     "${FT_FXLOGS}" "${FT_FXRDIR}" "${FT_PERF_OUT}" "${FT_PERF_FORMAT}"
 
 #
 # vi:tabstop=4 shiftwidth=4 expandtab
