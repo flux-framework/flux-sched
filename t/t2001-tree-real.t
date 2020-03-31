@@ -105,6 +105,16 @@ test_expect_success 'flux-tree: works with pre-existing rundir subdirectories' '
     flux tree -T 1 -N 1 -c 1 -r DIR -- hostname
 '
 
+test_expect_success 'flux-tree: rundir is propagated to nest instances' '
+    run_timeout 20 \
+    flux tree -T 1x1 -N 1 -c 1 -r DIR -- \
+    bash -c "flux lsattr -v | grep ^rundir > test.out" &&
+    p=$(cat test.out | awk "{print \$2}") &&
+    p2=${p%/*} &&
+    rundir=${p2##/*} &&
+    test ${rundir} = DIR
+'
+
 test_expect_success 'flux-tree: works with quoted jobscript argument' '
     flux tree -T 1 -N 1 -c 1 -- bash -c "touch touch-me" &&
     test -f touch-me
