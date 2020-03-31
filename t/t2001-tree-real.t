@@ -105,6 +105,11 @@ test_expect_success 'flux-tree: works with pre-existing rundir subdirectories' '
     flux tree -T 1 -N 1 -c 1 -r DIR -- hostname
 '
 
+test_expect_success 'flux-tree: works with quoted jobscript argument' '
+    flux tree -T 1 -N 1 -c 1 -- bash -c "touch touch-me" &&
+    test -f touch-me
+'
+
 test_expect_success 'flux-tree: removing qmanager/resource works' '
      flux module remove resource &&
      flux module remove qmanager
