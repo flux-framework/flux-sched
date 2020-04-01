@@ -180,11 +180,15 @@ def parse_args():
 @flux.util.CLIMain(logger)
 def main():
     args = parse_args()
-    flux_handle = flux.Flux()
+    flux_handle = None
+    try:
+        flux_handle = flux.Flux()
+    except FileNotFoundError:
+        flux_handle = None
 
     logger.debug("Getting this instance's data")
     this_data = get_this_instance_data()
-    if args.num_children > 0:
+    if flux_handle != None and args.num_children > 0:
         logger.debug("Getting children's data")
         child_data = get_child_data(
             flux_handle, args.num_children, args.job_name, args.kvs_key
@@ -193,8 +197,9 @@ def main():
         child_data = []
     logger.debug("Combining data")
     combined_data = combine_data(this_data, child_data)
-    logger.debug("Writing data to parent's KVS")
-    write_data_to_parent(flux_handle, args.kvs_key, combined_data)
+    if flux_handle != None:
+        logger.debug("Writing data to parent's KVS")
+        write_data_to_parent(flux_handle, args.kvs_key, combined_data)
     if args.perf_out:
         logger.debug("Writing data to file")
         write_data_to_file(args.perf_out, args.perf_format, combined_data)

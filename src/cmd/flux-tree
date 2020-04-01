@@ -37,6 +37,7 @@ FT_PERF_FORMAT='{treeid:<15s} {elapse:>20f} {begin:>20f} {end:>20f} {match:>15f}
 '{njobs:>15d} {my_nodes:>5d} {my_cores:>4d} {my_gpus:>4d}'
                                # store perf-out with format given by --perf-format
 FT_FXLOGS='%^+_no'             # dir in which flux logs are produced
+FT_FXRDIR='%^+_no'             # flux rundir attribute to pass
 FT_LEAF='no'                   # is this a leaf instance (given by --leaf)?
 FT_G_PREFIX='tree'             # store hierarchical path given by --prefix
 FT_DRY_RUN='no'                # --dry-run for testing?
@@ -60,6 +61,7 @@ declare -r top_prefix='tree'   # prefix name to identify the top Flux instance
 declare -r t_delim='x'         # topology delimiter
 declare -r p_delim=':'         # match policy delimiter
 declare -r perf_format='%-15s %20s %20s %20s %15s %15s %5s %4s %4s'
+declare -a FT_CL=()            # save the jobscript command into an array
 declare -A mp_policies=(       # make sure to update this when match
     [low]=1                    # policies are updated.
     [high]=1
@@ -81,11 +83,10 @@ declare -A q_params=(          # make sure to update this when
 )
 declare -a jobids             # array to store a set of submitted job IDs
 
-declare -r long_opts='help,leaf,flux-logs:,nnodes:,ncores-per-node:'\
-',ngpus-per-node:,topology:,queue-policy:,queue-params:,match-policy:'\
-',njobs:,perf-out:,perf-format:,prefix:,job-name:,dry-run'
-
-declare -r short_opts='hlf:N:c:g:T:Q:P:M:J:o:X:d'
+declare -r long_opts='help,leaf,flux-logs:,flux-rundir:,nnodes:'\
+',ncores-per-node:,ngpus-per-node:,topology:,queue-policy:,queue-params:'\
+',match-policy:,njobs:,perf-out:,perf-format:,prefix:,job-name:,dry-run'
+declare -r short_opts='hlf:r:N:c:g:T:Q:P:M:J:o:X:d'
 declare -r prog=${0##*/}
 declare -r usage="
 Usage: ${prog} [OPTIONS] -- Jobscript\n\
@@ -146,6 +147,9 @@ Options:\n\
                                with internal tree-node options like -T.\n\
                                    (default=${FT_LEAF})\n\
  -f, --flux-logs=DIR           Dump Flux logs for all instances into DIR\n\
+ -r, --flux-rundir=DIR         Set the rundir attribute of each Flux tree instance\n\
+                                   into a subdirectory within DIR. The content\n\
+                                   stores will be redirected to them as well\n\
  -N, --nnodes=NNODES           Total num of nodes to use\n\
                                    (default=${FT_NNODES})\n\
  -c, --ncores-per-node=NCORES  Total num of cores per node to use\n\
@@ -469,7 +473,6 @@ execute() {
     local ncores="${3}"
     local ngpus="${4}"
     local njobs="${5}"
-    local jobscript_cl="${6}"
     local rc=0
 
     for job in $(seq 1 "${njobs}");
@@ -487,11 +490,11 @@ execute() {
             dr_print "FLUX_TREE_NCORES_PER_NODE=${FLUX_TREE_NCORES_PER_NODE}"
             dr_print "FLUX_TREE_NGPUS_PER_NODE=${FLUX_TREE_NGPUS_PER_NODE}"
             dr_print "FLUX_TREE_NNODES=${FLUX_TREE_NNODES}"
-            dr_print "eval ${jobscript_cl}"
+            dr_print "eval ${FT_CL[@]}"
             continue
         else
             rc=0
-            eval ${jobscript_cl} || rc=$?
+            "${FT_CL[@]}" || rc=$?
             if [[ ${rc} -gt ${FT_MAX_EXIT_CODE} ]]
             then
                 FT_MAX_EXIT_CODE=${rc}
@@ -505,7 +508,7 @@ execute() {
 
     if [[ "x${FT_MAX_TREE_ID}" != "x" ]]
     then
-        warn "${jobscript_cl}: exited with exit code (${FT_MAX_EXIT_CODE})"
+        warn "${FT_CL[@]}: exited with exit code (${FT_MAX_EXIT_CODE})"
         warn "invocation id: ${FT_MAX_TREE_ID}@index[${FT_MAX_JOBSCRIPT_IX}]"
         warn "output displayed above, if any"
     fi
@@ -528,9 +531,8 @@ leaf() {
     local ncores="${3}"
     local ngpus="${4}"
     local njobs="${5}"
-    local cl="${6}"
-    local perfout="${7}"
-    local format="${8}"
+    local perfout="${6}"
+    local format="${7}"
 
     # Begin Time Stamp
     local B=''
@@ -588,9 +590,8 @@ submit() {
     local ngpus="${8}"
     local size="${9}"
     local njobs="${10}"
-    local cl="${11}"
-    local log="${12}"
-    local out="${13}"
+    local log="${11}"
+    local rdir="${12}"
 
     # Flux instance rank-agnostic command-line options for the next level
     local T="${nx_topo:+--topology=${nx_topo}}"
@@ -600,7 +601,8 @@ submit() {
     local M="${nx_match:+--match-policy=${nx_match}}"
     local F=''
     [[ "x${log}" != "x%^+_no" ]] && F="--flux-logs=${log}"
-    local S="${cl}"
+    local R=''
+    [[ "x${rdir}" != "x%^+_no" ]] && R="--flux-rundir=${rdir}"
     local rank=0
 
     # Main Loop to Submit the Next-Level Flux Instances
@@ -621,8 +623,20 @@ submit() {
         local o=''
         if [[ x"${log}" != "x%^+_no" ]]
         then
-            mkdir -p "${log}"
-            o="-o,-S,log-filename=${log}/${prefix}.${rank}.log"
+            if [[ "x${FT_DRY_RUN}" != "xyes" ]]
+            then
+                mkdir -p "${log}"
+            fi
+            o="-o,-Slog-filename=${log}/${prefix}.${rank}.log"
+        fi
+        if [[ x"${rdir}" != "x%^+_no" ]]
+        then
+            if [[ "x${FT_DRY_RUN}" != "xyes" ]]
+            then
+                rm -rf "${rdir}/${prefix}.${rank}.pfs"
+                mkdir -p "${rdir}/${prefix}.${rank}.pfs"
+            fi
+            o="${o:+${o} }-o,-Srundir=${rdir}/${prefix}.${rank}.pfs"
         fi
         local N=0
         N=$(get_my_nodes "${ncores}" "${my_cores}")
@@ -639,14 +653,15 @@ submit() {
             dr_print "Rank=${rank}: N=${N} c=${c} ${G:+g=${G}} ${o:+o=${o}}"
             dr_print "Rank=${rank}: ${T:+T=${T}}"
             dr_print "Rank=${rank}: ${Q:+Q=${Q}} ${P:+P=${P}} ${M:+M=${M}}" 
-            dr_print "Rank=${rank}: ${X:+X=${X}} ${J:+J=${J}} ${S:+S=${S}}"
+            dr_print "Rank=${rank}: ${X:+X=${X}} ${J:+J=${J}} ${FT_CL:+S=${FT_CL[@]}}"
             dr_print ""
             continue
         fi
         jobid=$(\
 flux mini submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
      flux start ${o} \
-     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${X} ${J} -- ${S})
+     flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${R} ${X} ${J} \
+     -- "${FT_CL[@]}")
         jobids["${rank}"]="${jobid}"
     done
 
@@ -733,8 +748,8 @@ main() {
     local ncores="${8}"        # num of cores per node
     local ngpus="${9}"         # num of gpus per node
     local njobs="${10}"        # num of jobs assigned to this Flux instance
-    local cl="${11}"           # jobscript commandline
-    local flogs="${12}"        # flux log output option
+    local flogs="${11}"        # flux log output option
+    local frdir="${12}"        # flux rundir attribute
     local out="${13}"          # perf output filename
     local format="${14}"      # perf output format
     local size=0
@@ -747,7 +762,7 @@ main() {
         # be executed on the last-level Flux instance. 
         #
         leaf "${prefix}" "${nnodes}" "${ncores}" "${ngpus}" "${njobs}" \
-             "${cl}" "${out}" "${format}"
+             "${out}" "${format}"
     else
         #
         # flux-tree is invoked to instantate ${size} internal Flux instances
@@ -756,7 +771,7 @@ main() {
         size=${topo%%${t_delim}*}
         internal "${prefix}" "${topo}" "${queue}" "${param}" "${match}" \
                  "${nnodes}" "${ncores}" "${ngpus}" "${size}" "${njobs}" \
-                 "${cl}" "${flogs}" "${out}" "${format}"
+                 "${flogs}" "${frdir}" "${out}" "${format}"
     fi
 
     exit ${FT_MAX_EXIT_CODE}
@@ -769,7 +784,7 @@ main() {
 #                                                                              #
 ################################################################################
 
-GETOPTS=$(/usr/bin/getopt -u -o ${short_opts} -l ${long_opts} -n "${prog}" -- "${@}")
+GETOPTS=$(/usr/bin/getopt -o ${short_opts} -l ${long_opts} -n "${prog}" -- "${@}")
 eval set -- "${GETOPTS}"
 rcopt=$?
 
@@ -779,6 +794,7 @@ while true; do
       -l|--leaf)                   FT_LEAF="yes";                shift 1 ;;
       -d|--dry-run)                FT_DRY_RUN="yes";             shift 1 ;;
       -f|--flux-logs)              FT_FXLOGS="${2}";             shift 2 ;;
+      -r|--flux-rundir)            FT_FXRDIR="${2}";             shift 2 ;;
       -N|--nnodes)                 FT_NNODES=${2};               shift 2 ;;
       -c|--ncores-per-node)        FT_NCORES=${2};               shift 2 ;;
       -g|--ngpus-per-node)         FT_NGPUS=${2};                shift 2 ;;
@@ -797,7 +813,7 @@ while true; do
 done
 
 FT_SCRIPT="${1}"
-FT_CL="${@}"
+FT_CL=( "${@}" )
 
 [[ "$#" -lt 1 || "${rcopt}" -ne 0 ]] && die "${usage}"
 
@@ -838,7 +854,7 @@ fi
 
 main "${FT_LEAF}" "${FT_G_PREFIX}" "${FT_TOPO}" "${FT_QUEUE}" "${FT_PARAMS}" \
      "${FT_MATCH}" "${FT_NNODES}" "${FT_NCORES}" "${FT_NGPUS}" "${FT_NJOBS}" \
-     "${FT_CL}" "${FT_FXLOGS}" "${FT_PERF_OUT}" "${FT_PERF_FORMAT}"
+     "${FT_FXLOGS}" "${FT_FXRDIR}" "${FT_PERF_OUT}" "${FT_PERF_FORMAT}"
 
 #
 # vi:tabstop=4 shiftwidth=4 expandtab

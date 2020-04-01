@@ -12,8 +12,6 @@ ORIG_HOME=${HOME}
 #
 HOME=${ORIG_HOME}
 
-test_under_flux 1
-
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then
      export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/rc"
@@ -137,7 +135,7 @@ test_expect_success 'flux-tree: --topology=1 works' '
 EOF
     flux tree --dry-run --topology=1 /bin/hostname > out.04 &&
     remove_prefix out.04 out.04.2 &&
-    sed -i "s/[ \t]*$//g" out.04.2 && 
+    sed -i "s/[ \t]*$//g" out.04.2 &&
     test_cmp cmp.04 out.04.2
 '
 
@@ -296,7 +294,7 @@ test_expect_success 'flux-tree: --perf-out generates a perf output file' '
     flux tree --dry-run -T 4 -N 4 -c 4 -J 10 -o p.out /bin/hostname &&
     test -f p.out &&
     lcount=$(wc -l p.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 && 
+    test ${lcount} -eq 2 &&
     wcount=$(wc -w p.out | awk "{print \$1}") &&
     test ${wcount} -eq 18
 '
@@ -307,7 +305,7 @@ test_expect_success 'flux-tree: --perf-format works with custom format' '
          /bin/hostname &&
     test -f perf.out &&
     lcount=$(wc -l perf.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 && 
+    test ${lcount} -eq 2 &&
     wcount=$(wc -w perf.out | awk "{print \$1}") &&
     test ${wcount} -eq 6
 '
@@ -569,7 +567,7 @@ EOF
     unset FLUX_RESOURCE_OPTIONS &&
     remove_prefix out.18 out.18.2 &&
     sed -i "s/[ \t]*$//g" out.18.2 &&
-    test_cmp cmp.18 out.18.2 
+    test_cmp cmp.18 out.18.2
 '
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/4 GPUs work' '
@@ -681,90 +679,56 @@ EOF
     test_cmp cmp.22 out.22.2
 '
 
-test_expect_success 'flux-tree: prep for testing in real mode works' '
-    flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
-subsystems=containment policy=low load-whitelist=node,core,gpu &&
-    flux module load qmanager
-'
-
-test_expect_success 'flux-tree: --leaf in real mode' '
-    flux tree --leaf -N 1 -c 1 -J 1 -o p.out2 hostname &&
-    test -f p.out2 &&
-    lcount=$(wc -l p.out2 | awk "{print \$1}") &&
-    test ${lcount} -eq 2 &&
-    wcount=$(wc -w p.out2 | awk "{print \$1}") &&
-    test ${wcount} -eq 18
-'
-
-test_expect_success 'flux-tree: -T1 in real mode' '
-    flux tree -T1 -N 1 -c 1 -J 1 -o p.out3 hostname &&
-    test -f p.out3 &&
-    lcount=$(wc -l p.out3 | awk "{print \$1}") &&
-    test ${lcount} -eq 3 &&
-    wcount=$(wc -w p.out3 | awk "{print \$1}") &&
-    test ${wcount} -eq 27
-'
-
-test_expect_success 'flux-tree: -T1x1 in real mode' '
-    flux tree -T1x1 -N 1 -c 1 -J 1 -o p.out4 hostname &&
-    test -f p.out4 &&
-    lcount=$(wc -l p.out4 | awk "{print \$1}") &&
-    test ${lcount} -eq 4 &&
-    wcount=$(wc -w p.out4 | awk "{print \$1}") &&
-    test ${wcount} -eq 36
-'
-
-test_expect_success 'flux-tree: -T2 with exit code rollup works' '
-    cat >jobscript.sh <<EOF &&
-#! /bin/bash
-echo \${FLUX_TREE_ID}
-if [[ \${FLUX_TREE_ID} = "tree.2" ]]
-then
-	exit 4
-else
-	exit 1
-fi
+test_expect_success 'flux-tree: --flux-rundir=DIR works in dry-run' '
+    cat >cmp.23 <<-EOF &&
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	Rank=1: N=1 c=2 o=-o,-Srundir=DIR/tree.1.pfs
+	Rank=1: T=--leaf
+	Rank=1:
+	Rank=1: X=--prefix=tree.1 J=--njobs=5 S=/bin/hostname
+	
+	Rank=2: N=1 c=2 o=-o,-Srundir=DIR/tree.2.pfs
+	Rank=2: T=--leaf
+	Rank=2:
+	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
+	
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	FLUX_QMANAGER_RC_NOOP:1
+	FLUX_RESOURCE_RC_NOOP:1
 EOF
+    flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR \
+/bin/hostname > out.23 &&
+    remove_prefix out.23 out.23.2 &&
+    sed -i "s/[ \t]*$//g" out.23.2 &&
+    test_cmp cmp.23 out.23.2
+'
 
-    cat >cmp.23 <<EOF &&
-tree.2
-flux-tree: warning: ./jobscript.sh: exited with exit code (4)
-flux-tree: warning: invocation id: tree.2@index[1]
-flux-tree: warning: output displayed above, if any
+test_expect_success 'flux-tree: --flux-rundir=DIR works along with -f' '
+    cat >cmp.24 <<-EOF &&
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	Rank=1: N=1 c=2 o=-o,-Slog-filename=DIR2/tree.1.log -o,-Srundir=DIR/tree.1.pfs
+	Rank=1: T=--leaf
+	Rank=1:
+	Rank=1: X=--prefix=tree.1 J=--njobs=5 S=/bin/hostname
+	
+	Rank=2: N=1 c=2 o=-o,-Slog-filename=DIR2/tree.2.log -o,-Srundir=DIR/tree.2.pfs
+	Rank=2: T=--leaf
+	Rank=2:
+	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
+	
+	FLUX_QMANAGER_OPTIONS:
+	FLUX_RESOURCE_OPTIONS:
+	FLUX_QMANAGER_RC_NOOP:1
+	FLUX_RESOURCE_RC_NOOP:1
 EOF
-    chmod u+x jobscript.sh &&
-    test_expect_code 4 flux tree -T2 -N 1 -c 2 -J 2 \
-./jobscript.sh > out.23 &&
-    test_cmp cmp.23 out.23
-'
-
-PERF_FORMAT="{treeid}"
-PERF_BLOB='{"treeid":"tree", "perf": {}}'
-JOB_NAME="foobar"
-test_expect_success 'flux-tree: successfully runs alongside other jobs' '
-    flux tree -T 1 -N 1 -c 1 -J 1 -o p.out5 --perf-format="$PERF_FORMAT" \
-         --job-name="${JOB_NAME}" -- hostname &&
-    flux mini run -N1 -c1 hostname &&
-    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out6 \
-         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
-    test_cmp p.out5 p.out6
-'
-
-JOB_NAME="foobar2"
-test_expect_success 'flux-tree: successfully runs alongside other flux-trees' '
-    run_timeout 20 \
-    flux tree -T 1x1 -N 1 -c 1 -J 1 -o p.out7 --perf-format="$PERF_FORMAT" \
-         --job-name="${JOB_NAME}" -- hostname &&
-    flux tree -T 1 -N 1 -c 1 -J 1 -- hostname &&
-    echo "$PERF_BLOB" | run_timeout 5 flux tree-helper --perf-out=p.out8 \
-         --perf-format="$PERF_FORMAT" 1 "tree-perf" "${JOB_NAME}" &&
-    test_cmp p.out7 p.out8
-'
-
-test_expect_success 'flux-tree: removing qmanager/resource works' '
-     flux module remove resource &&
-     flux module remove qmanager
+    flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR -f DIR2 \
+/bin/hostname > out.24 &&
+    remove_prefix out.24 out.24.2 &&
+    sed -i "s/[ \t]*$//g" out.24.2 &&
+    test_cmp cmp.24 out.24.2
 '
 
 test_done
