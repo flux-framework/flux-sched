@@ -71,8 +71,8 @@ bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
     return (r.type == f.type
             && r.basename == f.basename
-            && r.size == f.size
-            && r.rank == f.rank
+            && r.size == static_cast<unsigned int> (f.size)
+            && r.rank == static_cast<int> (f.rank)
             && r.id == f.id
             && r.name == f.name
             && r.properties == f.properties
