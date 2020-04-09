@@ -260,6 +260,7 @@ int resource_reader_jgf_t::add_graph_metadata (vtx_t v,
             if (!ptr.second)
                 goto done;
         }
+        m.by_path[kv.second] = v;
     }
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
