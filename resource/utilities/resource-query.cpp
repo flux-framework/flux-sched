@@ -494,6 +494,12 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
         std::cout << "INFO: Graph Load Time: " << elapse << std::endl;
         std::cout << "INFO: Vertex Count: " << num_vertices (g) << std::endl;
         std::cout << "INFO: Edge Count: " << num_edges (g) << std::endl;
+        std::cout << "INFO: by_type Key-Value Pairs: " <<
+                     ctx->db->metadata.by_type.size () << std::endl;
+        std::cout << "INFO: by_name Key-Value Pairs: " <<
+                     ctx->db->metadata.by_name.size () << std::endl;
+        std::cout << "INFO: by_path Key-Value Pairs: " <<
+                     ctx->db->metadata.by_path.size () << std::endl;
     }
 
 done:

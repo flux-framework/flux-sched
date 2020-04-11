@@ -5,6 +5,9 @@ test_description='Test Correctness of Populating Graph Data Store'
 . $(dirname $0)/sharness.sh
 
 tiny_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
+tiny_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
+exclusive_001N_hwloc="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/exclusive\
+/04-brokers/0.xml"
 large_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/sierra.graphml"
 query="../../resource/utilities/resource-query"
 
@@ -17,21 +20,69 @@ test_expect_success "vertex/edge counts for a tiny machine are correct" '
     test ${edg} -eq 198
 '
 
-test_expect_success "--reserve-vtx-vec works" '
+test_expect_success "by_type, by_name, and by_path map sizes are correct \
+for GRUG" '
     echo "quit" > input2.txt &&
-    ${query} -L ${tiny_grug} -e -r 1024 -S CA -P high < input2.txt > out2.txt &&
-    vtx=$(grep "Vertex" out2.txt  | sed "s/INFO: Vertex Count: //") &&
-    edg=$(grep "Edge" out2.txt  | sed "s/INFO: Edge Count: //") &&
+    ${query} -L ${tiny_grug} -e -S CA -P high < input2.txt > out2.txt &&
+    by_type=$(grep "by_type" out2.txt | sed "s/INFO: by_type Key-Value \
+Pairs: //") &&
+    by_name=$(grep "by_name" out2.txt | sed "s/INFO: by_name Key-Value \
+Pairs: //") &&
+    by_path=$(grep "by_path" out2.txt | sed "s/INFO: by_path Key-Value \
+Pairs: //") &&
+    test ${by_type} -eq 7 &&
+    test ${by_name} -eq 52 &&
+    test ${by_path} -eq 100
+'
+
+test_expect_success "by_type, by_name, and by_path map sizes are correct \
+for JGF" '
+    echo "quit" > input3.txt &&
+    ${query} -L ${tiny_jgf} -e -S CA -P high -f jgf < input3.txt > \
+out3.txt &&
+    by_type=$(grep "by_type" out3.txt | sed "s/INFO: by_type Key-Value \
+Pairs: //") &&
+    by_name=$(grep "by_name" out3.txt | sed "s/INFO: by_name Key-Value \
+Pairs: //") &&
+    by_path=$(grep "by_path" out3.txt | sed "s/INFO: by_path Key-Value \
+Pairs: //") &&
+    test ${by_type} -eq 7 &&
+    test ${by_name} -eq 52 &&
+    test ${by_path} -eq 100 
+'
+
+test_expect_success "by_type, by_name, and by_path map sizes are correct \
+for hwloc" '
+    echo "quit" > input4.txt &&
+    ${query} -L ${exclusive_001N_hwloc} -e -S CA -P high -f hwloc < \
+input4.txt > out4.txt &&
+    by_type=$(grep "by_type" out4.txt | sed "s/INFO: by_type Key-Value \
+Pairs: //") &&
+    by_name=$(grep "by_name" out4.txt | sed "s/INFO: by_name Key-Value \
+Pairs: //") &&
+    by_path=$(grep "by_path" out4.txt | sed "s/INFO: by_path Key-Value \
+Pairs: //") &&
+    test ${by_type} -eq 7 &&
+    test ${by_name} -eq 21 &&
+    test ${by_path} -eq 21
+'
+
+test_expect_success "--reserve-vtx-vec works" '
+    echo "quit" > input5.txt &&
+    ${query} -L ${tiny_grug} -e -r 1024 -S CA -P high < input5.txt > \
+out5.txt &&
+    vtx=$(grep "Vertex" out5.txt | sed "s/INFO: Vertex Count: //") &&
+    edg=$(grep "Edge" out5.txt | sed "s/INFO: Edge Count: //") &&
     test ${vtx} -eq 100 &&
     test ${edg} -eq 198
 '
 
 test_expect_success LONGTEST "--reserve-vtx-vec improves loading performance" '
-    echo "quit" > input3.txt &&
-    ${query} -L ${large_grug} -e -r 400000 < input3.txt > out3A.txt &&
-    ${query} -L ${large_grug} -e < input3.txt > out3B.txt &&
-    with=$(grep "Graph" out3A.txt  | sed "s/INFO: Graph Load Time: //") &&
-    without=$(grep "Graph" out3B.txt  | sed "s/INFO: Graph Load Time: //") &&
+    echo "quit" > input6.txt &&
+    ${query} -L ${large_grug} -e -r 400000 < input6.txt > out6A.txt &&
+    ${query} -L ${large_grug} -e < input6.txt > out6B.txt &&
+    with=$(grep "Graph" out6A.txt | sed "s/INFO: Graph Load Time: //") &&
+    without=$(grep "Graph" out6B.txt | sed "s/INFO: Graph Load Time: //") &&
     test $(awk "BEGIN{ print $with<$without }") -eq 1
 '
 
