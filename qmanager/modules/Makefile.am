@@ -36,7 +36,8 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/queue_policy_conservative.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_conservative_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory.hpp \
-    $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp
+    $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp \
+    $(top_srcdir)/src/common/c++wrappers/eh_wrapper.hpp
 
 qmanager_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
