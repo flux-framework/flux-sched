@@ -35,12 +35,13 @@ extern "C" {
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
 #include "qmanager/modules/qmanager_opts.hpp"
-
+#include "src/common/c++wrappers/eh_wrapper.hpp"
 
 using namespace Flux;
 using namespace Flux::queue_manager;
 using namespace Flux::queue_manager::detail;
 using namespace Flux::opts_manager;
+using namespace Flux::cplusplus_wrappers;
 
 
 /******************************************************************************
@@ -384,37 +385,42 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
  *                                                                            *
  ******************************************************************************/
 
-extern "C" int mod_main (flux_t *h, int argc, char **argv)
+int mod_start (flux_t *h, int argc, char **argv)
 {
     int rc = -1;
-    try {
-        std::shared_ptr<qmanager_ctx_t> ctx = nullptr;
-        if (!(ctx = qmanager_new (h))) {
-            flux_log_error (h, "%s: qmanager_new", __FUNCTION__);
-            return rc;
-        }
-        if ((rc = process_config_file (ctx)) < 0) {
-            flux_log_error (h, "%s: config file parsing", __FUNCTION__);
-            qmanager_destroy (ctx);
-            return rc;
-        }
-        if ((rc = process_args (ctx, argc, argv)) < 0) {
-            flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
-            qmanager_destroy (ctx);
-            return rc;
-        }
-        if ((rc = enforce_queue_policy (ctx)) < 0) {
-            flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
-            qmanager_destroy (ctx);
-            return rc;
-        }
-        if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
-            flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
+    std::shared_ptr<qmanager_ctx_t> ctx = nullptr;
+    if ( !(ctx = qmanager_new (h))) {
+        flux_log_error (h, "%s: qmanager_new", __FUNCTION__);
+        return rc;
+    }
+    if ( (rc = process_config_file (ctx)) < 0) {
+        flux_log_error (h, "%s: config file parsing", __FUNCTION__);
         qmanager_destroy (ctx);
+        return rc;
     }
-    catch (std::exception &e) {
-        flux_log_error (h, "%s: %s", __FUNCTION__, e.what ());
+    if ( (rc = process_args (ctx, argc, argv)) < 0) {
+        flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
     }
+    if ( (rc = enforce_queue_policy (ctx)) < 0) {
+        flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
+    }
+    if ( (rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
+        flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
+    qmanager_destroy (ctx);
+    return rc;
+}
+
+extern "C" int mod_main (flux_t *h, int argc, char **argv)
+{
+    eh_wrapper_t exception_safe_main;
+    int rc = exception_safe_main (mod_start, h, argc, argv);
+    if (exception_safe_main.bad ())
+        flux_log_error (h, "%s: %s", __FUNCTION__,
+                            exception_safe_main.get_err_message ());
     return rc;
 }
 
