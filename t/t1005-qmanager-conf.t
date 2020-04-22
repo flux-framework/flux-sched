@@ -32,13 +32,22 @@ start_qmanager_noconfig () {
 check_enforced_policy() {
     test "$(grep "enforced policy" <$1 | awk "{ print \$5}" )" = $2
 }
+
+check_params() {
+    res="$(grep "$3" <$1 | awk "{ print \$6}")"
+    for tok in $(echo ${res} | sed -e 's@,@ @g')
+    do
+        echo ${2} | grep ${tok} || return 1
+    done
+}
+
 # Usage: check_queue_params outfile expected
 check_queue_params() {
-    test "$(grep "queue params" <$1 | awk "{ print \$6}" )" = $2
+    check_params $1 $2 "queue params"
 }
 # Usage: check_policy_params outfile expected
 check_policy_params() {
-    test "$(grep "policy params" <$1 | awk "{ print \$6}" )" = $2
+    check_params $1 $2 "policy params"
 }
 
 test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
@@ -58,13 +67,14 @@ test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
 test_expect_success 'qmanager: load qmanager works with no config' '
     outfile=noconfig.out &&
     start_qmanager_noconfig >${outfile} &&
+    check_enforced_policy ${outfile} fcfs &&
     check_queue_params ${outfile} default &&
     check_policy_params ${outfile} default
 '
 
 test_expect_success 'qmanager: load qmanager works with valid qmanager.toml' '
     conf_name="01-default" &&
-    outfile=${conf_name}2.out &&
+    outfile=${conf_name}.out &&
     start_qmanager ${conf_base}/${conf_name} >${outfile} &&
     check_enforced_policy ${outfile} "fcfs" &&
     check_queue_params ${outfile} \
@@ -82,9 +92,9 @@ test_expect_success 'qmanager: module load options takes precedence' '
 	    policy-params=max-reservation-depth=64 >${outfile} &&
     check_enforced_policy ${outfile} "easy" &&
     check_queue_params ${outfile} \
-	    "max-queue-depth=20000,queue-depth=8192" &&
+	    "max-queue-depth=20000" &&
     check_policy_params ${outfile} \
-	    "max-reservation-depth=64,reservation-depth=64"
+	    "max-reservation-depth=64"
 '
 
 test_expect_success 'qmanager: load qmanager works with no keys' '
@@ -100,7 +110,7 @@ test_expect_success 'qmanager: load qmanager works with extra keys' '
     outfile=${conf_name}.out &&
     start_qmanager ${conf_base}/${conf_name} >${outfile} &&
     check_queue_params ${outfile} \
-	"queue-depth=8192,max-queue-depth=1000000" &&
+	"foo=1234,max-queue-depth=1000000,queue-depth=8192" &&
     check_policy_params ${outfile} \
 	"reservation-depth=64,max-reservation-depth=100000"
 '
@@ -156,10 +166,11 @@ test_expect_success 'qmanager: load works with no queue-depth key' '
 	"reservation-depth=64,max-reservation-depth=100000"
 '
 
-test_expect_success 'qmanager: load must fail on invalid policy' '
+test_expect_success 'qmanager: load must tolerate an invalid policy' '
     conf_name="09-invalid-policy" &&
     outfile=${conf_name}.out &&
-    test_must_fail start_qmanager ${conf_base}/${conf_name} >${outfile}
+    start_qmanager ${conf_base}/${conf_name} >${outfile} &&
+    check_enforced_policy ${outfile} fcfs
 '
 
 test_expect_success 'qmanager: load must fail on negative value' '
@@ -196,15 +207,12 @@ test_expect_success 'qmanager: load works with no queue-params category' '
     check_queue_params ${outfile} default
 '
 
-# because required sub categories exist, this should succeed
 test_expect_success 'qmanager: load succeeds on no qmanager category' '
     conf_name="15-no-qmanager" &&
     outfile=${conf_name}.out &&
     start_qmanager ${conf_base}/${conf_name} >${outfile} &&
-    check_queue_params ${outfile} \
-	"queue-depth=8192,max-queue-depth=1000000" &&
-    check_policy_params ${outfile} \
-	"reservation-depth=64,max-reservation-depth=100000"
+    check_queue_params ${outfile} default &&
+    check_policy_params ${outfile} default
 '
 
 test_done

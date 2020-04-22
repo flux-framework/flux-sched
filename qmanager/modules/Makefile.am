@@ -17,6 +17,10 @@ fluxmod_LTLIBRARIES = qmanager.la
 #
 qmanager_la_SOURCES = \
     qmanager.cpp \
+    qmanager_opts.cpp \
+    qmanager_opts.hpp \
+    $(top_srcdir)/src/common/liboptmgr/optmgr.hpp \
+    $(top_srcdir)/src/common/liboptmgr/optmgr_impl.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli_impl.hpp \

@@ -4,7 +4,3 @@
 
 [qmanager]
 
-    [qmanager.queue-params]        # general queue parameters
-
-    [qmanager.policy-params]       # queue policy parameters
-
