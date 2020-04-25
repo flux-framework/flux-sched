@@ -109,7 +109,7 @@ private:
 };
 
 template <>
-void eh_wrapper_t::return_<void> (int i) {
+inline void eh_wrapper_t::return_<void> (int i) {
     return;
 }
 
