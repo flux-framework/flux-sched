@@ -19,6 +19,8 @@ qmanager_la_SOURCES = \
     qmanager.cpp \
     qmanager_opts.cpp \
     qmanager_opts.hpp \
+    qmanager_callbacks.cpp \
+    qmanager_callbacks.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr_impl.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
