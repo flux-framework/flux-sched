@@ -48,7 +48,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
             flux_log_error (h, "%s: schedutil_alloc_respond_R", __FUNCTION__);
             goto out;
         }
-        flux_log (h, LOG_DEBUG, "alloc success (id=%jd)", (intmax_t)job->id);
+        flux_log (h, LOG_DEBUG, "alloc success (id=%jd)",
+                 static_cast<intmax_t> (job->id));
     }
     while ((job = queue->rejected_pop ()) != nullptr) {
         std::string note = "alloc denied due to type=\"" + job->note + "\"";
@@ -59,8 +60,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                             __FUNCTION__);
             goto out;
         }
-        flux_log (h, LOG_DEBUG,
-                  "%s (id=%jd)", note.c_str (), (intmax_t)job->id);
+        flux_log (h, LOG_DEBUG, "%s (id=%jd)", note.c_str (),
+                 static_cast<intmax_t> (job->id));
     }
     rc = 0;
 
@@ -83,7 +84,8 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
                                    RUNNING, id, uid, prio, ts, R);
 
     if (ctx->queue->reconstruct (running_job) < 0) {
-        flux_log_error (h, "%s: reconstruct (id=%jd)", __FUNCTION__, (intmax_t)id);
+        flux_log_error (h, "%s: reconstruct (id=%jd)", __FUNCTION__,
+                       static_cast<intmax_t> (id));
         goto out;
     }
     rc = 0;
@@ -107,11 +109,11 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->jobspec = jobspec;
     job->msg = flux_msg_copy (msg, true);
     if (ctx->queue->insert (job) < 0) {
-        flux_log_error (h, "%s: queue insert (id=%jd)",
-                        __FUNCTION__, (intmax_t)job->id);
+        flux_log_error (h, "%s: queue insert (id=%jd)", __FUNCTION__,
+                       static_cast<intmax_t> (job->id));
         return;
     }
-    if (ctx->queue->run_sched_loop ((void *)h, true) < 0
+    if (ctx->queue->run_sched_loop (static_cast<void *> (h), true) < 0
         || post_sched_loop (h, ctx->schedutil, ctx->queue) < 0) {
         flux_log_error (h, "%s: schedule loop", __FUNCTION__);
         return;
@@ -130,7 +132,8 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         return;
     }
     if ((ctx->queue->remove (id)) < 0) {
-        flux_log_error (h, "%s: remove (id=%jd)", __FUNCTION__, (intmax_t)id);
+        flux_log_error (h, "%s: remove (id=%jd)", __FUNCTION__,
+                       static_cast<intmax_t> (id));
         return;
     }
     if (ctx->queue->run_sched_loop ((void *)h, true) < 0) {
@@ -141,7 +144,8 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "free succeeded (id=%jd)", (intmax_t)id);
+    flux_log (h, LOG_DEBUG, "free succeeded (id=%jd)",
+             static_cast<intmax_t> (id));
     if (post_sched_loop (h, ctx->schedutil, ctx->queue) < 0) {
         flux_log_error (h, "%s: post_sched_loop", __FUNCTION__);
         return;
@@ -160,7 +164,8 @@ void qmanager_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
         || !job->is_pending ())
         return;
     if (ctx->queue->remove (id) < 0) {
-        flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__, (intmax_t)id);
+        flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__,
+                       static_cast<intmax_t> (id));
         return;
     }
     std::string note = std::string ("alloc aborted due to exception type=")
@@ -171,7 +176,8 @@ void qmanager_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
         flux_log_error (h, "%s: schedutil_alloc_respond_denied", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "%s (id=%jd)", note.c_str (), (intmax_t)id);
+    flux_log (h, LOG_DEBUG, "%s (id=%jd)", note.c_str (),
+             static_cast<intmax_t> (id));
 }
 
 int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
