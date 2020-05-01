@@ -136,11 +136,13 @@ if test -n "$TAG"; then
         --volume=$TOP:/usr/src \
         --user="root" \
 	travis-builder:${IMAGE} \
-	sh -c "make install && \
+	sh -c "cd ${BUILD_DIR:-.} && \
+	       make install && \
                userdel $USER" \
 	|| (docker rm tmp.$$; die "docker run of 'make install' failed")
     docker commit \
-	--change 'CMD "/usr/bin/flux"' \
+	--change 'ENTRYPOINT [ "/usr/local/sbin/entrypoint.sh" ]' \
+	--change 'CMD [ "/usr/bin/flux", "start", "/bin/bash" ]' \
 	--change 'USER flux' \
 	--change 'WORKDIR /home/flux' \
 	tmp.$$ $TAG \
