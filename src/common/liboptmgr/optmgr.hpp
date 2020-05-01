@@ -69,6 +69,15 @@ public:
     }
 
     /*!
+     * Canonicalize the option set -- calls the same named method
+     * of the object of the option set class T which canonicalizes
+     * its internal state after all the composition completes.
+     */
+    T &canonicalize () {
+        return m_opt.canonicalize ();
+    }
+
+    /*!
      * Getter
      *
      * \return         Option set object of type T
