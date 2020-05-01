@@ -99,6 +99,7 @@ public:
 
 struct System {
     double duration = 0.0f;
+    std::string queue = "";
     std::string cwd = "";
     std::unordered_map<std::string, std::string> environment;
     std::unordered_map<std::string, YAML::Node> optional;
