@@ -96,7 +96,7 @@ protected:
 
 private:
     T m_opt;
-    std::map<std::string, std::string> m_kv;
+    std::map<std::string, std::string, T> m_kv;
 };
 
 

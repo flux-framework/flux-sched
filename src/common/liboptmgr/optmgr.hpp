@@ -95,8 +95,10 @@ private:
  *  the option set from a single source (e.g., an option set passed from
  *  module-load time).
  *  Template class T should be a module option-set management class
- *  that provides a "parse" method. This method must take in an option
+ *  that provides a "parse" method.  This method must take in an option
  *  key-value pair from the optmgr_kv_t class and update its state.
+ *  In addition, T must provide "operator()" method to give specific
+ *  iteration order on the option set.
  */
 template <class T>
 struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
