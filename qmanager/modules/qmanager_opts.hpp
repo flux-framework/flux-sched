@@ -100,6 +100,15 @@ public:
      */
     qmanager_opts_t &operator+= (const qmanager_opts_t &o);
 
+    /*! Comparator function to make this whole class be used
+     *  as a functor -- allowing an upper class to call parse()
+     *  with a specific iteration order among key-value pairs.
+     *  \param k1        reference key
+     *  \param k2        comparing key
+     *  \return          true if k1 should precede k2 during iteration.
+     */
+    bool operator ()(const std::string &k1, const std::string &k2) const;
+
     /*! Parse the value string (v) according to the key string (k).
      *  The parsed results are stored in "this" object.
      *

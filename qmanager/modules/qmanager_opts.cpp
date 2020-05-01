@@ -204,6 +204,15 @@ qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
     return canonicalize ();
 }
 
+bool qmanager_opts_t::operator ()(const std::string &k1,
+                                  const std::string &k2) const
+{
+    if (m_tab.find (k1) == m_tab.end ()
+        || m_tab.find (k2) == m_tab.end ())
+        return k1 < k2;
+    return m_tab.at (k1) < m_tab.at (k2);
+}
+
 int qmanager_opts_t::parse (const std::string &k, const std::string &v,
                             std::string &info)
 {
