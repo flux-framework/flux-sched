@@ -23,6 +23,7 @@ qmanager_la_SOURCES = \
     qmanager_callbacks.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr_impl.hpp \
+    $(top_srcdir)/resource/libjobspec/jobspec.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi_cli_impl.hpp \
@@ -51,6 +52,7 @@ qmanager_la_CXXFLAGS = \
     $(FLUX_SCHEDUTIL_CFLAGS)
 
 qmanager_la_LIBADD = \
+    $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
     $(FLUX_CORE_LIBS) \
     $(FLUX_SCHEDUTIL_LIBS) \
     $(CZMQ_LIBS) \

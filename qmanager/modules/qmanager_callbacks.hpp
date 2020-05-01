@@ -30,11 +30,19 @@ extern "C" {
 #include <flux/schedutil.h>
 }
 
+#include "qmanager/modules/qmanager_opts.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
 
 struct qmanager_cb_ctx_t {
-    schedutil_t *schedutil;
-    std::shared_ptr<Flux::queue_manager::queue_policy_base_t> queue;
+    schedutil_t *schedutil{nullptr};
+    Flux::opts_manager::optmgr_composer_t<
+        Flux::opts_manager::qmanager_opts_t> opts;
+    std::map<std::string, std::shared_ptr<
+        Flux::queue_manager::queue_policy_base_t>> queues;
+
+    int find_queue (
+            flux_jobid_t id, std::string &queue_name,
+            std::shared_ptr<Flux::queue_manager::queue_policy_base_t> &queue);
 };
 
 class qmanager_cb_t {
@@ -49,8 +57,10 @@ protected:
     static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
                                          const char *type, int severity,
                                          void *arg);
-    static int post_sched_loop (flux_t *h, schedutil_t *schedutil, std::shared_ptr<
-                                    Flux::queue_manager::queue_policy_base_t> &queue);
+    static int post_sched_loop (flux_t *h,
+        schedutil_t *schedutil,
+        std::map<std::string, std::shared_ptr<
+            Flux::queue_manager::queue_policy_base_t>> &queues);
 };
 
 struct qmanager_safe_cb_t : public qmanager_cb_t {

@@ -30,11 +30,11 @@ start_qmanager_noconfig () {
 }
 # Usage: check_enforced_policy outfile expected
 check_enforced_policy() {
-    test "$(grep "enforced policy" <$1 | awk "{ print \$5}" )" = $2
+    test "$(grep "enforced policy" <$1 | awk "{ print \$6}" )" = $2
 }
 
 check_params() {
-    res="$(grep "$3" <$1 | awk "{ print \$6}")"
+    res="$(grep "$3" <$1 | awk "{ print \$7}")"
     for tok in $(echo ${res} | sed -e 's@,@ @g')
     do
         echo ${2} | grep ${tok} || return 1
