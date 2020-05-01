@@ -39,6 +39,18 @@ struct queue_prop_t {
     std::string queue_policy = QMANAGER_OPTS_UNSET_STR;
     std::string queue_params = QMANAGER_OPTS_UNSET_STR;
     std::string policy_params = QMANAGER_OPTS_UNSET_STR;
+
+    const std::string &get_queue_policy () const;
+    const std::string &get_queue_params () const;
+    const std::string &get_policy_params () const;
+
+    bool set_queue_policy (const std::string &p);
+    void set_queue_params (const std::string &p);
+    void set_policy_params (const std::string &p);
+
+    bool is_queue_policy_set () const;
+    bool is_queue_params_set () const;
+    bool is_policy_params_set () const;
 };
 
 /*! qmanager option set class

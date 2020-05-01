@@ -58,6 +58,52 @@ bool qmanager_opts_t::known_queue_policy (const std::string &policy)
  *                                                                            *
  ******************************************************************************/
 
+const std::string &queue_prop_t::get_queue_policy () const
+{
+    return queue_policy;
+}
+
+const std::string &queue_prop_t::get_queue_params () const
+{
+    return queue_params;
+}
+
+const std::string &queue_prop_t::get_policy_params () const
+{
+    return policy_params;
+}
+
+bool queue_prop_t::set_queue_policy (const std::string &p)
+{
+    queue_policy = p;
+    return true;
+}
+
+void queue_prop_t::set_queue_params (const std::string &p)
+{
+    queue_params = p;
+}
+
+void queue_prop_t::set_policy_params (const std::string &p)
+{
+    policy_params = p;
+}
+
+bool queue_prop_t::is_queue_policy_set () const
+{
+    return queue_policy != QMANAGER_OPTS_UNSET_STR;
+}
+
+bool queue_prop_t::is_queue_params_set () const
+{
+    return queue_params != QMANAGER_OPTS_UNSET_STR;
+}
+
+bool queue_prop_t::is_policy_params_set () const
+{
+    return policy_params != QMANAGER_OPTS_UNSET_STR;
+}
+
 qmanager_opts_t::qmanager_opts_t ()
 {
     // Note: std::pair<>() is guaranteed to throw only an exception
