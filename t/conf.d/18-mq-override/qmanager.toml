@@ -1,0 +1,25 @@
+#
+# Configuration for the qmanager module
+#
+
+[qmanager]
+
+queue-policy = "easy"
+
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+queue-params = "max-queue-depth=1000000,queue-depth=8192"
+
+# multiple queues
+queues = "debug batch"
+
+# queueing policy type for one or more named queue
+#     batch should inherit the base policy (easy)
+queue-policy-per-queue = "debug:fcfs"
+
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+queue-params-per-queue = "debug:queue-depth=16"
+

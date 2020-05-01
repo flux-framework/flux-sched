@@ -1,0 +1,21 @@
+#
+# Configuration for the qmanager module
+#
+
+[qmanager]
+
+# multiple queues
+queues = "debug batch"
+
+# queueing policy type
+queue-policy = "fcfs"
+
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+queue-params = "max-queue-depth=1000000,queue-depth=8192"
+
+# queue policy parameters
+    # max depth for "conservative" and "hybrid"
+    # reservation depth for HYBRID
+policy-params = "max-reservation-depth=100000,reservation-depth=64"
