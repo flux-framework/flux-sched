@@ -143,8 +143,8 @@ if test -n "$TAG"; then
     docker commit \
 	--change 'ENTRYPOINT [ "/usr/local/sbin/entrypoint.sh" ]' \
 	--change 'CMD [ "/usr/bin/flux", "start", "/bin/bash" ]' \
-	--change 'USER flux' \
-	--change 'WORKDIR /home/flux' \
+	--change 'USER fluxuser' \
+	--change 'WORKDIR /home/fluxuser' \
 	tmp.$$ $TAG \
 	|| die "docker commit failed"
     docker rm tmp.$$
