@@ -53,10 +53,14 @@ int queue_policy_conservative_t<reapi_type>::apply_params ()
         if ((i = queue_policy_base_impl_t
                      ::m_pparams.find ("max-reservation-depth"))
              != queue_policy_base_impl_t::m_pparams.end ()) {
-            unsigned int depth = std::stoi (i->second);
+            int depth = 0;
+            if ( (depth = std::stoi (i->second)) < 1) {
+                errno = ERANGE;
+                rc = -1;
+            }
             queue_policy_bf_base_t<reapi_type>::m_max_reservation_depth = depth;
-            if (depth < queue_policy_bf_base_t<reapi_type>
-                            ::m_reservation_depth) {
+            if (static_cast<unsigned> (depth)
+                    < queue_policy_bf_base_t<reapi_type>::m_reservation_depth) {
                 queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
             }
         }

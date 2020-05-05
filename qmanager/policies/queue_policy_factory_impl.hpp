@@ -49,15 +49,6 @@ namespace detail {
 using namespace resource_model;
 using namespace resource_model::detail;
 
-bool known_queue_policy (const std::string &policy)
-{
-    bool rc = false;
-    if (policy == "fcfs" || policy == "easy"
-        || policy == "hybrid" || policy == "conservative")
-        rc = true;
-    return rc;
-}
-
 std::shared_ptr<queue_policy_base_t> create_queue_policy (
                                          const std::string &policy,
                                          const std::string &reapi)

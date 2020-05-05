@@ -27,11 +27,11 @@
 
 #include <memory>
 #include <string>
+#include "qmanager/policies/base/queue_policy_base.hpp"
 
 namespace Flux {
 namespace queue_manager {
 
-bool known_queue_policy (const std::string &policy);
 std::shared_ptr<queue_policy_base_t> create_queue_policy (
                                          const std::string &policy,
                                          const std::string &reapi);

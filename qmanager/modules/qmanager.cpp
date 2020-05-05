@@ -28,16 +28,20 @@ extern "C" {
 #endif
 #include <flux/core.h>
 #include <flux/schedutil.h>
+#include <jansson.h>
 }
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
+#include "qmanager/modules/qmanager_opts.hpp"
 
 
 using namespace Flux;
 using namespace Flux::queue_manager;
 using namespace Flux::queue_manager::detail;
+using namespace Flux::opts_manager;
+
 
 /******************************************************************************
  *                                                                            *
@@ -45,24 +49,10 @@ using namespace Flux::queue_manager::detail;
  *                                                                            *
  ******************************************************************************/
 
-struct qmanager_conf_t {
-    std::string queue_policy;
-    std::string queue_params;
-    std::string policy_params;
-};
-
-struct qmanager_args_t {
-    std::string queue_policy;
-    std::string queue_params;
-    std::string policy_params;
-};
-
 struct qmanager_ctx_t {
     flux_t *h;
-    qmanager_conf_t conf;
-    qmanager_args_t args;
-    std::string queue_policy;
     schedutil_t *schedutil;
+    optmgr_composer_t<qmanager_opts_t> opts;
     std::shared_ptr<queue_policy_base_t> queue;
 };
 
@@ -215,47 +205,81 @@ static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
                          int argc, char **argv)
 {
     int rc = 0;
-    qmanager_args_t &args = ctx->args;
-    std::string dflt = "";
+    optmgr_kv_t<qmanager_opts_t> opts_store;
+    std::string info_str = "";
 
     for (int i = 0; i < argc; i++) {
-        if (!strncmp ("queue-policy=", argv[i], sizeof ("queue-policy"))) {
-            dflt = "";
-            args.queue_policy = strstr (argv[i], "=") + 1;
-            if (!known_queue_policy (args.queue_policy)) {
-                flux_log (ctx->h, LOG_ERR,
-                          "Unknown queuing policy (%s)! Use default (%s).",
-                           args.queue_policy.c_str (), dflt.c_str ());
-                args.queue_policy = "";
-            }
-        }
-        else if (!strncmp ("queue-params=", argv[i], sizeof ("queue-params"))) {
-            args.queue_params = strstr (argv[i], "=") + 1;
-        }
-        else if (!strncmp ("policy-params=", argv[i],
-                               sizeof ("policy-params"))) {
-            args.policy_params = strstr (argv[i], "=") + 1;
+        const std::string kv (argv[i]);
+        if ( (rc = opts_store.put (kv)) < 0) {
+            flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s)",
+                             __FUNCTION__, argv[i]);
+            return rc;
         }
     }
+    if ( (rc = opts_store.parse (info_str)) < 0) {
+        flux_log_error (ctx->h, "%s: optmgr_kv_t::parse: %s",
+                        __FUNCTION__, info_str.c_str ());
+        return rc;
+    }
+    if (info_str != "") {
+        flux_log (ctx->h, LOG_DEBUG, "%s: %s", __FUNCTION__, info_str.c_str ());
+    }
+    ctx->opts += opts_store.get_opt ();
+    return rc;
+}
 
+static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    int rc = 0;
+    json_t *conf = NULL;
+
+    if ( (rc = flux_conf_unpack (flux_get_conf (ctx->h), NULL,
+                                     "{ s?:o }",
+                                         "qmanager", &conf)) < 0) {
+        flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
+        return rc;
+    }
+
+    const char *k = NULL;
+    json_t *v = NULL;
+    optmgr_kv_t<qmanager_opts_t> opts_store;
+    std::string info_str = "";
+    json_object_foreach (conf, k, v) {
+        std::string value = json_string_value (v);
+        if ( (rc = opts_store.put (k, value)) < 0) {
+            flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s, %s)",
+                             __FUNCTION__, k, value.c_str ());
+            return rc;
+        }
+    }
+    if ( (rc = opts_store.parse (info_str)) < 0) {
+        flux_log_error (ctx->h, "%s: optmgr_kv_t::parse: %s",
+                        __FUNCTION__, info_str.c_str ());
+        return rc;
+    }
+    if (info_str != "") {
+        flux_log (ctx->h, LOG_DEBUG, "%s: %s", __FUNCTION__, info_str.c_str ());
+    }
+    ctx->opts += opts_store.get_opt ();
     return rc;
 }
 
 static void set_default (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
-    ctx->queue_policy = "fcfs";
-    ctx->conf.queue_policy = "";
-    ctx->conf.policy_params = "";
-    ctx->args.queue_policy = "";
-    ctx->args.policy_params = "";
+    qmanager_opts_t ct_opts;
+    ct_opts.set_queue_policy ("fcfs");
+    ct_opts.set_queue_params ("");
+    ct_opts.set_policy_params ("");
+    ctx->opts += ct_opts;
 }
 
 static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
     int queue_depth = 0;  /* Not implemented in job-manager */
-    const char *mode = (ctx->queue_policy == "fcfs")? "single"
-                                                      : "unlimited";
+    const qmanager_opts_t &opt = ctx->opts.get_opt ();
+    const char *mode = (opt.get_queue_policy () == "fcfs")? "single"
+                                                          : "unlimited";
     if (!(ctx->schedutil = schedutil_create (ctx->h,
                                              jobmanager_alloc_cb,
                                              jobmanager_free_cb,
@@ -277,83 +301,37 @@ out:
     return rc;
 }
 
-static int enforce_conf_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    int rc = -1;
-    if (ctx->conf.queue_policy != "")
-        ctx->queue_policy = ctx->conf.queue_policy;
-    if (ctx->conf.queue_params != ""
-        && ctx->queue->set_queue_params (ctx->conf.queue_params) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        goto out;
-    }
-    if (ctx->conf.policy_params != ""
-        && ctx->queue->set_policy_params (ctx->conf.policy_params) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        goto out;
-    }
-    if (ctx->queue->apply_params () < 0) {
-        flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
-        goto out;
-    }
-    rc = 0;
-out:
-    return rc;
-}
-
-static int enforce_args_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    int rc = -1;
-    if (ctx->args.queue_policy != "") {
-        ctx->queue_policy = ctx->args.queue_policy;
-    }
-    if (ctx->args.queue_params != ""
-        && ctx->queue->set_queue_params (ctx->args.queue_params) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        goto out;
-    }
-    if (ctx->args.policy_params != ""
-        && ctx->queue->set_policy_params (ctx->args.policy_params) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        goto out;
-    }
-    if (ctx->queue->apply_params () < 0) {
-        flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
-        goto out;
-    }
-    rc = 0;
-out:
-    return rc;
-}
-
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     std::string res_qp;
     std::string res_pp;
+    const qmanager_opts_t &effect = ctx->opts.get_opt ();
 
-    if (ctx->conf.queue_policy != "")
-        ctx->queue_policy = ctx->conf.queue_policy;
-    if (ctx->args.queue_policy != "")
-        ctx->queue_policy = ctx->args.queue_policy;
-
-    ctx->queue = create_queue_policy (ctx->queue_policy, "module");
+    ctx->queue = create_queue_policy (effect.get_queue_policy (), "module");
     flux_log (ctx->h, LOG_DEBUG,
-              "enforced policy: %s", ctx->queue_policy.c_str ());
+              "enforced policy: %s", effect.get_queue_policy ().c_str ());
     if (!ctx->queue) {
         errno = EINVAL;
         flux_log_error (ctx->h, "%s: create_queue_policy (%s)",
-                        __FUNCTION__, ctx->queue_policy.c_str ());
+                        __FUNCTION__, effect.get_queue_policy ().c_str ());
         return -1;
     }
-
-    // Apply configuration file-time policy and params.
-    if (enforce_conf_queue_policy (ctx))
+    if (effect.is_queue_params_set () && effect.get_queue_params () != ""
+        && ctx->queue->set_queue_params (effect.get_queue_params ()) < 0) {
+        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
         return -1;
-    // Apply module load-time policy and params.
-    if (enforce_args_queue_policy (ctx) < 0)
+    }
+    if (effect.is_policy_params_set () && effect.get_policy_params () != ""
+        && ctx->queue->set_policy_params (effect.get_policy_params ()) < 0) {
+        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
         return -1;
-
+    }
+    if (ctx->queue->apply_params () < 0) {
+        flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
+        return -1;
+    }
     ctx->queue->get_params (res_qp, res_pp);
+
     if (res_qp.empty ())
         res_qp = std::string ("default");
     if (res_pp.empty ())
@@ -399,122 +377,6 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
     }
 }
 
-static int process_config_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    flux_conf_error_t error;
-    const char *policy = NULL;
-
-    if (flux_conf_unpack (flux_get_conf (ctx->h),
-                          &error,
-                          "{s?:{s?:s}}",
-                          "qmanager",
-                              "policy", &policy) < 0) {
-        flux_log_error (ctx->h,
-                        "%s: config file error [qmanager.policy]: %s",
-                        __FUNCTION__, error.errbuf);
-        return -1;
-    }
-    if (policy) {
-        ctx->conf.queue_policy = policy;
-    }
-    return 0;
-}
-
-static int process_config_queue_params (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    flux_conf_error_t error;
-    int queue_depth = 0;
-    int max_queue_depth = 0;
-
-    if (flux_conf_unpack (flux_get_conf (ctx->h),
-                          &error,
-                          "{s?:{s?:{s?:i s?:i}}}",
-                          "qmanager",
-                              "queue-params",
-                                  "max-queue-depth", &max_queue_depth,
-                                  "queue-depth", &queue_depth) < 0) {
-        flux_log_error (ctx->h,
-                        "%s: config file error [qmanager.queue-params]: %s",
-                        __FUNCTION__, error.errbuf);
-        return -1;
-    }
-    if (queue_depth < 0 || max_queue_depth < 0) {
-        errno = EINVAL;
-        flux_log_error (ctx->h,
-                        "%s: config file error [qmanager.queue-params]",
-                        __FUNCTION__);
-        flux_log_error (ctx->h,
-                        "%s: [max-]queue-depth must be > 0", __FUNCTION__);
-        return -1;
-    }
-    if (max_queue_depth != 0) {
-        ctx->conf.queue_params = "max-queue-depth="
-                                     + std::to_string (max_queue_depth);
-    }
-    if (queue_depth != 0) {
-        if (!ctx->conf.queue_params.empty ())
-            ctx->conf.queue_params += std::string (",");
-        ctx->conf.queue_params += "queue-depth="
-                                      + std::to_string (queue_depth);
-    }
-    return 0;
-}
-
-static int process_config_policy_params (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    flux_conf_error_t error;
-    int reservation_depth = 0;
-    int max_reservation_depth = 0;
-
-    if (flux_conf_unpack (flux_get_conf (ctx->h),
-                          &error,
-                          "{s?:{s?:{s?:i s?:i}}}",
-                          "qmanager",
-                            "policy-params",
-                                "max-reservation-depth", &max_reservation_depth,
-                                "reservation-depth", &reservation_depth) < 0) {
-        flux_log_error (ctx->h,
-                        "%s: config file error [qmanager.policy-params]: %s",
-                        __FUNCTION__, error.errbuf);
-        return -1;
-    }
-    if (reservation_depth < 0 || max_reservation_depth < 0) {
-        errno = EINVAL;
-        flux_log_error (ctx->h,
-                        "%s: config file error [qmanager.policy-params]",
-                        __FUNCTION__);
-        flux_log_error (ctx->h,
-                        "%s: [max_]reservation_depth must be > 0",
-                        __FUNCTION__);
-        return -1;
-    }
-
-    if (max_reservation_depth != 0) {
-        ctx->conf.policy_params = "max-reservation-depth="
-                                      + std::to_string (max_reservation_depth);
-    }
-    if (reservation_depth != 0) {
-        if (!ctx->conf.policy_params.empty () )
-            ctx->conf.policy_params += std::string (",");
-        ctx->conf.policy_params += "reservation-depth="
-                                       + std::to_string (reservation_depth);
-    }
-    return 0;
-}
-
-static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
-{
-    int rc = 0;
-
-    if ((rc = process_config_queue_policy (ctx)) < 0)
-        return rc;
-    if ((rc = process_config_queue_params (ctx)) < 0)
-        return rc;
-    if ((rc = process_config_policy_params (ctx)) < 0)
-        return rc;
-    return rc;
-}
-
 
 /******************************************************************************
  *                                                                            *
@@ -546,8 +408,6 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             qmanager_destroy (ctx);
             return rc;
         }
-        if ((rc = process_args (ctx, argc, argv)) < 0)
-            flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
         if ((rc = flux_reactor_run (flux_get_reactor (h), 0)) < 0)
             flux_log_error (h, "%s: flux_reactor_run", __FUNCTION__);
         qmanager_destroy (ctx);

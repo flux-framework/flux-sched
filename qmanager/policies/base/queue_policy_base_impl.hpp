@@ -106,20 +106,29 @@ int queue_policy_base_t::set_policy_params (const std::string &params)
 int queue_policy_base_t::apply_params ()
 {
     int rc = 0;
+    int depth = 0;
     try {
         std::unordered_map<std::string, std::string>::const_iterator i;
         if ((i = queue_policy_base_impl_t::m_qparams.find ("max-queue-depth"))
              != queue_policy_base_impl_t::m_qparams.end ()) {
-            unsigned int depth = std::stoi (i->second);
+            if ( (depth = std::stoi (i->second)) < 1) {
+                errno = ERANGE;
+                rc += -1;
+            }
             queue_policy_base_impl_t::m_max_queue_depth = depth;
-            if (depth < queue_policy_base_impl_t::m_queue_depth) {
+            if (static_cast<unsigned> (depth)
+                    < queue_policy_base_impl_t::m_queue_depth) {
                 queue_policy_base_impl_t::m_queue_depth = depth;
             }
         }
         if ((i = queue_policy_base_impl_t::m_qparams.find ("queue-depth"))
              != queue_policy_base_impl_t::m_qparams.end ()) {
-            unsigned int depth = std::stoi (i->second);
-            if (depth < m_max_queue_depth) {
+            int depth = std::stoi (i->second);
+            if ( (depth = std::stoi (i->second)) < 1) {
+                errno = ERANGE;
+                rc += -1;
+            }
+            if (static_cast<unsigned> (depth) < m_max_queue_depth) {
                 queue_policy_base_impl_t::m_queue_depth = depth;
             } else {
                 queue_policy_base_impl_t::m_queue_depth

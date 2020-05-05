@@ -4,13 +4,16 @@
 
 [qmanager]
 
-policy = "hybrid"              # queueing policy type
+queue-policy = "hybrid"              # queueing policy type
 
-    [qmanager.queue-params]        # general queue parameters
-    max-queue-depth = 1000000      # max queue depth (applied to all policies)
-    queue-depth = 8192             # queue-depth (applied to all policies)
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+    # unknown key should be tolerated
+queue-params = "max-queue-depth=1000000,queue-depth=8192"
 
-    [qmanager.policy-params]       # queue policy parameters
-    max-reservation-depth = 128    # max depth for "conservative" and "hybrid"
-    reservation-depth = 64         # reservation depth for HYBRID
+# queue policy parameters
+    # max depth for "conservative" and "hybrid"
+    # reservation depth for HYBRID
+policy-params = "max-reservation-depth=128,reservation-depth=64"
 

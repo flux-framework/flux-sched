@@ -4,9 +4,9 @@
 
 [qmanager]
 
-policy = "fcfs"                    # queueing policy type
+queue-policy = "fcfs"                    # queueing policy type
 
-    [qmanager.queue-params]        # general queue parameters
-    max-queue-depth = 1000000      # max queue depth (applied to all policies)
-    queue-depth = 8192             # queue-depth (applied to all policies)
-
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+queue-params = "max-queue-depth=1000000,queue-depth=8192"
