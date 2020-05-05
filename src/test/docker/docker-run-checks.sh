@@ -16,8 +16,8 @@ declare -r prog=${0##*/}
 die() { echo -e "$prog: $@"; exit 1; }
 
 #
-declare -r long_opts="help,quiet,interactive,image:,jobs:,no-cache,no-home,distcheck,tag:"
-declare -r short_opts="hqIdi:j:t:"
+declare -r long_opts="help,quiet,interactive,image:,jobs:,no-cache,no-home,distcheck,tag:,build-directory:"
+declare -r short_opts="hqIdi:j:t:D:"
 declare -r usage="
 Usage: $prog [OPTIONS] -- [CONFIGURE_ARGS...]\n\
 Build docker image for travis builds, then run tests inside the new\n\
@@ -34,6 +34,7 @@ Options:\n\
  -i, --image=NAME              Use base docker image NAME (default=$IMAGE)\n\
  -j, --jobs=N                  Value for make -j (default=$JOBS)\n
  -d, --distcheck               Run 'make distcheck' instead of 'make check'\n\
+ -D, --build-directory=DIRNAME Name of a subdir to build in, will be made\n\
  -I, --interactive             Instead of running travis build, run docker\n\
                                 image with interactive shell.\n\
 "
@@ -58,6 +59,7 @@ while true; do
       -j|--jobs)                   JOBS="$2";                  shift 2 ;;
       -I|--interactive)            INTERACTIVE="/bin/bash";    shift   ;;
       -d|--distcheck)              DISTCHECK=t;                shift   ;;
+      -D|--build-directory)        BUILD_DIR="$2";             shift 2 ;;
       --no-cache)                  NO_CACHE="--no-cache";      shift   ;;
       --no-home)                   MOUNT_HOME_ARGS="";         shift   ;;
       -t|--tag)                    TAG="$2";                   shift 2 ;;
@@ -94,6 +96,7 @@ echo "mounting $TOP as /usr/src"
 
 export JOBS
 export DISTCHECK
+export BUILD_DIR
 export chain_lint
 
 docker run --rm \
@@ -112,6 +115,7 @@ docker run --rm \
     -e TEST_INSTALL \
     -e CPPCHECK \
     -e DISTCHECK \
+    -e BUILD_DIR \
     -e chain_lint \
     -e JOBS \
     -e USER \
@@ -132,13 +136,15 @@ if test -n "$TAG"; then
         --volume=$TOP:/usr/src \
         --user="root" \
 	travis-builder:${IMAGE} \
-	sh -c "make install && \
+	sh -c "cd ${BUILD_DIR:-.} && \
+	       make install && \
                userdel $USER" \
 	|| (docker rm tmp.$$; die "docker run of 'make install' failed")
     docker commit \
-	--change 'CMD "/usr/bin/flux"' \
-	--change 'USER flux' \
-	--change 'WORKDIR /home/flux' \
+	--change 'ENTRYPOINT [ "/usr/local/sbin/entrypoint.sh" ]' \
+	--change 'CMD [ "/usr/bin/flux", "start", "/bin/bash" ]' \
+	--change 'USER fluxuser' \
+	--change 'WORKDIR /home/fluxuser' \
 	tmp.$$ $TAG \
 	|| die "docker commit failed"
     docker rm tmp.$$

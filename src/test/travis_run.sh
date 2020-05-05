@@ -97,7 +97,12 @@ echo "Starting MUNGE"
 sudo /sbin/runuser -u munge /usr/sbin/munged
 
 travis_fold "autogen.sh" "./autogen.sh..." ./autogen.sh
-travis_fold "configure"  "./configure ${ARGS}..." ./configure ${ARGS}
+
+if test -n "$BUILD_DIR"; then
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+fi
+travis_fold "configure"  "configure ${ARGS}..." /usr/src/configure ${ARGS}
 travis_fold "make_clean" "make clean..." make clean
 
 eval ${MAKECMDS}
