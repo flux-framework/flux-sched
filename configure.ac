@@ -155,6 +155,8 @@ AC_CONFIG_FILES([Makefile
   src/common/libtap/Makefile
   src/common/libutil/Makefile
   src/common/librbtree/Makefile
+  src/common/c++wrappers/Makefile
+  src/common/c++wrappers/test/Makefile
   src/cmd/Makefile
   resource/Makefile
   resource/planner/Makefile

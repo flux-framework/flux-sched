@@ -19,6 +19,8 @@ qmanager_la_SOURCES = \
     qmanager.cpp \
     qmanager_opts.cpp \
     qmanager_opts.hpp \
+    qmanager_callbacks.cpp \
+    qmanager_callbacks.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr_impl.hpp \
     $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
@@ -40,7 +42,8 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/queue_policy_conservative.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_conservative_impl.hpp \
     $(top_srcdir)/qmanager/policies/queue_policy_factory.hpp \
-    $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp
+    $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp \
+    $(top_srcdir)/src/common/c++wrappers/eh_wrapper.hpp
 
 qmanager_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
