@@ -54,6 +54,22 @@ bool qmanager_opts_t::known_queue_policy (const std::string &policy)
 
 /******************************************************************************
  *                                                                            *
+ *                Private API for Queue Property Class                        *
+ *                                                                            *
+ ******************************************************************************/
+
+bool queue_prop_t::known_queue_policy (const std::string &policy)
+{
+    bool rc = false;
+    if (policy == "fcfs" || policy == "easy"
+        || policy == "hybrid" || policy == "conservative")
+        rc = true;
+    return rc;
+}
+
+
+/******************************************************************************
+ *                                                                            *
  *              Public API for Queue Manager Option Class                     *
  *                                                                            *
  ******************************************************************************/
@@ -75,6 +91,8 @@ const std::string &queue_prop_t::get_policy_params () const
 
 bool queue_prop_t::set_queue_policy (const std::string &p)
 {
+    if (!known_queue_policy (p))
+        return false;
     queue_policy = p;
     return true;
 }

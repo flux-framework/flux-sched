@@ -35,7 +35,8 @@ namespace opts_manager {
 
 const std::string QMANAGER_OPTS_UNSET_STR = "0xdeadbeef";
 
-struct queue_prop_t {
+class queue_prop_t {
+public:
     std::string queue_policy = QMANAGER_OPTS_UNSET_STR;
     std::string queue_params = QMANAGER_OPTS_UNSET_STR;
     std::string policy_params = QMANAGER_OPTS_UNSET_STR;
@@ -51,6 +52,9 @@ struct queue_prop_t {
     bool is_queue_policy_set () const;
     bool is_queue_params_set () const;
     bool is_policy_params_set () const;
+
+private:
+    bool known_queue_policy (const std::string &policy);
 };
 
 /*! qmanager option set class
