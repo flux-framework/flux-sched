@@ -63,9 +63,14 @@ private:
 class qmanager_opts_t : public optmgr_parse_t {
 public:
     enum class qmanager_opts_key_t : int {
+        QUEUES                    = 0,  // queues
+        DEFAULT_QUEUE             = 1,  // default-queue
         QUEUE_POLICY              = 10, // queue-policy
         QUEUE_PARAMS              = 20, // queue-params
         POLICY_PARAMS             = 30, // policy-params
+        QUEUE_POLICY_PER_QUEUE    = 40, // queue-policy-per_queue
+        QUEUE_PARAMS_PER_QUEUE    = 50, // queue-params-per_queue
+        POLICY_PARAMS_PER_QUEUE   = 60, // policy-params-per_queue
         UNKNOWN                   = 5000
     };
 
