@@ -82,14 +82,20 @@ public:
     qmanager_opts_t (qmanager_opts_t &&o) = default;
     qmanager_opts_t &operator= (qmanager_opts_t &&o) = default;
 
-    void set_queue_policy (const std::string &o);
+    void set_default_queue (const std::string &o);
+    bool set_queue_policy (const std::string &o);
     void set_queue_params (const std::string &o);
     void set_policy_params (const std::string &o);
 
+    const std::string &get_default_queue_name () const;
+    const std::string &get_default_queue () const;
+    const queue_prop_t &get_queue_prop () const;
     const std::string &get_queue_policy () const;
     const std::string &get_queue_params () const;
     const std::string &get_policy_params () const;
+    const std::map<std::string, queue_prop_t> &get_per_queue_prop () const;
 
+    bool is_default_queue_set () const;
     bool is_queue_policy_set () const;
     bool is_queue_params_set () const;
     bool is_policy_params_set () const;
@@ -131,7 +137,6 @@ public:
 
 private:
     int parse_queues (const std::string &queues);
-    bool known_queue_policy (const std::string &policy);
 
     const std::string m_default_queue_name = "default";
     std::string m_default_queue = QMANAGER_OPTS_UNSET_STR;

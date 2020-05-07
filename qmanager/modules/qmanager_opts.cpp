@@ -61,15 +61,6 @@ done:
     return rc;
 }
 
-bool qmanager_opts_t::known_queue_policy (const std::string &policy)
-{
-    bool rc = false;
-    if (policy == "fcfs" || policy == "easy"
-        || policy == "hybrid" || policy == "conservative")
-        rc = true;
-    return rc;
-}
-
 
 /******************************************************************************
  *                                                                            *
@@ -187,48 +178,81 @@ qmanager_opts_t::qmanager_opts_t ()
         throw std::bad_alloc ();
 }
 
-void qmanager_opts_t::set_queue_policy (const std::string &o)
+void qmanager_opts_t::set_default_queue (const std::string &o)
 {
-    m_queue_prop.queue_policy = o;
+    m_default_queue = o;
+}
+
+bool qmanager_opts_t::set_queue_policy (const std::string &o)
+{
+    return m_queue_prop.set_queue_policy (o);
 }
 
 void qmanager_opts_t::set_queue_params (const std::string &o)
 {
-    m_queue_prop.queue_params = o;
+    m_queue_prop.set_queue_params (o);
 }
 
 void qmanager_opts_t::set_policy_params (const std::string &o)
 {
-    m_queue_prop.policy_params = o;
+    m_queue_prop.set_policy_params (o);
+}
+
+const std::string &qmanager_opts_t::get_default_queue_name () const
+{
+    return m_default_queue_name;
+}
+
+const queue_prop_t &qmanager_opts_t::get_queue_prop () const
+{
+    return m_queue_prop;
+}
+
+const std::string &qmanager_opts_t::get_default_queue () const
+{
+    return m_default_queue;
 }
 
 const std::string &qmanager_opts_t::get_queue_policy () const
 {
-    return m_queue_prop.queue_policy;
+    return m_queue_prop.get_queue_policy ();
 }
 
 const std::string &qmanager_opts_t::get_queue_params () const
 {
-    return m_queue_prop.queue_params;
+    return m_queue_prop.get_queue_params ();
 }
 
 const std::string &qmanager_opts_t::get_policy_params () const
 {
-    return m_queue_prop.policy_params;
+    return m_queue_prop.get_policy_params ();
+}
+
+const std::map<std::string, queue_prop_t> &
+    qmanager_opts_t::get_per_queue_prop () const
+{
+    return m_per_queue_prop;
+}
+
+bool qmanager_opts_t::is_default_queue_set () const
+{
+    return m_default_queue != QMANAGER_OPTS_UNSET_STR;
 }
 
 bool qmanager_opts_t::is_queue_policy_set () const
 {
-    return m_queue_prop.queue_policy != QMANAGER_OPTS_UNSET_STR;
+    return m_queue_prop.is_queue_policy_set ();
 }
 
 bool qmanager_opts_t::is_queue_params_set () const
 {
-    return m_queue_prop.queue_params != QMANAGER_OPTS_UNSET_STR;
+    return m_queue_prop.is_queue_params_set ();
 }
 
 bool qmanager_opts_t::is_policy_params_set () const
 {
+    return m_queue_prop.is_policy_params_set ();
+}
 
 qmanager_opts_t &qmanager_opts_t::canonicalize ()
 {
@@ -245,25 +269,25 @@ qmanager_opts_t &qmanager_opts_t::canonicalize ()
         if (!is_default_queue_set ())
             m_default_queue = kv.first;
         if (!kv.second.is_queue_policy_set ())
-            kv.second.queue_policy = m_queue_prop.queue_policy;
+            kv.second.set_queue_policy (m_queue_prop.get_queue_policy ());
         if (!kv.second.is_queue_params_set ())
-            kv.second.queue_params = m_queue_prop.queue_params;
+            kv.second.set_queue_params (m_queue_prop.get_queue_params ());
         if (!kv.second.is_policy_params_set ())
-            kv.second.policy_params = m_queue_prop.policy_params;
+            kv.second.set_policy_params (m_queue_prop.get_policy_params ());
     }
     return *this;
 }
 
 qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
 {
-    if (src.m_queue_prop.queue_policy != QMANAGER_OPTS_UNSET_STR)
-        m_queue_prop.queue_policy = src.m_queue_prop.queue_policy;
-    if (src.m_default_queue != QMANAGER_OPTS_UNSET_STR)
-        m_default_queue = src.m_default_queue;
-    if (src.m_queue_prop.queue_params != QMANAGER_OPTS_UNSET_STR)
-        m_queue_prop.queue_params = src.m_queue_prop.queue_params;
-    if (src.m_queue_prop.policy_params != QMANAGER_OPTS_UNSET_STR)
-        m_queue_prop.policy_params = src.m_queue_prop.policy_params;
+    if (src.m_queue_prop.is_queue_policy_set ())
+        m_queue_prop.set_queue_policy (src.m_queue_prop.get_queue_policy ());
+    if (src.is_default_queue_set ())
+        set_default_queue (src.get_default_queue ());
+    if (src.m_queue_prop.is_queue_params_set ())
+        m_queue_prop.set_queue_params (src.m_queue_prop.get_queue_params ());
+    if (src.m_queue_prop.is_policy_params_set ())
+        m_queue_prop.set_policy_params (src.m_queue_prop.get_policy_params ());
     if (!src.m_per_queue_prop.empty ())
         m_per_queue_prop = src.get_per_queue_prop ();
     return *this;
@@ -306,21 +330,18 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
         break;
 
     case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):
-        dflt = m_queue_prop.queue_policy;
-        m_queue_prop.queue_policy = v;
-        if (!known_queue_policy (m_queue_prop.queue_policy)) {
+        if (!m_queue_prop.set_queue_policy (v)) {
             info += "Unknown queuing policy (" + v + ")! ";
             info += "Use default.";
-            m_queue_prop.queue_policy = dflt;
         }
         break;
 
     case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS):
-        m_queue_prop.queue_params = v;
+        m_queue_prop.set_queue_params (v);
         break;
 
     case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS):
-        m_queue_prop.policy_params = v;
+        m_queue_prop.set_policy_params (v);
         break;
 
     case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE):
@@ -334,13 +355,10 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
                 rc = -1;
                 break;
             }
-            dflt = m_per_queue_prop[kv.first].queue_policy;
-            m_per_queue_prop[kv.first].queue_policy = kv.second;
-            if (!known_queue_policy (kv.second)) {
+            if (!m_per_queue_prop[kv.first].set_queue_policy (kv.second)) {
                 info += "Unknown queuing policy (" + v + ") for queue ("
                         + kv.second + ")! ";
                 info += "Use default. ";
-                m_per_queue_prop[kv.first].queue_policy = dflt;
             }
         }
         break;
@@ -356,7 +374,7 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
                 rc = -1;
                 break;
             }
-            m_per_queue_prop[kv.first].queue_params = kv.second;
+            m_per_queue_prop[kv.first].set_queue_params (kv.second);
         }
         break;
 
@@ -371,7 +389,7 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
                 rc = -1;
                 break;
             }
-            m_per_queue_prop[kv.first].policy_params = kv.second;
+            m_per_queue_prop[kv.first].set_policy_params (kv.second);
         }
         break;
 
