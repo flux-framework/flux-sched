@@ -257,12 +257,28 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
 {
     int rc = 0;
     std::string dflt;
+    std::map<std::string, std::string> tmp_mp;
     int key = static_cast<int> (qmanager_opts_key_t::UNKNOWN);
 
     if (m_tab.find (k) != m_tab.end ())
         key = m_tab[k];
 
     switch (key) {
+    case static_cast<int> (qmanager_opts_key_t::QUEUES):
+        rc = parse_queues (v);
+        break;
+
+    case static_cast<int> (qmanager_opts_key_t::DEFAULT_QUEUE):
+        dflt = m_default_queue;
+        m_default_queue = v;
+        if (!m_per_queue_prop.empty ()
+            && m_per_queue_prop.find (v) == m_per_queue_prop.end ()) {
+            info += "Unknown default queue (" + v + ")! ";
+            info += "Use default.";
+            m_default_queue = dflt;
+        }
+        break;
+
     case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):
         dflt = m_queue_prop.queue_policy;
         m_queue_prop.queue_policy = v;
@@ -279,6 +295,58 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
 
     case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS):
         m_queue_prop.policy_params = v;
+        break;
+
+    case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE):
+        tmp_mp.clear ();
+        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+            break;
+        for (const auto &kv : tmp_mp) {
+            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                info += "Unknown queue (" + kv.first + ").";
+                errno = ENOENT;
+                rc = -1;
+                break;
+            }
+            dflt = m_per_queue_prop[kv.first].queue_policy;
+            m_per_queue_prop[kv.first].queue_policy = kv.second;
+            if (!known_queue_policy (kv.second)) {
+                info += "Unknown queuing policy (" + v + ") for queue ("
+                        + kv.second + ")! ";
+                info += "Use default. ";
+                m_per_queue_prop[kv.first].queue_policy = dflt;
+            }
+        }
+        break;
+
+    case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE):
+        tmp_mp.clear ();
+        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+            break;
+        for (const auto &kv : tmp_mp) {
+            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                info += "Unknown queue (" + kv.first + ").";
+                errno = ENOENT;
+                rc = -1;
+                break;
+            }
+            m_per_queue_prop[kv.first].queue_params = kv.second;
+        }
+        break;
+
+    case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE):
+        tmp_mp.clear ();
+        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+            break;
+        for (const auto &kv : tmp_mp) {
+            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                info += "Unknown queue (" + kv.first + ").";
+                errno = ENOENT;
+                rc = -1;
+                break;
+            }
+            m_per_queue_prop[kv.first].policy_params = kv.second;
+        }
         break;
 
     default:
