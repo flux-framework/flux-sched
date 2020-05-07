@@ -123,7 +123,10 @@ private:
     qmanager_opts_t &canonicalize ();
     bool known_queue_policy (const std::string &policy);
 
+    const std::string m_default_queue_name = "default";
+    std::string m_default_queue = QMANAGER_OPTS_UNSET_STR;
     queue_prop_t m_queue_prop;
+    std::map<std::string, queue_prop_t> m_per_queue_prop;
     std::map<std::string, int> m_tab;
 };
 
