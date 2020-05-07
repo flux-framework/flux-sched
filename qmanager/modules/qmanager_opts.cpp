@@ -229,18 +229,44 @@ bool qmanager_opts_t::is_queue_params_set () const
 
 bool qmanager_opts_t::is_policy_params_set () const
 {
-    return m_queue_prop.policy_params != QMANAGER_OPTS_UNSET_STR;
+
+qmanager_opts_t &qmanager_opts_t::canonicalize ()
+{
+    if (m_per_queue_prop.empty ()) {
+        std::string qn = is_default_queue_set ()? m_default_queue
+                                                : m_default_queue_name;
+        auto ret = m_per_queue_prop.insert (
+                       std::pair<std::string, queue_prop_t> (qn,
+                                                             queue_prop_t ()));
+        if (!ret.second)
+            throw std::bad_alloc ();
+    }
+    for (auto &kv : m_per_queue_prop) {
+        if (!is_default_queue_set ())
+            m_default_queue = kv.first;
+        if (!kv.second.is_queue_policy_set ())
+            kv.second.queue_policy = m_queue_prop.queue_policy;
+        if (!kv.second.is_queue_params_set ())
+            kv.second.queue_params = m_queue_prop.queue_params;
+        if (!kv.second.is_policy_params_set ())
+            kv.second.policy_params = m_queue_prop.policy_params;
+    }
+    return *this;
 }
 
 qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
 {
     if (src.m_queue_prop.queue_policy != QMANAGER_OPTS_UNSET_STR)
         m_queue_prop.queue_policy = src.m_queue_prop.queue_policy;
+    if (src.m_default_queue != QMANAGER_OPTS_UNSET_STR)
+        m_default_queue = src.m_default_queue;
     if (src.m_queue_prop.queue_params != QMANAGER_OPTS_UNSET_STR)
         m_queue_prop.queue_params = src.m_queue_prop.queue_params;
     if (src.m_queue_prop.policy_params != QMANAGER_OPTS_UNSET_STR)
         m_queue_prop.policy_params = src.m_queue_prop.policy_params;
-    return canonicalize ();
+    if (!src.m_per_queue_prop.empty ())
+        m_per_queue_prop = src.get_per_queue_prop ();
+    return *this;
 }
 
 bool qmanager_opts_t::operator ()(const std::string &k1,
