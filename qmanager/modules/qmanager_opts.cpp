@@ -151,8 +151,16 @@ qmanager_opts_t::qmanager_opts_t ()
     bool inserted = true;
 
     auto ret = m_tab.insert (std::pair<std::string, int> (
-                   "queue-policy",
-                   static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY)));
+              "queues",
+              static_cast<int> (qmanager_opts_key_t::QUEUES)));
+    inserted &= ret.second;
+    ret = m_tab.insert (std::pair<std::string, int> (
+              "default-queue",
+              static_cast<int> (qmanager_opts_key_t::DEFAULT_QUEUE)));
+    inserted &= ret.second;
+    ret = m_tab.insert (std::pair<std::string, int> (
+              "queue-policy",
+              static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY)));
     inserted &= ret.second;
     ret = m_tab.insert (std::pair<std::string, int> (
               "queue-params",
@@ -161,6 +169,18 @@ qmanager_opts_t::qmanager_opts_t ()
     ret= m_tab.insert (std::pair<std::string, int> (
               "policy-params",
               static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS)));
+    inserted &= ret.second;
+    ret= m_tab.insert (std::pair<std::string, int> (
+              "queue-policy-per-queue",
+              static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE)));
+    inserted &= ret.second;
+    ret= m_tab.insert (std::pair<std::string, int> (
+              "queue-params-per-queue",
+              static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE)));
+    inserted &= ret.second;
+    ret= m_tab.insert (std::pair<std::string, int> (
+              "policy-params-per-queue",
+              static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE)));
     inserted &= ret.second;
 
     if (!inserted)
