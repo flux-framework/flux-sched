@@ -120,7 +120,7 @@ public:
     int parse (const std::string &k, const std::string &v, std::string &info);
 
 private:
-    qmanager_opts_t &canonicalize ();
+    int parse_queues (const std::string &queues);
     bool known_queue_policy (const std::string &policy);
 
     const std::string m_default_queue_name = "default";

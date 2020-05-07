@@ -34,12 +34,31 @@ using namespace Flux::opts_manager;
  *                                                                            *
  ******************************************************************************/
 
-qmanager_opts_t &qmanager_opts_t::canonicalize ()
+int qmanager_opts_t::parse_queues (const std::string &queues)
 {
-    // Placeholder: If there are options whose default values are
-    // determined by another option, this method must
-    // cannoicalize the state.
-    return *this;
+    int rc = 0;
+    try {
+        std::vector<std::string> entries;
+        if ( (rc = parse_multi (queues.c_str (), ' ', entries)) < 0)
+            goto done;
+        m_per_queue_prop.clear (); // clear the default queue entry
+        for (const auto &entry: entries) {
+            auto ret = m_per_queue_prop.insert (
+                           std::pair<std::string, queue_prop_t> (
+                               entry, queue_prop_t ()));
+            if (!ret.second) {
+                errno = EEXIST;
+                rc = -1;
+                goto done;
+            }
+        }
+    }
+    catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        rc = -1;
+    }
+done:
+    return rc;
 }
 
 bool qmanager_opts_t::known_queue_policy (const std::string &policy)
