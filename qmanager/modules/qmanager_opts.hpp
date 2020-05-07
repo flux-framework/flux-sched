@@ -37,10 +37,6 @@ const std::string QMANAGER_OPTS_UNSET_STR = "0xdeadbeef";
 
 class queue_prop_t {
 public:
-    std::string queue_policy = QMANAGER_OPTS_UNSET_STR;
-    std::string queue_params = QMANAGER_OPTS_UNSET_STR;
-    std::string policy_params = QMANAGER_OPTS_UNSET_STR;
-
     const std::string &get_queue_policy () const;
     const std::string &get_queue_params () const;
     const std::string &get_policy_params () const;
@@ -55,6 +51,10 @@ public:
 
 private:
     bool known_queue_policy (const std::string &policy);
+
+    std::string queue_policy = QMANAGER_OPTS_UNSET_STR;
+    std::string queue_params = QMANAGER_OPTS_UNSET_STR;
+    std::string policy_params = QMANAGER_OPTS_UNSET_STR;
 };
 
 /*! qmanager option set class
