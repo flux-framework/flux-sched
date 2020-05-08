@@ -58,7 +58,8 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
         goto out;
     }
 
-    if (!(f = flux_rpc_pack (fh, "resource.match", FLUX_NODEID_ANY, 0,
+    if (!(f = flux_rpc_pack (fh, "sched-fluxion-resource.match",
+                             FLUX_NODEID_ANY, 0,
                              "{s:s s:I s:s}",
                              "cmd", cmd, "jobid", (const int64_t)jobid,
                              "jobspec", jobspec.c_str ()))) {
@@ -93,7 +94,8 @@ int reapi_module_t::cancel (void *h, const uint64_t jobid)
         errno = EINVAL;
         goto out;
     }
-    if (!(f = flux_rpc_pack (fh, "resource.cancel", FLUX_NODEID_ANY, 0,
+    if (!(f = flux_rpc_pack (fh, "sched-fluxion-resource.cancel",
+                             FLUX_NODEID_ANY, 0,
                              "{s:I}", "jobid", (const int64_t)jobid))) {
         goto out;
     }
@@ -120,7 +122,8 @@ int reapi_module_t::info (void *h, const uint64_t jobid,
         errno = EINVAL;
         goto out;
     }
-    if (!(f = flux_rpc_pack (fh, "resource.info", FLUX_NODEID_ANY, 0,
+    if (!(f = flux_rpc_pack (fh, "sched-fluxion-resource.info",
+                             FLUX_NODEID_ANY, 0,
                              "{s:I}", "jobid", (const int64_t)jobid))) {
         goto out;
     }
@@ -153,7 +156,8 @@ int reapi_module_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
         goto out;
     }
 
-    if (!(f = flux_rpc (fh, "resource.stat", NULL, FLUX_NODEID_ANY, 0))) {
+    if (!(f = flux_rpc (fh, "sched-fluxion-resource.stat",
+                        NULL, FLUX_NODEID_ANY, 0))) {
         goto out;
     }
     if ((rc = flux_rpc_get_unpack (f, "{s:I s:I s:f s:I s:f s:f s:f}",

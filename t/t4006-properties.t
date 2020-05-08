@@ -32,24 +32,25 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-	flux module load resource load-file=${grug} load-format=grug \
+	flux module load sched-fluxion-resource \
+load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=high
 '
 
 test_expect_success 'set/get property basic test works' '
-	flux resource set-property /tiny0/rack0/node0 class=one &&
-	flux resource get-property /tiny0/rack0/node0 class > sp.0 &&
+	flux ion-resource set-property /tiny0/rack0/node0 class=one &&
+	flux ion-resource get-property /tiny0/rack0/node0 class > sp.0 &&
 	echo "class = one" > expected &&
 	test_cmp expected sp.0
 '
 
 test_expect_success 'set/get property multiple resources works' '
-	flux resource set-property /tiny0/rack0/node0 nodeprop=1 &&
-	flux resource set-property /tiny0/rack0/node0/socket1 sockprop=abc &&
-	flux resource set-property /tiny0/rack0/node1/socket0/core17 coreprop=z &&
-	flux resource get-property /tiny0/rack0/node0 nodeprop > sp.1 &&
-	flux resource get-property /tiny0/rack0/node0/socket1 sockprop >> sp.1 &&
-	flux resource get-property /tiny0/rack0/node1/socket0/core17 coreprop >> sp.1 &&
+	flux ion-resource set-property /tiny0/rack0/node0 nodeprop=1 &&
+	flux ion-resource set-property /tiny0/rack0/node0/socket1 sockprop=abc &&
+	flux ion-resource set-property /tiny0/rack0/node1/socket0/core17 coreprop=z &&
+	flux ion-resource get-property /tiny0/rack0/node0 nodeprop > sp.1 &&
+	flux ion-resource get-property /tiny0/rack0/node0/socket1 sockprop >> sp.1 &&
+	flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop >> sp.1 &&
 	cat <<-EOF >expected &&
 	nodeprop = 1
 	sockprop = abc
@@ -59,16 +60,16 @@ test_expect_success 'set/get property multiple resources works' '
 '
 
 test_expect_success 'set/get property multiple properties works' '
-	flux resource set-property /tiny0/rack0/node0 prop1=a && 
-	flux resource set-property /tiny0/rack0/node0 prop2=foo &&
-	flux resource set-property /tiny0/rack0/node0 prop3=123 &&
-	flux resource set-property /tiny0/rack0/node0 prop4=bar &&
-	flux resource set-property /tiny0/rack0/node0 prop5=baz &&
-	flux resource get-property /tiny0/rack0/node0 prop1 > sp.2 &&
-	flux resource get-property /tiny0/rack0/node0 prop2 >> sp.2 &&
-	flux resource get-property /tiny0/rack0/node0 prop3 >> sp.2 &&
-	flux resource get-property /tiny0/rack0/node0 prop4 >> sp.2 &&
-	flux resource get-property /tiny0/rack0/node0 prop5 >> sp.2 &&
+	flux ion-resource set-property /tiny0/rack0/node0 prop1=a &&
+	flux ion-resource set-property /tiny0/rack0/node0 prop2=foo &&
+	flux ion-resource set-property /tiny0/rack0/node0 prop3=123 &&
+	flux ion-resource set-property /tiny0/rack0/node0 prop4=bar &&
+	flux ion-resource set-property /tiny0/rack0/node0 prop5=baz &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop1 > sp.2 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop2 >> sp.2 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop3 >> sp.2 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop4 >> sp.2 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop5 >> sp.2 &&
 	cat <<-EOF >expected &&
 	prop1 = a
 	prop2 = foo
@@ -80,31 +81,31 @@ test_expect_success 'set/get property multiple properties works' '
 '
 
 test_expect_success 'test with no path works' '
-	test_expect_code 3 flux resource set-property /dont/exist random=1
+	test_expect_code 3 flux ion-resource set-property /dont/exist random=1
 '
 
 test_expect_success 'test with no property works' '
-	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 dontexist
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 dontexist
 '
 
 test_expect_success 'test with malformed inputs works' '
-	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 badprop &&
-	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
-	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 badprop= &&
-	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
-	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 =badprop &&
-	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop &&
-	test_expect_code 1 flux resource set-property /tiny0/rack0/node0 = && 
-	test_expect_code 3 flux resource get-property /tiny0/rack0/node0 badprop
+	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 badprop= &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 =badprop &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
+	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 = &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop
 '
 
 test_expect_success 'test with complex inputs works' '
-	flux resource set-property /tiny0/rack0/node0 badprop==1 && 
-	flux resource get-property /tiny0/rack0/node0 badprop > sp.5 &&
-	flux resource set-property /tiny0/rack0/node0 badprop=1=class=random && 
-	flux resource get-property /tiny0/rack0/node0 badprop >> sp.5 &&
-	flux resource set-property /tiny0/rack0/node0 badprop=1 && 
-	flux resource get-property /tiny0/rack0/node0 badprop >> sp.5 &&
+	flux ion-resource set-property /tiny0/rack0/node0 badprop==1 &&
+	flux ion-resource get-property /tiny0/rack0/node0 badprop > sp.5 &&
+	flux ion-resource set-property /tiny0/rack0/node0 badprop=1=class=random &&
+	flux ion-resource get-property /tiny0/rack0/node0 badprop >> sp.5 &&
+	flux ion-resource set-property /tiny0/rack0/node0 badprop=1 &&
+	flux ion-resource get-property /tiny0/rack0/node0 badprop >> sp.5 &&
 	cat <<-EOF >expected &&
 	badprop = =1
 	badprop = 1=class=random
@@ -114,7 +115,7 @@ test_expect_success 'test with complex inputs works' '
 '
 
 test_expect_success 'removing resource works' '
-	flux module remove resource
+	flux module remove sched-fluxion-resource
 '
 
 test_done

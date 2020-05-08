@@ -1,6 +1,6 @@
 #
-#  Run script as `flux resource` with properly configured
-#   FLUX_EXEC_PATH or `flux python flux-resource` if not to
+#  Run script as `flux ion-resource` with properly configured
+#   FLUX_EXEC_PATH or `flux python flux-ion-resource` if not to
 #   avoid python version mismatch
 #
 from __future__ import print_function
@@ -23,49 +23,49 @@ def width ():
     return 20 + 20 + 20 + 20
 
 """
-    Class to interface with the resource module with RPC
+    Class to interface with the sched-fluxion-resource module with RPC
 """
 class ResourceModuleInterface:
     def __init__ (self):
         self.f = flux.Flux ()
 
     def rpc_next_jobid (self):
-        resp = self.f.rpc ("resource.next_jobid").get ()
+        resp = self.f.rpc ("sched-fluxion-resource.next_jobid").get ()
         return resp['jobid']
 
     def rpc_allocate (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate', 'jobid' : jobid, 'jobspec' : jobspec_str}
-        return self.f.rpc ("resource.match", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.match", payload).get ()
 
     def rpc_allocate_with_satisfiability (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate_with_satisfiability',
                    'jobid' : jobid, 'jobspec' : jobspec_str}
-        return self.f.rpc ("resource.match", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.match", payload).get ()
 
     def rpc_reserve (self, jobid, jobspec_str):
         payload = {'cmd' : 'allocate_orelse_reserve',
                    'jobid' : jobid, 'jobspec' : jobspec_str}
-        return self.f.rpc ("resource.match", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.match", payload).get ()
 
     def rpc_info (self, jobid):
         payload = {'jobid' : jobid}
-        return self.f.rpc ("resource.info", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.info", payload).get ()
 
     def rpc_stat (self):
-        return self.f.rpc ("resource.stat").get ()
+        return self.f.rpc ("sched-fluxion-resource.stat").get ()
 
     def rpc_cancel (self, jobid):
         payload = {'jobid' : jobid}
-        return self.f.rpc ("resource.cancel", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.cancel", payload).get ()
    
     def rpc_set_property (self, sp_resource_path, sp_keyval):
         payload = {'sp_resource_path' : sp_resource_path, 
             'sp_keyval' : sp_keyval}
-        return self.f.rpc ("resource.set_property", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.set_property", payload).get ()
     
     def rpc_get_property (self, gp_resource_path, gp_key):
         payload = {'gp_resource_path' : gp_resource_path, 'gp_key' : gp_key}
-        return self.f.rpc ("resource.get_property", payload).get ()
+        return self.f.rpc ("sched-fluxion-resource.get_property", payload).get ()
     
 
 """
@@ -169,7 +169,7 @@ def main ():
     #
     # Main command arguments/options
     #
-    desc = 'Front-end command for resource '\
+    desc = 'Front-end command for sched-fluxion-resource '\
            'module for testing. Provide 4 sub-commands. '\
            'For sub-command usage, '\
            '%(prog)s <sub-command> --help'

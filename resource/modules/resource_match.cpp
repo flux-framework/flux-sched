@@ -119,15 +119,20 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
 static const struct flux_msg_handler_spec htab[] = {
-    { FLUX_MSGTYPE_REQUEST, "resource.match", match_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.cancel", cancel_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.info", info_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.stat", stat_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.next_jobid", next_jobid_request_cb, 0},
-    { FLUX_MSGTYPE_REQUEST, "resource.set_property", set_property_request_cb,
-      0},
-    { FLUX_MSGTYPE_REQUEST, "resource.get_property", get_property_request_cb,
-      0},
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.match", match_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.cancel", cancel_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.info", info_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.stat", stat_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.next_jobid", next_jobid_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.set_property", set_property_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.get_property", get_property_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1069,7 +1074,7 @@ done:
     return rc;
 }
 
-MOD_NAME ("resource");
+MOD_NAME ("sched-fluxion-resource");
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

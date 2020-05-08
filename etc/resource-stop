@@ -1,6 +1,0 @@
-#!/bin/bash -e
-
-if [ -z ${FLUX_RESOURCE_RC_NOOP} ]; then
-    flux module remove resource
-fi
-

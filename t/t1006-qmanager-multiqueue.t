@@ -18,7 +18,7 @@ conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
 
 test_expect_success 'qmanager: loading qmanager with multiple queues' '
     flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
+    flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
     flux module load qmanager queues="all batch debug"
 '
@@ -145,7 +145,7 @@ queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
 
 test_expect_success 'removing resource and qmanager modules' '
     flux module remove qmanager &&
-    flux module remove resource
+    flux module remove sched-fluxion-resource
 '
 
 test_done

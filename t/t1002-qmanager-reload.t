@@ -38,7 +38,7 @@ test_expect_success 'qmanager: hwloc reload works' '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
-    flux module load resource prune-filters=ALL:core \
+    flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=node,socket,core,gpu &&
     flux module load qmanager
 '
@@ -77,7 +77,7 @@ test_expect_success 'qmanager: canceling a pending job works' '
 
 test_expect_success 'removing resource and qmanager modules' '
     flux module remove qmanager &&
-    flux module remove resource
+    flux module remove sched-fluxion-resource
 '
 
 # Reload the core scheduler so that rc3 won't hang waiting for
