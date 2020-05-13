@@ -324,7 +324,7 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
         if (!m_per_queue_prop.empty ()
             && m_per_queue_prop.find (v) == m_per_queue_prop.end ()) {
             info += "Unknown default queue (" + v + ")! ";
-            info += "Use default.";
+            info += "Using default.";
             m_default_queue = dflt;
         }
         break;
@@ -332,7 +332,7 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
     case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):
         if (!m_queue_prop.set_queue_policy (v)) {
             info += "Unknown queuing policy (" + v + ")! ";
-            info += "Use default.";
+            info += "Using default.";
         }
         break;
 
@@ -358,7 +358,7 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
             if (!m_per_queue_prop[kv.first].set_queue_policy (kv.second)) {
                 info += "Unknown queuing policy (" + v + ") for queue ("
                         + kv.second + ")! ";
-                info += "Use default. ";
+                info += "Using default. ";
             }
         }
         break;
