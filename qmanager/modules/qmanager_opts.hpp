@@ -140,8 +140,14 @@ private:
 
     const std::string m_default_queue_name = "default";
     std::string m_default_queue = QMANAGER_OPTS_UNSET_STR;
+
+    // default queue properties
     queue_prop_t m_queue_prop;
+
+    // properties of each queue
     std::map<std::string, queue_prop_t> m_per_queue_prop;
+
+    // mapping each option to an integer
     std::map<std::string, int> m_tab;
 };
 
