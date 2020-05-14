@@ -2,9 +2,13 @@
 # Configuration for the qmanager module
 #
 
-[qmanager]
+[sched-fluxion-qmanager]
 
-queue-policy = "invalid"             # queueing policy type
+# multiple queues
+queues = "debug batch"
+
+# queueing policy type
+queue-policy = "fcfs"
 
 # general queue parameters
     # max queue depth (applied to all policies)

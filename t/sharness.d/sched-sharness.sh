@@ -3,7 +3,7 @@
 # project-local sharness code for flux-sched
 #
 FLUXION_RESOURCE_RC_NOOP=1
-FLUX_QMANAGER_RC_NOOP=1
+FLUXION_QMANAGER_RC_NOOP=1
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
@@ -35,7 +35,7 @@ sched_src_path () {
 
 export FLUX_EXEC_PATH_PREPEND
 export FLUXION_RESOURCE_RC_NOOP
-export FLUX_QMANAGER_RC_NOOP
+export FLUXION_QMANAGER_RC_NOOP
 export FLUXION_RESOURCE_RC_PATH
 export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND

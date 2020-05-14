@@ -20,7 +20,7 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
     flux module remove sched-simple &&
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    flux module load qmanager queues="all batch debug"
+    flux module load sched-fluxion-qmanager queues="all batch debug"
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=all' '
@@ -74,7 +74,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 '
 
 test_expect_success 'qmanager: qmanager with queues with different policies' '
-    flux module reload -f qmanager queues="queue1 queue2 queue3" \
+    flux module reload -f sched-fluxion-qmanager queues="queue1 queue2 queue3" \
 queue-policy-per-queue="queue1:easy queue2:hybrid queue3:fcfs" default-queue=queue3
 '
 
@@ -132,19 +132,19 @@ test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
 '
 
 test_expect_success 'qmanager: incorrect default-queue name can be caught' '
-    flux module reload -f qmanager queues="queue1 queue2 queue3" \
+    flux module reload -f sched-fluxion-qmanager queues="queue1 queue2 queue3" \
 default-queue=foo &&
     flux dmesg | grep "Unknown default queue (foo)"
 '
 
 test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
-    flux module reload -f qmanager queues="queue1 queue2 queue3" \
+    flux module reload -f sched-fluxion-qmanager queues="queue1 queue2 queue3" \
 queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
     flux dmesg | grep "Unknown queuing policy"
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove qmanager &&
+    flux module remove sched-fluxion-qmanager &&
     flux module remove sched-fluxion-resource
 '
 

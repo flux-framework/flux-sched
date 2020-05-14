@@ -10,12 +10,12 @@ AM_CPPFLAGS = \
     $(FLUX_CORE_CFLAGS) \
     $(FLUX_SCHEDUTIL_CFLAGS)
 
-fluxmod_LTLIBRARIES = qmanager.la
+fluxmod_LTLIBRARIES = sched-fluxion-qmanager.la
 
 #
 # queue manager service module
 #
-qmanager_la_SOURCES = \
+sched_fluxion_qmanager_la_SOURCES = \
     qmanager.cpp \
     qmanager_opts.cpp \
     qmanager_opts.hpp \
@@ -46,19 +46,19 @@ qmanager_la_SOURCES = \
     $(top_srcdir)/qmanager/policies/queue_policy_factory_impl.hpp \
     $(top_srcdir)/src/common/c++wrappers/eh_wrapper.hpp
 
-qmanager_la_CXXFLAGS = \
+sched_fluxion_qmanager_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
     $(FLUX_CORE_CFLAGS) \
     $(FLUX_SCHEDUTIL_CFLAGS)
 
-qmanager_la_LIBADD = \
+sched_fluxion_qmanager_la_LIBADD = \
     $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
     $(FLUX_CORE_LIBS) \
     $(FLUX_SCHEDUTIL_LIBS) \
     $(CZMQ_LIBS) \
     $(JANSSON_LIBS)
 
-qmanager_la_LDFLAGS = \
+sched_fluxion_qmanager_la_LDFLAGS = \
     $(AM_LDFLAGS) \
     $(fluxmod_ldflags) -module
 

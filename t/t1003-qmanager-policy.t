@@ -42,7 +42,7 @@ test_expect_success 'qmanager: loading qmanager (queue-policy=easy)' '
     flux module remove sched-simple &&
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=cluster,node,core &&
-    flux module load qmanager queue-policy=easy
+    flux module load sched-fluxion-qmanager queue-policy=easy
 '
 
 test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
@@ -71,8 +71,8 @@ test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
 '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=hybrid)' '
-    flux module remove qmanager &&
-    flux module load qmanager queue-policy=hybrid \
+    flux module remove sched-fluxion-qmanager &&
+    flux module load sched-fluxion-qmanager queue-policy=hybrid \
 policy-params=reservation-depth=3
 '
 
@@ -102,8 +102,8 @@ test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
 
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=conservative)' '
-    flux module remove qmanager &&
-    flux module load qmanager queue-policy=conservative
+    flux module remove sched-fluxion-qmanager &&
+    flux module load sched-fluxion-qmanager queue-policy=conservative
 '
 
 test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
@@ -131,7 +131,7 @@ test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove qmanager &&
+    flux module remove sched-fluxion-qmanager &&
     flux module remove sched-fluxion-resource
 '
 

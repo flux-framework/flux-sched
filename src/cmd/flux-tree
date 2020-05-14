@@ -48,9 +48,9 @@ FT_MAX_TREE_ID=""              # FLUX_TREE_ID that reports max exit code
 FT_MAX_JOBSCRIPT_IX=""         # FLUX_TREE_JOBSCRIPT_INDEX reporting max code
                                # --prefix is an internal-use-only option
 FT_JOB_NAME='%^+_no'           # job name to use when submitting children
-ORIG_FLUX_QMANAGER_OPTIONS=''  #
+ORIG_FLUXION_QMANAGER_OPTIONS=''  #
 ORIG_FLUXION_RESOURCE_OPTIONS=''  # to apply and unapply FLUXION_RESOURCE options
-ORIG_FLUX_QMANAGER_RC_NOOP=''  # module load options.
+ORIG_FLUXION_QMANAGER_RC_NOOP=''  # module load options.
 ORIG_FLUXION_RESOURCE_RC_NOOP=''  #
 
 declare -i FT_NJOBS=1          # store num of jobs to run, given by --njobs
@@ -131,7 +131,7 @@ If --queue-policy (additionally --queue-params) and/or\n\
 be set to the specified queuing and matching policies and\n\
 parameters. Otherwise, all levels will be configured\n\
 to be used either the default policies or policies specified\n\
-through the FLUXION_RESOURCE_OPTIONS and/or FLUX_QMANAGER_OPTIONS\n\
+through the FLUXION_RESOURCE_OPTIONS and/or FLUXION_QMANAGER_OPTIONS\n\
 environment variables.\n\
 \n\
 If any one of Jobscripts returns a non-zero exit code, flux-tree\n\
@@ -393,21 +393,21 @@ apply_policies() {
     local queue_param="${2%%${p_delim}*}"
     local match_policy="${3%%${p_delim}*}"
 
-    ORIG_FLUX_QMANAGER_OPTIONS=${FLUX_QMANAGER_OPTIONS:-none}
+    ORIG_FLUXION_QMANAGER_OPTIONS=${FLUXION_QMANAGER_OPTIONS:-none}
     ORIG_FLUXION_RESOURCE_OPTIONS=${FLUXION_RESOURCE_OPTIONS:-none}
-    ORIG_FLUX_QMANAGER_RC_NOOP=${FLUX_QMANAGER_RC_NOOP:-none}
+    ORIG_FLUXION_QMANAGER_RC_NOOP=${FLUXION_QMANAGER_RC_NOOP:-none}
     ORIG_FLUXION_RESOURCE_RC_NOOP=${FLUXION_RESOURCE_RC_NOOP:-none}
-    unset FLUX_QMANAGER_RC_NOOP
+    unset FLUXION_QMANAGER_RC_NOOP
     unset FLUXION_RESOURCE_RC_NOOP
 
     if [[ "${queue_policy}" != "default" ]]
     then
-        export FLUX_QMANAGER_OPTIONS="queue-policy=${queue_policy}"
+        export FLUXION_QMANAGER_OPTIONS="queue-policy=${queue_policy}"
     fi
     if [[ "${queue_param}" != "default" ]]
     then
-        local qo="${FLUX_QMANAGER_OPTIONS}"
-        export FLUX_QMANAGER_OPTIONS="${qo:+${qo},}queue-params=${queue_param}"
+        local qo="${FLUXION_QMANAGER_OPTIONS}"
+        export FLUXION_QMANAGER_OPTIONS="${qo:+${qo},}queue-params=${queue_param}"
     fi
     if [[ "${match_policy}" != "default" ]]
     then
@@ -416,7 +416,7 @@ policy=${match_policy}"
     fi
     if [[ "x${FT_DRY_RUN}" = "xyes" ]]
     then
-        dr_print "FLUX_QMANAGER_OPTIONS:${FLUX_QMANAGER_OPTIONS}"
+        dr_print "FLUXION_QMANAGER_OPTIONS:${FLUXION_QMANAGER_OPTIONS}"
         dr_print "FLUXION_RESOURCE_OPTIONS:${FLUXION_RESOURCE_OPTIONS}"
     fi
 }
@@ -427,20 +427,20 @@ policy=${match_policy}"
 # by unsetting environment variables.
 #
 unapply_policies() {
-    unset FLUX_QMANAGER_OPTIONS
+    unset FLUXION_QMANAGER_OPTIONS
     unset FLUXION_RESOURCE_OPTIONS
 
-    if [ "${ORIG_FLUX_QMANAGER_OPTIONS}" != "none" ]
+    if [ "${ORIG_FLUXION_QMANAGER_OPTIONS}" != "none" ]
     then
-        export FLUX_QMANAGER_OPTIONS="${ORIG_FLUX_QMANAGER_OPTIONS}"
+        export FLUXION_QMANAGER_OPTIONS="${ORIG_FLUXION_QMANAGER_OPTIONS}"
     fi
     if [ "${ORIG_FLUXION_RESOURCE_OPTIONS}" != "none" ]
     then
         export FLUXION_RESOURCE_OPTIONS="${ORIG_FLUXION_RESOURCE_OPTIONS}"
     fi
-    if [ "${ORIG_FLUX_QMANAGER_RC_NOOP}" != "none" ]
+    if [ "${ORIG_FLUXION_QMANAGER_RC_NOOP}" != "none" ]
     then
-        export FLUX_QMANAGER_RC_NOOP="${ORIG_FLUX_QMANAGER_RC_NOOP}"
+        export FLUXION_QMANAGER_RC_NOOP="${ORIG_FLUXION_QMANAGER_RC_NOOP}"
     fi
     if [ "${ORIG_FLUXION_RESOURCE_RC_NOOP}" != "none" ]
     then
@@ -448,9 +448,9 @@ unapply_policies() {
     fi
     if [[ "x${FT_DRY_RUN}" = "xyes" ]]
     then
-        dr_print "FLUX_QMANAGER_OPTIONS:${FLUX_QMANAGER_OPTIONS}"
+        dr_print "FLUXION_QMANAGER_OPTIONS:${FLUXION_QMANAGER_OPTIONS}"
         dr_print "FLUXION_RESOURCE_OPTIONS:${FLUXION_RESOURCE_OPTIONS}"
-        dr_print "FLUX_QMANAGER_RC_NOOP:${FLUX_QMANAGER_RC_NOOP}"
+        dr_print "FLUXION_QMANAGER_RC_NOOP:${FLUXION_QMANAGER_RC_NOOP}"
         dr_print "FLUXION_RESOURCE_RC_NOOP:${FLUXION_RESOURCE_RC_NOOP}"
     fi
 }

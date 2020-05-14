@@ -2,7 +2,7 @@
 # Configuration for the qmanager module
 #
 
-[qmanager]
+[sched-fluxion-qmanager]
 
 queue-policy = "fcfs"                 # queueing policy type
 

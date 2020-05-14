@@ -121,16 +121,16 @@ test_expect_success 'flux-tree: --topology and --leaf cannot be given together' 
 # cmp.04 contains parameters to use to spawn a child instance
 test_expect_success 'flux-tree: --topology=1 works' '
     cat >cmp.04 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=1 /bin/hostname > out.04 &&
@@ -141,16 +141,16 @@ EOF
 
 test_expect_success 'flux-tree: -T2 on 1 node/1 core is equal to -T1' '
     cat >cmp.05 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=2 /bin/hostname > out.05 &&
@@ -161,16 +161,16 @@ EOF
 
 test_expect_success 'flux-tree: -T3 on 1 node/1 core is equal to -T1' '
     cat >cmp.06 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=3 /bin/hostname > out.06 &&
@@ -181,16 +181,16 @@ EOF
 
 test_expect_success 'flux-tree: -T1 on 2 nodes/2 cores work' '
     cat >cmp.07 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=2 c=2
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=1 -N 2 -c 2 /bin/hostname > out.07 &&
@@ -201,7 +201,7 @@ EOF
 
 test_expect_success 'flux-tree: -T2 on 2 nodes/2 cores work' '
     cat >cmp.08 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=2
 	Rank=1: T=--leaf
@@ -213,9 +213,9 @@ test_expect_success 'flux-tree: -T2 on 2 nodes/2 cores work' '
 	Rank=2:
 	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 /bin/hostname > out.08 &&
@@ -227,7 +227,7 @@ EOF
 # Not all instance will run simultaneously
 test_expect_success 'flux-tree: -T3 on 4 nodes/4 cores work' '
     cat >cmp.09 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=2 c=3
 	Rank=1: T=--leaf
@@ -244,9 +244,9 @@ test_expect_success 'flux-tree: -T3 on 4 nodes/4 cores work' '
 	Rank=3:
 	Rank=3: X=--prefix=tree.3 J=--njobs=3 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=3 -N 4 -c 4 -J 10 /bin/hostname > out.09 &&
@@ -257,7 +257,7 @@ EOF
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores work' '
     cat >cmp.10 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--leaf
@@ -279,9 +279,9 @@ test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores work' '
 	Rank=4:
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=4 -N 4 -c 4 -J 10 /bin/hostname > out.10 &&
@@ -312,7 +312,7 @@ test_expect_success 'flux-tree: --perf-format works with custom format' '
 
 test_expect_success 'flux-tree: -T4x2 on 4 nodes/4 cores work' '
     cat >cmp.11 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
@@ -334,9 +334,9 @@ test_expect_success 'flux-tree: -T4x2 on 4 nodes/4 cores work' '
 	Rank=4:
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2 -N 4 -c 4 -J 10 /bin/hostname > out.11 &&
@@ -347,7 +347,7 @@ EOF
 
 test_expect_success 'flux-tree: -T4x2 -Q fcfs:easy works' '
     cat >cmp.12 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:queue-policy=fcfs
+	FLUXION_QMANAGER_OPTIONS:queue-policy=fcfs
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
@@ -369,9 +369,9 @@ test_expect_success 'flux-tree: -T4x2 -Q fcfs:easy works' '
 	Rank=4: Q=--queue-policy=easy
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2 -Q fcfs:easy -N 4 -c 4 -J 10 /bin/hostname \
@@ -383,7 +383,7 @@ EOF
 
 test_expect_success 'flux-tree: -T4x2x3 -Q fcfs:fcfs:easy works' '
     cat >cmp.13 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:queue-policy=fcfs
+	FLUXION_QMANAGER_OPTIONS:queue-policy=fcfs
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2x3
@@ -405,9 +405,9 @@ test_expect_success 'flux-tree: -T4x2x3 -Q fcfs:fcfs:easy works' '
 	Rank=4: Q=--queue-policy=fcfs:easy
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2x3 -Q fcfs:fcfs:easy -N 4 -c 4 -J 10 /bin/hostname \
@@ -419,7 +419,7 @@ EOF
 
 test_expect_success 'flux-tree: combining -T -Q -P works (I)' '
     cat >cmp.14 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:queue-policy=fcfs,queue-params=queue-depth=23
+	FLUXION_QMANAGER_OPTIONS:queue-policy=fcfs,queue-params=queue-depth=23
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
@@ -441,9 +441,9 @@ test_expect_success 'flux-tree: combining -T -Q -P works (I)' '
 	Rank=4: Q=--queue-policy=conservative P=--queue-params=reservation-depth=24
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2 -Q fcfs:conservative \
@@ -455,7 +455,7 @@ EOF
 
 test_expect_success 'flux-tree: combining -T -Q -P works (II)' '
     cat >cmp.15 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:queue-policy=fcfs,queue-params=queue-depth=7,reservation-depth=8
+	FLUXION_QMANAGER_OPTIONS:queue-policy=fcfs,queue-params=queue-depth=7,reservation-depth=8
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
@@ -477,9 +477,9 @@ test_expect_success 'flux-tree: combining -T -Q -P works (II)' '
 	Rank=4: Q=--queue-policy=conservative P=--queue-params=queue-depth=24
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2 -Q fcfs:conservative \
@@ -492,7 +492,7 @@ EOF
 
 test_expect_success 'flux-tree: combining -T -M works' '
     cat >cmp.16 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:hwloc-whitelist=node,core,gpu policy=low
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
@@ -514,9 +514,9 @@ test_expect_success 'flux-tree: combining -T -M works' '
 	Rank=4: M=--match-policy=high
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run -T 4x2 -M low:high -N 4 -c 4 -J 10 /bin/hostname \
@@ -526,23 +526,23 @@ EOF
     test_cmp cmp.16 out.16.2
 '
 
-test_expect_success 'flux-tree: existing FLUX_QMANAGER_OPTIONS is respected' '
+test_expect_success 'flux-tree: existing FLUXION_QMANAGER_OPTIONS is respected' '
     cat >cmp.17 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:queue-policy=conservative
+	FLUXION_QMANAGER_OPTIONS:queue-policy=conservative
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:queue-policy=easy
+	FLUXION_QMANAGER_OPTIONS:queue-policy=easy
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
-    export FLUX_QMANAGER_OPTIONS=queue-policy=easy &&
+    export FLUXION_QMANAGER_OPTIONS=queue-policy=easy &&
     flux tree --dry-run -T 1 -Q conservative /bin/hostname > out.17 &&
-    unset FLUX_QMANAGER_OPTIONS &&
+    unset FLUXION_QMANAGER_OPTIONS &&
     remove_prefix out.17 out.17.2 &&
     sed -i "s/[ \t]*$//g" out.17.2 &&
     test_cmp cmp.17 out.17.2
@@ -550,16 +550,16 @@ EOF
 
 test_expect_success 'flux-tree: existing FLUXION_RESOURCE_OPTIONS is respected' '
     cat >cmp.18 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:hwloc-whitelist=node,core,gpu policy=locality
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:high
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     export FLUXION_RESOURCE_OPTIONS=high &&
@@ -572,7 +572,7 @@ EOF
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/4 GPUs work' '
     cat >cmp.19 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=4 g=-g 4
 	Rank=1: T=--leaf
@@ -594,9 +594,9 @@ test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/4 GPUs work' '
 	Rank=4:
 	Rank=4: X=--prefix=tree.4 J=--njobs=2 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=4 -N 4 -c 4 -g 4 -J 10 \
@@ -608,7 +608,7 @@ EOF
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/2 GPUs work' '
     cat >cmp.20 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=2 c=4 g=-g 2
 	Rank=1: T=--leaf
@@ -620,9 +620,9 @@ test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/2 GPUs work' '
 	Rank=2:
 	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=4 -N 4 -c 4 -g 2 -J 10 \
@@ -634,16 +634,16 @@ EOF
 
 test_expect_success 'flux-tree: -T4 on 4 nodes/4 cores/2 GPUs 1 job works' '
     cat >cmp.21 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=2 c=4 g=-g 2
 	Rank=1: T=--leaf
 	Rank=1:
 	Rank=1: X=--prefix=tree.1 J=--njobs=1 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=4 -N 4 -c 4 -g 2 -J 1 \
@@ -655,7 +655,7 @@ EOF
 
 test_expect_success 'flux-tree: correct job count under a unbalanced tree' '
     cat >cmp.22 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
@@ -667,9 +667,9 @@ test_expect_success 'flux-tree: correct job count under a unbalanced tree' '
 	Rank=2:
 	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=3 -N 1 -c 2 -J 10 \
@@ -681,7 +681,7 @@ EOF
 
 test_expect_success 'flux-tree: --flux-rundir=DIR works in dry-run' '
     cat >cmp.23 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=2 o=-o,-Srundir=DIR/tree.1.pfs
 	Rank=1: T=--leaf
@@ -693,9 +693,9 @@ test_expect_success 'flux-tree: --flux-rundir=DIR works in dry-run' '
 	Rank=2:
 	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR \
@@ -707,7 +707,7 @@ EOF
 
 test_expect_success 'flux-tree: --flux-rundir=DIR works along with -f' '
     cat >cmp.24 <<-EOF &&
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
 	Rank=1: N=1 c=2 o=-o,-Slog-filename=DIR2/tree.1.log -o,-Srundir=DIR/tree.1.pfs
 	Rank=1: T=--leaf
@@ -719,9 +719,9 @@ test_expect_success 'flux-tree: --flux-rundir=DIR works along with -f' '
 	Rank=2:
 	Rank=2: X=--prefix=tree.2 J=--njobs=5 S=/bin/hostname
 	
-	FLUX_QMANAGER_OPTIONS:
+	FLUXION_QMANAGER_OPTIONS:
 	FLUXION_RESOURCE_OPTIONS:
-	FLUX_QMANAGER_RC_NOOP:1
+	FLUXION_QMANAGER_RC_NOOP:1
 	FLUXION_RESOURCE_RC_NOOP:1
 EOF
     flux tree --dry-run --topology=2 -N 2 -c 2 -J 10 -r DIR -f DIR2 \

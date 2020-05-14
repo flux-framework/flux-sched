@@ -89,7 +89,8 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 
     if ( (rc = flux_conf_unpack (flux_get_conf (ctx->h), NULL,
                                      "{ s?:o }",
-                                         "qmanager", &conf)) < 0) {
+                                         "sched-fluxion-qmanager",
+                                         &conf)) < 0) {
         flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
         return rc;
     }
@@ -349,7 +350,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
     return rc;
 }
 
-MOD_NAME ("qmanager");
+MOD_NAME ("sched-fluxion-qmanager");
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
