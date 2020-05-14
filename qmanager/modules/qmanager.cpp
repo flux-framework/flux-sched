@@ -31,12 +31,12 @@ extern "C" {
 #include <jansson.h>
 }
 
-#include "qmanager/modules/qmanager_callbacks.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
 #include "qmanager/modules/qmanager_opts.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
+#include "qmanager/modules/qmanager_callbacks.hpp"
 
 using namespace Flux;
 using namespace Flux::queue_manager;
@@ -53,7 +53,6 @@ using namespace Flux::cplusplus_wrappers;
 
 struct qmanager_ctx_t : public qmanager_cb_ctx_t {
     flux_t *h;
-    optmgr_composer_t<qmanager_opts_t> opts;
 };
 
 static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
@@ -132,9 +131,7 @@ static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
     int queue_depth = 0;  /* Not implemented in job-manager */
-    const qmanager_opts_t &opt = ctx->opts.get_opt ();
-    const char *mode = (opt.get_queue_policy () == "fcfs")? "single"
-                                                          : "unlimited";
+
     if (!(ctx->schedutil = schedutil_create (
                                ctx->h,
                                &qmanager_safe_cb_t::jobmanager_alloc_cb,
@@ -152,7 +149,7 @@ static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
-    if (schedutil_ready (ctx->schedutil, mode, &queue_depth)) {
+    if (schedutil_ready (ctx->schedutil, "unlimited", &queue_depth)) {
         flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
         goto out;
     }
@@ -161,51 +158,117 @@ out:
     return rc;
 }
 
-static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx)
+static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx,
+                                 const std::string &queue_name,
+                                 const queue_prop_t &p)
 {
-    std::string res_qp;
-    std::string res_pp;
-    const qmanager_opts_t &effect = ctx->opts.get_opt ();
-
-    ctx->queue = create_queue_policy (effect.get_queue_policy (), "module");
-    flux_log (ctx->h, LOG_DEBUG,
-              "enforced policy: %s", effect.get_queue_policy ().c_str ());
-    if (!ctx->queue) {
+    int rc = -1;
+    std::shared_ptr<queue_policy_base_t> queue;
+    std::pair<std::map<std::string,
+                       std::shared_ptr<queue_policy_base_t>>::iterator,
+                                       bool> ret;
+    if ( !(queue = create_queue_policy (p.get_queue_policy (), "module"))) {
         errno = EINVAL;
         flux_log_error (ctx->h, "%s: create_queue_policy (%s)",
-                        __FUNCTION__, effect.get_queue_policy ().c_str ());
-        return -1;
+                        __FUNCTION__,
+                        p.get_queue_policy ().c_str ());
+        goto out;
     }
-    if (effect.is_queue_params_set () && effect.get_queue_params () != ""
-        && ctx->queue->set_queue_params (effect.get_queue_params ()) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        return -1;
+    ret = ctx->queues.insert (
+              std::pair<std::string, std::shared_ptr<queue_policy_base_t>> (
+                  queue_name, queue));
+    if (!ret.second) {
+        errno = EEXIST;
+        goto out;
     }
-    if (effect.is_policy_params_set () && effect.get_policy_params () != ""
-        && ctx->queue->set_policy_params (effect.get_policy_params ()) < 0) {
-        flux_log_error (ctx->h, "%s: queue->set_params", __FUNCTION__);
-        return -1;
-    }
-    if (ctx->queue->apply_params () < 0) {
-        flux_log_error (ctx->h, "%s: queue->apply_params", __FUNCTION__);
-        return -1;
-    }
-    ctx->queue->get_params (res_qp, res_pp);
+    rc = 0;
+out:
+    return rc;
+}
 
-    if (res_qp.empty ())
-        res_qp = std::string ("default");
-    if (res_pp.empty ())
-        res_pp = std::string ("default");
-    flux_log (ctx->h, LOG_DEBUG,
-              "effective queue params: %s", res_qp.c_str ());
-    flux_log (ctx->h, LOG_DEBUG,
-              "effective policy params: %s", res_pp.c_str ());
-
-    if (handshake_jobmanager (ctx) < 0) {
-        flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
+static int enforce_params (std::shared_ptr<qmanager_ctx_t> &ctx,
+                           const std::string queue_name,
+                           const queue_prop_t &prop)
+{
+    if (!prop.is_queue_params_set () || !prop.is_policy_params_set ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    const std::string &queue_params = prop.get_queue_params ();
+    const std::string &policy_params = prop.get_policy_params ();
+    if (prop.is_queue_params_set () && queue_params != ""
+        && ctx->queues.at (queue_name)->set_queue_params (queue_params) < 0) {
+        flux_log_error (ctx->h, "%s: queues[%s]->set_queue_params (%s)",
+                        __FUNCTION__, queue_name.c_str (), queue_params.c_str ());
+        return -1;
+    }
+    if (prop.is_policy_params_set () && policy_params != ""
+        && ctx->queues.at (queue_name)->set_policy_params (policy_params) < 0) {
+        flux_log_error (ctx->h, "%s: queues[%s]->set_policy_params (%s)",
+                        __FUNCTION__, queue_name.c_str (), policy_params.c_str ());
+        return -1;
+    }
+    if (ctx->queues.at (queue_name)->apply_params () < 0) {
+        flux_log_error (ctx->h, "%s: queue[%s]->apply_params",
+                        __FUNCTION__, queue_name.c_str ());
         return -1;
     }
     return 0;
+}
+
+static int enforce_queues (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    int rc = 0;
+    ctx->opts.canonicalize ();
+    const std::map<std::string, queue_prop_t> &per_queue_prop
+        = ctx->opts.get_opt ().get_per_queue_prop ();
+
+    for (const auto &kv : per_queue_prop) {
+        std::string res_qp = "";
+        std::string res_pp = "";
+        const std::string &queue_name = kv.first;
+        const queue_prop_t &queue_prop = kv.second;
+
+        if ( (rc = enforce_queue_policy (ctx, queue_name, queue_prop)) < 0)
+            goto out;
+
+        flux_log (ctx->h, LOG_DEBUG,
+                  "enforced policy (queue=%s): %s", queue_name.c_str (),
+                  queue_prop.get_queue_policy ().c_str ());
+
+        if ( (rc = enforce_params (ctx, queue_name, queue_prop)) < 0)
+            goto out;
+
+        ctx->queues.at (queue_name)->get_params (res_qp, res_pp);
+        if (res_qp.empty ())
+            res_qp = std::string ("default");
+        if (res_pp.empty ())
+            res_pp = std::string ("default");
+        flux_log (ctx->h, LOG_DEBUG,
+                  "effective queue params (queue=%s): %s",
+                  queue_name.c_str (), res_qp.c_str ());
+        flux_log (ctx->h, LOG_DEBUG,
+                  "effective policy params (queue=%s): %s",
+                  queue_name.c_str (), res_pp.c_str ());
+    }
+
+out:
+    return rc;
+}
+
+static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    int rc = 0;
+
+    if ( (rc = enforce_queues (ctx)) < 0) {
+        flux_log_error (ctx->h, "%s: enforce_queues", __FUNCTION__);
+        return rc;
+    }
+    if ( (rc = handshake_jobmanager (ctx)) < 0) {
+        flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
+        return rc;
+    }
+    return rc;
 }
 
 static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
@@ -214,7 +277,6 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
     try {
         ctx = std::make_shared<qmanager_ctx_t> ();
         ctx->h = h;
-        ctx->schedutil = NULL;
         set_default (ctx);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -228,10 +290,14 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
     if (ctx) {
         int saved_errno = errno;
         std::shared_ptr<job_t> job;
-        while (ctx->queue && (job = ctx->queue->pending_pop ()) != nullptr)
-            flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
-        while (ctx->queue && (job = ctx->queue->complete_pop ()) != nullptr)
-            flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
+        for (auto kv : ctx->queues) {
+            while ( (job = ctx->queues.at (kv.first)->pending_pop ())
+                     != nullptr)
+                flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
+            while ( (job = ctx->queues.at (kv.first)->complete_pop ())
+                     != nullptr)
+                flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
+        }
         schedutil_destroy (ctx->schedutil);
         errno = saved_errno;
     }
@@ -262,7 +328,7 @@ int mod_start (flux_t *h, int argc, char **argv)
         qmanager_destroy (ctx);
         return rc;
     }
-    if ( (rc = enforce_queue_policy (ctx)) < 0) {
+    if ( (rc = enforce_options (ctx)) < 0) {
         flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
         qmanager_destroy (ctx);
         return rc;

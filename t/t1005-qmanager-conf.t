@@ -30,11 +30,11 @@ start_qmanager_noconfig () {
 }
 # Usage: check_enforced_policy outfile expected
 check_enforced_policy() {
-    test "$(grep "enforced policy" <$1 | awk "{ print \$5}" )" = $2
+    test "$(grep "enforced policy" <$1 | awk "{ print \$6}" )" = $2
 }
 
 check_params() {
-    res="$(grep "$3" <$1 | awk "{ print \$6}")"
+    res="$(grep "$3" <$1 | awk "{ print \$7}")"
     for tok in $(echo ${res} | sed -e 's@,@ @g')
     do
         echo ${2} | grep ${tok} || return 1
@@ -213,6 +213,54 @@ test_expect_success 'qmanager: load succeeds on no qmanager category' '
     start_qmanager ${conf_base}/${conf_name} >${outfile} &&
     check_queue_params ${outfile} default &&
     check_policy_params ${outfile} default
+'
+
+test_expect_success 'qmanager: homogeneous multiqueue configuration works' '
+    conf_name="16-multiqueue" &&
+    outfile=${conf_name}.out &&
+    start_qmanager ${conf_base}/${conf_name} > ${outfile} &&
+    grep "queue=debug" ${outfile} > ${outfile}.qdebug &&
+    grep "queue=batch" ${outfile} > ${outfile}.qbatch &&
+    check_enforced_policy ${outfile}.qdebug "fcfs" &&
+    check_queue_params ${outfile}.qdebug \
+        "queue-depth=8192,max-queue-depth=1000000" &&
+    check_policy_params ${outfile}.qdebug \
+        "reservation-depth=64,max-reservation-depth=100000" &&
+    check_enforced_policy ${outfile}.qbatch "fcfs" &&
+    check_queue_params ${outfile}.qbatch \
+        "queue-depth=8192,max-queue-depth=1000000" &&
+    check_policy_params ${outfile}.qbatch \
+        "reservation-depth=64,max-reservation-depth=100000"
+'
+
+test_expect_success 'qmanager: heterogeneous multiqueue configuration works' '
+    conf_name="17-mq-hetero" &&
+    outfile=${conf_name}.out &&
+    start_qmanager ${conf_base}/${conf_name} > ${outfile} &&
+    grep "queue=debug" ${outfile} > ${outfile}.qdebug &&
+    grep "queue=batch" ${outfile} > ${outfile}.qbatch &&
+    check_enforced_policy ${outfile}.qdebug "fcfs" &&
+    check_queue_params ${outfile}.qdebug "queue-depth=16" &&
+    check_policy_params ${outfile}.qdebug "default" &&
+    check_enforced_policy ${outfile}.qbatch "hybrid" &&
+    check_queue_params ${outfile}.qbatch "default" &&
+    check_policy_params ${outfile}.qbatch \
+        "reservation-depth=64,max-reservation-depth=100000"
+'
+
+test_expect_success 'qmanager: per-queue parameter overriding works' '
+    conf_name="18-mq-override" &&
+    outfile=${conf_name}.out &&
+    start_qmanager ${conf_base}/${conf_name} > ${outfile} &&
+    grep "queue=debug" ${outfile} > ${outfile}.qdebug &&
+    grep "queue=batch" ${outfile} > ${outfile}.qbatch &&
+    check_enforced_policy ${outfile}.qdebug "fcfs" &&
+    check_queue_params ${outfile}.qdebug "queue-depth=16" &&
+    check_policy_params ${outfile}.qdebug "default" &&
+    check_enforced_policy ${outfile}.qbatch "easy" &&
+    check_queue_params ${outfile}.qbatch \
+        "queue-depth=8192,max-queue-depth=1000000" &&
+    check_policy_params ${outfile}.qbatch "default"
 '
 
 test_done

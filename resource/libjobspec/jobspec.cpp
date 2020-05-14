@@ -336,6 +336,9 @@ Attributes parse_yaml_attributes (const YAML::Node &attrs)
                 if (s.first.as<std::string>() == "duration") {
                     a.system.duration = s.second.as<double>();
                 }
+                else if (s.first.as<std::string>() == "queue") {
+                    a.system.queue = s.second.as<std::string>();
+                }
                 else if (s.first.as<std::string>() == "cwd") {
                     a.system.cwd = s.second.as<std::string>();
                 }
@@ -491,6 +494,7 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s, Jobspec const& jobspec)
     s << "    " << "duration: " << jobspec.attributes.system.duration
       << std::endl;
     s << "    " << "cwd: " << jobspec.attributes.system.cwd << std::endl;
+    s << "    " << "queue: " << jobspec.attributes.system.queue << std::endl;
     s << "    " << "environment:" << std::endl;
     for (auto&& e : jobspec.attributes.system.environment) {
         s << "      " << e.first << ": " << e.second << std::endl;
