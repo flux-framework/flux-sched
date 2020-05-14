@@ -4,22 +4,38 @@
 are not yet stable.* The github issue tracker is the primary way to
 communicate with the developers.
 
-### flux-sched
+### Fluxion: An Advanced Graph-Based Scheduler for HPC
 
-flux-sched contains an advanced job scheduling facility for the Flux resource
-manager framework.
+Welcome to Fluxion<sup>1</sup>, an advanced job scheduling software
+tool for High Performance Computing (HPC). Fluxion combines
+graph-based resource modeling with efficient temporal plan
+management schemes to schedule a wide range of HPC
+resources (e.g., compute, storage, power etc)
+in a highly scalable, customizable and effective fashion.
 
-### Overview
+Fluxion has been integrated with flux-core to
+provide it with both system-level batch job
+scheduling and nested workflow-level scheduling.
 
-flux-sched introduces queuing and resource matching services to extend Flux
-to provide advanced batch scheduling. Jobs are submitted to flux-sched via
+See our [resource-query utility](https://github.com/flux-framework/flux-sched/blob/master/resource/utilities/README.md), if you want
+to test your advanced HPC resource modeling and
+selection ideas with Fluxion in a simplified,
+easy-to-use environment.
+
+
+### Fluxion Scheduler in Flux
+
+Fluxion introduces queuing and resource matching services to extend Flux
+to provide advanced batch scheduling. Jobs are submitted to Fluxion via
 `flux job submit` which are then added to our queues for scheduling.
 
-At the core of its functionality lie its two service modules: `qmanager` and
-`resource`. The `qmanager` module is designed to manage our job queues and
+At the core of its functionality lie its two service modules:
+`sched-fluxion-qmanager` and `sched-fluxion-resource`.
+The first module is designed to manage our job queues and
 to enforce queueing policies that are configurable (e.g.,
 first-come-first-served, EASY, conservative backfilling policies etc).
-The `resource` module uses a graph to represent resources of arbitrary types
+The second module uses a graph to represent
+resources of arbitrary types
 as well as their complex relationships and to match the highly sophisticated
 resource requirements of a Flux jobspec to the compute and other resources
 on this graph. Both of these modules are loaded into a Flux instance and
@@ -32,18 +48,18 @@ behaviors. Users can use environment variables or module-load time options
 to select and to tune the policies as to how resources are selected
 and when to run their jobs.
 
-Overall, the advanced job scheduling facility within flux-sched offers vastly
+Overall, the advanced job scheduling facility within Fluxion offers vastly
 many opportunities for modern HPC and other worfklows to meet their highly
 challenging scheduling objectives.
 
 
-#### Building flux-sched
+#### Building Fluxion
 
-flux-sched requires an installed flux-core package.  Instructions
+Fluxion requires an installed flux-core package.  Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
-flux-sched also requires the following packages to build:
+Fluxion also requires the following packages to build:
 
 ```
 libhwloc-dev >= 1.11.1
@@ -65,19 +81,19 @@ python3-yaml >= 3.10
 apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
 ```
 
-Clone flux-sched from an upstream repo and prepare for configure:
+Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:
 ```
 git clone <flux-sched repo of your choice>
 cd flux-sched
 ./autogen.sh
 ```
 
-The flux-sched `configure` will attempt to find a flux-core in the
+The Fluxion's `configure` will attempt to find a flux-core in the
 same `--prefix` as specified on the command line. If `--prefix` is
 not specified, then it will default to the same prefix as was used
 to install the first `flux` executable found in `PATH`. Therefore,
 if `which flux` returns the version of flux-core against which
-flux-sched should be compiled, then `./configure` may be run without
+Fluxion should be compiled, then `./configure` may be run without
 any arguments. If flux-core is side-installed, then `--prefix` should
 be set to the same prefix as was used to install the target flux-core.
 
@@ -93,8 +109,9 @@ make install
 ##### Flux Instance
 
 The examples below walk through exercising functioning flux-sched modules (i.e.,
-`qmanager` and `resource`) in a Flux instance. The following examples assume
-that flux-core and flux-sched were both installed into
+`sched-fluxion-qmanager` and `sched-fluxion-resource`) in a Flux instance.
+The following examples assume
+that flux-core and Fluxion were both installed into
 `${FLUX_CORE_PREFIX}`. For greater insight into what is happening, add the -v
 flag to each flux command below.
 
@@ -135,3 +152,15 @@ Exit the Flux instance
 ```
 exit
 ```
+
+----
+<sup>1</sup> The name was inspired by
+Issac Newton's *Method of Fluxions* where
+[fluxions](https://en.wikipedia.org/wiki/Fluxion) and
+[fluents](https://en.wikipedia.org/wiki/Fluent_\(mathematics\))
+are the key terms to define his calculus.
+As his calculus describes the motion of points in time
+for time-varying variables,
+our Fluxion scheduler uses scalable techniques to
+describe [the motion of scheduled points in time](https://github.com/flux-framework/flux-sched/blob/master/resource/planner/README.md)
+for a diverse set of resources. 
