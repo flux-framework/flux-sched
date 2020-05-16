@@ -156,4 +156,11 @@ fi
 #  Some tests in flux don't work with --chain-lint, add a prereq for
 #   --no-chain-lint:
 test "$chain_lint" = "t" || test_set_prereq NO_CHAIN_LINT
+
+# Sanitize PMI_* environment for all tests. This allows commands like
+#  `flux broker` in tests to boot as singleton even when run under a
+#  job of an existing RM.
+for var in $(env | grep ^PMI); do unset ${var%=*}; done
+for var in $(env | grep ^SLURM); do unset ${var%=*}; done
+
 # vi: ts=4 sw=4 expandtab
