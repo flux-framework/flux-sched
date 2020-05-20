@@ -20,7 +20,7 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    flux module load sched-fluxion-qmanager queues="all batch debug"
+    load_qmanager "queues=all batch debug"
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=all' '
@@ -144,7 +144,7 @@ queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove sched-fluxion-qmanager &&
+    remove_qmanager &&
     remove_resource
 '
 

@@ -42,7 +42,7 @@ test_expect_success 'qmanager: loading with easy+queue-depth=5' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=cluster,node,core &&
-    flux module load sched-fluxion-qmanager queue-policy=easy \
+    load_qmanager queue-policy=easy \
 queue-params=queue-depth=5
 '
 
@@ -72,8 +72,8 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
 '
 
 test_expect_success 'qmanager: loading with hybrid+queue-depth=5' '
-    flux module remove sched-fluxion-qmanager &&
-    flux module load sched-fluxion-qmanager queue-policy=hybrid \
+    remove_qmanager &&
+    load_qmanager queue-policy=hybrid \
 queue-params=queue-depth=5 policy-params=reservation-depth=3
 '
 
@@ -98,8 +98,8 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
 '
 
 test_expect_success 'qmanager: loading with conservative+queue-depth=5' '
-    flux module remove sched-fluxion-qmanager &&
-    flux module load sched-fluxion-qmanager queue-policy=conservative \
+    remove_qmanager &&
+    load_qmanager queue-policy=conservative \
 queue-params=queue-depth=5
 '
 
@@ -124,7 +124,7 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove sched-fluxion-qmanager &&
+    remove_qmanager &&
     remove_resource
 '
 

@@ -38,7 +38,7 @@ test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    flux module load sched-fluxion-qmanager
+    load_qmanager
 '
 
 test_expect_success 'qmanager: basic job runs in simulated mode' '
@@ -87,7 +87,7 @@ test_expect_success 'qmanager: exception during run is supported' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove sched-fluxion-qmanager &&
+    remove_qmanager &&
     remove_resource
 '
 

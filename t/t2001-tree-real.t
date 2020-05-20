@@ -23,7 +23,7 @@ test_expect_success 'flux-tree: prep for testing in real mode works' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=node,core,gpu &&
-    flux module load sched-fluxion-qmanager
+    load_qmanager
 '
 
 test_expect_success 'flux-tree: --leaf in real mode' '
@@ -122,7 +122,7 @@ test_expect_success 'flux-tree: works with quoted jobscript argument' '
 
 test_expect_success 'flux-tree: removing qmanager/resource works' '
      remove_resource &&
-     flux module remove sched-fluxion-qmanager
+     remove_qmanager
 '
 
 test_done

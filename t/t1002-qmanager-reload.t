@@ -40,7 +40,7 @@ test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=node,socket,core,gpu &&
-    flux module load sched-fluxion-qmanager
+    load_qmanager
 '
 
 test_expect_success 'qmanager: submit 2 more as many jobs as there are cores ' '
@@ -55,8 +55,8 @@ test_expect_success 'qmanager: submit 2 more as many jobs as there are cores ' '
 '
 
 test_expect_success 'qmanager: restart keeps the main job queue intact' '
-    flux module remove sched-fluxion-qmanager &&
-    flux module load sched-fluxion-qmanager &&
+    remove_qmanager &&
+    load_qmanager &&
     flux job list > jobs.list2 &&
     diff jobs.list2 jobs.list
 '
@@ -76,7 +76,7 @@ test_expect_success 'qmanager: canceling a pending job works' '
 '
 
 test_expect_success 'removing resource and qmanager modules' '
-    flux module remove sched-fluxion-qmanager &&
+    remove_qmanager &&
     remove_resource
 '
 
