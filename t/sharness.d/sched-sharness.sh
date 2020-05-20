@@ -97,3 +97,19 @@ adjust_session_info () {
     set_end_jobid $(($(get_start_jobid) + $njobs - 1))
     return 0
 }
+
+load_qmanager () {
+    flux module load sched-fluxion-qmanager "$@"
+}
+
+load_resource () {
+    flux module load sched-fluxion-resource "$@"
+}
+
+remove_qmanager () {
+    flux module remove sched-fluxion-qmanager "$@"
+}
+
+remove_resource () {
+    flux module remove sched-fluxion-resource "$@"
+}
