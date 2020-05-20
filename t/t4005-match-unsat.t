@@ -33,41 +33,41 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource load-file=${grug} load-format=grug \
+    load_resource load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=high
 '
 
 test_expect_success 'satisfiability works with a 1-node, 1-socket jobspec' '
-    flux resource match allocate_with_satisfiability ${jobspec1} &&
-    flux resource match allocate_with_satisfiability ${jobspec1} &&
-    flux resource match allocate_with_satisfiability ${jobspec1} &&
-    flux resource match allocate_with_satisfiability ${jobspec1}
+    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
+    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
+    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
+    flux ion-resource match allocate_with_satisfiability ${jobspec1}
 '
 
 test_expect_success 'satisfiability returns EBUSY when no available resources' '
-    test_expect_code 16 flux resource \
+    test_expect_code 16 flux ion-resource \
 match allocate_with_satisfiability ${jobspec1} &&
-    test_expect_code 16 flux resource \
+    test_expect_code 16 flux ion-resource \
 match allocate_with_satisfiability ${jobspec1} &&
-    test_expect_code 16 flux resource \
+    test_expect_code 16 flux ion-resource \
 match allocate_with_satisfiability ${jobspec1} &&
-    test_expect_code 16 flux resource \
+    test_expect_code 16 flux ion-resource \
 match allocate_with_satisfiability ${jobspec1}
 '
 
 test_expect_success 'satisfiability returns ENODEV on unsatisfiable jobspec' '
-    test_expect_code 19 flux resource \
+    test_expect_code 19 flux ion-resource \
 match allocate_with_satisfiability ${jobspec2} &&
-    test_expect_code 19 flux resource \
+    test_expect_code 19 flux ion-resource \
 match allocate_with_satisfiability ${jobspec2} &&
-    test_expect_code 19 flux resource \
+    test_expect_code 19 flux ion-resource \
 match allocate_with_satisfiability ${jobspec2} &&
-    test_expect_code 19 flux resource \
+    test_expect_code 19 flux ion-resource \
 match allocate_with_satisfiability ${jobspec2}
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    remove_resource
 '
 
 test_done

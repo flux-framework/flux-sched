@@ -35,21 +35,22 @@ test_debug '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny jgf file works' '
-    flux module load resource load-file=${jgf_4core} load-format=jgf
+    load_resource \
+load-file=${jgf_4core} load-format=jgf
 '
 
 test_expect_success 'JGF: allocate works with four one-core jobspecs' '
-    flux resource match allocate ${jobspec_1core} &&
-    flux resource match allocate ${jobspec_1core} &&
-    flux resource match allocate ${jobspec_1core} &&
-    flux resource match allocate ${jobspec_1core}
+    flux ion-resource match allocate ${jobspec_1core} &&
+    flux ion-resource match allocate ${jobspec_1core} &&
+    flux ion-resource match allocate ${jobspec_1core} &&
+    flux ion-resource match allocate ${jobspec_1core}
 '
 
 test_expect_success 'JGF: allocate fails when all resources are allocated' '
-    test_expect_code 16 flux resource match allocate ${jobspec_1core} &&
-    test_expect_code 16 flux resource match allocate ${jobspec_1core} &&
-    test_expect_code 16 flux resource match allocate ${jobspec_1core} &&
-    test_expect_code 16 flux resource match allocate ${jobspec_1core}
+    test_expect_code 16 flux ion-resource match allocate ${jobspec_1core} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec_1core} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec_1core} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec_1core}
 '
 
 create_bad_jgfs() {
@@ -66,22 +67,22 @@ test_expect_success 'generate bad JGF files' '
 '
 
 test_expect_success 'resource detects bad JGF inputs' '
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=bad_id.json load-format=jgf &&
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=bad_nodes.json load-format=jgf &&
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=bad_edges.json load-format=jgf &&
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=bad_paths.json load-format=jgf &&
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=nonexistent.json load-format=jgf &&
-    test_must_fail flux module load resource \
+    test_must_fail load_resource \
 load-file=t4007-match-jgf.t load-format=jgf
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    remove_resource
 '
 
 test_done

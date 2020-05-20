@@ -35,32 +35,32 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource load-file=${grug} prune-filters=ALL:core \
+    load_resource load-file=${grug} prune-filters=ALL:core \
 load-format=grug subsystems=containment policy=low
 '
 
 test_expect_success 'After all resources are allocated, reserve still works' '
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec} &&
-    test_expect_code 16 flux resource match allocate ${jobspec} &&
-    flux resource match allocate_orelse_reserve ${jobspec} &&
-    flux resource match allocate_orelse_reserve ${jobspec} &&
-    flux resource match allocate_orelse_reserve ${jobspec} &&
-    flux resource match allocate_orelse_reserve ${jobspec}
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate_orelse_reserve ${jobspec} &&
+    flux ion-resource match allocate_orelse_reserve ${jobspec} &&
+    flux ion-resource match allocate_orelse_reserve ${jobspec} &&
+    flux ion-resource match allocate_orelse_reserve ${jobspec}
 '
 
 test_expect_success 'detecting of a non-existent jobspec file works' '
-    test_expect_code 3 flux resource match allocate_orelse_reserve foo
+    test_expect_code 3 flux ion-resource match allocate_orelse_reserve foo
 '
 
 test_expect_success 'handling of a malformed jobspec works' '
-    test_expect_code 2 flux resource match allocate_orelse_reserve ${malform}
+    test_expect_code 2 flux ion-resource match allocate_orelse_reserve ${malform}
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    remove_resource
 '
 
 test_done

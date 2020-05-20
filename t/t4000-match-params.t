@@ -35,7 +35,7 @@ test_debug '
 # Unload the resource module
 # If module is not loaded, suppress error.
 unload_resource() {
-    flux module remove resource 2>rmmod.out
+    remove_resource 2>rmmod.out
     if test $? -ne 0; then
         grep -q "No such file or directory" rmmod.out && return 0
         cat rmmod.out >&2
@@ -45,51 +45,51 @@ unload_resource() {
 
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
     unload_resource &&
-    flux module load resource load-file=${grug} \
+    load_resource load-file=${grug} \
 load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with an XML works' '
     unload_resource &&
-    flux module load resource load-file=${xml} \
+    load_resource load-file=${xml} \
 load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with no option works' '
     unload_resource &&
-    flux module load resource prune-filters=ALL:core
+    load_resource prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
     unload_resource &&
-    test_expect_code 1 flux module load resource load-file=${ne_grug} \
-load-format=grug prune-filters=ALL:core
+    test_expect_code 1 load_resource \
+load-file=${ne_grug} load-format=grug prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
     unload_resource &&
-    test_expect_code 1 flux module load resource load-file=${ne_xml} \
-load-format=hwloc prune-filters=ALL:core
+    test_expect_code 1 load_resource \
+load-file=${ne_xml} load-format=hwloc prune-filters=ALL:core
 '
 
 test_expect_success 'loading resource module with known policies works' '
     unload_resource &&
-    flux module load resource policy=high &&
-    flux module remove resource &&
-    flux module load resource policy=low &&
-    flux module remove resource &&
-    flux module load resource policy=locality
+    load_resource policy=high &&
+    remove_resource &&
+    load_resource policy=low &&
+    remove_resource &&
+    load_resource policy=locality
 '
 
 test_expect_success 'loading resource module with unknown policies is tolerated' '
     unload_resource &&
-    flux module load resource policy=foo &&
-    flux module remove resource &&
-    flux module load resource policy=bar
+    load_resource policy=foo &&
+    remove_resource &&
+    load_resource policy=bar
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    remove_resource
 '
 
 test_done

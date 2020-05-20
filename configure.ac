@@ -128,17 +128,17 @@ AC_SUBST(fluxlibdir)
 AS_VAR_SET(fluxmoddir, $libdir/flux/modules)
 AC_SUBST(fluxmoddir)
 
-AS_VAR_SET(fluxresourcerc1dir, $sysconfdir/flux/rc1.d)
-AC_SUBST(fluxresourcerc1dir)
+AS_VAR_SET(fluxrc1dir, $sysconfdir/flux/rc1.d)
+AC_SUBST(fluxrc1dir)
 
-AS_VAR_SET(fluxresourcerc3dir, $sysconfdir/flux/rc3.d)
-AC_SUBST(fluxresourcerc3dir)
+AS_VAR_SET(fluxrc3dir, $sysconfdir/flux/rc3.d)
+AC_SUBST(fluxrc3dir)
 
-AS_VAR_SET(fluxqmanagerrc1dir, $sysconfdir/flux/rc1.d)
-AC_SUBST(fluxqmanagerrc1dir)
+AS_VAR_SET(fluxrc1dir, $sysconfdir/flux/rc1.d)
+AC_SUBST(fluxrc1dir)
 
-AS_VAR_SET(fluxqmanagerrc3dir, $sysconfdir/flux/rc3.d)
-AC_SUBST(fluxqmanagerrc3dir)
+AS_VAR_SET(fluxrc3dir, $sysconfdir/flux/rc3.d)
+AC_SUBST(fluxrc3dir)
 
 ##
 # Macros to avoid repetition in Makefiles.am's

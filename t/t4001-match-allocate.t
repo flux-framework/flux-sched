@@ -35,34 +35,35 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load resource load-file=${grug} prune-filters=ALL:core \
+    load_resource \
+load-file=${grug} prune-filters=ALL:core \
 load-format=grug subsystems=containment policy=high
 '
 
 test_expect_success 'match-allocate works with a 1-node, 1-socket jobspec' '
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec} &&
-    flux resource match allocate ${jobspec}
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec} &&
+    flux ion-resource match allocate ${jobspec}
 '
 
 test_expect_success 'match-allocate fails when all resources are allocated' '
-    test_expect_code 16 flux resource match allocate ${jobspec} &&
-    test_expect_code 16 flux resource match allocate ${jobspec} &&
-    test_expect_code 16 flux resource match allocate ${jobspec} &&
-    test_expect_code 16 flux resource match allocate ${jobspec}
+    test_expect_code 16 flux ion-resource match allocate ${jobspec} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec} &&
+    test_expect_code 16 flux ion-resource match allocate ${jobspec}
 '
 
 test_expect_success 'detecting of a non-existent jobspec file works' '
-    test_expect_code 3 flux resource match allocate foo
+    test_expect_code 3 flux ion-resource match allocate foo
 '
 
 test_expect_success 'handling of a malformed jobspec works' '
-    test_expect_code 2 flux resource match allocate ${malform}
+    test_expect_code 2 flux ion-resource match allocate ${malform}
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove resource
+    remove_resource
 '
 
 test_done

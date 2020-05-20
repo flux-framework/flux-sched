@@ -1,6 +1,8 @@
-dist_fluxresourcerc1_SCRIPTS = resource-start
-dist_fluxresourcerc3_SCRIPTS = resource-stop
-dist_fluxqmanagerrc1_SCRIPTS = qmanager-start
-dist_fluxqmanagerrc3_SCRIPTS = qmanager-stop
-EXTRA_DIST = qmanager.toml
+dist_fluxrc1_SCRIPTS = \
+    sched-fluxion-resource-start \
+    sched-fluxion-qmanager-start
+dist_fluxrc3_SCRIPTS = \
+    sched-fluxion-resource-stop \
+    sched-fluxion-qmanager-stop
+EXTRA_DIST = sched-fluxion-qmanager.toml
 

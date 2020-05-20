@@ -2,10 +2,7 @@
 # Configuration for the qmanager module
 #
 
-[qmanager]
-
-# multiple queues
-queues = "debug batch"
+[sched-fluxion-qmanager]
 
 # queueing policy type
 queue-policy = "fcfs"

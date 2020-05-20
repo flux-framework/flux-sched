@@ -2,8 +2,8 @@
 #
 # project-local sharness code for flux-sched
 #
-FLUX_RESOURCE_RC_NOOP=1
-FLUX_QMANAGER_RC_NOOP=1
+FLUXION_RESOURCE_RC_NOOP=1
+FLUXION_QMANAGER_RC_NOOP=1
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
@@ -34,9 +34,9 @@ sched_src_path () {
 }
 
 export FLUX_EXEC_PATH_PREPEND
-export FLUX_RESOURCE_RC_NOOP
-export FLUX_QMANAGER_RC_NOOP
-export FLUX_RESOURCE_RC_PATH
+export FLUXION_RESOURCE_RC_NOOP
+export FLUXION_QMANAGER_RC_NOOP
+export FLUXION_RESOURCE_RC_PATH
 export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND
 export FLUX_LUA_CPATH_PREPEND
@@ -96,4 +96,20 @@ adjust_session_info () {
     set_start_jobid $(($(get_end_jobid) + 1))
     set_end_jobid $(($(get_start_jobid) + $njobs - 1))
     return 0
+}
+
+load_qmanager () {
+    flux module load sched-fluxion-qmanager "$@"
+}
+
+load_resource () {
+    flux module load sched-fluxion-resource "$@"
+}
+
+remove_qmanager () {
+    flux module remove sched-fluxion-qmanager "$@"
+}
+
+remove_resource () {
+    flux module remove sched-fluxion-resource "$@"
 }

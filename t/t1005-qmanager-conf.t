@@ -54,10 +54,10 @@ test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
 	cat <<-EOT >rc1 &&
 	flux module load kvs
 	flux module load job-manager
-	flux module load qmanager \$QMANAGER_OPTIONS
+	flux module load sched-fluxion-qmanager \$QMANAGER_OPTIONS
 	EOT
 	cat <<-EOT >rc3 &&
-	flux module remove -f qmanager
+	flux module remove -f sched-fluxion-qmanager
 	flux module remove -f job-manager
 	flux module remove -f kvs
 	EOT

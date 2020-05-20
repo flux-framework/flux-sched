@@ -2,18 +2,18 @@
 # Configuration for the qmanager module
 #
 
-[qmanager]
+[sched-fluxion-qmanager]
 
-queue-policy = "fcfs"                 # queueing policy type
+queue-policy = "hybrid"              # queueing policy type
 
 # general queue parameters
     # max queue depth (applied to all policies)
     # queue-depth (applied to all policies)
     # unknown key should be tolerated
-queue-params = "max-queue-depth=1000,queue-depth=10"
+queue-params = "max-queue-depth=1000000,queue-depth=8192"
 
 # queue policy parameters
     # max depth for "conservative" and "hybrid"
     # reservation depth for HYBRID
-policy-params = "max-reservation-depth=100000,reservation-depth=64"
+policy-params = "max-reservation-depth=128,reservation-depth=64"
 
