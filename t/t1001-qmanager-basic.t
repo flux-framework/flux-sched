@@ -88,7 +88,7 @@ test_expect_success 'qmanager: exception during run is supported' '
 
 test_expect_success 'removing resource and qmanager modules' '
     flux module remove sched-fluxion-qmanager &&
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

@@ -40,7 +40,7 @@ test_expect_success 'qmanager: hwloc reload works' '
 
 test_expect_success 'qmanager: loading with easy+queue-depth=5' '
     flux module remove sched-simple &&
-    flux module load sched-fluxion-resource prune-filters=ALL:core \
+    load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-whitelist=cluster,node,core &&
     flux module load sched-fluxion-qmanager queue-policy=easy \
 queue-params=queue-depth=5
@@ -125,7 +125,7 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
 
 test_expect_success 'removing resource and qmanager modules' '
     flux module remove sched-fluxion-qmanager &&
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

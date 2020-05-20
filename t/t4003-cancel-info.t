@@ -33,7 +33,7 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load sched-fluxion-resource \
+    load_resource \
 load-file=${grug} prune-filters=ALL:core \
 load-format=grug subsystems=containment policy=high
 '
@@ -76,7 +76,7 @@ test_expect_success 'cancel on nonexistent jobid is handled gracefully' '
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

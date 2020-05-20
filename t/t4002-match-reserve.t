@@ -35,7 +35,7 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load sched-fluxion-resource load-file=${grug} prune-filters=ALL:core \
+    load_resource load-file=${grug} prune-filters=ALL:core \
 load-format=grug subsystems=containment policy=low
 '
 
@@ -60,7 +60,7 @@ test_expect_success 'handling of a malformed jobspec works' '
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

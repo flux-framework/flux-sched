@@ -93,7 +93,7 @@ test_expect_success 'resource-query works with whitelist' '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
-    flux module load sched-fluxion-resource load-file=${hwloc_4core}
+    load_resource load-file=${hwloc_4core}
 '
 
 test_expect_success 'match-allocate works with four one-core jobspecs' '
@@ -111,7 +111,7 @@ test_expect_success 'match-allocate fails when all resources are allocated' '
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_expect_success 'reloading session/hwloc information with test data' '
@@ -119,7 +119,7 @@ test_expect_success 'reloading session/hwloc information with test data' '
 '
 
 test_expect_success 'loading resource module with default resource info source' '
-    flux module load sched-fluxion-resource subsystems=containment policy=high
+    load_resource subsystems=containment policy=high
 '
 
 test_expect_success 'match-allocate works with four two-socket jobspecs' '
@@ -137,9 +137,9 @@ test_expect_success 'match-allocate fails when all resources are allocated' '
 '
 
 test_expect_success 'reloading sierra xml and match allocate' '
-    flux module remove sched-fluxion-resource &&
+    remove_resource &&
     flux hwloc reload ${excl_4N4B_sierra2} &&
-    flux module load sched-fluxion-resource subsystems=containment \
+    load_resource subsystems=containment \
 policy=high load-whitelist=node,socket,core,gpu &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
@@ -153,7 +153,7 @@ policy=high load-whitelist=node,socket,core,gpu &&
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

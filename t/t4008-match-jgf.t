@@ -35,7 +35,7 @@ test_debug '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny jgf file works' '
-    flux module load sched-fluxion-resource \
+    load_resource \
 load-file=${jgf_4core} load-format=jgf
 '
 
@@ -67,22 +67,22 @@ test_expect_success 'generate bad JGF files' '
 '
 
 test_expect_success 'resource detects bad JGF inputs' '
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=bad_id.json load-format=jgf &&
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=bad_nodes.json load-format=jgf &&
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=bad_edges.json load-format=jgf &&
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=bad_paths.json load-format=jgf &&
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=nonexistent.json load-format=jgf &&
-    test_must_fail flux module load sched-fluxion-resource \
+    test_must_fail load_resource \
 load-file=t4007-match-jgf.t load-format=jgf
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

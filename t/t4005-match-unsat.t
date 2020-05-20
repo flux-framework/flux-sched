@@ -33,7 +33,7 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-    flux module load sched-fluxion-resource load-file=${grug} load-format=grug \
+    load_resource load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=high
 '
 
@@ -67,7 +67,7 @@ match allocate_with_satisfiability ${jobspec2}
 '
 
 test_expect_success 'removing resource works' '
-    flux module remove sched-fluxion-resource
+    remove_resource
 '
 
 test_done

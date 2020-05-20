@@ -32,7 +32,7 @@ test_debug '
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
-	flux module load sched-fluxion-resource \
+	load_resource \
 load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=high
 '
@@ -115,7 +115,7 @@ test_expect_success 'test with complex inputs works' '
 '
 
 test_expect_success 'removing resource works' '
-	flux module remove sched-fluxion-resource
+	remove_resource
 '
 
 test_done

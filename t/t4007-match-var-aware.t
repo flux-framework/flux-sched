@@ -35,7 +35,7 @@ test_debug '
 '
 
 test_expect_success 'Loading variation policy on a small config works' '
-	flux module load sched-fluxion-resource \
+	load_resource \
 load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=variation
 '
@@ -61,7 +61,7 @@ test_expect_success 'Variation policy works with resource-match.' '
 '
 
 test_expect_success 'removing resource works' '
-	flux module remove sched-fluxion-resource
+	remove_resource
 '
 
 test_done
