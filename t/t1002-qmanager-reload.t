@@ -27,7 +27,10 @@ test_expect_success 'qmanager: generate jobspec for a simple test job' '
 '
 
 test_expect_success 'qmanager: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+    flux hwloc reload ${excl_4N4B} &&
+    flux module unload sched-simple &&
+    flux module reload resource &&
+    flux module load sched-simple
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
