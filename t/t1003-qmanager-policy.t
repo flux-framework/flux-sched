@@ -8,15 +8,9 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
-test_under_flux 1
+skip_all_unless_have jq
 
-#  Set path to jq(1)
-#
-jq=$(which jq 2>/dev/null)
-if test -z "$jq"; then
-    skip_all='jq not found. Skipping all tests'
-    test_done
-fi
+test_under_flux 1
 
 exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
 

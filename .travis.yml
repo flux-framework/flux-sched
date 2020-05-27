@@ -12,6 +12,7 @@ matrix:
        - CXX=g++-8
        - DISTCHECK=t
        - GITHUB_RELEASES_DEPLOY=t
+       - TEST_CHECK_PREREQS=t
     - name: "Ubuntu: clang-6.0 chain-lint"
       compiler: clang-6.0
       env:

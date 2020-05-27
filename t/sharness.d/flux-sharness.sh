@@ -7,7 +7,15 @@
 #  Extra functions for Flux testsuite
 #
 run_timeout() {
-    perl -e 'use Time::HiRes qw( ualarm ) ; ualarm ((shift @ARGV) * 1000000) ; exec @ARGV or die "$!"' "$@"
+    if test -z "$LD_PRELOAD" ; then
+        "${PYTHON:-python3}" -S "${SHARNESS_TEST_SRCDIR}/scripts/run_timeout.py" "$@"
+    else
+        (
+            TIMEOUT_PRELOAD="$LD_PRELOAD"
+            unset -v LD_PRELOAD
+            exec "${PYTHON:-python3}" -S "${SHARNESS_TEST_SRCDIR}/scripts/run_timeout.py" -e LD_PRELOAD="$TIMEOUT_PRELOAD" "$@"
+        )
+    fi
 }
 
 #
@@ -89,6 +97,8 @@ test_under_flux() {
     timeout="-o -Sinit.rc2_timeout=300"
     if test -n "$FLUX_TEST_DISABLE_TIMEOUT"; then
         timeout=""
+    elif test_have_prereq LONGTEST; then
+        timeout="-o,-Sinit.rc2_timeout=900"
     fi
 
     if test "$personality" = "minimal"; then
@@ -110,8 +120,15 @@ test_under_flux() {
         valgrind="$valgrind,--trace-children=no,--child-silent-after-fork=yes"
         valgrind="$valgrind,--leak-resolution=med,--error-exitcode=1"
         valgrind="$valgrind,--suppressions=${VALGRIND_SUPPRESSIONS}"
+        gracetime="-o,-g,10"
     fi
-
+    # Extend timeouts when running under AddressSanitizer
+    if test_have_prereq ASAN; then
+        gracetime="-o,-g,10"
+        timeout="-o -Sinit.rc2_timeout=800"
+        # Set log_path for ASan o/w errors from broker may be lost
+        ASAN_OPTIONS=${ASAN_OPTIONS}:log_path=${TEST_NAME}.asan
+    fi
     logopts="-o -Slog-filename=${log_file},-Slog-forward-level=7"
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
@@ -120,6 +137,7 @@ test_under_flux() {
                       ${RC3_PATH+-o -Sbroker.rc3_path=${RC3_PATH}} \
                       ${logopts} \
                       ${timeout} \
+                      ${gracetime} \
                       ${valgrind} \
                      "sh $0 ${flags}"
 }
@@ -144,16 +162,94 @@ test_on_rank() {
     flux exec --rank=${ranks} "$@"
 }
 
+#
+# Check for a program and skip all tests immediately if not found.
+# Exports the program in SHARNESS_test_skip_all_prereq for later
+# check in TEST_CHECK_PREREQS
+#
+skip_all_unless_have()
+{
+    prog_path=$(which $1 2>/dev/null)
+    if test -z "$prog_path"; then
+        skip_all="$1 not found. Skipping all tests"
+        test_done
+    fi
+    eval "$1=$prog_path"
+    export SHARNESS_test_skip_all_prereq="$SHARNESS_test_skip_all_prereq,$1"
+}
+
+GLOBAL_PROGRAM_PREREQS="HAVE_JQ:jq"
+
+#
+#  Check for programs in GLOBAL_PROGRAM_PREREQS and set prereq and
+#   "<name>=<program_path>" if found. If TEST_CHECK_PREREQS is set, then
+#   create a wrapper script in trash-directory/bin which will ensure the
+#   prereq (or global skip_all above) has been used before each invocation
+#   of program. This will catch places in testsuite where program is used
+#   without testing the prerequisite.
+#
+for prereq in $GLOBAL_PROGRAM_PREREQS; do
+    prog=${prereq#*:}
+    path_prog=$(which ${prog} 2>/dev/null || echo "/bin/false")
+    req=${prereq%:*}
+    test "${path_prog}" = "/bin/false" || test_set_prereq ${req}
+    eval "${prog}=${path_prog}"
+    if test -n "$TEST_CHECK_PREREQS"; then
+		dir=${SHARNESS_TRASH_DIRECTORY}/bin
+		mkdir -p ${dir}
+		cat <<-EOF > ${dir}/$prog
+		#!/bin/sh
+		saved_IFS=\$IFS
+		IFS=,
+		for x in \$test_prereq; do
+		  test "\$x" = "$req" && ok=t
+		done
+		for x in \$SHARNESS_test_skip_all_prereq; do
+		  test "\$x" = "$prog" && ok=t
+		done
+		test -n "\$ok" && exec $path_prog "\$@"
+		echo >&2 "Use of $prog without prereq $req!"
+		exit 1
+		EOF
+		chmod +x ${dir}/$prog
+		# Override $$prog to point to wrapper script:
+		eval "${prog}=${dir}/${prog}"
+    fi
+done
+
+if test -n "$TEST_CHECK_PREREQS"; then
+    export PATH=${SHARNESS_TRASH_DIRECTORY}/bin:${PATH}
+fi
+
 #  Export a shorter name for this test
 TEST_NAME=$SHARNESS_TEST_NAME
 export TEST_NAME
 
 #  Test requirements for testsuite
-if ! run_timeout 1.0 lua -e 'require "posix"'; then
+if ! run_timeout 10.0 lua -e 'require "posix"'; then
     error "failed to find lua posix module in path"
 fi
 
 #  Some tests in flux don't work with --chain-lint, add a prereq for
 #   --no-chain-lint:
 test "$chain_lint" = "t" || test_set_prereq NO_CHAIN_LINT
+
+#  Set LONGTEST prereq
+if test "$TEST_LONG" = "t" || test "$LONGTEST" = "t"; then
+    test_set_prereq LONGTEST
+fi
+
+#  Set ASAN or NO_ASAN prereq
+if flux version | grep -q +asan; then
+    test_set_prereq ASAN
+else
+    test_set_prereq NO_ASAN
+fi
+
+# Sanitize PMI_* environment for all tests. This allows commands like
+#  `flux broker` in tests to boot as singleton even when run under a
+#  job of an existing RM.
+for var in $(env | grep ^PMI); do unset ${var%%=*}; done
+for var in $(env | grep ^SLURM); do unset ${var%%=*}; done
+
 # vi: ts=4 sw=4 expandtab
