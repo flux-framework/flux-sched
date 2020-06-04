@@ -26,6 +26,7 @@ extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <jansson.h>
 }
 
 #include "qmanager/modules/qmanager_callbacks.hpp"
@@ -96,30 +97,54 @@ out:
     return rc;
 }
 
-// FIXME: This will be expanded when we implement full scheduler
-// resilency schemes: Issue #470.
-// Until PR #625 is merged and Issue 240 of RFC project (adding the
-// queue name of the job to R), we insert the job into the default queue.
 int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
                                         flux_jobid_t id, int prio, uint32_t uid,
                                         double ts, const char *R, void *arg)
 
 {
-    int rc = -1;
-    qmanager_cb_ctx_t *ctx = nullptr;
-    ctx = static_cast<qmanager_cb_ctx_t *> (arg);
-    std::shared_ptr<job_t> running_job
-        = std::make_shared<job_t> (job_state_kind_t::
-                                   RUNNING, id, uid, prio, ts, R);
-    std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
-    auto &queue = ctx->queues.at (queue_name);
+    int rc = 0;
+    json_t *o = NULL;
+    json_error_t err;
+    std::string R_out;
+    char *qn_attr = NULL;
+    std::string queue_name;
+    std::shared_ptr<queue_policy_base_t> queue;
+    std::shared_ptr<job_t> running_job = nullptr;
+    qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
 
-    if (queue->reconstruct (running_job) < 0) {
+    if ( (o = json_loads (R, 0, &err)) == NULL) {
+        rc = -1;
+        errno = EPROTO;
+        flux_log (h, LOG_ERR, "%s: parsing R for job (id=%jd): %s %s@%d:%d",
+                  __FUNCTION__, static_cast<intmax_t> (id),
+                  err.text, err.source, err.line, err.column);
+        goto out;
+    }
+    if ( (rc = json_unpack (o, "{ s?:{s?:{s?:{s?:s}}} }",
+                                   "attributes",
+                                       "system",
+                                           "scheduler",
+                                                "queue", &qn_attr)) < 0) {
+        json_decref (o);
+        errno = EPROTO;
+        flux_log (h, LOG_ERR, "%s: json_unpack for attributes", __FUNCTION__);
+        goto out;
+    }
+
+    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
+    json_decref (o);
+    queue = ctx->queues.at (queue_name);
+    running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
+                                                   id, uid, prio, ts, R);
+
+    if ( (rc = queue->reconstruct (static_cast<void *> (h),
+                                   running_job, R_out)) < 0) {
         flux_log_error (h, "%s: reconstruct (id=%jd queue=%s)", __FUNCTION__,
                        static_cast<intmax_t> (id), queue_name.c_str ());
         goto out;
     }
-    rc = 0;
+    flux_log (h, LOG_DEBUG, "requeue success (queue=%s id=%jd)",
+              queue_name.c_str (), static_cast<intmax_t> (id));
 
 out:
     return rc;
