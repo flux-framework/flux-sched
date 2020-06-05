@@ -106,6 +106,14 @@ load_resource () {
     flux module load sched-fluxion-resource "$@"
 }
 
+reload_qmanager () {
+    flux module reload -f sched-fluxion-qmanager "$@"
+}
+
+reload_resource () {
+    flux module reload -f sched-fluxion-resource "$@"
+}
+
 remove_qmanager () {
     flux module remove sched-fluxion-qmanager "$@"
 }
