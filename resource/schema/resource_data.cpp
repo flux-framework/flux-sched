@@ -106,6 +106,10 @@ resource_relation_t::~resource_relation_t ()
 
 }
 
+const resource_pool_t::string_to_status resource_pool_t::str_to_status = 
+      { { "up", resource_pool_t::status_t::UP }, 
+      { "down", resource_pool_t::status_t::DOWN } };
+
 
 } // Flux::resource_model
 } // Flux

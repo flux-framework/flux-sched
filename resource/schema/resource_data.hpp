@@ -27,6 +27,7 @@
 #include <string>
 #include <cstring>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include "resource/schema/color.hpp"
 #include "resource/schema/data_std.hpp"
@@ -44,6 +45,14 @@ struct resource_pool_t {
     resource_pool_t &operator= (const resource_pool_t &o);
     ~resource_pool_t ();
 
+    enum class status_t : int { 
+        UP = 0,
+        DOWN = 1
+    };
+
+    typedef std::unordered_map<std::string, status_t> string_to_status;
+    static const string_to_status str_to_status;
+
     // Resource pool data
     std::string type;
     std::map<std::string, std::string> paths;
@@ -58,6 +67,7 @@ struct resource_pool_t {
 
     schedule_t schedule;    //!< schedule data
     pool_infra_t idata;     //!< scheduling infrastructure data
+    status_t status = status_t::UP;
 };
 
 /*! Resource relationship type.
