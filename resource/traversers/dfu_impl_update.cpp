@@ -484,6 +484,12 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
              m_err_msg += __FUNCTION__;
              m_err_msg += ": emit_tm returned -1.\n";
          }
+         if (jobmeta.is_queue_set ()) {
+             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                 m_err_msg += __FUNCTION__;
+                 m_err_msg += ": emit_attrs returned -1.\n";
+             }
+         }
      }
 
     return (rc > 0)? 0 : -1;
@@ -538,6 +544,12 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
          if (writers->emit_tm (starttime, endtime) == -1) {
              m_err_msg += __FUNCTION__;
              m_err_msg += ": emit_tm returned -1.\n";
+         }
+         if (jobmeta.is_queue_set ()) {
+             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                 m_err_msg += __FUNCTION__;
+                 m_err_msg += ": emit_attrs returned -1.\n";
+             }
          }
     }
 
