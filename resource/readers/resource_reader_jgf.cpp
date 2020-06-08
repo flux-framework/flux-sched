@@ -44,6 +44,7 @@ struct fetch_helper_t {
     int64_t size = 0;
     int64_t uniq_id = 0;
     int exclusive = 0;
+    resource_pool_t::status_t status = resource_pool_t::status_t::UP;
     const char *type = NULL;
     const char *name = NULL;
     const char *unit = NULL;
@@ -186,11 +187,11 @@ int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
         m_err_msg += std::string (f.vertex_id) + ".\n";
         goto done;
     }
-    if ( (json_unpack (metadata, "{ s:s s:s s:s s:I s:I s:I s:b s:s s:I }",
+    if ( (json_unpack (metadata, "{ s:s s:s s:s s:I s:I s:I s?:i s:b s:s s:I }",
                                  "type", &f.type, "basename", &f.basename,
                                  "name", &f.name, "id", &f.id,
                                  "uniq_id", &f.uniq_id, "rank", &f.rank,
-                                 "exclusive", &f.exclusive,
+                                 "status", &f.status, "exclusive", &f.exclusive,
                                  "unit", &f.unit, "size", &f.size)) < 0) {
         errno = EPROTO;
         m_err_msg += __FUNCTION__;
@@ -245,6 +246,7 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g,
     g[v].size = fetcher.size;
     g[v].uniq_id = fetcher.uniq_id;
     g[v].rank = fetcher.rank;
+    g[v].status = fetcher.status;
     g[v].id = fetcher.id;
     g[v].name = fetcher.name;
     g[v].properties = fetcher.properties;

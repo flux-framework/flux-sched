@@ -102,6 +102,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].name = basename + istr;
     g[v].paths[subsys] = prefix + "/" + g[v].name;
     g[v].idata.member_of[subsys] = "*";
+    g[v].status = resource_pool_t::status_t::UP;
 
     // Indexing for fast look-up
     m.by_path[g[v].paths[subsys]] = v;
