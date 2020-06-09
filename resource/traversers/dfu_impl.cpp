@@ -201,6 +201,11 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
 {
     int rc = 0;
     // Prune by the visiting resource vertex's availability
+    // If resource is not UP, no reason to descend further.
+    if ((*m_graph)[u].status != resource_pool_t::status_t::UP) {
+        rc = -1;
+        goto done;
+    }
     // if rack has been allocated exclusively, no reason to descend further.
     if ( (rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
