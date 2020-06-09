@@ -1,0 +1,5 @@
+set-status /tiny0/rack0/node0 down
+get-status /tiny0/rack0/node0
+set-status /tiny0/rack0/node0 up
+get-status /tiny0/rack0/node0
+quit
