@@ -43,9 +43,9 @@ struct job_info_t {
     uint64_t jobid = UINT64_MAX;
     job_lifecycle_t state = job_lifecycle_t::INIT;
     int64_t scheduled_at = -1;
-    std::string jobspec_fn;
-    std::string jobspec_str;
-    std::string R;
+    std::string jobspec_fn = "";
+    std::string jobspec_str = "";
+    std::string R = "";
     double overhead = 0.0f;
 };
 

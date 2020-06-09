@@ -71,8 +71,8 @@ bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
     return (r.type == f.type
             && r.basename == f.basename
-            && r.size == f.size
-            && r.rank == f.rank
+            && r.size == static_cast<unsigned int> (f.size)
+            && r.rank == static_cast<int> (f.rank)
             && r.id == f.id
             && r.name == f.name
             && r.properties == f.properties
@@ -82,6 +82,40 @@ bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
 {
     return !(r == f);
+}
+
+std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
+{
+    std::stringstream sstream;
+    if (r.type != f.type)
+        sstream << "type=(" << r.type << ", " << f.type << ")";
+    if (r.basename != f.basename)
+        sstream << " basename=(" << r.basename << ", " << f.basename << ")";
+    if (r.size != f.size)
+        sstream << " size=(" << r.size << ", " << f.size << ")";
+    if (r.id != f.id)
+        sstream << " id=(" << r.id << ", " << f.id << ")";
+    if (r.name != f.name)
+        sstream << " name=(" << r.name << ", " << f.name << ")";
+    if (r.properties != f.properties) {
+        sstream << " properties=(";
+        for (auto &kv : r.properties)
+            sstream << kv.first << "=" << kv.second << " ";
+        sstream << ", ";
+        for (auto &kv : f.properties)
+            sstream << kv.first << "=" << kv.second << " ";
+        sstream << ")";
+    }
+    if (r.paths != f.paths) {
+        sstream << " paths=(";
+        for (auto &kv : r.paths)
+            sstream << kv.first << "=" << kv.second << " ";
+        sstream << ", ";
+        for (auto &kv : f.paths)
+            sstream << kv.first << "=" << kv.second << " ";
+        sstream << ")";
+    }
+    return sstream.str ();
 }
 
 /********************************************************************************
@@ -357,6 +391,7 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
         m_err_msg += __FUNCTION__;
         m_err_msg += ": inconsistent input vertex for ";
         m_err_msg += std::string (fetcher.vertex_id) + ".\n";
+        m_err_msg += diff (g[v], fetcher) + ".\n";
         goto done;
     }
     rc = 0;

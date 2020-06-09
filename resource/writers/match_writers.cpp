@@ -347,7 +347,7 @@ json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
                             "rank", g[u].rank,
                             "exclusive", (exclusive)? 1 : 0,
                             "unit", g[u].unit.c_str (),
-                            "size", needs))) {
+                            "size", static_cast<int64_t> (needs)))) {
         errno = ENOMEM;
     }
     return o;

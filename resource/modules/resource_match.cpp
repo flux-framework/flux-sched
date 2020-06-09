@@ -620,32 +620,36 @@ static inline std::string get_status_string (int64_t now, int64_t at)
     return (at == now)? "ALLOCATED" : "RESERVED";
 }
 
-static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
-                                int64_t id, int64_t now, int64_t at,
-                                const std::string &jspec,
-                                std::stringstream &R, double elapse)
+static inline bool is_existent_jobid (
+                       const std::shared_ptr<resource_ctx_t> &ctx,
+                       uint64_t jobid)
 {
-    job_lifecycle_t state = job_lifecycle_t::INIT;
+    return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
+}
 
-    if (id < 0 || now < 0 || at < 0) {
+static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
+                                int64_t id, bool reserved, int64_t at,
+                                const std::string &jspec,
+                                const std::stringstream &R, double elapse)
+{
+    if (id < 0 || at < 0) {
         errno = EINVAL;
         return -1;
     }
-
-    state = (at == now)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
     try {
+        job_lifecycle_t state = (!reserved)? job_lifecycle_t::ALLOCATED
+                                           : job_lifecycle_t::RESERVED;
         ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "",
                                                       jspec, R.str (), elapse);
-    } catch (std::bad_alloc &e) {
+        if (!reserved)
+            ctx->allocations[id] = id;
+        else
+            ctx->reservations[id] = id;
+    }
+    catch (std::bad_alloc &e) {
         errno = ENOMEM;
         return -1;
     }
-
-    if (at == now)
-        ctx->allocations[id] = id;
-    else
-        ctx->reservations[id] = id;
-
     return 0;
 }
 
@@ -675,32 +679,39 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     double elapse = 0.0f;
     struct timeval start;
     struct timeval end;
+    bool rsv = false;
 
-    gettimeofday (&start, NULL);
-
+    if ( (rc = gettimeofday (&start, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0
         && strcmp ("allocate_with_satisfiability", cmd) != 0) {
+        rc = -1;
         errno = EINVAL;
-        flux_log_error (ctx->h, "%s: unknown cmd: %s", __FUNCTION__, cmd);
+        flux_log (ctx->h, LOG_ERR, "%s: unknown cmd: %s", __FUNCTION__, cmd);
         goto done;
     }
 
     *at = *now = (int64_t)start.tv_sec;
-    if ((rc = run (ctx, jobid, cmd, jstr, at)) < 0)
+    if ( (rc = run (ctx, jobid, cmd, jstr, at)) < 0) {
         goto done;
-
-    if ((rc = ctx->writers->emit (o)) < 0) {
+    }
+    if ( (rc = ctx->writers->emit (o)) < 0) {
         flux_log_error (ctx->h, "%s: writer can't emit", __FUNCTION__);
         goto done;
     }
 
-    gettimeofday (&end, NULL);
+    rsv = (*now != *at)? true : false;
+    if ( (rc = gettimeofday (&end, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
 
-    if ((rc = track_schedule_info (ctx, jobid, *now, *at, jstr, o, *ov)) != 0) {
-        errno = EINVAL;
+    if ( (rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *ov)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto done;
@@ -708,13 +719,6 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
 done:
     return rc;
-}
-
-static inline bool is_existent_jobid (
-                       const std::shared_ptr<resource_ctx_t> &ctx,
-                       uint64_t jobid)
-{
-    return (ctx->jobs.find (jobid) != ctx->jobs.end ())? true : false;
 }
 
 static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
