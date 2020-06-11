@@ -68,6 +68,8 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
     std::string R_buf = "";
+    char *R_buf_c = NULL;
+
     if (!ctx || !ctx->h) {
         errno = EINVAL;
         goto out;
@@ -77,7 +79,11 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                                            R_buf, *at, *ov)) < 0) {
         goto out;
     }
-    (*R) = strdup (R_buf.c_str ());
+    if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+        rc = -1;
+        goto out;
+    }
+    (*R) = R_buf_c;
 
 out:
     return rc;
