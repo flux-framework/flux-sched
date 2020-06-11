@@ -84,11 +84,59 @@ out:
     return rc;
 }
 
-int reapi_module_t::cancel (void *h, const uint64_t jobid)
+int reapi_module_t::update_allocate (void *h, const uint64_t jobid,
+                                    const std::string &R, int64_t &at,
+                                    double &ov, std::string &R_out)
+{
+    int rc = -1;
+    int64_t rj = -1;
+    flux_t *fh = (flux_t *)h;
+    flux_future_t *f = NULL;
+    int64_t scheduled_at = -1;
+    double overhead = 0.0f;
+    const char *rset = NULL;
+    const char *status = NULL;
+
+    if (!fh || R == "" || jobid > INT64_MAX) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( !(f = flux_rpc_pack (fh, "sched-fluxion-resource.update",
+                                  FLUX_NODEID_ANY, 0,
+                                  "{s:I s:s}",
+                                      "jobid", jobid,
+                                      "R", R.c_str ())))
+        goto out;
+    if ( (rc = flux_rpc_get_unpack (f, "{s:I s:s s:f s:s s:I}",
+                                           "jobid", &rj,
+                                           "status", &status,
+                                           "overhead", &overhead,
+                                           "R", &rset,
+                                           "at", &scheduled_at)) < 0)
+        goto out;
+    if (rj != static_cast<int64_t> (jobid)
+        || rset == NULL
+        || status == NULL
+        || std::string ("ALLOCATED") != status) {
+        rc = -1;
+        errno = EPROTO;
+        goto out;
+    }
+    R_out = rset;
+    ov = overhead;
+    at = scheduled_at;
+
+out:
+    flux_future_destroy (f);
+    return rc;
+}
+
+int reapi_module_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
 {
     int rc = -1;
     flux_t *fh = (flux_t *)h;
     flux_future_t *f = NULL;
+    int saved_errno;
 
     if (!fh || jobid > INT64_MAX) {
         errno = EINVAL;
@@ -99,7 +147,12 @@ int reapi_module_t::cancel (void *h, const uint64_t jobid)
                              "{s:I}", "jobid", (const int64_t)jobid))) {
         goto out;
     }
+    saved_errno = errno;
     if ((rc = flux_rpc_get (f, NULL)) < 0) {
+        if (noent_ok && errno == ENOENT) {
+            errno = saved_errno;
+            rc = 0;
+	}
         goto out;
     }
     rc = 0;

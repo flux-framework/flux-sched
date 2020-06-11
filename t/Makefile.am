@@ -28,6 +28,9 @@ TESTS = \
     t1004-qmanager-optimize.t \
     t1005-qmanager-conf.t \
     t1006-qmanager-multiqueue.t \
+    t1007-recovery-full.t \
+    t1008-recovery-none.t \
+    t1009-recovery-multiqueue.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
@@ -52,6 +55,8 @@ TESTS = \
     t3019-resource-mtl1.t \
     t3020-resource-mtl2.t \
     t3021-resource-mtl3.t \
+    t3022-resource-update.t \
+    t3023-resource-update2.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
@@ -61,8 +66,7 @@ TESTS = \
     t4006-properties.t \
     t4007-match-var-aware.t \
     t4008-match-jgf.t \
-    t4009-update-basic.t \
-    t4010-update-multi.t \
+    t4009-match-update.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t

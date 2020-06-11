@@ -72,13 +72,31 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx, bool orelse_reserve,
                               bool *reserved,
                               char **R, int64_t *at, double *ov);
 
+/*! Update the resource state with R.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param jobid     jobid of the uint64_t type.
+ *  \param R         R string
+ *  \param at        return the scheduled time
+ *  \param ov        return the performance overhead
+ *                   in terms of elapse time needed to complete
+ *                   the match operation.
+ *  \param R_out     return the updated R string.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
+                               const uint64_t jobid, const char *R, int64_t *at,
+                               double *ov, const char **R_out);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobid     jobid of the uint64_t type.
+ *  \param noent_ok  don't return an error on nonexistent jobid
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid);
+int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
+                      const uint64_t jobid, bool noent_ok);
 
 /*! Get the information on the allocation or reservation corresponding
  *  to jobid.

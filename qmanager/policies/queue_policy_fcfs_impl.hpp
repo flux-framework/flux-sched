@@ -48,7 +48,7 @@ int queue_policy_fcfs_t<reapi_type>::cancel_completed_jobs (void *h)
     // Pop newly completed jobs (e.g., per a free request from job-manager
     // as received by qmanager) to remove them from the resource infrastructure.
     while ((job = complete_pop ()) != nullptr)
-        rc += reapi_type::cancel (h, job->id);
+        rc += reapi_type::cancel (h, job->id, true);
     return rc;
 }
 
@@ -124,6 +124,16 @@ int queue_policy_fcfs_t<reapi_type>::run_sched_loop (void *h,
     rc += allocate_jobs (h, use_alloced_queue);
     return rc;
 }
+
+template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::reconstruct_resource (
+        void *h, std::shared_ptr<job_t> job, std::string &R_out)
+{
+    return reapi_type::update_allocate (h, job->id, job->schedule.R,
+                                        job->schedule.at,
+                                        job->schedule.ov, R_out);
+}
+
 
 } // namespace Flux::queue_manager::detail
 } // namespace Flux::queue_manager

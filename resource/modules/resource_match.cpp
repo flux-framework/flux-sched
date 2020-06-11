@@ -100,6 +100,9 @@ resource_ctx_t::~resource_ctx_t ()
 static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg);
 
+static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
 
@@ -121,6 +124,8 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.update", update_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.cancel", cancel_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
@@ -653,6 +658,116 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
     return 0;
 }
 
+static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
+                    std::string &jgf, int64_t &starttime, uint64_t &duration)
+{
+    int rc = 0;
+    int version = 0;
+    int saved_errno;
+    uint64_t st = 0;
+    uint64_t et = 0;
+    json_t *o = NULL;
+    json_t *graph = NULL;
+    json_error_t error;
+    char *jgf_str = NULL;
+
+    if ( (o = json_loads (R, 0, &error)) == NULL) {
+        rc = -1;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error.text);
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (rc = json_unpack (o, "{s:i s:{s:I s:I} s?:o}",
+                                   "version", &version,
+                                   "execution",
+                                       "starttime", &st,
+                                       "expiration", &et,
+                                   "scheduling", &graph)) < 0) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: json_unpack", __FUNCTION__);
+        goto freemem_out;
+    }
+    if (version != 1 || st < 0 || et < st) {
+        rc = -1;
+        errno = EPROTO;
+        flux_log (ctx->h, LOG_ERR,
+                  "%s: version=%d, starttime=%jd, expiration=%jd",
+                  __FUNCTION__, version,
+                  static_cast<intmax_t> (st), static_cast<intmax_t> (et));
+        goto freemem_out;
+    }
+    if (graph == NULL) {
+        rc = -1;
+        errno = ENOENT;
+        flux_log (ctx->h, LOG_ERR, "%s: no scheduling key in R", __FUNCTION__);
+        goto freemem_out;
+    }
+    if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
+        rc = -1;
+        errno = ENOMEM;
+        flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+        goto freemem_out;
+    }
+    jgf = jgf_str;
+    free (jgf_str);
+    starttime = static_cast<int64_t> (st);
+    duration = et - st;
+
+freemem_out:
+    saved_errno = errno;
+    json_decref (o);
+    json_decref (graph);
+    errno = saved_errno;
+out:
+    return rc;
+}
+
+static int Rlite_equal (const std::shared_ptr<resource_ctx_t> &ctx,
+                        const char *R1, const char *R2)
+{
+    int rc = -1;
+    int saved_errno;
+    json_t *o1 = NULL;
+    json_t *o2 = NULL;
+    json_t *rlite1 = NULL;
+    json_t *rlite2 = NULL;
+    json_error_t error1;
+    json_error_t error2;
+
+    if ( (o1 = json_loads (R1, 0, &error1)) == NULL) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error1.text);
+        goto out;
+    }
+    if ( (rc = json_unpack (o1, "{s:{s:o}}",
+                                    "execution",
+                                    "R_lite", &rlite1)) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (o2 = json_loads (R2, 0, &error2)) == NULL) {
+        errno = EINVAL;
+        flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error2.text);
+        goto out;
+    }
+    if ( (rc = json_unpack (o2, "{s:{s:o}}",
+                                    "execution",
+                                    "R_lite", &rlite2)) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    rc = (json_equal (rlite1, rlite2) == 1)? 0 : 1;
+
+out:
+    saved_errno = errno;
+    json_decref (o1);
+    json_decref (o2);
+    json_decref (rlite1);
+    json_decref (rlite2);
+    errno = saved_errno;
+    return rc;
+}
+
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                 const char *cmd, const std::string &jstr, int64_t *at)
 {
@@ -668,6 +783,29 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     else if (std::string ("allocate_orelse_reserve") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                      jobid, at);
+   return rc;
+}
+
+static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                const std::string &jgf, int64_t at, uint64_t duration)
+{
+    int rc = 0;
+    dfu_traverser_t &tr = *(ctx->traverser);
+    std::shared_ptr<resource_reader_base_t> rd;
+    if ((rd = create_resource_reader ("jgf")) == nullptr) {
+        rc = -1;
+        flux_log (ctx->h, LOG_ERR, "%s: create_resource_reader (id=%jd)",
+                  __FUNCTION__, static_cast<intmax_t> (jobid));
+        goto out;
+    }
+    if ((rc = tr.run (jgf, ctx->writers, rd, jobid, at, duration)) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: dfu_traverser_t::run (id=%jd): %s",
+                  __FUNCTION__, static_cast<intmax_t> (jobid),
+                  ctx->traverser->err_message ().c_str ());
+        goto out;
+    }
+
+out:
    return rc;
 }
 
@@ -719,6 +857,121 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
 done:
     return rc;
+}
+
+static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                       const char *R, int64_t &at, double &ov,
+                       std::stringstream &o)
+{
+    int rc = 0;
+    uint64_t duration = 0;
+    double elapse = 0.0f;
+    struct timeval start;
+    struct timeval end;
+    std::string jgf;
+    std::string R2;
+
+    if ( (rc = gettimeofday (&start, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = parse_R (ctx, R, jgf, at, duration)) < 0) {
+        flux_log_error (ctx->h, "%s: parsing R", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = run (ctx, jobid, jgf, at, duration)) < 0) {
+        flux_log_error (ctx->h, "%s: run", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = ctx->writers->emit (o)) < 0) {
+        flux_log_error (ctx->h, "%s: writers->emit", __FUNCTION__);
+        goto done;
+    }
+    if ( (rc = gettimeofday (&end, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
+    ov = get_elapse_time (start, end);
+    update_match_perf (ctx, ov);
+    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, ov)) != 0) {
+        flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
+                        __FUNCTION__, (intmax_t)jobid);
+        goto done;
+    }
+
+done:
+    return rc;
+}
+
+static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0f;
+    int64_t jobid = 0;
+    uint64_t duration = 0;
+    std::string status = "";
+    std::stringstream o;
+
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    if (flux_request_unpack (msg, NULL, "{s:I s:s}",
+                                            "jobid", &jobid,
+                                            "R", &R) < 0) {
+        flux_log_error (ctx->h, "%s: flux_request_unpack", __FUNCTION__);
+        goto error;
+    }
+    if (is_existent_jobid (ctx, jobid)) {
+        int rc = 0;
+        struct timeval st, et;
+        if ( (rc = gettimeofday (&st, NULL)) < 0) {
+            flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+            goto error;
+        }
+        if ( (rc = Rlite_equal (ctx, R, ctx->jobs[jobid]->R.c_str ())) < 0) {
+            flux_log_error (ctx->h, "%s: Rlite_equal", __FUNCTION__);
+            goto error;
+        } else if (rc == 1) {
+            errno=EINVAL;
+            flux_log (ctx->h, LOG_ERR,
+                      "%s: jobid (%jd) with different R exists!",
+                      __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto error;
+        }
+        if ( (rc = gettimeofday (&et, NULL)) < 0) {
+            flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+            goto error;
+        }
+        // If a jobid with matching R exists, no need to update
+        ov = get_elapse_time (st, et);
+        get_jobstate_str (ctx->jobs[jobid]->state, status);
+        o << ctx->jobs[jobid]->R;
+        at = ctx->jobs[jobid]->scheduled_at;
+        flux_log (ctx->h, LOG_DEBUG, "%s: jobid (%jd) with matching R exists",
+                  __FUNCTION__, static_cast<intmax_t> (jobid));
+    } else if (run_update (ctx, jobid, R, at, ov, o) < 0) {
+        flux_log_error (ctx->h,
+                        "%s: update failed (id=%jd)",
+                        __FUNCTION__, static_cast<intmax_t> (jobid));
+        goto error;
+    }
+
+    if ( status == "")
+        status = get_status_string (at, at);
+
+    if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
+                                       "jobid", jobid,
+                                       "status", status.c_str (),
+                                       "overhead", ov,
+                                       "R", o.str ().c_str (),
+                                       "at", at) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)

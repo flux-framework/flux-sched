@@ -68,6 +68,8 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
     std::string R_buf = "";
+    char *R_buf_c = NULL;
+
     if (!ctx || !ctx->h) {
         errno = EINVAL;
         goto out;
@@ -77,19 +79,48 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                                            R_buf, *at, *ov)) < 0) {
         goto out;
     }
-    (*R) = strdup (R_buf.c_str ());
+    if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+        rc = -1;
+        goto out;
+    }
+    (*R) = R_buf_c;
 
 out:
     return rc;
 }
 
-extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid)
+extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
+                   const uint64_t jobid, const char *R, int64_t *at,
+                   double *ov, const char **R_out)
+{
+    int rc = -1;
+    std::string R_buf = "";
+    const char *R_buf_c = NULL;
+    if (!ctx || !ctx->h || !R) {
+        errno = EINVAL;
+        goto out;
+    }
+    if ( (rc = reapi_cli_t::update_allocate (ctx->h,
+                                             jobid, R, *at, *ov, R_buf)) < 0) {
+        goto out;
+    }
+    if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+        rc = -1;
+        goto out;
+    }
+    *R_out = R_buf_c;
+out:
+    return rc;
+}
+
+extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
+                                 const uint64_t jobid, bool noent_ok)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::cancel (ctx->h, jobid);    
+    return reapi_cli_t::cancel (ctx->h, jobid, noent_ok);
 }
 
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,

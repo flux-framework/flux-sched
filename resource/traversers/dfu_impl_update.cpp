@@ -484,6 +484,12 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
              m_err_msg += __FUNCTION__;
              m_err_msg += ": emit_tm returned -1.\n";
          }
+         if (jobmeta.is_queue_set ()) {
+             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                 m_err_msg += __FUNCTION__;
+                 m_err_msg += ": emit_attrs returned -1.\n";
+             }
+         }
      }
 
     return (rc > 0)? 0 : -1;
@@ -531,7 +537,23 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     needs = static_cast<unsigned int>(m_graph_db->metadata
                                           .v_rt_edges[dom].get_needs ());
     m_color.reset ();
-    return (upd_dfv (root, writers, needs, x, jobmeta, false, dfu) > 0)? 0: -1;
+
+    if ( (rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu)) > 0) {
+         uint64_t starttime = jobmeta.at;
+         uint64_t endtime = jobmeta.at + jobmeta.duration;
+         if (writers->emit_tm (starttime, endtime) == -1) {
+             m_err_msg += __FUNCTION__;
+             m_err_msg += ": emit_tm returned -1.\n";
+         }
+         if (jobmeta.is_queue_set ()) {
+             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                 m_err_msg += __FUNCTION__;
+                 m_err_msg += ": emit_attrs returned -1.\n";
+             }
+         }
+    }
+
+    return (rc > 0)? 0: -1;
 }
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)

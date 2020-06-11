@@ -46,7 +46,7 @@ int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void *h)
     // Pop newly completed jobs (e.g., per a free request from job-manager
     // as received by qmanager) to remove them from the resource infrastructure.
     while ((job = complete_pop ()) != nullptr)
-        rc += reapi_type::cancel (h, job->id);
+        rc += reapi_type::cancel (h, job->id, true);
     return rc;
 }
 
@@ -56,7 +56,7 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
     int rc = 0;
     std::map<uint64_t, flux_jobid_t>::const_iterator citer;
     for (citer = m_reserved.begin (); citer != m_reserved.end (); citer++)
-        rc += reapi_type::cancel (h, citer->second);
+        rc += reapi_type::cancel (h, citer->second, false);
     m_reserved.clear ();
     return rc;
 }
@@ -181,6 +181,15 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h,
     rc += allocate_orelse_reserve_jobs (h, use_alloced_queue);
     rc += cancel_reserved_jobs (h);
     return rc;
+}
+
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::reconstruct_resource (
+        void *h, std::shared_ptr< job_t> job, std::string &R_out)
+{
+    return reapi_type::update_allocate (h, job->id, job->schedule.R,
+                                        job->schedule.at,
+                                        job->schedule.ov, R_out);
 }
 
 } // namespace Flux::queue_manager::detail

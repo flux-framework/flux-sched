@@ -627,12 +627,46 @@ bool rv1_match_writers_t::empty ()
     return (rlite.empty () && jgf.empty ());
 }
 
+int rv1_match_writers_t::attrs_json (json_t **o) {
+    int rc = 0;
+    json_t *sys = NULL;
+    json_t *attrs = json_object ();
+    for (const auto &kv : m_attrs) {
+        json_t *stro = NULL;
+        if (!(stro = json_string (kv.second.c_str ()))) {
+            json_decref (attrs);
+            rc = -1;
+            errno = ENOMEM;
+            goto ret;
+        }
+        if ((rc = json_object_set_new (attrs, kv.first.c_str (), stro)) == -1) {
+            json_decref (attrs);
+            rc = -1;
+            errno = ENOMEM;
+            goto ret;
+        }
+    }
+    if (!(sys = json_pack ("{s:{s:o}}",
+                               "system",
+                                   "scheduler", attrs))) {
+        json_decref (attrs);
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    *o = sys;
+
+ret:
+    return rc;
+}
+
 int rv1_match_writers_t::emit (std::stringstream &out)
 {
     int rc = 0;
     json_t *o = NULL;
     json_t *rlite_o = NULL;
     json_t *jgf_o = NULL;
+    json_t *attrs_o = NULL;
     char *json_str = NULL;
 
     if (rlite.empty () || jgf.empty ())
@@ -655,6 +689,17 @@ int rv1_match_writers_t::emit (std::stringstream &out)
         rc = -1;
         errno = ENOMEM;
         goto ret;
+    }
+    if (!m_attrs.empty ()) {
+        if ((rc = attrs_json (&attrs_o)) < 0) {
+            json_decref (o);
+            goto ret;
+        }
+        if ((rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
+            json_decref (o);
+            errno = ENOMEM;
+            goto ret;
+        }
     }
     if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
         json_decref (o);
@@ -697,6 +742,12 @@ int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
 {
     m_starttime = start_tm;
     m_expiration = end_tm;
+    return 0;
+}
+
+int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
+{
+    m_attrs[k] = v;
     return 0;
 }
 

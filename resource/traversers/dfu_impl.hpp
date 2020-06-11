@@ -58,6 +58,14 @@ struct jobmeta_t {
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
 
+    bool is_queue_set () const {
+        return m_queue_set;
+    }
+
+    const std::string &get_queue () const {
+        return m_queue;
+    }
+
     void build (Jobspec::Jobspec &jobspec, bool alloc, int64_t id, int64_t t)
     {
         at = t;
@@ -68,7 +76,15 @@ struct jobmeta_t {
             duration = SYSTEM_MAX_DURATION; // need config support ultimately
         else
             duration = (int64_t)jobspec.attributes.system.duration;
+        if (jobspec.attributes.system.queue != "") {
+            m_queue = jobspec.attributes.system.queue;
+            m_queue_set = true;
+        }
     }
+
+private:
+    bool m_queue_set = false;
+    std::string m_queue = "";
 };
 
 /*! implementation class of dfu_traverser_t

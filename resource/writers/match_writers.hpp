@@ -62,6 +62,9 @@ public:
     virtual int emit_tm (uint64_t starttime, uint64_t expiration) {
         return 0;
     }
+    virtual int emit_attrs (const std::string &k, const std::string &v) {
+        return 0;
+    }
     void compress (std::stringstream &o, const std::set<int64_t> &ids);
 };
 
@@ -158,10 +161,14 @@ public:
     virtual int emit_edg (const std::string &prefix,
                           const f_resource_graph_t &g, const edg_t &e);
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
+    virtual int emit_attrs (const std::string &k, const std::string &v);
 private:
+    int attrs_json (json_t **o);
+
     rlite_match_writers_t rlite;
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
+    std::map<std::string, std::string> m_attrs;
     jgf_match_writers_t jgf;
 };
 

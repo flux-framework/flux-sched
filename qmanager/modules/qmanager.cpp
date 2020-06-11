@@ -31,6 +31,8 @@ extern "C" {
 #include <jansson.h>
 }
 
+#include <sstream>
+
 #include "qmanager/policies/base/queue_policy_base.hpp"
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
@@ -100,7 +102,9 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     optmgr_kv_t<qmanager_opts_t> opts_store;
     std::string info_str = "";
     json_object_foreach (conf, k, v) {
-        std::string value = json_string_value (v);
+        std::string value = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT);
+        if (json_typeof (v) == JSON_STRING)
+            value = value.substr (1, value.length () - 2);
         if ( (rc = opts_store.put (k, value)) < 0) {
             flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s, %s)",
                              __FUNCTION__, k, value.c_str ());

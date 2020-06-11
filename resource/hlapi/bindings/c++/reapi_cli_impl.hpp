@@ -48,7 +48,14 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     return NOT_YET_IMPLEMENTED;
 }
 
-int reapi_cli_t::cancel (void *h, const int64_t jobid)
+int reapi_cli_t::update_allocate (void *h, const uint64_t jobid,
+                                  const std::string &R, int64_t &at, double &ov,
+                                  std::string &R_out)
+{
+    return NOT_YET_IMPLEMENTED;
+}
+
+int reapi_cli_t::cancel (void *h, const int64_t jobid, bool noent_ok)
 {
     return NOT_YET_IMPLEMENTED;
 }
