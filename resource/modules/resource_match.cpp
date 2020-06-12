@@ -462,8 +462,10 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
             flux_log (ctx->h, LOG_WARNING, "%s: whitelist unsupported",
                       __FUNCTION__);
     }
-
-    gettimeofday (&st, NULL);
+    if ( (rc = gettimeofday (&st, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     if (ctx->args.load_file != "") {
         if (populate_resource_db_file (ctx, rd) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: error loading resources from file",
@@ -482,7 +484,10 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
                   "%s: loaded resources from hwloc in the KVS",
                   __FUNCTION__);
     }
-    gettimeofday (&et, NULL);
+    if ( (rc = gettimeofday (&et, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     ctx->perf.load = get_elapse_time (st, et);
     rc = 0;
 
