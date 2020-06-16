@@ -70,7 +70,18 @@ struct match_perf_t {
     double accum;                  /* Total match time accumulated */
 };
 
-struct resource_ctx_t {
+class resource_interface_t {
+public:
+    ~resource_interface_t ();
+    int fetch_and_reset_update_rc ();
+    int get_update_rc () const;
+    void set_update_rc (int rc);
+    flux_future_t *update_f = nullptr;
+private:
+    int m_update_rc = 0;
+};
+
+struct resource_ctx_t : public resource_interface_t {
     ~resource_ctx_t ();
     flux_t *h;                     /* Flux handle */
     flux_msg_handler_t **handlers; /* Message handlers */
@@ -85,6 +96,29 @@ struct resource_ctx_t {
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
 };
+
+resource_interface_t::~resource_interface_t ()
+{
+    if (update_f)
+        flux_future_destroy (update_f);
+}
+
+int resource_interface_t::fetch_and_reset_update_rc ()
+{
+    int rc = m_update_rc;
+    m_update_rc = 0;
+    return rc;
+}
+
+int resource_interface_t::get_update_rc () const
+{
+    return m_update_rc;
+}
+
+void resource_interface_t::set_update_rc (int rc)
+{
+    m_update_rc = rc;
+}
 
 resource_ctx_t::~resource_ctx_t ()
 {
