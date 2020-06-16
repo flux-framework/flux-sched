@@ -102,6 +102,7 @@ struct resource_ctx_t : public resource_interface_t {
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
+    std::shared_ptr<resource_reader_base_t> reader; /* resource reader */
     match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
@@ -271,6 +272,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
         ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
+        ctx->reader = nullptr;  /* Cannot be allocated at this point */
     }
 
 done:
@@ -429,8 +431,7 @@ error:
     return NULL;
 }
 
-static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
-                                      std::shared_ptr<resource_reader_base_t> rd)
+static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     std::ifstream in_file;
@@ -445,9 +446,9 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
     }
     buffer << in_file.rdbuf ();
     in_file.close ();
-    if ( (rc = ctx->db->load (buffer.str (), rd)) < 0) {
+    if ( (rc = ctx->db->load (buffer.str (), ctx->reader)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                  __FUNCTION__, rd->err_message ().c_str ());
+                  __FUNCTION__, ctx->reader->err_message ().c_str ());
         goto done;
     }
     rc = 0;
@@ -456,65 +457,288 @@ done:
     return rc;
 }
 
-static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
-                                     std::shared_ptr<resource_reader_base_t> rd)
+static int grow (std::shared_ptr<resource_ctx_t> &ctx,
+                 vtx_t v, unsigned int rank)
 {
     int n = -1;
     int rc = -1;
     char k[64] = {0};
-    uint32_t rank = 0;
-    uint32_t size = 0;
     json_t *o = NULL;
-    flux_t *h = ctx->h;
+    int saved_errno = 0;
     const char *hwloc_xml = NULL;
     resource_graph_db_t &db = *(ctx->db);
-    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
-    if (flux_get_size (h, &size) == -1) {
-        flux_log (h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
-        goto done;
-    }
-
-    // For 0th rank -- special case to use rd->unpack
-    rank = 0;
     n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
     if ((n < 0) || ((unsigned int) n > sizeof (k))) {
         errno = ENOMEM;
-        goto done;
+        goto ret;
     }
-    o = get_string_blocking (h, k);
+    if ( !(o = get_string_blocking (ctx->h, k))) {
+        flux_log_error (ctx->h, "%s: get_string_blocking", __FUNCTION__);
+        goto ret;
+    }
     hwloc_xml = json_string_value (o);
-    if ( (rc = db.load (hwloc_xml, rd, rank)) < 0) {
-        flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                  __FUNCTION__,  rd->err_message ().c_str ());
-        goto done;
-    }
-    Jput (o);
+    if (v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
+        if ( (rc = db.load (hwloc_xml, ctx->reader, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
+                      __FUNCTION__,  ctx->reader->err_message ().c_str ());
+            goto freemem_ret;
+        }
+    } else {
+        if ( (rc = db.load (hwloc_xml, ctx->reader, v, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
+                      __FUNCTION__,  ctx->reader->err_message ().c_str ());
+            goto freemem_ret;
+        }
+   }
+
+freemem_ret:
+    saved_errno = errno;
+    json_decref (o);
+    errno = saved_errno;
+ret:
+    return rc;
+}
+
+static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                             struct idset *ids)
+{
+    int rc = -1;
+    resource_graph_db_t &db = *(ctx->db);
+    unsigned int rank = idset_first (ids);
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        // Special case to use rd->unpacpk
+        if ( (rc = grow (ctx, v, rank)) < 0)
+            goto done;
+    }
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        rc = -1;
+        errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: cluster vertex is unavailable",
                   __FUNCTION__);
         goto done;
     }
     v = db.metadata.roots.at ("containment");
 
-    // For the rest of the ranks -- general case
-    for (rank=1; rank < size; rank++) {
-        n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
-        if ((n < 0) || ((unsigned int) n > sizeof (k))) {
-          errno = ENOMEM;
-          goto done;
-        }
-        o = get_string_blocking (h, k);
-        hwloc_xml = json_string_value (o);
-        if ( (rc = db.load (hwloc_xml, rd, v, rank)) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                      __FUNCTION__,  rd->err_message ().c_str ());
+    rank = idset_next (ids, rank);
+    while (rank != IDSET_INVALID_ID) {
+        // For the rest of the ranks -- general case
+        if ( (rc = grow (ctx, v, rank)) < 0)
             goto done;
+        rank = idset_next (ids, rank);
+    }
+
+done:
+    return rc;
+}
+
+static int decode_all (std::shared_ptr<resource_ctx_t> &ctx,
+                       std::set<int64_t> &ranks)
+{
+    unsigned int size = 0;
+    unsigned int rank = 0;
+    if (flux_get_size (ctx->h, &size) < -1) {
+        flux_log (ctx->h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
+        return -1;
+    }
+    for (rank = 0; rank < size; ++rank) {
+        auto ret = ranks.insert (static_cast<int64_t> (rank));
+        if (!ret.second) {
+            errno = EEXIST;
+            return -1;
         }
-        Jput (o);
+    }
+    return 0;
+}
+
+static int decode_rankset (std::shared_ptr<resource_ctx_t> &ctx,
+                           const char *ids, std::set<int64_t> &ranks)
+{
+    int rc = -1;
+    unsigned int rank;
+    struct idset *idset = NULL;
+
+    if (!ids) {
+        errno = EINVAL;
+        goto done;
+    }
+    if (std::string ("all") == ids) {
+        if ( (rc = decode_all (ctx, ranks)) < 0)
+            goto done;
+    } else {
+        if ( !(idset = idset_decode (ids)))
+            goto done;
+        for (rank = idset_first (idset);
+             rank != IDSET_INVALID_ID; rank = idset_next (idset, rank)) {
+            auto ret = ranks.insert (static_cast<int64_t> (rank));
+            if (!ret.second) {
+                errno = EEXIST;
+                goto done;
+            }
+        }
     }
     rc = 0;
 
+done:
+    idset_destroy (idset);
+    return rc;
+}
+
+static int mark_lazy (std::shared_ptr<resource_ctx_t> &ctx,
+                      const char *ids, resource_pool_t::status_t status)
+{
+    int rc = 0;
+    switch (status) {
+    case resource_pool_t::status_t::UP:
+        ctx->set_ups (ids);
+        break;
+
+    case resource_pool_t::status_t::DOWN:
+    default:
+        // "down" shouldn't be a part of the first response of resource.acquire
+        errno = EINVAL;
+        rc = -1;
+    }
+    return rc;
+}
+
+static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
+                     const char *ids, resource_pool_t::status_t status)
+{
+    int rc = -1;
+    std::set <int64_t> ranks;
+    if (!ids) {
+        errno = EINVAL;
+        goto done;
+    }
+    if ( (rc = decode_rankset (ctx, ids, ranks)) < 0)
+        goto done;
+    if ( (rc = ctx->traverser->mark (ranks, status)) < 0) {
+        flux_log_error (ctx->h, "%s: traverser::mark: %s", __FUNCTION__,
+                                ctx->traverser->err_message ().c_str ());
+        ctx->traverser->clear_err_message ();
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource status changed (rankset=[%s] status=%s)",
+              ids, resource_pool_t::status_to_str (status).c_str ());
+done:
+    return rc;
+}
+
+static int mark (std::shared_ptr<resource_ctx_t> &ctx,
+                 const char *ids, resource_pool_t::status_t status)
+{
+    return (ctx->traverser->is_initialized ())? mark_now (ctx, ids, status)
+                                              : mark_lazy (ctx, ids, status);
+}
+
+static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                               struct idset *grow_set,
+                               const char *up,
+                               const char *down)
+{
+    int rc = 0;
+    if (grow_set && (rc = grow_resource_db (ctx, grow_set)) < 0) {
+        flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
+        goto done;
+    }
+    if (up && (rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0) {
+        flux_log_error (ctx->h, "%s: mark (up)", __FUNCTION__);
+        goto done;
+    }
+    if (down && (rc = mark (ctx, down, resource_pool_t::status_t::DOWN)) < 0) {
+        flux_log_error (ctx->h, "%s: mark (down)", __FUNCTION__);
+        goto done;
+    }
+done:
+    return rc;
+}
+
+static struct idset *get_grow_idset (json_t *o)
+{
+    json_t *v = NULL;
+    const char *k = NULL;
+    struct idset *ids = NULL;
+
+    if ( !(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+        goto done;
+
+    json_object_foreach (o, k, v) {
+        struct idset *ids_tmp = NULL;
+        if ( !(ids_tmp = idset_decode (k)))
+            goto done;
+        unsigned int id = idset_first (ids_tmp);
+        while (id != IDSET_INVALID_ID) {
+            if (idset_set (ids, id) < 0)
+                goto done;
+            id = idset_next (ids_tmp, id);
+        }
+        idset_destroy (ids_tmp);
+    }
+done:
+    return ids;
+}
+
+static void update_resource (flux_future_t *f, void *arg)
+{
+    int rc = -1;
+    const char *up = NULL;
+    const char *down = NULL;
+    json_t *grows = NULL;
+    struct idset *grow_set = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if ( (rc = flux_rpc_get_unpack (f, "{s?:o s?:s s?:s}",
+                                           "resources", &grows,
+                                           "up", &up,
+                                           "down", &down)) < 0) {
+        flux_log_error (ctx->h, "%s: exiting due to resource.acquire failure",
+                        __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
+        goto done;
+    }
+    if (grows) {
+        if ( !(grow_set = get_grow_idset (grows))) {
+            rc = -1;
+            flux_log_error (ctx->h, "%s: get_grow_idset", __FUNCTION__);
+            goto done;
+        }
+    }
+    if ( (rc = update_resource_db (ctx, grow_set, up, down)) < 0) {
+        flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
+        goto done;
+    }
+done:
+    idset_destroy (grow_set);
+    flux_future_reset (f);
+    ctx->set_update_rc (rc);
+}
+
+static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx)
+{
+    int rc = -1;
+    json_t *o = NULL;
+
+    if ( !(ctx->update_f = flux_rpc (ctx->h, "resource.acquire", NULL,
+                                     FLUX_NODEID_ANY, FLUX_RPC_STREAMING))) {
+        flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
+        goto done;
+    }
+
+    update_resource (ctx->update_f, static_cast<void *> (ctx->h));
+    if ( (rc = ctx->fetch_and_reset_update_rc ()) < 0) {
+        flux_log_error (ctx->h, "%s: update_resource", __FUNCTION__);
+        goto done;
+    }
+
+    if ( (rc = flux_future_then (ctx->update_f, -1.0, update_resource,
+                                 static_cast<void *> (ctx->h))) < 0) {
+        flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+        goto done;
+    }
 done:
     return rc;
 }
@@ -524,19 +748,19 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = -1;
     double elapse;
     struct timeval st, et;
-    std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-    if ( (rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
+    if ( (ctx->reader = create_resource_reader (
+                            ctx->args.load_format)) == nullptr) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create load reader",
                   __FUNCTION__);
         goto done;
     }
     if (ctx->args.load_allowlist != "") {
-        if (rd->set_allowlist (ctx->args.load_allowlist) < 0)
+        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
             flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
-        if (!rd->is_allowlist_supported ())
+        if (!ctx->reader->is_allowlist_supported ())
             flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
                       __FUNCTION__);
     }
@@ -545,7 +769,7 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         goto done;
     }
     if (ctx->args.load_file != "") {
-        if (populate_resource_db_file (ctx, rd) < 0) {
+        if (populate_resource_db_file (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: error loading resources from file",
                       __FUNCTION__);
             goto done;
@@ -553,7 +777,7 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_INFO, "%s: loaded resources from %s",
                   __FUNCTION__,  ctx->args.load_file.c_str ());
     } else {
-        if (populate_resource_db_kvs (ctx, rd) < 0) {
+        if (populate_resource_db_kvs (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: loading resources from the KVS",
                       __FUNCTION__);
             goto done;
@@ -683,6 +907,21 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
                   __FUNCTION__);
         return -1;
 
+    }
+
+    // Perform the initial status marking only when "up" rankset is available
+    // Rankless reader cases (required for testing e.g., GRUG) must not
+    // exectute the following branch.
+    if (ctx->is_ups_set ()) {
+        if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: mark (down)", __FUNCTION__);
+            return -1;
+        }
+        if (mark (ctx, ctx->get_ups ().c_str (),
+                  resource_pool_t::status_t::UP) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: mark (up)", __FUNCTION__);
+            return -1;
+        }
     }
     return 0;
 }
