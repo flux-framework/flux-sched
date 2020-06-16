@@ -207,6 +207,11 @@ void resource_interface_t::set_ups (const char *ups)
 resource_ctx_t::~resource_ctx_t ()
 {
     flux_msg_handler_delvec (handlers);
+    for (auto &t : notify_msgs) {
+        if (flux_respond_error (h, t.second->get_msg (), ECANCELED, NULL) < 0) {
+            flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+        }
+    }
 }
 
 
@@ -240,6 +245,12 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
+static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
+static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -257,6 +268,10 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.set_property", set_property_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.get_property", get_property_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.notify", notify_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.disconnect", disconnect_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -758,6 +773,11 @@ static void update_resource (flux_future_t *f, void *arg)
     if ( (rc = update_resource_db (ctx, grow_set, up, down)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
+    }
+    for (auto &kv : ctx->notify_msgs) {
+        if ( (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
+            flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+        }
     }
 done:
     idset_destroy (grow_set);
@@ -1720,6 +1740,74 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
          flux_log_error (h, "%s", __FUNCTION__);
 
      return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    char *route = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_msg_get_route_first (msg, &route) < 0) {
+        flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
+        goto error;
+    }
+    if (ctx->notify_msgs.find (route) != ctx->notify_msgs.end ()) {
+        ctx->notify_msgs.erase (route);
+        flux_log (h, LOG_DEBUG, "%s: a notify request aborted", __FUNCTION__);
+    }
+
+error:
+    free (route);
+    return;
+}
+
+static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    try {
+        char *route = NULL;
+        std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+        std::shared_ptr<msg_wrap_t> m = std::make_shared<msg_wrap_t> ();
+
+        if (flux_request_decode (msg, NULL, NULL) < 0) {
+            flux_log_error (h, "%s: flux_request_decode", __FUNCTION__);
+            goto error;
+        }
+        if (!flux_msg_is_streaming (msg)) {
+            errno = EPROTO;
+            flux_log_error (h, "%s: streaming flag not set", __FUNCTION__);
+            goto error;
+        }
+        if (flux_msg_get_route_first (msg, &route) < 0) {
+            free (route);
+            flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
+            goto error;
+        }
+
+        m->set_msg (msg);
+        auto ret = ctx->notify_msgs.insert (
+                       std::pair<std::string,
+                                 std::shared_ptr<msg_wrap_t>> (route, m));
+        free (route);
+        if (!ret.second) {
+            errno = EEXIST;
+            flux_log_error (h, "%s: insert", __FUNCTION__);
+            goto error;
+        }
+
+        if (flux_respond (ctx->h, msg, NULL) < 0) {
+            flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+            goto error;
+        }
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    }
+    return;
 
 error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
