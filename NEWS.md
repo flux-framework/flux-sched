@@ -1,3 +1,37 @@
+flux-sched version 0.9.0 - 2020-06-18
+-------------------------------------
+
+Note: flux-sched has been re-branded to "Fluxion"!
+
+### Fixes
+ * testsuite: break a race in a qmgr reload test (#617)
+ * testsuite: avoid rc3 hang in qmanager-reload test (#593)
+ * Fix build/test issues and enable travis on CentOS 8 (#565)
+ * t4000-match-params.t: suppress flux module unload failure (#561)
+ * Fix t2002-qmanager-reload.t with new core resource module (#661)
+ * docker: add ENTRYPOINT to start munged by default (#648)
+ * testsuite: prevent python version mismatch in test scripts (#568)
+
+### Features
+ * Add state recovery support (#663, #666)
+ * qmanager: add multi-queue support (#649)
+ * Add flux-tree (#622, #621, #616, #582)
+ * Add configuration file support (#599, #645, #630)
+ * Multi-tiered storage scheduling support demo and tests (#620)
+
+### Cleanup
+ * Update the project name to Fluxion (#655)
+ * qmanager: add exception safety for schedutil callbacks (#646)
+ * Add path, vertex pair to by_path map (#641)
+ * testsuite: update flux-sharness.sh from flux-core (#657)
+ * Use Jansson for JSON-based writers + time keys in RV1 (#614)
+ * rc: use reload -f to load qmanager/resource (#619)
+ * simplify build process and instructions (#603, #578, #595, #578, #579)
+ * testsuite: update flux-job list usage (#571)
+ * mergify: add config from flux-core (#562)
+ * github: add workflow action to validate PR commits (#553)
+ * drop flux module -r option (#557)
+
 flux-sched version 0.8.0 - 2019-11-20
 -------------------------------------
 
