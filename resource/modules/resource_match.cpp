@@ -71,6 +71,15 @@ struct match_perf_t {
     double accum;                  /* Total match time accumulated */
 };
 
+class msg_wrap_t {
+public:
+    ~msg_wrap_t ();
+    const flux_msg_t *get_msg () const;
+    void set_msg (const flux_msg_t *msg);
+private:
+    const flux_msg_t *m_msg = nullptr;
+};
+
 class resource_interface_t {
 public:
     ~resource_interface_t ();
@@ -97,7 +106,25 @@ struct resource_ctx_t : public resource_interface_t {
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
+    std::map<std::string, std::shared_ptr<msg_wrap_t>> notify_msgs;
 };
+
+msg_wrap_t::~msg_wrap_t ()
+{
+    if (m_msg)
+        flux_msg_decref (m_msg);
+}
+
+const flux_msg_t *msg_wrap_t::get_msg () const
+{
+    return m_msg;
+}
+
+void msg_wrap_t::set_msg (const flux_msg_t *msg)
+{
+    if (msg)
+        m_msg = flux_msg_incref (msg);
+}
 
 resource_interface_t::~resource_interface_t ()
 {
