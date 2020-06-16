@@ -195,6 +195,11 @@ void dfu_traverser_t::clear_err_message ()
     detail::dfu_impl_t::clear_err_message ();
 }
 
+bool dfu_traverser_t::is_initialized () const
+{
+    return m_initialized;
+}
+
 int dfu_traverser_t::initialize ()
 {
     int rc = 0;
@@ -216,6 +221,7 @@ int dfu_traverser_t::initialize ()
         rc += detail::dfu_impl_t::prime_pruning_filter (subsystem,
                                                         root, from_dfv);
     }
+    m_initialized = (rc == 0)? true : false;
     return rc;
 }
 

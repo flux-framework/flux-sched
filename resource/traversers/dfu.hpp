@@ -60,6 +60,8 @@ public:
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
 
+    bool is_initialized () const;
+
     /*! Prime the resource graph with subtree plans. Assume that resource graph,
      *  roots and match callback have already been registered. The subtree
      *  plans are instantiated on certain resource vertices and updated with the
@@ -197,6 +199,7 @@ private:
     int schedule (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
                   bool x, match_op_t op, vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);
+    bool m_initialized = false;
 };
 
 } // namespace resource_model
