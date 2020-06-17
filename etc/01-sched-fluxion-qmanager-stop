@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
 if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
-    flux module remove sched-fluxion-qmanager
+    flux module remove -f sched-fluxion-qmanager
 fi
 
