@@ -13,20 +13,33 @@ ORIG_HOME=${HOME}
 HOME=${ORIG_HOME}
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
+unset FLUXION_RESOURCE_RC_NOOP
+unset FLUXION_QMANAGER_RC_NOOP
+
+if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
+ then
+     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/rc"
+fi
 
 # Run broker with specified config file and qmanager options.
 # Usage: start_qmanager config-path [module options] >outfile
 start_qmanager () {
     local config=$1; shift
-    QMANAGER_OPTIONS=$* flux broker \
-	-Sbroker.rc1_path=./rc1 -Sbroker.rc3_path=./rc3 \
-	--config-path=${config} \
-	flux dmesg
+    QMANAGER_OPTIONS=$*
+    echo $QMANAGER_OPTIONS > options
+    flux broker --config-path=${config} bash -c \
+"flux dmesg -C && "\
+"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu && "\
+"flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
+"flux dmesg"
 }
 start_qmanager_noconfig () {
-    QMANAGER_OPTIONS=$* flux broker \
-	-Sbroker.rc1_path=./rc1 -Sbroker.rc3_path=./rc3 \
-	flux dmesg
+    QMANAGER_OPTIONS=$*
+    flux broker bash -c \
+"flux dmesg -C && "\
+"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu && "\
+"flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
+"flux dmesg"
 }
 # Usage: check_enforced_policy outfile expected
 check_enforced_policy() {
@@ -49,20 +62,6 @@ check_queue_params() {
 check_policy_params() {
     check_params $1 $2 "policy params"
 }
-
-test_expect_success 'qmanager: create rc1/rc3 for qmanager test' '
-	cat <<-EOT >rc1 &&
-	flux module load kvs
-	flux module load job-manager
-	flux module load sched-fluxion-qmanager \$QMANAGER_OPTIONS
-	EOT
-	cat <<-EOT >rc3 &&
-	flux module remove -f sched-fluxion-qmanager
-	flux module remove -f job-manager
-	flux module remove -f kvs
-	EOT
-	chmod +x rc1 rc3
-'
 
 test_expect_success 'qmanager: load qmanager works with no config' '
     outfile=noconfig.out &&
@@ -87,9 +86,9 @@ test_expect_success 'qmanager: module load options takes precedence' '
     conf_name="01-default" &&
     outfile=${conf_name}2.out &&
     start_qmanager ${conf_base}/${conf_name} \
-	    queue-policy=easy \
-	    queue-params=max-queue-depth=20000 \
-	    policy-params=max-reservation-depth=64 >${outfile} &&
+	queue-policy=easy \
+	queue-params=max-queue-depth=20000 \
+	policy-params=max-reservation-depth=64 >${outfile} &&
     check_enforced_policy ${outfile} "easy" &&
     check_queue_params ${outfile} \
 	    "max-queue-depth=20000" &&
