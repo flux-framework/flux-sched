@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    flux module remove sched-fluxion-resource
+    flux module remove -f sched-fluxion-resource
 fi
 
