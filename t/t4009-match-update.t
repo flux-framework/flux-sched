@@ -34,6 +34,7 @@ test_expect_success 'update: hwloc reload works' '
 '
 
 test_expect_success 'update: loading sched-fluxion-resource works' '
+    flux module remove sched-simple &&
     load_resource load-whitelist=node,core,gpu match-format=rv1
 '
 

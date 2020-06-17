@@ -121,8 +121,8 @@ test_expect_success 'flux-tree: works with quoted jobscript argument' '
 '
 
 test_expect_success 'flux-tree: removing qmanager/resource works' '
-     remove_resource &&
-     remove_qmanager
+     remove_qmanager &&
+     remove_resource
 '
 
 test_done

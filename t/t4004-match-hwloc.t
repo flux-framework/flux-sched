@@ -93,6 +93,7 @@ test_expect_success 'resource-query works with whitelist' '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
+    flux module remove sched-simple &&
     load_resource load-file=${hwloc_4core}
 '
 
