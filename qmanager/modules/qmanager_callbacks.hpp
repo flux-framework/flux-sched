@@ -74,6 +74,10 @@ struct qmanager_safe_cb_t : public qmanager_cb_t {
     static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
                                          const char *type, int severity,
                                          void *arg);
+    static int post_sched_loop (flux_t *h,
+        schedutil_t *schedutil,
+        std::map<std::string, std::shared_ptr<
+            Flux::queue_manager::queue_policy_base_t>> &queues);
 };
 
 #endif // #define QMANAGER_CALLBACKS_HPP
