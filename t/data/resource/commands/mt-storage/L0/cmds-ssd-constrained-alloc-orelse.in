@@ -1,0 +1,13 @@
+# 8x node[1]->slot[1]->socket[1]->core[18]
+#                               ->gpu[2]
+#                               ->memory[128]
+#                    ->ssd[2048]
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+quit

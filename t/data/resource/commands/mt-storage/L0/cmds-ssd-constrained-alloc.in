@@ -1,0 +1,11 @@
+# 5x node[1]->slot[1]->socket[1]->core[18]
+#                               ->gpu[2]
+#                               ->memory[128]
+#                    ->ssd[2048]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+# this must fail to match
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/mt-storage/L0/storage-constrained.yaml
+quit
