@@ -310,6 +310,21 @@ void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
                         exception_safe_wrapper.get_err_message ());
 }
 
+int qmanager_safe_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
+                                         std::map<std::string,
+                                                  std::shared_ptr<
+                                                      queue_policy_base_t>> &queues)
+{
+    int rc;
+    eh_wrapper_t exception_safe_wrapper;
+    rc = exception_safe_wrapper (qmanager_cb_t::post_sched_loop,
+                                 h, schedutil, queues);
+    if (exception_safe_wrapper.bad ())
+        flux_log_error (h, "%s: %s", __FUNCTION__,
+                        exception_safe_wrapper.get_err_message ());
+    return rc;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
