@@ -298,6 +298,7 @@ int resource_reader_jgf_t::add_graph_metadata (vtx_t v,
     }
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
+    m.by_rank[g[v].rank].push_back (v);
     rc = 0;
 
 done:

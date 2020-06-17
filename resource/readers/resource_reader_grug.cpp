@@ -228,6 +228,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     m.by_path[g[v].paths[ssys]] = v;
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
+    m.by_rank[m_rank].push_back (v);
     return v;
 }
 
