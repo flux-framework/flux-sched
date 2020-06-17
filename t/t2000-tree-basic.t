@@ -66,9 +66,9 @@ test_expect_success 'flux-tree: multi cmdline works' '
 	FLUX_TREE_NCORES_PER_NODE=1
 	FLUX_TREE_NGPUS_PER_NODE=0
 	FLUX_TREE_NNODES=1
-	eval python hostname.py
+	eval flux python hostname.py
 EOF
-    flux tree --dry-run --leaf -N 1 -c 1 python hostname.py > out.01.2 &&
+    flux tree --dry-run --leaf -N 1 -c 1 flux python hostname.py > out.01.2 &&
     remove_prefix out.01.2 out.01.2.a &&
     sed -i "s/[ \t]*$//g" out.01.2.a &&
     test_cmp cmp.01.2 out.01.2.a
