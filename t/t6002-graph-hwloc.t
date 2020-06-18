@@ -1,0 +1,41 @@
+#!/bin/sh
+
+test_description='Test Graph Data Store under the Fluxion Resource Module'
+
+. `dirname $0`/sharness.sh
+
+hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+# 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
+excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
+
+verify() {
+    local of=$1
+    echo "{\"[0-3]\": 37}" | jq ' ' > ref.out
+    cat ${of} | grep Rank: | awk '{ print $6 $7}' | jq ' ' > cmp.out
+    diff cmp.out ref.out
+    return $?
+}
+
+skip_all_unless_have jq
+
+test_under_flux 4
+
+test_expect_success 'qmanager: hwloc reload works' '
+    flux hwloc reload ${excl_4N4B}
+'
+
+test_expect_success 'qmanager: loading resource and qmanager modules works' '
+    flux module remove sched-simple &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=low
+'
+
+test_expect_success 'qmanager: graph stat as expected' '
+    flux ion-resource stat > stat.out &&
+    verify stat.out
+'
+
+test_expect_success 'removing resource and qmanager modules' '
+    remove_resource
+'
+
+test_done
