@@ -171,7 +171,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
     void *d = NULL;
     std::shared_ptr<resource_ctx_t> ctx = nullptr;
 
-    if ( (d = flux_aux_get (h, "resource")) != NULL)
+    if ( (d = flux_aux_get (h, "sched-fluxion-resource")) != NULL)
         ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *>(d));
     if (!ctx) {
         try {
@@ -1305,7 +1305,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             goto done;
         }
         // Because mod_main is always active, the following is safe.
-        flux_aux_set (h, "resource", &ctx, NULL);
+        flux_aux_set (h, "sched-fluxion-resource", &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: resource module starting", __FUNCTION__);
 
         if ( (rc = init_resource_graph (ctx)) != 0) {
