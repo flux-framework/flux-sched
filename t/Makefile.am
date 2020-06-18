@@ -69,7 +69,8 @@ TESTS = \
     t4009-match-update.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
-    t6001-match-formats.t
+    t6001-match-formats.t \
+    t6002-graph-hwloc.t
 
 check_SCRIPTS = $(TESTS)
 
