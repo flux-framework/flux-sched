@@ -42,6 +42,7 @@ struct resource_graph_metadata_t {
     std::map<subsystem_t, relation_infra_t> v_rt_edges;
     std::map<std::string, std::vector <vtx_t>> by_type;
     std::map<std::string, std::vector <vtx_t>> by_name;
+    std::map<int64_t, std::vector <vtx_t>> by_rank;
     std::map<std::string, vtx_t> by_path;
 };
 

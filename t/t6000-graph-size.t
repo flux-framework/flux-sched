@@ -20,8 +20,10 @@ test_expect_success "vertex/edge counts for a tiny machine are correct" '
     test ${edg} -eq 198
 '
 
-test_expect_success "by_type, by_name, and by_path map sizes are correct \
-for GRUG" '
+# Note that by default the rank is -1, meaning that the by_rank map 
+# contains the same number of vertices as the overall resource graph. 
+test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
+correct for GRUG" '
     echo "quit" > input2.txt &&
     ${query} -L ${tiny_grug} -e -S CA -P high < input2.txt > out2.txt &&
     by_type=$(grep "by_type" out2.txt | sed "s/INFO: by_type Key-Value \
@@ -30,13 +32,21 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out2.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
+    by_rank=$(grep "number of" out2.txt | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
     test ${by_type} -eq 7 &&
     test ${by_name} -eq 52 &&
-    test ${by_path} -eq 100
+    test ${by_path} -eq 100 &&
+    test ${rank} -eq -1 &&
+    test ${nvertices} -eq 100
 '
 
-test_expect_success "by_type, by_name, and by_path map sizes are correct \
-for JGF" '
+# Note that by default the rank is -1, meaning that the by_rank map 
+# contains the same number of vertices as the overall resource graph. 
+test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
+correct for JGF." '
     echo "quit" > input3.txt &&
     ${query} -L ${tiny_jgf} -e -S CA -P high -f jgf < input3.txt > \
 out3.txt &&
@@ -46,13 +56,21 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out3.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
+    by_rank=$(grep "number of" out3.txt | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
     test ${by_type} -eq 7 &&
     test ${by_name} -eq 52 &&
-    test ${by_path} -eq 100 
+    test ${by_path} -eq 100 &&
+    test ${rank} -eq -1 &&
+    test ${nvertices} -eq 100
 '
 
-test_expect_success "by_type, by_name, and by_path map sizes are correct \
-for hwloc" '
+# Note that by default the rank is -1, meaning that the by_rank map 
+# contains the same number of vertices as the overall resource graph. 
+test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
+correct for hwloc" '
     echo "quit" > input4.txt &&
     ${query} -L ${exclusive_001N_hwloc} -e -S CA -P high -f hwloc < \
 input4.txt > out4.txt &&
@@ -62,9 +80,15 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out4.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
+    by_rank=$(grep "number of" out4.txt | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
     test ${by_type} -eq 7 &&
     test ${by_name} -eq 21 &&
-    test ${by_path} -eq 21
+    test ${by_path} -eq 21 &&
+    test ${rank} -eq -1 &&
+    test ${nvertices} -eq 21
 '
 
 test_expect_success "--reserve-vtx-vec works" '

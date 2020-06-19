@@ -24,6 +24,7 @@ sched_fluxion_resource_la_CXXFLAGS = \
     $(FLUX_CORE_CFLAGS)
 sched_fluxion_resource_la_LIBADD = \
     ../libresource.la \
+    $(FLUX_IDSET_LIBS) \
     $(FLUX_CORE_LIBS) \
     $(DL_LIBS) \
     $(HWLOC_LIBS) \

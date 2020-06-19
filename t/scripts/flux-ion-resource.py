@@ -156,6 +156,7 @@ def stat_action (args):
     resp = r.rpc_stat ()
     print ("Num. of Vertices: ", resp['V'])
     print ("Num. of Edges: ", resp['E'])
+    print ("Num. of Vertices by Rank: ", json.dumps (resp['by_rank']))
     print ("Graph Load Time: ", resp['load-time'], "Secs")
     print ("Num. of Jobs Matched: ", resp['njobs'])
     print ("Min. Match Time: ", resp['min-match'], "Secs")

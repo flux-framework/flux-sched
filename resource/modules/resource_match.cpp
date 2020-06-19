@@ -33,6 +33,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <flux/idset.h>
 #include <jansson.h>
 #include "src/common/libutil/shortjansson.h"
 }
@@ -90,6 +91,7 @@ resource_ctx_t::~resource_ctx_t ()
 {
     flux_msg_handler_delvec (handlers);
 }
+
 
 /******************************************************************************
  *                                                                            *
@@ -1114,10 +1116,60 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
+static int get_stat_by_rank (std::shared_ptr<resource_ctx_t>& ctx, json_t *o)
+{
+    int rc = -1;
+    int saved_errno = 0;
+    char *str = nullptr;
+    struct idset *ids = nullptr;
+    std::map<size_t, struct idset *> s2r;
+
+    for (auto &kv : ctx->db->metadata.by_rank) {
+        if (kv.first == -1)
+            continue;
+        if (s2r.find (kv.second.size ()) == s2r.end ()) {
+            if ( !(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+                goto done;
+            s2r[kv.second.size ()] = ids;
+        }
+        if ( (rc = idset_set (s2r[kv.second.size ()],
+                              static_cast<unsigned int> (kv.first))) < 0)
+            goto done;
+    }
+
+    for (auto &kv : s2r) {
+        if ( !(str = idset_encode (kv.second,
+                                   IDSET_FLAG_BRACKETS | IDSET_FLAG_RANGE))) {
+            rc = -1;
+            goto done;
+        }
+        if ( (rc = json_object_set_new (o, str,
+                      json_integer (static_cast<json_int_t> (kv.first)))) < 0) {
+            errno = ENOMEM;
+            goto done;
+        }
+        saved_errno = errno;
+        free (str);
+        errno = saved_errno;
+        str = nullptr;
+    }
+
+done:
+    for (auto &kv : s2r)
+        idset_destroy (kv.second);
+    saved_errno = errno;
+    s2r.clear ();
+    free (str);
+    errno = saved_errno;
+    return rc;
+}
+
 static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg)
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    int saved_errno;
+    json_t *o = nullptr;
     double avg = 0.0f;
     double min = 0.0f;
 
@@ -1125,15 +1177,35 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         avg = ctx->perf.accum / (double)ctx->perf.njobs;
         min = ctx->perf.min;
     }
-    if (flux_respond_pack (h, msg, "{s:I s:I s:f s:I s:f s:f s:f}",
+    if ( !(o = json_object ())) {
+        errno = ENOMEM;
+        goto error;
+    }
+    if (get_stat_by_rank (ctx, o) < 0) {
+        flux_log_error (h, "%s: get_stat_by_rank", __FUNCTION__);
+        goto error_free;
+    }
+    if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:f s:f s:f}",
                                    "V", num_vertices (ctx->db->resource_graph),
                                    "E", num_edges (ctx->db->resource_graph),
+                                   "by_rank", o,
                                    "load-time", ctx->perf.load,
                                    "njobs", ctx->perf.njobs,
                                    "min-match", min,
                                    "max-match", ctx->perf.max,
-                                   "avg-match", avg) < 0)
-        flux_log_error (h, "%s", __FUNCTION__);
+                                   "avg-match", avg) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+    }
+
+    return;
+
+error_free:
+    saved_errno = errno;
+    json_decref (o);
+    errno = saved_errno;
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static inline int64_t next_jobid (const std::map<uint64_t,
