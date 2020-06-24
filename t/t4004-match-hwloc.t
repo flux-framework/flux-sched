@@ -19,7 +19,7 @@ HOME=${ORIG_HOME}
 jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
 # slot[1]->core[1]
 jobspec_1core="${jobspec_basepath}/basics/test008.yaml"
-# node[1]->slot[2]->numanode[1]->socket[1]
+# node[1]->slot[2]->socket[1]
 jobspec_2socket="${jobspec_basepath}/basics/test009.yaml"
 
 # node[1]->slot[1]->socket[1]->core[22]
@@ -63,25 +63,25 @@ test_debug '
 # Test using the resource query command
 test_expect_success 'resource-query works on simple query using xml file' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds09.in > cmds09 &&
-    ${query} -L ${hwloc_4core} -f hwloc -S CA -P high -t 017.R.out < cmds09 &&
+    ${query} -L ${hwloc_4core} -f hwloc -S CA -P high -W node,socket,core -t 017.R.out < cmds09 &&
     test_cmp 017.R.out ${exp_dir}/017.R.out
 '
 
 test_expect_success 'resource-query works on gpu query using xml (NVIDIA)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds10.in > cmds10 &&
-    ${query} -L ${hwloc_4gpu} -f hwloc -S CA -P high -t 018.R.out < cmds10 &&
+    ${query} -L ${hwloc_4gpu} -f hwloc -S CA -P high -W node,socket,core,gpu -t 018.R.out < cmds10 &&
     test_cmp 018.R.out ${exp_dir}/018.R.out
 '
 
 test_expect_success 'resource-query works on gpu query using xml (AMD GPU)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
-    ${query} -L ${hwloc_4amdgpu} -f hwloc -S CA -P high -t 019.R.out < cmds11 &&
+    ${query} -L ${hwloc_4amdgpu} -f hwloc -S CA -P high -W node,socket,core,gpu -t 019.R.out < cmds11 &&
     test_cmp 019.R.out ${exp_dir}/019.R.out
 '
 
 test_expect_success 'resource-query works on gpu type query using xml (MIXED)' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds11.in > cmds11 &&
-    ${query} -L ${hwloc_2mtypes} -f hwloc -S CA -P high -t 020.R.out < cmds11 &&
+    ${query} -L ${hwloc_2mtypes} -f hwloc -S CA -P high -W node,socket,core,gpu -t 020.R.out < cmds11 &&
     test_cmp 020.R.out ${exp_dir}/020.R.out
 '
 
