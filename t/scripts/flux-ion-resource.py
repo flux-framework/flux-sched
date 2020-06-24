@@ -1,3 +1,4 @@
+#!/bin/false
 #
 #  Run script as `flux ion-resource` with properly configured
 #   FLUX_EXEC_PATH or `flux python flux-ion-resource` if not to
