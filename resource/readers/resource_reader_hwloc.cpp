@@ -114,6 +114,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
 
 void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                                           resource_graph_metadata_t &m,
+                                          const hwloc_topology_t topo,
                                           const hwloc_obj_t obj,
                                           const vtx_t parent, int rank)
 {
@@ -280,8 +281,9 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         g[e].name[subsys] = rev_relation;
     }
 
-    for (unsigned int i = 0; i < obj->arity; i++) {
-        walk_hwloc (g, m, obj->children[i], valid_ancestor, rank);
+    hwloc_obj_t curr_child = NULL;
+    while ((curr_child = hwloc_get_next_child (topo, obj, curr_child)) != NULL) {
+      walk_hwloc (g, m, topo, curr_child, valid_ancestor, rank);
     }
 }
 
@@ -317,7 +319,7 @@ int resource_reader_hwloc_t::unpack_internal (resource_graph_t &g,
     }
 
     hwloc_root = hwloc_get_root_obj (topo);
-    walk_hwloc (g, m, hwloc_root, vtx, rank);
+    walk_hwloc (g, m, topo, hwloc_root, vtx, rank);
     hwloc_topology_destroy (topo);
     rc = 0;
 
