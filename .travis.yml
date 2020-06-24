@@ -29,6 +29,12 @@ matrix:
        - ARGS="--prefix=/usr"
        - TEST_INSTALL=t
        - DOCKER_TAG=t
+    - name: "Ubuntu: 20.04"
+      compiler: gcc
+      env:
+        - ARGS="--prefix=/usr"
+        - IMG=focal
+        - DOCKER_TAG=t
     - name: "Centos 7: docker-deploy"
       compiler: gcc
       env:
