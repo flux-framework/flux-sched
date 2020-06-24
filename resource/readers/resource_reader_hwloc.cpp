@@ -302,11 +302,35 @@ int resource_reader_hwloc_t::unpack_internal (resource_graph_t &g,
         m_err_msg += "Error initializing hwloc topology; ";
         goto done;
     }
+#if HWLOC_API_VERSION < 0x20000
     if ( hwloc_topology_set_flags (topo, HWLOC_TOPOLOGY_FLAG_IO_DEVICES) != 0) {
         errno = EINVAL;
         m_err_msg += "Error setting hwloc topology flag; ";
         goto done;
     }
+#else
+    if (hwloc_topology_set_io_types_filter (topo,
+                                            HWLOC_TYPE_FILTER_KEEP_IMPORTANT)
+        < 0) {
+        errno = EINVAL;
+        m_err_msg += "hwloc_topology_set_io_types_filter; ";
+        goto done;
+    }
+    if (hwloc_topology_set_cache_types_filter (topo,
+                                               HWLOC_TYPE_FILTER_KEEP_STRUCTURE)
+        < 0) {
+        errno = EINVAL;
+        m_err_msg += "hwloc_topology_set_cache_types_filter; ";
+        goto done;
+    }
+    if (hwloc_topology_set_icache_types_filter (topo,
+                                                HWLOC_TYPE_FILTER_KEEP_STRUCTURE)
+        < 0) {
+        errno = EINVAL;
+        m_err_msg += "hwloc_topology_set_icache_types_filter; ";
+        goto done;
+    }
+#endif
     if ( hwloc_topology_set_xmlbuffer (topo, str.c_str (), len) != 0) {
         errno = EINVAL;
         m_err_msg += "Error setting xmlbuffer; ";
