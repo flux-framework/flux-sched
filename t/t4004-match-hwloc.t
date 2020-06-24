@@ -150,7 +150,7 @@ policy=high load-allowlist=node,socket,core,gpu &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
-    test_must_fail flux ion-resource match allocate ${jobspec_1socket_2gpu}
+    test_expect_code 16 flux ion-resource match allocate ${jobspec_1socket_2gpu}
 '
 
 test_expect_success 'removing resource works' '
