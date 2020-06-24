@@ -119,7 +119,8 @@ test_expect_success 'reloading session/hwloc information with test data' '
 '
 
 test_expect_success 'loading resource module with default resource info source' '
-    load_resource subsystems=containment policy=high
+    load_resource subsystems=containment policy=high \
+load-allowlist=node,socket,core
 '
 
 test_expect_success 'match-allocate works with four two-socket jobspecs' '
