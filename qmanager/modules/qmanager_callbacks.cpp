@@ -67,10 +67,10 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
         const std::string &queue_name = kv.first;
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         while ( (job = queue->alloced_pop ()) != nullptr) {
-            if (schedutil_alloc_respond_R (schedutil, job->msg,
-                                           job->schedule.R.c_str (),
-                                           NULL) < 0) {
-                flux_log_error (h, "%s: schedutil_alloc_respond_R (queue=%s)",
+            if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
+                                                      job->schedule.R.c_str (),
+                                                      NULL) < 0) {
+                flux_log_error (h, "%s: schedutil_alloc_respond_pack (queue=%s)",
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
@@ -79,11 +79,11 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
         }
         while ( (job = queue->rejected_pop ()) != nullptr) {
             std::string note = "alloc denied due to type=\"" + job->note + "\"";
-            if (schedutil_alloc_respond_denied (schedutil,
-                                                job->msg,
-                                                note.c_str ()) < 0) {
+            if (schedutil_alloc_respond_deny (schedutil,
+                                              job->msg,
+                                              note.c_str ()) < 0) {
                 flux_log_error (h,
-                                "%s: schedutil_alloc_respond_denied (queue=%s)",
+                                "%s: schedutil_alloc_respond_deny (queue=%s)",
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
@@ -167,8 +167,8 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         return;
     }
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
-        if (schedutil_alloc_respond_denied (ctx->schedutil, msg, NULL) < 0)
-            flux_log_error (h, "%s: schedutil_alloc_respond_denied",
+        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
                             __FUNCTION__);
         errno = ENOENT;
         flux_log (h, LOG_DEBUG, "%s: queue (%s) doesn't exist",
@@ -182,8 +182,8 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     if (queue->insert (job) < 0) {
         flux_log_error (h, "%s: queue insert (id=%jd)", __FUNCTION__,
                        static_cast<intmax_t> (job->id));
-        if (schedutil_alloc_respond_denied (ctx->schedutil, msg, NULL) < 0)
-            flux_log_error (h, "%s: schedutil_alloc_respond_denied",
+        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
                             __FUNCTION__);
         return;
     }
@@ -233,9 +233,8 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     }
 }
 
-void qmanager_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
-                                             const char *type,
-                                             int severity, void *arg)
+void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+                                          void *arg)
 {
     std::shared_ptr<job_t> job;
     qmanager_cb_ctx_t *ctx = nullptr;
@@ -248,7 +247,7 @@ void qmanager_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
                         __FUNCTION__, static_cast<intmax_t> (id));
         return;
     }
-    if (severity > 0 || (job = queue->lookup (id)) == nullptr
+    if ((job = queue->lookup (id)) == nullptr
         || !job->is_pending ())
         return;
     if (queue->remove (id) < 0) {
@@ -256,15 +255,12 @@ void qmanager_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
                        static_cast<intmax_t> (id));
         return;
     }
-    std::string note = std::string ("alloc aborted due to exception type=")
-                       + type + std::string (" queue=") + queue_name;
-    if (schedutil_alloc_respond_denied (ctx->schedutil,
-                                        job->msg,
-                                        note.c_str ()) < 0) {
-        flux_log_error (h, "%s: schedutil_alloc_respond_denied", __FUNCTION__);
+    if (schedutil_alloc_respond_cancel (ctx->schedutil,
+                                        job->msg) < 0) {
+        flux_log_error (h, "%s: schedutil_alloc_respond_cancel", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "%s (id=%jd)", note.c_str (),
+    flux_log (h, LOG_DEBUG, "%s (id=%jd)", "alloc cancelled",
              static_cast<intmax_t> (id));
 }
 
@@ -303,13 +299,12 @@ void qmanager_safe_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                         exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
-                                                  const char *type, int severity,
-                                                  void *arg)
+void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+                                               void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    exception_safe_wrapper (qmanager_cb_t::jobmanager_exception_cb,
-                            h, id, type, severity, arg);
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb,
+                            h, id, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());

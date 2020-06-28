@@ -54,9 +54,8 @@ protected:
                                      const char *jobspec, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                                     const char *R, void *arg);
-    static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
-                                         const char *type, int severity,
-                                         void *arg);
+    static void jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+                                      void *arg);
     static int post_sched_loop (flux_t *h,
         schedutil_t *schedutil,
         std::map<std::string, std::shared_ptr<
@@ -71,9 +70,8 @@ struct qmanager_safe_cb_t : public qmanager_cb_t {
                                      const char *jobspec, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                                     const char *R, void *arg);
-    static void jobmanager_exception_cb (flux_t *h, flux_jobid_t id,
-                                         const char *type, int severity,
-                                         void *arg);
+    static void jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+                                      void *arg);
 };
 
 #endif // #define QMANAGER_CALLBACKS_HPP
