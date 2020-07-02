@@ -32,6 +32,7 @@ TESTS = \
     t1008-recovery-none.t \
     t1009-recovery-multiqueue.t \
     t1010-sync-modules.t \
+    t1011-dynstate-change.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
