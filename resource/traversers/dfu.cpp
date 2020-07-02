@@ -65,7 +65,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     case match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY: {
         /* With satisfiability check */
         errno = EBUSY;
-        meta.allocate = false;
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
         p = (*get_graph ())[root].idata.subplans.at (dom);
         meta.at = planner_multi_base_time (p)
                   + planner_multi_duration (p) - meta.duration - 1;
@@ -79,7 +79,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
         /* Or else reserve */
         errno = 0;
-        meta.allocate = false;
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
         t = meta.at + 1;
         p = (*get_graph ())[root].idata.subplans.at (dom);
         len = planner_multi_resources_len (p);
@@ -91,8 +91,16 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
         }
         // The planner layer returns ENOENT when no scheduleable point exists
-        // Turn this into ENODEV
-        errno = (rc < 0 && errno == ENOENT)? ENODEV : errno;
+        if (rc < 0 && errno == ENOENT) {
+            errno = EBUSY;
+            meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
+            meta.at = planner_multi_base_time (p)
+                      + planner_multi_duration (p) - duration - 1;
+            if (detail::dfu_impl_t::select (jobspec, root, meta, x) < 0) {
+                errno = (errno == EBUSY)? ENODEV : errno;
+                detail::dfu_impl_t::update ();
+            }
+        }
         break;
     }
     case match_op_t::MATCH_ALLOCATE:
@@ -240,7 +248,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
     std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
-    meta.build (jobspec, true, jobid, *at);
+    meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at);
     if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
         rc = detail::dfu_impl_t::update (root, writers, meta);
