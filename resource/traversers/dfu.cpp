@@ -286,8 +286,20 @@ int dfu_traverser_t::remove (int64_t jobid)
         return -1;
     }
 
-    vtx_t root = get_graph_db ()->metadata.roots.at(dom);
+    vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     return detail::dfu_impl_t::remove (root, jobid);
+}
+
+int dfu_traverser_t::mark (const std::string &root_path, 
+                           resource_pool_t::status_t status)
+{
+    return detail::dfu_impl_t::mark (root_path, status);
+}
+
+int dfu_traverser_t::mark (std::set<int64_t> &ranks, 
+                           resource_pool_t::status_t status)
+{
+    return detail::dfu_impl_t::mark (ranks, status);
 }
 
 /*
