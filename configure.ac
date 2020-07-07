@@ -161,6 +161,8 @@ AC_CONFIG_FILES([Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/test/Makefile
+  resource/evaluators/Makefile
+  resource/evaluators/test/Makefile
   resource/libjobspec/Makefile
   resource/utilities/Makefile
   resource/utilities/test/Makefile
