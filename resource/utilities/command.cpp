@@ -56,6 +56,8 @@ command_t commands[] = {
 "resource-query> set-property resource PROPERTY=VALUE" },
 { "get-property", "g", cmd_get_property, "Get all properties of a resource: "
 "resource-query> get-property resource" },
+{ "get-status", "e", cmd_get_status, "Get the graph resource vertex status: "
+"resource-query> get-status PATH_TO_VERTEX" },
     { "list", "l", cmd_list, "List all jobs: resource-query> list" },
     { "info", "i", cmd_info,
 "Print info on a jobid: resource-query> info jobid" },
@@ -418,6 +420,43 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
                     out << p_it->first << "=" << p_it->second << std::endl;
         }
     }
+    return 0;
+}
+
+int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args)
+{
+    if (args.size () != 2) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+    std::string vtx_path = args[1];
+    std::map<std::string, vtx_t>::const_iterator it =
+        ctx->db->metadata.by_path.find (vtx_path);
+    resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
+    std::string status = "";
+
+    if (it == ctx->db->metadata.by_path.end ()) {
+        std::cout << "Could not find path " << vtx_path
+                     << " in resource graph." << std::endl;
+        return 0;
+    }
+
+    for (auto &status_it : sts) {
+        if (status_it.second == ctx->db->resource_graph[it->second].status) {
+            status = status_it.first;
+            break;
+        }
+    }
+
+    if (status == "") {
+        std::cerr << "ERROR: vertex " << vtx_path
+                     << " has unknown status." << std::endl;
+        return 0;     
+    }
+
+    std::cout << vtx_path << " is " << status << std::endl;
+
     return 0;
 }
 

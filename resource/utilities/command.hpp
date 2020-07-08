@@ -91,6 +91,8 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
                       std::vector<std::string> &args);
 int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
                       std::vector<std::string> &args);
+int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
+                      std::vector<std::string> &args);
 int cmd_list (std::shared_ptr<resource_context_t> &ctx,
               std::vector<std::string> &args);
 int cmd_info (std::shared_ptr<resource_context_t> &ctx,
