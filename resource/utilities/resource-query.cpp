@@ -51,7 +51,7 @@ using namespace Flux::resource_model;
 static const struct option longopts[] = {
     {"load-file",        required_argument,  0, 'L'},
     {"load-format",      required_argument,  0, 'f'},
-    {"load-whitelist",   required_argument,  0, 'W'},
+    {"load-allowlist",   required_argument,  0, 'W'},
     {"match-subsystems", required_argument,  0, 'S'},
     {"match-policy",     required_argument,  0, 'P'},
     {"match-format",     required_argument,  0, 'F'},
@@ -114,8 +114,8 @@ static void usage (int code)
 "    -f, --load-format=<grug|hwloc|jgf>\n"
 "            Format of the load file (default=grug)\n"
 "\n"
-"    -W, --load-whitelist=<resource1[,resource2[,resource3...]]>\n"
-"            Whitelist of resource types to be loaded\n"
+"    -W, --load-allowlist=<resource1[,resource2[,resource3...]]>\n"
+"            Allowlist of resource types to be loaded\n"
 "            Resources that are not included in this list will be filtered out\n"
 "\n"
 "    -S, --match-subsystems="
@@ -194,7 +194,7 @@ static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
 {
     ctx->params.load_file = "conf/default";
     ctx->params.load_format = "grug";
-    ctx->params.load_whitelist = "";
+    ctx->params.load_allowlist = "";
     ctx->params.matcher_name = "CA";
     ctx->params.matcher_policy = "high";
     ctx->params.o_fname = "";
@@ -465,11 +465,11 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
         std::cerr << "ERROR: Can't create load reader " << std::endl;
         goto done;
     }
-    if (ctx->params.load_whitelist != "") {
-        if (rd->set_whitelist (ctx->params.load_whitelist) < 0)
-            std::cerr << "ERROR: Can't set whitelist" << std::endl;
-        if (!rd->is_whitelist_supported ())
-            std::cout << "WARN: whitelist unsupported" << std::endl;
+    if (ctx->params.load_allowlist != "") {
+        if (rd->set_allowlist (ctx->params.load_allowlist) < 0)
+            std::cerr << "ERROR: Can't set allowlist" << std::endl;
+        if (!rd->is_allowlist_supported ())
+            std::cout << "WARN: allowlist unsupported" << std::endl;
     }
 
     in_file.open (ctx->params.load_file.c_str (), std::ifstream::in);
@@ -620,11 +620,11 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx,
                     usage (1);
                 }
                 break;
-            case 'W': /* --hwloc-whitelist */
+            case 'W': /* --hwloc-allowlist */
                 token = optarg;
                 if(token.find_first_not_of(' ') != std::string::npos) {
-                    ctx->params.load_whitelist += "cluster,";
-                    ctx->params.load_whitelist += token;
+                    ctx->params.load_allowlist += "cluster,";
+                    ctx->params.load_allowlist += token;
                 }
                 break;
             case 'S': /* --match-subsystems */

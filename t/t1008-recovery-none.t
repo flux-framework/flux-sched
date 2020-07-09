@@ -26,7 +26,7 @@ test_expect_success 'recovery: hwloc reload works' '
 test_expect_success 'recovery: loading flux-sched modules works (rv1_nosched)' '
     flux module remove sched-simple &&
     flux module reload -f resource &&
-    load_resource load-whitelist=node,core,gpu match-format=rv1_nosched &&
+    load_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
     load_qmanager
 '
 
@@ -36,7 +36,7 @@ test_expect_success 'recovery: submit a job (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: qmanager w/o an option must fail (rv1_nosched)' '
-    reload_resource load-whitelist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
     test_must_fail reload_qmanager
 '
 

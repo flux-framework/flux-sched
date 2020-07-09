@@ -87,11 +87,11 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token);
 
-    /*! Is the hwloc reader format support whitelist
+    /*! Is the hwloc reader format support allowlist
      *
      * \return       true
      */
-    virtual bool is_whitelist_supported ();
+    virtual bool is_allowlist_supported ();
 
 private:
     int check_hwloc_version (std::string &m_err_msg);

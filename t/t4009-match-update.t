@@ -34,7 +34,7 @@ test_expect_success 'update: hwloc reload works' '
 '
 
 test_expect_success 'update: loading sched-fluxion-resource works' '
-    load_resource load-whitelist=node,core,gpu match-format=rv1
+    load_resource load-allowlist=node,core,gpu match-format=rv1
 '
 
 test_expect_success 'update: resource.match-allocate works with a jobspec' '
@@ -50,7 +50,7 @@ awk "NR==5{ print; }" > R4
 
 test_expect_success 'update: reloading sched-fluxion-resource works' '
     remove_resource &&
-    load_resource load-whitelist=node,core,gpu match-format=rv1
+    load_resource load-allowlist=node,core,gpu match-format=rv1
 '
 
 test_expect_success 'update: sched-fluxion-resource.update works with R1' '

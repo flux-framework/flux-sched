@@ -126,7 +126,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     case HWLOC_OBJ_MACHINE: {
         // TODO: add signature to support multiple ranks per node
         const char *hwloc_name = hwloc_obj_get_info_by_name (obj, "HostName");
-        if (!hwloc_name || !in_whitelist ("node")) {
+        if (!hwloc_name || !in_allowlist ("node")) {
             supported_resource = false;
             break;
         }
@@ -136,7 +136,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_GROUP: {
-        if (!in_whitelist ("group")) {
+        if (!in_allowlist ("group")) {
             supported_resource = false;
             break;
         }
@@ -145,7 +145,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_NUMANODE: {
-        if (!in_whitelist ("numanode")) {
+        if (!in_allowlist ("numanode")) {
             supported_resource = false;
             break;
         }
@@ -154,7 +154,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_PACKAGE: {
-        if (!in_whitelist ("socket")) {
+        if (!in_allowlist ("socket")) {
             supported_resource = false;
             break;
         }
@@ -165,7 +165,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
 #if HWLOC_API_VERSION < 0x00020000
     case HWLOC_OBJ_CACHE: {
         std::string r = "L" + std::to_string (obj->attr->cache.depth) + "cache";
-        if (!in_whitelist (r)) {
+        if (!in_allowlist (r)) {
             supported_resource = false;
             break;
         }
@@ -176,7 +176,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     }
 #else
     case HWLOC_OBJ_L1CACHE: {
-        if (!in_whitelist ("L1cache")) {
+        if (!in_allowlist ("L1cache")) {
             supported_resource = false;
             break;
         }
@@ -186,7 +186,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_L2CACHE: {
-        if (!in_whitelist ("L2cache")) {
+        if (!in_allowlist ("L2cache")) {
             supported_resource = false;
             break;
         }
@@ -196,7 +196,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_L3CACHE: {
-        if (!in_whitelist ("L3cache")) {
+        if (!in_allowlist ("L3cache")) {
             supported_resource = false;
             break;
         }
@@ -207,7 +207,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     }
 #endif
     case HWLOC_OBJ_CORE: {
-        if (!in_whitelist ("core")) {
+        if (!in_allowlist ("core")) {
             supported_resource = false;
             break;
         }
@@ -216,7 +216,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_PU: {
-        if (!in_whitelist ("pu")) {
+        if (!in_allowlist ("pu")) {
             supported_resource = false;
             break;
         }
@@ -226,7 +226,7 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     }
     case HWLOC_OBJ_OS_DEVICE: {
         if (obj->attr && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
-            if (!in_whitelist ("gpu")) {
+            if (!in_allowlist ("gpu")) {
                 supported_resource = false;
                 break;
             }
@@ -370,7 +370,7 @@ int resource_reader_hwloc_t::update (resource_graph_t &g,
     return -1;
 }
 
-bool resource_reader_hwloc_t::is_whitelist_supported ()
+bool resource_reader_hwloc_t::is_allowlist_supported ()
 {
     return true;
 }

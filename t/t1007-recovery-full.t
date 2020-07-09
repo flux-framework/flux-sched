@@ -26,7 +26,7 @@ test_expect_success 'recovery: hwloc reload works' '
 test_expect_success 'recovery: loading flux-sched modules works (rv1)' '
     flux module remove sched-simple &&
     flux module reload -f resource &&
-    load_resource load-whitelist=node,core,gpu match-format=rv1 &&
+    load_resource load-allowlist=node,core,gpu match-format=rv1 &&
     load_qmanager
 '
 
@@ -51,7 +51,7 @@ test_expect_success 'recovery: cancel one running job without fluxion' '
 '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
-    reload_resource load-whitelist=node,core,gpu match-format=rv1 &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1 &&
     reload_qmanager &&
     test_must_fail flux ion-resource info ${jobid1} &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
@@ -83,7 +83,7 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
 '
 
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
-    reload_resource load-whitelist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
     reload_qmanager &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
@@ -108,7 +108,7 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
-    reload_resource load-whitelist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
     reload_qmanager
 '
 

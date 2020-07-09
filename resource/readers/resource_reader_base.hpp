@@ -83,19 +83,19 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token) = 0;
 
-    /*! Set the whitelist: only resources that are part of this whitelist
+    /*! Set the allowlist: only resources that are part of this allowlist
      *  will be unpacked into the graph.
      *
-     * \param csl    comma separated whitelist string
+     * \param csl    comma separated allowlist string
      * \return       0 on success; non-zero integer on an error
      */
-    int set_whitelist (const std::string &csl);
+    int set_allowlist (const std::string &csl);
 
-    /*! Is the selected reader format support whitelist
+    /*! Is the selected reader format support allowlist
      *
      * \return       true when supported
      */
-    virtual bool is_whitelist_supported () = 0;
+    virtual bool is_allowlist_supported () = 0;
 
     /*! Return the error message string.
      */
@@ -106,8 +106,8 @@ public:
     void clear_err_message ();
 
 protected:
-    bool in_whitelist (const std::string &resource);
-    std::set<std::string> whitelist;
+    bool in_allowlist (const std::string &resource);
+    std::set<std::string> allowlist;
     std::string m_err_msg = "";
 };
 

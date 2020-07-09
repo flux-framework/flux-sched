@@ -87,11 +87,11 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token);
 
-    /*! Is the selected reader format support whitelist
+    /*! Is the selected reader format support allowlist
      *
      * \return       false
      */
-    virtual bool is_whitelist_supported ();
+    virtual bool is_allowlist_supported ();
 
 private:
     int fetch_jgf (const std::string &str,

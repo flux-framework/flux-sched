@@ -19,7 +19,7 @@
 # load it via FLUX_RC_EXTRA, the in-tree version can be loaded.
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    FLUXION_RESOURCE_OPTIONS=${FLUXION_RESOURCE_OPTIONS:-"load-whitelist=node,core,gpu"}
+    FLUXION_RESOURCE_OPTIONS=${FLUXION_RESOURCE_OPTIONS:-"load-allowlist=node,core,gpu"}
     flux module reload -f sched-fluxion-resource ${FLUXION_RESOURCE_OPTIONS}
 fi
 

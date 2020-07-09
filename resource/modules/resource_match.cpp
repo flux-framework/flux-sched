@@ -55,7 +55,7 @@ using namespace Flux::resource_model;
 struct resource_args_t {
     std::string load_file;          /* load file name */
     std::string load_format;        /* load reader format */
-    std::string load_whitelist;     /* load resource whitelist */
+    std::string load_allowlist;     /* load resource allowlist */
     std::string match_subsystems;
     std::string match_policy;
     std::string prune_filters;
@@ -160,7 +160,7 @@ static void set_default_args (resource_args_t &args)
 {
     args.load_file = "";
     args.load_format = "hwloc";
-    args.load_whitelist = "";
+    args.load_allowlist = "";
     args.match_subsystems = "containment";
     args.match_policy = "high";
     args.prune_filters = "ALL:core";
@@ -222,9 +222,9 @@ static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
                 args.load_format = dflt;
             }
             args.load_format = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("load-whitelist=",
-                             argv[i], sizeof ("load-whitelist"))) {
-            args.load_whitelist = strstr (argv[i], "=") + 1;
+        } else if (!strncmp ("load-allowlist=",
+                             argv[i], sizeof ("load-allowlist"))) {
+            args.load_allowlist = strstr (argv[i], "=") + 1;
         } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
             dflt = args.match_subsystems;
             args.match_subsystems = strstr (argv[i], "=") + 1;
@@ -457,11 +457,11 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
                   __FUNCTION__);
         goto done;
     }
-    if (ctx->args.load_whitelist != "") {
-        if (rd->set_whitelist (ctx->args.load_whitelist) < 0)
-            flux_log (ctx->h, LOG_ERR, "%s: setting whitelist", __FUNCTION__);
-        if (!rd->is_whitelist_supported ())
-            flux_log (ctx->h, LOG_WARNING, "%s: whitelist unsupported",
+    if (ctx->args.load_allowlist != "") {
+        if (rd->set_allowlist (ctx->args.load_allowlist) < 0)
+            flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
+        if (!rd->is_allowlist_supported ())
+            flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
                       __FUNCTION__);
     }
 

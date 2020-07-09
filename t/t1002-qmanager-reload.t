@@ -36,7 +36,7 @@ test_expect_success 'qmanager: hwloc reload works' '
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-whitelist=node,socket,core,gpu &&
+subsystems=containment policy=low load-allowlist=node,socket,core,gpu &&
     load_qmanager
 '
 

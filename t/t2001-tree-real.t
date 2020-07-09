@@ -22,7 +22,7 @@ fi
 test_expect_success 'flux-tree: prep for testing in real mode works' '
     flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-whitelist=node,core,gpu &&
+subsystems=containment policy=low load-allowlist=node,core,gpu &&
     load_qmanager
 '
 

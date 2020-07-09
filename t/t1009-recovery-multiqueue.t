@@ -38,7 +38,7 @@ test_expect_success 'recovery: hwloc reload works' '
 test_expect_success 'recovery: loading flux-sched modules with two queues' '
     flux module remove sched-simple &&
     flux module reload -f resource &&
-    load_resource load-whitelist=node,core,gpu match-format=rv1 &&
+    load_resource load-allowlist=node,core,gpu match-format=rv1 &&
     load_qmanager "queues=batch debug"
 '
 
@@ -54,7 +54,7 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
     flux dmesg -C &&
-    reload_resource load-whitelist=node,core,gpu match-format=rv1 &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1 &&
     reload_qmanager "queues=batch debug" &&
     check_requeue ${jobid1} batch &&
     check_requeue ${jobid2} debug &&

@@ -851,7 +851,7 @@ done:
     return rc;
 }
 
-bool resource_reader_jgf_t::is_whitelist_supported ()
+bool resource_reader_jgf_t::is_allowlist_supported ()
 {
     return false;
 }

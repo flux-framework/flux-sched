@@ -475,7 +475,7 @@ int resource_reader_grug_t::update (resource_graph_t &g,
     return -1;
 }
 
-bool resource_reader_grug_t::is_whitelist_supported ()
+bool resource_reader_grug_t::is_allowlist_supported ()
 {
     return false;
 }
