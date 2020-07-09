@@ -39,15 +39,15 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
     jobid5=$(flux job submit basic.json) &&
     jobid6=$(flux job submit basic.json) &&
     jobid7=$(flux job submit basic.json) &&
-    flux job wait-event -t 2 ${jobid4} start &&
-    flux job wait-event -t 2 ${jobid7} submit
+    flux job wait-event -t 10 ${jobid4} start &&
+    flux job wait-event -t 10 ${jobid7} submit
 '
 
 test_expect_success 'recovery: cancel one running job without fluxion' '
     remove_resource &&
     remove_qmanager &&
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 2 ${jobid1} release
+    flux job wait-event -t 10 ${jobid1} release
 '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
@@ -57,13 +57,13 @@ test_expect_success 'recovery: works when both modules restart (rv1)' '
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
-    flux job wait-event -t 2 ${jobid5} start &&
+    flux job wait-event -t 10 ${jobid5} start &&
     test_expect_code 3 flux ion-resource info ${jobid6}
 '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
     flux job cancel ${jobid2} &&
-    flux job wait-event -t 2 ${jobid6} start
+    flux job wait-event -t 10 ${jobid6} start
 '
 
 test_expect_success 'recovery: works when only qmanager restarts (rv1)' '
@@ -79,7 +79,7 @@ test_expect_success 'recovery: works when only qmanager restarts (rv1)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
     flux job cancel ${jobid3} &&
-    flux job wait-event -t 2 ${jobid7} start
+    flux job wait-event -t 10 ${jobid7} start
 '
 
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
@@ -104,7 +104,7 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job cancel ${jobid5} &&
     flux job cancel ${jobid6} &&
     flux job cancel ${jobid7} &&
-    flux job wait-event -t 2 ${jobid7} release
+    flux job wait-event -t 10 ${jobid7} release
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
@@ -118,8 +118,8 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '
     jobid3=$(flux job submit basic.json) &&
     jobid4=$(flux job submit basic.json) &&
     jobid5=$(flux job submit basic.json) &&
-    flux job wait-event -t 2 ${jobid4} start &&
-    flux job wait-event -t 2 ${jobid5} submit
+    flux job wait-event -t 10 ${jobid4} start &&
+    flux job wait-event -t 10 ${jobid5} submit
 '
 
 test_expect_success 'recovery: qmanager restarts (rv1_nosched->rv1_nosched)' '
@@ -134,7 +134,7 @@ test_expect_success 'recovery: qmanager restarts (rv1_nosched->rv1_nosched)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1_nosched)' '
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 2 ${jobid5} start
+    flux job wait-event -t 10 ${jobid5} start
 '
 
 test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
@@ -142,7 +142,7 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job cancel ${jobid3} &&
     flux job cancel ${jobid4} &&
     flux job cancel ${jobid5} &&
-    flux job wait-event -t 2 ${jobid5} release
+    flux job wait-event -t 10 ${jobid5} release
 '
 
 test_expect_success 'removing resource and qmanager modules' '

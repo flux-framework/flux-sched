@@ -25,7 +25,7 @@ subsystems=containment policy=low &&
 
 test_expect_success 'qmanager: job can be submitted to queue=all' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=all hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = all &&
@@ -37,7 +37,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 
 test_expect_success 'qmanager: job can be submitted to queue=batch' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=batch hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = batch &&
@@ -49,7 +49,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 
 test_expect_success 'qmanager: job can be submitted to queue=debug' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=debug hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = debug &&
@@ -63,7 +63,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 # earliest queue name becomes default
 test_expect_success 'qmanager: job enqueued into implicitly default queue' '
     jobid=$(flux mini submit -n 1 hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = all &&
@@ -80,7 +80,7 @@ queue-policy-per-queue="queue1:easy queue2:hybrid queue3:fcfs" default-queue=que
 
 test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=queue3 hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = queue3 &&
@@ -92,7 +92,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 
 test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=queue2 hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = queue2 &&
@@ -104,7 +104,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 
 test_expect_success 'qmanager: job submitted to queue=queue1 (conservative)' '
     jobid=$(flux mini submit -n 1 --setattr system.queue=queue1 hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = queue1 &&
@@ -116,7 +116,7 @@ awk "{print \$5}" | awk -F= "{print \$2}") &&
 
 test_expect_success 'qmanager: job enqueued into explicitly default queue' '
     jobid=$(flux mini submit -n 1 hostname) &&
-    flux job wait-event -t 2 ${jobid} finish &&
+    flux job wait-event -t 10 ${jobid} finish &&
     queue=$(flux dmesg | grep alloc | grep ${jobid} | \
 awk "{print \$5}" | awk -F= "{print \$2}") &&
     test ${queue} = queue3 &&

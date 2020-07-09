@@ -32,7 +32,7 @@ test_expect_success 'recovery: loading flux-sched modules works (rv1_nosched)' '
 
 test_expect_success 'recovery: submit a job (rv1_nosched)' '
     jobid1=$(flux job submit basic.json) &&
-    flux job wait-event -t 2 ${jobid1} start
+    flux job wait-event -t 10 ${jobid1} start
 '
 
 test_expect_success 'recovery: qmanager w/o an option must fail (rv1_nosched)' '
