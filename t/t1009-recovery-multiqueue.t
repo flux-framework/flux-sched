@@ -48,8 +48,8 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
     jobid2=$(flux job submit basic.debug.json) &&
     jobid3=$(flux job submit basic.batch.json) &&
     jobid4=$(flux job submit basic.debug.json) &&
-    flux job wait-event -t 2 ${jobid2} start &&
-    flux job wait-event -t 2 ${jobid4} submit
+    flux job wait-event -t 10 ${jobid2} start &&
+    flux job wait-event -t 10 ${jobid4} submit
 '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
@@ -64,14 +64,14 @@ test_expect_success 'recovery: works when both modules restart (rv1)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
     flux job cancel ${jobid2} &&
-    flux job wait-event -t 2 ${jobid4} start
+    flux job wait-event -t 10 ${jobid4} start
 '
 
 test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job cancel ${jobid1} &&
     flux job cancel ${jobid3} &&
     flux job cancel ${jobid4} &&
-    flux job wait-event -t 2 ${jobid4} release
+    flux job wait-event -t 10 ${jobid4} release
 '
 
 test_expect_success 'removing resource and qmanager modules' '

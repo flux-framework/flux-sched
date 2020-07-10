@@ -44,7 +44,7 @@ test_expect_success 'qmanager: submit 2 more as many jobs as there are cores ' '
     jobid1=$(submit_jobs basic.json 16) &&
     jobid2=$(flux job submit basic.json) &&
     jobid3=$(flux job submit basic.json) &&
-    flux job wait-event -t 2 ${jobid3} submit &&
+    flux job wait-event -t 10 ${jobid3} submit &&
     flux job list > jobs.list &&
     echo ${jobid1} > jobid1.out &&
     echo ${jobid2} > jobid2.out &&
@@ -63,13 +63,13 @@ test_expect_success 'qmanager: handle the alloc resubmitted by job-manager' '
     jobid2=$(cat jobid2.out) &&
     jobid3=$(cat jobid3.out) &&
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 2 ${jobid2} start
+    flux job wait-event -t 10 ${jobid2} start
 '
 
 test_expect_success 'qmanager: canceling a pending job works' '
     jobid3=$(cat jobid3.out) &&
     flux job cancel ${jobid3} &&
-    flux job wait-event -t 2 ${jobid3} exception
+    flux job wait-event -t 10 ${jobid3} exception
 '
 
 test_expect_success 'removing resource and qmanager modules' '
