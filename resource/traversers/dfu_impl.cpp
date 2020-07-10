@@ -575,6 +575,71 @@ done:
     return rc;
 }
 
+int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
+                              const std::string &critiera,
+                              vtx_t u, const subsystem_t &aux,
+                              const vtx_predicates_override_t &p)
+{
+    return 0;
+}
+
+int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
+                              const std::string &criteria, vtx_t u,
+                              const vtx_predicates_override_t &p)
+{
+    int rc = -1;
+    int nchildren = 0;
+    f_out_edg_iterator_t ei, ei_end;
+    expr_eval_vtx_target_t vtx_target;
+    std::string dom = m_match->dom_subsystem ();
+    bool result = false;
+    bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
+    bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
+    bool reserved = !(*m_graph)[u].schedule.reservations.empty ();
+    Flux::resource_model::vtx_predicates_override_t p_overriden = p;
+    p_overriden.set (down, allocated, reserved);
+
+    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
+    m_trav_level++;
+    for (auto &s : m_match->subsystems ()) {
+        for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
+            if (!in_subsystem (*ei, s) || stop_explore (*ei, s))
+                continue;
+            vtx_t tgt = target (*ei, *m_graph);
+            rc = (s == dom)? dom_find_dfv (w, criteria, tgt, p_overriden)
+                           : aux_find_upv (w, criteria, tgt, s, p_overriden);
+            if (rc > 0) {
+                if (w->emit_edg (level (), *m_graph, *ei) < 0) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": emit_edg returned an error.\n";
+                }
+                nchildren += rc;
+            } else if (rc < 0) {
+                goto done;
+            }
+        }
+    }
+    vtx_target.initialize (p_overriden, m_graph, u);
+    (*m_graph)[u].idata.colors[dom] = m_color.black ();
+
+    if ( (rc = m_expr_eval.evaluate (criteria, vtx_target, result)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += std::string (": error from evaluate: ") + strerror (errno);
+        goto done;
+    } else if (!result && !nchildren) {
+        goto done;
+    } else if ( (rc = w->emit_vtx (level (), *m_graph, u,
+                                   (*m_graph)[u].size, true)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
+        goto done;
+    }
+    rc = nchildren + 1;
+done:
+    m_trav_level--;
+    return rc;
+}
+
 int dfu_impl_t::resolve (vtx_t root, std::vector<Resource> &resources,
                          scoring_api_t &dfu, bool excl, unsigned int *needs)
 {
@@ -828,6 +893,46 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
                                                                   m_best_k_cnt);
     }
     return rc;
+}
+
+int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers,
+                      const std::string &criteria)
+{
+    int rc = -1;
+    vtx_t root;
+    expr_eval_vtx_target_t target;
+    vtx_predicates_override_t p_overriden;
+
+    if (!m_match || !m_graph || !m_graph_db || !writers) {
+        errno = EINVAL;
+        return rc;
+    }
+    const subsystem_t &dom = m_match->dom_subsystem ();
+    if (m_graph_db->metadata.roots.find (dom)
+        == m_graph_db->metadata.roots.end ()) {
+        errno = EINVAL;
+        goto done;
+    }
+    root = m_graph_db->metadata.roots.at (dom);
+    target.initialize (p_overriden, m_graph, root);
+    if ( (rc = m_expr_eval.validate (criteria, target)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": invalid criteria: " + criteria + ".\n";
+        goto done;
+    }
+
+    tick ();
+
+    if ( (rc = dom_find_dfv (writers, criteria, root, p_overriden)) < 0)
+        goto done;
+
+    if (writers->emit_tm (0, 0) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": emit_tm returned -1.\n";
+    }
+
+done:
+    return (rc >= 0)? 0: -1;
 }
 
 
