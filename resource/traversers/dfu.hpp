@@ -139,6 +139,31 @@ public:
              std::shared_ptr<resource_reader_base_t> &reader,
              int64_t id, int64_t at, uint64_t duration);
 
+    /*! Traverse the resource graph and emit those resources whose
+     *  status is matched with the matching criteria.
+     *
+     *  \param writers   vertex/edge writers to emit the matched labels
+     *  \param criteria  matching criteria expression string. Each
+     *                   individual criterion is expressed as a key-value
+     *                   pair, representing a predicate p(x) where key is
+     *                   is p and value is x.
+     *                   Currently supported expressions are
+     *                   "status={up|down}", "sched-now={allocated|free}",
+     *                   "sched-future={reserved|free}, or any combination
+     *                   of them separated with "and", "or", or a whitespace
+     *                   which is also interpreted as "and" logical
+     *                   operator of two expressions. Parentheses
+     *                   are supported to group expressions with a higher
+     *                   operator precedence. For example, in "staus=up and
+     *                   (sched-now=allocated or sched-future=reserved)"
+     *                   The parenthesized expression is evaluated
+     *                   before taking the "and" operator with the
+     *                   the result of the first predicate.
+     *  \return          0 on success; -1 on error.
+     */
+    int find (std::shared_ptr<match_writers_t> &writers,
+              const std::string &criteria);
+
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
      *
