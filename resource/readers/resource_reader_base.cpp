@@ -40,10 +40,10 @@ using namespace Flux::resource_model;
  *                                                                              *
  ********************************************************************************/
 
-bool resource_reader_base_t::in_whitelist (const std::string &resource)
+bool resource_reader_base_t::in_allowlist (const std::string &resource)
 {
-    return whitelist.empty ()
-           || (whitelist.find (resource) != whitelist.end ());
+    return allowlist.empty ()
+           || (allowlist.find (resource) != allowlist.end ());
 }
 
 
@@ -58,7 +58,7 @@ resource_reader_base_t::~resource_reader_base_t ()
 
 }
 
-int resource_reader_base_t::set_whitelist (const std::string &csl)
+int resource_reader_base_t::set_allowlist (const std::string &csl)
 {
     if (csl == "")
         return 0;
@@ -72,13 +72,13 @@ int resource_reader_base_t::set_whitelist (const std::string &csl)
         while ((pos = csl_copy.find (sep)) != std::string::npos) {
             std::string resource = csl_copy.substr (0, pos);
             if (resource != "")
-                whitelist.insert (resource);
+                allowlist.insert (resource);
             csl_copy.erase (0, pos + sep.length ());
         }
         if (csl_copy != "")
-            whitelist.insert (csl_copy);
+            allowlist.insert (csl_copy);
         errno = EINVAL;
-        rc = whitelist.empty ()? -1 : 0;
+        rc = allowlist.empty ()? -1 : 0;
     } catch (std::out_of_range &e) {
         errno = EINVAL;
         rc = -1;

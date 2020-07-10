@@ -41,7 +41,7 @@ namespace resource_model {
 struct test_params_t {
     std::string load_file;      /* load file name */
     std::string load_format;    /* load reader format */
-    std::string load_whitelist; /* load resource whitelist */
+    std::string load_allowlist; /* load resource allowlist */
     std::string matcher_name;   /* Matcher name */
     std::string matcher_policy; /* Matcher policy name */
     std::string o_fname;        /* Output file to dump the filtered graph */

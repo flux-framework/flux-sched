@@ -85,7 +85,7 @@ test_expect_success 'resource-query works on gpu type query using xml (MIXED)' '
     test_cmp 020.R.out ${exp_dir}/020.R.out
 '
 
-test_expect_success 'resource-query works with whitelist' '
+test_expect_success 'resource-query works with allowlist' '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmd_dir}/cmds12.in > cmds12 &&
     ${query} -L ${hwloc_4gpu} -f hwloc -S CA -P high -W node,socket,core,gpu -t 021.R.out < cmds12 &&
     test_cmp 021.R.out ${exp_dir}/021.R.out
@@ -140,7 +140,7 @@ test_expect_success 'reloading sierra xml and match allocate' '
     remove_resource &&
     flux hwloc reload ${excl_4N4B_sierra2} &&
     load_resource subsystems=containment \
-policy=high load-whitelist=node,socket,core,gpu &&
+policy=high load-allowlist=node,socket,core,gpu &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&

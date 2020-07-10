@@ -493,7 +493,7 @@ EOF
 test_expect_success 'flux-tree: combining -T -M works' '
     cat >cmp.16 <<-EOF &&
 	FLUXION_QMANAGER_OPTIONS:
-	FLUXION_RESOURCE_OPTIONS:hwloc-whitelist=node,core,gpu policy=low
+	FLUXION_RESOURCE_OPTIONS:hwloc-allowlist=node,core,gpu policy=low
 	Rank=1: N=1 c=4
 	Rank=1: T=--topology=2
 	Rank=1: M=--match-policy=high
@@ -551,7 +551,7 @@ EOF
 test_expect_success 'flux-tree: existing FLUXION_RESOURCE_OPTIONS is respected' '
     cat >cmp.18 <<-EOF &&
 	FLUXION_QMANAGER_OPTIONS:
-	FLUXION_RESOURCE_OPTIONS:hwloc-whitelist=node,core,gpu policy=locality
+	FLUXION_RESOURCE_OPTIONS:hwloc-allowlist=node,core,gpu policy=locality
 	Rank=1: N=1 c=1
 	Rank=1: T=--leaf
 	Rank=1:

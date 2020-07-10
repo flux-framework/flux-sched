@@ -411,7 +411,7 @@ apply_policies() {
     fi
     if [[ "${match_policy}" != "default" ]]
     then
-        export FLUXION_RESOURCE_OPTIONS="hwloc-whitelist=node,core,gpu \
+        export FLUXION_RESOURCE_OPTIONS="hwloc-allowlist=node,core,gpu \
 policy=${match_policy}"
     fi
     if [[ "x${FT_DRY_RUN}" = "xyes" ]]
