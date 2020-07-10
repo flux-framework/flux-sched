@@ -1,0 +1,6 @@
+get-status /cz0/pfs0/bandwidth0
+set-status /cz0/pfs0/bandwidth0 down
+get-status /cz0/pfs0/bandwidth0
+set-status /cz0/pfs0/bandwidth0 up
+get-status /cz0/pfs0/bandwidth0
+quit

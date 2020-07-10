@@ -1,0 +1,4 @@
+INFO: Loading a matcher: CA
+resource-query> get-status /tiny0/rack0/node0
+/tiny0/rack0/node0 is up
+resource-query> quit

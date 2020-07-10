@@ -565,6 +565,59 @@ int dfu_impl_t::remove (vtx_t root, int64_t jobid)
     return (root_has_jtag)? rem_dfv (root, jobid) : rem_exv (jobid);
 }
 
+int dfu_impl_t::mark (const std::string &root_path, 
+                      resource_pool_t::status_t status)
+{
+    std::map<std::string, vtx_t>::const_iterator vit_root =
+        m_graph_db->metadata.by_path.find (root_path);
+
+    if (vit_root == m_graph_db->metadata.by_path.end ()) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;                
+        m_err_msg += ": could not find subtree path ("
+                  + root_path + ") in resource graph.\n";
+        return -1;
+    }
+    (*m_graph)[vit_root->second].status = status;
+    
+    return 0;
+}
+
+int dfu_impl_t::mark (std::set<int64_t> &ranks, 
+                      resource_pool_t::status_t status)
+{
+    std::map<int64_t, std::vector <vtx_t>>::iterator vit;
+    std::string subtree_path = "", tmp_path = "";
+    const std::string &dom = m_match->dom_subsystem ();
+    vtx_t subtree_root;
+
+    for (auto &rank : ranks) {
+        // Now iterate through subgraphs keyed by rank and 
+        // set status appropriately
+        vit = m_graph_db->metadata.by_rank.find (rank);
+        if (vit == m_graph_db->metadata.by_rank.end ()) {
+            errno = EINVAL;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": could not find rank path in by_rank map.\n";
+            return -1;
+        }
+
+        subtree_root = vit->second.front ();
+        subtree_path = (*m_graph)[subtree_root].paths.at (dom);
+        for (vtx_t v : vit->second) {
+            // The shortest path string is the subtree root. 
+            tmp_path = (*m_graph)[v].paths.at (dom);
+            if (tmp_path.length () < subtree_path.length ()) {
+                subtree_path = tmp_path;
+                subtree_root = v;
+            }
+        }
+        (*m_graph)[subtree_root].status = status;
+    }
+
+    return 0;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
