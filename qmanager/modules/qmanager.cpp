@@ -141,7 +141,7 @@ static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
                                ctx->h,
                                &qmanager_safe_cb_t::jobmanager_alloc_cb,
                                &qmanager_safe_cb_t::jobmanager_free_cb,
-                               &qmanager_safe_cb_t::jobmanager_exception_cb,
+                               &qmanager_safe_cb_t::jobmanager_cancel_cb,
                                std::static_pointer_cast<
                                    qmanager_cb_ctx_t> (ctx).get ()))) {
         flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);

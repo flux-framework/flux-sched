@@ -80,6 +80,13 @@ test_expect_success 'qmanager: exception during run is supported' '
 	grep "finish status=15" eventlog.${jobid}.out
 '
 
+test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
+    jobid=$(flux jobspec srun -N 64 hostname | \
+        exec_test | flux job submit) &&
+    flux job wait-event -t 10 ${jobid} clean &&
+    flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"
+'
+
 test_expect_success 'removing resource and qmanager modules' '
     remove_qmanager &&
     remove_resource
