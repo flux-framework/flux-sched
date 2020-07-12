@@ -1,4 +1,1 @@
-INFO: Loading a matcher: CA
-resource-query> get-status /dne
 Could not find path /dne in resource graph.
-resource-query> quit

@@ -25,15 +25,15 @@ test_expect_success "${test001_desc}" '
 
 test002_desc="exit on get-status of nonexistent resource "
 test_expect_success "${test002_desc}" '
-    ${query} -L ${grugs} -F jgf -S CA -P high < ${cmd_dir}/cmds02 \
-> 002.R.out &&
+    ${query} -L ${grugs} -F jgf -S CA -P high -t 002.R.out \
+< ${cmd_dir}/cmds02 &&
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
 
 test003_desc="get resource vertex status "
 test_expect_success "${test003_desc}" '
-    ${query} -L ${grugs} -F jgf -S CA -P high < ${cmd_dir}/cmds03 \
-> 003.R.out &&
+    ${query} -L ${grugs} -F jgf -S CA -P high -t 003.R.out \
+< ${cmd_dir}/cmds03 &&
     test_cmp 003.R.out ${exp_dir}/003.R.out
 '
 
@@ -46,8 +46,8 @@ test_expect_success "${test004_desc}" '
 
 test005_desc="exit on set-status of nonexistent resource "
 test_expect_success "${test005_desc}" '
-    ${query} -L ${grugs} -F jgf -S CA -P high < ${cmd_dir}/cmds05 \
-> 005.R.out &&
+    ${query} -L ${grugs} -F jgf -S CA -P high -t 005.R.out \
+< ${cmd_dir}/cmds05 &&
     test_cmp 005.R.out ${exp_dir}/005.R.out
 '
 
@@ -60,15 +60,15 @@ test_expect_success "${test006_desc}" '
 
 test007_desc="change resource vertex status and get output "
 test_expect_success "${test007_desc}" '
-    ${query} -L ${grugs} -F jgf -S CA -P high < ${cmd_dir}/cmds07 \
-> 007.R.out &&
+    ${query} -L ${grugs} -F jgf -S CA -P high -t 007.R.out \
+< ${cmd_dir}/cmds07 &&
     test_cmp 007.R.out ${exp_dir}/007.R.out
 '
 
 test008_desc="change aux hierarchy resource vertex status and get output  "
 test_expect_success "${test008_desc}" '
-    ${query} -L ${grug_aux} -F jgf -S CA -P high < ${cmd_dir}/cmds08 \
-> 008.R.out &&
+    ${query} -L ${grug_aux} -F jgf -S CA -P high -t 008.R.out \
+< ${cmd_dir}/cmds08 &&
     test_cmp 008.R.out ${exp_dir}/008.R.out
 '
 

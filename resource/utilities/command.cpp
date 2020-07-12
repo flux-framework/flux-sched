@@ -478,9 +478,12 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx,
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
 
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
+
     if (it == ctx->db->metadata.by_path.end ()) {
-        std::cout << "Could not find path " << vtx_path
-                     << " in resource graph." << std::endl;
+        out << "Could not find path " << vtx_path
+            << " in resource graph." << std::endl;
         return 0;
     }
 
@@ -506,9 +509,13 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::string status = "";
 
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
+
+
     if (it == ctx->db->metadata.by_path.end ()) {
-        std::cout << "Could not find path " << vtx_path
-                     << " in resource graph." << std::endl;
+        out << "Could not find path " << vtx_path
+            << " in resource graph." << std::endl;
         return 0;
     }
 
@@ -521,11 +528,11 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
 
     if (status == "") {
         std::cerr << "ERROR: vertex " << vtx_path
-                     << " has unknown status." << std::endl;
+                  << " has unknown status." << std::endl;
         return 0;     
     }
 
-    std::cout << vtx_path << " is " << status << std::endl;
+    out << vtx_path << " is " << status << std::endl;
 
     return 0;
 }
