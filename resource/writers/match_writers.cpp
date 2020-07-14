@@ -73,6 +73,21 @@ bool sim_match_writers_t::empty ()
     return m_out.str ().empty ();
 }
 
+int sim_match_writers_t::emit_json (json_t **j_o)
+{
+    json_t *o = NULL;
+    std::string str = m_out.str ();
+
+    if (!str.empty ()) {
+        if ( !(o = json_string (str.c_str ()))) {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    *j_o = o;
+    return 0;
+}
+
 int sim_match_writers_t::emit (std::stringstream &out)
 {
     out << m_out.str ();
@@ -660,30 +675,32 @@ ret:
     return rc;
 }
 
-int rv1_match_writers_t::emit (std::stringstream &out)
+int rv1_match_writers_t::emit_json (json_t **j_o)
 {
     int rc = 0;
+    int saved_errno;
     json_t *o = NULL;
     json_t *rlite_o = NULL;
     json_t *jgf_o = NULL;
     json_t *attrs_o = NULL;
-    char *json_str = NULL;
 
     if (rlite.empty () || jgf.empty ())
         goto ret;
-    if ((rc = rlite.emit_json (&rlite_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o)) < 0)
         goto ret;
-    if ((rc = jgf.emit_json (&jgf_o)) < 0) {
+    if ( (rc = jgf.emit_json (&jgf_o)) < 0) {
+        saved_errno = errno;
         json_decref (rlite_o);
+        errno = saved_errno;
         goto ret;
     }
-    if (!(o = json_pack ("{s:i s:{s:o s:I s:I} s:o}",
-                             "version", 1,
-                             "execution",
-                             "R_lite", rlite_o,
-                             "starttime", m_starttime,
-                             "expiration", m_expiration,
-                             "scheduling", jgf_o))) {
+    if ( !(o = json_pack ("{s:i s:{s:o s:I s:I} s:o}",
+                              "version", 1,
+                              "execution",
+                              "R_lite", rlite_o,
+                              "starttime", m_starttime,
+                              "expiration", m_expiration,
+                              "scheduling", jgf_o))) {
         json_decref (rlite_o);
         json_decref (jgf_o);
         rc = -1;
@@ -692,16 +709,34 @@ int rv1_match_writers_t::emit (std::stringstream &out)
     }
     if (!m_attrs.empty ()) {
         if ((rc = attrs_json (&attrs_o)) < 0) {
+            saved_errno = errno;
             json_decref (o);
+            errno = saved_errno;
             goto ret;
         }
-        if ((rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
+        if ( (rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
             json_decref (o);
             errno = ENOMEM;
             goto ret;
         }
     }
-    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+    *j_o = o;
+
+ret:
+    return rc;
+}
+
+int rv1_match_writers_t::emit (std::stringstream &out)
+{
+    int rc = 0;
+    json_t *o = NULL;
+    char *json_str = NULL;
+
+    if (rlite.empty () || jgf.empty ())
+        goto ret;
+    if ( (rc = emit_json (&o)) < 0)
+        goto ret;
+    if ( !(json_str = json_dumps (o, JSON_INDENT (0)))) {
         json_decref (o);
         o = NULL;
         rc = -1;
@@ -763,7 +798,7 @@ bool rv1_nosched_match_writers_t::empty ()
     return rlite.empty ();
 }
 
-int rv1_nosched_match_writers_t::emit (std::stringstream &out)
+int rv1_nosched_match_writers_t::emit_json (json_t **j_o)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -772,20 +807,35 @@ int rv1_nosched_match_writers_t::emit (std::stringstream &out)
 
     if (rlite.empty ())
         goto ret;
-    if ((rc = rlite.emit_json (&rlite_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o)) < 0)
         goto ret;
-    if (!(o = json_pack ("{s:i s:{s:o s:I s:I}}",
-                             "version", 1,
-                             "execution",
-                             "R_lite",  rlite_o,
-                             "starttime", m_starttime,
-                             "expiration", m_expiration))) {
+    if ( !(*j_o = json_pack ("{s:i s:{s:o s:I s:I}}",
+                                "version", 1,
+                                "execution",
+                                "R_lite",  rlite_o,
+                                "starttime", m_starttime,
+                                "expiration", m_expiration))) {
         json_decref (rlite_o);
         rc = -1;
         errno = ENOMEM;
         goto ret;
     }
-    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+
+ret:
+    return rc;
+}
+
+int rv1_nosched_match_writers_t::emit (std::stringstream &out)
+{
+    int rc = 0;
+    json_t *o = NULL;
+    char *json_str = NULL;
+
+    if (rlite.empty ())
+        goto ret;
+    if ( (rc = emit_json (&o)) < 0)
+        goto ret;
+    if ( !(json_str = json_dumps (o, JSON_INDENT (0)))) {
         json_decref (o);
         o = NULL;
         rc = -1;
@@ -833,6 +883,24 @@ bool pretty_sim_match_writers_t::empty ()
         }
     }
     return empty;
+}
+
+int pretty_sim_match_writers_t::emit_json (json_t **j_o)
+{
+    json_t *o = NULL;
+    std::string str = "";
+
+    for (auto &s: m_out)
+        str += s;
+    m_out.clear ();
+    if (!str.empty ()) {
+        if ( !(o = json_string (str.c_str ()))) {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    *j_o = o;
+    return 0;
 }
 
 int pretty_sim_match_writers_t::emit (std::stringstream &out)
