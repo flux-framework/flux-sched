@@ -1,0 +1,2 @@
+# override ignore of *.out in top-level .gitignore
+!*.out

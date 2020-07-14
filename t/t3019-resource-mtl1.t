@@ -41,4 +41,70 @@ test_expect_success "${test004_desc}" '
     test_cmp 004.R.out ${exp_dir}/004.R.out
 '
 
+cmds005="${cmd_dir}/cmds-ssd-constrained-alloc.in"
+test005_desc="match allocate 5 jobs with 2TB L1 ssds - last one fails (pol=hi)"
+test_expect_success "${test005_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
+    ${query} -L ${grugs} -S CA -P high -t 005.R.out < cmds005 &&
+    test_cmp 005.R.out ${exp_dir}/005.R.out
+'
+
+cmds006="${cmd_dir}/cmds-ssd-constrained-alloc-orelse.in"
+test006_desc="match allocate_orelse_reserve works with MTS L1 (pol=hi)"
+test_expect_success "${test006_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
+    ${query} -L ${grugs} -S CA -P high -t 006.R.out < cmds006 &&
+    test_cmp 006.R.out ${exp_dir}/006.R.out
+'
+
+cmds007="${cmd_dir}/cmds-ssd-constrained-alloc.in"
+test007_desc="match allocate 5 jobs with 2TB L1 ssds - last one fails (pol=low)"
+test_expect_success "${test007_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds007} > cmds007 &&
+    ${query} -L ${grugs} -S CA -P low -t 007.R.out < cmds007 &&
+    test_cmp 007.R.out ${exp_dir}/007.R.out
+'
+
+cmds008="${cmd_dir}/cmds-ssd-constrained-alloc-orelse.in"
+test008_desc="match allocate_orelse_reserve works with MTS L1 (pol=low)"
+test_expect_success "${test008_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds008} > cmds008 &&
+    ${query} -L ${grugs} -S CA -P low -t 008.R.out < cmds008 &&
+    test_cmp 008.R.out ${exp_dir}/008.R.out
+'
+
+cmds009="${cmd_dir}/cmds-ssd-constrained-same-rack-alloc.in"
+test009_desc="match allocate 5 jobs with 2TB L1 ssds in same rack \
+- last one fails (pol=hi)"
+test_expect_success "${test009_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds009} > cmds009 &&
+    ${query} -L ${grugs} -S CA -P high -t 009.R.out < cmds009 &&
+    test_cmp 009.R.out ${exp_dir}/009.R.out
+'
+
+cmds010="${cmd_dir}/cmds-ssd-constrained-same-rack-alloc-orelse.in"
+test010_desc="match allocate_orelse_reserve works with MTS L1 (pol=hi)"
+test_expect_success "${test010_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds010} > cmds010 &&
+    ${query} -L ${grugs} -S CA -P high -t 010.R.out < cmds010 &&
+    test_cmp 010.R.out ${exp_dir}/010.R.out
+'
+
+cmds011="${cmd_dir}/cmds-ssd-constrained-same-rack-alloc.in"
+test011_desc="match allocate 5 jobs with 2TB L1 ssds in same rack \
+- last one fails (pol=low)"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${grugs} -S CA -P low -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds012="${cmd_dir}/cmds-ssd-constrained-same-rack-alloc-orelse.in"
+test012_desc="match allocate_orelse_reserve works with MTS L1 (pol=low)"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${grugs} -S CA -P low -t 012.R.out < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
 test_done

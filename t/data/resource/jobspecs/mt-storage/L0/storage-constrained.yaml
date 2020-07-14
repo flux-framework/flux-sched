@@ -1,0 +1,30 @@
+version: 1
+resources:
+  - type: node
+    count: 1
+    with:
+      - type: slot
+        label: default
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: core
+                count: 18
+              - type: gpu
+                count: 2
+              - type: memory
+                count: 128
+          - type: ssd
+            count: 2048
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: [ "default" ]
+    slot: default
+    count:
+      per_slot: 1
