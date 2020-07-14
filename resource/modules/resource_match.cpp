@@ -253,6 +253,9 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
+static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -274,6 +277,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.notify", notify_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.disconnect", disconnect_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.find", find_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1833,6 +1838,66 @@ error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
+
+static int run_find (std::shared_ptr<resource_ctx_t>& ctx,
+                     const std::string &criteria, json_t **R)
+{
+    int rc = -1;
+    json_t *o = nullptr;
+    std::shared_ptr<match_writers_t> w = nullptr;
+
+    if ( !(w = match_writers_factory_t::create (match_format_t::RV1_NOSCHED)))
+        goto error;
+    if ( (rc = ctx->traverser->find (w, criteria)) < 0) {
+        if (ctx->traverser->err_message () != "") {
+            flux_log_error (ctx->h, "%s: %s",
+                            __FUNCTION__,
+                            ctx->traverser->err_message ().c_str ());
+            ctx->traverser->clear_err_message ();
+        }
+        goto error;
+    }
+    if ( (rc = w->emit_json (&o)) < 0) {
+        flux_log_error (ctx->h, "%s: emit", __FUNCTION__);
+        goto error;
+    }
+    if (o)
+        *R = o;
+
+error:
+    return rc;
+}
+
+static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg)
+{
+    json_t *R = nullptr;
+    int saved_errno;
+    const char *criteria = nullptr;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_request_unpack (msg, nullptr, "{s:s}",
+                                               "criteria", &criteria) < 0)
+        goto error;
+    if (run_find (ctx, criteria, &R) < 0)
+        goto error;
+    if (flux_respond_pack (h, msg, "{s:o?}",
+                                       "R", R) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: find succeeded", __FUNCTION__);
+    return;
+
+error:
+    saved_errno = errno;
+    json_decref (R);
+    errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
 
 /******************************************************************************
  *                                                                            *
