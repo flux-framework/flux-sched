@@ -202,7 +202,8 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     int rc = 0;
     // Prune by the visiting resource vertex's availability
     // If resource is not UP, no reason to descend further.
-    if ((*m_graph)[u].status != resource_pool_t::status_t::UP) {
+    if (meta.alloc_type != jobmeta_t::alloc_type_t::AT_SATISFIABILITY
+        && (*m_graph)[u].status != resource_pool_t::status_t::UP) {
         rc = -1;
         goto done;
     }

@@ -123,6 +123,8 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                           bool excl,  const jobmeta_t &jobmeta, bool full,
                           int &n)
 {
+    int rc = 0;
+
     if (excl) {
 
         n++;
@@ -146,14 +148,28 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                 m_err_msg += strerror (errno);
                 m_err_msg += "\n";
             }
-            return -1;
+            rc = -1;
+            goto done;
         }
-        if (jobmeta.allocate)
+
+        switch (jobmeta.alloc_type) {
+        case jobmeta_t::alloc_type_t::AT_ALLOC:
             (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-        else
+            break;
+        case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
             (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
+            break;
+        case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
+            break;
+        default:
+            rc = -1;
+            errno = EINVAL;
+            break;
+        }
     }
-    return 0;
+
+done:
+    return rc;
 }
 
 int dfu_impl_t::accum_to_parent (vtx_t u, const subsystem_t &subsystem,
@@ -512,13 +528,15 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int needs = 0;
     std::map<std::string, int64_t> dfu;
     const std::string &dom = m_match->dom_subsystem ();
+    bool rsv = (jobmeta.alloc_type
+                 == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
 
     tick ();
     if ( (rc = reader->update (m_graph_db->resource_graph,
                                m_graph_db->metadata, str,
                                jobmeta.jobid, jobmeta.at,
                                jobmeta.duration,
-                               !jobmeta.allocate, m_best_k_cnt)) != 0) {
+                               rsv, m_best_k_cnt)) != 0) {
         m_err_msg += reader->err_message ();
         reader->clear_err_message ();
         return rc;
