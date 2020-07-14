@@ -1,0 +1,4 @@
+set-status /tiny0/rack0/node1 down
+set-status /tiny0/rack0/node1 up
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+quit
