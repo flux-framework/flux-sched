@@ -1,7 +1,5 @@
-      ---------------gpu2[1:x]
-      ------------numanode5[1:x]
-      ---------------gpu3[1:x]
-      ------------numanode7[1:x]
+      ------------gpu2[1:x]
+      ------------gpu3[1:x]
       ---------socket1[1:s]
       ------corona11[1:s]
       ---cluster0[1:s]
@@ -10,10 +8,8 @@ INFO: JOBID=1
 INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
-      ---------------gpu0[1:x]
-      ------------numanode1[1:x]
-      ---------------gpu1[1:x]
-      ------------numanode2[1:x]
+      ------------gpu0[1:x]
+      ------------gpu1[1:x]
       ---------socket0[1:s]
       ------corona11[1:s]
       ---cluster0[1:s]

@@ -1,3 +1,4 @@
+#!/bin/false
 #
 #  Run script as `flux jsonschemalint` with properly configured
 #   FLUX_EXEC_PATH or `flux python flux-jsonschemalint` if not to

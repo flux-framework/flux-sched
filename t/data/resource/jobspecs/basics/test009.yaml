@@ -7,11 +7,8 @@ resources:
         count: 2
         label: default
         with:
-          - type: numanode
+          - type: socket
             count: 1
-            with:
-              - type: socket
-                count: 1
 
 # a comment
 attributes:

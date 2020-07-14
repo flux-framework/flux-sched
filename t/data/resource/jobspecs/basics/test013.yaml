@@ -12,8 +12,8 @@ resources:
             with:
               - type: core
                 count: 22
-          - type: gpu
-            count: 2
+              - type: gpu
+                count: 2
 # a comment
 attributes:
   system:

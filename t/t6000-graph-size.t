@@ -72,8 +72,8 @@ vertices with rank //") &&
 test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
 correct for hwloc" '
     echo "quit" > input4.txt &&
-    ${query} -L ${exclusive_001N_hwloc} -e -S CA -P high -f hwloc < \
-input4.txt > out4.txt &&
+    ${query} -L ${exclusive_001N_hwloc} -W core,socket,node -e -S CA -P high \
+-f hwloc < input4.txt > out4.txt &&
     by_type=$(grep "by_type" out4.txt | sed "s/INFO: by_type Key-Value \
 Pairs: //") &&
     by_name=$(grep "by_name" out4.txt | sed "s/INFO: by_name Key-Value \
@@ -84,11 +84,11 @@ Pairs: //") &&
 vertices with rank //") &&
     rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
     nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
-    test ${by_type} -eq 7 &&
-    test ${by_name} -eq 21 &&
-    test ${by_path} -eq 21 &&
+    test ${by_type} -eq 4 &&
+    test ${by_name} -eq 7 &&
+    test ${by_path} -eq 7 &&
     test ${rank} -eq -1 &&
-    test ${nvertices} -eq 21
+    test ${nvertices} -eq 7
 '
 
 test_expect_success "--reserve-vtx-vec works" '

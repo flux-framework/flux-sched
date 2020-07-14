@@ -1,3 +1,4 @@
+#!/bin/false
 #
 #  Run script as `flux ion-resource` with properly configured
 #   FLUX_EXEC_PATH or `flux python flux-ion-resource` if not to
@@ -78,7 +79,7 @@ class ResourceModuleInterface:
 """
 def match_alloc_action (args):
     with open (args.jobspec, 'r') as stream:
-        jobspec_str = yaml.dump (yaml.load (stream))
+        jobspec_str = yaml.dump (yaml.safe_load (stream))
         r = ResourceModuleInterface ()
         resp = r.rpc_allocate (r.rpc_next_jobid (), jobspec_str)
         print (heading ())
@@ -92,7 +93,7 @@ def match_alloc_action (args):
 """
 def match_alloc_sat_action (args):
     with open (args.jobspec, 'r') as stream:
-        jobspec_str = yaml.dump (yaml.load (stream))
+        jobspec_str = yaml.dump (yaml.safe_load (stream))
         r = ResourceModuleInterface ()
         resp = r.rpc_allocate_with_satisfiability (r.rpc_next_jobid (),
                                                    jobspec_str)
@@ -107,7 +108,7 @@ def match_alloc_sat_action (args):
 """
 def match_reserve_action (args):
     with open (args.jobspec, 'r') as stream:
-        jobspec_str = yaml.dump (yaml.load (stream))
+        jobspec_str = yaml.dump (yaml.safe_load (stream))
         r = ResourceModuleInterface ()
         resp = r.rpc_reserve (r.rpc_next_jobid (), jobspec_str)
         print (heading ())

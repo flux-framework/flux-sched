@@ -1,11 +1,11 @@
 version: 1
 resources:
-  - type: slot
-    count: 2
-    label: default
+  - type: socket
+    count: 1
     with:
-      - type: numanode
-        count: 1
+      - type: slot
+        count: 2
+        label: default
         with:
           - type: gpu
             count: 1
