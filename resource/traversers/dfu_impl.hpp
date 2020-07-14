@@ -53,7 +53,14 @@ enum class match_kind_t { RESOURCE_MATCH,
                           PRESTINE_NONE_MATCH };
 
 struct jobmeta_t {
-    bool allocate = true;
+
+    enum class alloc_type_t : int {
+        AT_ALLOC = 0,
+        AT_ALLOC_ORELSE_RESERVE = 1,
+        AT_SATISFIABILITY = 2
+    };
+
+    alloc_type_t alloc_type = alloc_type_t::AT_ALLOC;
     int64_t jobid = -1;
     int64_t at = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
@@ -66,11 +73,12 @@ struct jobmeta_t {
         return m_queue;
     }
 
-    void build (Jobspec::Jobspec &jobspec, bool alloc, int64_t id, int64_t t)
+    void build (Jobspec::Jobspec &jobspec,
+                alloc_type_t alloc, int64_t id, int64_t t)
     {
         at = t;
         jobid = id;
-        allocate = alloc;
+        alloc_type = alloc;
         if (jobspec.attributes.system.duration == 0.0f
             || jobspec.attributes.system.duration > (double)UINT64_MAX)
             duration = SYSTEM_MAX_DURATION; // need config support ultimately

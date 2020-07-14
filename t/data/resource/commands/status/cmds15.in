@@ -1,0 +1,5 @@
+set-status /tiny0/rack0/node1 down
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test014.yaml
+set-status /tiny0/rack0/node1 up
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test014.yaml
+quit

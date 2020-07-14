@@ -90,10 +90,16 @@ queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
             iter = to_running (iter, use_alloced_queue);
         }
     } else {
-        // The request must be rejected. The job is enqueued into
-        // rejected job queue to the upper layer to react on this.
-        iter = to_rejected (iter, (errno == ENODEV)? "unsatisfiable"
-                                                   : "match error");
+        if (errno != EBUSY) {
+            // The request must be rejected. The job is enqueued into
+            // rejected job queue to the upper layer to react on this.
+            iter = to_rejected (iter, (errno == ENODEV)? "unsatisfiable"
+                                                       : "match error");
+        } else {
+            // This can happen if there are "down" resources.
+            // The semantics of our backfill policies is to skip this job
+            iter++;
+        }
     }
     return iter;
 }
