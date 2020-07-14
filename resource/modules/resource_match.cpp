@@ -256,6 +256,9 @@ static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -279,6 +282,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.disconnect", disconnect_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.find", find_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.status", status_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1893,6 +1898,42 @@ static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
 error:
     saved_errno = errno;
     json_decref (R);
+    errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    int saved_errno;
+    json_t *R_all = nullptr;
+    json_t *R_down = nullptr;
+    json_t *R_alloc = nullptr;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (run_find (ctx, "status=up or status=down", &R_all) < 0)
+        goto error;
+    if (run_find (ctx, "status=down", &R_down) < 0)
+        goto error;
+    if (run_find (ctx, "sched-now=allocated", &R_alloc) < 0)
+        goto error;
+    if (flux_respond_pack (h, msg, "{s:o? s:o? s:o?}",
+                                       "all", R_all,
+                                       "down", R_down,
+                                       "allocated", R_alloc) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: status succeeded", __FUNCTION__);
+    return;
+
+error:
+    saved_errno = errno;
+    json_decref (R_all);
+    json_decref (R_alloc);
+    json_decref (R_down);
     errno = saved_errno;
     if (flux_respond_error (h, msg, errno, nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
