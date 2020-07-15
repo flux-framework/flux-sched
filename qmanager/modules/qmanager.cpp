@@ -66,7 +66,8 @@ private:
 
 struct qmanager_ctx_t : public qmanager_cb_ctx_t,
                         public fluxion_resource_interface_t {
-    flux_t *h;
+    flux_t *h{nullptr};
+    flux_msg_handler_t **hndlr{nullptr};
 };
 
 fluxion_resource_interface_t::~fluxion_resource_interface_t ()
@@ -256,6 +257,37 @@ out:
     return rc;
 }
 
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    int len = 0;
+    const char *payload;
+    flux_future_t *f = NULL;
+
+    if ( !(f = flux_rpc (h, "sched-fluxion-resource.status", NULL,
+                            FLUX_NODEID_ANY, 0))) {
+        flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.status)",
+                            __FUNCTION__);
+        goto out;
+    }
+    if (flux_rpc_get_raw (f, (const void **)&payload, &len) < 0) {
+        flux_log_error (h, "%s: flux_rpc_get_raw", __FUNCTION__);
+        goto out;
+    }
+    if (flux_respond_raw (h, msg, (const void *)payload, len) < 0) {
+        flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
+        goto out;
+    }
+    flux_log (h, LOG_DEBUG, "%s: resource-status succeeded", __FUNCTION__);
+    flux_future_destroy (f);
+    return;
+
+out:
+    flux_future_destroy (f);
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx,
                                  const std::string &queue_name,
                                  const queue_prop_t &p)
@@ -408,8 +440,15 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
         }
         schedutil_destroy (ctx->schedutil);
         errno = saved_errno;
+        flux_msg_handler_delvec (ctx->hndlr);
     }
 }
+
+static const struct flux_msg_handler_spec htab[] = {
+    { FLUX_MSGTYPE_REQUEST,
+      "sched.resource-status", status_request_cb, FLUX_ROLE_USER },
+    FLUX_MSGHANDLER_TABLE_END,
+};
 
 
 /******************************************************************************
@@ -438,6 +477,11 @@ int mod_start (flux_t *h, int argc, char **argv)
     }
     if ( (rc = enforce_options (ctx)) < 0) {
         flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
+    }
+    if ( (rc = flux_msg_handler_addvec (h, htab, (void *)h, &ctx->hndlr)) < 0) {
+        flux_log_error (h, "%s: flux_msg_handler_addvec", __FUNCTION__);
         qmanager_destroy (ctx);
         return rc;
     }
