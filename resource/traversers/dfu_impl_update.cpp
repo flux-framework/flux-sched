@@ -613,12 +613,8 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks,
         // Now iterate through subgraphs keyed by rank and 
         // set status appropriately
         vit = m_graph_db->metadata.by_rank.find (rank);
-        if (vit == m_graph_db->metadata.by_rank.end ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": could not find rank path in by_rank map.\n";
-            return -1;
-        }
+        if (vit == m_graph_db->metadata.by_rank.end ())
+            continue;
 
         subtree_root = vit->second.front ();
         subtree_path = (*m_graph)[subtree_root].paths.at (dom);
