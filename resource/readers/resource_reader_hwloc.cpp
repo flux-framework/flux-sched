@@ -367,12 +367,17 @@ int resource_reader_hwloc_t::unpack (resource_graph_t &g,
                                      resource_graph_metadata_t &m,
                                      const std::string &str, int rank)
 {
+    int rc = 0;
+    vtx_t cluster_vertex;
+
     if (check_hwloc_version (m_err_msg) < 0) {
         return -1;
     }
 
-    vtx_t cluster_vertex = create_cluster_vertex (g, m);
-    return unpack_internal (g, m, cluster_vertex, str, rank);
+    cluster_vertex = create_cluster_vertex (g, m);
+    if (str != "")
+        rc = unpack_internal (g, m, cluster_vertex, str, rank);
+    return rc;
 }
 
 int resource_reader_hwloc_t::unpack_at (resource_graph_t &g,
