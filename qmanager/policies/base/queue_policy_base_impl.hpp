@@ -217,8 +217,10 @@ int queue_policy_base_impl_t::insert (std::shared_ptr<job_t> job)
     }
     job->state = job_state_kind_t::PENDING;
     job->t_stamps.pending_ts = m_pq_cnt++;
-    m_pending.insert (std::pair<uint64_t,
-                      flux_jobid_t> (job->t_stamps.pending_ts, job->id));
+    m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
+        {static_cast<double> (job->max_priority - job->priority),
+         static_cast<double> (job->t_submit),
+         static_cast<double> (job->t_stamps.pending_ts)}, job->id));
     m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
                                                                     job));
     rc = 0;
@@ -239,7 +241,9 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     job = m_jobs[id];
     switch (job->state) {
     case job_state_kind_t::PENDING:
-        m_pending.erase (job->t_stamps.pending_ts);
+        m_pending.erase ({static_cast<double> (job->max_priority - job->priority),
+                          static_cast<double> (job->t_submit),
+                          static_cast<double> (job->t_stamps.pending_ts)});
         job->state = job_state_kind_t::CANCELED;
         m_jobs.erase (id);
         break;
@@ -305,8 +309,9 @@ out:
     return rc;
 }
 
-std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
-    to_running (std::map<uint64_t, flux_jobid_t>::iterator pending_iter,
+std::map<std::vector<double>, flux_jobid_t>::iterator queue_policy_base_impl_t::
+    to_running (std::map<std::vector<double>,
+                         flux_jobid_t>::iterator pending_iter,
                 bool use_alloced_queue)
 {
     flux_jobid_t id = pending_iter->second;
@@ -330,8 +335,9 @@ std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
     return m_pending.erase (pending_iter);
 }
 
-std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
-    to_rejected (std::map<uint64_t, flux_jobid_t>::iterator pending_iter,
+std::map<std::vector<double>, flux_jobid_t>::iterator queue_policy_base_impl_t::
+    to_rejected (std::map<std::vector<double>,
+                          flux_jobid_t>::iterator pending_iter,
                  const std::string &note)
 {
     flux_jobid_t id = pending_iter->second;
@@ -380,7 +386,9 @@ std::shared_ptr<job_t> queue_policy_base_impl_t::pending_pop ()
     if (m_jobs.find (id) == m_jobs.end ())
         return nullptr;
     job = m_jobs[id];
-    m_pending.erase (job->t_stamps.pending_ts);
+    m_pending.erase ({static_cast<double> (job->max_priority - job->priority),
+                      static_cast<double> (job->t_submit),
+                      static_cast<double> (job->t_stamps.pending_ts)});
     m_jobs.erase (id);
     return job;
 }
