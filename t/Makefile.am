@@ -34,6 +34,7 @@ TESTS = \
     t1010-sync-modules.t \
     t1011-dynstate-change.t \
     t1012-find-status.t \
+    t1013-exclusion.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
