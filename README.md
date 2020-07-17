@@ -133,9 +133,9 @@ flux mini submit -N3 -n3 hostname
 flux mini submit -N3 -n3 sleep 30
 ```
 
-Examine the currently running job:
+Examine the status of these jobs:
 ```
-flux job list
+flux jobs -a
 ```
 
 Examine the output of the first job
