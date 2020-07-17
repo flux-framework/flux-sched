@@ -59,26 +59,46 @@ Fluxion requires an installed flux-core package.  Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
+<!-- A collapsible section with markdown -->
+<details>
+  <summary>Click to expand and see our full dependency table</summary>
+
 Fluxion also requires the following packages to build:
 
+**redhat**                | **ubuntu**              | **version**       | **note**
+----------                | ----------              | -----------       | --------
+hwloc-devel               | libhwloc-dev            | >= 1.11.1         |
+boost-devel               | libboost-dev            | == 1.53 or > 1.58 | *1*
+boost-graph               | libboost-graph-dev      | == 1.53 or > 1.58 | *1*
+boost-system              | libboost-system-dev     | == 1.53 or > 1.58 | *1*
+boost-filesystem          | libboost-filesystem-dev | == 1.53 or > 1.58 | *1*
+boost-regex               | libboost-regex-dev      | == 1.53 or > 1.58 | *1*
+readline-devel            |                         | >= 6.2-11         |
+libxml2-devel             | libxml2-dev             | >= 2.9.1          |
+python3-pyyaml            | python3-yaml            | >= 3.10           |
+yaml-cpp-devel            | libyaml-cpp-dev         | >= 0.5.1          |
+
+*Note 1 - Boost package versions 1.54-1.58 contain a bug that
+leads to compilation error.*
+
+The following optional dependencies enable additional testing:
+
+**redhat**        | **ubuntu**        | **version**
+----------        | ----------        | -----------
+valgrind-devel    | valgrind          |
+jq                | jq                |
+</details>
+
+##### Installing RedHat/CentOS Packages
 ```
-libhwloc-dev >= 1.11.1
-libboost packages == 1.53 or > 1.58
-  -  libboost-dev
-  -  libboost-system-dev
-  -  libboost-filesystem-dev
-  -  libboost-thread-dev
-  -  libboost-graph-dev
-  -  libboost-regex-dev
-libxml2-dev >= 2.9.1
-yaml-cpp-dev >= 0.5.1
-python3-yaml >= 3.10
+sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex readline-devel libxml2-devel python3-pyyaml yaml-cpp-devel
 ```
 
 ##### Installing Ubuntu Packages
 
 ```
-apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
+sudo apt-get update
+sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libxml2-dev libyaml-cpp-dev python3-yaml
 ```
 
 Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:
@@ -133,9 +153,9 @@ flux mini submit -N3 -n3 hostname
 flux mini submit -N3 -n3 sleep 30
 ```
 
-Examine the currently running job:
+Examine the status of these jobs:
 ```
-flux job list
+flux jobs -a
 ```
 
 Examine the output of the first job

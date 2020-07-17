@@ -2,8 +2,8 @@
 
 `resource-query` is a command-line utility that takes in an HPC resource request
 written in Flux's Canonical Job Specification (or simply a jobspec)
-([RFC 14](https://github.com/flux-framework/rfc/blob/master/spec_14.adoc)) and
-selects the best-matching compute and other resources in accordance with
+([RFC 14](https://flux-framework.readthedocs.io/projects/flux-rfc/en/latest/spec_14.html))
+and selects the best-matching compute and other resources in accordance with
 a selection policy.
 
 The goal of this utility is largely three-fold. First, as we are actively
@@ -24,7 +24,7 @@ On start-up, `resource-query` reads in a resource-graph generation recipe
 written in the GRUG format (see the GRUG section below) and populates
 a resource-graph data store, representing HPC resources and their
 relationships according to Flux Resource Model
-([RFC 4](https://github.com/flux-framework/rfc/blob/master/spec_4.adoc)).
+([RFC 4](https://flux-framework.readthedocs.io/projects/flux-rfc/en/latest/spec_4.html)).
 Once the graph data store is populated, an interactive command-line
 interface (cli) session is started for the user:
 
