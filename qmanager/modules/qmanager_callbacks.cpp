@@ -134,8 +134,11 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
     queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
+    // Note that RFC27 defines 31 as the max priority. Because our queue policy
+    // layer sorts the pending jobs in lexicographical order
+    // (<priority, t_submit, ...> and lower the better, we adjust priority.
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
-                                                   id, uid, prio, ts, R);
+                                                   id, uid, 31 - prio, ts, R);
 
     if ( (rc = queue->reconstruct (static_cast<void *> (h),
                                    running_job, R_out)) < 0) {
@@ -166,6 +169,10 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: schedutil_alloc_request_decode", __FUNCTION__);
         return;
     }
+    // Note that RFC27 defines 31 as the max priority. Because our queue policy
+    // layer sorts the pending jobs in lexicographical order
+    // (<priority, t_submit, ...> and lower the better, we adjust the priority.
+    job->priority = 31 - job->priority;
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",

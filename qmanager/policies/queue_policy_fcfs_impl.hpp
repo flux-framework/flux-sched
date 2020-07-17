@@ -58,7 +58,7 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
 {
     unsigned int i = 0;
     std::shared_ptr<job_t> job;
-    std::map<uint64_t, flux_jobid_t>::iterator iter;
+    std::map<std::vector<double>, flux_jobid_t>::iterator iter;
 
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't.

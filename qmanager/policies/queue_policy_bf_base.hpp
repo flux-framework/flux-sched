@@ -48,14 +48,14 @@ protected:
 private:
     int cancel_completed_jobs (void *h);
     int cancel_reserved_jobs (void *h);
-    std::map<uint64_t, flux_jobid_t>::iterator &
+    std::map<std::vector<double>, flux_jobid_t>::iterator &
         allocate_orelse_reserve (void *h, std::shared_ptr<job_t> job,
                                  bool use_alloced_queue,
-                                 std::map<uint64_t,
+                                 std::map<std::vector<double>,
                                      flux_jobid_t>::iterator &iter);
-    std::map<uint64_t, flux_jobid_t>::iterator &
+    std::map<std::vector<double>, flux_jobid_t>::iterator &
         allocate (void *h, std::shared_ptr<job_t> job, bool use_alloced_queue,
-        std::map<uint64_t, flux_jobid_t>::iterator &iter);
+        std::map<std::vector<double>, flux_jobid_t>::iterator &iter);
     int allocate_orelse_reserve_jobs (void *h, bool use_alloced_queue);
     std::map<uint64_t, flux_jobid_t> m_reserved;
     unsigned int m_reservation_cnt;
