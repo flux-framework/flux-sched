@@ -357,16 +357,25 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
                                       std::shared_ptr<resource_reader_base_t> rd)
 {
     int rc = -1;
+    int saved_errno;
     std::ifstream in_file;
     std::stringstream buffer{};
 
+    saved_errno = errno;
+    errno = 0;
     in_file.open (ctx->args.load_file.c_str (), std::ifstream::in);
     if (!in_file.good ()) {
-        errno = EIO;
-        flux_log (ctx->h, LOG_ERR, "%s: opening %s",
+        if (errno == 0) {
+            // C++ standard doesn't guarantee to set errno but
+            // many of the underlying system call set it appropriately.
+            // we manually set errno only when it is not set at all.
+            errno = EIO;
+        }
+        flux_log_error (ctx->h, "%s: opening %s",
                   __FUNCTION__, ctx->args.load_file.c_str ());
         goto done;
     }
+    errno = saved_errno;
     buffer << in_file.rdbuf ();
     in_file.close ();
     if ( (rc = ctx->db->load (buffer.str (), rd)) < 0) {
