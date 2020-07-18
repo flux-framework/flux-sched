@@ -313,7 +313,6 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
                                     const fetch_helper_t &fetcher)
 {
     int rc = -1;
-    bool root = false;
     std::map<std::string, bool> root_checks;
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
     vtx_t nullvtx = boost::graph_traits<resource_graph_t>::null_vertex ();
@@ -461,8 +460,6 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
                                        uint64_t dur, bool rsv)
 {
     int rc = -1;
-    int64_t span = -1;
-    planner_t *plans = NULL;
     std::map<std::string, bool> root_checks;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
@@ -539,8 +536,6 @@ int resource_reader_jgf_t::unpack_vertices (resource_graph_t &g,
     int rc = -1;
     unsigned int i = 0;
     fetch_helper_t fetcher;
-    const char *vtx_id = NULL;
-    vtx_t nullvtx = boost::graph_traits<resource_graph_t>::null_vertex ();
 
     for (i = 0; i < json_array_size (nodes); i++) {
         fetcher.properties.clear ();
@@ -567,7 +562,6 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
     int rc = -1;
     unsigned int i = 0;
     fetch_helper_t fetcher;
-    const char *vtx_id = NULL;
 
     for (i = 0; i < json_array_size (nodes); i++) {
         fetcher.properties.clear ();
@@ -746,15 +740,11 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
     unsigned int i = 0;
     json_t *name = NULL;
     json_t *element = NULL;
-    json_t *value = NULL;
-    bool inserted = false;
-    const char *key = NULL;
     std::string source{};
     std::string target{};
 
     for (i = 0; i < json_array_size (edges); i++) {
         element = json_array_get (edges, i);
-        vtx_t src = boost::graph_traits<resource_graph_t>::null_vertex ();
         // We only check protocol errors in JGF edges in the following...
         if ( (rc = unpack_edge (element, vmap, source, target, &name)) != 0)
             goto done;
