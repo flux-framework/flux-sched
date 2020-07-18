@@ -1,9 +1,5 @@
 AM_CXXFLAGS = \
     $(WARNING_CXXFLAGS) \
-    -Wno-unused-local-typedefs \
-    -Wno-deprecated-declarations \
-    -Wno-unused-variable \
-    -Wno-error \
     $(CODE_COVERAGE_CXXFLAGS)
 
 AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
