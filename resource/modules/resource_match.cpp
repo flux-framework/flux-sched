@@ -476,11 +476,8 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 
     gettimeofday (&st, NULL);
     if (ctx->args.load_file != "") {
-        if (populate_resource_db_file (ctx, rd) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: error loading resources from file",
-                      __FUNCTION__);
+        if (populate_resource_db_file (ctx, rd) < 0)
             goto done;
-        }
         flux_log (ctx->h, LOG_INFO, "%s: loaded resources from %s",
                   __FUNCTION__,  ctx->args.load_file.c_str ());
     } else {
