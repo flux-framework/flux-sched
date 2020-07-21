@@ -576,7 +576,6 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 {
-    int rc = -1;
     bool root_has_jtag = ((*m_graph)[root].idata.tags.find (jobid)
                           != (*m_graph)[root].idata.tags.end ());
     m_color.reset ();

@@ -50,7 +50,6 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
 {
     int64_t base_time = 0;
     uint64_t duration = 0;
-    size_t len = 0;
 
     // assign operator does not copy the contents
     // of the schedule tables and of the planner objects.
