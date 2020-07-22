@@ -283,6 +283,12 @@ int dfu_traverser_t::run (const std::string &str,
     return detail::dfu_impl_t::update (root, writers, str, reader, meta);
 }
 
+int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers,
+                           const std::string &criteria)
+{
+    return detail::dfu_impl_t::find (writers, criteria);
+}
+
 int dfu_traverser_t::remove (int64_t jobid)
 {
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();

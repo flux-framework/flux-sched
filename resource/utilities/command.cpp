@@ -50,6 +50,9 @@ command_t commands[] = {
     { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
 "allocate | reserv): "
 "resource-query> update allocate jgf_file jobid starttime duration" },
+    { "find", "f", cmd_find, "Find resources matched with a critera "
+"(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free}): "
+"resource-query> find status=down and sched-now=allocated" },
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
@@ -308,6 +311,43 @@ int cmd_update (std::shared_ptr<resource_context_t> &ctx,
     return 0;
 }
 
+int cmd_find (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args)
+{
+    int rc = -1;
+    int i = 0;
+    std::stringstream o;
+
+    if (args.size () < 2) {
+        std::cerr << "ERROR: malformed command: " << std::endl;
+        return 0;
+    }
+    std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
+                                                   : std::cout;
+    std::string criteria = args[1];
+    for (int i = 2; i < static_cast<int> (args.size()); ++i)
+        criteria += " " + args[i];
+    if ( (rc = ctx->traverser->find (ctx->writers, criteria)) < 0) {
+        if (ctx->traverser->err_message () != "") {
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            ctx->traverser->clear_err_message ();
+        }
+        goto done;
+    }
+    if (ctx->writers->emit (o) < 0) {
+        std::cerr << "ERROR: writer emit: " << strerror (errno) << std::endl;
+        goto done;
+    }
+
+    out << o.str ();
+    out << "INFO:" << " =============================" << std::endl;
+    out << "INFO:" << " EXPRESSION=\"" << criteria << "\"" << std::endl;
+    out << "INFO:" << " =============================" << std::endl;
+
+done:
+    return 0;
+}
+
 int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args)
 {
@@ -438,9 +478,12 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx,
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
 
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
+
     if (it == ctx->db->metadata.by_path.end ()) {
-        std::cout << "Could not find path " << vtx_path
-                     << " in resource graph." << std::endl;
+        out << "Could not find path " << vtx_path
+            << " in resource graph." << std::endl;
         return 0;
     }
 
@@ -466,9 +509,13 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::string status = "";
 
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
+                                                    : std::cout;
+
+
     if (it == ctx->db->metadata.by_path.end ()) {
-        std::cout << "Could not find path " << vtx_path
-                     << " in resource graph." << std::endl;
+        out << "Could not find path " << vtx_path
+            << " in resource graph." << std::endl;
         return 0;
     }
 
@@ -481,11 +528,11 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
 
     if (status == "") {
         std::cerr << "ERROR: vertex " << vtx_path
-                     << " has unknown status." << std::endl;
+                  << " has unknown status." << std::endl;
         return 0;     
     }
 
-    std::cout << vtx_path << " is " << status << std::endl;
+    out << vtx_path << " is " << status << std::endl;
 
     return 0;
 }

@@ -36,6 +36,8 @@
 #include "resource/schema/resource_graph.hpp"
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/evaluators/scoring_api.hpp"
+#include "resource/evaluators/expr_eval_api.hpp"
+#include "resource/evaluators/expr_eval_vtx_target.hpp"
 #include "resource/writers/match_writers.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_reader_base.hpp"
@@ -95,6 +97,7 @@ private:
     std::string m_queue = "";
 };
 
+
 /*! implementation class of dfu_traverser_t
  */
 class dfu_impl_t {
@@ -114,6 +117,7 @@ public:
     const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
+    const expr_eval_api_t &get_expr_eval () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
@@ -204,6 +208,33 @@ public:
      */
     int select (Jobspec::Jobspec &jobspec, vtx_t root, jobmeta_t &meta,
                 bool exclusive);
+
+    /*! Traverse the resource graph and emit those resources whose
+     *  status is matched with the matching criteria.
+     *
+     *  \param writers   vertex/edge writers to emit the matched labels
+     *  \param criteria  matching criteria expression string. Each
+     *                   individual criterion is expressed as a key-value
+     *                   pair, representing a predicate p(x) where key is
+     *                   is p and value is x.
+     *                   Currently supported expressions are
+     *                   "status={up|down}", "sched-now={allocated|free}",
+     *                   "sched-future={reserved|free}, or any combination
+     *                   of them separated with "and", "or", or a whitespace
+     *                   which is also interpreted as "and" logical
+     *                   operator of two expressions. Parentheses
+     *                   are supported to group expressions with a higher
+     *                   operator precedence. For example, in "staus=up and
+     *                   (sched-now=allocated or sched-future=reserved)"
+     *                   The parenthesized expression is evaluated
+     *                   before taking the "and" operator with the
+     *                   the result of the first predicate.
+     *                   Other extra whitespaces around predicates are
+     *                   ignored.
+     *  \return          0 on success; -1 on error.
+     */
+    int find (std::shared_ptr<match_writers_t> &writers,
+              const std::string &critera);
 
     /*! Update the resource state based on the previous select invocation
      *  and emit the allocation/reservation information.
@@ -341,6 +372,13 @@ private:
     int dom_dfv (const jobmeta_t &meta, vtx_t u,
                  const std::vector<Jobspec::Resource> &resources, bool prestine,
                  bool *excl, scoring_api_t &to_parent);
+    int dom_find_dfv (std::shared_ptr<match_writers_t> &writers,
+                      const std::string &criteria,
+                      vtx_t u, const vtx_predicates_override_t &p);
+    int aux_find_upv (std::shared_ptr<match_writers_t> &writers,
+                      const std::string &critiera,
+                      vtx_t u, const subsystem_t &aux,
+                      const vtx_predicates_override_t &p);
 
     // Resolve and enforce hierarchical constraints
     int resolve (vtx_t root, std::vector<Jobspec::Resource> &resources,
@@ -409,6 +447,7 @@ private:
     std::shared_ptr<f_resource_graph_t> m_graph = nullptr;
     std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
+    expr_eval_api_t m_expr_eval;
     std::string m_err_msg = "";
 }; // the end of class dfu_impl_t
 

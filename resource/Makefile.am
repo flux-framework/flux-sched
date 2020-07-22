@@ -7,7 +7,7 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 	      $(BOOST_CPPFLAGS)
 
-SUBDIRS = libjobspec planner . utilities modules hlapi
+SUBDIRS = libjobspec planner . utilities modules hlapi evaluators
 
 noinst_LTLIBRARIES = libresource.la
 
@@ -38,6 +38,8 @@ libresource_la_SOURCES = \
     readers/resource_reader_factory.cpp \
     evaluators/scoring_api.cpp \
     evaluators/edge_eval_api.cpp \
+    evaluators/expr_eval_api.cpp \
+    evaluators/expr_eval_vtx_target.cpp \
     writers/match_writers.cpp \
     store/resource_graph_store.cpp \
     utilities/command.hpp \
@@ -66,6 +68,9 @@ libresource_la_SOURCES = \
     evaluators/scoring_api.hpp \
     evaluators/edge_eval_api.hpp \
     evaluators/fold.hpp \
+    evaluators/expr_eval_api.hpp \
+    evaluators/expr_eval_target.hpp \
+    evaluators/expr_eval_vtx_target.hpp \
     config/system_defaults.hpp \
     writers/match_writers.hpp \
     store/resource_graph_store.hpp \
