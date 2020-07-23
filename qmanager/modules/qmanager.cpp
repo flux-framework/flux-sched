@@ -132,30 +132,62 @@ static void set_default (std::shared_ptr<qmanager_ctx_t> &ctx)
     ctx->opts += ct_opts;
 }
 
+/* Job manager/qmanager have completed processing of jobs that are already
+ * holding resources.  Tell the job manager that scheduler is now ready to
+ * accept alloc/free/cancel requests, and select the queue mode.
+ * (unlimited = job manager will not limit alloc request concurrency).
+ */
+static int jobmanager_ready_cb (void *arg)
+{
+    qmanager_ctx_t *ctx = static_cast<qmanager_ctx_t *> (arg);
+    int rc = -1;
+
+    if (schedutil_ready (ctx->schedutil, "unlimited", NULL)) {
+        flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
+        goto out;
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
+static const struct schedutil_ops ops = {
+    .resource_acquire = NULL, // handled in fluxion-resource, not here
+    .resource_down = NULL,
+    .resource_up = NULL,
+    .hello = qmanager_safe_cb_t::jobmanager_hello_cb,
+    .ready = jobmanager_ready_cb,
+    .alloc = qmanager_safe_cb_t::jobmanager_alloc_cb,
+    .free = qmanager_safe_cb_t::jobmanager_free_cb,
+    .cancel = qmanager_safe_cb_t::jobmanager_cancel_cb,
+};
+
+/* This function sets the job manager handshake in motion, then it plays
+ * out in the reactor.  The sequence of events is:
+ * 1) schedutil_create() - sets up reactor callbacks
+ * 2) schedutil_init() - sends initial job-manager.sched-hello request
+ * 3) this function returns, and mod_main() enters reactor
+ * 4) hello response triggers zero or more 'hello' callbacks, to process
+ * jobs that are already holding resources
+ * 5) completion of hello processing triggers 'ready' callback
+ * 6) ready callback calls schedutil_ready()
+ * 7) alloc/free/cancel callbacks occur as job-manager moves jobs through
+ * life cycle
+ */
 static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
-    int queue_depth = 0;  /* Not implemented in job-manager */
 
     if (!(ctx->schedutil = schedutil_create (
                                ctx->h,
-                               &qmanager_safe_cb_t::jobmanager_alloc_cb,
-                               &qmanager_safe_cb_t::jobmanager_free_cb,
-                               &qmanager_safe_cb_t::jobmanager_cancel_cb,
+                               &ops,
                                std::static_pointer_cast<
                                    qmanager_cb_ctx_t> (ctx).get ()))) {
         flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
         goto out;
     }
-    if (schedutil_hello (ctx->schedutil,
-                         &qmanager_safe_cb_t::jobmanager_hello_cb,
-                         std::static_pointer_cast<
-			     qmanager_cb_ctx_t> (ctx).get ()) < 0) {
-        flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
-        goto out;
-    }
-    if (schedutil_ready (ctx->schedutil, "unlimited", &queue_depth)) {
-        flux_log_error (ctx->h, "%s: schedutil_ready", __FUNCTION__);
+    if (schedutil_init (ctx->schedutil) < 0) {
+        flux_log_error (ctx->h, "%s: schedutil_init", __FUNCTION__);
         goto out;
     }
     rc = 0;
