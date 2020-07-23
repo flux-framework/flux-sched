@@ -35,13 +35,26 @@ test_expect_success 'recovery: submit a job (rv1_nosched)' '
     flux job wait-event -t 10 ${jobid1} start
 '
 
+wait_dmesg () {
+    local pattern="$*"
+    local tries=10
+    while test $tries -gt 0; do
+        flux dmesg | grep -q "$pattern" && return 0
+        sleep 0.5
+        tries=$(($tries-1))
+    done
+    echo "timed out waiting for $pattern" >&2
+    return 1
+}
+
 test_expect_success 'recovery: qmanager w/o an option must fail (rv1_nosched)' '
     reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
-    test_must_fail reload_qmanager
+    reload_qmanager &&
+    wait_dmesg hello callback failed &&
+    wait_dmesg fatal error
 '
 
-test_expect_success 'removing resource and qmanager modules' '
-    test_must_fail remove_qmanager &&
+test_expect_success 'removing resource module' '
     remove_resource
 '
 
