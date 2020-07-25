@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo FLUX_URI=$FLUX_URI
-TESTDIR=${SHARNESS_TEST_SRCDIR:-.}/valgrind/workload.d/*
 exitcode=0
 
-# Check for no workload:
-test -d ${TESTDIR} || exit $exitcode
+flux module remove -f sched-simple
+flux module load sched-fluxion-resource load-allowlist=node,core,gpu
+flux module load sched-fluxion-qmanager
 
-for file in ${TESTDIR}/*; do
+for file in ${SHARNESS_TEST_SRCDIR:-..}/valgrind/workload.d/*; do
 	echo Running $(basename $file)
 	$file
 	rc=$?
@@ -16,4 +16,9 @@ for file in ${TESTDIR}/*; do
 		exitcode=1
 	fi
 done
+
+flux module remove -f sched-fluxion-resource
+flux module remove -f sched-fluxion-qmanager
+flux module load sched-simple
+
 exit $exitcode
