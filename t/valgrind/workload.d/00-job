@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# As a sanity check, just run some single core jobs
+# with the fluxion scheduler
+
+NJOBS=${NJOBS:-10}
+
+echo Submitting $NJOBS jobs
+for i in `seq 1 $NJOBS`; do
+    flux mini submit /bin/true
+done
+echo Waiting jobs to complete
+flux queue drain
+echo Completed
