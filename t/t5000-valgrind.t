@@ -10,6 +10,10 @@ if ! which valgrind >/dev/null; then
     skip_all='skipping valgrind tests since no valgrind executable found'
     test_done
 fi
+if ! test_have_prereq NO_ASAN; then
+    skip_all='skipping valgrind tests since AddressSanitizer is active'
+    test_done
+fi
 
 # Do not run test by default unless valgrind/valgrind.h was found, since
 #  this has been known to introduce false positives (#1097). However, allow
@@ -29,15 +33,14 @@ VALGRIND=`which valgrind`
 VALGRIND_SUPPRESSIONS=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind.supp
 VALGRIND_WORKLOAD=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind-workload.sh
 
-# broker run under valgrind may need extra retries in flux_open():
-export FLUX_LOCAL_CONNECTOR_RETRY_COUNT=10
 VALGRIND_NBROKERS=${VALGRIND_NBROKERS:-2}
-VALGRIND_SHUTDOWN_GRACE=${VALGRIND_SHUTDOWN_GRACE:-16}
 
 test_expect_success \
   "valgrind reports no new errors on $VALGRIND_NBROKERS broker run" '
-	run_timeout 120 \
-	flux start -s ${VALGRIND_NBROKERS} --wrap=libtool,e,${VALGRIND} \
+	run_timeout 300 \
+	flux start -s ${VALGRIND_NBROKERS} \
+		--killer-timeout=120 \
+		--wrap=libtool,e,${VALGRIND} \
 		--wrap=--tool=memcheck \
 		--wrap=--leak-check=full \
 		--wrap=--gen-suppressions=all \
@@ -46,9 +49,7 @@ test_expect_success \
 		--wrap=--num-callers=30 \
 		--wrap=--leak-resolution=med \
 		--wrap=--error-exitcode=1 \
-                --wrap=--log-file="valgrind.out" \
 		--wrap=--suppressions=$VALGRIND_SUPPRESSIONS \
-		-o,--shutdown-grace=${VALGRIND_SHUTDOWN_GRACE} \
 		 ${VALGRIND_WORKLOAD}
 '
 test_done
