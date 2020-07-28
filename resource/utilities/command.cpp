@@ -316,7 +316,8 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx,
 {
     int rc = -1;
     int i = 0;
-    std::stringstream o;
+    json_t *o = nullptr;
+    char *json_str = nullptr;
 
     if (args.size () < 2) {
         std::cerr << "ERROR: malformed command: " << std::endl;
@@ -334,12 +335,24 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx,
         }
         goto done;
     }
-    if (ctx->writers->emit (o) < 0) {
+    if (ctx->writers->emit_json (&o) < 0) {
         std::cerr << "ERROR: writer emit: " << strerror (errno) << std::endl;
         goto done;
     }
-
-    out << o.str ();
+    if (o) {
+        if (json_is_string (o)) {
+            out << json_string_value (o);
+        } else if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+            goto done;
+        } else if (json_str) {
+            out << json_str << std::endl;
+            free (json_str);
+        }
+        json_decref (o);
+    }
     out << "INFO:" << " =============================" << std::endl;
     out << "INFO:" << " EXPRESSION=\"" << criteria << "\"" << std::endl;
     out << "INFO:" << " =============================" << std::endl;
