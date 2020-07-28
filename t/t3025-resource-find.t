@@ -264,5 +264,50 @@ EOF
     test_cmp down5.filt.json full.filt.json
 '
 
+test_expect_success 'find status=up works with simple writer' '
+    cat > cmds017 <<-EOF &&
+	set-status /tiny0/rack0/node0/socket0/core0 down
+	find status=down
+	quit
+EOF
+    ${query} -L ${grugs} -F simple -S CA -P high -t down17.out < cmds017 &&
+    grep core0 down17.out &&
+    grep node0 down17.out
+'
+
+test_expect_success 'find status=up works with pretty_simple writer' '
+    cat > cmds018 <<-EOF &&
+	set-status /tiny0/rack0/node0/socket0/core0 down
+	find status=down
+	quit
+EOF
+    ${query} -L ${grugs} -F pretty_simple -S CA -P high -t down18.out \
+< cmds018 &&
+    grep core0 down18.out &&
+    grep node0 down18.out
+'
+
+test_expect_success 'find status=up works with jgf writer' '
+    cat > cmds019 <<-EOF &&
+	set-status /tiny0/rack0/node0/socket0/core0 down
+	find status=down
+	quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t down19.out < cmds019  &&
+    grep core0 down19.out &&
+    grep node0 down19.out
+'
+
+test_expect_success 'find status=up works with rlite writer' '
+    cat > cmds020 <<-EOF &&
+	set-status /tiny0/rack0/node0/socket0/core0 down
+	find status=down
+	quit
+EOF
+    ${query} -L ${grugs} -F rlite -S CA -P high -t down20.out < cmds020 &&
+    grep -v INFO down20.out > down20.filt.out &&
+    core=$(cat down20.filt.out | jq " .[].children.core ") &&
+    test ${core} = "\"0\""
+'
 
 test_done
