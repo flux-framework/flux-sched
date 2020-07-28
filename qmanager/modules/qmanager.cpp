@@ -53,9 +53,45 @@ using namespace Flux::cplusplus_wrappers;
  *                                                                            *
  ******************************************************************************/
 
-struct qmanager_ctx_t : public qmanager_cb_ctx_t {
-    flux_t *h;
+class fluxion_resource_interface_t {
+public:
+    ~fluxion_resource_interface_t ();
+    int fetch_and_reset_notify_rc ();
+    int get_notify_rc () const;
+    void set_notify_rc (int rc);
+    flux_future_t *notify_f{nullptr};
+private:
+    int m_notify_rc = 0;
 };
+
+struct qmanager_ctx_t : public qmanager_cb_ctx_t,
+                        public fluxion_resource_interface_t {
+    flux_t *h{nullptr};
+    flux_msg_handler_t **hndlr{nullptr};
+};
+
+fluxion_resource_interface_t::~fluxion_resource_interface_t ()
+{
+    if (notify_f)
+        flux_future_destroy (notify_f);
+}
+
+int fluxion_resource_interface_t::fetch_and_reset_notify_rc ()
+{
+    int rc = m_notify_rc;
+    m_notify_rc = 0;
+    return rc;
+}
+
+int fluxion_resource_interface_t::get_notify_rc () const
+{
+    return m_notify_rc;
+}
+
+void fluxion_resource_interface_t::set_notify_rc (int rc)
+{
+    m_notify_rc = rc;
+}
 
 static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
                          int argc, char **argv)
@@ -132,6 +168,64 @@ static void set_default (std::shared_ptr<qmanager_ctx_t> &ctx)
     ctx->opts += ct_opts;
 }
 
+static void update_on_resource_response (flux_future_t *f, void *arg)
+{
+    int rc = -1;
+    qmanager_ctx_t *ctx = static_cast<qmanager_ctx_t *> (arg);
+
+    if ( (rc = flux_rpc_get (f, NULL)) < 0) {
+        flux_log_error (ctx->h,
+            "%s: exiting due to sched-fluxion-resource.notify failure",
+            __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
+        goto out;
+    }
+
+    for (auto &kv : ctx->queues) {
+        if ( (rc = kv.second->run_sched_loop (static_cast<void *> (ctx->h),
+                                              true)) < 0
+            || (rc = qmanager_safe_cb_t::post_sched_loop (ctx->h,
+                                                          ctx->schedutil,
+                                                          ctx->queues)) < 0) {
+            flux_log_error (ctx->h, "%s: schedule loop", __FUNCTION__);
+            goto out;
+        }
+    }
+out:
+    flux_future_reset (f);
+    ctx->set_notify_rc (rc);
+    return;
+}
+
+static int handshake_resource (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    int rc = -1;
+
+    if ( !(ctx->notify_f = flux_rpc (ctx->h, "sched-fluxion-resource.notify",
+                                     NULL,
+                                     FLUX_NODEID_ANY,
+                                     FLUX_RPC_STREAMING))) {
+        flux_log_error (ctx->h, "%s: flux_rpc (notify)", __FUNCTION__);
+        goto out;
+    }
+
+    update_on_resource_response (ctx->notify_f, ctx.get ());
+    if ( (rc = ctx->fetch_and_reset_notify_rc ()) < 0) {
+        flux_log_error (ctx->h, "%s: update_on_resource_response",
+                        __FUNCTION__);
+        goto out;
+    }
+    if ( (rc = flux_future_then (ctx->notify_f,
+                                 -1.0,
+                                 update_on_resource_response,
+                                 ctx.get ())) < 0) {
+        flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+        goto out;
+    }
+out:
+    return rc;
+}
+
 static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
@@ -161,6 +255,37 @@ static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
     rc = 0;
 out:
     return rc;
+}
+
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    int len = 0;
+    const char *payload;
+    flux_future_t *f = NULL;
+
+    if ( !(f = flux_rpc (h, "sched-fluxion-resource.status", NULL,
+                            FLUX_NODEID_ANY, 0))) {
+        flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.status)",
+                            __FUNCTION__);
+        goto out;
+    }
+    if (flux_rpc_get_raw (f, (const void **)&payload, &len) < 0) {
+        flux_log_error (h, "%s: flux_rpc_get_raw", __FUNCTION__);
+        goto out;
+    }
+    if (flux_respond_raw (h, msg, (const void *)payload, len) < 0) {
+        flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
+        goto out;
+    }
+    flux_log (h, LOG_DEBUG, "%s: resource-status succeeded", __FUNCTION__);
+    flux_future_destroy (f);
+    return;
+
+out:
+    flux_future_destroy (f);
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx,
@@ -269,10 +394,20 @@ static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: enforce_queues", __FUNCTION__);
         return rc;
     }
+    if ( (rc = handshake_resource (ctx)) < 0) {
+        flux_log_error (ctx->h, "%s: handshake_resource", __FUNCTION__);
+        return rc;
+    }
+    flux_log (ctx->h, LOG_DEBUG,
+              "handshaking with sched-fluxion-resource completed");
+
     if ( (rc = handshake_jobmanager (ctx)) < 0) {
         flux_log_error (ctx->h, "%s: handshake_jobmanager", __FUNCTION__);
         return rc;
     }
+    flux_log (ctx->h, LOG_DEBUG,
+              "handshaking with job-manager completed");
+
     return rc;
 }
 
@@ -305,8 +440,15 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
         }
         schedutil_destroy (ctx->schedutil);
         errno = saved_errno;
+        flux_msg_handler_delvec (ctx->hndlr);
     }
 }
+
+static const struct flux_msg_handler_spec htab[] = {
+    { FLUX_MSGTYPE_REQUEST,
+      "sched.resource-status", status_request_cb, FLUX_ROLE_USER },
+    FLUX_MSGHANDLER_TABLE_END,
+};
 
 
 /******************************************************************************
@@ -335,6 +477,11 @@ int mod_start (flux_t *h, int argc, char **argv)
     }
     if ( (rc = enforce_options (ctx)) < 0) {
         flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
+    }
+    if ( (rc = flux_msg_handler_addvec (h, htab, (void *)h, &ctx->hndlr)) < 0) {
+        flux_log_error (h, "%s: flux_msg_handler_addvec", __FUNCTION__);
         qmanager_destroy (ctx);
         return rc;
     }

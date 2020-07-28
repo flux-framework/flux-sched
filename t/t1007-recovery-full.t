@@ -44,8 +44,8 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
 '
 
 test_expect_success 'recovery: cancel one running job without fluxion' '
-    remove_resource &&
     remove_qmanager &&
+    remove_resource &&
     flux job cancel ${jobid1} &&
     flux job wait-event -t 10 ${jobid1} release
 '

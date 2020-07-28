@@ -71,7 +71,40 @@ struct match_perf_t {
     double accum;                  /* Total match time accumulated */
 };
 
-struct resource_ctx_t {
+class msg_wrap_t {
+public:
+    msg_wrap_t () = default;
+    msg_wrap_t (const msg_wrap_t &o);
+    msg_wrap_t &operator= (const msg_wrap_t &o);
+    ~msg_wrap_t ();
+    const flux_msg_t *get_msg () const;
+    void set_msg (const flux_msg_t *msg);
+private:
+    const flux_msg_t *m_msg = nullptr;
+};
+
+class resource_interface_t {
+public:
+    resource_interface_t () = default;
+    resource_interface_t (const resource_interface_t &o);
+    resource_interface_t &operator= (const resource_interface_t &o);
+
+    ~resource_interface_t ();
+    int fetch_and_reset_update_rc ();
+    int get_update_rc () const;
+    void set_update_rc (int rc);
+
+    const std::string &get_ups () const;
+    void set_ups (const char *ups);
+    bool is_ups_set () const;
+    flux_future_t *update_f = nullptr;
+
+private:
+    std::string m_ups = "";
+    int m_update_rc = 0;
+};
+
+struct resource_ctx_t : public resource_interface_t {
     ~resource_ctx_t ();
     flux_t *h;                     /* Flux handle */
     flux_msg_handler_t **handlers; /* Message handlers */
@@ -81,15 +114,106 @@ struct resource_ctx_t {
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
+    std::shared_ptr<resource_reader_base_t> reader; /* resource reader */
     match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
+    std::map<std::string, std::shared_ptr<msg_wrap_t>> notify_msgs;
 };
+
+
+msg_wrap_t::msg_wrap_t (const msg_wrap_t &o)
+{
+    m_msg = flux_msg_incref (o.m_msg);
+}
+
+msg_wrap_t &msg_wrap_t::operator= (const msg_wrap_t &o)
+{
+    m_msg = flux_msg_incref (o.m_msg);
+    return *this;
+}
+
+msg_wrap_t::~msg_wrap_t ()
+{
+    flux_msg_decref (m_msg);
+}
+
+const flux_msg_t *msg_wrap_t::get_msg () const
+{
+    return m_msg;
+}
+
+void msg_wrap_t::set_msg (const flux_msg_t *msg)
+{
+    if (m_msg)
+        flux_msg_decref (m_msg);
+    m_msg = flux_msg_incref (msg);
+}
+
+resource_interface_t::~resource_interface_t ()
+{
+    flux_future_decref (update_f);
+}
+
+resource_interface_t::resource_interface_t (const resource_interface_t &o)
+{
+    m_ups = o.m_ups;
+    m_update_rc = o.m_update_rc;
+    update_f = o.update_f;
+    flux_future_incref (update_f);
+}
+
+resource_interface_t &resource_interface_t::operator= (
+                                                const resource_interface_t &o)
+{
+    m_ups = o.m_ups;
+    m_update_rc = o.m_update_rc;
+    update_f = o.update_f;
+    flux_future_incref (update_f);
+    return *this;
+}
+
+int resource_interface_t::fetch_and_reset_update_rc ()
+{
+    int rc = m_update_rc;
+    m_update_rc = 0;
+    return rc;
+}
+
+int resource_interface_t::get_update_rc () const
+{
+    return m_update_rc;
+}
+
+void resource_interface_t::set_update_rc (int rc)
+{
+    m_update_rc = rc;
+}
+
+const std::string &resource_interface_t::get_ups () const
+{
+    return m_ups;
+}
+
+bool resource_interface_t::is_ups_set () const
+{
+    return m_ups != "";
+}
+
+void resource_interface_t::set_ups (const char *ups)
+{
+    m_ups = ups;
+}
 
 resource_ctx_t::~resource_ctx_t ()
 {
     flux_msg_handler_delvec (handlers);
+    for (auto &t : notify_msgs) {
+        if (flux_respond_error (h, t.second->get_msg (), ECANCELED, NULL) < 0) {
+            flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+        }
+    }
 }
 
 
@@ -123,6 +247,18 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
+static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
+static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
+static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg);
+
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -140,6 +276,14 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.set_property", set_property_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.get_property", get_property_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.notify", notify_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.disconnect", disconnect_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.find", find_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.status", status_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -195,6 +339,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
         ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
+        ctx->reader = nullptr;  /* Cannot be allocated at this point */
     }
 
 done:
@@ -353,8 +498,7 @@ error:
     return NULL;
 }
 
-static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
-                                      std::shared_ptr<resource_reader_base_t> rd)
+static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     int saved_errno;
@@ -378,9 +522,9 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx,
     errno = saved_errno;
     buffer << in_file.rdbuf ();
     in_file.close ();
-    if ( (rc = ctx->db->load (buffer.str (), rd)) < 0) {
+    if ( (rc = ctx->db->load (buffer.str (), ctx->reader)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                  __FUNCTION__, rd->err_message ().c_str ());
+                  __FUNCTION__, ctx->reader->err_message ().c_str ());
         goto done;
     }
     rc = 0;
@@ -389,65 +533,313 @@ done:
     return rc;
 }
 
-static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx,
-                                     std::shared_ptr<resource_reader_base_t> rd)
+static int grow (std::shared_ptr<resource_ctx_t> &ctx,
+                 vtx_t v, unsigned int rank)
 {
     int n = -1;
     int rc = -1;
     char k[64] = {0};
-    uint32_t rank = 0;
-    uint32_t size = 0;
     json_t *o = NULL;
-    flux_t *h = ctx->h;
+    int saved_errno = 0;
     const char *hwloc_xml = NULL;
     resource_graph_db_t &db = *(ctx->db);
-    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
-    if (flux_get_size (h, &size) == -1) {
-        flux_log (h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
-        goto done;
+    if (rank == IDSET_INVALID_ID) {
+        // Grow cluster vertex and leave
+        if ( (rc = db.load ("", ctx->reader, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
+                      __FUNCTION__,  ctx->reader->err_message ().c_str ());
+        }
+        goto ret;
     }
 
-    // For 0th rank -- special case to use rd->unpack
-    rank = 0;
     n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
     if ((n < 0) || ((unsigned int) n > sizeof (k))) {
         errno = ENOMEM;
-        goto done;
+        goto ret;
     }
-    o = get_string_blocking (h, k);
+    if ( !(o = get_string_blocking (ctx->h, k))) {
+        flux_log_error (ctx->h, "%s: get_string_blocking", __FUNCTION__);
+        goto ret;
+    }
     hwloc_xml = json_string_value (o);
-    if ( (rc = db.load (hwloc_xml, rd, rank)) < 0) {
-        flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                  __FUNCTION__,  rd->err_message ().c_str ());
-        goto done;
-    }
-    Jput (o);
+    if (v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
+        if ( (rc = db.load (hwloc_xml, ctx->reader, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
+                      __FUNCTION__,  ctx->reader->err_message ().c_str ());
+            goto freemem_ret;
+        }
+    } else {
+        if ( (rc = db.load (hwloc_xml, ctx->reader, v, rank)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
+                      __FUNCTION__,  ctx->reader->err_message ().c_str ());
+            goto freemem_ret;
+        }
+   }
+
+freemem_ret:
+    saved_errno = errno;
+    json_decref (o);
+    errno = saved_errno;
+ret:
+    return rc;
+}
+
+static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                             struct idset *ids)
+{
+    int rc = -1;
+    resource_graph_db_t &db = *(ctx->db);
+    unsigned int rank = idset_first (ids);
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        if ( (rc = grow (ctx, v, rank)) < 0)
+            goto done;
+    }
+
+    // If the above grow() does not grow resources in the "containment"
+    // subsystem, this condition can still be false
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        rc = -1;
+        errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: cluster vertex is unavailable",
                   __FUNCTION__);
         goto done;
     }
     v = db.metadata.roots.at ("containment");
 
-    // For the rest of the ranks -- general case
-    for (rank=1; rank < size; rank++) {
-        n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
-        if ((n < 0) || ((unsigned int) n > sizeof (k))) {
-          errno = ENOMEM;
-          goto done;
-        }
-        o = get_string_blocking (h, k);
-        hwloc_xml = json_string_value (o);
-        if ( (rc = db.load (hwloc_xml, rd, v, rank)) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
-                      __FUNCTION__,  rd->err_message ().c_str ());
+    rank = idset_next (ids, rank);
+    while (rank != IDSET_INVALID_ID) {
+        // For the rest of the ranks -- general case
+        if ( (rc = grow (ctx, v, rank)) < 0)
             goto done;
+        rank = idset_next (ids, rank);
+    }
+
+done:
+    return rc;
+}
+
+static int decode_all (std::shared_ptr<resource_ctx_t> &ctx,
+                       std::set<int64_t> &ranks)
+{
+    unsigned int size = 0;
+    unsigned int rank = 0;
+    if (flux_get_size (ctx->h, &size) < -1) {
+        flux_log (ctx->h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
+        return -1;
+    }
+    for (rank = 0; rank < size; ++rank) {
+        auto ret = ranks.insert (static_cast<int64_t> (rank));
+        if (!ret.second) {
+            errno = EEXIST;
+            return -1;
         }
-        Jput (o);
+    }
+    return 0;
+}
+
+static int decode_rankset (std::shared_ptr<resource_ctx_t> &ctx,
+                           const char *ids, std::set<int64_t> &ranks)
+{
+    int rc = -1;
+    unsigned int rank;
+    struct idset *idset = NULL;
+
+    if (!ids) {
+        errno = EINVAL;
+        goto done;
+    }
+    if (std::string ("all") == ids) {
+        if ( (rc = decode_all (ctx, ranks)) < 0)
+            goto done;
+    } else {
+        if ( !(idset = idset_decode (ids)))
+            goto done;
+        for (rank = idset_first (idset);
+             rank != IDSET_INVALID_ID; rank = idset_next (idset, rank)) {
+            auto ret = ranks.insert (static_cast<int64_t> (rank));
+            if (!ret.second) {
+                errno = EEXIST;
+                goto done;
+            }
+        }
     }
     rc = 0;
 
+done:
+    idset_destroy (idset);
+    return rc;
+}
+
+static int mark_lazy (std::shared_ptr<resource_ctx_t> &ctx,
+                      const char *ids, resource_pool_t::status_t status)
+{
+    int rc = 0;
+    switch (status) {
+    case resource_pool_t::status_t::UP:
+        ctx->set_ups (ids);
+        break;
+
+    case resource_pool_t::status_t::DOWN:
+    default:
+        // "down" shouldn't be a part of the first response of resource.acquire
+        errno = EINVAL;
+        rc = -1;
+    }
+    return rc;
+}
+
+static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
+                     const char *ids, resource_pool_t::status_t status)
+{
+    int rc = -1;
+    std::set <int64_t> ranks;
+    if (!ids) {
+        errno = EINVAL;
+        goto done;
+    }
+    if ( (rc = decode_rankset (ctx, ids, ranks)) < 0)
+        goto done;
+    if ( (rc = ctx->traverser->mark (ranks, status)) < 0) {
+        flux_log_error (ctx->h, "%s: traverser::mark: %s", __FUNCTION__,
+                                ctx->traverser->err_message ().c_str ());
+        ctx->traverser->clear_err_message ();
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource status changed (rankset=[%s] status=%s)",
+              ids, resource_pool_t::status_to_str (status).c_str ());
+done:
+    return rc;
+}
+
+static int mark (std::shared_ptr<resource_ctx_t> &ctx,
+                 const char *ids, resource_pool_t::status_t status)
+{
+    return (ctx->traverser->is_initialized ())? mark_now (ctx, ids, status)
+                                              : mark_lazy (ctx, ids, status);
+}
+
+static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                               struct idset *grow_set,
+                               const char *up,
+                               const char *down)
+{
+    int rc = 0;
+    if (grow_set && (rc = grow_resource_db (ctx, grow_set)) < 0) {
+        flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
+        goto done;
+    }
+    if (up && (rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0) {
+        flux_log_error (ctx->h, "%s: mark (up)", __FUNCTION__);
+        goto done;
+    }
+    if (down && (rc = mark (ctx, down, resource_pool_t::status_t::DOWN)) < 0) {
+        flux_log_error (ctx->h, "%s: mark (down)", __FUNCTION__);
+        goto done;
+    }
+done:
+    return rc;
+}
+
+// Directly copy form rutil_idset_from_resobj function
+// from flux-core's src/modules/resource/rutil.c.
+static struct idset *get_grow_idset (const json_t *resobj)
+{
+    struct idset *ids;
+    const char *key;
+    json_t *val;
+
+    if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+        return NULL;
+    if (resobj) {
+        json_object_foreach ((json_t *)resobj, key, val) {
+            struct idset *valset;
+            unsigned long id;
+
+            if (!(valset = idset_decode (key)))
+                goto error;
+            id = idset_first (valset);
+            while (id != IDSET_INVALID_ID) {
+                if (idset_set (ids, id) < 0) {
+                    idset_destroy (valset);
+                    goto error;
+                }
+                id = idset_next (valset, id);
+            }
+            idset_destroy (valset);
+        }
+    }
+    return ids;
+error:
+    idset_destroy (ids);
+    return NULL;
+}
+
+static void update_resource (flux_future_t *f, void *arg)
+{
+    int rc = -1;
+    const char *up = NULL;
+    const char *down = NULL;
+    json_t *grows = NULL;
+    struct idset *grow_set = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if ( (rc = flux_rpc_get_unpack (f, "{s?:o s?:s s?:s}",
+                                           "resources", &grows,
+                                           "up", &up,
+                                           "down", &down)) < 0) {
+        flux_log_error (ctx->h, "%s: exiting due to resource.acquire failure",
+                        __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
+        goto done;
+    }
+    if (grows) {
+        if ( !(grow_set = get_grow_idset (grows))) {
+            rc = -1;
+            flux_log_error (ctx->h, "%s: get_grow_idset", __FUNCTION__);
+            goto done;
+        }
+    }
+    if ( (rc = update_resource_db (ctx, grow_set, up, down)) < 0) {
+        flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
+        goto done;
+    }
+    for (auto &kv : ctx->notify_msgs) {
+        if ( (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
+            flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+        }
+    }
+done:
+    idset_destroy (grow_set);
+    flux_future_reset (f);
+    ctx->set_update_rc (rc);
+}
+
+static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx)
+{
+    int rc = -1;
+    json_t *o = NULL;
+
+    if ( !(ctx->update_f = flux_rpc (ctx->h, "resource.acquire", NULL,
+                                     FLUX_NODEID_ANY, FLUX_RPC_STREAMING))) {
+        flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
+        goto done;
+    }
+
+    update_resource (ctx->update_f, static_cast<void *> (ctx->h));
+    if ( (rc = ctx->fetch_and_reset_update_rc ()) < 0) {
+        flux_log_error (ctx->h, "%s: update_resource", __FUNCTION__);
+        goto done;
+    }
+
+    if ( (rc = flux_future_then (ctx->update_f, -1.0, update_resource,
+                                 static_cast<void *> (ctx->h))) < 0) {
+        flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+        goto done;
+    }
 done:
     return rc;
 }
@@ -457,31 +849,33 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = -1;
     double elapse;
     struct timeval st, et;
-    std::shared_ptr<resource_reader_base_t> rd;
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-    if ( (rd = create_resource_reader (ctx->args.load_format)) == nullptr) {
+    if ( (ctx->reader = create_resource_reader (
+                            ctx->args.load_format)) == nullptr) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create load reader",
                   __FUNCTION__);
         goto done;
     }
     if (ctx->args.load_allowlist != "") {
-        if (rd->set_allowlist (ctx->args.load_allowlist) < 0)
+        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
             flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
-        if (!rd->is_allowlist_supported ())
+        if (!ctx->reader->is_allowlist_supported ())
             flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
                       __FUNCTION__);
     }
-
-    gettimeofday (&st, NULL);
+    if ( (rc = gettimeofday (&st, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     if (ctx->args.load_file != "") {
-        if (populate_resource_db_file (ctx, rd) < 0)
+        if (populate_resource_db_file (ctx) < 0)
             goto done;
         flux_log (ctx->h, LOG_INFO, "%s: loaded resources from %s",
                   __FUNCTION__,  ctx->args.load_file.c_str ());
     } else {
-        if (populate_resource_db_kvs (ctx, rd) < 0) {
+        if (populate_resource_db_kvs (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: loading resources from the KVS",
                       __FUNCTION__);
             goto done;
@@ -490,7 +884,10 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
                   "%s: loaded resources from hwloc in the KVS",
                   __FUNCTION__);
     }
-    gettimeofday (&et, NULL);
+    if ( (rc = gettimeofday (&et, NULL)) < 0) {
+        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
+        goto done;
+    }
     ctx->perf.load = get_elapse_time (st, et);
     rc = 0;
 
@@ -608,6 +1005,21 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
                   __FUNCTION__);
         return -1;
 
+    }
+
+    // Perform the initial status marking only when "up" rankset is available
+    // Rankless reader cases (required for testing e.g., GRUG) must not
+    // exectute the following branch.
+    if (ctx->is_ups_set ()) {
+        if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: mark (down)", __FUNCTION__);
+            return -1;
+        }
+        if (mark (ctx, ctx->get_ups ().c_str (),
+                  resource_pool_t::status_t::UP) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: mark (up)", __FUNCTION__);
+            return -1;
+        }
     }
     return 0;
 }
@@ -1363,6 +1775,170 @@ error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
+
+static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    char *route = NULL;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_msg_get_route_first (msg, &route) < 0) {
+        flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
+        goto error;
+    }
+    if (ctx->notify_msgs.find (route) != ctx->notify_msgs.end ()) {
+        ctx->notify_msgs.erase (route);
+        flux_log (h, LOG_DEBUG, "%s: a notify request aborted", __FUNCTION__);
+    }
+
+error:
+    free (route);
+    return;
+}
+
+static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    try {
+        char *route = NULL;
+        std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+        std::shared_ptr<msg_wrap_t> m = std::make_shared<msg_wrap_t> ();
+
+        if (flux_request_decode (msg, NULL, NULL) < 0) {
+            flux_log_error (h, "%s: flux_request_decode", __FUNCTION__);
+            goto error;
+        }
+        if (!flux_msg_is_streaming (msg)) {
+            errno = EPROTO;
+            flux_log_error (h, "%s: streaming flag not set", __FUNCTION__);
+            goto error;
+        }
+        if (flux_msg_get_route_first (msg, &route) < 0) {
+            free (route);
+            flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
+            goto error;
+        }
+
+        m->set_msg (msg);
+        auto ret = ctx->notify_msgs.insert (
+                       std::pair<std::string,
+                                 std::shared_ptr<msg_wrap_t>> (route, m));
+        free (route);
+        if (!ret.second) {
+            errno = EEXIST;
+            flux_log_error (h, "%s: insert", __FUNCTION__);
+            goto error;
+        }
+
+        if (flux_respond (ctx->h, msg, NULL) < 0) {
+            flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+            goto error;
+        }
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    }
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static int run_find (std::shared_ptr<resource_ctx_t>& ctx,
+                     const std::string &criteria, json_t **R)
+{
+    int rc = -1;
+    json_t *o = nullptr;
+    std::shared_ptr<match_writers_t> w = nullptr;
+
+    if ( !(w = match_writers_factory_t::create (match_format_t::RV1_NOSCHED)))
+        goto error;
+    if ( (rc = ctx->traverser->find (w, criteria)) < 0) {
+        if (ctx->traverser->err_message () != "") {
+            flux_log_error (ctx->h, "%s: %s",
+                            __FUNCTION__,
+                            ctx->traverser->err_message ().c_str ());
+            ctx->traverser->clear_err_message ();
+        }
+        goto error;
+    }
+    if ( (rc = w->emit_json (&o)) < 0) {
+        flux_log_error (ctx->h, "%s: emit", __FUNCTION__);
+        goto error;
+    }
+    if (o)
+        *R = o;
+
+error:
+    return rc;
+}
+
+static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg)
+{
+    json_t *R = nullptr;
+    int saved_errno;
+    const char *criteria = nullptr;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_request_unpack (msg, nullptr, "{s:s}",
+                                               "criteria", &criteria) < 0)
+        goto error;
+    if (run_find (ctx, criteria, &R) < 0)
+        goto error;
+    if (flux_respond_pack (h, msg, "{s:o?}",
+                                       "R", R) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: find succeeded", __FUNCTION__);
+    return;
+
+error:
+    saved_errno = errno;
+    json_decref (R);
+    errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    int saved_errno;
+    json_t *R_all = nullptr;
+    json_t *R_down = nullptr;
+    json_t *R_alloc = nullptr;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (run_find (ctx, "status=up or status=down", &R_all) < 0)
+        goto error;
+    if (run_find (ctx, "status=down", &R_down) < 0)
+        goto error;
+    if (run_find (ctx, "sched-now=allocated", &R_alloc) < 0)
+        goto error;
+    if (flux_respond_pack (h, msg, "{s:o? s:o? s:o?}",
+                                       "all", R_all,
+                                       "down", R_down,
+                                       "allocated", R_alloc) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: status succeeded", __FUNCTION__);
+    return;
+
+error:
+    saved_errno = errno;
+    json_decref (R_all);
+    json_decref (R_alloc);
+    json_decref (R_down);
+    errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
 
 /******************************************************************************
  *                                                                            *

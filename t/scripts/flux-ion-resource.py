@@ -72,6 +72,13 @@ class ResourceModuleInterface:
     def rpc_get_property (self, gp_resource_path, gp_key):
         payload = {'gp_resource_path' : gp_resource_path, 'gp_key' : gp_key}
         return self.f.rpc ("sched-fluxion-resource.get_property", payload).get ()
+
+    def rpc_find (self, criteria):
+        payload = {'criteria' : criteria}
+        return self.f.rpc ("sched-fluxion-resource.find", payload).get ()
+
+    def rpc_status (self):
+        return self.f.rpc ("sched-fluxion-resource.status").get ()
     
 
 """
@@ -184,6 +191,32 @@ def get_property_action (args):
     print (args.gp_key, "=", resp['value'])
 
 """
+    Action for find sub-command
+"""
+def find_action (args):
+    r = ResourceModuleInterface ()
+    resp = r.rpc_find (args.criteria)
+    print ('CRITERIA')
+    print ("\'" + args.criteria + "\'")
+    print ("=" * width ())
+    print ('MATCHED RESOURCES:')
+    print (json.dumps (resp['R']))
+
+"""
+    Action for find sub-command
+"""
+def status_action (args):
+    r = ResourceModuleInterface ()
+    resp = r.rpc_status ()
+    print ('CRITERIA')
+    print ('all: \'status=up or status=down\'')
+    print ('down: \'status=down\'')
+    print ('allocated: \'sched-now=allocated\'')
+    print ("=" * width ())
+    print ('MATCHED RESOURCES:')
+    print (json.dumps (resp))
+
+"""
     Main entry point
 """
 def main ():
@@ -209,6 +242,8 @@ def main ():
     istr = "Print info on a single job"
     sstr = "Print overall performance statistics"
     cstr = "Cancel an allocated or reserved job"
+    fstr = "Find resources matching with a crieria"
+    ststr = "Display resource status"
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
     parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
@@ -216,6 +251,8 @@ def main ():
     parser_i = subpar.add_parser ('info', help=istr, description=istr)
     parser_s = subpar.add_parser ('stat', help=sstr, description=sstr)
     parser_c = subpar.add_parser ('cancel', help=cstr, description=cstr)
+    parser_f = subpar.add_parser ('find', help=fstr, description=fstr)
+    parser_st = subpar.add_parser ('status', help=ststr, description=ststr)
     parser_sp = subpar.add_parser ('set-property', help=pstr, description=pstr)
     parser_gp = subpar.add_parser ('get-property', help=gstr, description=gstr)
 
@@ -259,6 +296,19 @@ def main ():
     #
     parser_c.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
     parser_c.set_defaults (func=cancel_action)
+
+    #
+    # Positional argument for find sub-command
+    #
+    cr_help='Matching criteria -- a compound expression must be quoted'
+    parser_f.add_argument ('criteria', metavar='Criteria', type=str, help=cr_help)
+    parser_f.set_defaults (func=find_action)
+
+    #
+    # Positional argument for find sub-command
+    #
+    st_help='Resource status'
+    parser_st.set_defaults (func=status_action)
 
     #
     # Positional argument for match allocate sub-command

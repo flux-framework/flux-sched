@@ -57,6 +57,7 @@ load-format=hwloc prune-filters=ALL:core
 
 test_expect_success 'loading resource module with no option works' '
     unload_resource &&
+    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core
 '
 
