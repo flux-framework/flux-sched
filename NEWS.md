@@ -1,3 +1,26 @@
+flux-sched version 0.10.0 - 2020-07-29
+--------------------------------------
+
+Note: Fluxion now uses flux-core's resource service
+to acquire resources to schedule.
+
+### Fixes
+ * qmanager: support for ordering pending jobs by priority/submit time (#694)
+ * testsuite: increase wait-event timeouts (#692)
+ * testsuite: enable valgrind testing (#703)
+ * resource: errno support for std::ifstream open (#698)
+ * Undo compiler workarounds (#697)
+
+### Features
+ * Add support for hwloc 2.0+ (#677)
+ * Augment multi-tiered storage scheduling test (#673)
+ * Integrate with flux-core's resource module (#665, #667, #674, #693, #694)
+ * Update for flux-core annotation support changes (#681)
+
+### Cleanup
+ * Update pkg dependency matrix in README.md (#696)
+ * Globally rename whitelist to allowlist (#690)
+
 flux-sched version 0.9.0 - 2020-06-18
 -------------------------------------
 
