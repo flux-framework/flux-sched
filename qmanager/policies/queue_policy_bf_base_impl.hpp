@@ -62,11 +62,11 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
 }
 
 template<class reapi_type>
-std::map<uint64_t, flux_jobid_t>::iterator &
+std::map<std::vector<double>, flux_jobid_t>::iterator &
 queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
                                                std::shared_ptr<job_t> job,
                                                bool use_alloced_queue,
-                                               std::map<uint64_t,
+                                               std::map<std::vector<double>,
                                                   flux_jobid_t>::iterator &iter)
 
 
@@ -105,10 +105,10 @@ queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
 }
 
 template<class reapi_type>
-std::map<uint64_t, flux_jobid_t>::iterator &
+std::map<std::vector<double>, flux_jobid_t>::iterator &
 queue_policy_bf_base_t<reapi_type>::allocate (void *h, std::shared_ptr<job_t> job,
                                               bool use_alloced_queue,
-                                              std::map<uint64_t,
+                                              std::map<std::vector<double>,
                                                   flux_jobid_t>::iterator &iter)
 {
     if (reapi_type::match_allocate (h, false, job->jobspec, job->id,
@@ -143,7 +143,8 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't. When you can't allocate a job, you reserve it
     // and then try to backfill later jobs.
-    std::map<uint64_t, flux_jobid_t>::iterator iter = m_pending.begin ();
+    std::map<std::vector<double>, flux_jobid_t>::iterator iter
+        = m_pending.begin ();
     m_reservation_cnt = 0;
     int saved_errno = errno;
     while ((iter != m_pending.end ()) && (i < m_queue_depth)) {
