@@ -1,0 +1,3 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/corona-small-drive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/corona-small-drive.yaml
+quit
