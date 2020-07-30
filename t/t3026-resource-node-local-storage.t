@@ -31,4 +31,25 @@ test_expect_success "${corona_small_desc}" '
     test_cmp ${exp_dir}/corona-small-drive.R.out corona-small-drive.R.out
 '
 
+lassen_xml="${xml_dir}/lassen/0.xml"
+lassen_full_cmds="${cmd_dir}/lassen-full-drive.in"
+lassen_full_desc="match allocate with lassen hwloc and full-drive jobspec"
+test_expect_success "${lassen_full_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${lassen_full_cmds} \
+> lassen_full_cmds &&
+    ${query} -d -L ${lassen_xml} -f hwloc -W node,socket,core,gpu,storage \
+-S CA -P low -t lassen-full-drive.R.out < lassen_full_cmds &&
+    test_cmp ${exp_dir}/lassen-full-drive.R.out lassen-full-drive.R.out
+'
+
+lassen_small_cmds="${cmd_dir}/lassen-small-drive.in"
+lassen_small_desc="match allocate with lassen hwloc and small-drive jobspec"
+test_expect_success "${lassen_small_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${lassen_small_cmds} \
+> lassen_small_cmds &&
+    ${query} -d -L ${lassen_xml} -f hwloc -W node,socket,core,gpu,storage \
+-S CA -P low -t lassen-small-drive.R.out < lassen_small_cmds &&
+    test_cmp ${exp_dir}/lassen-small-drive.R.out lassen-small-drive.R.out
+'
+
 test_done
