@@ -1,0 +1,6 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/catalyst-small-drive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/catalyst-small-drive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/catalyst-small-drive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/catalyst-small-drive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_local_storage/catalyst-small-drive.yaml
+quit

@@ -1,0 +1,28 @@
+      ------------core12[1:x]
+      ------------core13[1:x]
+      ------------core14[1:x]
+      ------------core15[1:x]
+      ------------core16[1:x]
+      ------------core17[1:x]
+      ------------core18[1:x]
+      ------------core19[1:x]
+      ------------core20[1:x]
+      ------------core21[1:x]
+      ------------core22[1:x]
+      ------------core23[1:x]
+      ------------storage8[195:x]
+      ------------storage9[195:x]
+      ------------storage10[195:x]
+      ------------storage11[195:x]
+      ---------socket1[1:x]
+      ------catalyst321[1:s]
+      ---cluster0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================

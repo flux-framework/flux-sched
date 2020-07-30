@@ -52,4 +52,25 @@ test_expect_success "${lassen_small_desc}" '
     test_cmp ${exp_dir}/lassen-small-drive.R.out lassen-small-drive.R.out
 '
 
+catalyst_xml="${xml_dir}/catalyst/0.xml"
+catalyst_full_cmds="${cmd_dir}/catalyst-full-drive.in"
+catalyst_full_desc="match allocate with catalyst hwloc and full-drive jobspec"
+test_expect_success "${catalyst_full_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${catalyst_full_cmds} \
+> catalyst_full_cmds &&
+    ${query} -d -L ${catalyst_xml} -f hwloc -W node,socket,core,gpu,storage \
+-S CA -P low -t catalyst-full-drive.R.out < catalyst_full_cmds &&
+    test_cmp ${exp_dir}/catalyst-full-drive.R.out catalyst-full-drive.R.out
+'
+
+catalyst_small_cmds="${cmd_dir}/catalyst-small-drive.in"
+catalyst_small_desc="match allocate with catalyst hwloc and small-drive jobspec"
+test_expect_success "${catalyst_small_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${catalyst_small_cmds} \
+> catalyst_small_cmds &&
+    ${query} -d -L ${catalyst_xml} -f hwloc -W node,socket,core,gpu,storage \
+-S CA -P low -t catalyst-small-drive.R.out < catalyst_small_cmds &&
+    test_cmp ${exp_dir}/catalyst-small-drive.R.out catalyst-small-drive.R.out
+'
+
 test_done
