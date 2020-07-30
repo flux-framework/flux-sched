@@ -226,9 +226,11 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_OS_DEVICE: {
-        if (obj->attr && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+        supported_resource = false;
+        if (!obj->attr) {
+            break;
+        } else if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
             if (!in_allowlist ("gpu")) {
-                supported_resource = false;
                 break;
             }
             /* hwloc doesn't provide the logical index only amongst CoProc
@@ -247,8 +249,21 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
             }
             type = "gpu";
             basename = type;
-        } else {
-            supported_resource = false;
+            supported_resource = true;
+        } else if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_BLOCK) {
+            if (!in_allowlist ("storage")) {
+                break;
+            }
+            // Size from hwloc is in kBs (base 10)
+            const char* size_str = hwloc_obj_get_info_by_name (obj, "Size");
+            long int num_bytes = strtol (size_str, NULL, 10);
+            if (size_str == NULL || num_bytes == 0) {
+                break;
+            }
+            size = num_bytes / 1000000; // kBs -> gBs
+            type = "storage";
+            basename = type;
+            supported_resource = true;
         }
         break;
     }
