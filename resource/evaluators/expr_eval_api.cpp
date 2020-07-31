@@ -37,6 +37,9 @@ namespace resource_model {
 bool expr_eval_api_t::is_paren (const std::string &e, std::size_t at) const
 {
     std::size_t fnws = e.find_first_not_of (" \t", at);
+    if (fnws == std::string::npos) {
+        return false;
+    }
     return (e[fnws] == '(');
 }
 
