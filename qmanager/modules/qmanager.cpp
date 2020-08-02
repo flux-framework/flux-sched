@@ -394,6 +394,14 @@ static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: enforce_queues", __FUNCTION__);
         return rc;
     }
+    /* Before beginning synchronous handshakes with fluxion-resource
+     * and job-manager, set module status to 'running' to let flux module load
+     * return success.
+     */
+    if ( (rc = flux_module_set_running (ctx->h)) < 0) {
+        flux_log_error (ctx->h, "%s: flux_module_set_running", __FUNCTION__);
+        return rc;
+    }
     if ( (rc = handshake_resource (ctx)) < 0) {
         flux_log_error (ctx->h, "%s: handshake_resource", __FUNCTION__);
         return rc;
