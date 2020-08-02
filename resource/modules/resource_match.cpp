@@ -869,6 +869,13 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
         goto done;
     }
+    /* Before beginning synchronous resource.acquire RPC, set module status
+     * to 'running' to let flux module load return success.
+     */
+    if ( (rc = flux_module_set_running (ctx->h)) < 0) {
+        flux_log_error (ctx->h, "%s: flux_module_set_running", __FUNCTION__);
+        goto done;
+    }
     if (ctx->args.load_file != "") {
         if (populate_resource_db_file (ctx) < 0)
             goto done;
