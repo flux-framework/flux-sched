@@ -237,26 +237,6 @@
           <object type="PU" os_index="47" cpuset="0x00008000,0x0" complete_cpuset="0x00008000,0x0" online_cpuset="0x00008000,0x0" allowed_cpuset="0x00008000,0x0" nodeset="0x00000002" complete_nodeset="0x00000002" allowed_nodeset="0x00000002"/>
         </object>
         <object type="Bridge" bridge_type="0-1" depth="0" bridge_pci="0000:[80-85]">
-          <object type="Bridge" bridge_type="1-1" depth="1" bridge_pci="0000:[82-82]" pci_busid="0000:80:02.0" pci_type="0604 [8086:0e04] [8086:3582] 04" pci_link_speed="4.000000">
-            <info name="PCIVendor" value="Intel Corporation"/>
-            <info name="PCIDevice" value="Xeon E7 v2/Xeon E5 v2/Core i7 PCI Express Root Port 2a"/>
-            <object type="PCIDev" pci_busid="0000:82:00.0" pci_type="0c06 [1077:7322] [1077:7322] 02" pci_link_speed="4.000000">
-              <info name="PCIVendor" value="QLogic Corp."/>
-              <info name="PCIDevice" value="IBA7322 QDR InfiniBand HCA"/>
-              <object type="OSDev" name="hsi1" osdev_type="2">
-                <info name="Address" value="80:00:00:03:fe:80:00:00:00:00:00:00:00:11:75:00:00:70:70:b2"/>
-                <info name="Port" value="1"/>
-              </object>
-              <object type="OSDev" name="qib1" osdev_type="3">
-                <info name="NodeGUID" value="0011:7500:0070:70b2"/>
-                <info name="SysImageGUID" value="0011:7500:0070:7266"/>
-                <info name="Port1State" value="4"/>
-                <info name="Port1LID" value="0x1dc"/>
-                <info name="Port1LMC" value="0"/>
-                <info name="Port1GID0" value="fe80:0000:0000:0000:0011:7500:0070:70b2"/>
-              </object>
-            </object>
-          </object>
           <object type="Bridge" bridge_type="1-1" depth="1" bridge_pci="0000:[83-83]" pci_busid="0000:80:02.2" pci_type="0604 [8086:0e06] [8086:3582] 04" pci_link_speed="4.000000">
             <info name="PCIVendor" value="Intel Corporation"/>
             <info name="PCIDevice" value="Xeon E7 v2/Xeon E5 v2/Core i7 PCI Express Root Port 2c"/>
@@ -307,26 +287,6 @@
           </object>
         </object>
       </object>
-    </object>
-    <object type="OSDev" name="sde" osdev_type="0">
-      <info name="Size" value="31950848"/>
-      <info name="SectorSize" value="512"/>
-      <info name="LinuxDeviceID" value="8:64"/>
-      <info name="Vendor" value="LIO-ORG"/>
-      <info name="Model" value="FILEIO"/>
-      <info name="Revision" value="4.0"/>
-      <info name="SerialNumber" value="60014051cbae4f91ec591cb74b6dc178"/>
-      <info name="Type" value="Disk"/>
-    </object>
-    <object type="OSDev" name="sdf" osdev_type="0">
-      <info name="Size" value="31950848"/>
-      <info name="SectorSize" value="512"/>
-      <info name="LinuxDeviceID" value="8:80"/>
-      <info name="Vendor" value="LIO-ORG"/>
-      <info name="Model" value="FILEIO"/>
-      <info name="Revision" value="4.0"/>
-      <info name="SerialNumber" value="60014051cbae4f91ec591cb74b6dc178"/>
-      <info name="Type" value="Disk"/>
     </object>
   </object>
 </topology>

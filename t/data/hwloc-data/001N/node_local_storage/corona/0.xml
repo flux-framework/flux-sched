@@ -552,15 +552,5 @@
         </object>
       </object>
     </object>
-    <object type="OSDev" name="sda" osdev_type="0">
-      <info name="Size" value="26214400"/>
-      <info name="SectorSize" value="512"/>
-      <info name="LinuxDeviceID" value="8:0"/>
-      <info name="Vendor" value="LIO-ORG"/>
-      <info name="Model" value="FILEIO"/>
-      <info name="Revision" value="4.0"/>
-      <info name="SerialNumber" value="6001405ba8a4960774d417ccdeabf9a0"/>
-      <info name="Type" value="Disk"/>
-    </object>
   </object>
 </topology>
