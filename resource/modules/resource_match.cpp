@@ -1962,6 +1962,14 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         flux_aux_set (h, "sched-fluxion-resource", &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: resource module starting", __FUNCTION__);
 
+        /* Before beginning synchronous resource.acquire RPC, set module status
+         * to 'running' to let flux module load return success.
+         */
+        if ( (rc = flux_module_set_running (ctx->h)) < 0) {
+            flux_log_error (ctx->h, "%s: flux_module_set_running",
+                            __FUNCTION__);
+            goto done;
+        }
         if ( (rc = init_resource_graph (ctx)) != 0) {
             flux_log (h, LOG_ERR,
                       "%s: can't initialize resource graph database",
