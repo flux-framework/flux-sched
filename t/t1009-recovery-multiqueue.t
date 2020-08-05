@@ -11,7 +11,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 test_under_flux 1
 
 check_requeue() {
-    local jobid=${1}
+    local jobid=$(flux job id ${1})
     local correct_queue=${2}
 
     flux ion-resource info ${jobid} | grep "ALLOCATED"
