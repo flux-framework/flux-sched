@@ -394,6 +394,13 @@ static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: enforce_queues", __FUNCTION__);
         return rc;
     }
+    return rc;
+}
+
+static int handshake (std::shared_ptr<qmanager_ctx_t> &ctx)
+{
+    int rc = 0;
+
     if ( (rc = handshake_resource (ctx)) < 0) {
         flux_log_error (ctx->h, "%s: handshake_resource", __FUNCTION__);
         return rc;
@@ -476,7 +483,12 @@ int mod_start (flux_t *h, int argc, char **argv)
         return rc;
     }
     if ( (rc = enforce_options (ctx)) < 0) {
-        flux_log_error (h, "%s: enforce_queue_policy", __FUNCTION__);
+        flux_log_error (h, "%s: enforce_options", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
+    }
+    if ( (rc = handshake (ctx)) < 0) {
+        flux_log_error (h, "%s: handshake", __FUNCTION__);
         qmanager_destroy (ctx);
         return rc;
     }
