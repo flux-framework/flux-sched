@@ -63,22 +63,31 @@ test_expect_success 'loading resource module with no option works' '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
     unload_resource &&
-    test_expect_code 1 load_resource \
-load-file=${ne_grug} load-format=grug prune-filters=ALL:core 2> error1 &&
+    flux dmesg -C &&
+    load_resource load-file=${ne_grug} load-format=grug \
+prune-filters=ALL:core &&
+    test_must_fail flux module stats sched-fluxion-resource &&
+    flux dmesg > error1 &&
     test_must_fail grep -i Success error1
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
     unload_resource &&
-    test_expect_code 1 load_resource \
-load-file=${ne_xml} load-format=hwloc prune-filters=ALL:core 2> error2 &&
+    flux dmesg -C &&
+    load_resource load-file=${ne_xml} load-format=hwloc \
+prune-filters=ALL:core &&
+    test_must_fail flux module stats sched-fluxion-resource &&
+    flux dmesg > error2 &&
     test_must_fail grep -i Success error2
 '
 
 test_expect_success 'loading resource module with incorrect reader fails' '
     unload_resource &&
-    test_expect_code 1 load_resource \
-load-file=${xml} load-format=grug prune-filters=ALL:core 2> error3 &&
+    flux dmesg -C &&
+    load_resource load-file=${xml} load-format=grug \
+prune-filters=ALL:core &&
+    test_must_fail flux module stats sched-fluxion-resource &&
+    flux dmesg > error3 &&
     grep -i "Invalid argument" error3
 '
 

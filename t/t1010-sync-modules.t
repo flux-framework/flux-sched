@@ -9,12 +9,14 @@ test_under_flux 1
 # sched-simple acquires "exclusive" access to resource.
 test_expect_success 'sync: fluxion-resource cannot load w/ sched-simple' '
     flux module info sched-simple &&
-    test_must_fail load_resource policy=low load-allowlist=node,socket,core,gpu
+    load_resource policy=low load-allowlist=node,socket,core,gpu &&
+    test_must_fail flux module stats sched-fluxion-resource
 '
 
 test_expect_success 'sync: qmanager does not load w/o fluxion-resource' '
     flux module remove sched-simple &&
-    test_must_fail load_qmanager
+    load_qmanager &&
+    test_must_fail flux module stats sched-fluxion-qmanager
 '
 
 # sched-simple releases the exclusive access to resource.
