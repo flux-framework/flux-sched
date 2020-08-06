@@ -12,6 +12,8 @@ import json
 import flux
 import time
 
+from flux.job import JobID
+
 def heading ():
     return '{:20} {:20} {:20} {:20}'.format ('JOBID', 'STATUS',
                                              'AT', 'OVERHEAD (Secs)')
@@ -277,13 +279,13 @@ def main ():
     # Positional argument for update sub-command
     #
     parser_u.add_argument ('RV1', metavar='RV1', type=str, help='RV1 file name')
-    parser_u.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_u.add_argument ('jobid', metavar='Jobid', type=JobID, help='Jobid')
     parser_u.set_defaults (func=update_action)
 
     #
     # Positional argument for info sub-command
     #
-    parser_i.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_i.add_argument ('jobid', metavar='Jobid', type=JobID, help='Jobid')
     parser_i.set_defaults (func=info_action)
 
     #
@@ -294,7 +296,7 @@ def main ():
     #
     # Positional argument for cancel sub-command
     #
-    parser_c.add_argument ('jobid', metavar='Jobid', type=int, help='Jobid')
+    parser_c.add_argument ('jobid', metavar='Jobid', type=JobID, help='Jobid')
     parser_c.set_defaults (func=cancel_action)
 
     #

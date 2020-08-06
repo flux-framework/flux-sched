@@ -568,7 +568,7 @@ rollup_exit_code() {
         fi
     done
 
-    if [[ ${FT_MAX_FLUX_JOBID} -ne 0 ]]
+    if [[ "${FT_MAX_FLUX_JOBID}" != "0" ]]
     then
         flux job attach ${FT_MAX_FLUX_JOBID} || true
     fi
