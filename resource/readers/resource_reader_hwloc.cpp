@@ -63,10 +63,11 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (
 {
     // generate cluster root vertex
     const std::string subsys = "containment";
+    const std::map<std::string, std::string> properties;
     vtx_t v = add_new_vertex (g, m, boost::
                               graph_traits<resource_graph_t>::
                               null_vertex (),
-                              0, subsys, "cluster", "cluster", 1);
+                              0, subsys, "cluster", "cluster", properties, 1);
     m.roots.emplace (subsys, v);
     m.v_rt_edges.emplace (subsys, relation_infra_t ());
 
@@ -79,6 +80,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
                                                const std::string &subsys,
                                                const std::string &type,
                                                const std::string &basename,
+                                               const std::map<std::string, std::string> &properties,
                                                int size, int rank)
 {
     vtx_t v = boost::add_vertex (g);
@@ -103,6 +105,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].paths[subsys] = prefix + "/" + g[v].name;
     g[v].idata.member_of[subsys] = "*";
     g[v].status = resource_pool_t::status_t::UP;
+    g[v].properties = properties;
 
     // Indexing for fast look-up
     m.by_path[g[v].paths[subsys]] = v;
@@ -123,6 +126,7 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     int id = obj->logical_index;
     int rc = 0;
     unsigned int size = 1;
+    std::map<std::string, std::string> properties;
 
     switch(obj->type) {
     case HWLOC_OBJ_MACHINE: {
@@ -274,6 +278,18 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
             type = "storage";
             basename = type;
             supported_resource = true;
+
+            const char* devID_str = hwloc_obj_get_info_by_name (obj, "LinuxDeviceID");
+            if (devID_str == NULL) {
+                devID_str = "-1";
+            }
+            auto ret = properties.insert (std::pair<std::string, std::string>("LinuxDeviceID", devID_str));
+            if (!ret.second) {
+                errno = EEXIST;
+                m_err_msg += "Error inserting LinuxDeviceID into properties map; ";
+                rc = -1;
+                break;
+            }
         }
         break;
     }
@@ -290,7 +306,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     } else {
         const std::string subsys = "containment";
         vtx_t v = add_new_vertex (g, m, parent,
-                                  id, subsys, type, basename, size, rank);
+                                  id, subsys, type, basename,
+                                  properties, size, rank);
         valid_ancestor = v;
         std::string relation = "contains";
         std::string rev_relation = "in";
