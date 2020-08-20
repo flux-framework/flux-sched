@@ -115,7 +115,7 @@ test_expect_success 'find/status: flux ion-resource status works' '
     diff full.R.json all.key.json &&
     diff full.R.json allocated.key.json &&
     downrank=$(cat down.key.json | jq " .execution.R_lite[].rank ") &&
-    test ${rank} = "\"1\""
+    test ${downrank} = "\"1\""
 
 '
 
