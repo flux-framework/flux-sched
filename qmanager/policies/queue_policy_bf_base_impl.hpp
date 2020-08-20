@@ -185,8 +185,8 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h,
 {
     int rc = 0;
     rc = cancel_completed_jobs (h);
-    rc += allocate_orelse_reserve_jobs (h, use_alloced_queue);
     rc += cancel_reserved_jobs (h);
+    rc += allocate_orelse_reserve_jobs (h, use_alloced_queue);
     return rc;
 }
 
