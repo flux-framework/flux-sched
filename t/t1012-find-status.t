@@ -97,12 +97,10 @@ test_expect_success 'find/status: a 1sock jobspec cannot run' '
     test_must_fail flux job wait-event -t 1 ${jobid2} start
 '
 
-# Make sure jobid2 doesn't leave a temporary reservation behind
-# All reservations must be cleared up at the end of each schedule loop
-test_expect_success 'find/status: find status=reserved must be null' '
-    flux ion-resource find "sched-future=reserved" | tail -1 > null.out &&
-    null=$(cat null.out) &&
-    test ${null} = "null"
+test_expect_success 'find/status: find status=reserved must not be null' '
+    flux ion-resource find "sched-future=reserved" | tail -1 > rsv.out &&
+    rank=$(cat rsv.out | jq .execution.R_lite[].rank) &&
+    test ${rank} = "\"0\""
 '
 
 test_expect_success 'find/status: flux ion-resource status works' '
