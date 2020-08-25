@@ -191,6 +191,41 @@ std::shared_ptr<job_t> queue_policy_base_t::pending_pop ()
     return detail::queue_policy_base_impl_t::pending_pop ();
 }
 
+std::shared_ptr<job_t> queue_policy_base_t::pending_begin ()
+{
+    std::shared_ptr<job_t> job_p = nullptr;
+    m_pending_iter = detail::queue_policy_base_impl_t::m_pending.begin ();
+    if (m_pending_iter == m_pending.end ()) {
+        m_iter_valid = false;
+    } else {
+        flux_jobid_t id = m_pending_iter->second;
+        m_iter_valid = true;
+        if (detail::queue_policy_base_impl_t::m_jobs.find (id)
+            != detail::queue_policy_base_impl_t::m_jobs.end ())
+            job_p = detail::queue_policy_base_impl_t::m_jobs[id];
+    }
+    return job_p;
+}
+
+std::shared_ptr<job_t> queue_policy_base_t::pending_next ()
+{
+    std::shared_ptr<job_t> job_p = nullptr;
+    if (!m_iter_valid)
+        goto ret;
+    m_pending_iter++;
+    if (m_pending_iter == m_pending.end ()) {
+        m_iter_valid = false;
+    } else {
+        flux_jobid_t id = m_pending_iter->second;
+        m_iter_valid = true;
+        if (detail::queue_policy_base_impl_t::m_jobs.find (id)
+            != detail::queue_policy_base_impl_t::m_jobs.end ())
+            job_p = detail::queue_policy_base_impl_t::m_jobs[id];
+    }
+ret:
+    return job_p;
+}
+
 std::shared_ptr<job_t> queue_policy_base_t::alloced_pop ()
 {
     return detail::queue_policy_base_impl_t::alloced_pop ();

@@ -121,6 +121,7 @@ protected:
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
     std::shared_ptr<job_t> complete_pop ();
+    std::shared_ptr<job_t> reserved_pop ();
     std::map<std::vector<double>, flux_jobid_t>::iterator to_running (
         std::map<std::vector<double>,
                  flux_jobid_t>::iterator pending_iter,
@@ -292,6 +293,18 @@ public:
      */
     std::shared_ptr<job_t> pending_pop ();
 
+    /* Query the first job from the pending job queue.
+     * \return           a shared pointer pointing to a job_t object
+     *                   on success; nullptr when the queue is empty.
+     */
+    std::shared_ptr<job_t> pending_begin ();
+
+    /* Query the next job from the pending job queue.
+     * \return           a shared pointer pointing to a job_t object
+     *                   on success; nullptr when the queue is empty.
+     */
+    std::shared_ptr<job_t> pending_next ();
+
     /*! Pop the first job from the alloced job queue. The popped
      *  job still remains in the queue policy layer (i.e., in the
      *  internal running job queue).
@@ -319,6 +332,9 @@ private:
                     std::unordered_map<std::string, std::string> &p_map);
     int set_param (std::string &kv,
                    std::unordered_map<std::string, std::string> &p_map);
+
+    std::map<std::vector<double>, flux_jobid_t>::iterator m_pending_iter;
+    bool m_iter_valid = false;
 };
 
 } // namespace Flux::queue_manager
