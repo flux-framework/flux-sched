@@ -71,6 +71,7 @@ queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
 
 
 {
+    int64_t at = job->schedule.at;
     if (reapi_type::match_allocate (h, true, job->jobspec, job->id,
                                     job->schedule.reserved, job->schedule.R,
                                     job->schedule.at, job->schedule.ov) == 0) {
@@ -79,6 +80,7 @@ queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
             // High-priority job has been reserved, continue
             m_reserved.insert (std::pair<uint64_t, flux_jobid_t> (m_oq_cnt++,
                                                                   job->id));
+	    job->schedule.old_at = at;
             m_reservation_cnt++;
             iter++;
         } else {
