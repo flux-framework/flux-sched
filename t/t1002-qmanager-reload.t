@@ -12,7 +12,6 @@ skip_all_unless_have jq
 
 test_under_flux 1
 
-exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
 submit_jobs()   {
     local id
     for i in `seq 1 $2`
@@ -23,7 +22,7 @@ submit_jobs()   {
 }
 
 test_expect_success 'qmanager: generate jobspec for a simple test job' '
-    flux jobspec srun -n1 -t 100 hostname | exec_test > basic.json
+    flux mini submit -n 1 -t 100 --dry-run sleep 10 > basic.json
 '
 
 test_expect_success 'qmanager: hwloc reload works' '

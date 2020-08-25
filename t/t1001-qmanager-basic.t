@@ -21,7 +21,7 @@ exec_testattr() {
 }
 
 test_expect_success 'qmanager: generate jobspec for a simple test job' '
-    flux jobspec srun -n1 -t 0:1 hostname | exec_test > basic.json
+    flux mini submit -n1 -t 100 --dry-run hostname > basic.json
 '
 
 test_expect_success 'qmanager: hwloc reload works' '
@@ -31,7 +31,7 @@ test_expect_success 'qmanager: hwloc reload works' '
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module remove sched-simple &&
     flux module load sched-fluxion-resource prune-filters=ALL:core \
-subsystems=containment policy=low &&
+subsystems=containment policy=low load-allowlist=node,core &&
     load_qmanager
 '
 
@@ -44,7 +44,7 @@ test_expect_success 'qmanager: basic job runs in simulated mode' '
 '
 
 test_expect_success 'qmanager: canceling job during execution works' '
-    jobid=$(flux jobspec srun -t 1 hostname | \
+    jobid=$(flux jobspec srun -t 100 hostname | \
         exec_test | flux job submit) &&
     flux job wait-event -vt 10 ${jobid} start &&
     flux job cancel ${jobid} &&
