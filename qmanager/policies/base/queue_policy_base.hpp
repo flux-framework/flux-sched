@@ -65,6 +65,7 @@ struct schedule_t {
     std::string R = "";
     bool reserved = false;
     int64_t at = 0;
+    int64_t old_at = 0;
     double ov = 0.0f;
 };
 
