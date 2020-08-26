@@ -50,9 +50,16 @@ test_expect_success 'recovery: cancel one running job without fluxion' '
     flux job wait-event -t 10 ${jobid1} release
 '
 
+# Because by the time fluxion module loads return, qmanager can
+# still send RPCs to fluxion resource, the flux ion-resource info
+# JOBID may fail. JOBID has not been re-requested by qmanager.
+# flux module stats commands ensure a proper sync between
+# flux ion-resource info and the rest of fluxion module loads
 test_expect_success 'recovery: works when both modules restart (rv1)' '
     reload_resource load-allowlist=node,core,gpu match-format=rv1 &&
     reload_qmanager &&
+    flux module stats sched-fluxion-qmanager &&
+    flux module stats sched-fluxion-resource &&
     test_must_fail flux ion-resource info ${jobid1} &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
@@ -79,12 +86,15 @@ test_expect_success 'recovery: works when only qmanager restarts (rv1)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
     flux job cancel ${jobid3} &&
+    flux job wait-event -t 10 ${jobid3} clean &&
     flux job wait-event -t 10 ${jobid7} start
 '
 
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
     reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
     reload_qmanager &&
+    flux module stats sched-fluxion-qmanager &&
+    flux module stats sched-fluxion-resource &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid6} | grep "ALLOCATED" &&
@@ -93,6 +103,7 @@ test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
 
 test_expect_success 'recovery: only qmanager restarts (rv1->rv1_nosched)' '
     reload_qmanager &&
+    flux module stats sched-fluxion-qmanager &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid6} | grep "ALLOCATED" &&
@@ -104,12 +115,17 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job cancel ${jobid5} &&
     flux job cancel ${jobid6} &&
     flux job cancel ${jobid7} &&
-    flux job wait-event -t 10 ${jobid7} release
+    flux job wait-event -t 10 ${jobid4} clean &&
+    flux job wait-event -t 10 ${jobid5} clean &&
+    flux job wait-event -t 10 ${jobid6} clean &&
+    flux job wait-event -t 10 ${jobid7} clean
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
     reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
-    reload_qmanager
+    reload_qmanager &&
+    flux module stats sched-fluxion-qmanager &&
+    flux module stats sched-fluxion-resource
 '
 
 test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '
@@ -124,6 +140,7 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '
 
 test_expect_success 'recovery: qmanager restarts (rv1_nosched->rv1_nosched)' '
     reload_qmanager &&
+    flux module stats sched-fluxion-qmanager &&
     flux ion-resource info ${jobid1} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
@@ -134,7 +151,7 @@ test_expect_success 'recovery: qmanager restarts (rv1_nosched->rv1_nosched)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1_nosched)' '
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 10 ${jobid5} start
+    flux job wait-event -t 60 ${jobid5} start
 '
 
 test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
@@ -142,7 +159,10 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job cancel ${jobid3} &&
     flux job cancel ${jobid4} &&
     flux job cancel ${jobid5} &&
-    flux job wait-event -t 10 ${jobid5} release
+    flux job wait-event -t 10 ${jobid2} clean &&
+    flux job wait-event -t 10 ${jobid3} clean &&
+    flux job wait-event -t 10 ${jobid4} clean &&
+    flux job wait-event -t 10 ${jobid5} clean
 '
 
 test_expect_success 'removing resource and qmanager modules' '

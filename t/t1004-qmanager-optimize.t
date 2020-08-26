@@ -61,12 +61,15 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
     flux job wait-event -t 10 ${jobid8} start &&
     test $(flux job list --states=active | wc -l) -eq 9 &&
     test $(flux job list --states=running | wc -l) -eq 2 &&
-    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
-    flux job wait-event -t 10 ${jobid11} clean
+    active_jobs=$(flux job list --states=active | jq .id) &&
+    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
 test_expect_success 'qmanager: loading with hybrid+queue-depth=5' '
-    remove_qmanager &&
+    remove_resource &&
+    load_resource prune-filters=ALL:core \
+subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=hybrid \
 queue-params=queue-depth=5 policy-params=reservation-depth=3
 '
@@ -87,12 +90,15 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
     flux job wait-event -t 10 ${jobid1} start &&
     test $(flux job list --states=active | wc -l) -eq 11 &&
     test $(flux job list --states=running| wc -l) -eq 1 &&
-    flux job list --states=active | jq .id | xargs -L 1 flux job cancel &&
-    flux job wait-event -t 10 ${jobid11} clean
+    active_jobs=$(flux job list --states=active | jq .id) &&
+    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
 test_expect_success 'qmanager: loading with conservative+queue-depth=5' '
-    remove_qmanager &&
+    remove_resource &&
+    load_resource prune-filters=ALL:core \
+subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=conservative \
 queue-params=queue-depth=5
 '
@@ -113,8 +119,9 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
     flux job wait-event -t 10 ${jobid1} start &&
     test $(flux job list --states=active | wc -l) -eq 11 &&
     test $(flux job list --states=running | wc -l) -eq 1 &&
-    flux job list | jq .id | xargs -L 1 flux job cancel &&
-    flux job wait-event -t 10 ${jobid11} clean
+    active_jobs=$(flux job list --states=active | jq .id) &&
+    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
 test_expect_success 'removing resource and qmanager modules' '
