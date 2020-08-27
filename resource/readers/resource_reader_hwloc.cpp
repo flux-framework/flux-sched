@@ -63,10 +63,11 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (
 {
     // generate cluster root vertex
     const std::string subsys = "containment";
+    const std::map<std::string, std::string> properties;
     vtx_t v = add_new_vertex (g, m, boost::
                               graph_traits<resource_graph_t>::
                               null_vertex (),
-                              0, subsys, "cluster", "cluster", 1);
+                              0, subsys, "cluster", "cluster", properties, 1);
     m.roots.emplace (subsys, v);
     m.v_rt_edges.emplace (subsys, relation_infra_t ());
 
@@ -79,6 +80,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
                                                const std::string &subsys,
                                                const std::string &type,
                                                const std::string &basename,
+                                               const std::map<std::string, std::string> &properties,
                                                int size, int rank)
 {
     vtx_t v = boost::add_vertex (g);
@@ -103,6 +105,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].paths[subsys] = prefix + "/" + g[v].name;
     g[v].idata.member_of[subsys] = "*";
     g[v].status = resource_pool_t::status_t::UP;
+    g[v].properties = properties;
 
     // Indexing for fast look-up
     m.by_path[g[v].paths[subsys]] = v;
@@ -112,16 +115,18 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     return v;
 }
 
-void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
-                                          resource_graph_metadata_t &m,
-                                          const hwloc_topology_t topo,
-                                          const hwloc_obj_t obj,
-                                          const vtx_t parent, int rank)
+int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
+                                         resource_graph_metadata_t &m,
+                                         const hwloc_topology_t topo,
+                                         const hwloc_obj_t obj,
+                                         const vtx_t parent, int rank)
 {
     bool supported_resource = true;
     std::string type, basename;
     int id = obj->logical_index;
+    int rc = 0;
     unsigned int size = 1;
+    std::map<std::string, std::string> properties;
 
     switch(obj->type) {
     case HWLOC_OBJ_MACHINE: {
@@ -226,9 +231,11 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         break;
     }
     case HWLOC_OBJ_OS_DEVICE: {
-        if (obj->attr && obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+        supported_resource = false;
+        if (!obj->attr) {
+            break;
+        } else if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
             if (!in_allowlist ("gpu")) {
-                supported_resource = false;
                 break;
             }
             /* hwloc doesn't provide the logical index only amongst CoProc
@@ -247,8 +254,42 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
             }
             type = "gpu";
             basename = type;
-        } else {
-            supported_resource = false;
+            supported_resource = true;
+        } else if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_BLOCK) {
+            if (!in_allowlist ("storage")) {
+                break;
+            }
+            // Size from hwloc is in kBs (base 10)
+            const char* size_str = hwloc_obj_get_info_by_name (obj, "Size");
+            if (size_str == NULL) {
+                errno = ENOENT;
+                m_err_msg += "Error getting the size of block storage device; ";
+                rc = -1;
+                break;
+            }
+            long int num_bytes = strtol (size_str, NULL, 10);
+            if (num_bytes == 0 || num_bytes == LONG_MIN || num_bytes == LONG_MAX) {
+                // strtol sets errno to ERANGE
+                m_err_msg += "Error parsing the size of block storage device; ";
+                rc = -1;
+                break;
+            }
+            size = num_bytes / 1000000; // kBs -> gBs
+            type = "storage";
+            basename = type;
+            supported_resource = true;
+
+            const char* devID_str = hwloc_obj_get_info_by_name (obj, "LinuxDeviceID");
+            if (devID_str == NULL) {
+                devID_str = "-1";
+            }
+            auto ret = properties.insert (std::pair<std::string, std::string>("LinuxDeviceID", devID_str));
+            if (!ret.second) {
+                errno = EEXIST;
+                m_err_msg += "Error inserting LinuxDeviceID into properties map; ";
+                rc = -1;
+                break;
+            }
         }
         break;
     }
@@ -265,7 +306,8 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     } else {
         const std::string subsys = "containment";
         vtx_t v = add_new_vertex (g, m, parent,
-                                  id, subsys, type, basename, size, rank);
+                                  id, subsys, type, basename,
+                                  properties, size, rank);
         valid_ancestor = v;
         std::string relation = "contains";
         std::string rev_relation = "in";
@@ -283,8 +325,10 @@ void resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
 
     hwloc_obj_t curr_child = NULL;
     while ((curr_child = hwloc_get_next_child (topo, obj, curr_child)) != NULL) {
-      walk_hwloc (g, m, topo, curr_child, valid_ancestor, rank);
+        rc += walk_hwloc (g, m, topo, curr_child, valid_ancestor, rank);
     }
+
+    return rc;
 }
 
 int resource_reader_hwloc_t::unpack_internal (resource_graph_t &g,
@@ -343,7 +387,11 @@ int resource_reader_hwloc_t::unpack_internal (resource_graph_t &g,
     }
 
     hwloc_root = hwloc_get_root_obj (topo);
-    walk_hwloc (g, m, topo, hwloc_root, vtx, rank);
+    if ((rc = walk_hwloc (g, m, topo, hwloc_root, vtx, rank)) < 0) {
+        hwloc_topology_destroy (topo);
+        m_err_msg += "Error hwloc walk: rank " + std::to_string (rank) + "; ";
+        goto done;
+    }
     hwloc_topology_destroy (topo);
     rc = 0;
 

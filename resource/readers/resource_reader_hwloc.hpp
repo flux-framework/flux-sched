@@ -100,10 +100,12 @@ private:
     vtx_t add_new_vertex (resource_graph_t &g, resource_graph_metadata_t &m,
                           const vtx_t &parent, int id,
                           const std::string &subsys, const std::string &type,
-                          const std::string &basename, int size, int rank = -1);
-    void walk_hwloc (resource_graph_t &g, resource_graph_metadata_t &m,
-                     const hwloc_topology_t topo, const hwloc_obj_t obj,
-                     const vtx_t parent, int rank);
+                          const std::string &basename,
+                          const std::map<std::string, std::string> &properties,
+                          int size, int rank = -1);
+    int walk_hwloc (resource_graph_t &g, resource_graph_metadata_t &m,
+                    const hwloc_topology_t topo, const hwloc_obj_t obj,
+                    const vtx_t parent, int rank);
     int unpack_internal (resource_graph_t &g, resource_graph_metadata_t &m,
                          vtx_t &vtx, const std::string &str, int rank = -1);
 };
