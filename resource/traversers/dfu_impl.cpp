@@ -234,26 +234,38 @@ planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, std::vector<uint64_t> &av,
     return planner_multi_new (base_time, duration, &av[0], &tp[0], len);
 }
 
-void dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
+int dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
                        const Resource **slot_resource,
                        const Resource **match_resource)
 {
+    int rc = -1;
+    bool matched = false;
     for (auto &resource : resources) {
         if ((*m_graph)[u].type == resource.type) {
+            // Limitations of DFU traverser: jobspec must not
+            // have same type at same level Please read utilities/README.md
+            if (matched == true)
+                goto ret;
             *match_resource = &resource;
             if (!resource.with.empty ()) {
                 for (auto &c_resource : resource.with)
                     if (c_resource.type == "slot")
                         *slot_resource = &c_resource;
             }
-            // Limitations: jobspec must not have same type at same level
-            // Please read utilities/README.md
-            break;
+            matched = true;
         } else if (resource.type == "slot") {
+            // Limitations of DFU traverser: jobspec must not
+            // have same type at same level Please read utilities/README.md
+            if (matched == true)
+                goto ret;
             *slot_resource = &resource;
-            break;
+            matched = true;
         }
     }
+    rc = 0;
+
+ret:
+    return rc;
 }
 
 bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
@@ -300,7 +312,13 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
     const std::vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
-    match (u, resources, &slot_resources, &match_resources);
+    if (match (u, resources, &slot_resources, &match_resources) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": siblings in jobspec request same resource type ";
+        m_err_msg += ": " + (*m_graph)[u].type + ".\n";
+        spec = match_kind_t::NONE_MATCH;
+        goto done;
+    }
     if ( (slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
@@ -313,6 +331,8 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
         spec = pristine? match_kind_t::PRESTINE_NONE_MATCH
                        : match_kind_t::NONE_MATCH;
     }
+
+done:
     return *ret;
 }
 

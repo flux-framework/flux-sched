@@ -331,7 +331,7 @@ private:
     /*! Test various matching conditions between jobspec and graph
      * including slot match
      */
-    void match (vtx_t u, const std::vector<Jobspec::Resource> &resources,
+    int match (vtx_t u, const std::vector<Jobspec::Resource> &resources,
                 const Jobspec::Resource **slot_resource,
                 const Jobspec::Resource **match_resource);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
