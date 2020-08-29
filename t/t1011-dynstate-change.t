@@ -49,7 +49,8 @@ test_expect_success 'dyn-state: node drain does not kill the job' '
 '
 
 test_expect_success 'dyn-state: killing the job on the drained node works' '
-    flux job cancel ${jobid1}
+    flux job cancel ${jobid1} &&
+    flux job wait-event -t 10 ${jobid1} clean
 '
 
 test_expect_success 'dyn-state: undrain' '
@@ -58,15 +59,16 @@ test_expect_success 'dyn-state: undrain' '
 
 test_expect_success 'dyn-state: the drained node with a job not used' '
     jobid1=$(flux job submit 1N.json) &&
+    flux job wait-event -t 10 ${jobid1} start &&
     rank=$(flux job info ${jobid1} R | jq " .execution.R_lite[0].rank ") &&
     rank=${rank%\"} && rank=${rank#\"} &&
     jobid2=$(flux job submit 1N.json) &&
     jobid3=$(flux job submit 1N.json) &&
     jobid4=$(flux job submit 1N.json) &&
-    flux job wait-event -t 1 ${jobid4} start &&
+    flux job wait-event -t 10 ${jobid4} start &&
     flux resource drain ${rank} &&
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 1 ${jobid1} clean &&
+    flux job wait-event -t 10 ${jobid1} clean &&
     jobid5=$(flux job submit 1N.json) &&
     test_must_fail flux job wait-event -t 1 ${jobid5} start
 '
@@ -76,6 +78,10 @@ test_expect_success 'dyn-state: cancel all jobs' '
     flux job cancel ${jobid3} &&
     flux job cancel ${jobid4} &&
     flux job cancel ${jobid5} &&
+    flux job wait-event -t 10 ${jobid2} clean &&
+    flux job wait-event -t 10 ${jobid3} clean &&
+    flux job wait-event -t 10 ${jobid4} clean &&
+    flux job wait-event -t 10 ${jobid5} clean &&
     flux resource undrain ${rank}
 '
 
@@ -121,12 +127,13 @@ test_expect_success 'dyn-state: a full job skipped for a later job under easy' '
     flux resource drain 3 &&
     jobid1=$(flux job submit basic.json) &&
     jobid2=$(flux job submit 1N.json) &&
-    flux job wait-event -t 1 ${jobid2} start &&
+    flux job wait-event -t 10 ${jobid2} start &&
     flux job cancel ${jobid2} &&
+    flux job wait-event -t 10 ${jobid2} clean &&
     flux resource undrain 3 &&
-    flux job wait-event -t 1 ${jobid1} start &&
+    flux job wait-event -t 10 ${jobid1} start &&
     flux job cancel ${jobid1} &&
-    flux job wait-event -t 1 ${jobid1} clean
+    flux job wait-event -t 10 ${jobid1} clean
 '
 
 test_expect_success 'dyn-state: removing fluxion modules' '

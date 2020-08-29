@@ -1136,7 +1136,6 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
 freemem_out:
     saved_errno = errno;
     json_decref (o);
-    json_decref (graph);
     errno = saved_errno;
 out:
     return rc;
@@ -1182,8 +1181,6 @@ out:
     saved_errno = errno;
     json_decref (o1);
     json_decref (o2);
-    json_decref (rlite1);
-    json_decref (rlite2);
     errno = saved_errno;
     return rc;
 }
