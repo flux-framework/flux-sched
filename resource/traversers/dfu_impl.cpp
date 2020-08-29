@@ -602,6 +602,21 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
         goto done;
     to_parent.set_avail (avail);
     to_parent.set_overall_score (dfu.overall_score ());
+
+    for (auto &resource: resources) {
+        if ((resource.type == (*m_graph)[u].type) &&
+            (!resource.label.empty())) {
+            rc = (*m_graph)[u].idata.ephemeral.insert (m_best_k_cnt,
+                                                       "label",
+                                                       resource.label);
+            if (rc < 0) {
+                m_err_msg += "dom_dfv: inserting label into ephemeral failed.\n";
+                m_err_msg += strerror (errno);
+                m_err_msg += ".\n";
+                goto done;
+            }
+        }
+    }
 done:
     return rc;
 }
@@ -659,12 +674,22 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
         goto done;
     } else if (!result && !nchildren) {
         goto done;
-    } else if ( (rc = w->emit_vtx (level (), *m_graph, u,
+    }
+
+    // Need to clear out any stale data from the ephemeral object before
+    // emitting the vertex, since data could be leftover from previous
+    // traversals where the vertex was matched but not emitted
+    (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_best_k_cnt);
+    if ( (rc = w->emit_vtx (level (), *m_graph, u,
                                    (*m_graph)[u].size, true)) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
         goto done;
     }
+    // Need to clear out all data from the ephemeral object after
+    // emitting the vertex to minimize the amount of stale data
+    (*m_graph)[u].idata.ephemeral.clear ();
+
     rc = nchildren + 1;
 done:
     m_trav_level--;

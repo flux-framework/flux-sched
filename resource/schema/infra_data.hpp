@@ -26,6 +26,7 @@
 #include <map>
 #include <cstdint>
 #include "resource/schema/data_std.hpp"
+#include "resource/schema/ephemeral.hpp"
 #include "resource/planner/planner_multi.h"
 
 namespace Flux {
@@ -57,6 +58,7 @@ struct pool_infra_t : public infra_base_t {
     planner_t *x_checker = NULL;
     std::map<subsystem_t, planner_multi_t *> subplans;
     std::map<subsystem_t, uint64_t> colors;
+    ephemeral_t ephemeral;
 };
 
 class relation_infra_t : public infra_base_t {

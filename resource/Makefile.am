@@ -25,6 +25,7 @@ libresource_la_SOURCES = \
     schema/infra_data.cpp \
     schema/sched_data.cpp \
     schema/color.cpp \
+    schema/ephemeral.cpp \
     traversers/dfu.cpp \
     traversers/dfu_impl.cpp \
     traversers/dfu_impl_update.cpp \
@@ -55,6 +56,7 @@ libresource_la_SOURCES = \
     schema/sched_data.hpp \
     schema/resource_data.hpp \
     schema/color.hpp \
+    schema/ephemeral.hpp \
     traversers/dfu.hpp \
     traversers/dfu_impl.hpp \
     policies/base/dfu_match_cb.hpp \
