@@ -80,7 +80,9 @@ public:
     unsigned int best_k () const;
     unsigned int best_i () const;
     int merge (evals_t &o);
-    void rewind_iter_cur ();
+    void eval_egroups_iter_reset ();
+    std::vector<eval_egroup_t>::iterator eval_egroups_iter_next ();
+    std::vector<eval_egroup_t>::iterator eval_egroups_end ();
 
     template<class compare_op>
     int choose_best_k (unsigned int k, compare_op comp)
@@ -129,10 +131,11 @@ public:
                                o_it, uop);
     }
 
-    std::vector<eval_egroup_t>::iterator iter_cur;
 
 private:
     std::vector<eval_egroup_t> m_eval_egroups;
+    std::vector<eval_egroup_t>::iterator m_iter_cur;
+    bool m_iter_cur_reset = true;
     std::string m_resrc_type;
     int64_t m_cutline = 0;
     unsigned int m_qual_count = 0;

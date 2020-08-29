@@ -195,10 +195,28 @@ int evals_t::merge (evals_t &o)
     return 0;
 }
 
-void evals_t::rewind_iter_cur ()
+void evals_t::eval_egroups_iter_reset ()
 {
-    iter_cur = m_eval_egroups.begin ();
+    m_iter_cur_reset = true;
 }
+
+std::vector<eval_egroup_t>::iterator evals_t::eval_egroups_iter_next ()
+{
+    if (m_iter_cur_reset) {
+        m_iter_cur = m_eval_egroups.begin ();
+        m_iter_cur_reset = false;
+    }
+    else if (m_iter_cur != m_eval_egroups.end ()) {
+        m_iter_cur++;
+    }
+    return m_iter_cur;
+}
+
+std::vector<eval_egroup_t>::iterator evals_t::eval_egroups_end ()
+{
+    return m_eval_egroups.end ();
+}
+
 
 } // Flux::resource_model::detail
 } // Flux::resource_model

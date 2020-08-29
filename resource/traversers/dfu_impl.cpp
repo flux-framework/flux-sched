@@ -499,7 +499,7 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape,
         // constraint check against qualified granules
         fit = (fit > qg)? qg : fit;
         qual_num_slots = (qual_num_slots > fit)? fit : qual_num_slots;
-        dfu_slot.rewind_iter_cur (dom, slot_elem.type);
+        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
     }
     return qual_num_slots;
 }
@@ -512,6 +512,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
     bool x_inout = true;
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
+    std::vector<eval_egroup_t> edg_group_vector;
     const subsystem_t &dom = m_match->dom_subsystem ();
 
     if ( (rc = explore (meta, u, dom, slot_shape, pristine,
@@ -529,21 +530,31 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
             unsigned int count = m_match->calc_count (slot_elem, qc);
             while (j < count) {
-                auto egroup_i = dfu_slot.iter_cur (dom, slot_elem.type);
+                auto egroup_i = dfu_slot.eval_egroups_iter_next (
+                                             dom, slot_elem.type);
+                if (egroup_i == dfu_slot.eval_egroups_end (dom,
+                                                           slot_elem.type)) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": not enough slots.\n";
+                    qual_num_slots = 0;
+                    goto done;
+                }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
                                    (*egroup_i).edges[0].count, 1,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
                 j += (*egroup_i).edges[0].count;
-                dfu_slot.incr_iter_cur (dom, slot_elem.type);
             }
         }
         edg_group.score = score;
         edg_group.count = 1;
         edg_group.exclusive = 1;
-        dfu.add (dom, std::string ("slot"), edg_group);
+        edg_group_vector.push_back (edg_group);
     }
+    for (auto &edg_group : edg_group_vector)
+        dfu.add (dom, std::string ("slot"), edg_group);
+
 done:
     return (qual_num_slots)? 0 : -1;
 }

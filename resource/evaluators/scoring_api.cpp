@@ -133,26 +133,31 @@ int64_t scoring_api_t::set_cutline (const subsystem_t &s, const std::string &r,
     return res_evals->set_cutline (c);
 }
 
-void scoring_api_t::rewind_iter_cur (const subsystem_t &s, const std::string &r)
+
+void scoring_api_t::eval_egroups_iter_reset (const subsystem_t &s,
+                                             const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
-    return res_evals->rewind_iter_cur ();
+    res_evals->eval_egroups_iter_reset ();
 }
 
-std::vector<eval_egroup_t>::iterator scoring_api_t::iter_cur (
-    const subsystem_t &s, const std::string &r)
+std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_iter_next (
+                                                        const subsystem_t &s,
+                                                        const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
-    return res_evals->iter_cur;
+    return res_evals->eval_egroups_iter_next ();
 }
 
-void scoring_api_t::incr_iter_cur (const subsystem_t &s, const std::string &r)
+std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_end (
+                                                        const subsystem_t &s,
+                                                        const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
-    res_evals->iter_cur++;
+    return res_evals->eval_egroups_end ();
 }
 
 int scoring_api_t::add (const subsystem_t &s, const std::string &r,
