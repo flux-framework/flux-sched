@@ -65,6 +65,7 @@ TESTS = \
     t3024-resource-status.t \
     t3025-resource-find.t \
     t3026-resource-node-local-storage.t \
+    t3026-resource-sibling.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \

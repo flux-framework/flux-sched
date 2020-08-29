@@ -1,0 +1,6 @@
+# slot[1]->node[1]->socket[1]->core[1]
+#                            ->core[1]
+#                            ->core[1]
+#
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/sibling/test003.yaml
+quit

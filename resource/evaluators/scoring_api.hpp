@@ -48,10 +48,14 @@ public:
 
     int64_t cutline (const subsystem_t &s, const std::string &r);
     int64_t set_cutline (const subsystem_t &s, const std::string &r, int64_t c);
-    void rewind_iter_cur (const subsystem_t &s, const std::string &r);
-    std::vector<eval_egroup_t>::iterator iter_cur (const subsystem_t &s,
-                                                   const std::string &r);
-    void incr_iter_cur (const subsystem_t &s, const std::string &r);
+
+    void eval_egroups_iter_reset (const subsystem_t &s, const std::string &r);
+    std::vector<eval_egroup_t>::iterator eval_egroups_iter_next (
+                                             const subsystem_t &s,
+                                             const std::string &r);
+    std::vector<eval_egroup_t>::iterator eval_egroups_end (const subsystem_t &s,
+                                                           const std::string &r);
+
     int add (const subsystem_t &s, const std::string &r,
              const eval_egroup_t &eg);
     //! Can throw an out_of_range exception

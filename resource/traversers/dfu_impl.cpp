@@ -234,26 +234,38 @@ planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, std::vector<uint64_t> &av,
     return planner_multi_new (base_time, duration, &av[0], &tp[0], len);
 }
 
-void dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
+int dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
                        const Resource **slot_resource,
                        const Resource **match_resource)
 {
+    int rc = -1;
+    bool matched = false;
     for (auto &resource : resources) {
         if ((*m_graph)[u].type == resource.type) {
+            // Limitations of DFU traverser: jobspec must not
+            // have same type at same level Please read utilities/README.md
+            if (matched == true)
+                goto ret;
             *match_resource = &resource;
             if (!resource.with.empty ()) {
                 for (auto &c_resource : resource.with)
                     if (c_resource.type == "slot")
                         *slot_resource = &c_resource;
             }
-            // Limitations: jobspec must not have same type at same level
-            // Please read utilities/README.md
-            break;
+            matched = true;
         } else if (resource.type == "slot") {
+            // Limitations of DFU traverser: jobspec must not
+            // have same type at same level Please read utilities/README.md
+            if (matched == true)
+                goto ret;
             *slot_resource = &resource;
-            break;
+            matched = true;
         }
     }
+    rc = 0;
+
+ret:
+    return rc;
 }
 
 bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
@@ -300,7 +312,13 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
     const std::vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
-    match (u, resources, &slot_resources, &match_resources);
+    if (match (u, resources, &slot_resources, &match_resources) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": siblings in jobspec request same resource type ";
+        m_err_msg += ": " + (*m_graph)[u].type + ".\n";
+        spec = match_kind_t::NONE_MATCH;
+        goto done;
+    }
     if ( (slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
@@ -313,6 +331,8 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
         spec = pristine? match_kind_t::PRESTINE_NONE_MATCH
                        : match_kind_t::NONE_MATCH;
     }
+
+done:
     return *ret;
 }
 
@@ -479,7 +499,7 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape,
         // constraint check against qualified granules
         fit = (fit > qg)? qg : fit;
         qual_num_slots = (qual_num_slots > fit)? fit : qual_num_slots;
-        dfu_slot.rewind_iter_cur (dom, slot_elem.type);
+        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
     }
     return qual_num_slots;
 }
@@ -492,6 +512,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
     bool x_inout = true;
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
+    std::vector<eval_egroup_t> edg_group_vector;
     const subsystem_t &dom = m_match->dom_subsystem ();
 
     if ( (rc = explore (meta, u, dom, slot_shape, pristine,
@@ -509,21 +530,31 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
             unsigned int count = m_match->calc_count (slot_elem, qc);
             while (j < count) {
-                auto egroup_i = dfu_slot.iter_cur (dom, slot_elem.type);
+                auto egroup_i = dfu_slot.eval_egroups_iter_next (
+                                             dom, slot_elem.type);
+                if (egroup_i == dfu_slot.eval_egroups_end (dom,
+                                                           slot_elem.type)) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": not enough slots.\n";
+                    qual_num_slots = 0;
+                    goto done;
+                }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
                                    (*egroup_i).edges[0].count, 1,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
                 j += (*egroup_i).edges[0].count;
-                dfu_slot.incr_iter_cur (dom, slot_elem.type);
             }
         }
         edg_group.score = score;
         edg_group.count = 1;
         edg_group.exclusive = 1;
-        dfu.add (dom, std::string ("slot"), edg_group);
+        edg_group_vector.push_back (edg_group);
     }
+    for (auto &edg_group : edg_group_vector)
+        dfu.add (dom, std::string ("slot"), edg_group);
+
 done:
     return (qual_num_slots)? 0 : -1;
 }
