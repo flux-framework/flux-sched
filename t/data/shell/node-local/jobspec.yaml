@@ -1,0 +1,36 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: node
+        count: 2
+        with:
+          - type: slot
+            label: default
+            count: 1
+            with:
+              - type: core
+                count: 1
+              - type: storage
+                count: 1562
+                label: node-local-storage
+
+# a comment
+attributes:
+  system:
+    shell:
+      options:
+        verbose: 1
+    duration: 57600
+    data-staging:
+      - test: true
+        label: node-local-storage
+        granularity: node
+        stage-in:
+          file: /usr/src/README
+tasks:
+  - command: [ "hostname" ]
+    slot: default
+    count:
+      per_slot: 1
