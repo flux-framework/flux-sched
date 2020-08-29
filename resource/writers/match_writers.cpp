@@ -449,8 +449,8 @@ int jgf_match_writers_t::map2json (json_t *o,
                 errno = ENOMEM;
                 goto out;
             }
-        }
-	if ((rc = json_object_set_new (o, key, p)) == -1) {
+         }
+        if ((rc = json_object_set_new (o, key, p)) == -1) {
             errno = ENOMEM;
             goto out;
         }
