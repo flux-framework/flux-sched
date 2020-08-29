@@ -1,0 +1,29 @@
+version: 1
+resources:
+  - type: node
+    count: 1
+    with:
+      - type: slot
+        label: default
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: core
+                count: 24
+          - type: socket
+            count: 1
+            with:
+              - type: core
+                count: 24
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: [ "default" ]
+    slot: default
+    count:
+      per_slot: 1
