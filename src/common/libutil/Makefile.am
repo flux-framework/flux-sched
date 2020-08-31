@@ -15,3 +15,5 @@ libutil_la_SOURCES = \
 	xzmalloc.h \
 	oom.h \
 	shortjansson.h
+
+noinst_HEADERS = json.hpp
