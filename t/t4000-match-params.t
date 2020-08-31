@@ -21,6 +21,7 @@ ne_xml="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/exclusive/ne/0.xml"
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 #
@@ -57,7 +58,6 @@ load-format=hwloc prune-filters=ALL:core
 
 test_expect_success 'loading resource module with no option works' '
     unload_resource &&
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core
 '
 

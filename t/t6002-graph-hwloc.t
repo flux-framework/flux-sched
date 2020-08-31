@@ -18,6 +18,7 @@ verify() {
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
 test_expect_success 'qmanager: hwloc reload works' '
@@ -25,7 +26,6 @@ test_expect_success 'qmanager: hwloc reload works' '
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core subsystems=containment policy=low
 '
 

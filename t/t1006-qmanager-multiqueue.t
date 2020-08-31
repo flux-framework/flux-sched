@@ -6,6 +6,7 @@ ORIG_HOME=${HOME}
 
 . `dirname $0`/sharness.sh
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 #
@@ -24,7 +25,6 @@ get_queue() {
 }
 
 test_expect_success 'qmanager: loading qmanager with multiple queues' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
     load_qmanager "queues=all batch debug"
@@ -132,6 +132,10 @@ test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
     flux module reload -f sched-fluxion-qmanager queues="queue1 queue2 queue3" \
 queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
     flux dmesg | grep "Unknown queuing policy"
+'
+
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
 '
 
 test_expect_success 'removing resource and qmanager modules' '

@@ -15,6 +15,7 @@ HOME=${ORIG_HOME}
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
 unset FLUXION_RESOURCE_RC_NOOP
 unset FLUXION_QMANAGER_RC_NOOP
+export FLUX_SCHED_MODULE=none
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then

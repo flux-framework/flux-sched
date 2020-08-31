@@ -11,6 +11,7 @@ skip_all_unless_have jq
 
 export FLUX_CONF_DIR=$(pwd)
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
 test_expect_success 'exclusion: generate jobspecs' '
@@ -18,15 +19,16 @@ test_expect_success 'exclusion: generate jobspecs' '
     flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h sleep 3600 > 1N.json
 '
 
-test_expect_success 'exclusion: reloading resource with a config file' '
+test_expect_success 'exclusion: load config with resource exclusions' '
     cat >resource.toml <<-EOF &&
 	[resource]
 	exclude = "0-3"
 EOF
-    flux hwloc reload ${excl_4N4B} &&
-    flux module remove sched-simple &&
-    flux config reload &&
-    flux module reload resource
+    flux config reload
+'
+
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'exclusion: loading fluxion modules works' '
@@ -74,15 +76,13 @@ test_expect_success 'exclusion: cancel the running job' '
     flux job wait-event -t 10 ${jobid3} release
 '
 
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
+'
+
 test_expect_success 'exclusion: removing fluxion modules' '
     remove_qmanager &&
     remove_resource
-'
-
-# Reload the core scheduler so that rc3 won't hang waiting for
-# queue to become idle after jobs are canceled.
-test_expect_success 'exclusion: load sched-simple module' '
-    flux module load sched-simple
 '
 
 test_done

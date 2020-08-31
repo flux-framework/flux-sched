@@ -10,6 +10,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
@@ -28,12 +29,11 @@ test_expect_success 'qmanager: generate jobspecs of varying requirements' '
     flux jobspec srun -n2 -t 59 hostname | exec_test > C02.T3600.json #11
 '
 
-test_expect_success 'qmanager: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'qmanager: loading with easy+queue-depth=5' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=easy \
@@ -122,6 +122,10 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
     active_jobs=$(flux job list --states=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
+'
+
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
 '
 
 test_expect_success 'removing resource and qmanager modules' '
