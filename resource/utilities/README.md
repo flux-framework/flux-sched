@@ -29,7 +29,7 @@ Once the graph data store is populated, an interactive command-line
 interface (cli) session is started for the user:
 
 ```
-% resource-query --grug=conf/default --match-subsystems=CA --match-policy=high
+% resource-query -L conf/default -F pretty_simple --match-subsystems=CA --match-policy=high
 % INFO: Loading a matcher: CA
 resource-query>
 ```
@@ -44,34 +44,30 @@ resource state.  By contrast, `allocate` will simply not allocate
 resources if matching resources are not found in the current resource state.
 
 The following command allocated the best-matching resources for the
-specification contained in `test.jobspec`:
+specification contained in `test.yaml`:
 
 
 ```
-resource-query> match allocate test.jobspec
-      ---------------core31[1:x]
-      ---------------core32[1:x]
-      ---------------core33[1:x]
-      ---------------core34[1:x]
-      ---------------core35[1:x]
-      ---------------gpu0[1:x]
-      ---------------memory1[2:x]
-      ---------------memory2[2:x]
-      ---------------memory3[2:x]
-      ------------socket0[1:x]
-      ---------------core67[1:x]
-      ---------------core68[1:x]
-      ---------------core69[1:x]
-      ---------------core70[1:x]
-      ---------------core71[1:x]
-      ---------------gpu1[1:x]
-      ---------------memory5[2:x]
-      ---------------memory6[2:x]
-      ---------------memory7[2:x]
-      ------------socket1[1:x]
-      ---------node1[1:s]
-      ------rack0[1:s]
-      ---tiny0[1:s]
+resource-query> match allocate test.yaml
+      ---medium-coarse-cluster0[1:shared]
+      ------rack3[1:shared]
+      ---------node71[1:shared]
+      ------------socket1[1:exclusive]
+      ---------------memory0[8:exclusive]
+      ---------------gpu1[1:exclusive]
+      ---------------core15[1:exclusive]
+      ---------------core14[1:exclusive]
+      ---------------core13[1:exclusive]
+      ---------------core12[1:exclusive]
+      ---------------core11[1:exclusive]
+      ------------socket0[1:exclusive]
+      ---------------memory0[8:exclusive]
+      ---------------gpu0[1:exclusive]
+      ---------------core7[1:exclusive]
+      ---------------core6[1:exclusive]
+      ---------------core5[1:exclusive]
+      ---------------core4[1:exclusive]
+      ---------------core3[1:exclusive]
 INFO: =============================
 INFO: JOBID=1
 INFO: RESOURCES=ALLOCATED
@@ -79,13 +75,13 @@ INFO: SCHEDULED AT=Now
 INFO: =============================
 ```
 
-The output format of an allocation or reservation is a reversed tree shape
-where the root resource vertex appears at the last line. Each resource is
-annotated with the allocated or reserved count and exclusive (x) vs.
-shared (s) access modes.
+The output format of an allocation or reservation is a tree shape
+where the root resource vertex appears in the beginning. Each resource is
+annotated with the allocated or reserved count and exclusive vs.
+shared access modes.
 
-For example, `core31[1:x]` indicates that the 1 unit of `core31` has been
-exclusively allocated. Similarly, `memory1[2:x]` shows that the 2 units
+For example, `core15[1:exclusive]` indicates that the 1 unit of `core15` has been
+exclusively allocated. Similarly, `memory0[8:exclusive]` shows that the 8 units
 (i.e., GB) of `memory1` have been exclusive allocated.
 
 Please note that the granularity of exclusive allocation/reservation is
@@ -94,45 +90,40 @@ fined-grained exclusive memory allocation, for instance, you should first
 model your memory pool vertices with smaller memory unit (e.g., 256MB).
 
 By contrast, the following command reserved the best-matching resources
-for `test.jobspec`. Notice the output difference: `SCHEDULED AT=Now`
+for `test.yaml`. Notice the output difference: `SCHEDULED AT=Now`
 vs. `SCHEDULED AT=3600`
 
 ```
-resource-query> match allocate_orelse_reserve test.jobspec
-      ---------------core31[1:x]
-      ---------------core32[1:x]
-      ---------------core33[1:x]
-      ---------------core34[1:x]
-      ---------------core35[1:x]
-      ---------------gpu0[1:x]
-      ---------------memory1[2:x]
-      ---------------memory2[2:x]
-      ---------------memory3[2:x]
-      ------------socket0[1:x]
-      ---------------core67[1:x]
-      ---------------core68[1:x]
-      ---------------core69[1:x]
-      ---------------core70[1:x]
-      ---------------core71[1:x]
-      ---------------gpu1[1:x]
-      ---------------memory5[2:x]
-      ---------------memory6[2:x]
-      ---------------memory7[2:x]
-      ------------socket1[1:x]
-      ---------node1[1:s]
-      ------rack0[1:s]
-      ---tiny0[1:s]
+resource-query> match allocate_orelse_reserve test.yaml
+      ---medium-coarse-cluster0[1:shared]
+      ------rack3[1:shared]
+      ---------node71[1:shared]
+      ------------socket1[1:exclusive]
+      ---------------memory0[8:exclusive]
+      ---------------gpu1[1:exclusive]
+      ---------------core15[1:exclusive]
+      ---------------core14[1:exclusive]
+      ---------------core13[1:exclusive]
+      ---------------core12[1:exclusive]
+      ---------------core11[1:exclusive]
+      ------------socket0[1:exclusive]
+      ---------------memory0[8:exclusive]
+      ---------------gpu0[1:exclusive]
+      ---------------core7[1:exclusive]
+      ---------------core6[1:exclusive]
+      ---------------core5[1:exclusive]
+      ---------------core4[1:exclusive]
+      ---------------core3[1:exclusive]
 INFO: =============================
-INFO: JOBID=3
+INFO: JOBID=73
 INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=3600
 INFO: =============================
-```
 
-`test.jobspec` used in the above examples are the following:
+`test.yaml` used in the above examples are the following:
 
 ```yaml
-version: 1
+version: 9999
 resources:
   - type: node
     count: 1
@@ -155,7 +146,7 @@ attributes:
   system:
     duration: 3600
 tasks:
-  - command: app
+  - command: [ "app" ]
     slot: default
     count:
       per_slot: 1
@@ -545,7 +536,7 @@ graph data used by `resource-query` is the following,
 then, the next fully hierarchically specifies the resource request:
 
 ```yaml
-version: 1
+version: 9999
 resources:
     - type: cluster
       count: 1
@@ -572,7 +563,7 @@ By contrast, the following partially hierarchically specifies the resource
 shape, as it omits from the `cluster` and `rack` levels.
 
 ```yaml
-version: 1
+version: 9999
 resources:
   - type: node
     count: 1
@@ -612,7 +603,7 @@ nodes that can satisfy either type of node requirements: one with more cores
 and burst buffers (bb) and the other fewer cores with no advanced features.
 
 ```yaml
-version: 1
+version: 9999
 resources:
   - type: cluster
     count: 1
@@ -666,6 +657,8 @@ underlying resource model labels the type of the rack with the beefy compute
 nodes as `rack` and the other as `birack`.
 
 ```yaml
+version: 9999
+resources:
   - type: cluster
     count: 1
     with:
