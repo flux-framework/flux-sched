@@ -392,9 +392,9 @@ Jobspec::Jobspec(const YAML::Node &top)
                                "\"version\" must be an unsigned integer");
         }
         version = top["version"].as<unsigned int>();
-        if (version != 1) {
+        if (version < 1 || version > 9999) {
             throw parse_error (top["version"],
-                               "Only jobspec \"version\" 1 is supported");
+                      "Only jobspec \"version\" 1-9999 is supported");
         }
 
         /* Import attributes mappings */

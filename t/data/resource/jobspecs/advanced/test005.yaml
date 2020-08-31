@@ -1,4 +1,4 @@
-version: 1
+version: 9999
 resources:
   - type: cpu_group
     count: 1
