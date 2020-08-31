@@ -1,3 +1,23 @@
+flux-sched version 0.11.0 - 2020-08-31
+--------------------------------------
+
+Note: Fluxion can now annotate its jobs with their
+start-time estimate and queue info (to be displayed by `flux-jobs`).
+
+### Fixes
+ * Handle invalid sibling requests in jobspecs more gracefully (#737)
+ * Fix various errors detected when tests are run under valgrind (#734)
+ * fluxion-resource: check return value of `find_first_not_of` (#715)
+
+### Features
+ * Add support for job annotation including its start-time estimate (#735)
+ * Add support for node-local storage to hwloc reader (#714)
+ * flux module load returns early for staggered system-instance bring-up (#719)
+
+### Cleanup
+ * Update for non-integer jobid encodings (#718)
+ * Use version 9999 for test jobspecs (#739)
+
 flux-sched version 0.10.0 - 2020-07-29
 --------------------------------------
 
