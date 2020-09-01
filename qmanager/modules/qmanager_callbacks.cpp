@@ -69,7 +69,10 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
         while ( (job = queue->alloced_pop ()) != nullptr) {
             if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
                                                       job->schedule.R.c_str (),
-                                                      NULL) < 0) {
+                                                      "{ s:{s:s s:f} }",
+                                                      "sched",
+                                                          "queue", queue_name.c_str (),
+                                                          "t_estimate", 0.0) < 0) {
                 flux_log_error (h, "%s: schedutil_alloc_respond_pack (queue=%s)",
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
@@ -89,6 +92,22 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
             }
             flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", note.c_str (),
                      static_cast<intmax_t> (job->id), queue_name.c_str ());
+        }
+        for (job = queue->pending_begin (); job != nullptr;
+             job = queue->pending_next ()) {
+            // if old_at == at, then no reason to send this annotation again.
+            if (job->schedule.at == job->schedule.old_at)
+                continue;
+            if (schedutil_alloc_respond_annotate_pack (
+                    schedutil, job->msg,
+                    "{ s:{s:s s:f} }",
+                    "sched",
+                        "queue", queue_name.c_str (),
+                        "t_estimate", static_cast<double> (job->schedule.at))) {
+                flux_log_error (h, "%s: schedutil_alloc_respond_annotate_pack",
+                                __FUNCTION__);
+                goto out;
+            }
         }
     }
     rc = 0;
