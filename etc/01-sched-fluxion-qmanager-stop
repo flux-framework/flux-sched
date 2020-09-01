@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+test $(flux getattr rank) -eq 0 || exit 0
+
 if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
     flux module remove -f sched-fluxion-qmanager
 fi
