@@ -18,6 +18,8 @@
 # We now use "flux reload -f resource" so that when these failing tests
 # load it via FLUX_RC_EXTRA, the in-tree version can be loaded.
 
+test $(flux getattr rank) -eq 0 || exit 0
+
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
     # Unloading sched-simple as sched-fluxion-resource requires resource.acquire
     # that is exclusively used by it.

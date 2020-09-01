@@ -20,6 +20,8 @@
 # when these failing tests load it via FLUX_RC_EXTRA,
 # the in-tree version can be loaded.
 
+test $(flux getattr rank) -eq 0 || exit 0
+
 if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
     flux module remove -f sched-simple
     flux module reload -f sched-fluxion-qmanager ${FLUXION_QMANAGER_OPTIONS}
