@@ -75,7 +75,7 @@ test_expect_success 'annotation: cancel all active jobs 1' '
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
-test_expect_failure 'annotation: flux-jobs fail when some jobs miss t_est' '
+test_expect_failure FLUXCORESKIP 'annotation: flux-jobs fail when some jobs miss t_est' '
     jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
     jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
     jobid3=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
