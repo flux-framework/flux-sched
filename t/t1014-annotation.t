@@ -28,7 +28,7 @@ validate_sched_annotation(){
     test "\"${queue_name}\"" = "${queue}" &&
     if test x"${start_time_is_zero}" = x"TRUE";
     then
-        test "${t_est}" = "0"
+        test "${t_est}" = "null"
     else
         test "${t_est}" != "0"
     fi
