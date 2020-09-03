@@ -66,27 +66,11 @@ test_expect_success 'annotation: works with EASY policy' '
     nonexistent_annotation ${jobid3} &&
     nonexistent_annotation ${jobid4} &&
     validate_sched_annotation ${jobid5} default TRUE &&
-    print_queue
-'
-
-test_expect_success 'annotation: cancel all active jobs 1' '
-    active_jobs=$(flux job list --state=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
-    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
-'
-
-test_expect_failure FLUXCORESKIP 'annotation: flux-jobs fail when some jobs miss t_est' '
-    jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
-    jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid3=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
-    jobid4=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
-    jobid5=$(flux mini submit -n 2 -t 180 sleep 100) &&
-
-    flux job wait-event -t 10 ${jobid5} start &&
+    print_queue &&
     print_t_estimate
 '
 
-test_expect_success 'annotation: cancel all active jobs 2' '
+test_expect_success 'annotation: cancel all active jobs 1' '
     active_jobs=$(flux job list --state=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
@@ -114,7 +98,7 @@ test_expect_success 'annotation: works with HYBRID policy' '
     validate_sched_annotation ${jobid5} default TRUE
 '
 
-test_expect_success 'annotation: cancel all active jobs 3' '
+test_expect_success 'annotation: cancel all active jobs 2' '
     active_jobs=$(flux job list --state=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
@@ -142,7 +126,7 @@ test_expect_success 'annotation: works with CONSERVATIVE policy' '
     validate_sched_annotation ${jobid5} default TRUE
 '
 
-test_expect_success 'annotation: cancel all active jobs 4' '
+test_expect_success 'annotation: cancel all active jobs 3' '
     active_jobs=$(flux job list --state=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
