@@ -121,3 +121,22 @@ remove_qmanager () {
 remove_resource () {
     flux module remove sched-fluxion-resource "$@"
 }
+
+# Usage: load_test_resources hwloc-dir
+#   where hwloc-dir contains <rank>.xml files
+load_test_resources () {
+    flux kvs get --waitcreate resource.hwloc.by_rank &&
+        flux module remove resource &&
+        flux kvs unlink -R resource
+        flux hwloc reload $1 &&
+        flux kvs eventlog append resource.eventlog \
+            hwloc-discover-finish "{\"loaded\":true}" &&
+        flux module load resource
+}
+
+# N.B. this assumes that a scheduler is loaded
+cleanup_active_jobs () {
+    flux queue stop &&
+        flux job cancelall -f &&
+        flux queue idle
+}
