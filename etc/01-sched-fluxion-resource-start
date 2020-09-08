@@ -21,9 +21,6 @@
 test $(flux getattr rank) -eq 0 || exit 0
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    # Unloading sched-simple as sched-fluxion-resource requires resource.acquire
-    # that is exclusively used by it.
-    flux module remove -f sched-simple
     FLUXION_RESOURCE_OPTIONS=${FLUXION_RESOURCE_OPTIONS:-"load-allowlist=node,core,gpu"}
     flux module reload -f sched-fluxion-resource ${FLUXION_RESOURCE_OPTIONS}
 fi

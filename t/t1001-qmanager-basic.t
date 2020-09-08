@@ -10,6 +10,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 job_kvsdir()    { flux job id --to=kvs $1; }
@@ -24,12 +25,11 @@ test_expect_success 'qmanager: generate jobspec for a simple test job' '
     flux mini submit -n1 -t 100 --dry-run hostname > basic.json
 '
 
-test_expect_success 'qmanager: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
-    flux module remove sched-simple &&
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=node,core &&
     load_qmanager
@@ -85,6 +85,10 @@ test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
         exec_test | flux job submit) &&
     flux job wait-event -t 10 ${jobid} clean &&
     flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"
+'
+
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
 '
 
 test_expect_success 'removing resource and qmanager modules' '

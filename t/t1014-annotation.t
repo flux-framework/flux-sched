@@ -10,6 +10,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 nonexistent_annotation(){
@@ -42,12 +43,11 @@ print_t_estimate() {
     flux jobs -o '{sched.t_estimate!D:>10h}'
 }
 
-test_expect_success 'annotation: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=easy)' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=easy
@@ -156,6 +156,10 @@ test_expect_success 'annotation: works with FCFS policy' '
     active_jobs=$(flux job list --state=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
+'
+
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
 '
 
 test_expect_success 'removing resource and qmanager modules' '

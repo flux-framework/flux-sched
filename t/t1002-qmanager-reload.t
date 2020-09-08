@@ -10,6 +10,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 submit_jobs()   {
@@ -25,15 +26,11 @@ test_expect_success 'qmanager: generate jobspec for a simple test job' '
     flux mini submit -n 1 -t 100 --dry-run sleep 10 > basic.json
 '
 
-test_expect_success 'qmanager: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B} &&
-    flux module unload sched-simple &&
-    flux module reload resource &&
-    flux module load sched-simple
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=node,socket,core,gpu &&
     load_qmanager
@@ -71,15 +68,13 @@ test_expect_success 'qmanager: canceling a pending job works' '
     flux job wait-event -t 10 ${jobid3} exception
 '
 
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
+'
+
 test_expect_success 'removing resource and qmanager modules' '
     remove_qmanager &&
     remove_resource
-'
-
-# Reload the core scheduler so that rc3 won't hang waiting for
-# queue to become idle after jobs are canceled.
-test_expect_success 'load sched-simple module' '
-    flux module load sched-simple
 '
 
 test_done

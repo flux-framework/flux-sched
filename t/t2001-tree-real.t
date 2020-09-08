@@ -12,6 +12,7 @@ ORIG_HOME=${HOME}
 #
 HOME=${ORIG_HOME}
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
@@ -20,7 +21,6 @@ if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
 fi
 
 test_expect_success 'flux-tree: prep for testing in real mode works' '
-    flux module remove sched-simple &&
     load_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=node,core,gpu &&
     load_qmanager
@@ -118,6 +118,10 @@ test_expect_success 'flux-tree: rundir is propagated to nest instances' '
 test_expect_success 'flux-tree: works with quoted jobscript argument' '
     flux tree -T 1 -N 1 -c 1 -- bash -c "touch touch-me" &&
     test -f touch-me
+'
+
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
 '
 
 test_expect_success 'flux-tree: removing qmanager/resource works' '

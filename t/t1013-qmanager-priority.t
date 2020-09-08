@@ -10,12 +10,11 @@ excl_1N1B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 
 skip_all_unless_have jq
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
-test_expect_success 'priority: hwloc reload works' '
-    flux hwloc reload ${excl_1N1B} &&
-    flux module remove sched-simple &&
-    flux module reload resource
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_1N1B}
 '
 
 test_expect_success 'priority: loading fluxion modules works' '
@@ -49,15 +48,13 @@ test_expect_success 'priority: cancel all jobs' '
     flux job wait-event -t 10 ${jobid3} release
 '
 
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
+'
+
 test_expect_success 'priority: removing fluxion modules' '
     remove_qmanager &&
     remove_resource
-'
-
-# Reload the core scheduler so that rc3 won't hang waiting for
-# queue to become idle after jobs are canceled.
-test_expect_success 'priority: load sched-simple module' '
-    flux module load sched-simple
 '
 
 test_done

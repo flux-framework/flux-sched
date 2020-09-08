@@ -48,6 +48,7 @@ exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
 #
@@ -93,7 +94,6 @@ test_expect_success 'resource-query works with allowlist' '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
-    flux module remove sched-simple &&
     load_resource load-file=${hwloc_4core}
 '
 

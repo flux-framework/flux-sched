@@ -23,6 +23,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 test_expect_success 'update: generate jobspec for a simple test job' '
@@ -34,7 +35,6 @@ test_expect_success 'update: hwloc reload works' '
 '
 
 test_expect_success 'update: loading sched-fluxion-resource works' '
-    flux module remove sched-simple &&
     load_resource load-allowlist=node,core,gpu match-format=rv1
 '
 

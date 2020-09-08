@@ -8,6 +8,7 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 check_requeue() {
@@ -31,13 +32,11 @@ test_expect_success 'recovery: generate test jobspecs' '
 --setattr system.queue=debug sleep 3600 > basic.debug.json
 '
 
-test_expect_success 'recovery: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'recovery: loading flux-sched modules with two queues' '
-    flux module remove sched-simple &&
-    flux module reload -f resource &&
     load_resource load-allowlist=node,core,gpu match-format=rv1 &&
     load_qmanager "queues=batch debug"
 '
@@ -76,15 +75,13 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
     flux job wait-event -t 10 ${jobid4} release
 '
 
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
+'
+
 test_expect_success 'removing resource and qmanager modules' '
     remove_qmanager &&
     remove_resource
-'
-
-# Reload the core scheduler so that rc3 won't hang waiting for
-# queue to become idle after jobs are canceled.
-test_expect_success 'load sched-simple module' '
-    flux module load sched-simple
 '
 
 test_done

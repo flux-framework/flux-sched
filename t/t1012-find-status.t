@@ -15,6 +15,7 @@ remove_times() {
     cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration)'
 }
 
+export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
 test_expect_success 'find/status: generate jobspecs' '
@@ -34,10 +35,8 @@ validate_list_row() {
     test ${nnodes} = ${n} && test ${ncores} = ${c} && test ${ngpus} = ${g}
 }
 
-test_expect_success 'find/status: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B} &&
-    flux module remove sched-simple &&
-    flux module reload resource
+test_expect_success 'load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'find/status: loading fluxion modules works' '
@@ -130,15 +129,13 @@ test_expect_success 'find/status: cancel jobs' '
     flux job wait-event -t 10 ${jobid2} clean
 '
 
+test_expect_success 'cleanup active jobs' '
+    cleanup_active_jobs
+'
+
 test_expect_success 'find/status: removing fluxion modules' '
     remove_qmanager &&
     remove_resource
-'
-
-# Reload the core scheduler so that rc3 won't hang waiting for
-# queue to become idle after jobs are canceled.
-test_expect_success 'find/status: load sched-simple module' '
-    flux module load sched-simple
 '
 
 test_done
