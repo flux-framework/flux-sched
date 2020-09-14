@@ -30,8 +30,8 @@ test_expect_success 'update: generate jobspec for a simple test job' '
     flux mini run --dry-run -N 1 -n 1 -t 1h hostname > basic.json
 '
 
-test_expect_success 'update: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'update: load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'update: loading sched-fluxion-resource works' '
