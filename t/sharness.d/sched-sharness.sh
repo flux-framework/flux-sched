@@ -131,7 +131,7 @@ load_test_resources () {
         flux hwloc reload $1 &&
         flux kvs eventlog append resource.eventlog \
             hwloc-discover-finish "{\"loaded\":true}" &&
-        flux module load resource
+        flux module load resource monitor-force-up
 }
 
 # N.B. this assumes that a scheduler is loaded
