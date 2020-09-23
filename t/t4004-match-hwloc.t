@@ -115,8 +115,8 @@ test_expect_success 'removing resource works' '
     remove_resource
 '
 
-test_expect_success 'reloading session/hwloc information with test data' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'load test resources (4N4B)' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'loading resource module with default resource info source' '
@@ -138,11 +138,20 @@ test_expect_success 'match-allocate fails when all resources are allocated' '
     test_expect_code 16 flux ion-resource match allocate ${jobspec_2socket}
 '
 
-test_expect_success 'reloading sierra xml and match allocate' '
-    remove_resource &&
-    flux hwloc reload ${excl_4N4B_sierra2} &&
+test_expect_success 'unload fluxion resource' '
+    remove_resource
+'
+
+test_expect_success 'load test resources (4N4B_sierra2)' '
+    load_test_resources ${excl_4N4B_sierra2}
+'
+
+test_expect_success 'load fluxion resource' '
     load_resource subsystems=containment \
-policy=high load-allowlist=node,socket,core,gpu &&
+        policy=high load-allowlist=node,socket,core,gpu
+'
+
+test_expect_success 'match allocate' '
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&
     flux ion-resource match allocate ${jobspec_1socket_2gpu} &&

@@ -21,8 +21,8 @@ skip_all_unless_have jq
 export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
-test_expect_success 'qmanager: hwloc reload works' '
-    flux hwloc reload ${excl_4N4B}
+test_expect_success 'qmanager: load test resources' '
+    load_test_resources ${excl_4N4B}
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
