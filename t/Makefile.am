@@ -37,6 +37,7 @@ TESTS = \
     t1013-exclusion.t \
     t1013-qmanager-priority.t \
     t1014-annotation.t \
+    t1015-find-format.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
