@@ -1,3 +1,13 @@
+flux-sched version 0.12.0 - 2020-09-30
+--------------------------------------
+
+### Fixes
+
+ * qmanager: remove `t_estimate` when job alloc succeeds (#746)
+ * rc: avoid unloading sched-simple, which is no longer loaded by default (#749)
+ * rc: only load/unload scheduler on rank 0 (#741)
+ * makefile: workaround boost errors under latest compilers (#757)
+
 flux-sched version 0.11.0 - 2020-08-31
 --------------------------------------
 
