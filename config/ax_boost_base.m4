@@ -133,7 +133,7 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
         AC_MSG_CHECKING([for boostlib >= $1 ($WANT_BOOST_VERSION) includes in "$_AX_BOOST_BASE_boost_path/include"])
          AS_IF([test -d "$_AX_BOOST_BASE_boost_path/include" && test -r "$_AX_BOOST_BASE_boost_path/include"],[
            AC_MSG_RESULT([yes])
-           BOOST_CPPFLAGS="-I$_AX_BOOST_BASE_boost_path/include"
+           BOOST_CPPFLAGS="-isystem $_AX_BOOST_BASE_boost_path/include"
            for _AX_BOOST_BASE_boost_path_tmp in $multiarch_libsubdir $libsubdirs; do
                 AC_MSG_CHECKING([for boostlib >= $1 ($WANT_BOOST_VERSION) lib path in "$_AX_BOOST_BASE_boost_path/$_AX_BOOST_BASE_boost_path_tmp"])
                 AS_IF([test -d "$_AX_BOOST_BASE_boost_path/$_AX_BOOST_BASE_boost_path_tmp" && test -r "$_AX_BOOST_BASE_boost_path/$_AX_BOOST_BASE_boost_path_tmp" ],[
@@ -156,7 +156,7 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
                     if ls "$_AX_BOOST_BASE_boost_path_tmp/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
                 done
                 BOOST_LDFLAGS="-L$_AX_BOOST_BASE_boost_path_tmp/$libsubdir"
-                BOOST_CPPFLAGS="-I$_AX_BOOST_BASE_boost_path_tmp/include"
+                BOOST_CPPFLAGS="-isystem $_AX_BOOST_BASE_boost_path_tmp/include"
                 break;
             fi
         done
@@ -207,12 +207,12 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
                         _version=$_version_tmp
                     fi
                     VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                    BOOST_CPPFLAGS="-I$_AX_BOOST_BASE_boost_path/include/boost-$VERSION_UNDERSCORE"
+                    BOOST_CPPFLAGS="-isystem $_AX_BOOST_BASE_boost_path/include/boost-$VERSION_UNDERSCORE"
                 done
                 dnl if nothing found search for layout used in Windows distributions
                 if test -z "$BOOST_CPPFLAGS"; then
                     if test -d "$_AX_BOOST_BASE_boost_path/boost" && test -r "$_AX_BOOST_BASE_boost_path/boost"; then
-                        BOOST_CPPFLAGS="-I$_AX_BOOST_BASE_boost_path"
+                        BOOST_CPPFLAGS="-isystem $_AX_BOOST_BASE_boost_path"
                     fi
                 fi
                 dnl if we found something and BOOST_LDFLAGS was unset before
@@ -240,7 +240,7 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
                 done
 
                 VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
+                BOOST_CPPFLAGS="-isystem $best_path/include/boost-$VERSION_UNDERSCORE"
                 if test -z "$_AX_BOOST_BASE_boost_lib_path" ; then
                     for libsubdir in $libsubdirs ; do
                         if ls "$best_path/$libsubdir/libboost_"* >/dev/null 2>&1 ; then break; fi
@@ -260,7 +260,7 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
                     V_CHECK=`expr $stage_version_shorten \>\= $_version`
                     if test "x$V_CHECK" = "x1" && test -z "$_AX_BOOST_BASE_boost_lib_path" ; then
                         AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
-                        BOOST_CPPFLAGS="-I$BOOST_ROOT"
+                        BOOST_CPPFLAGS="-isystem $BOOST_ROOT"
                         BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
                     fi
                 fi
@@ -298,5 +298,12 @@ AC_DEFUN([_AX_BOOST_BASE_RUNDETECT],[
 
     CPPFLAGS="$CPPFLAGS_SAVED"
     LDFLAGS="$LDFLAGS_SAVED"
+
+    dnl Due to a change in GCC 6+, searching a default system path via -isystem
+    dnl causes compilation issues.  Let the compiler find headers in default
+    dnl system paths "naturally".
+    if test "$BOOST_CPPFLAGS" = "-isystem /usr/include" ; then
+       BOOST_CPPFLAGS=""
+    fi
 
 ])
