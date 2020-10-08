@@ -20,8 +20,7 @@ test_expect_success 'sync: fluxion-resource cannot load w/ sched-simple' '
 '
 
 test_expect_success 'sync: qmanager does not load w/o fluxion-resource' '
-    load_qmanager &&
-    test_must_fail flux module stats sched-fluxion-qmanager
+    test_must_fail load_qmanager
 '
 
 test_expect_success 'remove sched-simple' '
