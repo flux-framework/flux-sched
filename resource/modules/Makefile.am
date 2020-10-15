@@ -21,10 +21,12 @@ sched_fluxion_resource_la_SOURCES = \
 sched_fluxion_resource_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
     $(JOBSPEC_CFLAGS) \
+    $(FLUX_HOSTLIST_CFLAGS) \
     $(FLUX_CORE_CFLAGS)
 sched_fluxion_resource_la_LIBADD = \
     ../libresource.la \
     $(FLUX_IDSET_LIBS) \
+    $(FLUX_HOSTLIST_LIBS) \
     $(FLUX_CORE_LIBS) \
     $(DL_LIBS) \
     $(HWLOC_LIBS) \
