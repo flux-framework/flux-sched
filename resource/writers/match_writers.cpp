@@ -24,6 +24,7 @@
 
 #include <new>
 #include <cerrno>
+#include <algorithm>
 #include "resource/schema/resource_data.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/writers/match_writers.hpp"
@@ -38,27 +39,34 @@ namespace resource_model {
  *                                                                          *
  ****************************************************************************/
 
-void match_writers_t::compress (std::stringstream &o,
-                                const std::set<int64_t> &ids)
+int match_writers_t::compress_ids (std::stringstream &o,
+                                   const std::vector<int64_t> &ids)
 {
-    int64_t base = INT64_MIN;
-    int64_t runlen = 0;
-    // set is already sorted, so we iterate in ascending order
-    for (auto &id : ids) {
-        if (id == (base + runlen + 1)) {
-            runlen++;
-        } else {
-            if (runlen != 0)
-                o << "-" + std::to_string (base + runlen) + ",";
-            else if (base != INT64_MIN)
-                o << ",";
-            o << id;
-            base = id;
-            runlen = 0;
+    int rc = 0;
+    try {
+        int64_t base = INT64_MIN;
+        int64_t runlen = 0;
+
+        for (auto &id : ids) {
+            if (id == (base + runlen + 1)) {
+                runlen++;
+            } else {
+                if (runlen != 0)
+                    o << "-" + std::to_string (base + runlen) + ",";
+                else if (base != INT64_MIN)
+                    o << ",";
+                o << id;
+                base = id;
+                runlen = 0;
+            }
         }
+        if (runlen)
+            o << "-" << (base + runlen);
+    } catch (std::bad_alloc &) {
+        rc = -1;
+        errno = ENOMEM;
     }
-    if (runlen)
-        o << "-" << (base + runlen);
+    return rc;
 }
 
 
@@ -453,8 +461,8 @@ out:
 
 rlite_match_writers_t::rlite_match_writers_t ()
 {
-    m_reducer["core"] = std::set<int64_t> ();
-    m_reducer["gpu"] = std::set<int64_t> ();
+    m_reducer["core"] = std::vector<int64_t> ();
+    m_reducer["gpu"] = std::vector<int64_t> ();
     m_gatherer.insert ("node");
     if (!(m_out = json_array ()))
         throw std::bad_alloc ();
@@ -551,7 +559,13 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
         goto ret;
     }
     if (m_reducer.find (g[u].type) != m_reducer.end ()) {
-        m_reducer[g[u].type].insert (g[u].id);
+        try {
+            m_reducer[g[u].type].push_back (g[u].id);
+        } catch (std::bad_alloc &) {
+            rc = -1;
+            errno = ENOMEM;
+            goto ret;
+        }
     } else if (m_gatherer.find (g[u].type) != m_gatherer.end ()) {
         if ((rc = emit_gatherer (g, u)) < 0)
             goto ret;
@@ -597,8 +611,12 @@ int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
         if (kv.second.empty ())
             continue;
         std::stringstream s;
-        compress (s, kv.second);
         json_t *vo = NULL;
+        std::sort (kv.second.begin (), kv.second.end ());
+        if ( (rc = compress_ids (s, kv.second)) < 0) {
+            json_decref (co);
+            goto ret;
+        }
         if (!(vo = json_string (s.str ().c_str ()))) {
             json_decref (co);
             rc = -1;

@@ -66,7 +66,7 @@ public:
     virtual int emit_attrs (const std::string &k, const std::string &v) {
         return 0;
     }
-    void compress (std::stringstream &o, const std::set<int64_t> &ids);
+    int compress_ids (std::stringstream &o, const std::vector<int64_t> &ids);
 };
 
 
@@ -144,7 +144,7 @@ private:
     bool m_reducer_set ();
     int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
 
-    std::map<std::string, std::set<int64_t>> m_reducer;
+    std::map<std::string, std::vector<int64_t>> m_reducer;
     std::set<std::string> m_gatherer;
     json_t *m_out = NULL;
 };
