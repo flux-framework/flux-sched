@@ -51,7 +51,7 @@ class match_writers_t {
 public:
     virtual ~match_writers_t () {}
     virtual bool empty () = 0;
-    virtual int emit_json (json_t **o) = 0;
+    virtual int emit_json (json_t **o, json_t **aux = nullptr) = 0;
     virtual int emit (std::stringstream &out) = 0;
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -77,7 +77,7 @@ class sim_match_writers_t : public match_writers_t
 public:
     virtual ~sim_match_writers_t () {}
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -98,7 +98,7 @@ public:
     virtual ~jgf_match_writers_t ();
 
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -134,7 +134,7 @@ public:
     virtual ~rlite_match_writers_t ();
 
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out, bool newline);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
@@ -156,7 +156,7 @@ class rv1_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -182,7 +182,7 @@ class rv1_nosched_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -201,7 +201,7 @@ class pretty_sim_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,

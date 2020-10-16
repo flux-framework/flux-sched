@@ -73,7 +73,7 @@ bool sim_match_writers_t::empty ()
     return m_out.str ().empty ();
 }
 
-int sim_match_writers_t::emit_json (json_t **j_o)
+int sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     json_t *o = NULL;
     std::string str = m_out.str ();
@@ -161,7 +161,7 @@ bool jgf_match_writers_t::empty ()
     return (v_size == 0) && (e_size == 0);
 }
 
-int jgf_match_writers_t::emit_json (json_t **o)
+int jgf_match_writers_t::emit_json (json_t **o, json_t **aux)
 {
     int rc = 0;
 
@@ -488,7 +488,7 @@ bool rlite_match_writers_t::empty ()
     return (json_array_size (m_out) == 0)? true : false;
 }
 
-int rlite_match_writers_t::emit_json (json_t **o)
+int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
 {
     int rc = 0;
     if (!m_out) {
@@ -675,7 +675,7 @@ ret:
     return rc;
 }
 
-int rv1_match_writers_t::emit_json (json_t **j_o)
+int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     int rc = 0;
     int saved_errno;
@@ -798,7 +798,7 @@ bool rv1_nosched_match_writers_t::empty ()
     return rlite.empty ();
 }
 
-int rv1_nosched_match_writers_t::emit_json (json_t **j_o)
+int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     int rc = 0;
     json_t *rlite_o = NULL;
@@ -883,7 +883,7 @@ bool pretty_sim_match_writers_t::empty ()
     return empty;
 }
 
-int pretty_sim_match_writers_t::emit_json (json_t **j_o)
+int pretty_sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     json_t *o = NULL;
     std::string str = "";
