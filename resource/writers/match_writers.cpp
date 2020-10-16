@@ -25,6 +25,10 @@
 #include <new>
 #include <cerrno>
 #include <algorithm>
+#include <iterator>
+extern "C" {
+#include <flux/hostlist.h>
+}
 #include "resource/schema/resource_data.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/writers/match_writers.hpp"
@@ -66,6 +70,44 @@ int match_writers_t::compress_ids (std::stringstream &o,
         rc = -1;
         errno = ENOMEM;
     }
+    return rc;
+}
+
+int match_writers_t::compress_hosts (const std::vector<std::string> &hosts,
+                                     const char *hostlist_init,
+                                     char **hostlist_out)
+{
+    int rc = 0;
+    hostlist *hl = NULL;
+
+    if (!hostlist_out) {
+        rc = -1;
+        errno = EINVAL;
+        goto ret;
+    }
+    if (hostlist_init) {
+        if ( !(hl = hostlist_decode (hostlist_init))) {
+            rc = -1;
+            goto ret;
+        }
+    } else {
+        if ( !(hl = hostlist_create ())) {
+            rc = -1;
+            goto ret;
+        }
+    }
+    for (auto &hn : hosts) {
+        if ( (rc = hostlist_append (hl, hn.c_str ())) < 0)
+            goto ret;
+    }
+
+    if ( !(*hostlist_out = hostlist_encode (hl))) {
+        rc = -1;
+        goto ret;
+    }
+
+ret:
+    hostlist_destroy (hl);
     return rc;
 }
 
@@ -464,16 +506,13 @@ rlite_match_writers_t::rlite_match_writers_t ()
     m_reducer["core"] = std::vector<int64_t> ();
     m_reducer["gpu"] = std::vector<int64_t> ();
     m_gatherer.insert ("node");
-    if (!(m_out = json_array ()))
-        throw std::bad_alloc ();
 }
 
 rlite_match_writers_t::rlite_match_writers_t (const rlite_match_writers_t &w)
 {
     m_reducer = w.m_reducer;
     m_gatherer = w.m_gatherer;
-    if (!(m_out = json_deep_copy (w.m_out)))
-        throw std::bad_alloc ();
+    m_gl_gatherer = w.m_gl_gatherer;
 }
 
 rlite_match_writers_t &rlite_match_writers_t::operator=(
@@ -481,39 +520,60 @@ rlite_match_writers_t &rlite_match_writers_t::operator=(
 {
     m_reducer = w.m_reducer;
     m_gatherer = w.m_gatherer;
-    if (!(m_out = json_deep_copy (w.m_out)))
-        throw std::bad_alloc ();
+    m_gl_gatherer = w.m_gl_gatherer;
     return *this;
 }
 
 rlite_match_writers_t::~rlite_match_writers_t ()
 {
-    json_decref (m_out);
 }
 
 bool rlite_match_writers_t::empty ()
 {
-    return (json_array_size (m_out) == 0)? true : false;
+    return m_gl_gatherer.empty ();
 }
 
 int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
 {
     int rc = 0;
-    if (!m_out) {
+    int saved_errno;
+    json_t *rlite_array = NULL;
+    json_t *host_array = NULL;
+
+    if (m_gl_gatherer.empty ()) {
         errno = EINVAL;
         rc = -1;
         goto ret;
     }
-    if ((rc = json_array_size (m_out)) != 0) {
-        *o = m_out;
-        if (!(m_out = json_array ())) {
-            json_decref (*o);
-            *o = NULL;
-            rc = -1;
-            errno = ENOMEM;
-            goto ret;
-        }
+    if ( !(rlite_array = json_array ())) {
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
     }
+    if ( aux && !(host_array = json_array ())) {
+        json_decref (rlite_array);
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    if ( (rc = fill (rlite_array, host_array)) < 0) {
+        saved_errno = errno;
+        json_decref (rlite_array);
+        if (host_array)
+            json_decref (host_array);
+        errno = saved_errno;
+        goto ret;
+
+    }
+
+    m_gl_gatherer.clear ();
+
+    if ( (rc = json_array_size (rlite_array)) != 0) {
+        *o = rlite_array;
+        if (aux)
+            *aux = host_array;
+    }
+
 ret:
     return rc;
 }
@@ -553,11 +613,6 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
 {
     int rc = 0;
 
-    if (!m_out) {
-        rc = -1;
-        errno = EINVAL;
-        goto ret;
-    }
     if (m_reducer.find (g[u].type) != m_reducer.end ()) {
         try {
             m_reducer[g[u].type].push_back (g[u].id);
@@ -593,58 +648,170 @@ bool rlite_match_writers_t::m_reducer_set ()
     return set;
 }
 
-int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
-                                          const vtx_t &u)
+int rlite_match_writers_t::get_gatherer_children (std::string &children)
 {
     int rc = 0;
-    json_t *o = NULL;
+    int saved_errno;
     json_t *co = NULL;
+    char *co_dump = NULL;
 
-    if (!m_reducer_set ())
-        goto ret;
     if (!(co = json_object ())) {
         rc = -1;
         errno = ENOMEM;
         goto ret;
     }
     for (auto &kv : m_reducer) {
+        json_t *vo = NULL;
+        std::stringstream s;
         if (kv.second.empty ())
             continue;
-        std::stringstream s;
-        json_t *vo = NULL;
+
         std::sort (kv.second.begin (), kv.second.end ());
-        if ( (rc = compress_ids (s, kv.second)) < 0) {
-            json_decref (co);
-            goto ret;
+        if ( (rc = compress_ids (s, kv.second)) < 0)
+            goto memfree_ret;
+        if ( !(vo = json_string (s.str ().c_str ()))) {
+            rc = -1;
+            errno = ENOMEM;
+            goto memfree_ret;
         }
-        if (!(vo = json_string (s.str ().c_str ()))) {
-            json_decref (co);
+        if ( (rc = json_object_set_new (co, kv.first.c_str (), vo)) < 0) {
+            errno = ENOMEM;
+            goto memfree_ret;
+        }
+        kv.second.clear ();
+    }
+    if (!(co_dump = json_dumps (co, JSON_INDENT (0)))) {
+        rc = -1;
+        errno = ENOMEM;
+        goto memfree_ret;
+    }
+
+    children = co_dump;
+
+memfree_ret:
+    saved_errno = errno;
+    free (co_dump);
+    json_decref (co);
+    errno = saved_errno;
+ret:
+    return rc;
+}
+
+int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
+                                          const vtx_t &u)
+{
+    int rc = 0;
+    std::string children;
+
+    try {
+        if (!m_reducer_set ())
+            goto ret;
+
+        if ( (rc = get_gatherer_children (children)) < 0)
+            goto ret;
+
+        if (m_gl_gatherer.find (children) == m_gl_gatherer.end ())
+            m_gl_gatherer[children] = std::vector<rank_host_t> ();
+
+        m_gl_gatherer[children].push_back ({g[u].rank, g[u].name});
+    } catch (std::bad_alloc &) {
+        rc = -1;
+        errno = ENOMEM;
+    }
+
+ret:
+    return rc;
+}
+
+int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
+{
+    int rc = 0;
+    int saved_errno;
+    char *hl_in = NULL;
+    char *hl_out = NULL;
+
+    // m_gl_gatherer is keyed by the "children" signature of each node
+    // the value is the set of ranks that have the same signature.
+    for (auto &kv : m_gl_gatherer) {
+        json_error_t err;
+        std::stringstream s;
+        std::vector<int64_t> ranks_vec;
+        json_t *robj, *ranks, *cobj = NULL;
+
+        // The primary sorting order for compression is rank
+        std::sort (kv.second.begin (), kv.second.end (),
+                   [] (const rank_host_t &a, const rank_host_t &b) {
+                       return a.rank < b.rank;
+                   });
+        std::transform (kv.second.begin (), kv.second.end(),
+                        std::back_inserter (ranks_vec),
+                        [] (rank_host_t &o) {
+                            return o.rank;
+                        });
+        if ( (rc = compress_ids (s, ranks_vec)) < 0)
+            goto ret;
+
+        if (host_array) {
+            std::vector<std::string> hosts_vec;
+            std::transform (kv.second.begin (), kv.second.end (),
+                            std::back_inserter (hosts_vec),
+                            [] (rank_host_t &o) {
+                                return o.host;
+                            });
+            if ( (rc = compress_hosts (hosts_vec, hl_in, &hl_out)) < 0)
+                goto ret;
+            if (hl_in)
+                free (hl_in);
+            hl_in = hl_out;
+        }
+
+        if ( !(robj = json_object ())) {
             rc = -1;
             errno = ENOMEM;
             goto ret;
         }
-        if ((rc = json_object_set_new (co, kv.first.c_str (), vo)) < 0) {
-            json_decref (co);
+        if ( !(ranks = json_string (s.str ().c_str ()))) {
+            json_decref (robj);
+            rc = -1;
             errno = ENOMEM;
             goto ret;
         }
-        kv.second.clear ();
+        if ( (rc = json_object_set_new (robj, "rank", ranks)) < 0) {
+            json_decref (robj);
+            errno = ENOMEM;
+            goto ret;
+        }
+        if ( !(cobj = json_loads (kv.first.c_str (), 0, &err))) {
+            json_decref (robj);
+            rc = -1;
+            errno = ENOMEM;
+            goto ret;
+        }
+        if ( (rc = json_object_set_new (robj, "children", cobj)) < 0) {
+            json_decref (robj);
+            errno = ENOMEM;
+            goto ret;
+        }
+        if ( (rc = json_array_append_new (rlite_array, robj)) < 0) {
+            json_decref (robj);
+            errno = ENOMEM;
+            goto ret;
+        }
     }
-    if (!(o = json_pack ("{s:s s:s s:o}",
-                             "rank", std::to_string (g[u].rank).c_str (),
-                             "node", g[u].name.c_str (),
-                             "children", co))) {
-        json_decref (co);
-        rc = -1;
-        errno = ENOMEM;
-        goto ret;
-    }
-    if ((rc = json_array_append_new (m_out, o)) != 0) {
-        errno = ENOMEM;
-        goto ret;
+
+    if (host_array && hl_out) {
+       if ( (rc = json_array_append_new (host_array,
+                                         json_string (hl_out))) < 0) {
+           json_decref (rlite_array);
+           errno = ENOMEM;
+           goto ret;
+       }
     }
 
 ret:
+    saved_errno = errno;
+    free (hl_out);
+    errno = saved_errno;
     return rc;
 }
 
@@ -699,27 +866,31 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     int saved_errno;
     json_t *o = NULL;
     json_t *rlite_o = NULL;
+    json_t *ndlist_o = NULL;
     json_t *jgf_o = NULL;
     json_t *attrs_o = NULL;
 
     if (rlite.empty () || jgf.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o, &ndlist_o)) < 0)
         goto ret;
     if ( (rc = jgf.emit_json (&jgf_o)) < 0) {
         saved_errno = errno;
         json_decref (rlite_o);
+        json_decref (ndlist_o);
         errno = saved_errno;
         goto ret;
     }
-    if ( !(o = json_pack ("{s:i s:{s:o s:I s:I} s:o}",
+    if ( !(o = json_pack ("{s:i s:{s:o s:o s:I s:I} s:o}",
                               "version", 1,
                               "execution",
-                              "R_lite", rlite_o,
-                              "starttime", m_starttime,
-                              "expiration", m_expiration,
+                                  "R_lite", rlite_o,
+                                  "nodelist", ndlist_o,
+                                  "starttime", m_starttime,
+                                  "expiration", m_expiration,
                               "scheduling", jgf_o))) {
         json_decref (rlite_o);
+        json_decref (ndlist_o);
         json_decref (jgf_o);
         rc = -1;
         errno = ENOMEM;
@@ -820,18 +991,21 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     int rc = 0;
     json_t *rlite_o = NULL;
+    json_t *ndlist_o = NULL;
 
     if (rlite.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o, &ndlist_o)) < 0)
         goto ret;
-    if ( !(*j_o = json_pack ("{s:i s:{s:o s:I s:I}}",
+    if ( !(*j_o = json_pack ("{s:i s:{s:o s:o s:I s:I}}",
                                 "version", 1,
                                 "execution",
-                                "R_lite",  rlite_o,
-                                "starttime", m_starttime,
-                                "expiration", m_expiration))) {
+                                    "R_lite",  rlite_o,
+                                    "nodelist", ndlist_o,
+                                    "starttime", m_starttime,
+                                    "expiration", m_expiration))) {
         json_decref (rlite_o);
+        json_decref (ndlist_o);
         rc = -1;
         errno = ENOMEM;
         goto ret;

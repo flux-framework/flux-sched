@@ -67,6 +67,8 @@ public:
         return 0;
     }
     int compress_ids (std::stringstream &o, const std::vector<int64_t> &ids);
+    int compress_hosts (const std::vector<std::string> &hosts,
+                        const char *hostlist_init, char **hostlist);
 };
 
 
@@ -141,12 +143,20 @@ public:
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
+    class rank_host_t {
+    public:
+        int64_t rank;
+        std::string host;
+    };
     bool m_reducer_set ();
     int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
+    int get_gatherer_children (std::string &children);
+    int fill (json_t *rlite_array, json_t *host_array);
+    int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
 
     std::map<std::string, std::vector<int64_t>> m_reducer;
+    std::map<std::string, std::vector<rank_host_t>> m_gl_gatherer;
     std::set<std::string> m_gatherer;
-    json_t *m_out = NULL;
 };
 
 
