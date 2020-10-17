@@ -5,8 +5,8 @@ test_description='Test the full state recovery of qmanager for multiple queues'
 . `dirname $0`/sharness.sh
 
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
-# 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
-excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
+# 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
+excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
@@ -33,7 +33,7 @@ test_expect_success 'recovery: generate test jobspecs' '
 '
 
 test_expect_success 'load test resources' '
-    load_test_resources ${excl_4N4B}
+    load_test_resources ${excl_1N1B}
 '
 
 test_expect_success 'recovery: loading flux-sched modules with two queues' '
