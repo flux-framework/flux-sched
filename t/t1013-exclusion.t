@@ -52,7 +52,7 @@ test_expect_success 'exclusion: reloading resource with a config file' '
 	exclude = "2-3"
 EOF
     flux config reload &&
-    flux module reload resource
+    flux module reload resource noverify
 '
 
 test_expect_success 'exclusion: loading fluxion modules works' '

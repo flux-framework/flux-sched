@@ -25,7 +25,6 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'recovery: loading flux-sched modules works (rv1)' '
-    flux module reload -f resource &&
     load_resource load-allowlist=node,core,gpu match-format=rv1 &&
     load_qmanager
 '

@@ -125,13 +125,8 @@ remove_resource () {
 # Usage: load_test_resources hwloc-dir
 #   where hwloc-dir contains <rank>.xml files
 load_test_resources () {
-    flux kvs get --waitcreate resource.hwloc.by_rank &&
-        flux module remove resource &&
-        flux kvs unlink -R resource
-        flux hwloc reload $1 &&
-        flux kvs eventlog append resource.eventlog \
-            hwloc-discover-finish "{\"loaded\":true}" &&
-        flux module load resource monitor-force-up
+    flux resource reload --xml $1 &&
+        flux kvs get resource.R
 }
 
 # N.B. this assumes that a scheduler is loaded
