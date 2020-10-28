@@ -744,35 +744,53 @@ done:
     return rc;
 }
 
-// Directly copy form rutil_idset_from_resobj function
-// from flux-core's src/modules/resource/rutil.c.
-static struct idset *get_grow_idset (const json_t *resobj)
+/* Given 'resobj' in Rv1 form, decode the set of execution target ranks
+ * contained in it.
+ */
+static struct idset *get_grow_idset (json_t *resobj)
 {
     struct idset *ids;
-    const char *key;
+    int version;
+    json_t *r_lite;
+    size_t index;
     json_t *val;
 
     if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
         return NULL;
     if (resobj) {
-        json_object_foreach ((json_t *)resobj, key, val) {
-            struct idset *valset;
+        if (json_unpack (resobj,
+                         "{s:i s:{s:o}}",
+                         "version",
+                           &version,
+                         "execution",
+                           "R_lite",
+                            &r_lite) < 0)
+            goto inval;
+        if (version != 1)
+            goto inval;
+        json_array_foreach (r_lite, index, val) {
+            struct idset *r_ids;
             unsigned long id;
+            const char *rank;
 
-            if (!(valset = idset_decode (key)))
+            if (json_unpack (val, "{s:s}", "rank", &rank) < 0)
+                goto inval;
+            if (!(r_ids = idset_decode (rank)))
                 goto error;
-            id = idset_first (valset);
+            id = idset_first (r_ids);
             while (id != IDSET_INVALID_ID) {
                 if (idset_set (ids, id) < 0) {
-                    idset_destroy (valset);
+                    idset_destroy (r_ids);
                     goto error;
                 }
-                id = idset_next (valset, id);
+                id = idset_next (r_ids, id);
             }
-            idset_destroy (valset);
+            idset_destroy (r_ids);
         }
     }
     return ids;
+inval:
+    errno = EINVAL;
 error:
     idset_destroy (ids);
     return NULL;
