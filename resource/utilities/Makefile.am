@@ -31,10 +31,12 @@ resource_query_SOURCES = \
     resource-query.cpp \
     command.cpp
 resource_query_CXXFLAGS = \
-    $(AM_CXXFLAGS)
+    $(AM_CXXFLAGS) \
+    $(FLUX_HOSTLIST_CFLAGS)
 resource_query_LDADD = \
     ../libresource.la \
     $(READLINE_LIBS) \
+    $(FLUX_HOSTLIST_LIBS) \
     $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \

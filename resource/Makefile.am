@@ -79,11 +79,13 @@ libresource_la_SOURCES = \
 libresource_la_CXXFLAGS = \
     $(WARNING_CXXFLAGS) \
     $(CODE_COVERAGE_CFLAGS) \
-    $(AM_CXXFLAGS)
+    $(AM_CXXFLAGS) \
+    $(FLUX_HOSTLIST_CFLAGS)
 
 libresource_la_LIBADD = \
     $(top_builddir)/resource/planner/libplanner.la \
     $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
+    $(FLUX_HOSTLIST_LIBS) \
     $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \

@@ -51,7 +51,7 @@ class match_writers_t {
 public:
     virtual ~match_writers_t () {}
     virtual bool empty () = 0;
-    virtual int emit_json (json_t **o) = 0;
+    virtual int emit_json (json_t **o, json_t **aux = nullptr) = 0;
     virtual int emit (std::stringstream &out) = 0;
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -66,7 +66,9 @@ public:
     virtual int emit_attrs (const std::string &k, const std::string &v) {
         return 0;
     }
-    void compress (std::stringstream &o, const std::set<int64_t> &ids);
+    int compress_ids (std::stringstream &o, const std::vector<int64_t> &ids);
+    int compress_hosts (const std::vector<std::string> &hosts,
+                        const char *hostlist_init, char **hostlist);
 };
 
 
@@ -77,7 +79,7 @@ class sim_match_writers_t : public match_writers_t
 public:
     virtual ~sim_match_writers_t () {}
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -98,7 +100,7 @@ public:
     virtual ~jgf_match_writers_t ();
 
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -134,19 +136,27 @@ public:
     virtual ~rlite_match_writers_t ();
 
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out, bool newline);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
+    class rank_host_t {
+    public:
+        int64_t rank;
+        std::string host;
+    };
     bool m_reducer_set ();
     int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
+    int get_gatherer_children (std::string &children);
+    int fill (json_t *rlite_array, json_t *host_array);
+    int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
 
-    std::map<std::string, std::set<int64_t>> m_reducer;
+    std::map<std::string, std::vector<int64_t>> m_reducer;
+    std::map<std::string, std::vector<rank_host_t>> m_gl_gatherer;
     std::set<std::string> m_gatherer;
-    json_t *m_out = NULL;
 };
 
 
@@ -156,7 +166,7 @@ class rv1_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -182,7 +192,7 @@ class rv1_nosched_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,
@@ -201,7 +211,7 @@ class pretty_sim_match_writers_t : public match_writers_t
 {
 public:
     virtual bool empty ();
-    virtual int emit_json (json_t **o);
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
                           const f_resource_graph_t &g, const vtx_t &u,

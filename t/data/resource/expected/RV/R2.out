@@ -1,0 +1,6 @@
+{"version": 1, "execution": {"R_lite": [{"rank": "1-3", "children": {"core": "0-35", "gpu": "0-1"}}, {"rank": "0", "children": {"core": "1-35,100", "gpu": "0-1"}}], "nodelist": ["node[1-3,0]"], "starttime": 0, "expiration": 3600}}
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
