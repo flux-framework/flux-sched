@@ -5,8 +5,8 @@ test_description='Test qmanager service reloading'
 . `dirname $0`/sharness.sh
 
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
-# 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
-excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
+# 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
+excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
 skip_all_unless_have jq
 
@@ -27,7 +27,7 @@ test_expect_success 'qmanager: generate jobspec for a simple test job' '
 '
 
 test_expect_success 'load test resources' '
-    load_test_resources ${excl_4N4B}
+    load_test_resources ${excl_1N1B}
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '

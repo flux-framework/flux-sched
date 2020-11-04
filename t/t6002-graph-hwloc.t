@@ -31,6 +31,7 @@ test_expect_success 'qmanager: loading resource and qmanager modules works' '
 
 test_expect_success 'qmanager: graph stat as expected' '
     flux ion-resource stat > stat.out &&
+    test_debug "cat stat.out" &&
     verify stat.out
 '
 

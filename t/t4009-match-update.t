@@ -17,8 +17,8 @@ ORIG_HOME=${HOME}
 HOME=${ORIG_HOME}
 
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
-# 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
-excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
+# 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
+excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
 #
 # test_under_flux is under sharness.d/
@@ -31,7 +31,7 @@ test_expect_success 'update: generate jobspec for a simple test job' '
 '
 
 test_expect_success 'update: load test resources' '
-    load_test_resources ${excl_4N4B}
+    load_test_resources ${excl_1N1B}
 '
 
 test_expect_success 'update: loading sched-fluxion-resource works' '

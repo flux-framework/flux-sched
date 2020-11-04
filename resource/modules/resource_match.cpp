@@ -462,42 +462,6 @@ error:
  *                                                                            *
  ******************************************************************************/
 
-/* Block until value of 'key' becomes non-NULL.
- * It is an EPROTO error if value is type other than json_type_string.
- * On success returns value, otherwise NULL with errno set.
- */
-static json_t *get_string_blocking (flux_t *h, const char *key)
-{
-    flux_future_t *f = NULL;
-    const char *json_str;
-    json_t *o = NULL;
-    int saved_errno;
-
-    if (!(f = flux_kvs_lookup (h, NULL, FLUX_KVS_WAITCREATE, key))) {
-        saved_errno = errno;
-        goto error;
-    }
-
-    if (flux_kvs_lookup_get (f, &json_str) < 0) {
-        saved_errno = errno;
-        goto error;
-    }
-
-    if (!json_str || !(o = Jfromstr (json_str))
-                  || !json_is_string (o)) {
-        saved_errno = EPROTO;
-        goto error;
-    }
-
-    flux_future_destroy (f);
-    return o;
-error:
-    flux_future_destroy (f);
-    Jput (o);
-    errno = saved_errno;
-    return NULL;
-}
-
 static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
@@ -533,15 +497,14 @@ done:
     return rc;
 }
 
+/* Add resources associated with 'rank' execution target,
+ * defined by hwloc_xml.  This function may be called with
+ * rank == IDSET_INVALID_ID, to instantiate an empty graph.
+ */
 static int grow (std::shared_ptr<resource_ctx_t> &ctx,
-                 vtx_t v, unsigned int rank)
+                 vtx_t v, unsigned int rank, const char *hwloc_xml)
 {
-    int n = -1;
     int rc = -1;
-    char k[64] = {0};
-    json_t *o = NULL;
-    int saved_errno = 0;
-    const char *hwloc_xml = NULL;
     resource_graph_db_t &db = *(ctx->db);
 
     if (rank == IDSET_INVALID_ID) {
@@ -553,38 +516,41 @@ static int grow (std::shared_ptr<resource_ctx_t> &ctx,
         goto ret;
     }
 
-    n = snprintf (k, sizeof (k), "resource.hwloc.xml.%" PRIu32 "", rank);
-    if ((n < 0) || ((unsigned int) n > sizeof (k))) {
-        errno = ENOMEM;
-        goto ret;
-    }
-    if ( !(o = get_string_blocking (ctx->h, k))) {
-        flux_log_error (ctx->h, "%s: get_string_blocking", __FUNCTION__);
-        goto ret;
-    }
-    hwloc_xml = json_string_value (o);
     if (v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
         if ( (rc = db.load (hwloc_xml, ctx->reader, rank)) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                       __FUNCTION__,  ctx->reader->err_message ().c_str ());
-            goto freemem_ret;
+            goto ret;
         }
     } else {
         if ( (rc = db.load (hwloc_xml, ctx->reader, v, rank)) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: reader: %s",
                       __FUNCTION__,  ctx->reader->err_message ().c_str ());
-            goto freemem_ret;
+            goto ret;
         }
    }
 
-freemem_ret:
-    saved_errno = errno;
-    json_decref (o);
-    errno = saved_errno;
 ret:
     return rc;
 }
 
+static const char *get_array_string (json_t *array, size_t index)
+{
+    json_t *entry;
+    const char *s;
+
+    if (!(entry = json_array_get (array, index))
+            || !(s = json_string_value (entry))) {
+        errno = EINVAL;
+        return NULL;
+    }
+    return s;
+}
+
+/* Grow resources for execution targets 'ids', fetching resource
+ * details in hwloc XML form from the core resource module.
+ * If 'ids' is the empty set, an empty resource vertex will be instantiated.
+ */
 static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                              struct idset *ids)
 {
@@ -592,9 +558,23 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
     resource_graph_db_t &db = *(ctx->db);
     unsigned int rank = idset_first (ids);
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+    flux_future_t *f = NULL;
+    json_t *xml_array;
+    const char *hwloc_xml;
+
+    if (!(f = flux_rpc (ctx->h, "resource.get-xml", NULL, 0, 0)))
+        goto done;
+    if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0)
+        goto done;
 
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
-        if ( (rc = grow (ctx, v, rank)) < 0)
+        if (rank != IDSET_INVALID_ID) {
+            if (!(hwloc_xml = get_array_string (xml_array, rank)))
+                goto done;
+        }
+        else
+            hwloc_xml = NULL;
+        if ( (rc = grow (ctx, v, rank, hwloc_xml)) < 0)
             goto done;
     }
 
@@ -612,12 +592,15 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
     rank = idset_next (ids, rank);
     while (rank != IDSET_INVALID_ID) {
         // For the rest of the ranks -- general case
-        if ( (rc = grow (ctx, v, rank)) < 0)
+        if (!(hwloc_xml = get_array_string (xml_array, rank)))
+            goto done;
+        if ( (rc = grow (ctx, v, rank, hwloc_xml)) < 0)
             goto done;
         rank = idset_next (ids, rank);
     }
 
 done:
+    flux_future_destroy (f);
     return rc;
 }
 
@@ -744,35 +727,53 @@ done:
     return rc;
 }
 
-// Directly copy form rutil_idset_from_resobj function
-// from flux-core's src/modules/resource/rutil.c.
-static struct idset *get_grow_idset (const json_t *resobj)
+/* Given 'resobj' in Rv1 form, decode the set of execution target ranks
+ * contained in it.
+ */
+static struct idset *get_grow_idset (json_t *resobj)
 {
     struct idset *ids;
-    const char *key;
+    int version;
+    json_t *r_lite;
+    size_t index;
     json_t *val;
 
     if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
         return NULL;
     if (resobj) {
-        json_object_foreach ((json_t *)resobj, key, val) {
-            struct idset *valset;
+        if (json_unpack (resobj,
+                         "{s:i s:{s:o}}",
+                         "version",
+                           &version,
+                         "execution",
+                           "R_lite",
+                            &r_lite) < 0)
+            goto inval;
+        if (version != 1)
+            goto inval;
+        json_array_foreach (r_lite, index, val) {
+            struct idset *r_ids;
             unsigned long id;
+            const char *rank;
 
-            if (!(valset = idset_decode (key)))
+            if (json_unpack (val, "{s:s}", "rank", &rank) < 0)
+                goto inval;
+            if (!(r_ids = idset_decode (rank)))
                 goto error;
-            id = idset_first (valset);
+            id = idset_first (r_ids);
             while (id != IDSET_INVALID_ID) {
                 if (idset_set (ids, id) < 0) {
-                    idset_destroy (valset);
+                    idset_destroy (r_ids);
                     goto error;
                 }
-                id = idset_next (valset, id);
+                id = idset_next (r_ids, id);
             }
-            idset_destroy (valset);
+            idset_destroy (r_ids);
         }
     }
     return ids;
+inval:
+    errno = EINVAL;
 error:
     idset_destroy (ids);
     return NULL;

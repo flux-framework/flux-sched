@@ -45,14 +45,16 @@ test_expect_success 'exclusion: all jobs are rejected on satisfiability' '
     flux job eventlog ${jobid1} | grep unsatisfiable &&
     flux job eventlog ${jobid2} | grep unsatisfiable
 '
-
+test_expect_success 'exclusion: removing fluxion modules' '
+    remove_qmanager &&
+    remove_resource
+'
 test_expect_success 'exclusion: reloading resource with a config file' '
     cat >resource.toml <<-EOF &&
 	[resource]
 	exclude = "2-3"
 EOF
-    flux config reload &&
-    flux module reload resource
+    flux config reload
 '
 
 test_expect_success 'exclusion: loading fluxion modules works' '
