@@ -75,8 +75,10 @@ class ResourceModuleInterface:
         payload = {'gp_resource_path' : gp_resource_path, 'gp_key' : gp_key}
         return self.f.rpc ("sched-fluxion-resource.get_property", payload).get ()
 
-    def rpc_find (self, criteria):
+    def rpc_find (self, criteria, find_format=None):
         payload = {'criteria' : criteria}
+        if find_format:
+            payload['format'] = find_format
         return self.f.rpc ("sched-fluxion-resource.find", payload).get ()
 
     def rpc_status (self):
@@ -197,7 +199,7 @@ def get_property_action (args):
 """
 def find_action (args):
     r = ResourceModuleInterface ()
-    resp = r.rpc_find (args.criteria)
+    resp = r.rpc_find (args.criteria, find_format=args.format)
     print ('CRITERIA')
     print ("\'" + args.criteria + "\'")
     print ("=" * width ())
@@ -303,7 +305,9 @@ def main ():
     # Positional argument for find sub-command
     #
     cr_help='Matching criteria -- a compound expression must be quoted'
+    cf_help='Writer format for find query'
     parser_f.add_argument ('criteria', metavar='Criteria', type=str, help=cr_help)
+    parser_f.add_argument ('--format', type=str, default=None, help=cf_help)
     parser_f.set_defaults (func=find_action)
 
     #

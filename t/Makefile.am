@@ -37,6 +37,7 @@ TESTS = \
     t1013-exclusion.t \
     t1013-qmanager-priority.t \
     t1014-annotation.t \
+    t1015-find-format.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
@@ -81,7 +82,8 @@ TESTS = \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t \
-    t6002-graph-hwloc.t
+    t6002-graph-hwloc.t \
+    t7000-shell-datastaging.t
 
 check_SCRIPTS = $(TESTS)
 

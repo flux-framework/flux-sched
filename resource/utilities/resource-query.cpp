@@ -35,6 +35,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
@@ -45,6 +46,7 @@ extern "C" {
 #endif
 }
 
+namespace fs = boost::filesystem;
 using namespace Flux::resource_model;
 
 #define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
@@ -611,6 +613,15 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx,
                 break;
             case 'L': /* --load-file */
                 ctx->params.load_file = optarg;
+                if (!fs::exists(ctx->params.load_file)) {
+                    std::cerr << "[ERROR] file does not exist for --load-file: ";
+                    std::cerr << optarg << std::endl;
+                    usage (1);
+                } else if (fs::is_directory(ctx->params.load_file)) {
+                    std::cerr << "[ERROR] path passed to --load-file is a directory: ";
+                    std::cerr << optarg << std::endl;
+                    usage (1);
+                }
                 break;
             case 'f': /* --load-format */
                 ctx->params.load_format = optarg;

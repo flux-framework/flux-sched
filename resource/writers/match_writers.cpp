@@ -270,6 +270,8 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
     int rc = 0;
     json_t *o = NULL;
     json_t *b = NULL;
+    auto &ephemeral = g[u].idata.ephemeral;
+    auto &eph_map = ephemeral.to_map ();
 
     if (!m_vout || !m_eout) {
         rc = -1;
@@ -285,6 +287,10 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
         goto out;
     }
     if ((rc = map2json (b, g[u].paths, "paths") < 0)) {
+        json_decref (b);
+        goto out;
+    }
+    if ((rc = map2json (b, eph_map, "ephemeral") < 0)) {
         json_decref (b);
         goto out;
     }
@@ -443,8 +449,8 @@ int jgf_match_writers_t::map2json (json_t *o,
                 errno = ENOMEM;
                 goto out;
             }
-        }
-	if ((rc = json_object_set_new (o, key, p)) == -1) {
+         }
+        if ((rc = json_object_set_new (o, key, p)) == -1) {
             errno = ENOMEM;
             goto out;
         }

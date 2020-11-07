@@ -1,5 +1,5 @@
 .NOTPARALLEL:
 
-SUBDIRS = common cmd
+SUBDIRS = common cmd shell
 
 check-local: all

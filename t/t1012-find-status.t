@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test_description='Test Resource Find and Stutus with Fluxion Modules'
+test_description='Test Resource Find and Status with Fluxion Modules'
 
 . `dirname $0`/sharness.sh
 

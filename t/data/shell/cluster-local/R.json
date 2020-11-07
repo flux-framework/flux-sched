@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "execution": {
+    "R_lite": [
+      {
+        "rank": "0",
+        "node": "corona116",
+        "children": {
+          "core": "0"
+        }
+      },
+      {
+        "rank": "1",
+        "node": "corona117",
+        "children": {
+          "core": "0"
+        }
+      }
+    ],
+    "starttime": 1598683001,
+    "expiration": 1598740601
+  },
+  "scheduling": {
+    "graph": {
+      "nodes": [
+        {
+          "id": "2",
+          "metadata": {
+            "type": "storage",
+            "basename": "storage",
+            "name": "storage0",
+            "id": 0,
+            "uniq_id": 2,
+            "rank": 0,
+            "exclusive": true,
+            "unit": "",
+            "size": 1562,
+            "properties": {
+              "mountpoint": "/p/pfs0"
+            },
+            "paths": {
+              "containment": "/cluster0/storage0"
+            },
+            "ephemeral": {
+              "label": "cluster-local-storage"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "metadata": {
+            "type": "core",
+            "basename": "core",
+            "name": "core0",
+            "id": 0,
+            "uniq_id": 3,
+            "rank": 0,
+            "exclusive": true,
+            "unit": "",
+            "size": 1,
+            "paths": {
+              "containment": "/cluster0/corona116/core0"
+            }
+          }
+        },
+        {
+          "id": "1",
+          "metadata": {
+            "type": "node",
+            "basename": "corona116",
+            "name": "corona116",
+            "id": -1,
+            "uniq_id": 1,
+            "rank": 0,
+            "exclusive": false,
+            "unit": "",
+            "size": 1,
+            "paths": {
+              "containment": "/cluster0/corona116"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "metadata": {
+            "type": "core",
+            "basename": "core",
+            "name": "core0",
+            "id": 0,
+            "uniq_id": 3,
+            "rank": 1,
+            "exclusive": true,
+            "unit": "",
+            "size": 1,
+            "paths": {
+              "containment": "/cluster0/corona117/core0"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "metadata": {
+            "type": "node",
+            "basename": "corona117",
+            "name": "corona117",
+            "id": -1,
+            "uniq_id": 1,
+            "rank": 1,
+            "exclusive": false,
+            "unit": "",
+            "size": 1,
+            "paths": {
+              "containment": "/cluster0/corona117"
+            }
+          }
+        },
+        {
+          "id": "0",
+          "metadata": {
+            "type": "cluster",
+            "basename": "cluster",
+            "name": "cluster0",
+            "id": 0,
+            "uniq_id": 0,
+            "rank": -1,
+            "exclusive": false,
+            "unit": "",
+            "size": 1,
+            "paths": {
+              "containment": "/cluster0"
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "0",
+          "target": "2",
+          "metadata": {
+            "name": {
+              "containment": "contains"
+            }
+          }
+        },
+        {
+          "source": "1",
+          "target": "3",
+          "metadata": {
+            "name": {
+              "containment": "contains"
+            }
+          }
+        },
+        {
+          "source": "0",
+          "target": "1",
+          "metadata": {
+            "name": {
+              "containment": "contains"
+            }
+          }
+        },
+        {
+          "source": "4",
+          "target": "5",
+          "metadata": {
+            "name": {
+              "containment": "contains"
+            }
+          }
+        },
+        {
+          "source": "0",
+          "target": "4",
+          "metadata": {
+            "name": {
+              "containment": "contains"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

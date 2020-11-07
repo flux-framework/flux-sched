@@ -1,0 +1,39 @@
+version: 9999
+resources:
+  - type: cpu_group
+    label: alpha
+    count: 1
+    with:
+      - type: socket
+        count: 2
+        label: bravo
+        with:
+          - type: slot
+            label: default
+            count: 22
+            with:
+              - type: core
+                count: 1
+                label: charlie
+  - type: gpu_rack
+    label: delta
+    count: 1
+    with:
+      - type: gpu_group
+        count: 2
+        label: echo
+        with:
+           - type: gpu
+             count: 8
+             label: foxtrot
+             exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

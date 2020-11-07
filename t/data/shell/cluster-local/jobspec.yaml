@@ -1,0 +1,37 @@
+version: 1
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: node
+        count: 2
+        with:
+          - type: slot
+            label: default
+            count: 1
+            with:
+              - type: core
+                count: 1
+      - type: storage
+        count: 1562
+        label: cluster-local-storage
+        exclusive: true
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+    shell:
+      options:
+        verbose: 1
+    data-staging:
+      - test: true
+        label: cluster-local-storage
+        granularity: job
+        stage-in:
+          file: /usr/src/foo
+tasks:
+  - command: [ "hostname" ]
+    slot: default
+    count:
+      per_slot: 1

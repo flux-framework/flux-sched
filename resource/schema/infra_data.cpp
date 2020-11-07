@@ -141,6 +141,7 @@ void pool_infra_t::scrub ()
     colors.clear ();
     if (x_checker)
         planner_destroy (&x_checker);
+    ephemeral.clear ();
 }
 
 

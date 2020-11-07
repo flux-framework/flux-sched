@@ -395,7 +395,6 @@ static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
             dflt = args.match_format;
             args.match_format = strstr (argv[i], "=") + 1;
             if (!known_match_format (args.match_format)) {
-                args.match_format = dflt;
                 flux_log (ctx->h, LOG_ERR,
                           "%s: unknown match format (%s)! use default (%s).",
                           __FUNCTION__,
@@ -1843,13 +1842,17 @@ error:
 }
 
 static int run_find (std::shared_ptr<resource_ctx_t>& ctx,
-                     const std::string &criteria, json_t **R)
+                     const std::string &criteria,
+                     const std::string &format_str,
+                     json_t **R)
 {
     int rc = -1;
     json_t *o = nullptr;
     std::shared_ptr<match_writers_t> w = nullptr;
 
-    if ( !(w = match_writers_factory_t::create (match_format_t::RV1_NOSCHED)))
+    match_format_t format = match_writers_factory_t::
+        get_writers_type (format_str);
+    if ( !(w = match_writers_factory_t::create (format)))
         goto error;
     if ( (rc = ctx->traverser->find (w, criteria)) < 0) {
         if (ctx->traverser->err_message () != "") {
@@ -1877,12 +1880,16 @@ static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
     json_t *R = nullptr;
     int saved_errno;
     const char *criteria = nullptr;
+    const char *format_str = "rv1_nosched";
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if (flux_request_unpack (msg, nullptr, "{s:s}",
-                                               "criteria", &criteria) < 0)
+    if (flux_request_unpack (msg, nullptr,
+                                  "{s:s, s?:s}",
+                                  "criteria", &criteria,
+                                  "format", &format_str) < 0)
         goto error;
-    if (run_find (ctx, criteria, &R) < 0)
+
+    if (run_find (ctx, criteria, format_str, &R) < 0)
         goto error;
     if (flux_respond_pack (h, msg, "{s:o?}",
                                        "R", R) < 0) {
@@ -1910,11 +1917,11 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
     json_t *R_alloc = nullptr;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if (run_find (ctx, "status=up or status=down", &R_all) < 0)
+    if (run_find (ctx, "status=up or status=down", "rv1_nosched", &R_all) < 0)
         goto error;
-    if (run_find (ctx, "status=down", &R_down) < 0)
+    if (run_find (ctx, "status=down", "rv1_nosched", &R_down) < 0)
         goto error;
-    if (run_find (ctx, "sched-now=allocated", &R_alloc) < 0)
+    if (run_find (ctx, "sched-now=allocated", "rv1_nosched", &R_alloc) < 0)
         goto error;
     if (flux_respond_pack (h, msg, "{s:o? s:o? s:o?}",
                                        "all", R_all,
