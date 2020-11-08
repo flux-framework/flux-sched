@@ -1,3 +1,16 @@
+flux-sched version 0.13.0 - 2020-11-05
+--------------------------------------
+
+### Fixes
+
+ * expect Rv1 from resource.acquire, use flux resource reload (#766)
+ * update configs for travis-ci.com migration (#769)
+
+### Features
+
+ * Add support for nodelist for RV1 change and R_lite compression (#764)
+ * Add job shell plugin for data staging on tiered storage systems (#743)
+
 flux-sched version 0.12.0 - 2020-09-30
 --------------------------------------
 
