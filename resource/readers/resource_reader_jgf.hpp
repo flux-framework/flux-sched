@@ -26,6 +26,7 @@
 #define RESOURCE_READER_JGF_HPP
 
 #include <string>
+#include <unordered_set>
 #include <jansson.h>
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_base.hpp"
@@ -104,11 +105,16 @@ private:
                       json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
+    vtx_t vtx_in_graph (const resource_graph_metadata_t &m, 
+                        const std::map<std::string, std::string> &paths);
     bool is_root (const std::string &path);
     int check_root (vtx_t v, resource_graph_t &g,
                     std::map<std::string, bool> &is_roots);
     int add_graph_metadata (vtx_t v, resource_graph_t &g,
                             resource_graph_metadata_t &m);
+    int update_vmap (std::map<std::string, vmap_val_t> &vmap, vtx_t v, 
+                     const std::map<std::string, bool> &root_checks,
+                     const fetch_helper_t &fetcher);
     int add_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
                  std::map<std::string, vmap_val_t> &vmap,
                  const fetch_helper_t &fetcher);
@@ -123,7 +129,9 @@ private:
                     const fetch_helper_t &fetcher, uint64_t jobid, int64_t at,
                     uint64_t dur, bool rsv);
     int unpack_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes);
+                         std::map<std::string, vmap_val_t> &vmap, 
+                         json_t *nodes,
+                         std::unordered_set<std::string> &added_vtcs);
     int undo_vertices (resource_graph_t &g,
                        std::map<std::string, vmap_val_t> &vmap,
                        uint64_t jobid, bool rsv);
@@ -143,7 +151,9 @@ private:
                          std::string &source, std::string &target,
                          uint64_t token);
     int unpack_edges (resource_graph_t &g, resource_graph_metadata_t &m,
-                      std::map<std::string, vmap_val_t> &vmap, json_t *edges);
+                      std::map<std::string, vmap_val_t> &vmap, 
+                      json_t *edges,
+                      const std::unordered_set<std::string> &added_vtcs);
     int update_edges (resource_graph_t &g, resource_graph_metadata_t &m,
                       std::map<std::string, vmap_val_t> &vmap,
                       json_t *edges, uint64_t token);
