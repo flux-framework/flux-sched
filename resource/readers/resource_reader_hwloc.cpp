@@ -22,6 +22,7 @@
  *  See also:  http://www.gnu.org/licenses/
  \*****************************************************************************/
 
+#include <limits>
 #include "resource/readers/resource_reader_hwloc.hpp"
 #include "resource/store/resource_graph_store.hpp"
 
@@ -251,6 +252,22 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                  */
                 const char *delim = strchr (obj->name + 6, 'd');
                 id = atoi (delim + 1);
+            }
+            if (namespace_remapper.is_remapped ()) {
+                uint64_t remap_id;
+                if (namespace_remapper.query (rank, "gpu", id, remap_id) < 0) {
+                    m_err_msg += "Error remapping gpu id="
+                                     + std::to_string (id) +"; ";
+                    rc = -1;
+                    break;
+                }
+                if (remap_id > std::numeric_limits<int>::max ()) {
+                    errno = EOVERFLOW;
+                    m_err_msg += "Remapped gpu id too large; ";
+                    rc = -1;
+                    break;
+                }
+                id = static_cast<int> (remap_id);
             }
             type = "gpu";
             basename = type;
