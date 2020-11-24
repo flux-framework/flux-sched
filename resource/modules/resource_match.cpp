@@ -265,6 +265,9 @@ static void find_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
 
+static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -290,6 +293,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.find", find_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.status", status_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.ns-info", ns_info_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -2037,6 +2042,44 @@ error:
     json_decref (R_alloc);
     json_decref (R_down);
     errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                const flux_msg_t *msg, void *arg)
+{
+    uint64_t rank, id, remapped_id;
+    const char *type_name;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_request_unpack (msg, nullptr,
+                                  "{s:I s:s s:I}",
+                                      "rank", &rank,
+                                      "type-name", &type_name,
+                                      "id", &id) < 0) {
+        flux_log_error (h, "%s: flux_respond_unpack", __FUNCTION__);
+        goto error;
+    }
+    if (ctx->reader->namespace_remapper.query (rank, type_name,
+                                               id, remapped_id) < 0) {
+        flux_log_error (h, "%s: namespace_remapper.query", __FUNCTION__);
+        goto error;
+    }
+    if (remapped_id > std::numeric_limits<int64_t>::max ()) {
+        errno = EOVERFLOW;
+        flux_log_error (h, "%s: remapped id too large", __FUNCTION__);
+        goto error;
+    }
+    if (flux_respond_pack (h, msg, "{s:I}",
+                                       "id", static_cast<int64_t> (
+                                                 remapped_id)) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+    return;
+
+error:
     if (flux_respond_error (h, msg, errno, nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
