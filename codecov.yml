@@ -6,6 +6,7 @@ coverage:
  - "**/test/*.c"
  - "**/tests/*.c"
  - "libtap/.*"
+ - "src/common/libutil/json.hpp"
  patch:
   default:
    target: 50%
