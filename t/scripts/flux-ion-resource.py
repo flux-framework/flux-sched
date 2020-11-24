@@ -207,7 +207,7 @@ def find_action (args):
     print (json.dumps (resp['R']))
 
 """
-    Action for find sub-command
+    Action for status sub-command
 """
 def status_action (args):
     r = ResourceModuleInterface ()
