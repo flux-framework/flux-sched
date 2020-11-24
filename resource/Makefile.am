@@ -31,6 +31,7 @@ libresource_la_SOURCES = \
     traversers/dfu_impl_update.cpp \
     policies/base/dfu_match_cb.cpp \
     policies/base/matcher.cpp \
+    readers/resource_namespace_remapper.cpp \
     readers/resource_reader_base.cpp \
     readers/resource_spec_grug.cpp \
     readers/resource_reader_grug.cpp \
@@ -61,6 +62,7 @@ libresource_la_SOURCES = \
     traversers/dfu_impl.hpp \
     policies/base/dfu_match_cb.hpp \
     policies/base/matcher.hpp \
+    readers/resource_namespace_remapper.hpp \
     readers/resource_reader_base.hpp \
     readers/resource_spec_grug.hpp \
     readers/resource_reader_grug.hpp \
