@@ -5,7 +5,7 @@ coverage:
  ignore:
  - "**/test/*.c"
  - "**/tests/*.c"
- - "libtap/.*"
+ - "src/common/libtap/.*"
  - "src/common/libutil/json.hpp"
 
  # Allow coverage to drop up to 0.1%
