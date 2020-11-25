@@ -1,0 +1,2 @@
+ERROR: can't attach JGF subgraph 
+ERROR: add_graph_metadata: failed to add root metadata for containment subsystem. Possible duplicate root.

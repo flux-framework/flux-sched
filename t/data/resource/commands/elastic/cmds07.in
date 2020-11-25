@@ -1,0 +1,4 @@
+attach @TEST_SRCDIR@/data/resource/jgfs/elastic/dne.json
+find status=up
+find sched-now=allocated
+quit

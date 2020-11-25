@@ -1,0 +1,7 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
+find status=up
+find sched-now=allocated
+attach @TEST_SRCDIR@/data/resource/jgfs/elastic/node-add-test.json
+find status=up
+find sched-now=allocated
+quit
