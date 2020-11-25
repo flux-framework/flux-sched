@@ -1,14 +1,19 @@
 coverage:
  precision: 1
  round: down
- range: "50...100"
+ range: "65...100"
  ignore:
  - "**/test/*.c"
  - "**/tests/*.c"
  - "libtap/.*"
  - "src/common/libutil/json.hpp"
- patch:
-  default:
-   target: 50%
- comment:
+
+ # Allow coverage to drop up to 0.1%
+ status:
+  project:
+   default:
+    threshold: .1
+
+comment:
   layout: "header, diff, changes, tree"
+  behavior: new
