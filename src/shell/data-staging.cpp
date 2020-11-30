@@ -36,7 +36,7 @@ static jobspec_state_t validate_jobspec (json &jobspec)
         storage_attrs = \
             jobspec.at ("/attributes/system/data-staging"_json_pointer);
     } catch (json::out_of_range& e) {
-        shell_log ("Jobspec does not contain data-staging attributes. "
+        shell_debug ("Jobspec does not contain data-staging attributes. "
                    "No staging necessary.");
         return jobspec_state_t::VALID_NO_STAGING;
     }
@@ -131,7 +131,7 @@ static std::map<std::string, json> find_storage_resources (json &R, int rank)
                 } else {
                     auto name = metadata.at ("name").get_ref<
                         const std::string&>();
-                    shell_log ("Storage resource in R without a label: %s",
+                    shell_debug ("Storage resource in R without a label: %s",
                                name.c_str ());
                 }
             }
@@ -149,14 +149,14 @@ static int stage_data (json &jobspec, json &R, int rank)
     auto data_staging_key = "/attributes/system/data-staging"_json_pointer;
     json data_staging_list = jobspec.at (data_staging_key);
     auto storage_resources = find_storage_resources (R, rank);
-    shell_log ("Found %d storage resources", (int) storage_resources.size ());
+    shell_debug ("Found %d storage resources", (int) storage_resources.size ());
 
     for (const json &data_staging : data_staging_list) {
         // If the filesystem is job-level then only the first rank needs to do
         // the staging
         std::string granularity = data_staging.at ("granularity");
         if ((granularity == "job") && (rank > 0)) {
-            shell_log ("Rank %d skipping staging to a job granularity storage",
+            shell_debug ("Rank %d skipping staging to a job granularity storage",
                        rank);
             continue;
         }
@@ -190,7 +190,7 @@ static int stage_data (json &jobspec, json &R, int rank)
         try {
             test = data_staging.at ("test").get<bool>();
              if (test) {
-                shell_log ("Rank %d staging from %s to %s",
+                shell_debug ("Rank %d staging from %s to %s",
                            rank,
                            source.c_str (),
                            destination.c_str ());
