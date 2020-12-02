@@ -416,7 +416,7 @@ std::shared_ptr<job_t> queue_policy_base_impl_t::pending_pop ()
     flux_jobid_t id;
 
     if (m_pending.empty ())
-        return nullptr; 
+        return nullptr;
     id = m_pending.begin ()->second;
     if (m_jobs.find (id) == m_jobs.end ())
         return nullptr;
