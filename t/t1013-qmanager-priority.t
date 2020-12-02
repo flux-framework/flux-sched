@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test_description='Fluxion takes into account priority and t_submit'
+test_description='Fluxion takes into account urgency and t_submit'
 
 . `dirname $0`/sharness.sh
 
@@ -24,15 +24,15 @@ test_expect_success 'priority: loading fluxion modules works' '
 
 test_expect_success 'priority: a full-size job can be scheduled and run' '
     jobid1=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
---priority 16 sleep 3600) &&
+--urgency 16 sleep 3600) &&
     flux job wait-event -t 10 ${jobid1} start
 '
 
-test_expect_success 'priority: 2 jobs with higher priority will not run' '
+test_expect_success 'priority: 2 jobs with higher urgency will not run' '
     jobid2=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
---priority 17 sleep 3600) &&
+--urgency 17 sleep 3600) &&
     jobid3=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
---priority 18 sleep 3600) &&
+--urgency 18 sleep 3600) &&
     test_must_fail flux job wait-event -t 1 ${jobid2} start
 '
 
