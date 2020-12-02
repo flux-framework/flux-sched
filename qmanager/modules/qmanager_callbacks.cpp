@@ -153,9 +153,9 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
     queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
-    // Note that RFC27 defines 31 as the max priority. Because our queue policy
+    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
     // layer sorts the pending jobs in lexicographical order
-    // (<priority, t_submit, ...> and lower the better, we adjust priority.
+    // (<urgency, t_submit, ...> and lower the better, we adjust urgency.
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
                                                    id, uid, 31 - prio, ts, R);
 
@@ -183,15 +183,15 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
 
     if (jobspec_obj.attributes.system.queue != "")
         queue_name = jobspec_obj.attributes.system.queue;
-    if (schedutil_alloc_request_decode (msg, &job->id, &job->priority,
+    if (schedutil_alloc_request_decode (msg, &job->id, &job->urgency,
                                         &job->userid, &job->t_submit) < 0) {
         flux_log_error (h, "%s: schedutil_alloc_request_decode", __FUNCTION__);
         return;
     }
-    // Note that RFC27 defines 31 as the max priority. Because our queue policy
+    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
     // layer sorts the pending jobs in lexicographical order
-    // (<priority, t_submit, ...> and lower the better, we adjust the priority.
-    job->priority = 31 - job->priority;
+    // (<urgency, t_submit, ...> and lower the better, we adjust the urgency.
+    job->urgency = 31 - job->urgency;
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
