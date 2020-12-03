@@ -252,6 +252,7 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
     const std::string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
     m_trav_level++;
+    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     for (auto &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
