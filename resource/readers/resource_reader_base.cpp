@@ -90,6 +90,11 @@ int resource_reader_base_t::set_allowlist (const std::string &csl)
     return rc;
 }
 
+bool resource_reader_base_t::is_allowlist_set ()
+{
+    return !allowlist.empty ();
+}
+
 const std::string &resource_reader_base_t::err_message () const
 {
     return m_err_msg;

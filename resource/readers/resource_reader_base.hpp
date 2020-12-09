@@ -92,6 +92,12 @@ public:
      */
     int set_allowlist (const std::string &csl);
 
+    /*! Is the allowlist set
+     *
+     * \return       true when supported
+     */
+    virtual bool is_allowlist_set ();
+
     /*! Is the selected reader format support allowlist
      *
      * \return       true when supported
