@@ -59,9 +59,13 @@ public:
     int add (const std::string &exec_target_range,
              const std::string &name_type,
              uint64_t ref_id, uint64_t remapped_id);
+    int add_exec_target_range (const std::string &exec_target_range,
+                               const std::string &remapped_exec_target_range);
     int query (const uint64_t exec_target,
                const std::string &name_type,
                uint64_t ref_id, uint64_t &remapped_id_out) const;
+    int query_exec_target (const uint64_t exec_target,
+                           uint64_t &remapped_exec_target) const;
     bool is_remapped () const;
 
 private:

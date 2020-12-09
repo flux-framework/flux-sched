@@ -192,6 +192,33 @@ error:
     return -1;
 }
 
+int resource_namespace_remapper_t::add_exec_target_range (
+        const std::string &exec_target_range,
+        const std::string &remapped_exec_target_range)
+{
+    try {
+        uint64_t low, high, r_low, r_high, i, j;
+        if (get_low_high (exec_target_range, low, high) < 0)
+            goto error;
+        if (get_low_high (remapped_exec_target_range, r_low, r_high) < 0)
+            goto error;
+        if ((high - low) != (r_high - r_low))
+            goto inval;
+        for (i = low, j = r_low; i <= high; i++, j++) {
+            if (add (exec_target_range, "exec-target", i, j) < 0)
+                goto error;
+        }
+    } catch (std::bad_alloc &) {
+        errno = ENOMEM;
+        goto error;
+    }
+    return 0;
+inval:
+    errno = EINVAL;
+error:
+    return -1;
+}
+
 int resource_namespace_remapper_t::query (const uint64_t exec_target,
                                           const std::string &name_type,
                                           uint64_t ref_id,
@@ -199,7 +226,21 @@ int resource_namespace_remapper_t::query (const uint64_t exec_target,
 {
     try {
         remapped_id_out = m_remap.at (distinct_range_t{exec_target})
-                                         .at (name_type). at (ref_id);
+                                         .at (name_type).at (ref_id);
+        return 0;
+    } catch (std::out_of_range &) {
+        errno = ENOENT;
+        return -1;
+    }
+}
+
+int resource_namespace_remapper_t::query_exec_target (
+        const uint64_t exec_target, uint64_t &remapped_exec_target) const
+{
+    try {
+        remapped_exec_target = m_remap.at (distinct_range_t{exec_target})
+                                               .at ("exec-target")
+                                                        .at (exec_target);
         return 0;
     } catch (std::out_of_range &) {
         errno = ENOENT;
