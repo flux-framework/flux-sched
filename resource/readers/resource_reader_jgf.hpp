@@ -96,6 +96,12 @@ public:
 private:
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p, json_t **nodes_p, json_t **edges_p);
+    int unpack_and_remap_vtx (fetch_helper_t &f,
+                              json_t *paths, json_t *properties);
+    int remap_aware_unpack_vtx (fetch_helper_t &f,
+                                json_t *paths, json_t *properties);
+    int fill_fetcher (json_t *element, fetch_helper_t &f,
+                      json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
     bool is_root (const std::string &path);

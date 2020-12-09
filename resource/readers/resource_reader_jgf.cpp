@@ -275,13 +275,107 @@ done:
     return rc;
 }
 
-int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
+/* JGF reader remaps execution target Ids for all resources
+ * and certain info for core resources. (each core's id, name and paths).
+ */
+int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
+                                                 json_t *paths,
+                                                 json_t *properties)
+{
+    json_t *value = NULL;
+    const char *key = NULL;
+    uint64_t remap_rank;
+    uint64_t remap_id;
+
+    if (namespace_remapper.query_exec_target (
+                               static_cast<uint64_t> (f.rank),
+                               remap_rank) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": error remapping rank id=";
+        m_err_msg += std::to_string (f.rank) + ".\n";
+        goto error;
+    }
+    if (remap_rank > std::numeric_limits<int64_t>::max ()) {
+        errno = EOVERFLOW;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": remapped rank too large.\n";
+        goto error;
+    }
+    f.set_remapped_rank (static_cast<int64_t> (remap_rank));
+
+    if (std::string ("core") == f.type) {
+        if (namespace_remapper.query (f.rank, "core", f.id, remap_id) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": error remapping core id=" + std::to_string (f.id);
+            m_err_msg += " rank=" + std::to_string (f.rank) + ".\n";
+            goto error;
+        }
+        if (remap_id > std::numeric_limits<int>::max ()) {
+            errno = EOVERFLOW;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": remapped id too large.\n";
+            goto error;
+        }
+        f.set_remapped_id (static_cast<int> (remap_id));
+        f.set_remapped_name (f.basename + std::to_string (remap_id));
+
+        json_object_foreach (paths, key, value) {
+            std::string path = json_string_value (value);
+            std::size_t sl = path.find_last_of ("/");
+            if (sl == std::string::npos || path.substr (sl+1, 4) != "core") {
+                errno = EINVAL;
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": malformed path for core id=";
+                m_err_msg += std::to_string (f.id) + ".\n";
+                goto error;
+            }
+            f.paths[std::string (key)] = path.substr (0, sl+1)
+                                             + f.basename
+                                             + std::to_string (remap_id);
+        }
+    } else {
+        json_object_foreach (paths, key, value) {
+            f.paths[std::string (key)] = json_string_value (value);
+        }
+    }
+
+    json_object_foreach (properties, key, value) {
+        f.properties[std::string (key)]
+            = std::string (json_string_value (value));
+    }
+    return 0;
+error:
+    return -1;
+}
+
+int resource_reader_jgf_t::remap_aware_unpack_vtx (fetch_helper_t &f,
+                                                   json_t *paths,
+                                                   json_t *properties)
+{
+    json_t *value = NULL;
+    const char *key = NULL;
+
+    if (namespace_remapper.is_remapped () && f.rank != -1) {
+        if (unpack_and_remap_vtx (f, paths, properties) < 0)
+            return -1;
+    } else {
+        json_object_foreach (paths, key, value) {
+            f.paths[std::string (key)] = std::string (json_string_value (value));
+        }
+        json_object_foreach (properties, key, value) {
+            f.properties[std::string (key)]
+                = std::string (json_string_value (value));
+        }
+    }
+    return 0;
+}
+
+int resource_reader_jgf_t::fill_fetcher (json_t *element, fetch_helper_t &f,
+                                         json_t **paths, json_t **properties)
 {
     int rc = -1;
     json_t *p = NULL;
-    json_t *value = NULL;
     json_t *metadata = NULL;
-    const char *key = NULL;
 
     if ( (json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
         errno = EPROTO;
@@ -315,19 +409,22 @@ int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
         m_err_msg += std::string (f.vertex_id) + ".\n";
         goto done;
     }
-    json_object_foreach (p, key, value) {
-        f.paths[std::string (key)] = std::string (json_string_value (value));
-    }
-
-    p = json_object_get (metadata, "properties");
-    json_object_foreach (p, key, value) {
-        f.properties[std::string (key)]
-            = std::string (json_string_value (value));
-    }
+    *properties = json_object_get (metadata, "properties");
+    *paths = p;
     rc = 0;
-
 done:
     return rc;
+}
+
+int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
+{
+    json_t *paths = NULL;
+    json_t *properties = NULL;
+    if (fill_fetcher (element, f, &paths, &properties) < 0)
+        return -1;
+    if (remap_aware_unpack_vtx (f, paths, properties) < 0)
+        return -1;
+    return 0;
 }
 
 vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g,
@@ -354,10 +451,10 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g,
     g[v].basename = fetcher.basename;
     g[v].size = fetcher.size;
     g[v].uniq_id = fetcher.uniq_id;
-    g[v].rank = fetcher.rank;
+    g[v].rank = fetcher.get_proper_rank ();
     g[v].status = fetcher.status;
-    g[v].id = fetcher.id;
-    g[v].name = fetcher.name;
+    g[v].id = fetcher.get_proper_id ();
+    g[v].name = fetcher.get_proper_name ();
     g[v].properties = fetcher.properties;
     g[v].paths = fetcher.paths;
     g[v].schedule.plans = plans;
@@ -647,8 +744,7 @@ int resource_reader_jgf_t::unpack_vertices (resource_graph_t &g,
     fetch_helper_t fetcher;
 
     for (i = 0; i < json_array_size (nodes); i++) {
-        fetcher.properties.clear ();
-        fetcher.paths.clear ();
+        fetcher.scrub ();
         if (unpack_vtx (json_array_get (nodes, i), fetcher) != 0)
             goto done;
         if (add_vtx (g, m, vmap, fetcher) != 0)
@@ -673,8 +769,7 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
     fetch_helper_t fetcher;
 
     for (i = 0; i < json_array_size (nodes); i++) {
-        fetcher.properties.clear ();
-        fetcher.paths.clear ();
+        fetcher.scrub ();
         if ( (rc = unpack_vtx (json_array_get (nodes, i), fetcher)) != 0)
             goto done;
         if ( (rc = update_vtx (g, m, vmap, fetcher, jobid, at, dur, rsv)) != 0)
