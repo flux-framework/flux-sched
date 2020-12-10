@@ -472,12 +472,35 @@ error:
  *                                                                            *
  ******************************************************************************/
 
+static int create_reader (std::shared_ptr<resource_ctx_t> &ctx,
+                          const std::string &format,
+                          const std::string &allowlist)
+{
+    if ( (ctx->reader = create_resource_reader (format)) == nullptr)
+        return -1;
+    if (allowlist != "") {
+        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
+            flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
+        if (!ctx->reader->is_allowlist_supported ())
+            flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
+                      __FUNCTION__);
+    }
+    return 0;
+}
+
 static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     int saved_errno;
     std::ifstream in_file;
     std::stringstream buffer{};
+
+    if (ctx->reader == nullptr
+        && create_reader (ctx, ctx->args.load_format,
+                          ctx->args.load_allowlist) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: can't create reader", __FUNCTION__);
+        goto done;
+    }
 
     saved_errno = errno;
     errno = 0;
@@ -662,7 +685,12 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         goto done;
     if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0)
         goto done;
-
+    if (ctx->reader == nullptr
+        && create_reader (ctx, "hwloc", ctx->args.load_allowlist) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: can't create hwloc reader",
+                  __FUNCTION__);
+        goto done;
+    }
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         if (rank != IDSET_INVALID_ID) {
             if (!(hwloc_xml = get_array_string (xml_array, rank)))
@@ -954,19 +982,6 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-    if ( (ctx->reader = create_resource_reader (
-                            ctx->args.load_format)) == nullptr) {
-        flux_log (ctx->h, LOG_ERR, "%s: can't create load reader",
-                  __FUNCTION__);
-        goto done;
-    }
-    if (ctx->args.load_allowlist != "") {
-        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
-            flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
-        if (!ctx->reader->is_allowlist_supported ())
-            flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
-                      __FUNCTION__);
-    }
     if ( (rc = gettimeofday (&st, NULL)) < 0) {
         flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
         goto done;
