@@ -38,12 +38,36 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::resource_model;
 
-struct fetch_helper_t {
-    int64_t id = 0;
-    int64_t rank = 0;
-    int64_t size = 0;
-    int64_t uniq_id = 0;
-    int exclusive = 0;
+class fetch_remap_support_t {
+public:
+    int64_t get_remapped_id () const;
+    int64_t get_remapped_rank () const;
+    const std::string &get_remapped_name () const;
+    void set_remapped_id (int64_t i);
+    void set_remapped_rank (int64_t r);
+    void set_remapped_name (const std::string &n);
+    bool is_name_remapped () const;
+    bool is_id_remapped () const;
+    bool is_rank_remapped () const;
+    void clear ();
+
+private:
+    int64_t m_remapped_id = -1;
+    int64_t m_remapped_rank = -1;
+    std::string m_remapped_name = "";
+};
+
+struct fetch_helper_t : public fetch_remap_support_t {
+    const char *get_proper_name () const;
+    int64_t get_proper_id () const;
+    int64_t get_proper_rank () const;
+    void scrub ();
+
+    int64_t id = -1;
+    int64_t rank = -1;
+    int64_t size = -1;
+    int64_t uniq_id = -1;
+    int exclusive = -1;
     resource_pool_t::status_t status = resource_pool_t::status_t::UP;
     const char *type = NULL;
     const char *name = NULL;
@@ -53,6 +77,91 @@ struct fetch_helper_t {
     std::map<std::string, std::string> properties;
     std::map<std::string, std::string> paths;
 };
+
+int64_t fetch_remap_support_t::get_remapped_id () const
+{
+    return m_remapped_id;
+}
+
+int64_t fetch_remap_support_t::get_remapped_rank () const
+{
+    return m_remapped_rank;
+}
+
+const std::string &fetch_remap_support_t::get_remapped_name () const
+{
+    return m_remapped_name;
+}
+
+void fetch_remap_support_t::set_remapped_id (int64_t i)
+{
+    m_remapped_id = i;
+}
+
+void fetch_remap_support_t::set_remapped_rank (int64_t r)
+{
+    m_remapped_rank = r;
+}
+
+void fetch_remap_support_t::set_remapped_name (const std::string &n)
+{
+    m_remapped_name = n;
+}
+
+bool fetch_remap_support_t::is_name_remapped () const
+{
+    return m_remapped_name != "";
+}
+
+bool fetch_remap_support_t::is_id_remapped () const
+{
+    return m_remapped_id != -1;
+}
+
+bool fetch_remap_support_t::is_rank_remapped () const
+{
+    return m_remapped_rank != -1;
+}
+
+void fetch_remap_support_t::clear ()
+{
+    m_remapped_id = -1;
+    m_remapped_rank = -1;
+    m_remapped_name = "";
+}
+
+const char *fetch_helper_t::get_proper_name () const
+{
+    return (is_name_remapped ())? get_remapped_name ().c_str () : name;
+}
+
+int64_t fetch_helper_t::get_proper_id () const
+{
+    return (is_id_remapped ())? get_remapped_id () : id;
+}
+
+int64_t fetch_helper_t::get_proper_rank () const
+{
+    return (is_rank_remapped ())? get_remapped_rank () : rank;
+}
+
+void fetch_helper_t::scrub ()
+{
+    id = -1;
+    rank = -1;
+    size = -1;
+    uniq_id = -1;
+    exclusive = -1;
+    type = NULL;
+    name = NULL;
+    unit = NULL;
+    basename = NULL;
+    vertex_id = NULL;
+    properties.clear ();
+    paths.clear ();
+    clear ();
+}
+
 
 struct vmap_val_t {
     vtx_t v;
