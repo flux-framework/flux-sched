@@ -39,6 +39,7 @@ TESTS = \
     t1014-annotation.t \
     t1015-find-format.t \
     t1016-nest-namespace.t \
+    t1017-rv1-bootstrap.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
