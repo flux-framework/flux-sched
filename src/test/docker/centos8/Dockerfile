@@ -27,4 +27,3 @@ RUN \
 
 USER $USER
 WORKDIR /home/$USER
-RUN flux keygen
