@@ -68,7 +68,6 @@ if test "$COVERAGE" = "t"; then
 elif test "$TEST_INSTALL" = "t"; then
     ARGS="$ARGS --prefix=/usr --sysconfdir=/etc"
     MAKECMDS="make -j $JOBS && sudo make install && \
-              /usr/bin/flux keygen --force && \
               FLUX_TEST_INSTALLED_PATH=/usr/bin \
               FLUX_SCHED_TEST_INSTALLED=t make -j $JOBS check"
 fi
@@ -87,10 +86,6 @@ export DISTCHECK_CONFIGURE_FLAGS="${ARGS}"
 
 if test "$CPPCHECK" = "t"; then
     sh -x src/test/cppcheck.sh
-fi
-
-if ! test -d $HOME/.flux/curve; then
-    travis_fold "flux_keygen" "flux keygen ..." flux keygen
 fi
 
 echo "Starting MUNGE"
