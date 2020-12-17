@@ -44,6 +44,9 @@ public:
     bool operator== (const distinct_range_t &o) const;
     bool operator!= (const distinct_range_t &o) const;
 
+    static int get_low_high (const std::string &exec_target_range,
+                             uint64_t &low, uint64_t &high);
+
 private:
     uint64_t m_low;
     uint64_t m_high;
@@ -59,8 +62,9 @@ public:
     int add (const std::string &exec_target_range,
              const std::string &name_type,
              uint64_t ref_id, uint64_t remapped_id);
-    int add_exec_target_range (const std::string &exec_target_range,
-                               const std::string &remapped_exec_target_range);
+    int add_exec_target_range (
+            const std::string &exec_target_range,
+            const distinct_range_t &remapped_exec_target_range);
     int query (const uint64_t exec_target,
                const std::string &name_type,
                uint64_t ref_id, uint64_t &remapped_id_out) const;

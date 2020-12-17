@@ -92,9 +92,8 @@ bool distinct_range_t::operator!= (const distinct_range_t &o) const {
     return m_high != o.m_high || m_low != o.m_low;
 }
 
-int resource_namespace_remapper_t::get_low_high (
-                                       const std::string &exec_target_range,
-                                       uint64_t &low, uint64_t &high) const
+int distinct_range_t::get_low_high (const std::string &exec_target_range,
+                                    uint64_t &low, uint64_t &high)
 {
     try {
         long int n;
@@ -180,7 +179,7 @@ int resource_namespace_remapper_t::add (const std::string &exec_target_range,
 {
     try {
         uint64_t low, high;
-        if (get_low_high (exec_target_range, low, high) < 0)
+        if (distinct_range_t::get_low_high (exec_target_range, low, high) < 0)
             goto error;
         return add (low, high, name_type, ref_id, remapped_id);
     } catch (std::bad_alloc &) {
@@ -194,17 +193,17 @@ error:
 
 int resource_namespace_remapper_t::add_exec_target_range (
         const std::string &exec_target_range,
-        const std::string &remapped_exec_target_range)
+        const distinct_range_t &remapped_exec_target_range)
 {
     try {
         uint64_t low, high, r_low, r_high, i, j;
-        if (get_low_high (exec_target_range, low, high) < 0)
+        if (distinct_range_t::get_low_high (exec_target_range, low, high) < 0)
             goto error;
-        if (get_low_high (remapped_exec_target_range, r_low, r_high) < 0)
-            goto error;
+        r_low = remapped_exec_target_range.get_low ();
+        r_high = remapped_exec_target_range.get_high ();
         if ((high - low) != (r_high - r_low))
             goto inval;
-        for (i = low, j = r_low; i <= high; i++, j++) {
+        for (i = low, j = r_low; i <= high && j <= r_high; i++, j++) {
             if (add (exec_target_range, "exec-target", i, j) < 0)
                 goto error;
         }
