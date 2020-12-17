@@ -92,6 +92,43 @@ bool distinct_range_t::operator!= (const distinct_range_t &o) const {
     return m_high != o.m_high || m_low != o.m_low;
 }
 
+int resource_namespace_remapper_t::get_low_high (
+                                       const std::string &exec_target_range,
+                                       uint64_t &low, uint64_t &high) const
+{
+    try {
+        long int n;
+        size_t ndash;
+        std::string exec_target;
+        std::istringstream istr{exec_target_range};
+        std::vector<uint64_t> targets;
+
+        if ( (ndash = std::count (exec_target_range.begin (),
+                                  exec_target_range.end (), '-')) > 1)
+            goto inval;
+        while (std::getline (istr, exec_target, '-')) {
+            if ( (n = std::stol (exec_target)) < 0)
+                goto inval;
+            targets.push_back (static_cast<uint64_t> (n));
+        }
+        low = high = targets[0];
+        if (targets.size () == 2)
+            high = targets[1];
+        if (low > high)
+            goto inval;
+    } catch (std::invalid_argument &) {
+        goto inval;
+    } catch (std::out_of_range &) {
+        errno = ERANGE;
+        goto error;
+    }
+    return 0;
+inval:
+    errno = EINVAL;
+error:
+    return -1;
+}
+
 
 /********************************************************************************
  *                                                                              *
@@ -142,36 +179,15 @@ int resource_namespace_remapper_t::add (const std::string &exec_target_range,
                                         uint64_t ref_id, uint64_t remapped_id)
 {
     try {
-        long int n;
-        size_t ndash;
-        std::string exec_target;
-        std::istringstream istr{exec_target_range};
-        std::vector<uint64_t> targets;
-
-        if ( (ndash = std::count (exec_target_range.begin (),
-                                  exec_target_range.end (), '-')) > 1)
-            goto inval;
-        while (std::getline (istr, exec_target, '-')) {
-            if ( (n = std::stol (exec_target)) < 0)
-                goto inval;
-            targets.push_back (static_cast<uint64_t> (n));
-        }
-        return (targets.size () == 2) ? add (targets[0], targets[1],
-                                             name_type, ref_id, remapped_id)
-                                      : add (targets[0], targets[0],
-                                             name_type, ref_id, remapped_id);
-    } catch (std::invalid_argument &) {
-        goto inval;
-    } catch (std::out_of_range &) {
-        errno = ERANGE;
-        goto error;
+        uint64_t low, high;
+        if (get_low_high (exec_target_range, low, high) < 0)
+            goto error;
+        return add (low, high, name_type, ref_id, remapped_id);
     } catch (std::bad_alloc &) {
         errno = ENOMEM;
         goto error;
     }
     return 0;
-inval:
-    errno = EINVAL;
 error:
     return -1;
 }

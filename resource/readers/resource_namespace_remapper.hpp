@@ -65,22 +65,9 @@ public:
     bool is_remapped () const;
 
 private:
-    class distinct_range_t {
-    public:
-        explicit distinct_range_t (uint64_t point);
-        distinct_range_t (uint64_t lo, uint64_t hi);
 
-        uint64_t get_low () const;
-        uint64_t get_high () const;
-        bool is_point () const;
-        bool operator< (const distinct_range_t &o) const;
-        bool operator== (const distinct_range_t &o) const;
-        bool operator!= (const distinct_range_t &o) const;
-
-    private:
-        uint64_t m_low;
-        uint64_t m_high;
-    };
+    int get_low_high (const std::string &exec_target_range,
+                      uint64_t &low, uint64_t &high) const;
 
     std::map<const distinct_range_t,
              std::map<const std::string,
