@@ -83,6 +83,10 @@ class ResourceModuleInterface:
 
     def rpc_status (self):
         return self.f.rpc ("sched-fluxion-resource.status").get ()
+
+    def rpc_namespace_info (self, rank, type_name, identity):
+        payload = {'rank' : rank, 'type-name' : type_name, 'id' : identity}
+        return self.f.rpc ("sched-fluxion-resource.ns-info", payload).get ()
     
 
 """
@@ -207,7 +211,7 @@ def find_action (args):
     print (json.dumps (resp['R']))
 
 """
-    Action for find sub-command
+    Action for status sub-command
 """
 def status_action (args):
     r = ResourceModuleInterface ()
@@ -219,6 +223,14 @@ def status_action (args):
     print ("=" * width ())
     print ('MATCHED RESOURCES:')
     print (json.dumps (resp))
+
+"""
+    Action for ns-info sub-command
+"""
+def namespace_info_action (args):
+    r = ResourceModuleInterface ()
+    resp = r.rpc_namespace_info (args.rank, args.type, args.Id)
+    print (resp['id'])
 
 """
     Main entry point
@@ -250,6 +262,7 @@ def main ():
     ststr = "Display resource status"
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
+    nstr = "Get remapped ID given raw ID seen by the selected reader."
     parser_m = subpar.add_parser ('match', help=mstr, description=mstr)
     parser_u = subpar.add_parser ('update', help=ustr, description=ustr)
     parser_i = subpar.add_parser ('info', help=istr, description=istr)
@@ -259,6 +272,7 @@ def main ():
     parser_st = subpar.add_parser ('status', help=ststr, description=ststr)
     parser_sp = subpar.add_parser ('set-property', help=pstr, description=pstr)
     parser_gp = subpar.add_parser ('get-property', help=gstr, description=gstr)
+    parser_n = subpar.add_parser ('ns-info', help=nstr, description=nstr)
 
     #
     # Add subparser for the match sub-command
@@ -352,6 +366,16 @@ def main ():
     parser_gp.add_argument ('gp_key', metavar='PropertyKey', type=str,
                             help='get-property resource_path property-key')
     parser_gp.set_defaults (func=get_property_action)
+
+    # Positional argument for ns-info sub-command
+    #
+    parser_n.add_argument ('rank', metavar='Rank', type=int,
+                           help='execution target')
+    parser_n.add_argument ('type', metavar='Type', type=str,
+                           help='type: e.g., core, gpu, or rank')
+    parser_n.add_argument ('Id', metavar='Id', type=int,
+                           help='raw Id seen by the reader')
+    parser_n.set_defaults (func=namespace_info_action)
 
     #
     # Parse the args and call an action routine as part of that

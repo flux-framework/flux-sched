@@ -30,6 +30,7 @@
 #include <cerrno>
 #include "resource/schema/resource_graph.hpp"
 #include "resource/store/resource_graph_store.hpp"
+#include "resource/readers/resource_namespace_remapper.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -104,6 +105,10 @@ public:
     /*! Clear the error message string.
      */
     void clear_err_message ();
+
+    /*! Expose resource_namespace_remapper_t interface
+     */
+    resource_namespace_remapper_t namespace_remapper;
 
 protected:
     bool in_allowlist (const std::string &resource);
