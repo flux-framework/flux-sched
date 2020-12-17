@@ -32,6 +32,24 @@
 namespace Flux {
 namespace resource_model {
 
+class distinct_range_t {
+public:
+    explicit distinct_range_t (uint64_t point);
+    distinct_range_t (uint64_t lo, uint64_t hi);
+
+    uint64_t get_low () const;
+    uint64_t get_high () const;
+    bool is_point () const;
+    bool operator< (const distinct_range_t &o) const;
+    bool operator== (const distinct_range_t &o) const;
+    bool operator!= (const distinct_range_t &o) const;
+
+private:
+    uint64_t m_low;
+    uint64_t m_high;
+};
+
+
 class resource_namespace_remapper_t {
 public:
     int add (const uint64_t exec_target_high,

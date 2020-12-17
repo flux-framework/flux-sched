@@ -42,58 +42,52 @@ using namespace Flux::resource_model;
 
 /********************************************************************************
  *                                                                              *
- *                   Private Resource Namespace Remapper API                    *
+ *                    Public Resource Namespace Remapper API                    *
  *                                                                              *
  ********************************************************************************/
 
-resource_namespace_remapper_t
-    ::distinct_range_t::distinct_range_t (uint64_t point)
+distinct_range_t::distinct_range_t (uint64_t point)
 {
     m_low = point;
     m_high = point;
 }
 
-resource_namespace_remapper_t
-    ::distinct_range_t::distinct_range_t (uint64_t lo, uint64_t hi)
+distinct_range_t::distinct_range_t (uint64_t lo, uint64_t hi)
 {
     m_low = lo;
     m_high = hi;
+    if (lo > hi)
+        throw std::invalid_argument ("distinct_range_t: low > than high");
 }
 
-uint64_t resource_namespace_remapper_t
-             ::distinct_range_t::get_low () const
+uint64_t distinct_range_t::get_low () const
 {
     return m_low;
 }
 
-uint64_t resource_namespace_remapper_t
-             ::distinct_range_t::get_high () const
+uint64_t distinct_range_t::get_high () const
 {
     return m_high;
 }
 
-bool resource_namespace_remapper_t
-         ::distinct_range_t::is_point () const
+bool distinct_range_t::is_point () const
 {
     return m_low == m_high;
 }
 
-bool resource_namespace_remapper_t
-         ::distinct_range_t::operator< (const distinct_range_t &o) const {
+bool distinct_range_t::operator< (const distinct_range_t &o) const {
     // this class is used as key for std::map, which relies on the following
     // x and y are equivalent if !(x < y) && !(y < x)
     return m_high < o.m_low;
 }
 
-bool resource_namespace_remapper_t
-         ::distinct_range_t::operator== (const distinct_range_t &o) const {
+bool distinct_range_t::operator== (const distinct_range_t &o) const {
     // x and y are equal if and only if both high and low
     // of the operands are equal
     return m_high == o.m_high && m_low == o.m_low;
 }
 
-bool resource_namespace_remapper_t
-         ::distinct_range_t::operator!= (const distinct_range_t &o) const {
+bool distinct_range_t::operator!= (const distinct_range_t &o) const {
     // x and y are not equal if either high or low is not equal
     return m_high != o.m_high || m_low != o.m_low;
 }
@@ -109,8 +103,6 @@ int resource_namespace_remapper_t::add (const uint64_t low, const uint64_t high,
                                         const std::string &name_type,
                                         uint64_t ref_id, uint64_t remapped_id)
 {
-    if (low > high)
-        goto inval;
     try {
         const distinct_range_t exec_target_range{low, high};
         auto m_remap_iter = m_remap.find (exec_target_range);
@@ -135,6 +127,8 @@ int resource_namespace_remapper_t::add (const uint64_t low, const uint64_t high,
     } catch (std::bad_alloc &) {
         errno = ENOMEM;
         goto error;
+    } catch (std::invalid_argument &) {
+        goto inval;
     }
     return 0;
 inval:
