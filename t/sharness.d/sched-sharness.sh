@@ -135,3 +135,35 @@ cleanup_active_jobs () {
         flux job cancelall -f &&
         flux queue idle
 }
+
+# Usage: remap_rv1_resource_type file resource_type
+#            [rank0_offset rank1_offset rank2_offset rank3_offset id_offset]
+#   Remap rank and Id of the given resource type based on rank offsets
+#   (corresponding rank - rank#_offset) id_offset.
+#   If the rebase refactors are not passed in, don't remap.
+#   Print the remapped info into a CSV file with heading:
+#   Name, Rank, Id, Id-in-paths
+#
+remap_rv1_resource_type() {
+    local json=${1} &&
+    local type=${2} &&
+    local id_rebase=${3:-0} &&
+    local rank_remap0=${4:-0} &&
+    local rank_remap1=${5:-0} &&
+    local rank_remap2=${6:-0} &&
+    local rank_remap3=${7:-0} &&
+    local path_prefix=$(expr 21 + ${#type})
+
+    # jq filter
+    local filter=".scheduling.graph.nodes[].metadata | \
+select(.type == \"${type}\") | .name |= .[${#type}:] | \
+.paths.containment |= .[${path_prefix}:] | \
+[ (.name | tonumber - ${id_rebase}), \
+if .rank == 0 then .rank - ${rank_remap0} \
+elif .rank == 1 then .rank - ${rank_remap1} \
+elif .rank == 2 then .rank - ${rank_remap2} \
+else .rank - ${rank_remap3} end, .id - ${id_rebase}, \
+(.paths.containment | tonumber - ${id_rebase}) ] | @csv" &&
+    echo Name,Rank,Id,Id-in-paths &&
+    jq -r " ${filter} " ${json}
+}

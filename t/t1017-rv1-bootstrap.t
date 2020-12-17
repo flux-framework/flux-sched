@@ -15,30 +15,6 @@ export FLUX_SCHED_MODULE=none
 
 test_under_flux 4
 
-# Usage: remap_rv1_resource_type file resource_type rank_rebase id_rebase
-#   Remap rank and Id of the given resource type based on rank_rebase
-#   and id_rebase. If the rebase refactors are not passed in, don't remap.
-#   Print the remapped info into a CSV file with heading:
-#   Name, Rank, Id, Id-in-paths
-#
-remap_rv1_resource_type() {
-    local json=${1} &&
-    local type=${2} &&
-    local rank_rebase=${3:-0} &&
-    local id_rebase=${4:-0} &&
-    local path_prefix=$(expr 21 + ${#type})
-
-    # jq filter
-    local filter=".scheduling.graph.nodes[].metadata | \
-select(.type == \"${type}\") | .name |= .[${#type}:] | \
-.paths.containment |= .[${path_prefix}:] | \
-[ (.name | tonumber - ${id_rebase}), \
-.rank - ${rank_rebase}, .id - ${id_rebase}, \
-(.paths.containment | tonumber - ${id_rebase}) ] | @csv" &&
-    echo Name,Rank,Id,Id-in-paths &&
-    jq -r " ${filter} " ${json}
-}
-
 test_expect_success 'rv1-bootstrap: load test resources' '
     load_test_resources ${excl_4N4B}
 '
@@ -103,8 +79,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (high)' '
     flux job info ${JOBID2} R | jq . > job2.json &&
     remap_rv1_resource_type nest2.json core > nest2.csv &&
     remap_rv1_resource_type nest2.json gpu > nest2.gpu.csv &&
-    remap_rv1_resource_type job2.json core 2 34 > job2.csv &&
-    remap_rv1_resource_type job2.json gpu 2 > job2.gpu.csv &&
+    remap_rv1_resource_type job2.json core 34 0 0 2 2 > job2.csv &&
+    remap_rv1_resource_type job2.json gpu 0 0 2 2 2 > job2.gpu.csv &&
     test_cmp job2.csv nest2.csv &&
     test_cmp job2.gpu.csv nest2.gpu.csv &&
     flux jobs -a > before
@@ -150,8 +126,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (low)' '
     flux job info ${JOBID4} R | jq . > job4.json &&
     remap_rv1_resource_type nest4.json core > nest4.csv &&
     remap_rv1_resource_type nest4.json gpu > nest4.gpu.csv &&
-    remap_rv1_resource_type job4.json core 2 0 > job4.csv &&
-    remap_rv1_resource_type job4.json gpu 2 > job4.gpu.csv &&
+    remap_rv1_resource_type job4.json core 0 0 0 2 2 > job4.csv &&
+    remap_rv1_resource_type job4.json gpu 0 0 0 2 2 > job4.gpu.csv &&
     test_cmp job4.csv nest4.csv &&
     test_cmp job4.gpu.csv nest4.gpu.csv
 '
