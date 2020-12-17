@@ -40,6 +40,7 @@ TESTS = \
     t1015-find-format.t \
     t1016-nest-namespace.t \
     t1017-rv1-bootstrap.t \
+    t1018-rv1-bootstrap2.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
