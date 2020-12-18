@@ -1,3 +1,23 @@
+flux-sched version 0.14.0 - 2020-12-18
+--------------------------------------
+
+Note: In support of fully hierarchical scheduling for our
+workflow users, Fluxion is now capable of correctly
+discovering and scheduling GPUs at any level of nesting.
+
+### Fixes
+ * ci: drop unnecessary flux keygen (#788)
+ * shell: reduce logging verbosity of datastaging plugin (#779)
+ * t0000-sharness.sh: fix test with debug/verbose set in env (#784)
+ * codecov: ignore vendored json.hpp (#774)
+
+### Features
+  * use RV1+JGF JSON from resource.acquire to populate graph data store (#787)
+  * execution target and core/gpu Id remapping support for nesting (#773, #787)
+
+### Cleanup
+  * Globally rename "administrative priority" to "urgency" (#781)
+
 flux-sched version 0.13.0 - 2020-11-05
 --------------------------------------
 
