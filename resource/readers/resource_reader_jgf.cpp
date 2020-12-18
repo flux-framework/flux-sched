@@ -242,7 +242,7 @@ int resource_reader_jgf_t::fetch_jgf (const std::string &str, json_t **jgf_p,
     json_error_t json_err;
 
     if ( (*jgf_p = json_loads (str.c_str (), 0, &json_err)) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": json_loads returned an error: ";
         m_err_msg += std::string (json_err.text) + std::string (": ");
@@ -252,19 +252,19 @@ int resource_reader_jgf_t::fetch_jgf (const std::string &str, json_t **jgf_p,
         goto done;
     }
     if ( (graph = json_object_get (*jgf_p, "graph" )) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF does not contain a required key (graph).\n";
         goto done;
     }
     if ( (*nodes_p = json_object_get (graph, "nodes" )) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF does not contain a required key (nodes).\n";
         goto done;
     }
     if ( (*edges_p = json_object_get (graph, "edges" )) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF does not contain a required key (edges).\n";
         goto done;
@@ -378,13 +378,13 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element, fetch_helper_t &f,
     json_t *metadata = NULL;
 
     if ( (json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF vertex id key is not found in a node.\n";
         goto done;
     }
     if ( (metadata = json_object_get (element, "metadata")) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": key (metadata) is not found in an JGF node for ";
         m_err_msg += std::string (f.vertex_id) + ".\n";
@@ -396,14 +396,14 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element, fetch_helper_t &f,
                                  "uniq_id", &f.uniq_id, "rank", &f.rank,
                                  "status", &f.status, "exclusive", &f.exclusive,
                                  "unit", &f.unit, "size", &f.size)) < 0) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": malformed metadata in an JGF node for ";
         m_err_msg += std::string (f.vertex_id) + "\n";
         goto done;
     }
     if ( (p = json_object_get (metadata, "paths")) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": key (paths) does not exist in an JGF node for ";
         m_err_msg += std::string (f.vertex_id) + ".\n";
@@ -525,7 +525,7 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
     if (vmap.find (fetcher.vertex_id) != vmap.end ()) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": found duplicate JGF node id for ";
         m_err_msg += std::string (fetcher.vertex_id) + ".\n";
@@ -565,7 +565,7 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
     v = nullvtx;
 
     if (vmap.find (fetcher.vertex_id) != vmap.end ()) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": found duplicate JGF node id for ";
         m_err_msg += std::string (fetcher.vertex_id) + ".\n";
@@ -576,7 +576,7 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
         try {
             vtx_t u = m.by_path.at (kv.second);
             if (v != nullvtx && u != v) {
-                errno = EPROTO;
+                errno = EINVAL;
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": inconsistent input vertex for " + kv.second;
                 m_err_msg += " (id=" + std::string (fetcher.vertex_id) + ").\n";
@@ -595,7 +595,7 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
     }
 
     if (g[v] != fetcher) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": inconsistent input vertex for ";
         m_err_msg += std::string (fetcher.vertex_id) + ".\n";
@@ -680,7 +680,7 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
                             static_cast<unsigned int> (fetcher.size),
                             static_cast<unsigned int> (fetcher.exclusive)});
     if (!ptr.second) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": can't insert into vmap.\n";
         rc = -1;
@@ -795,7 +795,7 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
 
     if ( (json_unpack (element, "{ s:s s:s }", "source", &src,
                                                "target", &tgt)) < 0) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": encountered a malformed edge.\n";
         goto done;
@@ -804,21 +804,21 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
     target = tgt;
     if (vmap.find (source) == vmap.end ()
         || vmap.find (target) == vmap.end ()) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": source and/or target vertex not found";
         m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
     if ( (metadata = json_object_get (element, "metadata")) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": metadata key not found in an edge for ";
         m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
     if ( (*name = json_object_get (metadata, "name")) == NULL) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": name key not found in edge metadata.\n";
         goto done;
@@ -852,7 +852,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
             goto done;
         tie (e, inserted) = add_edge (vmap[source].v, vmap[target].v, g);
         if (inserted == false) {
-            errno = EPROTO;
+            errno = EINVAL;
             m_err_msg += __FUNCTION__;
             m_err_msg += ": couldn't add an edge to the graph for ";
             m_err_msg += source + std::string (" -> ") + target + ".\n";
@@ -914,13 +914,13 @@ int resource_reader_jgf_t::update_tgt_edge (resource_graph_t &g,
          }
     }
     if (!found) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF edge not found in resource graph.\n";
         goto done;
     }
     if (!(vmap[target].is_roots.empty ())) {
-        errno = EPROTO;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": an edge into a root detected!\n";
         goto done;
