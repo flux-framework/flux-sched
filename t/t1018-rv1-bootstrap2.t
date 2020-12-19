@@ -45,7 +45,7 @@ EOF
 test_expect_success 'rv1-bootstrap: resource idempotency preserved' '
     JOBID=$(flux mini batch -n4 -N4 -c44 -g4 \
 	./nest.sh high 4 4 44 4 nest.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" nest.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" nest.json &&
     jq " del(.execution.starttime, .execution.expiration) " \
 	nest.json > nest.norm.json &&
     flux job info ${JOBID} R | \
@@ -64,7 +64,7 @@ test_expect_success 'rv1-bootstrap2: killing a nested job works' '
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=high)' '
     JOBID1=$(flux mini batch -n2 -N2 -c44 -g4 \
 	./nest.sh high 2 2 44 4 nest1.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" nest1.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" nest1.json &&
     remap_rv1_resource_type nest1.json core > nest1.csv &&
     remap_rv1_resource_type nest1.json gpu > nest1.gpu.csv &&
     flux job info ${JOBID1} R | jq . > job1.json &&
@@ -78,7 +78,7 @@ test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=high)' '
 test_expect_success 'rv1-bootstrap2: 2 partial node nesting works (high)' '
     JOBID2=$(flux mini batch -n2 -N2 -c10 -g2 \
 	./nest.sh high 2 2 10 2 nest2.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" nest2.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" nest2.json &&
     flux job info ${JOBID2} R | jq . > job2.json &&
     remap_rv1_resource_type nest2.json core > nest2.csv &&
     remap_rv1_resource_type nest2.json gpu > nest2.gpu.csv &&
@@ -111,7 +111,7 @@ match-format=rv1 policy=low &&
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=low)' '
     JOBID3=$(flux mini batch -n2 -N2 -c44 -g4 \
 	./nest.sh low 2 2 44 4 nest3.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" nest3.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" nest3.json &&
     remap_rv1_resource_type nest3.json core > nest3.csv &&
     remap_rv1_resource_type nest3.json gpu > nest3.gpu.csv &&
     flux job info ${JOBID3} R | jq . > job3.json &&
@@ -124,7 +124,7 @@ test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=low)' '
 test_expect_success 'rv1-bootstrap2: 2 partial node nesting works (low)' '
     JOBID4=$(flux mini batch -n2 -N2 -c10 -g2 \
 	./nest.sh low 2 2 10 2 nest4.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" nest4.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" nest4.json &&
     flux job info ${JOBID4} R | jq . > job4.json &&
     remap_rv1_resource_type nest4.json core > nest4.csv &&
     remap_rv1_resource_type nest4.json gpu > nest4.gpu.csv &&
@@ -154,9 +154,9 @@ load-allowlist=cluster,node,gpu,core match-format=rv1 policy=\$1
 		./nest.sh \$1 \$2 \$3 \${hc} \${hg} \$8)
 	job2=\$(flux mini batch -n\$2 -N\$3 -c\${hc} -g\${hg} \
 		./nest.sh \$1 \$2 \$3 \${hc} \${hg} \$9)
-	\$WAITFILE -t 10 -v -p \"R_lite\" \$8
+	\$WAITFILE -t 20 -v -p \"R_lite\" \$8
 	flux job info \${job1} R > \$6
-	\$WAITFILE -t 10 -v -p \"R_lite\" \$9
+	\$WAITFILE -t 20 -v -p \"R_lite\" \$9
 	flux job info \${job2} R > \$7
 	sleep inf
 EOF
@@ -166,8 +166,8 @@ EOF
 test_expect_success 'rv1-bootstrap2: double nesting works' '
     JOBID5=$(flux mini batch -n2 -N2 -c10 -g2 ./dnest.sh low 2 2 10 2 \
 	job5.1.json job5.2.json nest5.1.json nest5.2.json) &&
-    $WAITFILE -t 10 -v -p \"R_lite\" job5.1.json &&
-    $WAITFILE -t 10 -v -p \"R_lite\" job5.2.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" job5.1.json &&
+    $WAITFILE -t 20 -v -p \"R_lite\" job5.2.json &&
     remap_rv1_resource_type nest5.1.json core > nest5.1.csv &&
     remap_rv1_resource_type nest5.1.json gpu > nest5.1.gpu.csv &&
     remap_rv1_resource_type nest5.2.json core > nest5.2.csv &&
