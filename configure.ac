@@ -69,7 +69,7 @@ AC_CHECK_LIB([readline], [readline],
 
 #  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
 PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
-AX_PYTHON_DEVEL([>='2.7'])
+AX_PYTHON_DEVEL([>='3.6'])
 
 AM_PATH_PYTHON([$ac_python_version])
 if test "X$PYTHON" = "X"; then
