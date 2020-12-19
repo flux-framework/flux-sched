@@ -472,12 +472,35 @@ error:
  *                                                                            *
  ******************************************************************************/
 
+static int create_reader (std::shared_ptr<resource_ctx_t> &ctx,
+                          const std::string &format,
+                          const std::string &allowlist)
+{
+    if ( (ctx->reader = create_resource_reader (format)) == nullptr)
+        return -1;
+    if (allowlist != "") {
+        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
+            flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
+        if (!ctx->reader->is_allowlist_supported ())
+            flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
+                      __FUNCTION__);
+    }
+    return 0;
+}
+
 static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     int saved_errno;
     std::ifstream in_file;
     std::stringstream buffer{};
+
+    if (ctx->reader == nullptr
+        && create_reader (ctx, ctx->args.load_format,
+                          ctx->args.load_allowlist) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s: can't create reader", __FUNCTION__);
+        goto done;
+    }
 
     saved_errno = errno;
     errno = 0;
@@ -583,7 +606,67 @@ ret:
     return rc;
 }
 
-static int unpack_resobj (json_t *resobj, std::vector<resobj_t> &out)
+/* Given 'resobj' in Rv1 form, decode the set of execution target ranks
+ * contained in it as well as r_lite key.
+ */
+static int unpack_resources (json_t *resobj,
+                             struct idset **idset,
+                             json_t **r_lite_p, json_t **jgf_p)
+{
+    int rc = 0;
+    struct idset *ids;
+    int version;
+    json_t *r_lite = NULL;
+    json_t *jgf = NULL;
+    size_t index;
+    json_t *val;
+
+    if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+        return -1;
+    if (resobj) {
+        if (json_unpack (resobj,
+                         "{s:i s:{s:o} s?:o}",
+                         "version", &version,
+                         "execution",
+                           "R_lite", &r_lite,
+                         "scheduling", &jgf) < 0)
+            goto inval;
+        if (version != 1)
+            goto inval;
+        json_array_foreach (r_lite, index, val) {
+            struct idset *r_ids;
+            unsigned long id;
+            const char *rank;
+
+            if (json_unpack (val, "{s:s}", "rank", &rank) < 0)
+                goto inval;
+            if (!(r_ids = idset_decode (rank)))
+                goto error;
+            id = idset_first (r_ids);
+            while (id != IDSET_INVALID_ID) {
+                if (idset_set (ids, id) < 0) {
+                    idset_destroy (r_ids);
+                    goto error;
+                }
+                id = idset_next (r_ids, id);
+            }
+            idset_destroy (r_ids);
+        }
+    }
+    *idset = ids;
+    *r_lite_p = r_lite;
+    *jgf_p = jgf;
+    return 0;
+inval:
+    errno = EINVAL;
+error:
+    idset_destroy (ids);
+    return -1;
+}
+
+static int unpack_resobj (json_t *resobj,
+                          std::map<const distinct_range_t,
+                                   std::shared_ptr<resobj_t>> &out)
 {
     if (!resobj)
         goto inval;
@@ -592,7 +675,7 @@ static int unpack_resobj (json_t *resobj, std::vector<resobj_t> &out)
         json_t *val;
 
         json_array_foreach (resobj, index, val) {
-            std::string exec_target_range;
+            std::string range;
             std::istringstream istr;
             const char *rank = NULL, *core = NULL, *gpu = NULL;
             if (json_unpack (val, "{s:s s:{s?:s s?:s}}",
@@ -601,21 +684,40 @@ static int unpack_resobj (json_t *resobj, std::vector<resobj_t> &out)
                                       "core", &core,
                                       "gpu", &gpu) < 0)
                 goto inval;
+            // Split the rank idset in resobj, convert each entry into
+            // distict_range_t and use it as the key to std::map.
+            // The value is the pointer to resobj_t.
+            // The distinct_range_t class provides ordering logic such that
+            // you will be able to iterate through ranges in strictly
+            // ascending order.
             istr.str (rank);
-            while (std::getline (istr, exec_target_range, ',')) {
-                resobj_t robj;
-                robj.exec_target_range = exec_target_range;
-                if (core && expand_ids (core, robj.core) < 0)
+            while (std::getline (istr, range, ',')) {
+                uint64_t low, high;
+                std::pair<std::map<const distinct_range_t,
+                                   std::shared_ptr<resobj_t>>::iterator, bool> res;
+                std::shared_ptr<resobj_t> robj = std::make_shared<resobj_t> ();
+                if (distinct_range_t::get_low_high (range, low, high) < 0)
                     goto error;
-                if (gpu && expand_ids (gpu, robj.gpu) < 0)
+                robj->exec_target_range = range;
+                if (core && expand_ids (core, robj->core) < 0)
                     goto error;
-                out.push_back (robj);
+                if (gpu && expand_ids (gpu, robj->gpu) < 0)
+                    goto error;
+                res = out.insert (std::pair<const distinct_range_t,
+                                  std::shared_ptr<resobj_t>> (
+                                      distinct_range_t{low, high}, robj));
+                if (res.second == false) {
+                    errno = EEXIST;
+                    goto error;
+                }
             }
         }
         return 0;
     } catch (std::bad_alloc &) {
         errno = ENOMEM;
         goto error;
+    } catch (std::invalid_argument &) {
+        goto inval;
     }
 inval:
     errno = EINVAL;
@@ -626,29 +728,90 @@ error:
 static int remap_hwloc_namespace (std::shared_ptr<resource_ctx_t> &ctx,
                                   json_t *r_lite)
 {
-    std::vector<resobj_t> resobjs;
+    std::map<const distinct_range_t, std::shared_ptr<resobj_t>> resobjs;
     if (unpack_resobj (r_lite, resobjs) < 0)
         return -1;
-    for (auto &resobj : resobjs) {
+    for (auto &kv : resobjs) {
         /* hwloc reader only needs to remap gpu IDs */
         size_t logical;
-        for (logical = 0; logical < resobj.gpu.size (); logical++) {
-            if (ctx->reader->namespace_remapper.add (resobj.exec_target_range,
-                                                     "gpu",
-                                                     logical,
-                                                     resobj.gpu[logical]) < 0)
+        for (logical = 0; logical < kv.second->gpu.size (); logical++) {
+            if (ctx->reader->namespace_remapper.add (
+                                 kv.second->exec_target_range,
+                                 "gpu",
+                                 logical,
+                                 kv.second->gpu[logical]) < 0)
                 return -1;
         }
     }
     return 0;
 }
 
+static int remap_jgf_namespace (std::shared_ptr<resource_ctx_t> &ctx,
+                                json_t *resobj, json_t *p_resobj)
+{
+    size_t i, j;
+    uint64_t cur_rank = 0;
+    std::map<const distinct_range_t, std::shared_ptr<resobj_t>> robjs, p_robjs;
+
+    if (unpack_resobj (resobj, robjs) < 0)
+        goto error;
+    if (unpack_resobj (p_resobj, p_robjs) < 0)
+        goto error;
+
+    try {
+        // Add remap rule for rank and compute core Ids. JGF reader only
+        // needs to remap them (e.g., GPU uses Id in global scope).
+        // This loop iterates through the distinct rank ranges of R_lite in
+        // the parent's namespace in ascending order.
+        // We first translate the ascending rank range sequence into
+        // 0-based monotonically increasing rank range sequence, for example
+        // A: <"3", "5", "6", "20-21"> --> B: <"1", "2", "3", "4-5">.
+        // Now, per core resource.acquire's remapping rule, for each range found
+        // in the parent namespace's R_lite, you should be able to find a
+        // corresponding range in the current namespace's R_lite.
+        // The current R_lite's range sequence for the above example might
+        // be C: <"1-2", "3", "4-5">. Then, B's "1" and "2" will be resolved
+        // to C's "1-2" range. B's "3" to C's "3". And B's "4-5" to C's "4-5".
+        for (auto kv : p_robjs) {
+            distinct_range_t new_range{cur_rank,
+                                       kv.first.get_high ()
+                                           - kv.first.get_low () + cur_rank};
+            std::shared_ptr<resobj_t> entry = nullptr;
+            std::shared_ptr<resobj_t> p_entry = kv.second;
+            if (robjs.find (new_range) == robjs.end ()) {
+                // Can't find the rank range in the current namespace
+                // corresponding to the (remapped) range of the parent namespace!
+                errno = ENOENT;
+                goto error;
+            }
+            entry = robjs[new_range];
+            if (ctx->reader->namespace_remapper.add_exec_target_range (
+                                                    p_entry->exec_target_range,
+                                                    new_range) < 0)
+                goto error;
+            for (j = 0; j < p_entry->core.size (); j++) {
+                if (ctx->reader->namespace_remapper.add (
+                                     p_entry->exec_target_range, "core",
+                                     p_entry->core[j], entry->core[j]) < 0)
+                    goto error;
+            }
+            cur_rank += (kv.first.get_high () - kv.first.get_low () + 1);
+        }
+    } catch (std::invalid_argument &) {
+        errno = EINVAL;
+        goto error;
+    }
+    return 0;
+error:
+    return -1;
+}
+
 /* Grow resources for execution targets 'ids', fetching resource
  * details in hwloc XML form from the core resource module.
  * If 'ids' is the empty set, an empty resource vertex will be instantiated.
  */
-static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
-                             struct idset *ids, json_t *resobj)
+static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
+                                   struct idset *ids, json_t *resobj)
 {
     int rc = -1;
     resource_graph_db_t &db = *(ctx->db);
@@ -662,7 +825,6 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         goto done;
     if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0)
         goto done;
-
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         if (rank != IDSET_INVALID_ID) {
             if (!(hwloc_xml = get_array_string (xml_array, rank)))
@@ -700,6 +862,166 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
 
 done:
     flux_future_destroy (f);
+    return rc;
+}
+
+static int get_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
+                                     json_t **resobj_p)
+{
+    int rc = -1;
+    json_t *resobj;
+    json_error_t json_err;
+    flux_jobid_t id;
+    flux_future_t *f = NULL;
+    flux_t *parent_h = NULL;
+    const char *uri, *jobid, *resobj_str;
+
+    if ( !(uri = flux_attr_get (ctx->h, "parent-uri")))
+        return 0;
+    if ( !(jobid = flux_attr_get (ctx->h, "jobid")))
+        return 0;
+    if (flux_job_id_parse (jobid, &id) < 0) {
+        flux_log_error (ctx->h, "%s: parsing jobid %s", __FUNCTION__, jobid);
+        return -1;
+    }
+    if ( !(parent_h = flux_open (uri, 0))) {
+        flux_log_error (ctx->h, "%s: flux_open (%s)", __FUNCTION__, uri);
+        goto done;
+    }
+    if ( !(f = flux_rpc_pack (parent_h, "job-info.lookup", FLUX_NODEID_ANY, 0,
+                                          "{s:I s:[s] s:i}",
+                                            "id", id,
+                                            "keys", "R",
+                                            "flags", 0))) {
+        flux_log_error (ctx->h, "%s: flux_rpc_pack (R)", __FUNCTION__);
+        goto done;
+    }
+    if (flux_rpc_get_unpack (f, "{s:s}", "R", &resobj_str) < 0) {
+        flux_log_error (ctx->h, "%s: flux_rpc_get_unpack (R)", __FUNCTION__);
+        goto done;
+    }
+    if ( !(resobj = json_loads (resobj_str, 0, &json_err))) {
+        errno = ENOMEM;
+        flux_log (ctx->h, LOG_ERR, "%s: json_loads", __FUNCTION__);
+        goto done;
+    }
+    *resobj_p = resobj;
+    rc = 0;
+done:
+    flux_future_destroy (f);
+    flux_close (parent_h);
+    return rc;
+}
+
+static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
+                                        json_t **p_r_lite_p)
+{
+    int rc = 0;
+    int saved_errno;
+    json_t *p_jgf = NULL;
+    json_t *p_r_lite = NULL;
+    json_t *p_resources = NULL;
+    struct idset *p_grow_set = NULL;
+    if ( (rc = get_parent_job_resources (ctx, &p_resources)) < 0
+         || !p_resources)
+        goto done;
+    if ( (rc = unpack_resources (p_resources,
+                                 &p_grow_set, &p_r_lite, &p_jgf)) < 0)
+        goto done;
+    if (!p_grow_set || !p_r_lite || !p_jgf) {
+        errno = EINVAL;
+        rc = -1;
+        goto done;
+    }
+    if ( (*p_r_lite_p = json_deep_copy (p_r_lite)) == NULL) {
+        errno = ENOMEM;
+        rc = -1;
+        goto done;
+    }
+    rc = 0;
+done:
+    saved_errno = errno;
+    json_decref (p_resources);
+    idset_destroy (p_grow_set);
+    errno = saved_errno;
+    return rc;
+}
+
+static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx,
+                                 json_t *r_lite, json_t *jgf)
+{
+    int rc = -1;
+    int saved_errno;
+    json_t *p_r_lite = NULL;
+    resource_graph_db_t &db = *(ctx->db);
+    char *jgf_str = NULL;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+
+    if ( (rc = unpack_parent_job_resources (ctx, &p_r_lite)) < 0) {
+        flux_log_error (ctx->h, "%s: unpack_parent_job_resources",
+                        __FUNCTION__);
+        goto done;
+    }
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        if ( p_r_lite
+             && (rc = remap_jgf_namespace (ctx, r_lite, p_r_lite)) < 0) {
+            flux_log_error (ctx->h, "%s: remap_jgf_namespace", __FUNCTION__);
+            goto done;
+        }
+        if ( (jgf_str = json_dumps (jgf, JSON_INDENT (0))) == NULL) {
+            rc = -1;
+            errno = ENOMEM;
+            goto done;
+        }
+        if ( (rc = db.load (jgf_str, ctx->reader, -1)) < 0) {
+            flux_log_error (ctx->h, "%s: db.load: %s",
+                            __FUNCTION__, ctx->reader->err_message ().c_str ());
+            goto done;
+        }
+    }
+done:
+    saved_errno = errno;
+    json_decref (p_r_lite);
+    free (jgf_str);
+    errno = saved_errno;
+    return rc;
+}
+
+static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                             json_t *resources)
+{
+    int rc = 0;
+    struct idset *grow_set = NULL;
+    json_t *r_lite = NULL;
+    json_t *jgf = NULL;
+
+    if ( (rc = unpack_resources (resources,
+                                 &grow_set, &r_lite, &jgf)) < 0) {
+        flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
+        goto done;
+    }
+    if (jgf) {
+        if (ctx->reader == nullptr
+            && (rc = create_reader (ctx, "jgf",
+                                    ctx->args.load_allowlist)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: can't create jgf reader",
+                      __FUNCTION__);
+            goto done;
+        }
+        rc = grow_resource_db_jgf (ctx, r_lite, jgf);
+    } else {
+        if (ctx->reader == nullptr
+            && (rc = create_reader (ctx, "hwloc",
+                                    ctx->args.load_allowlist)) < 0) {
+            flux_log (ctx->h, LOG_ERR, "%s: can't create hwloc reader",
+                      __FUNCTION__);
+            goto done;
+        }
+        rc = grow_resource_db_hwloc (ctx, grow_set, r_lite);
+   }
+
+done:
+    idset_destroy (grow_set);
     return rc;
 }
 
@@ -805,11 +1127,11 @@ static int mark (std::shared_ptr<resource_ctx_t> &ctx,
 }
 
 static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
-                               struct idset *grow_set, json_t *resobj,
+                               json_t *resources,
                                const char *up, const char *down)
 {
     int rc = 0;
-    if (grow_set && (rc = grow_resource_db (ctx, grow_set, resobj)) < 0) {
+    if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
         flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
         goto done;
     }
@@ -825,68 +1147,12 @@ done:
     return rc;
 }
 
-/* Given 'resobj' in Rv1 form, decode the set of execution target ranks
- * contained in it as well as r_lite key.
- */
-static int unpack_resources (json_t *resobj,
-                             struct idset **idset, json_t **r_lite_p)
-{
-    int rc = 0;
-    struct idset *ids;
-    int version;
-    json_t *r_lite;
-    size_t index;
-    json_t *val;
-
-    if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
-        return -1;
-    if (resobj) {
-        if (json_unpack (resobj,
-                         "{s:i s:{s:o}}",
-                         "version", &version,
-                         "execution",
-                           "R_lite", &r_lite) < 0)
-            goto inval;
-        if (version != 1)
-            goto inval;
-        json_array_foreach (r_lite, index, val) {
-            struct idset *r_ids;
-            unsigned long id;
-            const char *rank;
-
-            if (json_unpack (val, "{s:s}", "rank", &rank) < 0)
-                goto inval;
-            if (!(r_ids = idset_decode (rank)))
-                goto error;
-            id = idset_first (r_ids);
-            while (id != IDSET_INVALID_ID) {
-                if (idset_set (ids, id) < 0) {
-                    idset_destroy (r_ids);
-                    goto error;
-                }
-                id = idset_next (r_ids, id);
-            }
-            idset_destroy (r_ids);
-        }
-    }
-    *idset = ids;
-    *r_lite_p = r_lite;
-    return 0;
-inval:
-    errno = EINVAL;
-error:
-    idset_destroy (ids);
-    return -1;
-}
-
 static void update_resource (flux_future_t *f, void *arg)
 {
     int rc = -1;
     const char *up = NULL;
     const char *down = NULL;
     json_t *resources = NULL;
-    json_t *r_lite = NULL;
-    struct idset *grow_set = NULL;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     if ( (rc = flux_rpc_get_unpack (f, "{s?:o s?:s s?:s}",
@@ -898,14 +1164,7 @@ static void update_resource (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto done;
     }
-    if (resources) {
-        if ( (rc = unpack_resources (resources, &grow_set, &r_lite)) < 0) {
-            rc = -1;
-            flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
-            goto done;
-        }
-    }
-    if ( (rc = update_resource_db (ctx, grow_set, r_lite, up, down)) < 0) {
+    if ( (rc = update_resource_db (ctx, resources, up, down)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
     }
@@ -915,12 +1174,11 @@ static void update_resource (flux_future_t *f, void *arg)
         }
     }
 done:
-    idset_destroy (grow_set);
     flux_future_reset (f);
     ctx->set_update_rc (rc);
 }
 
-static int populate_resource_db_kvs (std::shared_ptr<resource_ctx_t> &ctx)
+static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     json_t *o = NULL;
@@ -954,19 +1212,6 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 
     if (ctx->args.reserve_vtx_vec != 0)
         ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
-    if ( (ctx->reader = create_resource_reader (
-                            ctx->args.load_format)) == nullptr) {
-        flux_log (ctx->h, LOG_ERR, "%s: can't create load reader",
-                  __FUNCTION__);
-        goto done;
-    }
-    if (ctx->args.load_allowlist != "") {
-        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
-            flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
-        if (!ctx->reader->is_allowlist_supported ())
-            flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
-                      __FUNCTION__);
-    }
     if ( (rc = gettimeofday (&st, NULL)) < 0) {
         flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
         goto done;
@@ -977,13 +1222,14 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_INFO, "%s: loaded resources from %s",
                   __FUNCTION__,  ctx->args.load_file.c_str ());
     } else {
-        if (populate_resource_db_kvs (ctx) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: loading resources from the KVS",
+        if (populate_resource_db_acquire (ctx) < 0) {
+            flux_log (ctx->h, LOG_ERR,
+                      "%s: loading resources using resource.acquire",
                       __FUNCTION__);
             goto done;
         }
         flux_log (ctx->h, LOG_INFO,
-                  "%s: loaded resources from hwloc in the KVS",
+                  "%s: loaded resources from core's resource.acquire",
                   __FUNCTION__);
     }
     if ( (rc = gettimeofday (&et, NULL)) < 0) {

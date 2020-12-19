@@ -171,7 +171,7 @@ int resource_gen_spec_t::read_graphml (std::istream &in)
     try {
         boost::read_graphml (in, g, dp);
     } catch (boost::exception &e) {
-        errno = EPROTO;
+        errno = EINVAL;
         rc = -1;
     }
     return rc;
