@@ -1,8 +1,10 @@
-on: pull_request
+on: [ pull_request, push ]
+name: ci
 jobs:
   check-pr:
     name: validate commits
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
     - uses: actions/checkout@v2
       with:
@@ -10,3 +12,99 @@ jobs:
         fetch-depth: 0
     - run: git fetch origin master
     - uses: flux-framework/pr-validator@master
+
+  generate-matrix:
+    # https://stackoverflow.com/questions/59977364
+    name: Generate build matrix
+    runs-on: ubuntu-latest
+    outputs:
+        matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - id: set-matrix
+      run: echo "::set-output name=matrix::$(src/test/generate-matrix.py)"
+    - run: src/test/generate-matrix.py | jq -S .
+    - run: echo "::set-output name=GITHUB_BRANCH::${GITHUB_REF#refs/heads}"
+    - run: echo "::set-output name=GITHUB_TAG::${GITHUB_REF#refs/tags}"
+    - run: echo "::set-output name=EVENT_NAME::${{github.event_name}}"
+
+  ci-checks:
+    needs: [ generate-matrix ]
+    runs-on: ubuntu-latest
+    env:
+      TAP_DRIVER_QUIET: 1
+      FLUX_TEST_TIMEOUT: 300
+      DOCKER_REPO: fluxrm/flux-sched
+      DOCKER_USERNAME: travisflux
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TRAVISFLUX_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 30
+    strategy:
+      matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
+      fail-fast: false
+    name: ${{matrix.name}}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+       ref: ${{ github.event.pull_request.head.sha }}
+       fetch-depth: 0
+
+    - name: coverage setup
+      env: ${{matrix.env}}
+      if: matrix.coverage
+      run: |
+        # Use python3 coverage to match version in flux docker image
+        sudo apt update ; \
+        sudo apt install -yy python3-pip ; \
+        pip3 install --upgrade pip ;
+        pip3 install --upgrade --force-reinstall coverage ;
+
+    - name: docker-run-checks
+      env: ${{matrix.env}}
+      run: ${{matrix.command}}
+
+    - name: annotate errors
+      if: failure() || cancelled()
+      env: ${{matrix.env}}
+      run: src/test/checks-annotate.sh
+
+    - name: coverage report
+      if: success() && matrix.coverage
+      run: DOCKER_REPO= bash <(curl -s https://codecov.io/bash)
+
+    - name: docker deploy
+      if: success() && matrix.docker_tag
+      env: ${{matrix.env}}
+      run: src/test/docker-deploy.sh
+
+    #   Prepare, create and deploy release on tag:
+    - name: prep release
+      id: prep_release
+      if: success() && matrix.create_release
+      env: ${{matrix.env}}
+      run: echo "::set-output name=tarball::flux-sched*.tar.gz"
+
+    - name: create release
+      id: create_release
+      if: success() && matrix.create_release
+      env: ${{matrix.env}}
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ matrix.tag }}
+        release_name: flux-sched ${{ matrix.tag }}
+        prerelease: true
+        body: |
+          View [Release Notes](https://github.com/${{ github.repository }}/blob/${{ matrix.tag }}/NEWS.md) for flux-sched ${{ matrix.tag }}
+
+    - name: upload tarball
+      id: upload-tarball
+      if: success() && matrix.create_release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.prep_release.outputs.tarball }}
+        asset_name: ${{ steps.prep_release.outputs.tarball }}
+        asset_content_type: "application/gzip"
