@@ -2,8 +2,14 @@ pull_request_rules:
   - name: rebase and merge when passing all checks
     conditions:
       - base=master
-      - status-success=Travis CI - Pull Request
       - status-success="validate commits"
+      - status-success="bionic - gcc-8,distcheck"
+      - status-success="bionic - clang6.0"
+      - status-success="bionic - test-install"
+      - status-success="focal"
+      - status-success="centos7"
+      - status-success="centos8"
+      - status-success="coverage"
       - label="merge-when-passing"
       - label!="work-in-progress"
       - "approved-reviews-by=@flux-framework/core"
