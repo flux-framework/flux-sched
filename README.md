@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/flux-framework/flux-sched.svg?branch=master)](https://travis-ci.org/flux-framework/flux-sched) [![codecov](https://codecov.io/gh/flux-framework/flux-sched/branch/master/graph/badge.svg)](https://codecov.io/gh/flux-framework/flux-sched)
+![ci](https://github.com/flux-framework/flux-sched/workflows/ci/badge.svg)[![codecov](https://codecov.io/gh/flux-framework/flux-sched/branch/master/graph/badge.svg)](https://codecov.io/gh/flux-framework/flux-sched)
+
 
 *NOTE: The interfaces of flux-sched are being actively developed and
 are not yet stable.* The github issue tracker is the primary way to
