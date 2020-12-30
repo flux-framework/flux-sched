@@ -286,7 +286,7 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
         flux_log_error (h, "%s: schedutil_alloc_respond_cancel", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "%s (id=%jd)", "alloc cancelled",
+    flux_log (h, LOG_DEBUG, "%s (id=%jd)", "alloc canceled",
              static_cast<intmax_t> (id));
 }
 
