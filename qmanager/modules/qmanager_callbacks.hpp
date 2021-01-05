@@ -48,8 +48,9 @@ struct qmanager_cb_ctx_t {
 class qmanager_cb_t {
 protected:
     static int jobmanager_hello_cb (flux_t *h,
-                                    flux_jobid_t id, int prio, uint32_t uid,
-                                    double ts, const char *R, void *arg);
+                                    flux_jobid_t id, unsigned int prio,
+                                    uint32_t uid, double ts, const char *R,
+                                    void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
                                      const char *jobspec, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
@@ -64,8 +65,9 @@ protected:
 
 struct qmanager_safe_cb_t : public qmanager_cb_t {
     static int jobmanager_hello_cb (flux_t *h,
-                                    flux_jobid_t id, int prio, uint32_t uid,
-                                    double ts, const char *R, void *arg);
+                                    flux_jobid_t id, unsigned int prio,
+                                    uint32_t uid, double ts, const char *R,
+                                    void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
                                      const char *jobspec, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,

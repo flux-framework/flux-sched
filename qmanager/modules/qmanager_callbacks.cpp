@@ -117,8 +117,9 @@ out:
 }
 
 int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
-                                        flux_jobid_t id, int prio, uint32_t uid,
-                                        double ts, const char *R, void *arg)
+                                        flux_jobid_t id, unsigned int prio,
+                                        uint32_t uid, double ts, const char *R,
+                                        void *arg)
 
 {
     int rc = 0;
@@ -291,7 +292,7 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
 }
 
 int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
-                                             flux_jobid_t id, int prio,
+                                             flux_jobid_t id, unsigned int prio,
                                              uint32_t uid, double ts,
                                              const char *R, void *arg)
 {
