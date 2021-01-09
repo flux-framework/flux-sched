@@ -49,7 +49,7 @@ class Node:
             try:
                 stringId = str(id)
                 self._id = stringId
-            except Exception as excecption:
+            except Exception as exception:
                 raise TypeError("Type of id in Node needs to be a string (or string castable): " + str(exception))
 
 
@@ -68,7 +68,7 @@ class Node:
                 try:
                     stringLabel = str(label)
                     self._label = stringLabel
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of label in Node object needs to be a string (or string castable): " + str(exception))
 
 

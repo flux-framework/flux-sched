@@ -77,7 +77,7 @@ class Multigraph:
                 try:
                     stringType = str(type)
                     self._type = stringType
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of type in Multigraph object needs to be a string (or string castable): " + str(exception))
 
 
@@ -96,7 +96,7 @@ class Multigraph:
                 try:
                     stringLabel = str(label)
                     self._label = stringLabel
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of label in Multigraph object needs to be a string (or string castable): " + str(exception))
 
 
