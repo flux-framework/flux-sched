@@ -184,9 +184,13 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
 
     if (jobspec_obj.attributes.system.queue != "")
         queue_name = jobspec_obj.attributes.system.queue;
-    if (schedutil_alloc_request_decode (msg, &job->id, &job->urgency,
-                                        &job->userid, &job->t_submit) < 0) {
-        flux_log_error (h, "%s: schedutil_alloc_request_decode", __FUNCTION__);
+    if (flux_request_unpack (msg, NULL,
+                             "{s:I s:i s:i s:f}",
+                             "id", &job->id,
+                             "priority", &job->urgency,
+                             "userid", &job->userid,
+                             "t_submit", &job->t_submit) < 0) {
+        flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
     // Note that RFC27 defines 31 as the max urgency. Because our queue policy
@@ -230,8 +234,8 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
 
-    if (schedutil_free_request_decode (msg, &id) < 0) {
-        flux_log_error (h, "%s: schedutil_free_request_decode", __FUNCTION__);
+    if (flux_request_unpack (msg, NULL, "{s:I}", "id", &id) < 0) {
+        flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
