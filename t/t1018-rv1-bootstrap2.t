@@ -15,7 +15,7 @@ test_under_flux 4
 # However, node selections are different this time as node Ids are filled
 test_expect_success 'rv1-bootstrap2: create test R with unlikely core count' '
     flux R encode --hosts=sierra[3682,3179,3683,3178] --cores=0-43 --gpu=0-3 \
-	| flux ion-R > sierra.R.test
+	| flux ion-R encode > sierra.R.test
 '
 
 test_expect_success 'rv1-bootstrap2: reload the configured R' '
