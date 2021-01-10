@@ -174,25 +174,36 @@ out:
 }
 
 void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                         const char *jobspec, void *arg)
+                                         void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
-    Flux::Jobspec::Jobspec jobspec_obj{jobspec};
+    Flux::Jobspec::Jobspec jobspec_obj;
     std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
     std::shared_ptr<job_t> job = std::make_shared<job_t> ();
+    json_t *jobspec;
+    char *jobspec_str = NULL;
 
-    if (jobspec_obj.attributes.system.queue != "")
-        queue_name = jobspec_obj.attributes.system.queue;
-    if (flux_request_unpack (msg, NULL,
-                             "{s:I s:i s:i s:f}",
-                             "id", &job->id,
-                             "priority", &job->urgency,
-                             "userid", &job->userid,
-                             "t_submit", &job->t_submit) < 0) {
-        flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
+    if (flux_msg_unpack (msg,
+                         "{s:I s:i s:i s:f s:o}",
+                         "id", &job->id,
+                         "priority", &job->urgency,
+                         "userid", &job->userid,
+                         "t_submit", &job->t_submit,
+                         "jobspec", &jobspec) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         return;
     }
+    if (!(jobspec_str = json_dumps (jobspec, JSON_COMPACT))) {
+        errno = ENOMEM;
+        flux_log (h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+        return;
+    }
+    jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
+    if (jobspec_obj.attributes.system.queue != "")
+        queue_name = jobspec_obj.attributes.system.queue;
+    job->jobspec = jobspec_str;
+    free (jobspec_str);
     // Note that RFC27 defines 31 as the max urgency. Because our queue policy
     // layer sorts the pending jobs in lexicographical order
     // (<urgency, t_submit, ...> and lower the better, we adjust the urgency.
@@ -207,7 +218,6 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         return;
     }
 
-    job->jobspec = jobspec;
     job->msg = flux_msg_copy (msg, true);
     auto &queue = ctx->queues.at (queue_name);
     if (queue->insert (job) < 0) {
@@ -310,11 +320,11 @@ int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
 }
 
 void qmanager_safe_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                              const char *jobspec, void *arg)
+                                              void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_alloc_cb,
-                            h, msg, jobspec, arg);
+                            h, msg, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());

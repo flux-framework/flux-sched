@@ -52,7 +52,7 @@ protected:
                                     uint32_t uid, double ts, const char *R,
                                     void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                     const char *jobspec, void *arg);
+                                     void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                                     const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
@@ -69,7 +69,7 @@ struct qmanager_safe_cb_t : public qmanager_cb_t {
                                     uint32_t uid, double ts, const char *R,
                                     void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                     const char *jobspec, void *arg);
+                                     void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                                     const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
