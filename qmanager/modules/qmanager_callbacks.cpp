@@ -274,7 +274,7 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     }
 }
 
-void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                           void *arg)
 {
     std::shared_ptr<job_t> job;
@@ -282,7 +282,12 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
+    flux_jobid_t id;
 
+    if (flux_msg_unpack (msg, "{s:I}", "id", &id) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
+        return;
+    }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
         flux_log_error (h, "%s: queue not found for job (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (id));
@@ -340,12 +345,12 @@ void qmanager_safe_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                         exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                                void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb,
-                            h, id, arg);
+                            h, msg, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());
