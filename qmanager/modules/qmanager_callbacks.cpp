@@ -116,10 +116,8 @@ out:
     return rc;
 }
 
-int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
-                                        flux_jobid_t id, unsigned int prio,
-                                        uint32_t uid, double ts, const char *R,
-                                        void *arg)
+int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
+                                        const char *R, void *arg)
 
 {
     int rc = 0;
@@ -131,6 +129,20 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
     std::shared_ptr<queue_policy_base_t> queue;
     std::shared_ptr<job_t> running_job = nullptr;
     qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+    flux_jobid_t id;
+    unsigned int prio;
+    uint32_t uid;
+    double ts;
+
+    if (flux_msg_unpack (msg,
+                         "{s:I s:i s:i s:f}",
+                         "id", &id,
+                         "priority", &prio,
+                         "userid", &uid,
+                         "t_submit", &ts) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
+        goto out;
+    }
 
     if ( (o = json_loads (R, 0, &err)) == NULL) {
         rc = -1;
@@ -310,14 +322,12 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
              static_cast<intmax_t> (id));
 }
 
-int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
-                                             flux_jobid_t id, unsigned int prio,
-                                             uint32_t uid, double ts,
+int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                              const char *R, void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     int rc = exception_safe_wrapper (qmanager_cb_t::jobmanager_hello_cb,
-                                     h, id, prio, uid, ts, R, arg);
+                                     h, msg, R, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());
