@@ -22,7 +22,7 @@ import flux.util
 import flux.kvs
 import flux.job
 
-logger = logging.getLogger("flux-tree-helper")
+LOGGER = logging.getLogger("flux-tree-helper")
 
 
 def get_child_jobids(flux_handle, num_children, child_name):
@@ -33,7 +33,7 @@ def get_child_jobids(flux_handle, num_children, child_name):
     """
     jobids = set()
     since = 0.0
-    logger.debug("Getting IDs of inactive children with name == {}".format(child_name))
+    LOGGER.debug("Getting IDs of inactive children with name == %s", child_name)
     while True:
         for job in flux.job.job_list_inactive(
             flux_handle,
@@ -47,7 +47,7 @@ def get_child_jobids(flux_handle, num_children, child_name):
             jobids.add(jobid)
         if len(jobids) >= num_children:
             break
-        logger.debug(
+        LOGGER.debug(
             "Only %d out of %d children are inactive, sleeping before trying again",
             len(jobids),
             num_children,
@@ -167,7 +167,8 @@ def parse_args():
     parser.add_argument(
         "--perf-out",
         type=str,
-        help="Dump the performance data into the given file. Assumed to be given at the root instance.",
+        help="Dump the performance data into the given file. "
+        "Assumed to be given at the root instance.",
     )
     parser.add_argument(
         "--perf-format",
@@ -177,7 +178,7 @@ def parse_args():
     return parser.parse_args()
 
 
-@flux.util.CLIMain(logger)
+@flux.util.CLIMain(LOGGER)
 def main():
     args = parse_args()
     flux_handle = None
@@ -186,22 +187,22 @@ def main():
     except FileNotFoundError:
         flux_handle = None
 
-    logger.debug("Getting this instance's data")
+    LOGGER.debug("Getting this instance's data")
     this_data = get_this_instance_data()
-    if flux_handle != None and args.num_children > 0:
-        logger.debug("Getting children's data")
+    if flux_handle is not None and args.num_children > 0:
+        LOGGER.debug("Getting children's data")
         child_data = get_child_data(
             flux_handle, args.num_children, args.job_name, args.kvs_key
         )
     else:
         child_data = []
-    logger.debug("Combining data")
+    LOGGER.debug("Combining data")
     combined_data = combine_data(this_data, child_data)
-    if flux_handle != None:
-        logger.debug("Writing data to parent's KVS")
+    if flux_handle is not None:
+        LOGGER.debug("Writing data to parent's KVS")
         write_data_to_parent(flux_handle, args.kvs_key, combined_data)
     if args.perf_out:
-        logger.debug("Writing data to file")
+        LOGGER.debug("Writing data to file")
         write_data_to_file(args.perf_out, args.perf_format, combined_data)
 
 
