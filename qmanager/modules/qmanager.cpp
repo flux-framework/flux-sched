@@ -421,6 +421,7 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
         ctx->h = h;
         set_default (ctx);
         if (!(ctx->schedutil = schedutil_create (ctx->h,
+                                   SCHEDUTIL_FREE_NOLOOKUP,
                                    &ops,
                                    std::static_pointer_cast<
                                        qmanager_cb_ctx_t> (ctx).get ()))) {
