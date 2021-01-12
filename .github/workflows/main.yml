@@ -13,6 +13,38 @@ jobs:
     - run: git fetch origin master
     - uses: flux-framework/pr-validator@master
 
+  python-format:
+    name: python format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - name: install black
+      run: python3 -m pip install 'black==20.08.b1' --force-reinstall
+    - name: check format
+      run: ./scripts/check-format
+
+  python-lint:
+    name: python lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - name: install pylint
+      run: python3 -m pip install 'pylint==2.4.4' --force-reinstall
+    - name: run pylint
+      run: ./scripts/pylint
+
   generate-matrix:
     # https://stackoverflow.com/questions/59977364
     name: Generate build matrix
