@@ -53,8 +53,8 @@ void get_jobstate_str (job_lifecycle_t state, std::string &status)
     case job_lifecycle_t::RESERVED:
         status = "RESERVED";
         break;
-    case job_lifecycle_t::CANCELLED:
-        status = "CANCELLED";
+    case job_lifecycle_t::CANCELED:
+        status = "CANCELED";
         break;
     case job_lifecycle_t::ERROR:
         status = "ERROR";

@@ -49,7 +49,7 @@ test_expect_success 'resource-cancel works' '
     flux ion-resource cancel 0
 '
 
-test_expect_success 'resource-info will not report for cancelled jobs' '
+test_expect_success 'resource-info will not report for canceled jobs' '
     test_must_fail flux ion-resource info 0
 '
 

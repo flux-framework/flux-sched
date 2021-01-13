@@ -80,7 +80,7 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
     if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
            std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
-           info->state = job_lifecycle_t::CANCELLED;
+           info->state = job_lifecycle_t::CANCELED;
         }
     } else {
         std::cout << ctx->traverser->err_message ();
