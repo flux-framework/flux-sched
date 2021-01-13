@@ -166,11 +166,13 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
     queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
-    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
-    // layer sorts the pending jobs in lexicographical order
-    // (<urgency, t_submit, ...> and lower the better, we adjust urgency.
+    // Note that RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...>) and lower the
+    // better, we adjust priority.
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
-                                                   id, uid, 31 - prio, ts, R);
+                                                   id, uid, 4294967295 - prio,
+                                                   ts, R);
 
     if ( (rc = queue->reconstruct (static_cast<void *> (h),
                                    running_job, R_out)) < 0) {
@@ -199,7 +201,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s:o}",
                          "id", &job->id,
-                         "priority", &job->urgency,
+                         "priority", &job->priority,
                          "userid", &job->userid,
                          "t_submit", &job->t_submit,
                          "jobspec", &jobspec) < 0) {
@@ -216,10 +218,11 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         queue_name = jobspec_obj.attributes.system.queue;
     job->jobspec = jobspec_str;
     free (jobspec_str);
-    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
-    // layer sorts the pending jobs in lexicographical order
-    // (<urgency, t_submit, ...> and lower the better, we adjust the urgency.
-    job->urgency = 31 - job->urgency;
+    // Note that RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...> and lower the
+    // better, we adjust the priority.
+    job->priority = 4294967295 - job->priority;
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
