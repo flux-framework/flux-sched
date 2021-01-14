@@ -4,7 +4,7 @@ pull_request_rules:
       - base=master
       - status-success="validate commits"
       - status-success="bionic - gcc-8,distcheck"
-      - status-success="bionic - clang6.0"
+      - status-success="bionic - clang-6.0"
       - status-success="bionic - test-install"
       - status-success="focal"
       - status-success="centos7"
