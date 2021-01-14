@@ -269,7 +269,7 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     std::shared_ptr<job_t> job = nullptr;
 
     if (m_jobs.find (id) == m_jobs.end ()) {
-        errno = EINVAL;
+        errno = ENOENT;
         goto out;
     }
 
