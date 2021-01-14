@@ -293,6 +293,7 @@ public:
      *  \param priority  new job priority
      *  \return          0 on success; -1 on error.
      *                       ENOENT: unknown id.
+     *                       EEXIST: id already exists
      *                       EINVAL: job not pending
      */
     int pending_reprioritize (flux_jobid_t id, unsigned int priority);

@@ -410,7 +410,7 @@ const struct schedutil_ops ops = {
     .alloc  = &qmanager_safe_cb_t::jobmanager_alloc_cb,
     .free   = &qmanager_safe_cb_t::jobmanager_free_cb,
     .cancel = &qmanager_safe_cb_t::jobmanager_cancel_cb,
-    .prioritize = NULL,
+    .prioritize = &qmanager_safe_cb_t::jobmanager_prioritize_cb,
 };
 
 static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)

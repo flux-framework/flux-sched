@@ -332,6 +332,56 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
              static_cast<intmax_t> (id));
 }
 
+void qmanager_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
+                                              void *arg)
+{
+    qmanager_cb_ctx_t *ctx = nullptr;
+    ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+    std::shared_ptr<queue_policy_base_t> queue;
+    std::string queue_name;
+    json_t *jobs;
+    size_t index;
+    json_t *arr;
+
+    if (flux_msg_unpack (msg, "{s:o}", "jobs", &jobs) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
+        return;
+    }
+
+    json_array_foreach (jobs, index, arr) {
+        flux_jobid_t id;
+        unsigned int priority;
+
+        if (json_unpack (arr, "[I,i]", &id, &priority) < 0) {
+            flux_log_error (h, "%s: invalid prioritize entry",
+                            __FUNCTION__);
+            return;
+        }
+
+        if (ctx->find_queue (id, queue_name, queue) < 0) {
+            flux_log_error (h, "%s: queue not found for job (id=%jd)",
+                            __FUNCTION__, static_cast<intmax_t> (id));
+            continue;
+        }
+
+        if (queue->pending_reprioritize (id, calc_priority (priority)) < 0) {
+            if (errno == ENOENT) {
+                flux_log_error (h, "invalid job reprioritized (id=%jd)",
+                                static_cast<intmax_t> (id));
+                continue;
+            }
+            else if (errno == EINVAL) {
+                flux_log_error (h, "reprioritized non-pending job (id=%jd)",
+                                static_cast<intmax_t> (id));
+                continue;
+            }
+            flux_log_error (h, "%s: queue pending_reprioritize (id=%jd)",
+                            __FUNCTION__, static_cast<intmax_t> (id));
+            return;
+        }
+    }
+}
+
 int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                              const char *R, void *arg)
 {
@@ -370,6 +420,17 @@ void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb,
+                            h, msg, arg);
+    if (exception_safe_wrapper.bad ())
+        flux_log_error (h, "%s: %s", __FUNCTION__,
+                        exception_safe_wrapper.get_err_message ());
+}
+
+void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
+                                                   void *arg)
+{
+    eh_wrapper_t exception_safe_wrapper;
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_prioritize_cb,
                             h, msg, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,

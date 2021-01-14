@@ -420,18 +420,17 @@ int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
                                                     unsigned int priority)
 {
     std::shared_ptr<job_t> job = nullptr;
-    int rc = -1;
 
     if (m_jobs.find (id) == m_jobs.end ()) {
         errno = ENOENT;
-        goto out;
+        return -1;
     }
 
     job = m_jobs[id];
 
     if (job->state != job_state_kind_t::PENDING) {
         errno = EINVAL;
-        goto out;
+        return -1;
     }
 
     m_pending.erase ({static_cast<double> (job->priority),
@@ -440,14 +439,16 @@ int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
 
     job->priority = priority;
 
-    m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
-        {static_cast<double> (job->priority),
-         static_cast<double> (job->t_submit),
-         static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+    auto res = m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
+                   {static_cast<double> (job->priority),
+                    static_cast<double> (job->t_submit),
+                    static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+    if (!res.second) {
+        errno = EEXIST;
+        return -1;
+    }
 
-    rc = 0;
-out:
-    return rc;
+    return 0;
 }
 
 std::shared_ptr<job_t> queue_policy_base_impl_t::pending_pop ()
