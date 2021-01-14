@@ -118,6 +118,7 @@ public:
 
 protected:
     int reconstruct_queue (std::shared_ptr<job_t> running_job);
+    int pending_reprioritize (flux_jobid_t id, unsigned int priority);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
@@ -285,6 +286,16 @@ public:
      *                       ENOTSUP: job->schedule.R has unsupported feature.
      */
     int reconstruct (void *h, std::shared_ptr<job_t> job, std::string &R_out);
+
+    /*! Reprioritize a job with a new priority.
+     *
+     *  \param id        jobid of flux_jobid_t type.
+     *  \param priority  new job priority
+     *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
+     *                       EINVAL: job not pending
+     */
+    int pending_reprioritize (flux_jobid_t id, unsigned int priority);
 
     /*! Pop the first job from the pending job queue. The popped
      *  job is completely graduated from the queue policy layer.

@@ -186,6 +186,12 @@ int queue_policy_base_t::reconstruct (void *h, std::shared_ptr<job_t> job,
     return detail::queue_policy_base_impl_t::reconstruct_queue (job);
 }
 
+int queue_policy_base_t::pending_reprioritize (flux_jobid_t id,
+                                               unsigned int priority)
+{
+  return detail::queue_policy_base_impl_t::pending_reprioritize (id, priority);
+}
+
 std::shared_ptr<job_t> queue_policy_base_t::pending_pop ()
 {
     return detail::queue_policy_base_impl_t::pending_pop ();
@@ -408,6 +414,40 @@ std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
                            job->t_stamps.complete_ts, job->id));
     m_alloced.erase (job->t_stamps.running_ts);
     return m_running.erase (running_iter);
+}
+
+int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
+                                                    unsigned int priority)
+{
+    std::shared_ptr<job_t> job = nullptr;
+    int rc = -1;
+
+    if (m_jobs.find (id) == m_jobs.end ()) {
+        errno = ENOENT;
+        goto out;
+    }
+
+    job = m_jobs[id];
+
+    if (job->state != job_state_kind_t::PENDING) {
+        errno = EINVAL;
+        goto out;
+    }
+
+    m_pending.erase ({static_cast<double> (job->priority),
+                      static_cast<double> (job->t_submit),
+                      static_cast<double> (job->t_stamps.pending_ts)});
+
+    job->priority = priority;
+
+    m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
+        {static_cast<double> (job->priority),
+         static_cast<double> (job->t_submit),
+         static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+
+    rc = 0;
+out:
+    return rc;
 }
 
 std::shared_ptr<job_t> queue_policy_base_impl_t::pending_pop ()
