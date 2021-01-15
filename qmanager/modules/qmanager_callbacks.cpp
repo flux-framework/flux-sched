@@ -195,15 +195,19 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     Flux::Jobspec::Jobspec jobspec_obj;
     std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
     std::shared_ptr<job_t> job = std::make_shared<job_t> ();
+    flux_jobid_t id;
+    unsigned int priority;
+    uint32_t userid;
+    double t_submit;
     json_t *jobspec;
     char *jobspec_str = NULL;
 
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s:o}",
-                         "id", &job->id,
-                         "priority", &job->priority,
-                         "userid", &job->userid,
-                         "t_submit", &job->t_submit,
+                         "id", &id,
+                         "priority", &priority,
+                         "userid", &userid,
+                         "t_submit", &t_submit,
                          "jobspec", &jobspec) < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         return;
@@ -213,16 +217,19 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         flux_log (h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
         return;
     }
+    job->id = id;
+    job->userid = userid;
+    job->t_submit = t_submit;
+    // Note that RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...> and lower the
+    // better, we adjust the priority.
+    job->priority = 4294967295 - priority;
     jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
     if (jobspec_obj.attributes.system.queue != "")
         queue_name = jobspec_obj.attributes.system.queue;
     job->jobspec = jobspec_str;
     free (jobspec_str);
-    // Note that RFC27 defines 4294967295 as the max priority. Because
-    // our queue policy layer sorts the pending jobs in
-    // lexicographical order (<priority, t_submit, ...> and lower the
-    // better, we adjust the priority.
-    job->priority = 4294967295 - job->priority;
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
