@@ -961,11 +961,11 @@ int resource_reader_jgf_t::update_tgt_edge (resource_graph_t &g,
     boost::tie (ei, ei_end) = boost::out_edges (vmap[source].v, g);
 
     for (; ei != ei_end; ++ei) {
-         if (boost::target (*ei, g) == vmap[target].v) {
-              e = *ei;
-              found = true;
-              break;
-         }
+        if (boost::target (*ei, g) == vmap[target].v) {
+            e = *ei;
+            found = true;
+            break;
+        }
     }
     if (!found) {
         errno = EINVAL;
