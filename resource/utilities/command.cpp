@@ -48,11 +48,11 @@ command_t commands[] = {
 "allocate | allocate_with_satisfiability | allocate_orelse_reserve): "
 "resource-query> match allocate jobspec"},
     { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
-"allocate | reserv): "
+"allocate | reserve): "
 "resource-query> update allocate jgf_file jobid starttime duration" },
     { "attach", "j", cmd_attach, "Experimental: attach a JGF subgraph to the "
 "resource graph: resource-query> attach jgf_file" },
-    { "find", "f", cmd_find, "Find resources matched with a critera "
+    { "find", "f", cmd_find, "Find resources matched with criteria "
 "(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free}): "
 "resource-query> find status=down and sched-now=allocated" },
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
