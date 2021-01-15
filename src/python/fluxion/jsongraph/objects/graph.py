@@ -125,7 +125,7 @@ class Graph:
                 try:
                     stringType = str(type)
                     self._type = stringType
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of type in Graph object needs to be a string (or string castable): " + str(exception))
 
 
@@ -144,7 +144,7 @@ class Graph:
                 try:
                     stringLabel = str(label)
                     self._label = stringLabel
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of label in Graph object needs to be a string (or string castable): " + str(exception))
 
 
@@ -163,7 +163,7 @@ class Graph:
                 try:
                     boolDirected = bool(target)
                     self._directed = boolDirected
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of directed in Graph needs to be a boolean (or boolean castable): " + str(exception))
 
 

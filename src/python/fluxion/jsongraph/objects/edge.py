@@ -57,7 +57,7 @@ class Edge:
             try:
                 stringSource = str(source)
                 self._source = stringSource
-            except Exception as excecption:
+            except Exception as exception:
                 raise TypeError("Type of source in Edge needs to be a string (or string castable): " + str(exception))
 
 
@@ -75,7 +75,7 @@ class Edge:
             try:
                 stringTarget = str(target)
                 self._target = stringTarget
-            except Exception as excecption:
+            except Exception as exception:
                 raise TypeError("Type of target in Edge needs to be a string (or string castable): " + str(exception))
 
 
@@ -94,7 +94,7 @@ class Edge:
                 try:
                     stringLabel = str(label)
                     self._label = stringLabel
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of label in Node object needs to be a string (or string castable): " + str(exception))
 
 
@@ -113,7 +113,7 @@ class Edge:
                 try:
                     boolDirected = bool(target)
                     self._directed = boolDirected
-                except Exception as excecption:
+                except Exception as exception:
                     raise TypeError("Type of directed in Edge needs to be a boolean (or boolean castable): " + str(exception))
 
 

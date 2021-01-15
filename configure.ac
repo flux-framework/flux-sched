@@ -69,7 +69,7 @@ AC_CHECK_LIB([readline], [readline],
 
 #  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
 PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
-AX_PYTHON_DEVEL([>='2.7'])
+AX_PYTHON_DEVEL([>='3.6'])
 
 AM_PATH_PYTHON([$ac_python_version])
 if test "X$PYTHON" = "X"; then
@@ -140,6 +140,16 @@ AC_SUBST(fluxrc1dir)
 AS_VAR_SET(fluxrc3dir, $sysconfdir/flux/rc3.d)
 AC_SUBST(fluxrc3dir)
 
+AS_VAR_SET(fluxionpydir, $pyexecdir/fluxion)
+AC_SUBST(fluxionpydir)
+
+# Target of PYTHONPATH set by flux(1) cmddriver, so flux(1)
+# doesn't inadvertently insert system python paths (or any
+# other python path for that matter) first in PYTHONPATH.
+#
+AS_VAR_SET(fluxionpylinkdir, $fluxlibdir/python$PYTHON_VERSION)
+AC_SUBST(fluxionpylinkdir)
+
 ##
 # Macros to avoid repetition in Makefiles.am's
 ##
@@ -161,6 +171,8 @@ AC_CONFIG_FILES([Makefile
   src/common/c++wrappers/Makefile
   src/common/c++wrappers/test/Makefile
   src/cmd/Makefile
+  src/python/Makefile
+  src/python/fluxion/Makefile
   src/shell/Makefile
   resource/Makefile
   resource/planner/Makefile
