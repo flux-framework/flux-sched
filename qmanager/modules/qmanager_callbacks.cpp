@@ -40,6 +40,14 @@ using namespace Flux::queue_manager::detail;
 using namespace Flux::opts_manager;
 using namespace Flux::cplusplus_wrappers;
 
+static unsigned int calc_priority (unsigned int priority)
+{
+    // RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...>) and lower the
+    // better, we need to calculate an adjusted priority.
+    return (4294967295 - priority);
+}
 
 int qmanager_cb_ctx_t::find_queue (flux_jobid_t id,
                                    std::string &queue_name,
@@ -166,12 +174,8 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
     queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
-    // Note that RFC27 defines 4294967295 as the max priority. Because
-    // our queue policy layer sorts the pending jobs in
-    // lexicographical order (<priority, t_submit, ...>) and lower the
-    // better, we adjust priority.
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
-                                                   id, uid, 4294967295 - prio,
+                                                   id, uid, calc_priority (prio),
                                                    ts, R);
 
     if ( (rc = queue->reconstruct (static_cast<void *> (h),
@@ -220,11 +224,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->id = id;
     job->userid = userid;
     job->t_submit = t_submit;
-    // Note that RFC27 defines 4294967295 as the max priority. Because
-    // our queue policy layer sorts the pending jobs in
-    // lexicographical order (<priority, t_submit, ...> and lower the
-    // better, we adjust the priority.
-    job->priority = 4294967295 - priority;
+    job->priority = calc_priority (priority);
     jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
     if (jobspec_obj.attributes.system.queue != "")
         queue_name = jobspec_obj.attributes.system.queue;
