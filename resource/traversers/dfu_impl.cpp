@@ -864,6 +864,11 @@ void dfu_impl_t::clear_err_message ()
     m_err_msg = "";
 }
 
+void dfu_impl_t::reset_color ()
+{
+    m_color.reset ();
+}
+
 int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
                                       std::map<std::string, int64_t> &to_parent)
 {

@@ -209,6 +209,8 @@ int dfu_traverser_t::initialize ()
         return -1;
     }
 
+    m_initialized = false;
+    detail::dfu_impl_t::reset_color ();
     for (auto &subsystem : get_match_cb ()->subsystems ()) {
         std::map<std::string, int64_t> from_dfv;
         if (get_graph_db ()->metadata.roots.find (subsystem)

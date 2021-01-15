@@ -123,6 +123,7 @@ public:
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
+    void reset_color ();
 
     /*! Exclusive request? Return true if a resource in resources vector
      *  matches resource vertex u and its exclusivity field value is TRUE.
