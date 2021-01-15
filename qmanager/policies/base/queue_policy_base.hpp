@@ -85,9 +85,9 @@ public:
     ~job_t () { flux_msg_destroy (msg); }
     job_t () = default;
     job_t (job_state_kind_t s, flux_jobid_t jid,
-           uint32_t uid, int u, double t_s, const std::string &R)
+           uint32_t uid, unsigned int p, double t_s, const std::string &R)
 	   : state (s), id (jid), userid (uid),
-	     urgency (u), t_submit (t_s), schedule (R) { }
+	     priority (p), t_submit (t_s), schedule (R) { }
     job_t (job_t &&j) = default;
     job_t (const job_t &j) = default;
     job_t& operator= (job_t &&s) = default;
@@ -99,7 +99,7 @@ public:
     job_state_kind_t state = job_state_kind_t::INIT;
     flux_jobid_t id = 0;
     uint32_t userid = 0;
-    int urgency = 0;
+    unsigned int priority = 0;
     double t_submit = 0.0f;;
     std::string jobspec = "";
     std::string note = "";

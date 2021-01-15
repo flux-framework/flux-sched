@@ -253,7 +253,7 @@ int queue_policy_base_impl_t::insert (std::shared_ptr<job_t> job)
     job->state = job_state_kind_t::PENDING;
     job->t_stamps.pending_ts = m_pq_cnt++;
     m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
-        {static_cast<double> (job->urgency),
+        {static_cast<double> (job->priority),
          static_cast<double> (job->t_submit),
          static_cast<double> (job->t_stamps.pending_ts)}, job->id));
     m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
@@ -276,7 +276,7 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     job = m_jobs[id];
     switch (job->state) {
     case job_state_kind_t::PENDING:
-        m_pending.erase ({static_cast<double> (job->urgency),
+        m_pending.erase ({static_cast<double> (job->priority),
                           static_cast<double> (job->t_submit),
                           static_cast<double> (job->t_stamps.pending_ts)});
         job->state = job_state_kind_t::CANCELED;
@@ -421,7 +421,7 @@ std::shared_ptr<job_t> queue_policy_base_impl_t::pending_pop ()
     if (m_jobs.find (id) == m_jobs.end ())
         return nullptr;
     job = m_jobs[id];
-    m_pending.erase ({static_cast<double> (job->urgency),
+    m_pending.erase ({static_cast<double> (job->priority),
                       static_cast<double> (job->t_submit),
                       static_cast<double> (job->t_stamps.pending_ts)});
     m_jobs.erase (id);

@@ -116,9 +116,8 @@ out:
     return rc;
 }
 
-int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
-                                        flux_jobid_t id, int prio, uint32_t uid,
-                                        double ts, const char *R, void *arg)
+int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
+                                        const char *R, void *arg)
 
 {
     int rc = 0;
@@ -130,6 +129,20 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
     std::shared_ptr<queue_policy_base_t> queue;
     std::shared_ptr<job_t> running_job = nullptr;
     qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+    flux_jobid_t id;
+    unsigned int prio;
+    uint32_t uid;
+    double ts;
+
+    if (flux_msg_unpack (msg,
+                         "{s:I s:i s:i s:f}",
+                         "id", &id,
+                         "priority", &prio,
+                         "userid", &uid,
+                         "t_submit", &ts) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
+        goto out;
+    }
 
     if ( (o = json_loads (R, 0, &err)) == NULL) {
         rc = -1;
@@ -153,11 +166,13 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h,
     queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
-    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
-    // layer sorts the pending jobs in lexicographical order
-    // (<urgency, t_submit, ...> and lower the better, we adjust urgency.
+    // Note that RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...>) and lower the
+    // better, we adjust priority.
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
-                                                   id, uid, 31 - prio, ts, R);
+                                                   id, uid, 4294967295 - prio,
+                                                   ts, R);
 
     if ( (rc = queue->reconstruct (static_cast<void *> (h),
                                    running_job, R_out)) < 0) {
@@ -173,25 +188,41 @@ out:
 }
 
 void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                         const char *jobspec, void *arg)
+                                         void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
-    Flux::Jobspec::Jobspec jobspec_obj{jobspec};
+    Flux::Jobspec::Jobspec jobspec_obj;
     std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
     std::shared_ptr<job_t> job = std::make_shared<job_t> ();
+    json_t *jobspec;
+    char *jobspec_str = NULL;
 
-    if (jobspec_obj.attributes.system.queue != "")
-        queue_name = jobspec_obj.attributes.system.queue;
-    if (schedutil_alloc_request_decode (msg, &job->id, &job->urgency,
-                                        &job->userid, &job->t_submit) < 0) {
-        flux_log_error (h, "%s: schedutil_alloc_request_decode", __FUNCTION__);
+    if (flux_msg_unpack (msg,
+                         "{s:I s:i s:i s:f s:o}",
+                         "id", &job->id,
+                         "priority", &job->priority,
+                         "userid", &job->userid,
+                         "t_submit", &job->t_submit,
+                         "jobspec", &jobspec) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         return;
     }
-    // Note that RFC27 defines 31 as the max urgency. Because our queue policy
-    // layer sorts the pending jobs in lexicographical order
-    // (<urgency, t_submit, ...> and lower the better, we adjust the urgency.
-    job->urgency = 31 - job->urgency;
+    if (!(jobspec_str = json_dumps (jobspec, JSON_COMPACT))) {
+        errno = ENOMEM;
+        flux_log (h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+        return;
+    }
+    jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
+    if (jobspec_obj.attributes.system.queue != "")
+        queue_name = jobspec_obj.attributes.system.queue;
+    job->jobspec = jobspec_str;
+    free (jobspec_str);
+    // Note that RFC27 defines 4294967295 as the max priority. Because
+    // our queue policy layer sorts the pending jobs in
+    // lexicographical order (<priority, t_submit, ...> and lower the
+    // better, we adjust the priority.
+    job->priority = 4294967295 - job->priority;
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
@@ -202,7 +233,6 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         return;
     }
 
-    job->jobspec = jobspec;
     job->msg = flux_msg_copy (msg, true);
     auto &queue = ctx->queues.at (queue_name);
     if (queue->insert (job) < 0) {
@@ -229,8 +259,8 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
 
-    if (schedutil_free_request_decode (msg, &id) < 0) {
-        flux_log_error (h, "%s: schedutil_free_request_decode", __FUNCTION__);
+    if (flux_request_unpack (msg, NULL, "{s:I}", "id", &id) < 0) {
+        flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
@@ -259,7 +289,7 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     }
 }
 
-void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                           void *arg)
 {
     std::shared_ptr<job_t> job;
@@ -267,7 +297,12 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
+    flux_jobid_t id;
 
+    if (flux_msg_unpack (msg, "{s:I}", "id", &id) < 0) {
+        flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
+        return;
+    }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
         flux_log_error (h, "%s: queue not found for job (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (id));
@@ -290,14 +325,12 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
              static_cast<intmax_t> (id));
 }
 
-int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
-                                             flux_jobid_t id, int prio,
-                                             uint32_t uid, double ts,
+int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                              const char *R, void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     int rc = exception_safe_wrapper (qmanager_cb_t::jobmanager_hello_cb,
-                                     h, id, prio, uid, ts, R, arg);
+                                     h, msg, R, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());
@@ -305,11 +338,11 @@ int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
 }
 
 void qmanager_safe_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                              const char *jobspec, void *arg)
+                                              void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_alloc_cb,
-                            h, msg, jobspec, arg);
+                            h, msg, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());
@@ -325,12 +358,12 @@ void qmanager_safe_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                         exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, flux_jobid_t id,
+void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                                void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb,
-                            h, id, arg);
+                            h, msg, arg);
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());

@@ -231,10 +231,7 @@ static int handshake_jobmanager (std::shared_ptr<qmanager_ctx_t> &ctx)
     int rc = -1;
     int queue_depth = 0;  /* Not implemented in job-manager */
 
-    if (schedutil_hello (ctx->schedutil,
-                         &qmanager_safe_cb_t::jobmanager_hello_cb,
-                         std::static_pointer_cast<
-			     qmanager_cb_ctx_t> (ctx).get ()) < 0) {
+    if (schedutil_hello (ctx->schedutil) < 0) {
         flux_log_error (ctx->h, "%s: schedutil_hello", __FUNCTION__);
         goto out;
     }
@@ -408,6 +405,14 @@ static int handshake (std::shared_ptr<qmanager_ctx_t> &ctx)
     return rc;
 }
 
+const struct schedutil_ops ops = {
+    .hello  = &qmanager_safe_cb_t::jobmanager_hello_cb,
+    .alloc  = &qmanager_safe_cb_t::jobmanager_alloc_cb,
+    .free   = &qmanager_safe_cb_t::jobmanager_free_cb,
+    .cancel = &qmanager_safe_cb_t::jobmanager_cancel_cb,
+    .prioritize = NULL,
+};
+
 static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
 {
     std::shared_ptr<qmanager_ctx_t> ctx = nullptr;
@@ -416,9 +421,8 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
         ctx->h = h;
         set_default (ctx);
         if (!(ctx->schedutil = schedutil_create (ctx->h,
-                                   &qmanager_safe_cb_t::jobmanager_alloc_cb,
-                                   &qmanager_safe_cb_t::jobmanager_free_cb,
-                                   &qmanager_safe_cb_t::jobmanager_cancel_cb,
+                                   SCHEDUTIL_FREE_NOLOOKUP,
+                                   &ops,
                                    std::static_pointer_cast<
                                        qmanager_cb_ctx_t> (ctx).get ()))) {
             flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
