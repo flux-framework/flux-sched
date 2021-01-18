@@ -136,11 +136,13 @@ private:
                        std::map<std::string, vmap_val_t> &vmap,
                        uint64_t jobid, bool rsv);
     int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes,
-                         int64_t jobid, int64_t at, uint64_t dur, bool rsv);
+                         std::map<std::string, vmap_val_t> &vmap, 
+                         json_t *nodes, int64_t jobid, int64_t at, 
+                         uint64_t dur, bool rsv);
     int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, json_t *nodes,
-                         int64_t jobid, int64_t at, uint64_t dur);
+                         std::map<std::string, vmap_val_t> &vmap, 
+                         json_t *nodes, int64_t jobid, int64_t at, 
+                         uint64_t dur);
     int unpack_edge (json_t *element, std::map<std::string, vmap_val_t> &vmap,
                      std::string &source, std::string &target, json_t **name);
     int update_src_edge (resource_graph_t &g, resource_graph_metadata_t &m,
