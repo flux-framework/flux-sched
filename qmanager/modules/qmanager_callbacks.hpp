@@ -55,6 +55,8 @@ protected:
                                     const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                       void *arg);
+    static void jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
+                                          void *arg);
     static int post_sched_loop (flux_t *h,
         schedutil_t *schedutil,
         std::map<std::string, std::shared_ptr<
@@ -70,6 +72,8 @@ struct qmanager_safe_cb_t : public qmanager_cb_t {
                                     const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                                       void *arg);
+    static void jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
+                                          void *arg);
     static int post_sched_loop (flux_t *h,
         schedutil_t *schedutil,
         std::map<std::string, std::shared_ptr<
