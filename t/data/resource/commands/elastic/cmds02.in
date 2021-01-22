@@ -1,0 +1,3 @@
+update attach @TEST_SRCDIR@/data/resource/jgfs/elastic/node-add-test-random.json
+find status=up
+quit
