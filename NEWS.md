@@ -1,3 +1,23 @@
+flux-sched version 0.15.0 - 2021-01-25
+--------------------------------------
+
+### Features
+
+ * Implement unpack_at for JGF (#775)
+ * qmanager: support re-prioritization of jobs (#803)
+ * fluxion-R: add flux-ion-R.py as a public command (#800)
+ * ci: migrate to github actions (#794)
+
+### Fixes
+
+ * traverser: fix segfault for bi-edge traversal (#775)
+ * qmanager: update per libschedutil API changes (#801)
+ * mergify: fix referenced test name (#804)
+
+### Cleanup
+
+ * Globally standardize spelling of "canceled" (#797)
+
 flux-sched version 0.14.0 - 2020-12-18
 --------------------------------------
 
