@@ -345,6 +345,7 @@ private:
                     std::unordered_map<std::string, std::string> &p_map);
     int set_param (std::string &kv,
                    std::unordered_map<std::string, std::string> &p_map);
+    bool is_number (const std::string &num_str);
 
     std::map<std::vector<double>, flux_jobid_t>::iterator m_pending_iter;
     bool m_iter_valid = false;

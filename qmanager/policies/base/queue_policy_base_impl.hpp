@@ -93,6 +93,15 @@ done:
     return rc;
 }
 
+bool queue_policy_base_t::is_number (const std::string &num_str)
+{
+    if (num_str.empty ())
+        return false;
+    auto i = std::find_if (num_str.begin (), num_str.end (),
+                           [] (unsigned char c) { return !std::isdigit (c); });
+    return i == num_str.end ();
+}
+
 int queue_policy_base_t::set_queue_params (const std::string &params)
 {
     return set_params (params, m_qparams);
@@ -111,28 +120,47 @@ int queue_policy_base_t::apply_params ()
         std::unordered_map<std::string, std::string>::const_iterator i;
         if ((i = queue_policy_base_impl_t::m_qparams.find ("max-queue-depth"))
              != queue_policy_base_impl_t::m_qparams.end ()) {
-            if ( (depth = std::stoi (i->second)) < 1) {
-                errno = ERANGE;
+            // We pre-check the input string to see if it is a positive number
+            // before passing it to std::stoi. This works around issues
+            // in some compilers where std::stoi aborts on certain
+            // invalid input string with some debug flags (Issue #808).
+            if (!is_number (i->second)) {
+                errno = EINVAL;
                 rc += -1;
-            }
-            queue_policy_base_impl_t::m_max_queue_depth = depth;
-            if (static_cast<unsigned> (depth)
-                    < queue_policy_base_impl_t::m_queue_depth) {
-                queue_policy_base_impl_t::m_queue_depth = depth;
+            } else {
+                if ( (depth = std::stoi (i->second)) < 1) {
+                    errno = ERANGE;
+                    rc += -1;
+                } else {
+                    queue_policy_base_impl_t::m_max_queue_depth = depth;
+                    if (static_cast<unsigned> (depth)
+                            < queue_policy_base_impl_t::m_queue_depth) {
+                        queue_policy_base_impl_t::m_queue_depth = depth;
+                    }
+                }
             }
         }
         if ((i = queue_policy_base_impl_t::m_qparams.find ("queue-depth"))
              != queue_policy_base_impl_t::m_qparams.end ()) {
-            int depth = std::stoi (i->second);
-            if ( (depth = std::stoi (i->second)) < 1) {
-                errno = ERANGE;
+            // We pre-check the input string to see if it is a positive number
+            // before passing it to std::stoi. This works around issues
+            // in some compilers where std::stoi aborts on certain
+            // invalid input string with some debug flags (Issue #808).
+            if (!is_number (i->second)) {
+                errno = EINVAL;
                 rc += -1;
-            }
-            if (static_cast<unsigned> (depth) < m_max_queue_depth) {
-                queue_policy_base_impl_t::m_queue_depth = depth;
             } else {
-                queue_policy_base_impl_t::m_queue_depth
-                    = queue_policy_base_impl_t::m_max_queue_depth;
+                if ( (depth = std::stoi (i->second)) < 1) {
+                    errno = ERANGE;
+                    rc += -1;
+                } else {
+                    if (static_cast<unsigned> (depth) < m_max_queue_depth) {
+                        queue_policy_base_impl_t::m_queue_depth = depth;
+                    } else {
+                        queue_policy_base_impl_t::m_queue_depth
+                            = queue_policy_base_impl_t::m_max_queue_depth;
+                    }
+                }
             }
         }
     } catch (const std::invalid_argument &e) {
