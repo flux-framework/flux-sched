@@ -2377,7 +2377,14 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         }
     }
     catch (std::exception &e) {
-        flux_log_error (h, "%s: %s", __FUNCTION__, e.what ());
+        errno = ENOSYS;
+        flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, e.what ());
+        return -1;
+    }
+    catch (...) {
+        errno = ENOSYS;
+        flux_log (h, LOG_ERR, "%s: caught unknown exception", __FUNCTION__);
+        return -1;
     }
 
 done:
