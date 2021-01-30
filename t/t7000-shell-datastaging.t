@@ -7,9 +7,12 @@ test_description='Test data-staging job shell plugin'
 shell_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/shell`
 shell_plugin_path="$(readlink -e ${SHARNESS_BUILD_DIRECTORY}/src/shell/.libs)"
 jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
-flux_shell="$(pkg-config --variable=prefix flux-core)/libexec/flux/flux-shell"
+
 
 test_under_flux 2
+
+flux_shell=$(flux builtin-conf shell_path)
+test_debug "echo flux_shell=$flux_shell"
 
 test_expect_success 'node-local storage allocation staging rank 0' '
 	cat <<-EOT >test-initrc.lua &&
