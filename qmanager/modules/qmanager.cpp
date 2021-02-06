@@ -66,7 +66,6 @@ private:
 
 struct qmanager_ctx_t : public qmanager_cb_ctx_t,
                         public fluxion_resource_interface_t {
-    flux_t *h{nullptr};
     flux_msg_handler_t **hndlr{nullptr};
 };
 
@@ -180,17 +179,9 @@ static void update_on_resource_response (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto out;
     }
+    for (auto &kv : ctx->queues)
+        kv.second->set_schedulability (true);
 
-    for (auto &kv : ctx->queues) {
-        if ( (rc = kv.second->run_sched_loop (static_cast<void *> (ctx->h),
-                                              true)) < 0
-            || (rc = qmanager_safe_cb_t::post_sched_loop (ctx->h,
-                                                          ctx->schedutil,
-                                                          ctx->queues)) < 0) {
-            flux_log_error (ctx->h, "%s: schedule loop", __FUNCTION__);
-            goto out;
-        }
-    }
 out:
     flux_future_reset (f);
     ctx->set_notify_rc (rc);
@@ -417,9 +408,41 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
 {
     std::shared_ptr<qmanager_ctx_t> ctx = nullptr;
     try {
+        flux_reactor_t *reactor{nullptr};
         ctx = std::make_shared<qmanager_ctx_t> ();
         ctx->h = h;
         set_default (ctx);
+
+        if (!(reactor = flux_get_reactor (h))) {
+            flux_log_error (ctx->h, "%s: flux_get_reactor", __FUNCTION__);
+            ctx = nullptr;
+            goto done;
+        }
+        if (!(ctx->prep = flux_prepare_watcher_create (
+                              reactor,
+                              &qmanager_safe_cb_t::prep_watcher_cb,
+                              std::static_pointer_cast<
+                                  qmanager_ctx_t> (ctx).get ()))) {
+            flux_log_error (h, "%s: flux_prepare_watcher_create", __FUNCTION__);
+            ctx = nullptr;
+            goto done;
+        }
+        if (!(ctx->check = flux_check_watcher_create (
+                               reactor,
+                               &qmanager_safe_cb_t::check_watcher_cb,
+                               std::static_pointer_cast<
+                                   qmanager_ctx_t> (ctx).get ()))) {
+            flux_log_error (h, "%s: flux_check_watcher_create", __FUNCTION__);
+            ctx = nullptr;
+            goto done;
+        }
+        // idle watcher makes sure the check watcher is called
+        // even with no external events delivered
+        if (!(ctx->idle = flux_idle_watcher_create (reactor, NULL, NULL))) {
+            flux_log_error (h, "%s: flux_idle_watcher_create", __FUNCTION__);
+            ctx = nullptr;
+            goto done;
+        }
         if (!(ctx->schedutil = schedutil_create (ctx->h,
                                    SCHEDUTIL_FREE_NOLOOKUP,
                                    &ops,
@@ -427,11 +450,16 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
                                        qmanager_cb_ctx_t> (ctx).get ()))) {
             flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
             ctx = nullptr;
+            goto done;
         }
+        flux_watcher_start (ctx->prep);
+        flux_watcher_start (ctx->check);
+
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
     }
 
+done:
     return ctx;
 }
 
@@ -449,8 +477,11 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
                 flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
         }
         schedutil_destroy (ctx->schedutil);
-        errno = saved_errno;
+        flux_watcher_destroy (ctx->prep);
+        flux_watcher_destroy (ctx->check);
+        flux_watcher_destroy (ctx->idle);
         flux_msg_handler_delvec (ctx->hndlr);
+        errno = saved_errno;
     }
 }
 

@@ -120,6 +120,7 @@ int queue_policy_fcfs_t<reapi_type>::run_sched_loop (void *h,
                                                      bool use_alloced_queue)
 {
     int rc = 0;
+    set_schedulability (false);
     rc = cancel_completed_jobs (h);
     rc += allocate_jobs (h, use_alloced_queue);
     return rc;
