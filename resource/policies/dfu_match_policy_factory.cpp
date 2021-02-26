@@ -32,7 +32,8 @@ bool known_match_policy (const std::string &policy)
 {
     bool rc = true;
     if (policy != HIGH_ID_FIRST && policy != LOW_ID_FIRST
-        && policy != LOCALITY_AWARE && policy != VAR_AWARE)
+        && policy != LOCALITY_AWARE && policy != VAR_AWARE
+        && policy != UNIFORM_STORAGE)
         rc = false;
 
     return rc;
@@ -51,6 +52,8 @@ std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy)
         matcher = std::make_shared<greater_interval_first_t> ();
     else if (policy == VAR_AWARE)
         matcher = std::make_shared<var_aware_t> ();
+    else if (policy == UNIFORM_STORAGE)
+        matcher = std::make_shared<uniform_storage_t> ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         matcher = nullptr;

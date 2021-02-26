@@ -1,0 +1,6 @@
+# 5x rack[1]->node[1]->slot[1]->socket[1]->core[2]
+#                                        ->gpu[2]
+#    mtl2unit[1]->mtl1unit[1]->ssd[16]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/uniform_storage/storage-constrained-global.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/uniform_storage/storage-constrained-global.yaml
+quit
