@@ -122,7 +122,7 @@ protected:
     std::string m_err_msg = "";
 };
 
-} // namesapce resource_model
+} // namespace resource_model
 } // namespace Flux
 
 
