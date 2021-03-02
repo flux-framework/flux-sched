@@ -82,7 +82,7 @@ private:
                       std::map<uint64_t, uint64_t>>> m_remap;
 };
 
-} // namesapce resource_model
+} // namespace resource_model
 } // namespace Flux
 
 
