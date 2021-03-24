@@ -1,0 +1,6 @@
+# 4x node[1]->slot[1]->socket[1]->core[1]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test001.yaml
+quit
