@@ -179,11 +179,13 @@ int dfu_impl_t::accum_to_parent (vtx_t u, const subsystem_t &subsystem,
 {
     // Build up the new aggregates that will be used by subtree
     // aggregate pruning filter. If exclusive, none of the vertex's resource
-    // is available (0). If not, all will be available (needs).
+    // is available (size). If not, all will be available (size - needs).
     if (excl)
-        accum_if (subsystem, (*m_graph)[u].type, 0, to_parent);
+        accum_if (subsystem,
+                  (*m_graph)[u].type, (*m_graph)[u].size, to_parent);
     else
-        accum_if (subsystem, (*m_graph)[u].type, needs, to_parent);
+        accum_if (subsystem,
+                  (*m_graph)[u].type, (*m_graph)[u].size - needs, to_parent);
 
     // Pass up the new subtree aggregates collected so far to the parent.
     for (auto &kv : dfu)
