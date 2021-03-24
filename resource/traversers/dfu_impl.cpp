@@ -173,12 +173,12 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
-    count_relevant_types (p, resource.user_data, aggs);
-    if (aggs.empty ()) {
+    if (resource.user_data.empty ()) {
+        // If user_data is empty, no data is available to prune with.
         rc = 0;
         goto done;
     }
-
+    count_relevant_types (p, resource.user_data, aggs);
     errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, &(aggs[0]), len)) == -1) {
