@@ -211,10 +211,11 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     if ( (rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
     for (auto &resource : resources) {
-        if ((*m_graph)[u].type != resource.type)
+        if ((*m_graph)[u].type != resource.type && resource.type != "slot")
             continue;
         // Prune by exclusivity checker
-        if ( (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
+        if (resource.type != "slot"
+            && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
             break;
         // Prune by the subtree planner quantities
         if ( (rc = by_subplan (meta, s, u, resource)) == -1)
