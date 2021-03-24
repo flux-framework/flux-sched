@@ -57,8 +57,11 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     planner_multi_t *p = NULL;
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
 
-    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0)
+    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
+        m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
+        m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
         goto out;
+    }
 
     /* Currently no resources/devices available... Do more... */
     switch (op) {
@@ -74,6 +77,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             errno = (errno == EBUSY)? ENODEV : errno;
             detail::dfu_impl_t::update ();
         }
+        m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
+        m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
         break;
     }
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
@@ -89,6 +94,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
              (t != -1 && rc && !errno); t = planner_multi_avail_time_next (p)) {
             meta.at = t;
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
+            m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
+            m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
         }
         // The planner layer returns ENOENT when no scheduleable point exists
         if (rc < 0 && errno == ENOENT) {
@@ -100,6 +107,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                 errno = (errno == EBUSY)? ENODEV : errno;
                 detail::dfu_impl_t::update ();
             }
+            m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
+            m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
         }
         break;
     }
@@ -173,6 +182,16 @@ const std::shared_ptr<const dfu_match_cb_t> dfu_traverser_t::
 const std::string &dfu_traverser_t::err_message () const
 {
     return detail::dfu_impl_t::err_message ();
+}
+
+const unsigned int dfu_traverser_t::get_total_preorder_count () const
+{
+    return m_total_preorder;
+}
+
+const unsigned int dfu_traverser_t::get_total_postorder_count () const
+{
+    return m_total_postorder;
 }
 
 void dfu_traverser_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
