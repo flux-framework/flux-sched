@@ -576,6 +576,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     const std::string &dom = m_match->dom_subsystem ();
     const std::vector<Resource> &next = test (u, resources, check_pres, sm);
 
+    m_preorder++;
     if (sm == match_kind_t::NONE_MATCH)
         goto done;
     if ((prune (meta, x_in, dom, u, resources) == -1)
@@ -618,6 +619,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
             }
         }
     }
+    m_postorder++;
 done:
     return rc;
 }
@@ -845,6 +847,16 @@ const std::string &dfu_impl_t::err_message () const
     return m_err_msg;
 }
 
+const unsigned int dfu_impl_t::get_preorder_count () const
+{
+    return m_preorder;
+}
+
+const unsigned int dfu_impl_t::get_postorder_count () const
+{
+    return m_postorder;
+}
+
 void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
@@ -943,6 +955,8 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     const std::string &dom = m_match->dom_subsystem ();
 
     tick ();
+    m_preorder = 0;
+    m_postorder = 0;
     rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;

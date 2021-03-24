@@ -118,6 +118,8 @@ public:
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
     const expr_eval_api_t &get_expr_eval () const;
+    const unsigned int get_preorder_count () const;
+    const unsigned int get_postorder_count () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
@@ -444,6 +446,8 @@ private:
     color_t m_color;
     uint64_t m_best_k_cnt = 0;
     unsigned int m_trav_level = 0;
+    unsigned int m_preorder = 0;
+    unsigned int m_postorder = 0;
     std::shared_ptr<std::map<subsystem_t, vtx_t>> m_roots = nullptr;
     std::shared_ptr<f_resource_graph_t> m_graph = nullptr;
     std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
