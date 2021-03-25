@@ -94,7 +94,8 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
 static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
                                  std::ostream &out, uint64_t jobid,
                                  const std::string &jobspec_fn, bool matched,
-                                 int64_t at, double elapse, bool sat)
+                                 int64_t at, bool sat, double elapse,
+                                 unsigned int pre, unsigned int post)
 {
     if (matched) {
         job_lifecycle_t st;
@@ -104,9 +105,14 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
         out << "INFO:" << " JOBID=" << jobid << std::endl;
         out << "INFO:" << " RESOURCES=" << mode << std::endl;
         out << "INFO:" << " SCHEDULED AT=" << scheduled_at << std::endl;
-        if (ctx->params.elapse_time)
+        if (ctx->params.elapse_time) {
             std::cout << "INFO:" << " ELAPSE=" << std::to_string (elapse)
                       << std::endl;
+            std::cout << "INFO:" << " PREORDER VISIT COUNT=" << pre
+                      << std::endl;
+            std::cout << "INFO:" << " POSTORDER VISIT COUNT=" << post
+                      << std::endl;
+        }
 
         out << "INFO:" << " =============================" << std::endl;
         st = (at == 0)? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
@@ -123,9 +129,14 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
         if (!sat)
             out << "INFO: " << "Unsatisfiable request" << std::endl;
         out << "INFO:" << " JOBID=" << jobid << std::endl;
-        if (ctx->params.elapse_time)
+        if (ctx->params.elapse_time) {
             out << "INFO:" << " ELAPSE=" << std::to_string (elapse)
                 << std::endl;
+            std::cout << "INFO:" << " PREORDER VISIT COUNT=" << pre
+                      << std::endl;
+            std::cout << "INFO:" << " POSTORDER VISIT COUNT=" << post
+                      << std::endl;
+        }
         out << "INFO:" << " =============================" << std::endl;
     }
     ctx->jobid_counter++;
@@ -174,6 +185,8 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
         Flux::Jobspec::Jobspec job {jobspec_in};
         std::stringstream o;
         double elapse = 0.0f;
+        unsigned int preorder_count = 0;
+        unsigned int postorder_count = 0;
         struct timeval st, et;
 
         gettimeofday (&st, NULL);
@@ -206,10 +219,13 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
 
         gettimeofday (&et, NULL);
         elapse = get_elapse_time (st, et);
+        preorder_count = ctx->traverser->get_total_preorder_count ();
+        postorder_count = ctx->traverser->get_total_postorder_count ();
         update_match_perf (ctx, elapse);
 
         print_schedule_info (ctx, out, jobid,
-                             jobspec_fn, rc == 0, at, elapse, sat);
+                             jobspec_fn, rc == 0, at, sat,
+                             elapse, preorder_count, postorder_count);
         jobspec_in.close ();
 
     } catch (parse_error &e) {
@@ -251,7 +267,7 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     elapse = get_elapse_time (st, et);
     update_match_perf (ctx, elapse);
     ctx->jobid_counter = id;
-    print_schedule_info (ctx, out, id, fn, rc == 0, at, elapse, true);
+    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse, 0, 0);
 
     return 0;
 }

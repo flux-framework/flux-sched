@@ -54,6 +54,8 @@ public:
     const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
+    const unsigned int get_total_preorder_count () const;
+    const unsigned int get_total_postorder_count () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
@@ -200,6 +202,8 @@ private:
                   bool x, match_op_t op, vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);
     bool m_initialized = false;
+    unsigned int m_total_preorder = 0;
+    unsigned int m_total_postorder = 0;
 };
 
 } // namespace resource_model

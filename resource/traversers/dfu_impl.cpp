@@ -173,12 +173,12 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
-    count_relevant_types (p, resource.user_data, aggs);
-    if (aggs.empty ()) {
+    if (resource.user_data.empty ()) {
+        // If user_data is empty, no data is available to prune with.
         rc = 0;
         goto done;
     }
-
+    count_relevant_types (p, resource.user_data, aggs);
     errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, &(aggs[0]), len)) == -1) {
@@ -211,10 +211,11 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     if ( (rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
     for (auto &resource : resources) {
-        if ((*m_graph)[u].type != resource.type)
+        if ((*m_graph)[u].type != resource.type && resource.type != "slot")
             continue;
         // Prune by exclusivity checker
-        if ( (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
+        if (resource.type != "slot"
+            && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
             break;
         // Prune by the subtree planner quantities
         if ( (rc = by_subplan (meta, s, u, resource)) == -1)
@@ -575,6 +576,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     const std::string &dom = m_match->dom_subsystem ();
     const std::vector<Resource> &next = test (u, resources, check_pres, sm);
 
+    m_preorder++;
     if (sm == match_kind_t::NONE_MATCH)
         goto done;
     if ((prune (meta, x_in, dom, u, resources) == -1)
@@ -617,6 +619,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
             }
         }
     }
+    m_postorder++;
 done:
     return rc;
 }
@@ -844,6 +847,16 @@ const std::string &dfu_impl_t::err_message () const
     return m_err_msg;
 }
 
+const unsigned int dfu_impl_t::get_preorder_count () const
+{
+    return m_preorder;
+}
+
+const unsigned int dfu_impl_t::get_postorder_count () const
+{
+    return m_postorder;
+}
+
 void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
@@ -942,6 +955,8 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     const std::string &dom = m_match->dom_subsystem ();
 
     tick ();
+    m_preorder = 0;
+    m_postorder = 0;
     rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;

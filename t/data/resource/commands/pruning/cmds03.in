@@ -1,0 +1,6 @@
+# 4x slot[1]->core[1]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test003.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test003.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test003.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/pruning/test003.yaml
+quit
