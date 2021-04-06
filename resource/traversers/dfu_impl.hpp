@@ -65,6 +65,7 @@ struct jobmeta_t {
     alloc_type_t alloc_type = alloc_type_t::AT_ALLOC;
     int64_t jobid = -1;
     int64_t at = -1;
+    int64_t now = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
 
     bool is_queue_set () const {
@@ -79,6 +80,7 @@ struct jobmeta_t {
                 alloc_type_t alloc, int64_t id, int64_t t)
     {
         at = t;
+        now = t;
         jobid = id;
         alloc_type = alloc;
         if (jobspec.attributes.system.duration == 0.0f
