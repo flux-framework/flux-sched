@@ -429,6 +429,8 @@ private:
                       const std::map<std::string, int64_t> &dfu);
     int upd_idata (vtx_t u, const subsystem_t &s, const jobmeta_t &jobmeta,
                    const std::map<std::string, int64_t> &dfu);
+    int upd_by_outedges (const subsystem_t &subsystem,
+                         const jobmeta_t &jobmeta, vtx_t u, edg_t e);
     int upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                   bool excl, const jobmeta_t &jobmeta, bool full, int &n);
     int accum_to_parent (vtx_t u, const subsystem_t &s, unsigned int needs,
