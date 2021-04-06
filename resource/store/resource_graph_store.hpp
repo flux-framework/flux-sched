@@ -44,6 +44,11 @@ struct resource_graph_metadata_t {
     std::map<std::string, std::vector <vtx_t>> by_name;
     std::map<int64_t, std::vector <vtx_t>> by_rank;
     std::map<std::string, vtx_t> by_path;
+    // by_outedges enables graph traversing order to edge "weight"
+    // E.g., the more available resources an edge point to, the heavier
+    std::map<vtx_t,
+             std::map<std::pair<uint64_t, int64_t>, edg_t,
+                      std::greater<std::pair<uint64_t, int64_t>>>> by_outedges;
 };
 
 /*! Resource graph data store.
