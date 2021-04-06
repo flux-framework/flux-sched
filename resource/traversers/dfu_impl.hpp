@@ -337,12 +337,12 @@ private:
      * including slot match
      */
     int match (vtx_t u, const std::vector<Jobspec::Resource> &resources,
-                const Jobspec::Resource **slot_resource,
+                const Jobspec::Resource **slot_resource, unsigned int *nslots,
                 const Jobspec::Resource **match_resource);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
              const std::vector<Jobspec::Resource> &resources,
-             bool &prestine, match_kind_t &ko);
+             bool &prestine, unsigned int &nslots, match_kind_t &ko);
 
     /*! Accumulate count into accum if type matches with one of the resource
      *  types used in the scheduler-driven aggregate update (SDAU) scheme.
@@ -362,14 +362,34 @@ private:
     // Explore for resource matching -- only DFV or UPV
     int explore (const jobmeta_t &meta, vtx_t u, const subsystem_t &subsystem,
                  const std::vector<Jobspec::Resource> &resources, bool prestine,
-                 bool *excl, visit_t direction, scoring_api_t &to_parent);
+                 bool *excl, visit_t direction, scoring_api_t &dfu,
+                 unsigned int multiplier=1);
+    int explore_statically (const jobmeta_t &meta, vtx_t u,
+                            const subsystem_t &subsystem,
+                            const std::vector<Jobspec::Resource> &resources,
+                            bool prestine, bool *excl, visit_t direction,
+                            scoring_api_t &dfu);
+    int explore_dynamically (const jobmeta_t &meta, vtx_t u,
+                             const subsystem_t &subsystem,
+                             const std::vector<Jobspec::Resource> &resources,
+                             bool prestine, bool *excl, visit_t direction,
+                             scoring_api_t &dfu, unsigned int multiplier=1);
+
+    bool is_enough (const subsystem_t &subsystem,
+                    const std::vector<Jobspec::Resource> &resources,
+                    scoring_api_t &dfu, unsigned int multiplier);
+    int new_sat_types (const subsystem_t &subsystem,
+                       const std::vector<Jobspec::Resource> &resources,
+                       scoring_api_t &dfu, unsigned int multiplier,
+                       std::set<std::string> &sat_types);
     int aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &subsystem,
                  const std::vector<Jobspec::Resource> &resources, bool prestine,
                  bool *excl, scoring_api_t &to_parent);
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape,
                   scoring_api_t &dfu_slot);
     int dom_slot (const jobmeta_t &meta, vtx_t u,
-                  const std::vector<Jobspec::Resource> &resources, bool prestine,
+                  const std::vector<Jobspec::Resource> &resources,
+                  unsigned int nslots,  bool prestine,
                   bool *excl, scoring_api_t &dfu);
     int dom_exp (const jobmeta_t &meta, vtx_t u,
                  const std::vector<Jobspec::Resource> &resources, bool prestine,
