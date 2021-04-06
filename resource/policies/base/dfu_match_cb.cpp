@@ -115,6 +115,18 @@ int dfu_match_cb_t::aux_finish_vtx (
     return 0;
 }
 
+int dfu_match_cb_t::set_stop_on_k_matches (unsigned int k)
+{
+    // Unless the dervied class supports limited traversal,
+    // this knob cannot be set
+    return -1;
+}
+
+int dfu_match_cb_t::get_stop_on_k_matches () const
+{
+    return 0;
+}
+
 void dfu_match_cb_t::incr ()
 {
     m_trav_level++;

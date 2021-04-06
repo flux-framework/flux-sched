@@ -158,6 +158,25 @@ public:
                                 const f_resource_graph_t &g,
                                 scoring_api_t &dfu);
 
+    /*
+     * Set a knob to limit graph traversal: i.g., stop traversing
+     * when k instances of qualified matches are found for each requested
+     * resource type.
+     *
+     *  \param k         num of qualified matches
+     *
+     *  \return          return 0 on success; otherwise -1
+     */
+    virtual int set_stop_on_k_matches (unsigned int k);
+
+    /*
+     * Return the knob to limit graph traversal: i.g., stop traversing
+     * when k instances of qualified matches are found for each requested
+     * resource type.
+     */
+    virtual int get_stop_on_k_matches () const;
+
+
     void incr ();
     void decr ();
     std::string level ();

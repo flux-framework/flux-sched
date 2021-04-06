@@ -121,6 +121,19 @@ int low_first_t::dom_finish_slot (const subsystem_t &subsystem,
     return 0;
 }
 
+int low_first_t::set_stop_on_k_matches (unsigned int k)
+{
+    if (k > 1)
+        return -1;
+    m_stop_on_k_matches = k;
+    return 0;
+}
+
+int low_first_t::get_stop_on_k_matches () const
+{
+    return m_stop_on_k_matches;
+}
+
 } // resource_model
 } // Flux
 
