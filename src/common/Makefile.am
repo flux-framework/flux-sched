@@ -1,1 +1,6 @@
-SUBDIRS = libtap libutil librbtree c++wrappers
+SUBDIRS = \
+	libtap \
+	libutil \
+	librbtree \
+	c++wrappers \
+	libczmqcontainers

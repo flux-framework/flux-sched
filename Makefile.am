@@ -12,6 +12,7 @@ CODE_COVERAGE_IGNORE_PATTERN = \
     "*/test/*.c" \
     "*/tests/*.c" \
     "*/common/libtap/*" \
+    "*/common/libczmqcontainers/*" \
     "/usr/include/*" \
     "/usr/lib/*"
 CODE_COVERAGE_LCOV_OPTIONS =
