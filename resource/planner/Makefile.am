@@ -19,4 +19,5 @@ libplanner_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resource/planner
 libplanner_la_LIBADD = \
 	$(top_builddir)/src/common/libutil/libutil.la \
 	$(top_builddir)/src/common/librbtree/librbtree.la \
+	$(top_builddir)/src/common/libczmqcontainers/libczmqcontainers.la \
 	$(CZMQ_LIBS)

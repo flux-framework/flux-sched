@@ -33,6 +33,7 @@
 #include "src/common/librbtree/rbtree.h"
 #include "src/common/librbtree/rbtree_augmented.h"
 #include "src/common/libutil/xzmalloc.h"
+#include "src/common/libczmqcontainers/czmq_containers.h"
 #include "planner.h"
 
 #define START(node) ((node)->start)
