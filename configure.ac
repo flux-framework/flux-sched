@@ -170,6 +170,7 @@ AC_CONFIG_FILES([Makefile
   src/common/librbtree/Makefile
   src/common/c++wrappers/Makefile
   src/common/c++wrappers/test/Makefile
+  src/common/libczmqcontainers/Makefile
   src/cmd/Makefile
   src/python/Makefile
   src/python/fluxion/Makefile

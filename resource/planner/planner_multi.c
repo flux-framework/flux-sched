@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "src/common/libutil/xzmalloc.h"
+#include "src/common/libczmqcontainers/czmq_containers.h"
 #include "planner_multi.h"
 
 struct request {
