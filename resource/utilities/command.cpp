@@ -157,6 +157,71 @@ double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
+static int run_match (std::shared_ptr<resource_context_t> &ctx, int64_t jobid,
+                      const std::string cmd, const std::string &jobspec_fn,
+                      Flux::Jobspec::Jobspec &job)
+{
+    int rc = 0;
+    int rc2 = 0;
+    bool sat = true;
+    int64_t at = 0;
+    std::stringstream o;
+    double elapse = 0.0f;
+    unsigned int preorder_count = 0;
+    unsigned int postorder_count = 0;
+    struct timeval st, et;
+    std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
+                                                   : std::cout;
+
+    if ( (rc = gettimeofday (&st, NULL)) < 0) {
+        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
+        goto done;
+    }
+
+    if (cmd == "allocate")
+        rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                   MATCH_ALLOCATE, (int64_t)jobid, &at);
+    else if (cmd == "allocate_with_satisfiability")
+        rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                   MATCH_ALLOCATE_W_SATISFIABILITY,
+                                   (int64_t)jobid, &at);
+    else if (cmd == "allocate_orelse_reserve")
+        rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                   MATCH_ALLOCATE_ORELSE_RESERVE,
+                                   (int64_t)jobid, &at);
+
+    if ((rc2 != 0) && (errno == ENODEV))
+        sat = false;
+
+    if (ctx->traverser->err_message () != "") {
+        std::cerr << "ERROR: " << ctx->traverser->err_message ();
+        ctx->traverser->clear_err_message ();
+    }
+    if ( (rc = ctx->writers->emit (o)) < 0) {
+        std::cerr << "ERROR: match writer emit: "
+                  << strerror (errno) << std::endl;
+        goto done;
+    }
+
+    out << o.str ();
+
+    if ( (rc = gettimeofday (&et, NULL)) < 0) {
+        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
+        goto done;
+    }
+
+    elapse = get_elapse_time (st, et);
+    preorder_count = ctx->traverser->get_total_preorder_count ();
+    postorder_count = ctx->traverser->get_total_postorder_count ();
+    update_match_perf (ctx, elapse);
+
+    print_schedule_info (ctx, out, jobid,
+                         jobspec_fn, rc2 == 0, at, sat,
+                         elapse, preorder_count, postorder_count);
+done:
+    return rc + rc2;
+}
+
 int cmd_match (std::shared_ptr<resource_context_t> &ctx,
                std::vector<std::string> &args)
 {
@@ -172,9 +237,6 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
     }
 
     try {
-        int rc = 0;
-        bool sat = true;
-        int64_t at = 0;
         int64_t jobid = ctx->jobid_counter;
         std::string &jobspec_fn = args[2];
         std::ifstream jobspec_in (jobspec_fn);
@@ -183,50 +245,9 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
             return 0;
         }
         Flux::Jobspec::Jobspec job {jobspec_in};
-        std::stringstream o;
-        double elapse = 0.0f;
-        unsigned int preorder_count = 0;
-        unsigned int postorder_count = 0;
-        struct timeval st, et;
-
-        gettimeofday (&st, NULL);
-
-        if (args[1] == "allocate")
-            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
-                                      MATCH_ALLOCATE, (int64_t)jobid, &at);
-        else if (args[1] == "allocate_with_satisfiability")
-            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
-                                      MATCH_ALLOCATE_W_SATISFIABILITY,
-                                      (int64_t)jobid, &at);
-        else if (args[1] == "allocate_orelse_reserve")
-            rc = ctx->traverser->run (job, ctx->writers, match_op_t::
-                                      MATCH_ALLOCATE_ORELSE_RESERVE,
-                                      (int64_t)jobid, &at);
-
-        if ((rc != 0) && (errno == ENODEV))
-            sat = false;
-
-        if (ctx->traverser->err_message () != "") {
-            std::cerr << "ERROR: " << ctx->traverser->err_message ();
-            ctx->traverser->clear_err_message ();
-        }
-        if (ctx->writers->emit (o) < 0)
-            std::cerr << "ERROR: match writer emit: " << strerror (errno) << std::endl;
-
-        std::ostream &out = (ctx->params.r_fname != "")? ctx->params.r_out
-                                                       : std::cout;
-        out << o.str ();
-
-        gettimeofday (&et, NULL);
-        elapse = get_elapse_time (st, et);
-        preorder_count = ctx->traverser->get_total_preorder_count ();
-        postorder_count = ctx->traverser->get_total_postorder_count ();
-        update_match_perf (ctx, elapse);
-
-        print_schedule_info (ctx, out, jobid,
-                             jobspec_fn, rc == 0, at, sat,
-                             elapse, preorder_count, postorder_count);
         jobspec_in.close ();
+
+        run_match (ctx, jobid, subcmd, jobspec_fn, job);
 
     } catch (parse_error &e) {
         std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
