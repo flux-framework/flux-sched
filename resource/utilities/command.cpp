@@ -47,6 +47,10 @@ command_t commands[] = {
     { "match",  "m", cmd_match, "Allocate or reserve matching resources (subcmd: "
 "allocate | allocate_with_satisfiability | allocate_orelse_reserve): "
 "resource-query> match allocate jobspec"},
+    { "multi-match",  "M", cmd_match_multi, "Allocate or reserve for "
+"multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
+"allocate_orelse_reserve): "
+"resource-query> multi-match allocate jobspec1 jobspec2 ..."},
     { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
 "allocate | reserve): "
 "resource-query> update allocate jgf_file jobid starttime duration" },
@@ -249,6 +253,44 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
 
         run_match (ctx, jobid, subcmd, jobspec_fn, job);
 
+    } catch (parse_error &e) {
+        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
+                  << e.what () << std::endl;
+    }
+    return 0;
+}
+
+int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx,
+                     std::vector<std::string> &args)
+{
+    size_t i;
+
+    if (args.size () <= 3) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+    std::string subcmd = args[1];
+    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
+          || subcmd == "allocate_with_satisfiability")) {
+        std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
+        return 0;
+    }
+
+    try {
+        for (i = 2; i < args.size (); i++) {
+            int64_t jobid = ctx->jobid_counter;
+            std::string &jobspec_fn = args[i];
+            std::ifstream jobspec_in (jobspec_fn);
+            if (!jobspec_in) {
+                std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
+                return 0;
+            }
+            Flux::Jobspec::Jobspec job {jobspec_in};
+            jobspec_in.close ();
+
+            if (run_match (ctx, jobid, subcmd, jobspec_fn, job) < 0)
+                return 0;
+        }
     } catch (parse_error &e) {
         std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter <<": "
                   << e.what () << std::endl;

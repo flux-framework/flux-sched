@@ -83,6 +83,8 @@ typedef int cmd_func_f (std::shared_ptr<resource_context_t> &,
 cmd_func_f *find_cmd (const std::string &cmd_str);
 int cmd_match (std::shared_ptr<resource_context_t> &ctx,
                std::vector<std::string> &args);
+int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx,
+                     std::vector<std::string> &args);
 int cmd_update (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
 int cmd_attach (std::shared_ptr<resource_context_t> &ctx,
