@@ -1,0 +1,3 @@
+# 2x slot[1]->node[1]->socket[2]->core[5]:gpu[1]:memory[6]
+multi-match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test003.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test003.yaml
+quit

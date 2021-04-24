@@ -1,0 +1,5 @@
+# 6x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[1]
+# the result must be same as 5x as multi-match must not try
+# to match later jobspecs when it encounter no-match.
+M allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+quit
