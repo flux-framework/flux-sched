@@ -85,7 +85,7 @@ int dfu_impl_t::upd_agfilter (vtx_t u, const subsystem_t &s,
 {
     // idata subtree aggregate prunning filter
     planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
-    if (subtree_plan) {
+    if (subtree_plan && !dfu.empty ()) {
         int64_t span = -1;
         std::vector<uint64_t> aggregate;
         // Update the subtree aggregate pruning filter of this vertex
@@ -117,6 +117,47 @@ int dfu_impl_t::upd_idata (vtx_t u, const subsystem_t &s,
         goto done;
 done:
     return rc;
+}
+
+int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
+                                 const jobmeta_t &jobmeta, vtx_t u, edg_t e)
+{
+    size_t len = 0;
+    vtx_t tgt = target (e, *m_graph);
+    planner_multi_t *subplan = (*m_graph)[tgt].idata.subplans[subsystem];
+    if (subplan) {
+        if ( (len = planner_multi_resources_len (subplan)) == 0)
+            return -1;
+
+        // Set dynamic traversing order based on the following heuristics:
+        //     1. Current-time (jobmeta.now) resource availability
+        //     2. Last pruning filter resource type (if additional
+        //        pruning filter type was given, that's a good
+        //        indication that it is the scarcest resource)
+        int64_t avail = planner_multi_avail_resources_at (subplan,
+                                                          jobmeta.now, len - 1);
+        // Special case to skip (e.g., leaf resource vertices)
+        if (avail == 0 && planner_multi_span_size (subplan) == 0)
+            return 0;
+
+        auto key = std::make_pair ((*m_graph)[e].idata.get_weight (),
+                                   (*m_graph)[tgt].uniq_id);
+        m_graph_db->metadata.by_outedges[u].erase (key);
+
+        (*m_graph)[e].idata.set_weight ((avail == -1)? 0 : avail);
+        key = std::make_pair ((*m_graph)[e].idata.get_weight (),
+                              (*m_graph)[tgt].uniq_id);
+        // Reinsert so that outedges are maintained according to the current
+        // resource availability state. Leverage the fact that std::map
+        // uses a RedBlack tree keep its elemented in sorted order.
+        auto ret = m_graph_db->metadata.by_outedges[u].insert (
+                                            std::make_pair (key, e));
+        if (!ret.second) {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    return 0;
 }
 
 int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
@@ -275,6 +316,11 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
             }
 
             if (n_plan_sub > 0) {
+                if (m_match->get_stop_on_k_matches () > 0
+                    && upd_by_outedges (subsystem, jobmeta, u, *ei) < 0) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": upd_by_outedges returned -1.\n";
+                }
                 if (emit_edg (*ei, writers) == -1) {
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": emit_edg returned -1.\n";

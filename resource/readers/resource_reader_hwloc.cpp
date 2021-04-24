@@ -116,6 +116,41 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     return v;
 }
 
+int resource_reader_hwloc_t::add_metadata (resource_graph_metadata_t &m,
+                                           edg_t e, vtx_t src, vtx_t tgt,
+                                           resource_graph_t &g)
+{
+    // add this edge to by_outedges metadata
+    auto iter = m.by_outedges.find (src);
+    if (iter == m.by_outedges.end ()) {
+        auto ret = m.by_outedges.insert (
+                         std::make_pair (
+                             src,
+                             std::map<std::pair<uint64_t, int64_t>, edg_t,
+                                      std::greater<
+                                               std::pair<uint64_t,
+                                                         int64_t>>> ()));
+        if (!ret.second) {
+            errno = ENOMEM;
+            m_err_msg += "error creating out-edge metadata map: "
+                              + g[src].name + " -> " + g[tgt].name + "; ";
+            return -1;
+        }
+        iter = m.by_outedges.find (src);
+    }
+    std::pair<uint64_t, int64_t> key = std::make_pair (
+                                                g[e].idata.get_weight (),
+                                                g[tgt].uniq_id);
+    auto ret = iter->second.insert (std::make_pair (key, e));
+    if (!ret.second) {
+        errno = ENOMEM;
+        m_err_msg += "error inserting an edge to out-edge metadata map: "
+                          + g[src].name + " -> " + g[tgt].name + "; ";
+        return -1;
+    }
+    return 0;
+}
+
 int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                                          resource_graph_metadata_t &m,
                                          const hwloc_topology_t topo,
@@ -332,12 +367,28 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         bool inserted; // set to false when we try and insert a parallel edge
 
         tie (e, inserted) = add_edge (parent, v, g);
+        if (!inserted) {
+            errno = ENOMEM;
+            m_err_msg += "error inserting a new edge: "
+                            + g[parent].name + " -> " + g[v].name + "; ";
+            return -1;
+        }
         g[e].idata.member_of[subsys] = relation;
         g[e].name[subsys] = relation;
+        if (add_metadata (m, e, parent, v, g) < 0)
+            return -1;
 
         tie (e, inserted) = add_edge (v, parent, g);
+        if (!inserted) {
+            errno = ENOMEM;
+            m_err_msg += "error inserting a new edge: "
+                            + g[v].name + " -> " + g[parent].name + "; ";
+            return -1;
+        }
         g[e].idata.member_of[subsys] = rev_relation;
         g[e].name[subsys] = rev_relation;
+        if (add_metadata (m, e, v, parent, g) < 0)
+            return -1;
     }
 
     hwloc_obj_t curr_child = NULL;

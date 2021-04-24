@@ -63,7 +63,7 @@ public:
 private:
     vtx_t emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
                        vtx_t src_v, int i, int sz, int j);
-    edg_t raw_edge (vtx_t src_v, vtx_t tgt_v);
+    int raw_edge (vtx_t src_v, vtx_t tgt_v, edg_t &e);
     void emit_edges (gge_t e, const gg_t &recipe,
                      vtx_t src_v, vtx_t tgt_v);
     int path_prefix (const std::string &pth,
@@ -142,9 +142,8 @@ int dfs_emitter_t::gen_id (gge_t e, const gg_t &recipe, int i, int sz, int j)
               + (i * recipe[e].id_stride);
 }
 
-edg_t dfs_emitter_t::raw_edge (vtx_t src_v, vtx_t tgt_v)
+int dfs_emitter_t::raw_edge (vtx_t src_v, vtx_t tgt_v, edg_t &e)
 {
-    edg_t e; // Unfortunately, BGL does not have null_edge ()
     bool inserted;
     out_edg_iterator_t ei, ee;
     resource_graph_t &g = *m_g_p;
@@ -153,29 +152,59 @@ edg_t dfs_emitter_t::raw_edge (vtx_t src_v, vtx_t tgt_v)
     for ( ; ei != ee; ++ei) {
         if (target (*ei, g) == tgt_v) {
             e = (*ei);
-            return e;
+            return 0;
         }
     }
     tie (e, inserted) = add_edge (src_v, tgt_v, g);
     if (!inserted) {
-        m_err_msg += "error inserting a new edge:"
+        errno = ENOMEM;
+        m_err_msg += "error inserting a new edge: "
                         + g[src_v].name + " -> " + g[tgt_v].name + "; ";
+        return -1;
     }
-    return e;
+    // add this edge to by_outedges metadata
+    auto iter = m_gm_p->by_outedges.find (src_v);
+    if (iter == m_gm_p->by_outedges.end ()) {
+        auto ret = m_gm_p->by_outedges.insert (
+                       std::make_pair (
+                       src_v,
+                       std::map<std::pair<uint64_t, int64_t>, edg_t,
+                                std::greater<std::pair<uint64_t,
+                                                       int64_t>>> ()));
+        if (!ret.second) {
+            errno = ENOMEM;
+            m_err_msg += "error creating out-edge metadata map: "
+                              + g[src_v].name + " -> " + g[tgt_v].name + "; ";
+            return -1;
+        }
+        iter = m_gm_p->by_outedges.find (src_v);
+    }
+    // Use a temporary for readability
+    std::pair<uint64_t, int64_t> key = std::make_pair (
+                                                g[e].idata.get_weight (),
+                                                g[tgt_v].uniq_id);
+    auto ret = iter->second.insert (std::make_pair (key, e));
+    if (!ret.second) {
+        errno = ENOMEM;
+        m_err_msg += "error inserting an edge into out-edge metadata map:"
+                         + g[src_v].name + " -> " + g[tgt_v].name + "; ";
+        return -1;
+    }
+    return 0;
 }
 
 void dfs_emitter_t::emit_edges (gge_t ge, const gg_t &recipe,
                                 vtx_t src_v, vtx_t tgt_v)
 {
+    edg_t e;
+    int rc = 0;
     resource_graph_t &g = *m_g_p;
-    edg_t e = raw_edge (src_v, tgt_v);
-    if (m_err_msg != "")
+    if ( (rc = raw_edge (src_v, tgt_v, e)) < 0)
         return;
     g[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].relation;
     g[e].name[recipe[ge].e_subsystem] = recipe[ge].relation;
-    e = raw_edge (tgt_v, src_v);
-    if (m_err_msg != "")
+    if ( (rc = raw_edge (tgt_v, src_v, e)) < 0)
         return;
     g[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].rrelation;

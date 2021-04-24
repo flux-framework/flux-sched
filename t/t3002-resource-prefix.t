@@ -69,4 +69,31 @@ test_expect_success "${test006_desc}" '
     test_cmp 006.R.out ${exp_dir}/006.R.out
 '
 
+#
+# Selection Policy -- First Match (-P first)
+
+cmds011="${cmd_dir}/cmds01.in"
+test011_desc="match allocate with fully specified (pol=first)"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${grugs} -S CA -P first -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds012="${cmd_dir}/cmds02.in"
+test012_desc="match allocate with partially specified from rack (pol=first)"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${grugs} -S CA -P first -t 012.R.out < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
+cmds013="${cmd_dir}/cmds03.in"
+test013_desc="match allocate with partially specified from node (pol=first)"
+test_expect_success "${test003_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
+    ${query} -L ${grugs} -S CA -P first -t 013.R.out < cmds013 &&
+    test_cmp 013.R.out ${exp_dir}/013.R.out
+'
+
 test_done

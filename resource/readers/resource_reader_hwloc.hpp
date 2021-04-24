@@ -103,6 +103,8 @@ private:
                           const std::string &basename,
                           const std::map<std::string, std::string> &properties,
                           int size, int rank = -1);
+    int add_metadata (resource_graph_metadata_t &m,
+                      edg_t e, vtx_t src, vtx_t tgt, resource_graph_t &g);
     int walk_hwloc (resource_graph_t &g, resource_graph_metadata_t &m,
                     const hwloc_topology_t topo, const hwloc_obj_t obj,
                     const vtx_t parent, int rank);

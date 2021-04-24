@@ -37,8 +37,9 @@ namespace resource_model {
 /*! Low ID first policy: select resources of each type
  *  with lower numeric IDs.
  */
-struct low_first_t : public dfu_match_cb_t
+class low_first_t : public dfu_match_cb_t
 {
+public:
     low_first_t ();
     low_first_t (const std::string &name);
     low_first_t (const low_first_t &o);
@@ -53,6 +54,28 @@ struct low_first_t : public dfu_match_cb_t
                         const f_resource_graph_t &g, scoring_api_t &dfu);
 
     int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+
+    /*
+     * Set a knob to limit graph traversal: i.g., stop traversing
+     * when k instances of qualifed matches are found
+     * for each requested resource type.
+     *
+     *  \param k         num of qualified matches
+     *
+     *  \return          return 0 on success; -1 if k is great than 1
+     *                   (i.e., only first match is currently supported).
+     */
+    virtual int set_stop_on_k_matches (unsigned int k);
+
+    /*
+     * Return the knob to limit graph traversal: i.g., stop traversing
+     * when k instances of qualifed matches are found
+     * for each requested resource type.
+     */
+    virtual int get_stop_on_k_matches () const;
+
+private:
+    unsigned int m_stop_on_k_matches = 0;
 };
 
 } // resource_model

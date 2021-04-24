@@ -117,5 +117,47 @@ test_expect_success 'prune: default core-level pruning works on w/ headless spec
     test_cmp cmp04 visit_count.out04
 '
 
+#
+# First match only visits min number of vertices
+cmds05="${cmd_dir}/cmds01.in"
+test_expect_success 'prune: default core-level pruning works with first match' '
+    cat <<-EOF >cmp05 &&
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	EOF
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds05} > cmds05 &&
+    ${query} -L ${grugs} -S CA -P first -t 005.R.out -e < cmds05 > out05 &&
+    cat out05 | grep ORDER > visit_count.out05 &&
+    test_cmp cmp05 visit_count.out05
+'
+
+#
+# First match only visits min number of vertices
+# jobspec is node[1]->socket[1]->slot[1]->core[1],gpu[1]
+# gpu pruning filter helps reducing visit count further.
+cmds06="${cmd_dir}/cmds02.in"
+test_expect_success 'prune: use gpu-level pruning' '
+    cat <<-EOF >cmp06 &&
+	INFO: PREORDER VISIT COUNT=10
+	INFO: POSTORDER VISIT COUNT=6
+	INFO: PREORDER VISIT COUNT=10
+	INFO: POSTORDER VISIT COUNT=6
+	INFO: PREORDER VISIT COUNT=10
+	INFO: POSTORDER VISIT COUNT=6
+	INFO: PREORDER VISIT COUNT=10
+	INFO: POSTORDER VISIT COUNT=6
+	EOF
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds06} > cmds06 &&
+    ${query} -L ${grugs} -S CA -P first -p ALL:gpu -t 006.R.out -e < cmds06 > out06 &&
+    cat out06 | grep ORDER > visit_count.out06 &&
+    test_cmp cmp06 visit_count.out06
+'
+
 test_done
 

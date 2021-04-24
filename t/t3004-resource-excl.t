@@ -134,4 +134,32 @@ test_expect_success "${test014_desc}" '
     test_cmp 014.R.out ${exp_dir}/014.R.out
 '
 
+#
+# Selection Policy -- First Match (-P first)
+#
+
+cmds021="${cmd_dir}/cmds01.in"
+test021_desc="allocate entire cluster then nothing scheduled (pol=first)"
+test_expect_success "${test021_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds021} > cmds021 &&
+    ${query} -L ${grugs} -S CA -P first -t 021.R.out < cmds021 &&
+    test_cmp 021.R.out ${exp_dir}/021.R.out
+'
+
+cmds022="${cmd_dir}/cmds02.in"
+test022_desc="allocate 1 node then rack4x shouldn't match (pol=first)"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -L ${grugs} -S CA -P first -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/022.R.out
+'
+
+cmds023="${cmd_dir}/cmds03.in"
+test023_desc="match allocate with several rack exclusives 1 (pol=first)"
+test_expect_success "${test023_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds023} > cmds023 &&
+    ${query} -L ${grugs} -S CA -P first -t 023.R.out < cmds023 &&
+    test_cmp 023.R.out ${exp_dir}/023.R.out
+'
+
 test_done

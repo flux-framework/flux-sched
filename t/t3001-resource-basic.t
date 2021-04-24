@@ -160,4 +160,63 @@ test_expect_success "${test040_desc}" '
     test_cmp 040.R.out ${exp_dir}/040.R.out
 '
 
+#
+# Selection Policy -- First Match (-P first)
+#
+cmds041="${cmd_dir}/cmds01.in"
+test041_desc="match alloc 4 jobs with 1 slot: 1 socket: 1 core (pol=first)"
+test_expect_success "${test041_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds041} > cmds041 &&
+    ${query} -L ${grugs} -S CA -P first -t 041.R.out < cmds041 &&
+    test_cmp 041.R.out ${exp_dir}/041.R.out
+'
+
+cmds042="${cmd_dir}/cmds02.in"
+test042_desc="match allocate 5 jobs instead - last one must fail (pol=first)"
+test_expect_success "${test042_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds042} > cmds042 &&
+    ${query} -L ${grugs} -S CA -P first -t 042.R.out < cmds042 &&
+    test_cmp 042.R.out ${exp_dir}/042.R.out
+'
+
+cmds043="${cmd_dir}/cmds03.in"
+test043_desc="match allocate_orelse_reserve 10 jobspecs (pol=first)"
+test_expect_success "${test043_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds043} > cmds043 &&
+    ${query} -L ${grugs} -S CA -P first -t 043.R.out < cmds043 &&
+    test_cmp 043.R.out ${exp_dir}/043.R.out
+'
+
+cmds044="${cmd_dir}/cmds04.in"
+test044_desc="match allocate 3 jobspecs with 1 slot: 2 sockets (pol=first)"
+test_expect_success "${test044_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds044} > cmds044 &&
+    ${query} -L ${grugs} -S CA -P first -t 044.R.out < cmds044 &&
+    test_cmp 044.R.out ${exp_dir}/044.R.out
+'
+
+cmds045="${cmd_dir}/cmds05.in"
+test045_desc="match allocate_orelse_reserve 100 jobspecs instead (pol=first)"
+test_expect_success "${test045_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds045} > cmds045 &&
+    ${query} -L ${grugs} -S CA -P first -t 045.R.out < cmds045 &&
+    test_cmp 045.R.out ${exp_dir}/045.R.out
+'
+
+cmds046="${cmd_dir}/cmds06.in"
+test046_desc="match allocate 2 jobspecs with 2 nodes - last must fail (pol=first)"
+test_expect_success "${test046_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds046} > cmds046 &&
+    ${query} -L ${grugs} -S CA -P first -t 046.R.out < cmds046 &&
+    test_cmp 046.R.out ${exp_dir}/046.R.out
+'
+
+cmds048="${cmd_dir}/cmds08.in"
+test048_desc="36 core (satisfiable) cores and 37 cores (unsatisfiable) (pol=first)"
+test_expect_success "${test048_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds048} > cmds048 &&
+    ${query} -L ${grugs} -S CA -P first -t 048.R.out < cmds048 &&
+    test_cmp 048.R.out ${exp_dir}/048.R.out
+'
+
 test_done

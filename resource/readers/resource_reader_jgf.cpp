@@ -917,6 +917,36 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 g[e].idata.member_of[std::string (key)]
                     = std::string (json_string_value (value));
             }
+            // add this edge to by_outedges metadata
+            auto iter = m.by_outedges.find (vmap[source].v);
+            if (iter == m.by_outedges.end ()) {
+                auto ret = m.by_outedges.insert (
+                               std::make_pair (
+                                   vmap[source].v,
+                                   std::map<std::pair<uint64_t, int64_t>, edg_t,
+                                            std::greater<
+                                                     std::pair<uint64_t,
+                                                               int64_t>>> ()));
+                if (!ret.second) {
+                    errno = ENOMEM;
+                    m_err_msg += "error creating out-edge metadata map: "
+                                      + g[vmap[source].v].name + " -> "
+                                      + g[vmap[target].v].name + "; ";
+                    goto done;
+                }
+                iter = m.by_outedges.find (vmap[source].v);
+            }
+            std::pair<uint64_t, int64_t> key = std::make_pair (
+                                                   g[e].idata.get_weight (),
+                                                   g[vmap[target].v].uniq_id);
+            auto ret = iter->second.insert (std::make_pair (key, e));
+            if (!ret.second) {
+                errno = ENOMEM;
+                m_err_msg += "error inserting an edge to outedge metadata map: "
+                             + g[vmap[source].v].name + " -> "
+                             + g[vmap[target].v].name + "; ";
+                goto done;
+            }
         }
     }
     rc = 0;
