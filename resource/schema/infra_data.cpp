@@ -20,6 +20,7 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
+#include <limits>
 #include "resource/schema/infra_data.hpp"
 
 namespace Flux {

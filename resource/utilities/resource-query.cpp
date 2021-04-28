@@ -29,7 +29,6 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
-#include <cstdint>
 #include <limits>
 #include <memory>
 #include <readline/readline.h>
@@ -719,7 +718,7 @@ static std::shared_ptr<resource_context_t> init_resource_query (int c,
 
     set_default_params (ctx);
     process_args (ctx, c, v);
-    ctx->perf.min = DBL_MAX;
+    ctx->perf.min = std::numeric_limits<double>::max();
     ctx->perf.max = 0.0f;
     ctx->perf.accum = 0.0f;
     if ( !(ctx->matcher = create_match_cb (ctx->params.matcher_policy))) {
