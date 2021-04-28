@@ -70,6 +70,7 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                                  queue_policy_base_t>> &queues)
 {
     int rc = -1;
+    unsigned int qd = 0;
     std::shared_ptr<job_t> job = nullptr;
     for (auto& kv: queues) {
         const std::string &queue_name = kv.first;
@@ -101,8 +102,9 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
             flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", note.c_str (),
                      static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
-        for (job = queue->pending_begin (); job != nullptr;
-             job = queue->pending_next ()) {
+        for (job = queue->pending_begin (), qd = 0;
+             job != nullptr && qd < queue->get_queue_depth ();
+             job = queue->pending_next (), qd++) {
             // if old_at == at, then no reason to send this annotation again.
             if (job->schedule.at == job->schedule.old_at)
                 continue;
