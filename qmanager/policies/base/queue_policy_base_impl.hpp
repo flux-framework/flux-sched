@@ -190,6 +190,11 @@ void queue_policy_base_t::get_params (std::string &q_p, std::string &p_p)
     }
 }
 
+unsigned int queue_policy_base_t::get_queue_depth ()
+{
+    return m_queue_depth;
+}
+
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
 {
     return detail::queue_policy_base_impl_t::insert (job);

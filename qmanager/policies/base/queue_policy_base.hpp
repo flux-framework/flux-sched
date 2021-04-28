@@ -246,6 +246,12 @@ public:
      */
     void get_params (std::string &q_p, std::string &p_p);
 
+    /*! Return the queue depth used for this queue. The queue depth
+     *  is the depth of its pending-job queue only upto which it
+     *  considers for scheduling to deal with unbounded queue length.
+     */
+    unsigned int get_queue_depth ();
+
     /*! Append a job into the internal pending-job queue.
      *  If succeeds, it changes the pending job queue state and thus
      *  this queue becomes "schedulable": i.e., is_schedulable()
