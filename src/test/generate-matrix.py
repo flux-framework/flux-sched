@@ -159,4 +159,11 @@ matrix.add_build(
     docker_tag=True,
 )
 
+# Fedora33
+matrix.add_build(
+    name="fedora33",
+    image="fedora33",
+    docker_tag=True,
+)
+
 print(matrix)

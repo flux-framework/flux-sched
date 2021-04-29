@@ -23,6 +23,7 @@
 \*****************************************************************************/
 
 #include <cstdint>
+#include <limits>
 #include <sstream>
 #include <cerrno>
 #include <map>
@@ -344,7 +345,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         set_default_args (ctx->args);
         ctx->perf.load = 0.0f;
         ctx->perf.njobs = 0;
-        ctx->perf.min = DBL_MAX;
+        ctx->perf.min = std::numeric_limits<double>::max();
         ctx->perf.max = 0.0f;
         ctx->perf.accum = 0.0f;
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
