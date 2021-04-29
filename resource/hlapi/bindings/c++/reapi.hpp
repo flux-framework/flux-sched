@@ -39,6 +39,60 @@ namespace Flux {
 namespace resource_model {
 
 
+/*! Queue adapter base API class: define a set of methods a queue
+ *  policy class (a subclass of this API class) must implement
+ *  to be able to work with reapi_t under asynchronous execution.
+ */
+class queue_adapter_base_t {
+public:
+    /*! When a match succeeds, this method is called back
+     *  by reapi_t with the matched resource information.
+     *  The implementor (e.g., queue policy class) of this method
+     *  is expected to dequeue the job from its pending queue
+     *  and proceed to the next state transition.
+     *
+     *  \param jobid     Job ID of the uint64_t type.
+     *  \param status    String indicating if the match type is
+     *                   allocation or reservation.
+     *  \param R         Resource set: i.e., either allocated or reserved.
+     *  \param at        If allocated, 0 is returned; if reserved,
+     *                   actual time at which the job is reserved.
+     *  \param ov        Match performance overhead in terms
+     *                   of the elapse time to complete the match operation.
+     *  \return          0 on success; -1 on error.
+     */
+    virtual int handle_match_success (int64_t jobid, const char *status,
+                                      const char *R, int64_t at, double ov) = 0;
+
+    /*! When a match failed (e.g., unsatisfiable jobspec, resource
+     *  unavailable, no more jobspec to process), this method is
+     *  called back by reapi_t with errcode returned from the resource
+     *  match service.
+     *  The implementor of this method is expected to dequeue the
+     *  the job from the pending job queue, if appropriate, and proceed
+     *  to the next pending job or return 0 if the scheduling loop
+     *  must be terminated per its queuing policy (e.g., FCFS).
+     *
+     *  \param           errno returned from the resource match service.
+     *                       EBUSY: resource unavailable
+     *                       ENODEV: unsatisfiable jobspec
+     *                       ENODATA: no more jobspec to process
+     *                       Others: one that can raised from match_multi RPC
+     *  \return          0 when the loop must terminate; -1 on error.
+     */
+    virtual int handle_match_failure (int errcode) = 0;
+
+    /*! Return true if the scheduling loop is active under asynchronous
+     *  execution; otherwise false.
+     */
+    virtual bool get_sloop_active () = 0;
+
+    /*! Set the state of the scheduling loop.
+     */
+    virtual void set_sloop_active (bool active) = 0;
+};
+
+
 /*! High-level resource API base class. Derived classes must implement
  *  the methods.
  */
