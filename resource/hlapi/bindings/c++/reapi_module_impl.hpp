@@ -84,6 +84,70 @@ out:
     return rc;
 }
 
+void match_allocate_multi_cont (flux_future_t *f, void *arg)
+{
+    int64_t rj = -1;
+    int64_t at;
+    double ov;
+    const char *rset = nullptr;
+    const char *status = nullptr;
+    queue_adapter_base_t *adapter = static_cast<queue_adapter_base_t *> (arg);
+
+    if (flux_rpc_get_unpack (f, "{s:I s:s s:f s:s s:I}",
+                                  "jobid", &rj,
+                                  "status", &status,
+                                  "overhead", &ov,
+                                  "R", &rset,
+                                  "at", &at) == 0) {
+        if (adapter->handle_match_success (rj, status, rset, at, ov) < 0) {
+            adapter->set_sloop_active (false);
+            flux_future_destroy (f);
+            return;
+        }
+    } else {
+        adapter->handle_match_failure (errno);
+        adapter->set_sloop_active (false);
+        flux_future_destroy (f);
+        return;
+    }
+    flux_future_reset (f);
+    return;
+}
+
+int reapi_module_t::match_allocate_multi (void *h,
+                                          bool orelse_reserve,
+                                          const char *jobs,
+                                          queue_adapter_base_t *adapter)
+{
+    int rc = -1;
+    flux_t *fh = static_cast<flux_t *> (h);
+    flux_future_t *f = nullptr;
+
+    const char *cmd = orelse_reserve ? "allocate_orelse_reserve"
+                                     : "allocate_with_satisfiability";
+    if (!fh) {
+        errno = EINVAL;
+        goto error;
+    }
+    if ( !(f = flux_rpc_pack (fh,
+                              "sched-fluxion-resource.match_multi",
+                              FLUX_NODEID_ANY, FLUX_RPC_STREAMING,
+                              "{s:s s:s}",
+                                "cmd", cmd,
+                                "jobs", jobs)))
+        goto error;
+    if (flux_future_then (f,
+                          -1.0f,
+                          match_allocate_multi_cont,
+                          static_cast<void *> (adapter)) < 0)
+        goto error;
+    return 0;
+
+error:
+    flux_future_destroy (f);
+    return rc;
+}
+
 int reapi_module_t::update_allocate (void *h, const uint64_t jobid,
                                     const std::string &R, int64_t &at,
                                     double &ov, std::string &R_out)

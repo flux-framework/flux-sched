@@ -130,6 +130,28 @@ public:
         return -1;
     }
 
+    /*! Multi-Match jobspecs to the "best" resources and either allocate
+     *  orelse reserve them. The best resources are determined by
+     *  the selected match policy.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param orelse_reserve
+     *                   Boolean: if false, only allocate; otherwise, first try
+     *                   to allocate and if that fails, reserve.
+     *  \param jobs      JSON array of jobspecs.
+     *  \param adapter   queue_adapter_base_t object that provides
+     *                   a set of callback methods to be called each time
+     *                   the result of a match is returned from the
+     *                   resource match service.
+     *  \return          0 on success; -1 on error.
+     */
+    static int match_allocate_multi (void *h, bool orelse_reserve,
+                                     const char *jobs,
+                                     queue_adapter_base_t *adapter);
+
     /*! Update the resource state with R.
      *
      *  \param h         Opaque handle. How it is used is an implementation
