@@ -225,6 +225,16 @@ void queue_policy_base_t::reset_scheduled ()
     detail::queue_policy_base_impl_t::reset_scheduled ();
 }
 
+bool queue_policy_base_t::is_sched_loop_active ()
+{
+    return detail::queue_policy_base_impl_t::is_sched_loop_active ();
+}
+
+void queue_policy_base_t::set_sched_loop_active (bool active)
+{
+    detail::queue_policy_base_impl_t::set_sched_loop_active (active);
+}
+
 const std::shared_ptr<job_t> queue_policy_base_t::lookup (flux_jobid_t id)
 {
     return detail::queue_policy_base_impl_t::lookup (id);
@@ -380,6 +390,16 @@ bool queue_policy_base_impl_t::is_scheduled ()
 void queue_policy_base_impl_t::reset_scheduled ()
 {
     m_scheduled = false;
+}
+
+bool queue_policy_base_impl_t::is_sched_loop_active ()
+{
+    return m_sched_loop_active;
+}
+
+void queue_policy_base_impl_t::set_sched_loop_active (bool active)
+{
+    m_sched_loop_active = active;
 }
 
 const std::shared_ptr<job_t> queue_policy_base_impl_t::lookup (flux_jobid_t id)

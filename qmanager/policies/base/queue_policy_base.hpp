@@ -119,6 +119,8 @@ public:
     void set_schedulability (bool scheduable);
     bool is_scheduled ();
     void reset_scheduled ();
+    bool is_sched_loop_active ();
+    void set_sched_loop_active (bool active);
 
 protected:
     int reconstruct_queue (std::shared_ptr<job_t> running_job);
@@ -141,6 +143,7 @@ protected:
 
     bool m_schedulable = false;
     bool m_scheduled = false;
+    bool m_sched_loop_active = false;
     uint64_t m_pq_cnt = 0;
     uint64_t m_rq_cnt = 0;
     uint64_t m_dq_cnt = 0;
@@ -383,6 +386,15 @@ public:
     /*! Reset this queue's "scheduled" state.
      */
     void reset_scheduled ();
+
+    /*! Return true if the asynchronous execution of the scheduling loop
+     *  is active.
+     */
+    bool is_sched_loop_active ();
+
+    /*! Set the asynchronous execution state of the scheduling loop.
+     */
+    void set_sched_loop_active (bool active);
 
 private:
     int set_params (const std::string &params,
