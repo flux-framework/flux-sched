@@ -382,7 +382,8 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     for (auto &kv: ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         ctx->pls_sched_loop = ctx->pls_sched_loop
-                              || queue->is_schedulable ();
+                              || (queue->is_schedulable ()
+                                  && !queue->is_sched_loop_active ());
         ctx->pls_post_loop = ctx->pls_post_loop
                               || queue->is_scheduled ();
     }

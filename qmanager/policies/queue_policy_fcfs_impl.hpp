@@ -53,47 +53,120 @@ int queue_policy_fcfs_t<reapi_type>::cancel_completed_jobs (void *h)
 }
 
 template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::pack_jobs (json_t *jobs)
+{
+    unsigned int qd = 0;
+    std::shared_ptr<job_t> job;
+    auto iter = m_pending.begin ();
+    while (iter != m_pending.end () && qd < m_queue_depth) {
+        json_t *jobdesc;
+        job = m_jobs[iter->second];
+        if ( !(jobdesc = json_pack ("{s:I s:s}",
+                                      "jobid", job->id,
+                                      "jobspec", job->jobspec.c_str ()))) {
+            json_decref (jobs);
+            errno = ENOMEM;
+            return -1;
+        }
+        if (json_array_append_new (jobs, jobdesc) < 0) {
+            json_decref (jobs);
+            errno = ENOMEM;
+            return -1;
+        }
+        iter++;
+        qd++;
+    }
+    return 0;
+}
+
+template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
                                                     bool use_alloced_queue)
 {
-    unsigned int i = 0;
-    std::shared_ptr<job_t> job;
+    json_t *jobs = nullptr;
+    char *jobs_str = nullptr;
     std::map<std::vector<double>, flux_jobid_t>::iterator iter;
 
-    // Iterate jobs in the pending job queue and try to allocate each
-    // until you can't.
-    //
-    int saved_errno = errno;
-    iter = m_pending.begin ();
-    while (iter != m_pending.end () && i < m_queue_depth) {
-        errno = 0;
-        job = m_jobs[iter->second];
-        if (reapi_type::match_allocate (h, false, job->jobspec, job->id,
-                                        job->schedule.reserved,
-                                        job->schedule.R,
-                                        job->schedule.at,
-                                        job->schedule.ov) == 0) {
-            // move the job to the running queue and make sure the job
-            // is enqueued into allocated job queue as well.
-            // When this is used within a module (qmanager), it allows the module
-            // to fetch those newly allocated jobs, which have flux_msg_t to
-            // respond to job-manager.
-            iter = to_running (iter, use_alloced_queue);
-        } else {
-            if (errno != EBUSY) {
-                // The request must be rejected. The job is enqueued into
-                // rejected job queue to the upper layer to react on this.
-                iter = to_rejected (iter, (errno == ENODEV)? "unsatisfiable"
-                                                           : "match error");
-            }
-            else {
-                break;
-            }
-        }
-        i++;
+    // move jobs in m_pending_provisional queue into
+    // m_pending. Note that c++11 doesn't have a clean way
+    // to "move" elements between two std::map objects so
+    // we use copy for the time being.
+    m_pending.insert (m_pending_provisional.begin (),
+                      m_pending_provisional.end ());
+    m_pending_provisional.clear ();
+    m_iter = m_pending.begin ();
+    if (m_pending.empty ())
+        return 0;
+    if (!(jobs = json_array ())) {
+        errno = ENOMEM;
+        return -1;
     }
-    errno = saved_errno;
+    if (pack_jobs (jobs) < 0)
+        return -1;
+
+    set_sched_loop_active (true);
+    if ( !(jobs_str = json_dumps (jobs, JSON_INDENT (0)))) {
+        errno = ENOMEM;
+        json_decref (jobs);
+        return -1;
+     }
+    json_decref (jobs);
+    if (reapi_type::match_allocate_multi (h, false, jobs_str, this) < 0) {
+        free (jobs_str);
+        set_sched_loop_active (false);
+        return -1;;
+    };
+    free (jobs_str);
     return 0;
+}
+
+template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::handle_match_success (
+                                         int64_t jobid, const char *status,
+                                         const char *R, int64_t at, double ov)
+{
+    if (!is_sched_loop_active ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    std::shared_ptr<job_t> job = m_jobs[m_iter->second];
+    if (job->id != static_cast<flux_jobid_t> (jobid)) {
+        errno = EINVAL;
+        return -1;
+    }
+    job->schedule.reserved = std::string ("RESERVED") == status?  true : false;
+    job->schedule.R = R;
+    job->schedule.at = at;
+    job->schedule.ov = ov;
+    m_iter = to_running (m_iter, true);
+    return 0;
+}
+
+template<class reapi_type>
+int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
+{
+    if (!is_sched_loop_active ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (errcode != EBUSY && errcode != ENODATA) {
+        m_iter = to_rejected (m_iter,
+                              (errcode == ENODEV)? "unsatisfiable"
+                                                 : "match error");
+    }
+    return 0;
+}
+
+template<class reapi_type>
+bool queue_policy_fcfs_t<reapi_type>::get_sloop_active ()
+{
+    return is_sched_loop_active ();
+}
+
+template<class reapi_type>
+void queue_policy_fcfs_t<reapi_type>::set_sloop_active (bool active)
+{
+    set_sched_loop_active (active);
 }
 
 
@@ -119,6 +192,8 @@ template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::run_sched_loop (void *h,
                                                      bool use_alloced_queue)
 {
+    if (is_sched_loop_active ())
+        return 1;
     int rc = 0;
     set_schedulability (false);
     rc = cancel_completed_jobs (h);

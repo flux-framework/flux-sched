@@ -152,6 +152,7 @@ protected:
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
     std::map<std::vector<double>, flux_jobid_t> m_pending;
+    std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
     std::map<uint64_t, flux_jobid_t> m_complete;
@@ -191,7 +192,9 @@ public:
      *                   Boolean indicating if you want to use the
      *                   allocated job queue or not. This affects the
      *                   alloced_pop method.
-     *  \return          0 on success; -1 on error.
+     *  \return          0 on success; -1 on error; 1 when a previous
+     *                   loop invocation is still active under asynchronous
+     *                   execution.
      *                       EINVAL: invalid argument.
      */
     virtual int run_sched_loop (void *h, bool use_alloced_queue) = 0;

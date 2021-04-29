@@ -40,6 +40,8 @@ public:
     virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
                                       std::string &R_out);
     virtual int apply_params ();
+    virtual bool get_sloop_active ();
+    virtual void set_sloop_active (bool active);
 
 protected:
     unsigned int m_reservation_depth;

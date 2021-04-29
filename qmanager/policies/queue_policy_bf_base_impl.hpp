@@ -142,6 +142,16 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     unsigned int i = 0;
     std::shared_ptr<job_t> job;
 
+    // move jobs in m_pending_provisional queue into
+    // m_pending. Note that c++11 doesn't have a clean way
+    // to "move" elements between two std::map objects so
+    // we use copy for the time being.
+    m_pending.insert (m_pending_provisional.begin (),
+                      m_pending_provisional.end ());
+    m_pending_provisional.clear ();
+
+    set_sched_loop_active (true);
+
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't. When you can't allocate a job, you reserve it
     // and then try to backfill later jobs.
@@ -158,8 +168,21 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
             iter = allocate (h, job, use_alloced_queue, iter);
        i++;
     }
+    set_sched_loop_active (false);
     errno = saved_errno;
     return 0;
+}
+
+template<class reapi_type>
+bool queue_policy_bf_base_t<reapi_type>::get_sloop_active ()
+{
+    return is_sched_loop_active ();
+}
+
+template<class reapi_type>
+void queue_policy_bf_base_t<reapi_type>::set_sloop_active (bool active)
+{
+    set_sched_loop_active (active);
 }
 
 
