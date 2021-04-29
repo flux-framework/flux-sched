@@ -76,6 +76,9 @@ int queue_policy_fcfs_t<reapi_type>::pack_jobs (json_t *jobs)
         iter++;
         qd++;
     }
+    if (qd == m_queue_depth && m_pending.size () != m_queue_depth)
+        m_queue_depth_limit = true;
+
     return 0;
 }
 
@@ -153,6 +156,13 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
         m_iter = to_rejected (m_iter,
                               (errcode == ENODEV)? "unsatisfiable"
                                                  : "match error");
+    }
+    if (errcode == ENODATA && m_queue_depth_limit) {
+        // Because the scheduling loop is being terminated
+        // per queue_depth_limit, the queue should still be
+        // schedulable.
+        set_schedulability (true);
+        m_queue_depth_limit = false;
     }
     return 0;
 }

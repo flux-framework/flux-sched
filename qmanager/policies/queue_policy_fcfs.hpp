@@ -51,6 +51,7 @@ private:
     int cancel_completed_jobs (void *h);
     int pack_jobs (json_t *jobs);
     int allocate_jobs (void *h, bool use_alloced_queue);
+    bool m_queue_depth_limit = false;
     std::map<std::vector<double>, flux_jobid_t>::iterator m_iter;
 };
 
