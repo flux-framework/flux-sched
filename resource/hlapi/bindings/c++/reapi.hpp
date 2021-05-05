@@ -85,11 +85,11 @@ public:
     /*! Return true if the scheduling loop is active under asynchronous
      *  execution; otherwise false.
      */
-    virtual bool get_sloop_active () = 0;
+    virtual bool is_sched_loop_active () = 0;
 
     /*! Set the state of the scheduling loop.
      */
-    virtual void set_sloop_active (bool active) = 0;
+    virtual void set_sched_loop_active (bool active) = 0;
 };
 
 

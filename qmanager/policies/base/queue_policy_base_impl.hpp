@@ -235,6 +235,18 @@ void queue_policy_base_t::set_sched_loop_active (bool active)
     detail::queue_policy_base_impl_t::set_sched_loop_active (active);
 }
 
+int queue_policy_base_t::handle_match_success (
+                             int64_t jobid, const char *status,
+                             const char *R, int64_t at, double ov)
+{
+   return 0;
+}
+
+int queue_policy_base_t::handle_match_failure (int errcode)
+{
+   return 0;
+}
+
 const std::shared_ptr<job_t> queue_policy_base_t::lookup (flux_jobid_t id)
 {
     return detail::queue_policy_base_impl_t::lookup (id);

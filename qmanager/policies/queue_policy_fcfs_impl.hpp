@@ -167,18 +167,6 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
     return 0;
 }
 
-template<class reapi_type>
-bool queue_policy_fcfs_t<reapi_type>::get_sloop_active ()
-{
-    return is_sched_loop_active ();
-}
-
-template<class reapi_type>
-void queue_policy_fcfs_t<reapi_type>::set_sloop_active (bool active)
-{
-    set_sched_loop_active (active);
-}
-
 
 /******************************************************************************
  *                                                                            *

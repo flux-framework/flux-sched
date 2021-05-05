@@ -100,13 +100,13 @@ void match_allocate_multi_cont (flux_future_t *f, void *arg)
                                   "R", &rset,
                                   "at", &at) == 0) {
         if (adapter->handle_match_success (rj, status, rset, at, ov) < 0) {
-            adapter->set_sloop_active (false);
+            adapter->set_sched_loop_active (false);
             flux_future_destroy (f);
             return;
         }
     } else {
         adapter->handle_match_failure (errno);
-        adapter->set_sloop_active (false);
+        adapter->set_sched_loop_active (false);
         flux_future_destroy (f);
         return;
     }

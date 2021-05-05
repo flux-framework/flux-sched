@@ -39,6 +39,7 @@ extern "C" {
 #include <memory>
 #include <cstdint>
 
+#include "resource/hlapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
 
 namespace Flux {
@@ -169,7 +170,8 @@ protected:
  *  and pending_pop interface implementations are provided through
  *  its parent class (detail::queue_policy_base_impl_t).
  */
-class queue_policy_base_t : public detail::queue_policy_base_impl_t
+class queue_policy_base_t : public detail::queue_policy_base_impl_t,
+                            public resource_model::queue_adapter_base_t
 {
 public:
     /*! The destructor that must be implemented by derived classes.
@@ -390,14 +392,32 @@ public:
      */
     void reset_scheduled ();
 
-    /*! Return true if the asynchronous execution of the scheduling loop
-     *  is active.
+    /*! Implement queue_adapter_base_t's pure virtual method
+     *  so that this queue can be adapted for use within high-level
+     *  resource API. Return true if the scheduling loop is active.
      */
-    bool is_sched_loop_active ();
+    virtual bool is_sched_loop_active ();
 
-    /*! Set the asynchronous execution state of the scheduling loop.
+    /*! Implement queue_adapter_base_t's pure virtual method
+     *  so that this queue can be adapted for use within high-level
+     *  resource API. Set the state of the scheduling loop.
      */
-    void set_sched_loop_active (bool active);
+    virtual void set_sched_loop_active (bool active);
+
+    /*! Implement queue_adapter_base_t's pure virtual method
+     *  so that this queue can be adapted for use within high-level
+     *  resource API. When a match succeeds, this method is called back
+     *  by reapi_t.
+     */
+    virtual int handle_match_success (int64_t jobid, const char *status,
+                                      const char *R, int64_t at, double ov);
+
+    /*! Implement queue_adapter_base_t's pure virtual method
+     *  so that this queue can be adapted for use within high-level
+     *  resource API. When a match fails, this method is called back
+     *  by reapi_t.
+     */
+    virtual int handle_match_failure (int errcode);
 
 private:
     int set_params (const std::string &params,

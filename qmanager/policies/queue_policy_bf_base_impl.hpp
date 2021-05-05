@@ -173,18 +173,6 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     return 0;
 }
 
-template<class reapi_type>
-bool queue_policy_bf_base_t<reapi_type>::get_sloop_active ()
-{
-    return is_sched_loop_active ();
-}
-
-template<class reapi_type>
-void queue_policy_bf_base_t<reapi_type>::set_sloop_active (bool active)
-{
-    set_sched_loop_active (active);
-}
-
 
 /******************************************************************************
  *                                                                            *
