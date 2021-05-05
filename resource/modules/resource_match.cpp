@@ -1826,6 +1826,8 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
     json_error_t err;
     int saved_errno;
     json_t *jobs = nullptr;
+    uint64_t jobid = 0;
+    std::string errmsg;
     const char *cmd = nullptr;
     const char *jobs_str = nullptr;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
@@ -1844,7 +1846,6 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
     }
 
     json_array_foreach(jobs, index, value) {
-        uint64_t jobid;
         const char *js_str;
         int64_t at = 0;
         int64_t now = 0;
@@ -1882,13 +1883,17 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
         }
     }
     errno = ENODATA;
+    jobid = 0;
 error:
     if (jobs) {
         saved_errno = errno;
         json_decref (jobs);
         errno = saved_errno;
     }
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
+    if (jobid != 0)
+        errmsg += "jobid=" + std::to_string (jobid);
+    if (flux_respond_error (h, msg, errno,
+                            !errmsg.empty ()? errmsg.c_str () : nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
