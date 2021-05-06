@@ -1,3 +1,32 @@
+flux-sched version 0.16.0 - 2021-05-05
+--------------------------------------
+
+Note: Do you have a need to run high-throughput workloads
+at large scale? Check out this version. It combines
+our new first-match policy with asynchrous
+communications to significantly improve scheduling scalability.
+
+### Features
+
+ * Add async FCFS policy support and other scheduling optimization
+   (#826)
+ * Add "ultrafast" first-match policy support (#820)
+ * CI: Add fedora33 for gcc10 (#825)
+
+### Fixes
+
+ * libczmqcontainers: introduce new internal library of czmq zhashx
+   library (#822)
+ * Add bug fix for by_subplan pruning (#817)
+ * resource: fix 'namespace' spelling (#813)
+ * Add minor C++ safety improvements (#809)
+
+### Cleanup
+
+ * sharness: update flux start options (#823)
+ * testsuite: fix shell path discovery in datastaging test (#810)
+
+
 flux-sched version 0.15.0 - 2021-01-25
 --------------------------------------
 
