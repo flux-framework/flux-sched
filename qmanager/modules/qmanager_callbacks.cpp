@@ -70,6 +70,7 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                                  queue_policy_base_t>> &queues)
 {
     int rc = -1;
+    unsigned int qd = 0;
     std::shared_ptr<job_t> job = nullptr;
     for (auto& kv: queues) {
         const std::string &queue_name = kv.first;
@@ -101,8 +102,9 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
             flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", note.c_str (),
                      static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
-        for (job = queue->pending_begin (); job != nullptr;
-             job = queue->pending_next ()) {
+        for (job = queue->pending_begin (), qd = 0;
+             job != nullptr && qd < queue->get_queue_depth ();
+             job = queue->pending_next (), qd++) {
             // if old_at == at, then no reason to send this annotation again.
             if (job->schedule.at == job->schedule.old_at)
                 continue;
@@ -117,6 +119,7 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                 goto out;
             }
         }
+        queue->reset_scheduled ();
     }
     rc = 0;
 
@@ -250,11 +253,6 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
                             __FUNCTION__);
         return;
     }
-    if (queue->run_sched_loop (static_cast<void *> (h), true) < 0
-        || post_sched_loop (h, ctx->schedutil, ctx->queues) < 0) {
-        flux_log_error (h, "%s: schedule loop", __FUNCTION__);
-        return;
-    }
 }
 
 void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
@@ -280,20 +278,12 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                        queue_name.c_str (), static_cast<intmax_t> (id));
         return;
     }
-    if (queue->run_sched_loop (static_cast<void *> (h), true) < 0) {
-        flux_log_error (h, "%s: run_sched_loop", __FUNCTION__);
-        return;
-    }
     if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
         return;
     }
     flux_log (h, LOG_DEBUG, "free succeeded (queue=%s id=%jd)",
              queue_name.c_str (), static_cast<intmax_t> (id));
-    if (post_sched_loop (h, ctx->schedutil, ctx->queues) < 0) {
-        flux_log_error (h, "%s: post_sched_loop", __FUNCTION__);
-        return;
-    }
 }
 
 void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
@@ -382,6 +372,50 @@ void qmanager_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
     }
 }
 
+void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                     int revents, void *arg)
+{
+    qmanager_cb_ctx_t *ctx = nullptr;
+    ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+    ctx->pls_sched_loop = false;
+    ctx->pls_post_loop = false;
+    for (auto &kv: ctx->queues) {
+        std::shared_ptr<queue_policy_base_t> &queue = kv.second;
+        ctx->pls_sched_loop = ctx->pls_sched_loop
+                              || (queue->is_schedulable ()
+                                  && !queue->is_sched_loop_active ());
+        ctx->pls_post_loop = ctx->pls_post_loop
+                              || queue->is_scheduled ();
+    }
+    if (ctx->pls_sched_loop || ctx->pls_post_loop)
+        flux_watcher_start (ctx->idle);
+}
+
+void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                     int revents, void *arg)
+{
+    qmanager_cb_ctx_t *ctx = nullptr;
+    ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+
+    if (ctx->idle)
+        flux_watcher_stop (ctx->idle);
+    if (!ctx->pls_sched_loop && !ctx->pls_post_loop)
+        return;
+    if (ctx->pls_sched_loop) {
+        for (auto &kv: ctx->queues) {
+            std::shared_ptr<queue_policy_base_t> &queue = kv.second;
+            if (queue->run_sched_loop (static_cast<void *> (ctx->h), true) < 0) {
+                flux_log_error (ctx->h, "%s: run_sched_loop", __FUNCTION__);
+                return;
+            }
+         }
+    }
+    if (post_sched_loop (ctx->h, ctx->schedutil, ctx->queues) < 0) {
+        flux_log_error (ctx->h, "%s: post_sched_loop", __FUNCTION__);
+        return;
+    }
+}
+
 int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                              const char *R, void *arg)
 {
@@ -426,7 +460,8 @@ void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
                         exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
+void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h,
+                                                   const flux_msg_t *msg,
                                                    void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
@@ -435,6 +470,31 @@ void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
                         exception_safe_wrapper.get_err_message ());
+}
+
+void qmanager_safe_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                          int revents, void *arg)
+{
+    eh_wrapper_t exception_safe_wrapper;
+    exception_safe_wrapper (qmanager_cb_t::prep_watcher_cb, r, w, revents, arg);
+    if (exception_safe_wrapper.bad ()) {
+        flux_t *h = flux_handle_watcher_get_flux (w);
+        flux_log_error (h, "%s: %s", __FUNCTION__,
+                        exception_safe_wrapper.get_err_message ());
+    }
+}
+
+void qmanager_safe_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                           int revents, void *arg)
+{
+    eh_wrapper_t exception_safe_wrapper;
+    exception_safe_wrapper (qmanager_cb_t::check_watcher_cb,
+                            r, w, revents, arg);
+    if (exception_safe_wrapper.bad ()) {
+        flux_t *h = flux_handle_watcher_get_flux (w);
+        flux_log_error (h, "%s: %s", __FUNCTION__,
+                        exception_safe_wrapper.get_err_message ());
+    }
 }
 
 int qmanager_safe_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,

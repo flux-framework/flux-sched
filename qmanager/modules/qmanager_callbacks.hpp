@@ -34,6 +34,14 @@ extern "C" {
 #include "qmanager/policies/base/queue_policy_base.hpp"
 
 struct qmanager_cb_ctx_t {
+    flux_t *h{nullptr};
+
+    flux_watcher_t *prep{nullptr};
+    flux_watcher_t *check{nullptr};
+    flux_watcher_t *idle{nullptr};
+    bool pls_sched_loop {false};
+    bool pls_post_loop {false};
+
     schedutil_t *schedutil{nullptr};
     Flux::opts_manager::optmgr_composer_t<
         Flux::opts_manager::qmanager_opts_t> opts;
@@ -57,6 +65,10 @@ protected:
                                       void *arg);
     static void jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
                                           void *arg);
+    static void prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                 int revents, void *arg);
+    static void check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                  int revents, void *arg);
     static int post_sched_loop (flux_t *h,
         schedutil_t *schedutil,
         std::map<std::string, std::shared_ptr<
@@ -74,6 +86,10 @@ struct qmanager_safe_cb_t : public qmanager_cb_t {
                                       void *arg);
     static void jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
                                           void *arg);
+    static void prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                 int revents, void *arg);
+    static void check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
+                                  int revents, void *arg);
     static int post_sched_loop (flux_t *h,
         schedutil_t *schedutil,
         std::map<std::string, std::shared_ptr<

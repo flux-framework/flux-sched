@@ -190,6 +190,11 @@ void queue_policy_base_t::get_params (std::string &q_p, std::string &p_p)
     }
 }
 
+unsigned int queue_policy_base_t::get_queue_depth ()
+{
+    return m_queue_depth;
+}
+
 int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
 {
     return detail::queue_policy_base_impl_t::insert (job);
@@ -198,6 +203,48 @@ int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
 int queue_policy_base_t::remove (flux_jobid_t id)
 {
     return detail::queue_policy_base_impl_t::remove (id);
+}
+
+bool queue_policy_base_t::is_schedulable ()
+{
+    return detail::queue_policy_base_impl_t::is_schedulable ();
+}
+
+void queue_policy_base_t::set_schedulability (bool schedulable)
+{
+    detail::queue_policy_base_impl_t::set_schedulability (schedulable);
+}
+
+bool queue_policy_base_t::is_scheduled ()
+{
+    return detail::queue_policy_base_impl_t::is_scheduled ();
+}
+
+void queue_policy_base_t::reset_scheduled ()
+{
+    detail::queue_policy_base_impl_t::reset_scheduled ();
+}
+
+bool queue_policy_base_t::is_sched_loop_active ()
+{
+    return detail::queue_policy_base_impl_t::is_sched_loop_active ();
+}
+
+void queue_policy_base_t::set_sched_loop_active (bool active)
+{
+    detail::queue_policy_base_impl_t::set_sched_loop_active (active);
+}
+
+int queue_policy_base_t::handle_match_success (
+                             int64_t jobid, const char *status,
+                             const char *R, int64_t at, double ov)
+{
+   return 0;
+}
+
+int queue_policy_base_t::handle_match_failure (int errcode)
+{
+   return 0;
 }
 
 const std::shared_ptr<job_t> queue_policy_base_t::lookup (flux_jobid_t id)
@@ -286,12 +333,13 @@ int queue_policy_base_impl_t::insert (std::shared_ptr<job_t> job)
     }
     job->state = job_state_kind_t::PENDING;
     job->t_stamps.pending_ts = m_pq_cnt++;
-    m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
+    m_pending_provisional.insert (std::pair<std::vector<double>, flux_jobid_t> (
         {static_cast<double> (job->priority),
          static_cast<double> (job->t_submit),
          static_cast<double> (job->t_stamps.pending_ts)}, job->id));
     m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
                                                                     job));
+    m_schedulable = true;
     rc = 0;
 out:
     return rc;
@@ -300,6 +348,7 @@ out:
 int queue_policy_base_impl_t::remove (flux_jobid_t id)
 {
     int rc = -1;
+    size_t sz;
     std::shared_ptr<job_t> job = nullptr;
 
     if (m_jobs.find (id) == m_jobs.end ()) {
@@ -310,9 +359,21 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     job = m_jobs[id];
     switch (job->state) {
     case job_state_kind_t::PENDING:
-        m_pending.erase ({static_cast<double> (job->priority),
-                          static_cast<double> (job->t_submit),
-                          static_cast<double> (job->t_stamps.pending_ts)});
+        sz = m_pending.erase (
+                 {static_cast<double> (job->priority),
+                  static_cast<double> (job->t_submit),
+                  static_cast<double> (job->t_stamps.pending_ts)});
+        if (sz == 0) {
+            // job must be in m_pending_provisional in this case
+            sz = m_pending_provisional.erase (
+                    {static_cast<double> (job->priority),
+                     static_cast<double> (job->t_submit),
+                     static_cast<double> (job->t_stamps.pending_ts)});
+            if (sz == 0) {
+                errno = ENOENT;
+                goto out;
+            }
+        }
         job->state = job_state_kind_t::CANCELED;
         m_jobs.erase (id);
         break;
@@ -329,9 +390,41 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     default:
         break;
     }
+
+    m_schedulable = true;
     rc = 0;
 out:
     return rc;
+}
+
+bool queue_policy_base_impl_t::is_schedulable ()
+{
+    return m_schedulable;
+}
+
+void queue_policy_base_impl_t::set_schedulability (bool schedulable)
+{
+    m_schedulable = schedulable;
+}
+
+bool queue_policy_base_impl_t::is_scheduled ()
+{
+    return m_scheduled;
+}
+
+void queue_policy_base_impl_t::reset_scheduled ()
+{
+    m_scheduled = false;
+}
+
+bool queue_policy_base_impl_t::is_sched_loop_active ()
+{
+    return m_sched_loop_active;
+}
+
+void queue_policy_base_impl_t::set_sched_loop_active (bool active)
+{
+    m_sched_loop_active = active;
 }
 
 const std::shared_ptr<job_t> queue_policy_base_impl_t::lookup (flux_jobid_t id)
@@ -392,12 +485,22 @@ std::map<std::vector<double>, flux_jobid_t>::iterator queue_policy_base_impl_t::
     std::shared_ptr<job_t> job = m_jobs[id];
     job->state = job_state_kind_t::RUNNING;
     job->t_stamps.running_ts = m_rq_cnt++;
-    m_running.insert (std::pair<uint64_t, flux_jobid_t>(
-                          job->t_stamps.running_ts, job->id));
+    auto res = m_running.insert (std::pair<uint64_t, flux_jobid_t>(
+                                     job->t_stamps.running_ts, job->id));
+    if (!res.second) {
+        errno = ENOMEM;
+        return pending_iter;
+    }
+
     if (use_alloced_queue) {
         job->state = job_state_kind_t::ALLOC_RUNNING;
-        m_alloced.insert (std::pair<uint64_t, flux_jobid_t>(
-                              job->t_stamps.running_ts, job->id));
+        auto res = m_alloced.insert (std::pair<uint64_t, flux_jobid_t>(
+                                         job->t_stamps.running_ts, job->id));
+        if (!res.second) {
+            errno = ENOMEM;
+            return pending_iter;
+        }
+        m_scheduled = true;
     }
     // Return the next iterator after pending_iter. This way,
     // the upper layer can modify m_pending while iterating the queue
@@ -419,8 +522,13 @@ std::map<std::vector<double>, flux_jobid_t>::iterator queue_policy_base_impl_t::
     job->state = job_state_kind_t::REJECTED;
     job->note = note;
     job->t_stamps.rejected_ts = m_dq_cnt++;
-    m_rejected.insert (std::pair<uint64_t, flux_jobid_t>(
-                          job->t_stamps.rejected_ts, job->id));
+    auto res = m_rejected.insert (std::pair<uint64_t, flux_jobid_t>(
+                                      job->t_stamps.rejected_ts, job->id));
+    if (!res.second) {
+        errno = ENOMEM;
+        return pending_iter;
+    }
+    m_scheduled = true;
     // Return the next iterator after pending_iter. This way,
     // the upper layer can modify m_pending while iterating the queue
     return m_pending.erase (pending_iter);
@@ -438,8 +546,12 @@ std::map<uint64_t, flux_jobid_t>::iterator queue_policy_base_impl_t::
     std::shared_ptr<job_t> job = m_jobs[id];
     job->state = job_state_kind_t::COMPLETE;
     job->t_stamps.complete_ts = m_cq_cnt++;
-    m_complete.insert (std::pair<uint64_t, flux_jobid_t>(
-                           job->t_stamps.complete_ts, job->id));
+    auto res = m_complete.insert (std::pair<uint64_t, flux_jobid_t>(
+                                      job->t_stamps.complete_ts, job->id));
+    if (!res.second) {
+        errno = ENOMEM;
+        return running_iter;
+    }
     m_alloced.erase (job->t_stamps.running_ts);
     return m_running.erase (running_iter);
 }
@@ -448,6 +560,7 @@ int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
                                                     unsigned int priority)
 {
     std::shared_ptr<job_t> job = nullptr;
+    size_t sz;
 
     if (m_jobs.find (id) == m_jobs.end ()) {
         errno = ENOENT;
@@ -461,21 +574,47 @@ int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
         return -1;
     }
 
-    m_pending.erase ({static_cast<double> (job->priority),
-                      static_cast<double> (job->t_submit),
-                      static_cast<double> (job->t_stamps.pending_ts)});
+    sz = m_pending.erase (
+             {static_cast<double> (job->priority),
+              static_cast<double> (job->t_submit),
+              static_cast<double> (job->t_stamps.pending_ts)});
+    if (sz == 0) {
+        int sz2;
+        sz2 = m_pending_provisional.erase (
+                  {static_cast<double> (job->priority),
+                   static_cast<double> (job->t_submit),
+                   static_cast<double> (job->t_stamps.pending_ts)});
+        if (sz2 == 0) {
+            errno = ENOENT;
+            return -1;
+        }
+    }
 
     job->priority = priority;
 
-    auto res = m_pending.insert (std::pair<std::vector<double>, flux_jobid_t> (
-                   {static_cast<double> (job->priority),
-                    static_cast<double> (job->t_submit),
-                    static_cast<double> (job->t_stamps.pending_ts)}, job->id));
-    if (!res.second) {
-        errno = EEXIST;
-        return -1;
+    if (sz) {
+        auto res = m_pending.insert (std::pair<std::vector<double>,
+                                               flux_jobid_t> (
+                       {static_cast<double> (job->priority),
+                        static_cast<double> (job->t_submit),
+                        static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+        if (!res.second) {
+            errno = ENOMEM;
+            return -1;
+        }
+    } else {
+        auto res = m_pending_provisional.insert (std::pair<std::vector<double>,
+                                                           flux_jobid_t> (
+                       {static_cast<double> (job->priority),
+                        static_cast<double> (job->t_submit),
+                        static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+        if (!res.second) {
+            errno = ENOMEM;
+            return -1;
+        }
     }
 
+    m_schedulable = true;
     return 0;
 }
 

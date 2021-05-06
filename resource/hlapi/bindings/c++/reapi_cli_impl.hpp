@@ -55,6 +55,13 @@ int reapi_cli_t::update_allocate (void *h, const uint64_t jobid,
     return NOT_YET_IMPLEMENTED;
 }
 
+int reapi_cli_t::match_allocate_multi (void *h, bool orelse_reserve,
+                                       const char *jobs,
+                                       queue_adapter_base_t *adapter)
+{
+    return NOT_YET_IMPLEMENTED;
+}
+
 int reapi_cli_t::cancel (void *h, const int64_t jobid, bool noent_ok)
 {
     return NOT_YET_IMPLEMENTED;
