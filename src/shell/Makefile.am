@@ -22,6 +22,7 @@ datastaging_la_SOURCES = \
 
 datastaging_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
+	$(fluxplugin_ldflags) \
 	-module
 
 datastaging_la_LIBADD= \
