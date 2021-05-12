@@ -25,6 +25,7 @@
 
 #include <map>
 #include <cstdint>
+#include <limits>
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/ephemeral.hpp"
 #include "resource/planner/planner_multi.h"
