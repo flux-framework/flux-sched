@@ -126,6 +126,8 @@ public:
 protected:
     int reconstruct_queue (std::shared_ptr<job_t> running_job);
     int pending_reprioritize (flux_jobid_t id, unsigned int priority);
+    int insert_pending_job (std::shared_ptr<job_t> &job, bool into_provisional);
+    int erase_pending_job (std::shared_ptr<job_t> &job, bool &found_in_prov);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
