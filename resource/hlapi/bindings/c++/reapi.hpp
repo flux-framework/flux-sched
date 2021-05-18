@@ -88,8 +88,15 @@ public:
     virtual bool is_sched_loop_active () = 0;
 
     /*! Set the state of the scheduling loop.
+     *  \param active    true when the scheduling loop becomes
+     *                   active; false when becomes inactive.
+     *  \return          0 on success; otherwise -1 an error with errno set
+     *                   (Note: when the scheduling loop becomes inactive,
+     *                    internal queueing can occur and an error can arise):
+     *                       - ENOENT (job is not found from some queue)
+     *                       - EEXIST (enqueue fails due to an existent entry)
      */
-    virtual void set_sched_loop_active (bool active) = 0;
+    virtual int set_sched_loop_active (bool active) = 0;
 };
 
 

@@ -77,6 +77,7 @@ struct t_stamps_t {
     uint64_t running_ts = 0;
     uint64_t rejected_ts = 0;
     uint64_t complete_ts = 0;
+    uint64_t canceled_ts = 0;
 };
 
 /*! Type to store a job's attributes.
@@ -121,16 +122,20 @@ public:
     bool is_scheduled ();
     void reset_scheduled ();
     bool is_sched_loop_active ();
-    void set_sched_loop_active (bool active);
+    int set_sched_loop_active (bool active);
 
 protected:
     int reconstruct_queue (std::shared_ptr<job_t> running_job);
     int pending_reprioritize (flux_jobid_t id, unsigned int priority);
+    int process_provisional_cancel ();
+    int insert_pending_job (std::shared_ptr<job_t> &job, bool into_provisional);
+    int erase_pending_job (std::shared_ptr<job_t> &job, bool &found_in_prov);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
     std::shared_ptr<job_t> complete_pop ();
     std::shared_ptr<job_t> reserved_pop ();
+    std::shared_ptr<job_t> canceled_pop ();
     std::map<std::vector<double>, flux_jobid_t>::iterator to_running (
         std::map<std::vector<double>,
                  flux_jobid_t>::iterator pending_iter,
@@ -150,14 +155,17 @@ protected:
     uint64_t m_dq_cnt = 0;
     uint64_t m_cq_cnt = 0;
     uint64_t m_oq_cnt = 0;
+    uint64_t m_cancel_cnt = 0;
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
     std::map<std::vector<double>, flux_jobid_t> m_pending;
     std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
+    std::map<uint64_t, flux_jobid_t> m_pending_cancel_provisional;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
     std::map<uint64_t, flux_jobid_t> m_complete;
     std::map<uint64_t, flux_jobid_t> m_rejected;
+    std::map<uint64_t, flux_jobid_t> m_canceled;
     std::map<flux_jobid_t, std::shared_ptr<job_t>> m_jobs;
     std::unordered_map<std::string, std::string> m_qparams;
     std::unordered_map<std::string, std::string> m_pparams;
@@ -366,6 +374,13 @@ public:
      */
     std::shared_ptr<job_t> complete_pop ();
 
+    /*! Pop the first job from the internal canceled job queue.
+     *  The popped is completely graduated from the queue policy layer.
+     *  \return          a shared pointer pointing to a job_t object
+     *                   on success; nullptr when the queue is empty.
+     */
+    std::shared_ptr<job_t> canceled_pop ();
+
     /*! Return true if this queue has become schedulable since
      *  its state had been reset with set_schedulability (false).
      *  "Being schedulable" means one or more job or resource events
@@ -401,8 +416,15 @@ public:
     /*! Implement queue_adapter_base_t's pure virtual method
      *  so that this queue can be adapted for use within high-level
      *  resource API. Set the state of the scheduling loop.
+     *  \param active    true when the scheduling loop becomes
+     *                   active; false when becomes inactive.
+     *  \return          0 on success; otherwise -1 an error with errno set
+     *                   (Note: when the scheduling loop becomes inactive,
+     *                    internal queueing can occur and an error can arise):
+     *                       - ENOENT (job is not found from some queue)
+     *                       - EEXIST (enqueue fails due to an existent entry)
      */
-    virtual void set_sched_loop_active (bool active);
+    virtual int set_sched_loop_active (bool active);
 
     /*! Implement queue_adapter_base_t's pure virtual method
      *  so that this queue can be adapted for use within high-level
