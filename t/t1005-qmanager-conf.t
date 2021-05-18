@@ -30,7 +30,8 @@ start_qmanager () {
     echo $QMANAGER_OPTIONS > options
     flux broker --config-path=${config} bash -c \
 "flux dmesg -C && "\
-"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu && "\
+"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu "\
+"policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux dmesg"
 }
@@ -38,7 +39,8 @@ start_qmanager_noconfig () {
     QMANAGER_OPTIONS=$*
     flux broker bash -c \
 "flux dmesg -C && "\
-"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu && "\
+"flux module reload -f sched-fluxion-resource load-whitelist=node,core,gpu "\
+"policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux dmesg"
 }

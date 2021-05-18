@@ -37,7 +37,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'recovery: loading flux-sched modules with two queues' '
-    load_resource load-allowlist=node,core,gpu match-format=rv1 &&
+    load_resource load-allowlist=node,core,gpu match-format=rv1 policy=high &&
     load_qmanager "queues=batch debug"
 '
 
@@ -53,7 +53,7 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
     flux dmesg -C &&
-    reload_resource load-allowlist=node,core,gpu match-format=rv1 &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1 policy=high &&
     reload_qmanager "queues=batch debug" &&
     flux module stats sched-fluxion-qmanager &&
     flux module stats sched-fluxion-resource &&

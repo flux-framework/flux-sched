@@ -24,7 +24,7 @@ test_expect_success 'namespace: loading resource and qmanager modules works' '
 test_expect_success 'namespace: gpu id remapping works with hwloc (pol=hi)' '
     cat >nest.sh <<-EOF &&
 	#!/bin/sh
-	flux module load sched-fluxion-resource load-allowlist=cluster,node,gpu,core
+	flux module load sched-fluxion-resource load-allowlist=cluster,node,gpu,core policy=high
 	flux module load sched-fluxion-qmanager
 	flux resource list
 	flux ion-resource ns-info 0 gpu 0
