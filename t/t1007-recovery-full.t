@@ -122,7 +122,7 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
-    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched \
     policy=high &&
     reload_qmanager &&
     flux module stats sched-fluxion-qmanager &&

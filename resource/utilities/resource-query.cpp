@@ -146,7 +146,7 @@ static void usage (int code)
 "                locality: Select contiguous resources first in their ID space\n"
 "                variation: Allocate resources based on performance classes.\n"
 "				 (perf_class must be set using set-property).\n"
-"            	 (default=high).\n"
+"            	 (default=first).\n"
 "\n"
 "    -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>\n"
 "            Specify the emit format of the matched resource set.\n"
@@ -198,7 +198,7 @@ static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
     ctx->params.load_format = "grug";
     ctx->params.load_allowlist = "";
     ctx->params.matcher_name = "CA";
-    ctx->params.matcher_policy = "high";
+    ctx->params.matcher_policy = "first";
     ctx->params.o_fname = "";
     ctx->params.r_fname = "";
     ctx->params.o_fext = "dot";

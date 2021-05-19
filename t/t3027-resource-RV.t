@@ -17,7 +17,7 @@ test_expect_success 'RV1 is correct on rank and node ID order match' '
 	match allocate ${full_job}
 	quit
 EOF
-    ${query} -L ${jgf_orig} -f jgf -F rv1_nosched -t R1.out < cmds001 &&
+    ${query} -L ${jgf_orig} -f jgf -F rv1_nosched -t R1.out -P high < cmds001 &&
     test_cmp R1.out ${exp_dir}/R1.out
 '
 
@@ -26,7 +26,7 @@ test_expect_success 'RV1 is correct on core ID modified' '
 	match allocate ${full_job}
 	quit
 EOF
-    ${query} -L ${jgf_mod1} -f jgf -F rv1_nosched -t R2.out < cmds002 &&
+    ${query} -L ${jgf_mod1} -f jgf -F rv1_nosched -t R2.out -P high < cmds002 &&
     test_cmp R2.out ${exp_dir}/R2.out
 '
 
@@ -35,7 +35,7 @@ test_expect_success 'RV1 correct on rank/node ID mismatch + core ID modified' '
 	match allocate ${full_job}
 	quit
 EOF
-    ${query} -L ${jgf_mod2} -f jgf -F rv1_nosched -t R3.out < cmds003 &&
+    ${query} -L ${jgf_mod2} -f jgf -F rv1_nosched -t R3.out -P high < cmds003 &&
     test_cmp R3.out ${exp_dir}/R3.out
 '
 
