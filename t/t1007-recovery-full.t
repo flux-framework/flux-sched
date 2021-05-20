@@ -25,7 +25,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'recovery: loading flux-sched modules works (rv1)' '
-    load_resource load-allowlist=node,core,gpu match-format=rv1 &&
+    load_resource load-allowlist=node,core,gpu match-format=rv1 policy=high &&
     load_qmanager
 '
 
@@ -55,7 +55,7 @@ test_expect_success 'recovery: cancel one running job without fluxion' '
 # flux module stats commands ensure a proper sync between
 # flux ion-resource info and the rest of fluxion module loads
 test_expect_success 'recovery: works when both modules restart (rv1)' '
-    reload_resource load-allowlist=node,core,gpu match-format=rv1 &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1 policy=high &&
     reload_qmanager &&
     flux module stats sched-fluxion-qmanager &&
     flux module stats sched-fluxion-resource &&
@@ -90,7 +90,8 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
 '
 
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
-    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched \
+    policy=high &&
     reload_qmanager &&
     flux module stats sched-fluxion-qmanager &&
     flux module stats sched-fluxion-resource &&
@@ -121,7 +122,8 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
-    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched \
+    policy=high &&
     reload_qmanager &&
     flux module stats sched-fluxion-qmanager &&
     flux module stats sched-fluxion-resource

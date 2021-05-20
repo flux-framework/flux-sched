@@ -47,25 +47,25 @@ unload_resource() {
 test_expect_success 'loading resource module with a tiny machine GRUG works' '
     unload_resource &&
     load_resource load-file=${grug} \
-load-format=grug prune-filters=ALL:core
+load-format=grug prune-filters=ALL:core policy=high
 '
 
 test_expect_success 'loading resource module with an XML works' '
     unload_resource &&
     load_resource load-file=${xml} \
-load-format=hwloc prune-filters=ALL:core
+load-format=hwloc prune-filters=ALL:core policy=high
 '
 
 test_expect_success 'loading resource module with no option works' '
     unload_resource &&
-    load_resource prune-filters=ALL:core
+    load_resource prune-filters=ALL:core policy=high
 '
 
 test_expect_success 'loading resource module with a nonexistent GRUG fails' '
     unload_resource &&
     flux dmesg -C &&
     load_resource load-file=${ne_grug} load-format=grug \
-prune-filters=ALL:core &&
+prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error1 &&
     test_must_fail grep -i Success error1
@@ -75,7 +75,7 @@ test_expect_success 'loading resource module with a nonexistent XML fails' '
     unload_resource &&
     flux dmesg -C &&
     load_resource load-file=${ne_xml} load-format=hwloc \
-prune-filters=ALL:core &&
+prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error2 &&
     test_must_fail grep -i Success error2
@@ -85,7 +85,7 @@ test_expect_success 'loading resource module with incorrect reader fails' '
     unload_resource &&
     flux dmesg -C &&
     load_resource load-file=${xml} load-format=grug \
-prune-filters=ALL:core &&
+prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error3 &&
     grep -i "Invalid argument" error3
@@ -96,6 +96,8 @@ test_expect_success 'loading resource module with known policies works' '
     load_resource policy=high &&
     remove_resource &&
     load_resource policy=low &&
+    remove_resource &&
+    load_resource policy=first &&
     remove_resource &&
     load_resource policy=locality
 '

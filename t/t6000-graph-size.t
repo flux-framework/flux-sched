@@ -103,8 +103,8 @@ out5.txt &&
 
 test_expect_success LONGTEST "--reserve-vtx-vec improves loading performance" '
     echo "quit" > input6.txt &&
-    ${query} -L ${large_grug} -e -r 400000 < input6.txt > out6A.txt &&
-    ${query} -L ${large_grug} -e < input6.txt > out6B.txt &&
+    ${query} -L ${large_grug} -e -r 400000 -P high < input6.txt > out6A.txt &&
+    ${query} -L ${large_grug} -e -P high < input6.txt > out6B.txt &&
     with=$(grep "Graph" out6A.txt | sed "s/INFO: Graph Load Time: //") &&
     without=$(grep "Graph" out6B.txt | sed "s/INFO: Graph Load Time: //") &&
     test $(awk "BEGIN{ print $with<$without }") -eq 1

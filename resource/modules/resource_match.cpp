@@ -323,7 +323,7 @@ static void set_default_args (resource_args_t &args)
     args.load_format = "hwloc";
     args.load_allowlist = "";
     args.match_subsystems = "containment";
-    args.match_policy = "high";
+    args.match_policy = "first";
     args.prune_filters = "ALL:core";
     args.match_format = "rv1_nosched";
     args.reserve_vtx_vec = 0;
