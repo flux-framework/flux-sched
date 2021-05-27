@@ -102,35 +102,35 @@ class FluxionResourceGraphV1(Graph):
                    Resource Set Specification Version 1
         """
         super(FluxionResourceGraphV1, self).__init__()
-        self.__uniqId = 0
-        self.__rv1NoSched = rv1
-        self.__encode()
+        self._uniqId = 0
+        self._rv1NoSched = rv1
+        self._encode()
 
-    def __tick_uniq_id(self):
-        self.__uniqId += 1
+    def _tick_uniq_id(self):
+        self._uniqId += 1
 
-    def __add_and_tick_uniq_id(self, vtx, edg):
+    def _add_and_tick_uniq_id(self, vtx, edg=None):
         self.add_node(vtx)
         if edg:
             self.add_edge(edg)
-        self.__tick_uniq_id()
+        self._tick_uniq_id()
 
-    def __extract_id_from_hn(self, hostName):
+    def _extract_id_from_hn(self, hostName):
         postfix = re.findall(r"(\d+$)", hostName)
-        rc = self.__uniqId
+        rc = self._uniqId
         if len(postfix) == 1:
             rc = int(postfix[0])
         return rc
 
-    def __encode_child(self, ppid, hPath, rank, resType, i):
+    def _encode_child(self, ppid, hPath, rank, resType, i):
         path = f"{hPath}/{resType}{i}"
         vtx = FluxionResourcePoolV1(
-            self.__uniqId,
+            self._uniqId,
             resType,
             resType,
             resType + str(i),
             i,
-            self.__uniqId,
+            self._uniqId,
             rank,
             True,
             "",
@@ -138,18 +138,18 @@ class FluxionResourceGraphV1(Graph):
             path,
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
-        self.__add_and_tick_uniq_id(vtx, edg)
+        self._add_and_tick_uniq_id(vtx, edg)
 
-    def __encode_rank(self, ppid, rank, children, hList, hIndex):
+    def _encode_rank(self, ppid, rank, children, hList, hIndex):
         hPath = f"/cluster0/{hList[hIndex]}"
-        iden = self.__extract_id_from_hn(hList[hIndex])
+        iden = self._extract_id_from_hn(hList[hIndex])
         vtx = FluxionResourcePoolV1(
-            self.__uniqId,
+            self._uniqId,
             "node",
             "node",
             hList[hIndex],
             iden,
-            self.__uniqId,
+            self._uniqId,
             rank,
             True,
             "",
@@ -157,33 +157,33 @@ class FluxionResourceGraphV1(Graph):
             hPath,
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
-        self.__add_and_tick_uniq_id(vtx, edg)
+        self._add_and_tick_uniq_id(vtx, edg)
         for key, val in children.items():
             for i in IDset(val):
-                self.__encode_child(vtx.get_id(), hPath, rank, str(key), i)
+                self._encode_child(vtx.get_id(), hPath, rank, str(key), i)
 
-    def __encode_rlite(self, ppid, entry, hList, hIndex):
+    def _encode_rlite(self, ppid, entry, hList, hIndex):
         for rank in list(IDset(entry["rank"])):
             hIndex += 1
-            self.__encode_rank(ppid, rank, entry["children"], hList, hIndex)
+            self._encode_rank(ppid, rank, entry["children"], hList, hIndex)
         return hIndex
 
-    def __encode(self):
+    def _encode(self):
         hIndex = -1
-        hList = Hostlist(self.__rv1NoSched["execution"]["nodelist"])
+        hList = Hostlist(self._rv1NoSched["execution"]["nodelist"])
         vtx = FluxionResourcePoolV1(
-            self.__uniqId,
+            self._uniqId,
             "cluster",
             "cluster",
             "cluster0",
             0,
-            self.__uniqId,
+            self._uniqId,
             -1,
             True,
             "",
             1,
             "/cluster0",
         )
-        self.__add_and_tick_uniq_id(vtx, None)
-        for entry in self.__rv1NoSched["execution"]["R_lite"]:
-            hIndex = self.__encode_rlite(vtx.get_id(), entry, hList, hIndex)
+        self._add_and_tick_uniq_id(vtx, None)
+        for entry in self._rv1NoSched["execution"]["R_lite"]:
+            hIndex = self._encode_rlite(vtx.get_id(), entry, hList, hIndex)
