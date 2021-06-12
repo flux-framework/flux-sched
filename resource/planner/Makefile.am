@@ -14,7 +14,7 @@ SUBDIRS = . test
 noinst_LTLIBRARIES = libplanner.la
 noinst_HEADERS = planner.h planner_multi.h
 
-libplanner_la_SOURCES = planner.c planner_multi.c
+libplanner_la_SOURCES = planner.cpp planner_multi.cpp
 libplanner_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resource/planner
 libplanner_la_LIBADD = \
 	$(top_builddir)/src/common/libutil/libutil.la \

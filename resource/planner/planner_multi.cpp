@@ -27,9 +27,11 @@
 #include <czmq.h>
 #include <errno.h>
 
+extern "C" {
 #include "src/common/libutil/xzmalloc.h"
 #include "src/common/libczmqcontainers/czmq_containers.h"
 #include "planner_multi.h"
+}
 
 struct request {
     int64_t on_or_after;
@@ -56,11 +58,12 @@ void fill_iter_request (planner_multi_t *ctx, struct request *iter,
     memcpy (iter->counts, resources, len * sizeof (*resources));
 }
 
-planner_multi_t *planner_multi_new (int64_t base_time, uint64_t duration,
-                                    const uint64_t *resource_totals,
-                                    const char **resource_types, size_t len)
+extern "C" planner_multi_t *planner_multi_new (
+                                int64_t base_time, uint64_t duration,
+                                const uint64_t *resource_totals,
+                                const char **resource_types, size_t len)
 {
-    int i = 0;
+    size_t i = 0;
     planner_multi_t *ctx = NULL;
 
     if (duration < 1 || !resource_totals || !resource_types) {
@@ -75,17 +78,21 @@ planner_multi_t *planner_multi_new (int64_t base_time, uint64_t duration,
         }
     }
 
-    ctx = xzmalloc (sizeof (*ctx));
-    ctx->resource_totals = xzmalloc (len * sizeof (*(ctx->resource_totals)));
-    ctx->resource_types = xzmalloc (len * sizeof (*(ctx->resource_types)));
-    ctx->planners = xzmalloc (len * sizeof (*(ctx->planners)));
+    ctx = new planner_multi ();
+    ctx->resource_totals = reinterpret_cast<uint64_t *> (xzmalloc (
+                               len * sizeof (*(ctx->resource_totals))));
+    ctx->resource_types = reinterpret_cast<char **> (xzmalloc (
+                               len * sizeof (*(ctx->resource_types))));
+    ctx->planners = reinterpret_cast<planner_t **> (xzmalloc (
+                               len * sizeof(*(ctx->planners))));
     ctx->size = len;
     ctx->iter.on_or_after = 0;
     ctx->iter.duration = 0;
-    ctx->iter.counts = xzmalloc (len * sizeof (*(ctx->iter.counts)));
+    ctx->iter.counts = reinterpret_cast<int64_t *> (xzmalloc (
+                           len * sizeof (*(ctx->iter.counts))));
     for (i = 0; i < len; ++i) {
         ctx->resource_totals[i] = resource_totals[i];
-        ctx->resource_types[i] = xstrdup (resource_types[i]);
+        ctx->resource_types[i] = strdup (resource_types[i]);
         ctx->planners[i] = planner_new (base_time, duration,
                                         resource_totals[i], resource_types[i]);
     }
@@ -95,7 +102,7 @@ done:
     return ctx;
 }
 
-int64_t planner_multi_base_time (planner_multi_t *ctx)
+extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -104,7 +111,7 @@ int64_t planner_multi_base_time (planner_multi_t *ctx)
     return planner_base_time (ctx->planners[0]);
 }
 
-int64_t planner_multi_duration (planner_multi_t *ctx)
+extern "C" int64_t planner_multi_duration (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -113,7 +120,7 @@ int64_t planner_multi_duration (planner_multi_t *ctx)
     return planner_duration (ctx->planners[0]);
 }
 
-size_t planner_multi_resources_len (planner_multi_t *ctx)
+extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -122,7 +129,7 @@ size_t planner_multi_resources_len (planner_multi_t *ctx)
     return ctx->size;
 }
 
-const char **planner_multi_resource_types (planner_multi_t *ctx)
+extern "C" const char **planner_multi_resource_types (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -131,7 +138,7 @@ const char **planner_multi_resource_types (planner_multi_t *ctx)
     return (const char **)ctx->resource_types;
 }
 
-const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx)
+extern "C" const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -140,7 +147,8 @@ const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx)
     return (const uint64_t *)ctx->resource_totals;
 }
 
-int64_t planner_multi_resource_total_at (planner_multi_t *ctx, unsigned int i)
+extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx,
+                                                    unsigned int i)
 {
     int64_t rc = -1;
     if (ctx) {
@@ -154,10 +162,10 @@ done:
     return rc;
 }
 
-int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx,
-                                              const char *resource_type)
+extern "C" int64_t planner_multi_resource_total_by_type (
+                       planner_multi_t *ctx, const char *resource_type)
 {
-    int i = 0;
+    size_t i = 0;
     int64_t rc = -1;
     if (!ctx || !resource_type)
         goto done;
@@ -173,9 +181,10 @@ done:
     return rc;
 }
 
-int planner_multi_reset (planner_multi_t *ctx, int64_t base_time, uint64_t duration)
+extern "C" int planner_multi_reset (planner_multi_t *ctx,
+                                    int64_t base_time, uint64_t duration)
 {
-    int i = 0;
+    size_t i = 0;
     int rc = -1;
     if (!ctx || duration < 1) {
         errno = EINVAL;
@@ -191,9 +200,9 @@ done:
     return rc;
 }
 
-void planner_multi_destroy (planner_multi_t **ctx_p)
+extern "C" void planner_multi_destroy (planner_multi_t **ctx_p)
 {
-    int i = 0;
+    size_t i = 0;
     if (ctx_p && *ctx_p) {
         for (i = 0; i < (*ctx_p)->size; ++i) {
             planner_destroy (&((*ctx_p)->planners[i]));
@@ -209,7 +218,8 @@ void planner_multi_destroy (planner_multi_t **ctx_p)
     }
 }
 
-planner_t *planner_multi_planner_at (planner_multi_t *ctx, unsigned int i)
+extern "C" planner_t *planner_multi_planner_at (planner_multi_t *ctx,
+                                                unsigned int i)
 {
     planner_t *planner = NULL;
     if (!ctx || i >= ctx->size) {
@@ -221,12 +231,12 @@ done:
     return planner;
 }
 
-int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
-                                        int64_t on_or_after, uint64_t duration,
-                                        const uint64_t *resource_requests,
-                                        size_t len)
+extern "C" int64_t planner_multi_avail_time_first (
+                       planner_multi_t *ctx, int64_t on_or_after,
+                       uint64_t duration,
+                       const uint64_t *resource_requests, size_t len)
 {
-    int i = 0;
+    size_t i = 0;
     int unmet = 0;
     int64_t t = -1;
 
@@ -257,9 +267,9 @@ done:
     return t;
 }
 
-int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
+extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
 {
-    int i = 0;
+    size_t i = 0;
     int unmet = 0;
     int64_t t = -1;
 
@@ -284,8 +294,8 @@ done:
     return t;
 }
 
-int64_t planner_multi_avail_resources_at (planner_multi_t *ctx, int64_t at,
-                                          unsigned int i)
+extern "C" int64_t planner_multi_avail_resources_at (
+                       planner_multi_t *ctx, int64_t at, unsigned int i)
 {
     if (!ctx || i >= ctx->size) {
         errno = EINVAL;
@@ -294,11 +304,11 @@ int64_t planner_multi_avail_resources_at (planner_multi_t *ctx, int64_t at,
     return planner_avail_resources_at (ctx->planners[i], at);
 }
 
-int planner_multi_avail_resources_array_at (planner_multi_t *ctx, int64_t at,
-                                            int64_t *resource_counts,
-                                            size_t len)
+extern "C" int planner_multi_avail_resources_array_at (
+                   planner_multi_t *ctx, int64_t at,
+                   int64_t *resource_counts, size_t len)
 {
-    int i = 0;
+    size_t i = 0;
     int64_t rc = 0;
     if (!ctx || !resource_counts || ctx->size != len) {
         errno = EINVAL;
@@ -313,10 +323,11 @@ int planner_multi_avail_resources_array_at (planner_multi_t *ctx, int64_t at,
     return (rc == -1)? -1 : 0;
 }
 
-int planner_multi_avail_during (planner_multi_t *ctx, int64_t at, uint64_t duration,
-                                const uint64_t *resource_requests, size_t len)
+extern "C" int planner_multi_avail_during (
+                   planner_multi_t *ctx, int64_t at, uint64_t duration,
+                   const uint64_t *resource_requests, size_t len)
 {
-    int i = 0;
+    size_t i = 0;
     int rc = 0;
     if (!ctx || !resource_requests || ctx->size != len) {
         errno = EINVAL;
@@ -331,12 +342,11 @@ int planner_multi_avail_during (planner_multi_t *ctx, int64_t at, uint64_t durat
     return rc;
 }
 
-int planner_multi_avail_resources_array_during (planner_multi_t *ctx, int64_t at,
-                                                uint64_t duration,
-                                                int64_t *resource_counts,
-                                                size_t len)
+extern "C" int planner_multi_avail_resources_array_during (
+                   planner_multi_t *ctx, int64_t at,
+                   uint64_t duration, int64_t *resource_counts, size_t len)
 {
-    int i = 0;
+    size_t i = 0;
     int64_t rc = 0;
     if (!ctx || !resource_counts || ctx->size < 1 || ctx->size != len) {
         errno = EINVAL;
@@ -358,13 +368,13 @@ static void zlist_free_wrap (void *o)
         zlist_destroy (&list);
 }
 
-int64_t planner_multi_add_span (planner_multi_t *ctx, int64_t start_time,
-                                uint64_t duration,
-                                const uint64_t *resource_requests,
-                                size_t len)
+extern "C" int64_t planner_multi_add_span (
+                       planner_multi_t *ctx, int64_t start_time,
+                       uint64_t duration,
+                       const uint64_t *resource_requests, size_t len)
 {
     char key[32];
-    int i = 0;
+    size_t i = 0;
     zlist_t *list = NULL;
     int64_t span = -1;
     int64_t mspan = -1;
@@ -395,7 +405,7 @@ error:
     return -1;
 }
 
-int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
+extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
 {
     int i = 0;
     int rc = -1;
@@ -409,7 +419,8 @@ int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
     }
 
     sprintf (key, "%jd", (intmax_t)span_id);
-    if (!(list = zhashx_lookup (ctx->span_lookup, key))) {
+    if (!(list = reinterpret_cast<zlist_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
@@ -442,7 +453,7 @@ done:
     return rc;
 }
 
-int64_t planner_multi_span_next (planner_multi_t *ctx)
+extern "C" int64_t planner_multi_span_next (planner_multi_t *ctx)
 {
     int64_t rc = -1;
     void *span = NULL;
@@ -459,7 +470,7 @@ done:
     return rc;
 }
 
-size_t planner_multi_span_size (planner_multi_t *ctx)
+extern "C" size_t planner_multi_span_size (planner_multi_t *ctx)
 {
    if (!ctx) {
         errno = EINVAL;

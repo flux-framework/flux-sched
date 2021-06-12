@@ -30,28 +30,27 @@
 #include <stdbool.h>
 #include <czmq.h>
 
+extern "C" {
 #include "src/common/librbtree/rbtree.h"
 #include "src/common/librbtree/rbtree_augmented.h"
-#include "src/common/libutil/xzmalloc.h"
 #include "src/common/libczmqcontainers/czmq_containers.h"
 #include "planner.h"
+}
 
 #define START(node) ((node)->start)
 #define LAST(node)  ((node)->last)
 
-typedef struct span span_t;
-
-typedef struct request {
+struct request_t {
     int64_t on_or_after;
     uint64_t duration;
     int64_t count;
-} request_t;
+};
 
 /*! Scheduled point: time at which resource state changes.  Each point's resource
  *  requirements are tracked as a node in a min-time resource (MTR) binary search
  *  tree.
  */
-typedef struct scheduled_point {
+struct scheduled_point_t {
     struct rb_node point_rb;     /* BST node for scheduled point tree */
     struct rb_node resource_rb;  /* BST node for min-time resource tree */
     int64_t subtree_min;         /* Min time of the subtree of this node */
@@ -61,11 +60,11 @@ typedef struct scheduled_point {
     int ref_count;               /* reference counter */
     int64_t scheduled;           /* scheduled quantity at this point */
     int64_t remaining;           /* remaining resources (available) */
-} scheduled_point_t;
+};
 
 /*! Node in a span interval tree to enable fast retrieval of intercepting spans.
  */
-struct span {
+struct span_t {
     int64_t start;               /* start time of the span */
     int64_t last;                /* end time of the span */
     int64_t span_id;             /* unique span id */
@@ -384,8 +383,10 @@ static void restore_track_points (planner_t *ctx)
     struct rb_root *root = &(ctx->mt_resource_tree);
     zlistx_t *keys = zhashx_keys (ctx->avail_time_iter);
     const char *k = NULL;
-    for (k = zlistx_first (keys); k; k = zlistx_next (keys)) {
-        point = zhashx_lookup (ctx->avail_time_iter, k);
+    for (k = reinterpret_cast<const char *> (zlistx_first (keys));
+         k; k = reinterpret_cast<const char *> (zlistx_next (keys))) {
+        point = reinterpret_cast<scheduled_point_t *> (
+                    zhashx_lookup (ctx->avail_time_iter, k));
         mintime_resource_insert (point, root);
         zhashx_delete (ctx->avail_time_iter, k);
     }
@@ -396,7 +397,8 @@ static void update_mintime_resource_tree (planner_t *ctx, zlist_t *list)
 {
     scheduled_point_t *point = NULL;
     struct rb_root *mtrt = &(ctx->mt_resource_tree);
-    for (point = zlist_first (list); point; point = zlist_next (list)) {
+    for (point = reinterpret_cast<scheduled_point_t *> (zlist_first (list));
+         point; point = reinterpret_cast<scheduled_point_t *> (zlist_next (list))) {
         if (point->in_mt_resource_tree)
             mintime_resource_remove (point, mtrt);
         if (point->ref_count && !(point->in_mt_resource_tree))
@@ -419,7 +421,7 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
     if ( !(point = scheduled_point_search (at, spt))) {
         struct rb_root *mtrt = &(ctx->mt_resource_tree);
         scheduled_point_t *state = scheduled_point_state (at, spt);
-        point = xzmalloc (sizeof (*point));
+        point = new scheduled_point_t ();
         point->at = at;
         point->in_mt_resource_tree = 0;
         point->new_point = 1;
@@ -451,7 +453,8 @@ static int update_points_add_span (planner_t *ctx, zlist_t *list, span_t *span)
 {
     int rc = 0;
     scheduled_point_t *point = NULL;
-    for (point = zlist_first (list); point; point = zlist_next (list)) {
+    for (point = reinterpret_cast<scheduled_point_t *> (zlist_first (list));
+         point; point = reinterpret_cast<scheduled_point_t *> (zlist_next (list))) {
         point->scheduled += span->planned;
         point->remaining -= span->planned;
         if ( (point->scheduled > ctx->total_resources)
@@ -468,7 +471,8 @@ static int update_points_subtract_span (planner_t *ctx, zlist_t *list,
 {
     int rc = 0;
     scheduled_point_t *point = NULL;
-    for (point = zlist_first (list); point; point = zlist_next (list)) {
+    for (point = reinterpret_cast<scheduled_point_t *> (zlist_first (list)); point;
+         point = reinterpret_cast<scheduled_point_t *> (zlist_next (list))) {
         point->scheduled -= span->planned;
         point->remaining += span->planned;
         if ( (point->scheduled < 0)
@@ -518,7 +522,7 @@ static int64_t avail_at (planner_t *ctx, int64_t on_or_after, uint64_t duration,
         } else if (span_ok (ctx, start_point, duration, request)) {
             mintime_resource_remove (start_point, mt);
             track_points (ctx->avail_time_iter, start_point);
-            if ((at + duration) > ctx->plan_end)
+            if (static_cast<int64_t> (at + duration) > ctx->plan_end)
                 at = -1;
             break;
         }
@@ -531,7 +535,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration,
 {
     bool ok = true;
     struct rb_root *spr = NULL;
-    if ((at + duration) > ctx->plan_end) {
+    if (static_cast<int64_t> (at + duration) > ctx->plan_end) {
         errno = ERANGE;
         return -1;
     }
@@ -557,7 +561,7 @@ static scheduled_point_t *avail_resources_during (planner_t *ctx, int64_t at,
 {
     struct rb_root *spr = NULL;
 
-    if ((at + duration) > ctx->plan_end) {
+    if (static_cast<int64_t> (at + duration) > ctx->plan_end) {
         errno = ERANGE;
         return NULL;
     }
@@ -590,7 +594,7 @@ static void initialize (planner_t *ctx, int64_t base_time, uint64_t duration)
     ctx->plan_end = base_time + (int64_t)duration;
     ctx->sched_point_tree = RB_ROOT;
     ctx->mt_resource_tree = RB_ROOT;
-    ctx->p0 = xzmalloc (sizeof (*(ctx->p0)));
+    ctx->p0 = new scheduled_point_t ();
     ctx->p0->at = base_time;
     ctx->p0->ref_count = 1;
     ctx->p0->remaining = ctx->total_resources;
@@ -598,7 +602,7 @@ static void initialize (planner_t *ctx, int64_t base_time, uint64_t duration)
     mintime_resource_insert (ctx->p0, &(ctx->mt_resource_tree));
     ctx->span_lookup = zhashx_new ();
     ctx->avail_time_iter = zhashx_new ();
-    ctx->current_request = xzmalloc (sizeof (*(ctx->current_request)));
+    ctx->current_request = new request_t ();
     ctx->avail_time_iter_set = 0;
     ctx->span_counter = 0;
 }
@@ -628,7 +632,8 @@ static inline bool not_feasable (planner_t *ctx, int64_t start_time,
                                  uint64_t duration, int64_t request)
 {
     bool rc = (start_time < ctx->plan_start) || (duration < 1)
-              || ((start_time + duration - 1) > ctx->plan_end);
+              || (static_cast<int64_t> (start_time + duration - 1)
+                     > ctx->plan_end);
     return rc;
 }
 
@@ -656,7 +661,7 @@ static span_t *span_new (planner_t *ctx, int64_t start_time, uint64_t duration,
     if (span_input_check (ctx, start_time, duration, (int64_t)request) == -1)
         goto done;
 
-    span = xzmalloc (sizeof (*span));
+    span = new span_t ();
     span->start = start_time;
     span->last = start_time + duration;
     ctx->span_counter++;
@@ -679,8 +684,9 @@ done:
  *                                                                             *
  *******************************************************************************/
 
-planner_t *planner_new (int64_t base_time, uint64_t duration,
-                        uint64_t resource_totals, const char *resource_type)
+extern "C" planner_t *planner_new (int64_t base_time, uint64_t duration,
+                                   uint64_t resource_totals,
+                                   const char *resource_type)
 {
     planner_t *ctx = NULL;
 
@@ -692,16 +698,17 @@ planner_t *planner_new (int64_t base_time, uint64_t duration,
         goto done;
     }
 
-    ctx = xzmalloc (sizeof (*ctx));
+    ctx = new planner_t ();
     ctx->total_resources = (int64_t)resource_totals;
-    ctx->resource_type = xstrdup (resource_type);
+    ctx->resource_type = strdup (resource_type);
     initialize (ctx, base_time, duration);
 
 done:
     return ctx;
 }
 
-int planner_reset (planner_t *ctx, int64_t base_time, uint64_t duration)
+extern "C" int planner_reset (planner_t *ctx,
+                              int64_t base_time, uint64_t duration)
 {
     if (!ctx || duration < 1) {
         errno = EINVAL;
@@ -713,7 +720,7 @@ int planner_reset (planner_t *ctx, int64_t base_time, uint64_t duration)
     return 0;
 }
 
-void planner_destroy (planner_t **ctx_p)
+extern "C" void planner_destroy (planner_t **ctx_p)
 {
     if (ctx_p && *ctx_p) {
         restore_track_points (*ctx_p);
@@ -725,7 +732,7 @@ void planner_destroy (planner_t **ctx_p)
     }
 }
 
-int64_t planner_base_time (planner_t *ctx)
+extern "C" int64_t planner_base_time (planner_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -734,7 +741,7 @@ int64_t planner_base_time (planner_t *ctx)
     return ctx->plan_start;
 }
 
-int64_t planner_duration (planner_t *ctx)
+extern "C" int64_t planner_duration (planner_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -743,7 +750,7 @@ int64_t planner_duration (planner_t *ctx)
     return ctx->plan_end - ctx->plan_start;
 }
 
-int64_t planner_resource_total (planner_t *ctx)
+extern "C" int64_t planner_resource_total (planner_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -752,7 +759,7 @@ int64_t planner_resource_total (planner_t *ctx)
     return ctx->total_resources;
 }
 
-const char *planner_resource_type (planner_t *ctx)
+extern "C" const char *planner_resource_type (planner_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -761,8 +768,10 @@ const char *planner_resource_type (planner_t *ctx)
     return (const char *)ctx->resource_type;
 }
 
-int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
-                                  uint64_t duration, uint64_t request)
+extern "C" int64_t planner_avail_time_first (planner_t *ctx,
+                                             int64_t on_or_after,
+                                             uint64_t duration,
+                                             uint64_t request)
 {
     int64_t t = -1;
     if (!ctx || on_or_after < ctx->plan_start
@@ -770,7 +779,7 @@ int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
         errno = EINVAL;
         return -1;
     }
-    if (request > ctx->total_resources) {
+    if (static_cast<int64_t> (request) > ctx->total_resources) {
         errno = ERANGE;
         return -1;
     }
@@ -782,7 +791,7 @@ int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
     return t;
 }
 
-int64_t planner_avail_time_next (planner_t *ctx)
+extern "C" int64_t planner_avail_time_next (planner_t *ctx)
 {
     int64_t t = -1;
     int64_t on_or_after = -1;
@@ -805,15 +814,15 @@ int64_t planner_avail_time_next (planner_t *ctx)
     return t;
 }
 
-int planner_avail_during (planner_t *ctx, int64_t start_time, uint64_t duration,
-                          uint64_t request)
+extern "C" int planner_avail_during (planner_t *ctx, int64_t start_time,
+                                     uint64_t duration, uint64_t request)
 {
     bool ok = false;
     if (!ctx || duration < 1) {
         errno = EINVAL;
         return -1;
     }
-    if (request > ctx->total_resources) {
+    if (static_cast<int64_t> (request) > ctx->total_resources) {
         errno = ERANGE;
         return -1;
     }
@@ -821,8 +830,8 @@ int planner_avail_during (planner_t *ctx, int64_t start_time, uint64_t duration,
     return ok? 0 : -1;
 }
 
-int64_t planner_avail_resources_during (planner_t *ctx, int64_t at,
-                                        uint64_t duration)
+extern "C" int64_t planner_avail_resources_during (planner_t *ctx,
+                                                   int64_t at, uint64_t duration)
 {
     scheduled_point_t *min_point = NULL;
     if (!ctx || at > ctx->plan_end || duration < 1) {
@@ -833,7 +842,7 @@ int64_t planner_avail_resources_during (planner_t *ctx, int64_t at,
     return min_point->remaining;
 }
 
-int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
+extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
 {
     struct rb_root *spt = NULL;
     scheduled_point_t *state = NULL;
@@ -846,8 +855,8 @@ int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
     return state->remaining;
 }
 
-int64_t planner_add_span (planner_t *ctx, int64_t start_time,
-                          uint64_t duration, uint64_t request)
+extern "C" int64_t planner_add_span (planner_t *ctx, int64_t start_time,
+                                     uint64_t duration, uint64_t request)
 {
     span_t *span = NULL;
     zlist_t *list = NULL;
@@ -885,7 +894,7 @@ int64_t planner_add_span (planner_t *ctx, int64_t start_time,
     return span->span_id;
 }
 
-int planner_rem_span (planner_t *ctx, int64_t span_id)
+extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
 {
     char key[32];
     int rc = -1;
@@ -898,7 +907,8 @@ int planner_rem_span (planner_t *ctx, int64_t span_id)
         goto done;
     }
     sprintf (key, "%ju", (intmax_t)span_id);
-    if ( !(span = zhashx_lookup (ctx->span_lookup, key))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
@@ -938,7 +948,7 @@ done:
     return rc;
 }
 
-int64_t planner_span_first (planner_t *ctx)
+extern "C" int64_t planner_span_first (planner_t *ctx)
 {
     int64_t rc = -1;
     span_t *span = NULL;
@@ -946,7 +956,7 @@ int64_t planner_span_first (planner_t *ctx)
         errno = EINVAL;
         goto done;
     }
-    if ( !(span = zhashx_first (ctx->span_lookup))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_first (ctx->span_lookup)))) {
         errno = EINVAL;
         goto done;
 
@@ -956,7 +966,7 @@ done:
     return rc;
 }
 
-int64_t planner_span_next (planner_t *ctx)
+extern "C" int64_t planner_span_next (planner_t *ctx)
 {
     int64_t rc = -1;
     span_t *span = NULL;
@@ -964,7 +974,7 @@ int64_t planner_span_next (planner_t *ctx)
         errno = EINVAL;
         goto done;
     }
-    if ( !(span = zhashx_next (ctx->span_lookup))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_next (ctx->span_lookup)))) {
         errno = EINVAL;
         goto done;
 
@@ -974,7 +984,7 @@ done:
     return rc;
 }
 
-size_t planner_span_size (planner_t *ctx)
+extern "C" size_t planner_span_size (planner_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
@@ -984,7 +994,7 @@ size_t planner_span_size (planner_t *ctx)
 }
 
 
-bool planner_is_active_span (planner_t *ctx, int64_t span_id)
+extern "C" bool planner_is_active_span (planner_t *ctx, int64_t span_id)
 {
     bool rc = false;
     char key[32];
@@ -994,7 +1004,8 @@ bool planner_is_active_span (planner_t *ctx, int64_t span_id)
         goto done;
     }
     sprintf (key, "%ju", (intmax_t)span_id);
-    if ( !(span = zhashx_lookup (ctx->span_lookup, key))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
@@ -1003,7 +1014,7 @@ done:
     return rc;
 }
 
-int64_t planner_span_start_time (planner_t *ctx, int64_t span_id)
+extern "C" int64_t planner_span_start_time (planner_t *ctx, int64_t span_id)
 {
     char key[32];
     int64_t rc = -1;
@@ -1013,7 +1024,8 @@ int64_t planner_span_start_time (planner_t *ctx, int64_t span_id)
         goto done;
     }
     sprintf (key, "%ju", (intmax_t)span_id);
-    if ( !(span = zhashx_lookup (ctx->span_lookup, key))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
@@ -1022,7 +1034,7 @@ done:
     return rc;
 }
 
-int64_t planner_span_duration (planner_t *ctx, int64_t span_id)
+extern "C" int64_t planner_span_duration (planner_t *ctx, int64_t span_id)
 {
     char key[32];
     int64_t rc = -1;
@@ -1032,7 +1044,8 @@ int64_t planner_span_duration (planner_t *ctx, int64_t span_id)
         goto done;
     }
     sprintf (key, "%ju", (intmax_t)span_id);
-    if ( !(span = zhashx_lookup (ctx->span_lookup, key))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
@@ -1041,7 +1054,7 @@ done:
     return rc;
 }
 
-int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id)
+extern "C" int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id)
 {
     char key[32];
     int64_t rc = -1;
@@ -1051,7 +1064,8 @@ int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id)
         goto done;
     }
     sprintf (key, "%ju", (intmax_t)span_id);
-    if ( !(span = zhashx_lookup (ctx->span_lookup, key))) {
+    if ( !(span = reinterpret_cast<span_t *> (zhashx_lookup (
+                                                  ctx->span_lookup, key)))) {
         errno = EINVAL;
         goto done;
     }
