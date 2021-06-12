@@ -56,10 +56,9 @@ static int test_planner_getters ()
     uint64_t resource_total = 10;
     const char resource_type[] = "1";
 
-    errno = 0;
     to_stream (0, 9999, resource_total, resource_type, ss);
     ctx = planner_new (0, 9999, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     rc = planner_base_time (ctx);
     ok ((rc == 0), "base_time works for (%s)", ss.str ().c_str ());
@@ -73,7 +72,7 @@ static int test_planner_getters ()
     type = planner_resource_type (ctx);
     bo = (bo || (type == resource_type));
 
-    ok ((!bo && !errno), "planner getters work");
+    ok (!bo, "planner getters work");
 
     planner_destroy (&ctx);
     return 0;
@@ -90,10 +89,9 @@ static int test_basic_add_remove ()
     uint64_t counts1 = resource_total;
     int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, span5 = -1;
 
-    errno = 0;
     to_stream (0, 10, resource_total, resource_type, ss);
     ctx = planner_new (0, 10, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 5, counts1, resource_type, ss);
@@ -176,20 +174,19 @@ static int test_availability_checkers ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_total, resource_type, ss);
     ctx = planner_new (0, tmax, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 5, counts10, resource_type, ss);
     rc = planner_avail_during (ctx, 0, 1, counts10);
-    ok ((!rc && !errno), "avail check works (%s)", ss.str ().c_str ());
+    ok (!rc, "avail check works (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1000, counts5, resource_type, ss);
     rc = planner_avail_during (ctx, 1, 1000, counts5);
-    ok ((!rc && !errno), "avail check works (%s)", ss.str ().c_str ());
+    ok (!rc, "avail check works (%s)", ss.str ().c_str ());
 
     span1 = planner_add_span (ctx, 1, 1000, counts5);
     ok ((span1 != -1), "span1 added for (%s)", ss.str ().c_str ());
@@ -203,12 +200,12 @@ static int test_availability_checkers ()
     ss.str ("");
     to_stream (-1, 2990, counts1, resource_type, ss);
     rc = planner_avail_during (ctx, 10, 2991, counts1);
-    ok ((rc == -1) && !errno, "over-alloc fails for (%s)", ss.str ().c_str ());
+    ok (rc == -1, "over-alloc fails for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1990, counts1, resource_type, ss);
     rc = planner_avail_during (ctx, 10, 1990, counts1);
-    ok ((!rc && !errno), "overlapping works (%s)", ss.str ().c_str ());
+    ok (!rc, "overlapping works (%s)", ss.str ().c_str ());
 
     span3 = planner_add_span (ctx, 10, 1990, counts1);
     ok ((span3 != -1), "span3 added for (%s)", ss.str ().c_str ());
@@ -228,7 +225,7 @@ static int test_availability_checkers ()
     bo = (bo || avail != 0);
     avail = planner_avail_resources_at (ctx, 3001);
     bo = (bo || avail != 10);
-    ok (!bo && !errno, "avail_at_resources_* works");
+    ok (!bo, "avail_at_resources_* works");
 
     bo = false;
     rc = planner_avail_during (ctx, 2000, 1001, counts1);
@@ -243,7 +240,7 @@ static int test_availability_checkers ()
     bo = (bo || rc != 0);
     avail = planner_avail_resources_during (ctx, 10, 1990);
     bo = (bo || avail != 4);
-    ok (!bo && !errno, "resources_during works");
+    ok (!bo, "resources_during works");
 
     bo = false;
     rc = planner_avail_during (ctx, 4, 3, counts5);
@@ -262,7 +259,7 @@ static int test_availability_checkers ()
     bo = (bo || rc != -1);
     avail = planner_avail_resources_during (ctx, 2500, 101);
     bo = (bo || avail != 0);
-    ok (!bo && !errno, "resources_during works for a subset (no edges)");
+    ok (!bo, "resources_during works for a subset (no edges)");
 
     bo = false;
     rc = planner_avail_during (ctx, 0, 1000, counts4);
@@ -273,7 +270,7 @@ static int test_availability_checkers ()
     bo = (bo || rc != 0);
     rc = planner_avail_during (ctx, 1001, 999, counts9);
     bo = (bo || rc != 0);
-    ok (!bo && !errno, "resources_during works for a subset (1 edge)");
+    ok (!bo, "resources_during works for a subset (1 edge)");
 
     bo = false;
     rc = planner_avail_during (ctx, 100, 1401, counts4);
@@ -282,7 +279,7 @@ static int test_availability_checkers ()
     bo = (bo || rc != -1);
     rc = planner_avail_during (ctx, 1000, 1001, counts1);
     bo = (bo || rc != -1);
-    ok (!bo && !errno, "resources_during works for >1 overlapping spans");
+    ok (!bo, "resources_during works for >1 overlapping spans");
 
     bo = false;
     rc = planner_avail_during (ctx, 0, 3001, counts1);
@@ -291,7 +288,7 @@ static int test_availability_checkers ()
     bo = (bo || rc != -1);
     rc = planner_avail_during (ctx, 3001, 2000, counts10);
     bo = (bo || rc != 0);
-    ok (!bo && !errno, "resources_during works for all spans");
+    ok (!bo, "resources_during works for all spans");
 
     bo = false;
     t = planner_avail_time_first (ctx, 0, 9, counts5);
@@ -330,10 +327,9 @@ int test_add_and_iterator ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, 10, resource_total, resource_type, ss);
     ctx = planner_new (0, 10, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     t = planner_avail_time_first (ctx, 0, 4, counts3);
@@ -367,10 +363,9 @@ int test_on_or_after ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, INT64_MAX, resource_total, resource_type, ss);
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     t = planner_avail_time_first (ctx, 100000, 100, counts2);
@@ -412,10 +407,9 @@ int test_remove_more ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, INT64_MAX, resource_total, resource_type, ss);
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
     ss.str ("");
 
     std::vector<int64_t> spans;
@@ -431,7 +425,7 @@ int test_remove_more ()
         bo = (bo || rc == -1);
     }
 
-    ok (!bo && !errno, "removing more works");
+    ok (!bo, "removing more works");
     planner_destroy (&ctx);
     return 0;
 
@@ -449,10 +443,9 @@ int test_stress_fully_overlap ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, INT64_MAX, resource_total, resource_type, ss);
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     for (i = 0; i < 100000; ++i) {
@@ -461,7 +454,7 @@ int test_stress_fully_overlap ()
         span = planner_add_span (ctx, t, 4, counts100);
         bo = (bo || span == -1);
     }
-    ok (!bo && !errno, "add_span 100000 times (fully overlapped spans)");
+    ok (!bo, "add_span 100000 times (fully overlapped spans)");
 
     for (i = 0; i < 100000; ++i) {
         t = planner_avail_time_first (ctx, 0, 4, counts100);
@@ -487,10 +480,9 @@ int test_stress_4spans_overlap ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, INT64_MAX, resource_total, resource_type, ss);
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     for (i = 0; i < 100000; ++i) {
         rc = planner_avail_during (ctx, i, 4, counts100);
@@ -498,7 +490,7 @@ int test_stress_4spans_overlap ()
         span = planner_add_span (ctx, i, 4, counts100);
         bo = (bo || span == -1);
     }
-    ok (!bo && !errno, "add_span 100000 times (4 spans overlap)");
+    ok (!bo, "add_span 100000 times (4 spans overlap)");
 
     for (i = 100000; i < 200000; ++i) {
         rc = planner_avail_during (ctx, i, 4, counts100);
@@ -506,7 +498,7 @@ int test_stress_4spans_overlap ()
         span = planner_add_span (ctx, i, 4, counts100);
         bo = (bo || span == -1);
     }
-    ok (!bo && !errno, "add_span 100000 more (4 spans overlap)");
+    ok (!bo, "add_span 100000 more (4 spans overlap)");
 
     planner_destroy (&ctx);
     return 0;
@@ -587,7 +579,7 @@ static int test_resource_service_flow ()
         span = planner_add_span (global, t, duration, totals[j]);
         bo = (bo || span == -1);
     }
-    ok (!bo && !errno, "reserve %d jobs for global/local planners", depth);
+    ok (!bo, "reserve %d jobs for global/local planners", depth);
 
     planner_destroy (&global1);
     planner_destroy (&global2);
@@ -614,10 +606,9 @@ static int test_more_add_remove ()
     planner_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, INT64_MAX, resource_total, resource_type, ss);
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
     ss.str ("");
 
     span1 = planner_add_span (ctx, 0, 600, resource1);
@@ -659,7 +650,7 @@ static int test_more_add_remove ()
     span6 = planner_add_span (ctx, 115200, 900, resource6);
     bo = (bo || span6 == -1);
 
-    ok (!bo && !errno, "more add-remove-add test works");
+    ok (!bo, "more add-remove-add test works");
     return 0;
 }
 
