@@ -22,40 +22,40 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#include <stdlib.h>
-#include <string.h>
-#include <czmq.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
+#include <cstring>
+#include <limits>
+#include <vector>
+#include <map>
 
-extern "C" {
-#include "src/common/libutil/xzmalloc.h"
-#include "src/common/libczmqcontainers/czmq_containers.h"
 #include "planner_multi.h"
-}
 
 struct request {
     int64_t on_or_after;
     uint64_t duration;
-    int64_t *counts;
+    std::vector<int64_t> counts;
 };
 
 struct planner_multi {
-    planner_t **planners;
-    uint64_t *resource_totals;
-    char **resource_types;
-    size_t size;
+    std::vector<planner_t *> planners;
+    std::vector<uint64_t> resource_totals;
+    std::vector<const char *> resource_types;
     struct request iter;
-    zhashx_t *span_lookup;
+    std::map<uint64_t, std::vector<int64_t>> span_lookup;
+    std::map<uint64_t, std::vector<int64_t>>::iterator span_lookup_iter;
     uint64_t span_counter;
 };
 
-void fill_iter_request (planner_multi_t *ctx, struct request *iter,
-                        int64_t at, uint64_t duration,
-                        const uint64_t *resources, size_t len)
+static void fill_iter_request (planner_multi_t *ctx, struct request *iter,
+                               int64_t at, uint64_t duration,
+                               const uint64_t *resources, size_t len)
 {
+    size_t i;
     iter->on_or_after = at;
     iter->duration = duration;
-    memcpy (iter->counts, resources, len * sizeof (*resources));
+    for (i = 0; i < len; ++i)
+        iter->counts[i] = resources[i];
 }
 
 extern "C" planner_multi_t *planner_multi_new (
@@ -64,41 +64,48 @@ extern "C" planner_multi_t *planner_multi_new (
                                 const char **resource_types, size_t len)
 {
     size_t i = 0;
-    planner_multi_t *ctx = NULL;
+    planner_multi_t *ctx = nullptr;
+    char *type = nullptr;
+    planner_t *p;
 
     if (duration < 1 || !resource_totals || !resource_types) {
         errno = EINVAL;
-        goto done;
+        goto error;
     } else {
         for (i = 0; i < len; ++i) {
-            if (resource_totals[i] > INT64_MAX) {
+            if (resource_totals[i] > std::numeric_limits<int64_t>::max ()) {
                 errno = ERANGE;
-                goto done;
+                goto error;
             }
         }
     }
 
-    ctx = new planner_multi ();
-    ctx->resource_totals = reinterpret_cast<uint64_t *> (xzmalloc (
-                               len * sizeof (*(ctx->resource_totals))));
-    ctx->resource_types = reinterpret_cast<char **> (xzmalloc (
-                               len * sizeof (*(ctx->resource_types))));
-    ctx->planners = reinterpret_cast<planner_t **> (xzmalloc (
-                               len * sizeof(*(ctx->planners))));
-    ctx->size = len;
-    ctx->iter.on_or_after = 0;
-    ctx->iter.duration = 0;
-    ctx->iter.counts = reinterpret_cast<int64_t *> (xzmalloc (
-                           len * sizeof (*(ctx->iter.counts))));
-    for (i = 0; i < len; ++i) {
-        ctx->resource_totals[i] = resource_totals[i];
-        ctx->resource_types[i] = strdup (resource_types[i]);
-        ctx->planners[i] = planner_new (base_time, duration,
-                                        resource_totals[i], resource_types[i]);
+    try {
+        ctx = new planner_multi ();
+        ctx->iter.on_or_after = 0;
+        ctx->iter.duration = 0;
+        for (i = 0; i < len; ++i) {
+            ctx->resource_totals.push_back (resource_totals[i]);
+            if ( (type = strdup (resource_types[i])) == nullptr)
+                goto nomem_error;
+            ctx->resource_types.push_back (type);
+            ctx->iter.counts.push_back (0);
+            if ( (p = planner_new (base_time, duration,
+                                   resource_totals[i],
+                                   resource_types[i])) == nullptr)
+                goto nomem_error;
+            ctx->planners.push_back (p);
+        }
+        ctx->span_counter = 0;
+    } catch (std::bad_alloc &e) {
+        goto nomem_error;
     }
-    ctx->span_lookup = zhashx_new ();
-    ctx->span_counter = 0;
-done:
+    return ctx;
+
+nomem_error:
+    errno = ENOMEM;
+    planner_multi_destroy (&ctx);
+error:
     return ctx;
 }
 
@@ -126,25 +133,25 @@ extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
         errno = EINVAL;
         return 0;
     }
-    return ctx->size;
+    return ctx->planners.size ();
 }
 
 extern "C" const char **planner_multi_resource_types (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
-        return NULL;
+        return nullptr;
     }
-    return (const char **)ctx->resource_types;
+    return &(ctx->resource_types[0]);
 }
 
 extern "C" const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx)
 {
     if (!ctx) {
         errno = EINVAL;
-        return NULL;
+        return nullptr;
     }
-    return (const uint64_t *)ctx->resource_totals;
+    return &(ctx->resource_totals[0]);
 }
 
 extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx,
@@ -152,7 +159,7 @@ extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx,
 {
     int64_t rc = -1;
     if (ctx) {
-        if (i >= ctx->size) {
+        if (i >= ctx->planners.size ()) {
             errno = EINVAL;
             goto done;
         }
@@ -169,13 +176,13 @@ extern "C" int64_t planner_multi_resource_total_by_type (
     int64_t rc = -1;
     if (!ctx || !resource_type)
         goto done;
-    for (i = 0; i < ctx->size; i++) {
-        if (!strcmp (ctx->resource_types[i], resource_type)) {
+    for (i = 0; i < ctx->planners.size (); i++) {
+        if ( !(strcmp (ctx->resource_types[i], resource_type))) {
             rc = planner_resource_total (ctx->planners[i]);
             break;
         }
     }
-    if (i == ctx->size)
+    if (i == ctx->planners.size ())
         errno = EINVAL;
 done:
     return rc;
@@ -191,7 +198,7 @@ extern "C" int planner_multi_reset (planner_multi_t *ctx,
         goto done;
     }
 
-    for (i = 0; i < ctx->size; ++i)
+    for (i = 0; i < ctx->planners.size (); ++i)
         if (planner_reset (ctx->planners[i], base_time, duration) == -1)
             goto done;
 
@@ -204,25 +211,20 @@ extern "C" void planner_multi_destroy (planner_multi_t **ctx_p)
 {
     size_t i = 0;
     if (ctx_p && *ctx_p) {
-        for (i = 0; i < (*ctx_p)->size; ++i) {
+        for (i = 0; i < (*ctx_p)->planners.size (); ++i)
             planner_destroy (&((*ctx_p)->planners[i]));
-            free ((*ctx_p)->resource_types[i]);
-        }
-        free ((*ctx_p)->resource_totals);
-        free ((*ctx_p)->resource_types);
-        free ((*ctx_p)->iter.counts);
-        free ((*ctx_p)->planners);
-        zhashx_destroy (&((*ctx_p)->span_lookup));
-        free (*ctx_p);
-        *ctx_p = NULL;
+        for (i = 0; i < (*ctx_p)->resource_types.size (); ++i)
+            free ((void *)(*ctx_p)->resource_types[i]);
+        delete *ctx_p;
+        *ctx_p = nullptr;
     }
 }
 
 extern "C" planner_t *planner_multi_planner_at (planner_multi_t *ctx,
                                                 unsigned int i)
 {
-    planner_t *planner = NULL;
-    if (!ctx || i >= ctx->size) {
+    planner_t *planner = nullptr;
+    if (!ctx || i >= ctx->planners.size ()) {
         errno = EINVAL;
         goto done;
     }
@@ -240,8 +242,8 @@ extern "C" int64_t planner_multi_avail_time_first (
     int unmet = 0;
     int64_t t = -1;
 
-    if (!ctx || !resource_requests || ctx->size < 1
-         || ctx->size != len) {
+    if (!ctx || !resource_requests || ctx->planners.size () < 1
+         || ctx->planners.size () != len) {
         errno = EINVAL;
         goto done;
     }
@@ -255,7 +257,7 @@ extern "C" int64_t planner_multi_avail_time_first (
 
     do {
         unmet = 0;
-        for (i = 1; i < ctx->size; ++i) {
+        for (i = 1; i < ctx->planners.size (); ++i) {
             if ((unmet = planner_avail_during (ctx->planners[i],
                                                t, duration,
                                                resource_requests[i])) == -1)
@@ -282,7 +284,7 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
         unmet = 0;
         if ((t = planner_avail_time_next (ctx->planners[0])) == -1)
             break;
-        for (i = 1; i < ctx->size; ++i) {
+        for (i = 1; i < ctx->planners.size (); ++i) {
             if ((unmet = planner_avail_during (ctx->planners[i], t,
                                                ctx->iter.duration,
                                                ctx->iter.counts[i])) == -1)
@@ -297,7 +299,7 @@ done:
 extern "C" int64_t planner_multi_avail_resources_at (
                        planner_multi_t *ctx, int64_t at, unsigned int i)
 {
-    if (!ctx || i >= ctx->size) {
+    if (!ctx || i >= ctx->planners.size ()) {
         errno = EINVAL;
         return -1;
     }
@@ -310,11 +312,11 @@ extern "C" int planner_multi_avail_resources_array_at (
 {
     size_t i = 0;
     int64_t rc = 0;
-    if (!ctx || !resource_counts || ctx->size != len) {
+    if (!ctx || !resource_counts || ctx->planners.size () != len) {
         errno = EINVAL;
         return -1;
     }
-    for (i = 0; i < ctx->size; ++i) {
+    for (i = 0; i < ctx->planners.size (); ++i) {
         rc = planner_avail_resources_at (ctx->planners[i], at);
         if (rc == -1)
             break;
@@ -329,11 +331,11 @@ extern "C" int planner_multi_avail_during (
 {
     size_t i = 0;
     int rc = 0;
-    if (!ctx || !resource_requests || ctx->size != len) {
+    if (!ctx || !resource_requests || ctx->planners.size () != len) {
         errno = EINVAL;
         return -1;
     }
-    for (i = 0; i < ctx->size; ++i) {
+    for (i = 0; i < ctx->planners.size (); ++i) {
         rc = planner_avail_during (ctx->planners[i], at, duration,
                                    resource_requests[i]);
         if (rc == -1)
@@ -348,11 +350,12 @@ extern "C" int planner_multi_avail_resources_array_during (
 {
     size_t i = 0;
     int64_t rc = 0;
-    if (!ctx || !resource_counts || ctx->size < 1 || ctx->size != len) {
+    if (!ctx || !resource_counts
+        || ctx->planners.size () < 1 || ctx->planners.size () != len) {
         errno = EINVAL;
         return -1;
     }
-    for (i = 0; i < ctx->size; ++i) {
+    for (i = 0; i < ctx->planners.size (); ++i) {
         rc = planner_avail_resources_during (ctx->planners[i], at, duration);
         if (rc == -1)
             break;
@@ -361,75 +364,60 @@ extern "C" int planner_multi_avail_resources_array_during (
     return (rc == -1)? -1 : 0;
 }
 
-static void zlist_free_wrap (void *o)
-{
-    zlist_t *list = (zlist_t *)o;
-    if (list)
-        zlist_destroy (&list);
-}
-
 extern "C" int64_t planner_multi_add_span (
                        planner_multi_t *ctx, int64_t start_time,
                        uint64_t duration,
                        const uint64_t *resource_requests, size_t len)
 {
-    char key[32];
     size_t i = 0;
-    zlist_t *list = NULL;
     int64_t span = -1;
     int64_t mspan = -1;
 
-    if (!ctx || !resource_requests || len != ctx->size)
+    if (!ctx || !resource_requests || len != ctx->planners.size ())
         return -1;
 
-    list = zlist_new ();
     mspan = ctx->span_counter;
-    ctx->span_counter++;
-    sprintf (key, "%jd", (intmax_t)mspan);
-
-    for (i = 0; i < len; ++i) {
-        if ((span = planner_add_span (ctx->planners[i],
-                                      start_time, duration,
-                                      resource_requests[i])) == -1)
-            goto error;
-
-        zlist_append (list, (void *)(intptr_t)span);
+    auto res = ctx->span_lookup.insert (
+                        std::pair<int64_t, std::vector<int64_t>> (
+                            mspan, std::vector<int64_t> ()));
+    if (!res.second) {
+        errno = EEXIST;
+        return -1;
     }
 
-    zhashx_insert (ctx->span_lookup, key, list);
-    zhashx_freefn (ctx->span_lookup, key, zlist_free_wrap);
-    return mspan;
+    ctx->span_counter++;
 
-error:
-    zlist_destroy (&list);
-    return -1;
+    for (i = 0; i < len; ++i) {
+        if ( (span = planner_add_span (ctx->planners[i],
+                                       start_time, duration,
+                                       resource_requests[i])) == -1) {
+            ctx->span_lookup.erase (mspan);
+            return -1;
+        }
+        ctx->span_lookup[mspan].push_back (span);
+    }
+    return mspan;
 }
 
 extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
 {
-    int i = 0;
+    size_t i;
     int rc = -1;
-    char key[32];
-    void *s = NULL;
-    zlist_t *list = NULL;
 
     if (!ctx || span_id < 0) {
         errno = EINVAL;
+        return -1;
+    }
+    auto it = ctx->span_lookup.find (span_id);
+    if (it == ctx->span_lookup.end ()) {
+        errno = ENOENT;
         goto done;
     }
-
-    sprintf (key, "%jd", (intmax_t)span_id);
-    if (!(list = reinterpret_cast<zlist_t *> (zhashx_lookup (
-                                                  ctx->span_lookup, key)))) {
-        errno = EINVAL;
-        goto done;
-    }
-
-    for (i = 0, s = zlist_first (list); s; i++, s = zlist_next (list))
-        if (planner_rem_span (ctx->planners[i], (intptr_t)s) == -1)
+    for (i = 0; i < it->second.size (); ++i) {
+        if (planner_rem_span (ctx->planners[i], it->second[i]) == -1)
             goto done;
-
-    zhashx_delete (ctx->span_lookup, key);
+    }
+    ctx->span_lookup.erase (it);
     rc  = 0;
 done:
     return rc;
@@ -438,17 +426,17 @@ done:
 int64_t planner_multi_span_first (planner_multi_t *ctx)
 {
     int64_t rc = -1;
-    void *span = NULL;
     if (!ctx) {
         errno = EINVAL;
         goto done;
     }
-    if ( !(span = zhashx_first (ctx->span_lookup))) {
+    ctx->span_lookup_iter = ctx->span_lookup.begin ();
+    if (ctx->span_lookup_iter == ctx->span_lookup.end ()) {
         errno = ENOENT;
         goto done;
 
     }
-    rc = (intptr_t)span;
+    rc = ctx->span_lookup_iter->first;
 done:
     return rc;
 }
@@ -456,16 +444,18 @@ done:
 extern "C" int64_t planner_multi_span_next (planner_multi_t *ctx)
 {
     int64_t rc = -1;
-    void *span = NULL;
+    void *span = nullptr;
     if (!ctx) {
         errno = EINVAL;
         goto done;
     }
-    if ( !(span = zhashx_next (ctx->span_lookup))) {
+    ctx->span_lookup_iter++;
+    if (ctx->span_lookup_iter == ctx->span_lookup.end ()) {
         errno = ENOENT;
         goto done;
+
     }
-    rc = (intptr_t)span;
+    rc = ctx->span_lookup_iter->first;
 done:
     return rc;
 }
@@ -476,7 +466,7 @@ extern "C" size_t planner_multi_span_size (planner_multi_t *ctx)
         errno = EINVAL;
         return 0;
     }
-    return zhashx_size (ctx->span_lookup);
+    return ctx->span_lookup.size ();
 }
 
 /*
