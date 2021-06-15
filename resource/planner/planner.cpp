@@ -28,36 +28,13 @@
 #include <string>
 #include <memory>
 
-extern "C" {
-#include "src/common/librbtree/rbtree.h"
-#include "src/common/librbtree/rbtree_augmented.h"
-}
-
+#include "planner_internal_tree.hpp"
 #include "planner.h"
-
-#define START(node) ((node)->start)
-#define LAST(node)  ((node)->last)
 
 struct request_t {
     int64_t on_or_after;
     uint64_t duration;
     int64_t count;
-};
-
-/*! Scheduled point: time at which resource state changes.  Each point's resource
- *  requirements are tracked as a node in a min-time resource (MTR) binary search
- *  tree.
- */
-struct scheduled_point_t {
-    struct rb_node point_rb;     /* BST node for scheduled point tree */
-    struct rb_node resource_rb;  /* BST node for min-time resource tree */
-    int64_t subtree_min;         /* Min time of the subtree of this node */
-    int64_t at;                  /* Resource-state changing time */
-    int in_mt_resource_tree;     /* 1 when inserted in min-time resource tree */
-    int new_point;               /* 1 when this point is newly created */
-    int ref_count;               /* reference counter */
-    int64_t scheduled;           /* scheduled quantity at this point */
-    int64_t remaining;           /* remaining resources (available) */
 };
 
 /*! Node in a span interval tree to enable fast retrieval of intercepting spans.
@@ -79,8 +56,8 @@ struct planner {
     std::string resource_type;
     int64_t plan_start;          /* base time of the planner */
     int64_t plan_end;            /* end time of the planner */
-    struct rb_root sched_point_tree;  /* scheduled point rb tree */
-    struct rb_root mt_resource_tree;  /* min-time resrouce rb tree */
+    scheduled_point_tree_t sched_point_tree;  /* scheduled point rb tree */
+    mintime_resource_tree_t mt_resource_tree; /* min-time resrouce rb tree */
     scheduled_point_t *p0;       /* system's scheduled point at base time */
     std::map<int64_t, std::shared_ptr<span_t>> span_lookup; /* span lookup */
     std::map<int64_t, std::shared_ptr<span_t>>::iterator span_lookup_iter;
@@ -89,277 +66,6 @@ struct planner {
     int avail_time_iter_set;     /* iterator set flag */
     uint64_t span_counter;       /* current span counter */
 };
-
-
-/*******************************************************************************
- *                                                                             *
- *                           INTERNAL PLANNER API                              *
- *                                                                             *
- *******************************************************************************/
-
-/*******************************************************************************
- *                                                                             *
- *    Scheduled Points Binary Search Tree: O(log n) Scheduled Points Search    *
- *                                                                             *
- *******************************************************************************/
-static scheduled_point_t *scheduled_point_search (int64_t t, struct rb_root *root)
-{
-    struct rb_node *node = root->rb_node;
-    while (node) {
-        scheduled_point_t *this_data = nullptr;
-        this_data = container_of (node, scheduled_point_t, point_rb);
-        int64_t result = t - this_data->at;
-        if (result < 0)
-            node = node->rb_left;
-        else if (result > 0)
-            node = node->rb_right;
-        else
-            return this_data;
-    }
-    return nullptr;
-}
-
-static inline scheduled_point_t *recent_state (scheduled_point_t *new_data,
-                                               scheduled_point_t *old_data)
-{
-    if (!old_data)
-        return new_data;
-    return (new_data->at > old_data->at)? new_data : old_data;
-}
-
-/*! While scheduled_point_search returns the exact match scheduled_point_state
- *  returns the most recent scheduled point, representing the accurate resource
- *  state at the time t.
- */
-static scheduled_point_t *scheduled_point_state (int64_t at, struct rb_root *root)
-{
-    scheduled_point_t *last_state = nullptr;
-    struct rb_node *node = root->rb_node;
-    while (node) {
-        scheduled_point_t *this_data = nullptr;
-        this_data = container_of (node, scheduled_point_t, point_rb);
-        int64_t result = at - this_data->at;
-        if (result < 0) {
-            node = node->rb_left;
-        } else if (result > 0) {
-            last_state = recent_state (this_data, last_state);
-            node = node->rb_right;
-        } else {
-            return this_data;
-        }
-    }
-    return last_state;
-}
-
-static int scheduled_point_insert (scheduled_point_t *new_data,
-                                   struct rb_root *root)
-{
-    struct rb_node **link = &(root->rb_node);
-    struct rb_node *parent = nullptr;
-    while (*link) {
-        scheduled_point_t *this_data = nullptr;
-        this_data  = container_of (*link, scheduled_point_t, point_rb);
-        int64_t result = new_data->at - this_data->at;
-        parent = *link;
-        if (result < 0)
-            link = &((*link)->rb_left);
-        else if (result > 0)
-            link = &((*link)->rb_right);
-        else
-            return -1;
-    }
-    rb_link_node (&(new_data->point_rb), parent, link);
-    rb_insert_color (&(new_data->point_rb), root);
-    return 0;
-}
-
-static int scheduled_point_remove (scheduled_point_t *data, struct rb_root *root)
-{
-    int rc = -1;
-    scheduled_point_t *n = scheduled_point_search (data->at, root);
-    if (n) {
-        rb_erase (&(n->point_rb), root);
-        // Note: this must only remove the node from the scheduled point tree:
-        // DO NOT free memory allocated to the node
-        rc = 0;
-    }
-    return rc;
-}
-
-static void scheduled_points_destroy (struct rb_node *node)
-{
-    if (node->rb_left)
-        scheduled_points_destroy (node->rb_left);
-    if (node->rb_right)
-        scheduled_points_destroy (node->rb_right);
-    scheduled_point_t *data = container_of (node, scheduled_point_t, point_rb);
-    delete data;
-}
-
-
-/*******************************************************************************
- *                                                                             *
- *   Minimum Time Resource Tree: O(log n) Earliest Schedulable Point Search    *
- *                                                                             *
- *******************************************************************************/
-static int64_t mintime_resource_subtree_min (scheduled_point_t *point)
-{
-    int64_t min = point->at;
-    scheduled_point_t *p = nullptr;
-    if (point->resource_rb.rb_left) {
-        p = rb_entry (point->resource_rb.rb_left, scheduled_point_t, resource_rb);
-        if (min > p->subtree_min)
-            min = p->subtree_min;
-    }
-    if (point->resource_rb.rb_right) {
-        p = rb_entry (point->resource_rb.rb_right, scheduled_point_t, resource_rb);
-        if (min > p->subtree_min)
-            min = p->subtree_min;
-    }
-    return min;
-}
-
-static void mintime_resource_propagate (struct rb_node *n, struct rb_node *stop)
-{
-    int64_t subtree_min;
-    while (n != stop) {
-        scheduled_point_t *point = rb_entry (n, scheduled_point_t, resource_rb);
-        subtree_min = mintime_resource_subtree_min (point);
-        if (point->subtree_min == subtree_min)
-            break;
-        point->subtree_min = subtree_min;
-        n = rb_parent (&(point->resource_rb));
-    }
-}
-
-static void mintime_resource_copy (struct rb_node *src, struct rb_node *dst)
-{
-    scheduled_point_t *o = rb_entry (src, scheduled_point_t, resource_rb);
-    scheduled_point_t *n = rb_entry (dst, scheduled_point_t, resource_rb);
-    n->subtree_min = o->subtree_min;
-}
-
-static void mintime_resource_rotate (struct rb_node *src, struct rb_node *dst)
-{
-    scheduled_point_t *o = rb_entry (src, scheduled_point_t, resource_rb);
-    scheduled_point_t *n = rb_entry (dst, scheduled_point_t, resource_rb);
-    n->subtree_min = o->subtree_min;
-    o->subtree_min = mintime_resource_subtree_min (o);
-}
-
-static const struct rb_augment_callbacks mintime_resource_aug_cb = {
-    mintime_resource_propagate, mintime_resource_copy, mintime_resource_rotate
-};
-
-static void mintime_resource_insert (scheduled_point_t *new_data,
-                                     struct rb_root *root)
-{
-    struct rb_node **link = &(root->rb_node);
-    scheduled_point_t *this_data = nullptr;
-    struct rb_node *parent = nullptr;
-    while (*link) {
-        this_data = rb_entry (*link, scheduled_point_t, resource_rb);
-        parent = *link;
-        if (this_data->subtree_min > new_data->at)
-            this_data->subtree_min = new_data->at;
-        if (new_data->remaining < this_data->remaining)
-            link = &(this_data->resource_rb.rb_left);
-        else
-            link = &(this_data->resource_rb.rb_right);
-    }
-    new_data->subtree_min = new_data->at;
-    new_data->in_mt_resource_tree = 1;
-    rb_link_node (&(new_data->resource_rb), parent, link);
-    rb_insert_augmented (&(new_data->resource_rb), root,
-                         &mintime_resource_aug_cb);
-}
-
-static void mintime_resource_remove (scheduled_point_t *data,
-                                     struct rb_root *root)
-{
-    rb_erase_augmented (&data->resource_rb, root, &mintime_resource_aug_cb);
-    data->in_mt_resource_tree = 0;
-}
-
-static int64_t right_branch_mintime (struct rb_node *n)
-{
-    int64_t min_time = std::numeric_limits<int64_t>::max ();
-    struct rb_node *right = n->rb_right;
-    if (right)
-        min_time = rb_entry (right, scheduled_point_t, resource_rb)->subtree_min;
-
-    scheduled_point_t *this_data = rb_entry (n, scheduled_point_t, resource_rb);
-    return  (this_data->at < min_time)? this_data->at : min_time;
-}
-
-static scheduled_point_t *find_mintime_point (struct rb_node *anchor,
-                                              int64_t min_time)
-{
-    if (!anchor)
-        return nullptr;
-
-    scheduled_point_t *this_data = nullptr;
-    this_data = rb_entry (anchor, scheduled_point_t, resource_rb);
-    if (this_data->at == min_time)
-        return this_data;
-
-    struct rb_node *node = anchor->rb_right;
-    while (node) {
-        this_data = rb_entry (node, scheduled_point_t, resource_rb);
-        if (this_data->at == min_time)
-            return this_data;
-        if (node->rb_left
-            && (rb_entry(node->rb_left, scheduled_point_t,
-                        resource_rb)->subtree_min == min_time))
-            node = node->rb_left;
-        else
-            node = node->rb_right;
-    }
-
-    // Error condition: when an anchor was found, there must be
-    // a point that meets the requirements.
-    errno = ENOTSUP;
-    return nullptr;
-}
-
-static int64_t find_mintime_anchor (int64_t request, struct rb_root *mtrt,
-                                    struct rb_node **anchor_p)
-{
-    struct rb_node *node = mtrt->rb_node;
-    int64_t min_time = std::numeric_limits<int64_t>::max ();
-    int64_t right_min_time = std::numeric_limits<int64_t>::max ();
-    while (node) {
-        scheduled_point_t *this_data = nullptr;
-        this_data = rb_entry (node, scheduled_point_t, resource_rb);
-        if (request <= this_data->remaining) {
-            // visiting node satisfies the resource requirements. This means all
-            // nodes at its subtree also satisfy the requirements. Thus,
-            // right_min_time is the best min time.
-            right_min_time = right_branch_mintime (node);
-            if (right_min_time < min_time) {
-                min_time = right_min_time;
-                *anchor_p = node;
-            }
-            // next, we should search the left subtree for potentially better
-            // then current min_time;
-            node = node->rb_left;
-        } else {
-            // visiting node does not satisfy the resource requirements. This
-            // means that nothing in its left branch will meet these requirements:
-            // time to search the right subtree.
-            node = node->rb_right;
-        }
-    }
-    return min_time;
-}
-
-static scheduled_point_t *mintime_resource_mintime (int64_t request,
-                                                    struct rb_root *mtrt)
-{
-    struct rb_node *anchor = nullptr;
-    int64_t min_time = find_mintime_anchor (request, mtrt, &anchor);
-    return find_mintime_point (anchor, min_time);
-}
 
 
 /*******************************************************************************
@@ -381,11 +87,8 @@ static int track_points (std::map<int64_t, scheduled_point_t *> &tracker,
 static void restore_track_points (planner_t *ctx)
 {
     scheduled_point_t *point = nullptr;
-    struct rb_root *root = &(ctx->mt_resource_tree);
-    for (auto &kv : ctx->avail_time_iter) {
-        point = kv.second;
-        mintime_resource_insert (point, root);
-    }
+    for (auto &kv : ctx->avail_time_iter)
+        ctx->mt_resource_tree.insert (kv.second);
     ctx->avail_time_iter.clear ();
 }
 
@@ -393,12 +96,11 @@ static void update_mintime_resource_tree (planner_t *ctx,
                                           std::list<scheduled_point_t *> &list)
 {
     scheduled_point_t *point = nullptr;
-    struct rb_root *mtrt = &(ctx->mt_resource_tree);
     for (auto &point : list) {
         if (point->in_mt_resource_tree)
-            mintime_resource_remove (point, mtrt);
+            ctx->mt_resource_tree.remove (point);
         if (point->ref_count && !(point->in_mt_resource_tree))
-            mintime_resource_insert (point, mtrt);
+            ctx->mt_resource_tree.insert (point);
     }
 }
 
@@ -412,12 +114,10 @@ static void copy_req (request_t &dest, int64_t on_or_after, uint64_t duration,
 
 static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
 {
-    struct rb_root *spt = &(ctx->sched_point_tree);
     scheduled_point_t *point = nullptr;
     try {
-        if ( !(point = scheduled_point_search (at, spt))) {
-            struct rb_root *mtrt = &(ctx->mt_resource_tree);
-            scheduled_point_t *state = scheduled_point_state (at, spt);
+        if ( !(point = ctx->sched_point_tree.search (at))) {
+            scheduled_point_t *state = ctx->sched_point_tree.get_state (at);
             point = new scheduled_point_t ();
             point->at = at;
             point->in_mt_resource_tree = 0;
@@ -425,8 +125,8 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
             point->ref_count = 0;
             point->scheduled = state->scheduled;
             point->remaining = state->remaining;
-            scheduled_point_insert (point, spt);
-            mintime_resource_insert (point, mtrt);
+            ctx->sched_point_tree.insert (point);
+            ctx->mt_resource_tree.insert (point);
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -437,15 +137,13 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
 static void fetch_overlap_points (planner_t *ctx, int64_t at, uint64_t duration,
                                   std::list<scheduled_point_t *> &list)
 {
-    struct rb_root *spr = &(ctx->sched_point_tree);
-    scheduled_point_t *point = scheduled_point_state (at, spr);
+    scheduled_point_t *point = ctx->sched_point_tree.get_state (at);
     while (point) {
         if (point->at >= static_cast<int64_t> (at + duration))
             break;
         else if (point->at >= at)
             list.push_back (point);
-        struct rb_node *n = rb_next (&(point->point_rb));
-        point = rb_entry (n, scheduled_point_t, point_rb);
+        point = ctx->sched_point_tree.next (point);
     }
 }
 
@@ -487,20 +185,19 @@ static bool span_ok (planner_t *ctx, scheduled_point_t *start_point,
                      uint64_t duration, int64_t request)
 {
     bool ok = true;
-    struct rb_root *mtrt = &(ctx->mt_resource_tree);
     scheduled_point_t *next_point = nullptr;
-    struct rb_node *n = &(start_point->point_rb);
-    while ((next_point = rb_entry (n, scheduled_point_t, point_rb))) {
+    for (next_point = start_point;
+         next_point != nullptr;
+         next_point = ctx->sched_point_tree.next (next_point)) {
          if (next_point->at >= (start_point->at + (int64_t)duration)) {
              ok = true;
              break;
          } else if (request > next_point->remaining) {
-             mintime_resource_remove (start_point, mtrt);
+             ctx->mt_resource_tree.remove (start_point);
              track_points (ctx->avail_time_iter, start_point);
              ok = false;
              break;
          }
-         n = rb_next (&(next_point->point_rb));
     }
     return ok;
 }
@@ -510,16 +207,15 @@ static int64_t avail_at (planner_t *ctx, int64_t on_or_after, uint64_t duration,
 {
     int64_t at = -1;
     scheduled_point_t *start_point = nullptr;
-    struct rb_root *mt = &(ctx->mt_resource_tree);
-    while ((start_point = mintime_resource_mintime (request, mt))) {
+    while ((start_point = ctx->mt_resource_tree.get_mintime (request))) {
         at = start_point->at;
         if (at < on_or_after) {
-            mintime_resource_remove (start_point, mt);
+            ctx->mt_resource_tree.remove (start_point);
             track_points (ctx->avail_time_iter, start_point);
             at = -1;
 
         } else if (span_ok (ctx, start_point, duration, request)) {
-            mintime_resource_remove (start_point, mt);
+            ctx->mt_resource_tree.remove (start_point);
             track_points (ctx->avail_time_iter, start_point);
             if (static_cast<int64_t> (at + duration) > ctx->plan_end)
                 at = -1;
@@ -533,14 +229,12 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration,
                           const int64_t request)
 {
     bool ok = true;
-    struct rb_root *spr = nullptr;
     if (static_cast<int64_t> (at + duration) > ctx->plan_end) {
         errno = ERANGE;
         return -1;
     }
 
-    spr = &(ctx->sched_point_tree);
-    scheduled_point_t *point = scheduled_point_state (at, spr);
+    scheduled_point_t *point = ctx->sched_point_tree.get_state (at);
     while (point) {
         if (point->at >= (at + (int64_t)duration)) {
             ok = true;
@@ -549,8 +243,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration,
             ok = false;
             break;
         }
-        struct rb_node *n = rb_next (&(point->point_rb));
-        point = rb_entry (n, scheduled_point_t, point_rb);
+        point = ctx->sched_point_tree.next (point);
     }
     return ok;
 }
@@ -558,24 +251,19 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration,
 static scheduled_point_t *avail_resources_during (planner_t *ctx, int64_t at,
                                                   uint64_t duration)
 {
-    struct rb_root *spr = nullptr;
-
     if (static_cast<int64_t> (at + duration) > ctx->plan_end) {
         errno = ERANGE;
         return nullptr;
     }
 
-    spr = &(ctx->sched_point_tree);
-    scheduled_point_t *point = scheduled_point_state (at, spr);
+    scheduled_point_t *point = ctx->sched_point_tree.get_state (at);
     scheduled_point_t *min = point;
     while (point) {
         if (point->at >= (at + (int64_t)duration))
             break;
         else if (min->remaining > point->remaining)
           min = point;
-
-        struct rb_node *n = rb_next (&(point->point_rb));
-        point = rb_entry (n, scheduled_point_t, point_rb);
+        point = ctx->sched_point_tree.next (point);
     }
     return min;
 }
@@ -591,27 +279,24 @@ static void initialize (planner_t *ctx, int64_t base_time, uint64_t duration)
 {
     ctx->plan_start = base_time;
     ctx->plan_end = base_time + static_cast<int64_t> (duration);
-    ctx->sched_point_tree = RB_ROOT;
-    ctx->mt_resource_tree = RB_ROOT;
     ctx->p0 = new scheduled_point_t ();
     ctx->p0->at = base_time;
     ctx->p0->ref_count = 1;
     ctx->p0->remaining = ctx->total_resources;
-    scheduled_point_insert (ctx->p0, &(ctx->sched_point_tree));
-    mintime_resource_insert (ctx->p0, &(ctx->mt_resource_tree));
+    ctx->sched_point_tree.insert (ctx->p0);
+    ctx->mt_resource_tree.insert (ctx->p0);
     ctx->avail_time_iter_set = 0;
     ctx->span_counter = 0;
 }
 
 static inline void erase (planner_t *ctx)
 {
-    struct rb_node *n = nullptr;
+    rb_node *n = nullptr;
     ctx->span_lookup.clear ();
     ctx->avail_time_iter.clear ();
     if (ctx->p0 && ctx->p0->in_mt_resource_tree)
-        mintime_resource_remove (ctx->p0, &(ctx->mt_resource_tree));
-    if ((n = ctx->sched_point_tree.rb_node))
-        scheduled_points_destroy (n);
+        ctx->mt_resource_tree.remove (ctx->p0);
+    ctx->sched_point_tree.destroy ();
 }
 
 static inline bool not_feasable (planner_t *ctx, int64_t start_time,
@@ -848,14 +533,12 @@ extern "C" int64_t planner_avail_resources_during (planner_t *ctx,
 
 extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
 {
-    struct rb_root *spt = nullptr;
     scheduled_point_t *state = nullptr;
     if (!ctx || at > ctx->plan_end) {
         errno = EINVAL;
         return -1;
     }
-    spt = &(ctx->sched_point_tree);
-    state = scheduled_point_state (at, spt);
+    state = ctx->sched_point_tree.get_state (at);
     return state->remaining;
 }
 
@@ -927,18 +610,16 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     span->in_system = 0;
 
     if (span->start_p->ref_count == 0) {
-        struct rb_root *mtrt = &(ctx->mt_resource_tree);
-        scheduled_point_remove (span->start_p, &(ctx->sched_point_tree));
+        ctx->sched_point_tree.remove (span->start_p);
         if (span->start_p->in_mt_resource_tree)
-            mintime_resource_remove (span->start_p, mtrt);
+            ctx->mt_resource_tree.remove (span->start_p);
         delete span->start_p;
         span->start_p = nullptr;
     }
     if (span->last_p->ref_count == 0) {
-        struct rb_root *mtrt = &(ctx->mt_resource_tree);
-        scheduled_point_remove (span->last_p, &(ctx->sched_point_tree));
+        ctx->sched_point_tree.remove (span->last_p);
         if (span->last_p->in_mt_resource_tree)
-            mintime_resource_remove (span->last_p, mtrt);
+            ctx->mt_resource_tree.remove (span->last_p);
         delete span->last_p;
         span->last_p = nullptr;
     }
