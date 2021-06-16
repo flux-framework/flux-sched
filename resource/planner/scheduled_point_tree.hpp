@@ -26,13 +26,33 @@
 #define SCHEDULED_POINT_TREE_HPP
 
 #include <cstdint>
-
-extern "C" {
-#include "src/common/librbtree/rbtree.h"
-#include "src/common/librbtree/rbtree_augmented.h"
-}
+#include "src/common/yggdrasil/rbtree.hpp"
 
 struct scheduled_point_t;
+
+class rb_node_base_t {
+public:
+    void set_point (scheduled_point_t *p) {
+        m_point = p;
+    }
+    scheduled_point_t *get_point () {
+        return m_point;
+    }
+    const scheduled_point_t *get_point () const {
+        return m_point;
+    }
+private:
+    scheduled_point_t *m_point = nullptr;
+};
+
+struct scheduled_point_rb_node_t
+           : public rb_node_base_t,
+             public ygg::RBTreeNodeBase<scheduled_point_rb_node_t> {
+    bool operator< (const scheduled_point_rb_node_t &other) const;
+};
+
+using scheduled_point_rb_tree_t = ygg::RBTree<scheduled_point_rb_node_t,
+                                              ygg::RBDefaultNodeTraits>;
 
 class scheduled_point_tree_t {
 public:
@@ -47,8 +67,8 @@ public:
 private:
     scheduled_point_t *get_recent_state (scheduled_point_t *new_point,
                                          scheduled_point_t *old_point);
-    void destroy (rb_node *node);
-    rb_root m_tree = RB_ROOT;
+    void destroy (scheduled_point_rb_node_t *node);
+    scheduled_point_rb_tree_t m_tree;
 };
 
 #endif // SCHEDULED_POINT_TREE_HPP

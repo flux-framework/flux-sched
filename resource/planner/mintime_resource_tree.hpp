@@ -26,13 +26,48 @@
 #define MINTIME_RESOURCE_TREE_HPP
 
 #include <cstdint>
-
-extern "C" {
-#include "src/common/librbtree/rbtree.h"
-#include "src/common/librbtree/rbtree_augmented.h"
-}
+#include "src/common/yggdrasil/rbtree.hpp"
 
 struct scheduled_point_t;
+struct rb_node_base_t;
+
+struct mt_resource_rb_node_t
+        : public rb_node_base_t,
+          public ygg::RBTreeNodeBase<mt_resource_rb_node_t> {
+    int64_t at;
+    int64_t subtree_min;
+    int64_t remaining;
+    bool operator< (const mt_resource_rb_node_t &other) const;
+};
+
+template <class mt_resource_rb_node_t, class NodeTraits>
+class mt_resource_node_traits : public NodeTraits {
+public:
+    template <class BaseTree>
+    static void leaf_inserted (mt_resource_rb_node_t &node, BaseTree &t);
+
+    template <class BaseTree>
+    static void rotated_left (mt_resource_rb_node_t &node, BaseTree &t);
+
+    template <class BaseTree>
+    static void rotated_right (mt_resource_rb_node_t &node, BaseTree &t);
+
+    template <class BaseTree>
+    static void deleted_below (mt_resource_rb_node_t &node, BaseTree &t);
+
+    template <class BaseTree>
+    static void swapped (mt_resource_rb_node_t &n1,
+                         mt_resource_rb_node_t &n2, BaseTree &t);
+
+private:
+    static void fix (mt_resource_rb_node_t *node);
+};
+
+using mt_resource_rb_tree_t = ygg::RBTree<mt_resource_rb_node_t,
+                                          mt_resource_node_traits<
+                                              mt_resource_rb_node_t,
+                                              ygg::RBDefaultNodeTraits>>;
+
 
 class mintime_resource_tree_t {
 public:
@@ -41,12 +76,12 @@ public:
     scheduled_point_t *get_mintime (int64_t request);
 
 private:
-    int64_t right_branch_mintime (rb_node *n);
-    scheduled_point_t *find_mintime_point (rb_node *anchor,
+    int64_t right_branch_mintime (mt_resource_rb_node_t *n);
+    scheduled_point_t *find_mintime_point (mt_resource_rb_node_t *anchor,
                                            int64_t min_time);
     int64_t find_mintime_anchor (int64_t request,
-                                 rb_node **anchor_p);
-    rb_root m_tree = RB_ROOT;
+                                 mt_resource_rb_node_t **anchor_p);
+    mt_resource_rb_tree_t m_tree;
 };
 
 #endif // MINTIME_RESOURCE_TREE_HPP

@@ -40,39 +40,33 @@ extern "C" {
  *                                                                             *
  *******************************************************************************/
 
-int64_t mintime_resource_tree_t::right_branch_mintime (rb_node *n)
+int64_t mintime_resource_tree_t::right_branch_mintime (mt_resource_rb_node_t *n)
 {
     int64_t min_time = std::numeric_limits<int64_t>::max ();
-    rb_node *right = n->rb_right;
+    mt_resource_rb_node_t *right = n->get_right ();
     if (right)
-        min_time = rb_entry (right, scheduled_point_t, resource_rb)->subtree_min;
-
-    scheduled_point_t *this_data = rb_entry (n, scheduled_point_t, resource_rb);
-    return  (this_data->at < min_time)? this_data->at : min_time;
+        min_time = right->subtree_min;
+    return (n->at < min_time)? n->at : min_time;
 }
 
 scheduled_point_t *mintime_resource_tree_t::find_mintime_point (
-                       rb_node *anchor, int64_t min_time)
+                       mt_resource_rb_node_t *anchor, int64_t min_time)
 {
     if (!anchor)
         return nullptr;
 
-    scheduled_point_t *this_data = nullptr;
-    this_data = rb_entry (anchor, scheduled_point_t, resource_rb);
-    if (this_data->at == min_time)
-        return this_data;
+    if (anchor->at == min_time)
+        return anchor->get_point ();
 
-    rb_node *node = anchor->rb_right;
+    mt_resource_rb_node_t *node = anchor->get_right ();
     while (node) {
-        this_data = rb_entry (node, scheduled_point_t, resource_rb);
-        if (this_data->at == min_time)
-            return this_data;
-        if (node->rb_left
-            && (rb_entry (node->rb_left, scheduled_point_t,
-                        resource_rb)->subtree_min == min_time))
-            node = node->rb_left;
+        if (node->at == min_time)
+            return node->get_point ();
+        if (node->get_left ()
+            && (node->get_left ()->subtree_min == min_time))
+            node = node->get_left ();
         else
-            node = node->rb_right;
+            node = node->get_right ();
     }
 
     // Error condition: when an anchor was found, there must be
@@ -82,15 +76,13 @@ scheduled_point_t *mintime_resource_tree_t::find_mintime_point (
 }
 
 int64_t mintime_resource_tree_t::find_mintime_anchor (
-            int64_t request, rb_node **anchor_p)
+            int64_t request, mt_resource_rb_node_t **anchor_p)
 {
-    rb_node *node = m_tree.rb_node;
+    mt_resource_rb_node_t *node = m_tree.get_root ();
     int64_t min_time = std::numeric_limits<int64_t>::max ();
     int64_t right_min_time = std::numeric_limits<int64_t>::max ();
     while (node) {
-        scheduled_point_t *this_data = nullptr;
-        this_data = rb_entry (node, scheduled_point_t, resource_rb);
-        if (request <= this_data->remaining) {
+        if (request <= node->remaining) {
             // visiting node satisfies the resource requirements. This means all
             // nodes at its subtree also satisfy the requirements. Thus,
             // right_min_time is the best min time.
@@ -101,12 +93,12 @@ int64_t mintime_resource_tree_t::find_mintime_anchor (
             }
             // next, we should search the left subtree for potentially better
             // then current min_time;
-            node = node->rb_left;
+            node = node->get_left ();
         } else {
             // visiting node does not satisfy the resource requirements. This
             // means that nothing in its left branch will meet these requirements:
             // time to search the right subtree.
-            node = node->rb_right;
+            node = node->get_right ();
         }
     }
     return min_time;
@@ -115,58 +107,120 @@ int64_t mintime_resource_tree_t::find_mintime_anchor (
 
 /*******************************************************************************
  *                                                                             *
- *                Mintime Resource RBTree Internal Operations                  *
+ *                 Private Mintime Resource RBTree Node Methods                *
  *                                                                             *
  *******************************************************************************/
 
-static int64_t mintime_resource_subtree_min (scheduled_point_t *point)
+template <class mt_resource_rb_node_t, class NodeTraits>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::fix (
+         mt_resource_rb_node_t *node)
 {
-    int64_t min = point->at;
-    scheduled_point_t *p = nullptr;
-    if (point->resource_rb.rb_left) {
-        p = rb_entry (point->resource_rb.rb_left, scheduled_point_t, resource_rb);
-        if (min > p->subtree_min)
-            min = p->subtree_min;
-    }
-    if (point->resource_rb.rb_right) {
-        p = rb_entry (point->resource_rb.rb_right, scheduled_point_t, resource_rb);
-        if (min > p->subtree_min)
-            min = p->subtree_min;
-    }
-    return min;
-}
-
-static void mintime_resource_propagate (rb_node *n, rb_node *stop)
-{
-    int64_t subtree_min;
-    while (n != stop) {
-        scheduled_point_t *point = rb_entry (n, scheduled_point_t, resource_rb);
-        subtree_min = mintime_resource_subtree_min (point);
-        if (point->subtree_min == subtree_min)
+    mt_resource_rb_node_t *trav = node;
+    while (trav) {
+        int64_t old = trav->subtree_min;
+        trav->subtree_min = trav->at;
+        mt_resource_rb_node_t *left = trav->get_left ();
+        if (left) {
+            if (trav->subtree_min > left->subtree_min)
+                trav->subtree_min = left->subtree_min;
+        }
+        mt_resource_rb_node_t *right = trav->get_right ();
+        if (right) {
+            if (trav->subtree_min > right->subtree_min)
+                trav->subtree_min = right->subtree_min;
+        }
+        // no parent propagation is needed if new subtree_min == old,
+	if (trav->subtree_min == old)
             break;
-        point->subtree_min = subtree_min;
-        n = rb_parent (&(point->resource_rb));
+
+        mt_resource_rb_node_t *parent = trav->get_parent ();
+        // if parent's subtree_min is already smaller than
+	// new subtree_min, no parent propagation is necessary.
+	// However, if parent's subtree_min == old, propagation is
+	// needed, as it could (or in fact is likely to)
+	// come from the traversing child node and thus needs an update.
+	if (parent && parent->subtree_min != old
+                   && parent->subtree_min < trav->subtree_min)
+            break;
+        trav = parent;
     }
 }
 
-static void mintime_resource_copy (rb_node *src, rb_node *dst)
+
+/*******************************************************************************
+ *                                                                             *
+ *                  Public Mintime Resource RBTree Node Methods                *
+ *                                                                             *
+ *******************************************************************************/
+
+template <class mt_resource_rb_node_t, class NodeTraits>
+template <class BaseTree>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::leaf_inserted (
+         mt_resource_rb_node_t &node, BaseTree &tree)
 {
-    scheduled_point_t *o = rb_entry (src, scheduled_point_t, resource_rb);
-    scheduled_point_t *n = rb_entry (dst, scheduled_point_t, resource_rb);
-    n->subtree_min = o->subtree_min;
+    scheduled_point_t *p = node.get_point ();
+    node.subtree_min = node.at;
+    mt_resource_rb_node_t *n = &node;
+    while ( (n = n->get_parent ()) != nullptr
+            && n->subtree_min > node.subtree_min)
+        n->subtree_min = node.subtree_min;
 }
 
-static void mintime_resource_rotate (rb_node *src, rb_node *dst)
+template <class mt_resource_rb_node_t, class NodeTraits>
+template <class BaseTree>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::rotated_left (
+         mt_resource_rb_node_t &node, BaseTree &tree)
 {
-    scheduled_point_t *o = rb_entry (src, scheduled_point_t, resource_rb);
-    scheduled_point_t *n = rb_entry (dst, scheduled_point_t, resource_rb);
-    n->subtree_min = o->subtree_min;
-    o->subtree_min = mintime_resource_subtree_min (o);
+    fix (&node);
+    if (node.get_parent ())
+       fix (node.get_parent ());
 }
 
-static const struct rb_augment_callbacks mintime_resource_aug_cb = {
-    mintime_resource_propagate, mintime_resource_copy, mintime_resource_rotate
-};
+template <class mt_resource_rb_node_t, class NodeTraits>
+template <class BaseTree>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::rotated_right (
+         mt_resource_rb_node_t &node, BaseTree &tree)
+{
+    fix (&node);
+    if (node.get_parent ())
+       fix (node.get_parent ());
+}
+
+template <class mt_resource_rb_node_t, class NodeTraits>
+template <class BaseTree>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::deleted_below (
+         mt_resource_rb_node_t &node, BaseTree &tree)
+{
+    fix (&node);
+}
+
+template <class mt_resource_rb_node_t, class NodeTraits>
+template <class BaseTree>
+void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::swapped (
+         mt_resource_rb_node_t &node1, mt_resource_rb_node_t &node2, BaseTree &t)
+{
+    fix (&node1);
+    if (node1.get_parent ())
+       fix (node1.get_parent ());
+    fix (&node2);
+    if (node2.get_parent ())
+       fix (node2.get_parent ());
+}
+
+bool operator< (const mt_resource_rb_node_t &lhs, const int64_t rhs)
+{
+    return lhs.remaining < rhs;
+}
+
+bool operator< (const int64_t lhs, const mt_resource_rb_node_t &rhs)
+{
+    return lhs < rhs.remaining;
+}
+
+bool mt_resource_rb_node_t::operator< (const mt_resource_rb_node_t &other) const
+{
+    return this->remaining < other.remaining;
+}
 
 
 /*******************************************************************************
@@ -177,37 +231,32 @@ static const struct rb_augment_callbacks mintime_resource_aug_cb = {
 
 int mintime_resource_tree_t::insert (scheduled_point_t *point)
 {
-    rb_node **link = &(m_tree.rb_node);
-    scheduled_point_t *this_data = nullptr;
-    rb_node *parent = nullptr;
-    while (*link) {
-        this_data = rb_entry (*link, scheduled_point_t, resource_rb);
-        parent = *link;
-        if (this_data->subtree_min > point->at)
-            this_data->subtree_min = point->at;
-        if (point->remaining < this_data->remaining)
-            link = &(this_data->resource_rb.rb_left);
-        else
-            link = &(this_data->resource_rb.rb_right);
+    if (!point) {
+        errno = EINVAL;
+        return -1;
     }
-    point->subtree_min = point->at;
+    point->resource_rb.set_point (point);
+    point->resource_rb.at = point->at;
+    point->resource_rb.remaining = point->remaining;
+    m_tree.insert (point->resource_rb);
     point->in_mt_resource_tree = 1;
-    rb_link_node (&(point->resource_rb), parent, link);
-    rb_insert_augmented (&(point->resource_rb), &m_tree,
-                         &mintime_resource_aug_cb);
     return 0;
 }
 
 int mintime_resource_tree_t::remove (scheduled_point_t *point)
 {
-    rb_erase_augmented (&point->resource_rb, &m_tree, &mintime_resource_aug_cb);
+    if (!point) {
+        errno = EINVAL;
+        return -1;
+    }
+    m_tree.remove (point->resource_rb);
     point->in_mt_resource_tree = 0;
     return 0;
 }
 
 scheduled_point_t *mintime_resource_tree_t::get_mintime (int64_t request)
 {
-    rb_node *anchor = nullptr;
+    mt_resource_rb_node_t *anchor = nullptr;
     int64_t min_time = find_mintime_anchor (request, &anchor);
     return find_mintime_point (anchor, min_time);
 }

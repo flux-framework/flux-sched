@@ -33,9 +33,8 @@
  *  tree.
  */
 struct scheduled_point_t {
-    rb_node point_rb;            /* BST node for scheduled point tree */
-    rb_node resource_rb;         /* BST node for min-time resource tree */
-    int64_t subtree_min;         /* Min time of the subtree of this node */
+    scheduled_point_rb_node_t point_rb; /* BST node for scheduled point tree */
+    mt_resource_rb_node_t resource_rb;  /* BST node for min-time resource tree */
     int64_t at;                  /* Resource-state changing time */
     int in_mt_resource_tree;     /* 1 when inserted in min-time resource tree */
     int new_point;               /* 1 when this point is newly created */

@@ -291,7 +291,6 @@ static void initialize (planner_t *ctx, int64_t base_time, uint64_t duration)
 
 static inline void erase (planner_t *ctx)
 {
-    rb_node *n = nullptr;
     ctx->span_lookup.clear ();
     ctx->avail_time_iter.clear ();
     if (ctx->p0 && ctx->p0->in_mt_resource_tree)

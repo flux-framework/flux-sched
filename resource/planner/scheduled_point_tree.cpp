@@ -46,14 +46,35 @@ scheduled_point_t *scheduled_point_tree_t::get_recent_state (
     return (new_point->at > old_point->at)? new_point : old_point;
 }
 
-void scheduled_point_tree_t::destroy (rb_node *node)
+void scheduled_point_tree_t::destroy (scheduled_point_rb_node_t *node)
 {
-    if (node->rb_left)
-        destroy (node->rb_left);
-    if (node->rb_right)
-        destroy (node->rb_right);
-    scheduled_point_t *data = container_of (node, scheduled_point_t, point_rb);
-    delete data;
+    if (node->get_left ())
+        destroy (node->get_left ());
+    if (node->get_right ())
+        destroy (node->get_right ());
+    scheduled_point_t *data = node->get_point ();
+    delete (data);
+}
+
+
+/*******************************************************************************
+ *                                                                             *
+ *                Public Scheduled Point RBTree Node Methods                   *
+ *                                                                             *
+ *******************************************************************************/
+
+bool scheduled_point_rb_node_t::operator< (
+         const scheduled_point_rb_node_t &other) const
+{
+    return this->get_point ()->at < other.get_point ()->at;
+}
+
+bool operator<(const scheduled_point_rb_node_t &lhs, const int64_t rhs) {
+    return lhs.get_point ()->at < rhs;
+}
+
+bool operator<(const int64_t lhs, const scheduled_point_rb_node_t &rhs) {
+    return lhs < rhs.get_point ()->at;
 }
 
 
@@ -65,41 +86,36 @@ void scheduled_point_tree_t::destroy (rb_node *node)
 
 scheduled_point_tree_t::~scheduled_point_tree_t ()
 {
-    if (m_tree.rb_node) {
-        destroy (m_tree.rb_node);
-        m_tree.rb_node = nullptr;
+    if (!m_tree.empty ()) {
+        destroy (m_tree.get_root ());
+        m_tree.clear ();
     }
 }
 
 void scheduled_point_tree_t::destroy ()
 {
-    if (m_tree.rb_node) {
-        destroy (m_tree.rb_node);
-        m_tree.rb_node = nullptr;
+    if (!m_tree.empty ()) {
+        destroy (m_tree.get_root ());
+        m_tree.clear ();
     }
 }
 
 scheduled_point_t *scheduled_point_tree_t::next (scheduled_point_t *point)
 {
-    rb_node *n = rb_next (&(point->point_rb));
-    return rb_entry (n, scheduled_point_t, point_rb);
+    scheduled_point_t *next_point = nullptr;
+    auto iter = m_tree.iterator_to (point->point_rb);
+    if (iter != m_tree.end ()) {
+        iter++;
+        if (iter != m_tree.end ())
+            next_point = iter->get_point ();
+    }
+    return next_point;
 }
 
 scheduled_point_t *scheduled_point_tree_t::search (int64_t tm)
 {
-    rb_node *node = m_tree.rb_node;
-    while (node) {
-        scheduled_point_t *this_data = nullptr;
-        this_data = container_of (node, scheduled_point_t, point_rb);
-        int64_t result = tm - this_data->at;
-        if (result < 0)
-            node = node->rb_left;
-        else if (result > 0)
-            node = node->rb_right;
-        else
-            return this_data;
-    }
-    return nullptr;
+    auto iter = m_tree.find (tm);
+    return (iter != m_tree.end ())? iter->get_point () : nullptr;
 }
 
 /*! While scheduled_point_search returns the exact match scheduled_point_state
@@ -109,16 +125,16 @@ scheduled_point_t *scheduled_point_tree_t::search (int64_t tm)
 scheduled_point_t *scheduled_point_tree_t::get_state (int64_t at)
 {
     scheduled_point_t *last_state = nullptr;
-    rb_node *node = m_tree.rb_node;
+    scheduled_point_rb_node_t *node = m_tree.get_root ();
     while (node) {
         scheduled_point_t *this_data = nullptr;
-        this_data = container_of (node, scheduled_point_t, point_rb);
+        this_data = node->get_point ();
         int64_t result = at - this_data->at;
         if (result < 0) {
-            node = node->rb_left;
+            node = node->get_left ();
         } else if (result > 0) {
             last_state = get_recent_state (this_data, last_state);
-            node = node->rb_right;
+            node = node->get_right ();
         } else {
             return this_data;
         }
@@ -128,36 +144,23 @@ scheduled_point_t *scheduled_point_tree_t::get_state (int64_t at)
 
 int scheduled_point_tree_t::insert (scheduled_point_t *point)
 {
-    rb_node **link = &(m_tree.rb_node);
-    rb_node *parent = nullptr;
-    while (*link) {
-        scheduled_point_t *this_data = nullptr;
-        this_data  = container_of (*link, scheduled_point_t, point_rb);
-        int64_t result = point->at - this_data->at;
-        parent = *link;
-        if (result < 0)
-            link = &((*link)->rb_left);
-        else if (result > 0)
-            link = &((*link)->rb_right);
-        else
-            return -1;
+    if (!point) {
+        errno = EINVAL;
+        return -1;
     }
-    rb_link_node (&(point->point_rb), parent, link);
-    rb_insert_color (&(point->point_rb), &m_tree);
+    point->point_rb.set_point (point);
+    m_tree.insert (point->point_rb);
     return 0;
 }
 
 int scheduled_point_tree_t::remove (scheduled_point_t *point)
 {
-    int rc = -1;
-    scheduled_point_t *n = search (point->at);
-    if (n) {
-        rb_erase (&(n->point_rb), &m_tree);
-        // Note: this must only remove the node from the scheduled point tree:
-        // DO NOT free memory allocated to the node
-        rc = 0;
+    if (!point) {
+        errno = EINVAL;
+        return -1;
     }
-    return rc;
+    m_tree.remove (point->point_rb);
+    return 0;
 }
 
 /*
