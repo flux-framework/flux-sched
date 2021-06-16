@@ -48,20 +48,14 @@ template <class Node, class Options, class Tag, class ParentContainer>
 Node *
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_parent() const noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_parent();
-	}
 	return this->_bst_parent.get_parent();
 }
 
 template <class Node, class Options, class Tag, class ParentContainer>
 template <class InnerPC>
-std::enable_if_t<InnerPC::parent_reference, Node *&>
+typename std::enable_if<InnerPC::parent_reference, Node *&>::type
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_parent() const noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_parent();
-	}
 	return this->_bst_parent.get_parent();
 }
 
@@ -69,9 +63,6 @@ template <class Node, class Options, class Tag, class ParentContainer>
 Node *&
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_left() noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_left();
-	}
 	return this->_bst_children[0];
 }
 
@@ -79,9 +70,6 @@ template <class Node, class Options, class Tag, class ParentContainer>
 Node *&
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_right() noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_right();
-	}
 	return this->_bst_children[1];
 }
 
@@ -89,9 +77,6 @@ template <class Node, class Options, class Tag, class ParentContainer>
 Node * const &
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_left() const noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_left();
-	}
 	return this->_bst_children[0];
 }
 
@@ -99,9 +84,6 @@ template <class Node, class Options, class Tag, class ParentContainer>
 Node * const &
 BSTNodeBase<Node, Options, Tag, ParentContainer>::get_right() const noexcept
 {
-	if constexpr (Options::has_pointer_get_callback) {
-		Options::PointerGetCallback::get_right();
-	}
 	return this->_bst_children[1];
 }
 
@@ -110,9 +92,6 @@ void
 BSTNodeBase<Node, Options, Tag, ParentContainer>::set_parent(
     Node * new_parent) noexcept
 {
-	if constexpr (Options::has_pointer_set_callback) {
-		Options::PointerSetCallback::set_parent();
-	}
 	this->_bst_parent.set_parent(new_parent);
 }
 
@@ -121,9 +100,6 @@ void
 BSTNodeBase<Node, Options, Tag, ParentContainer>::set_left(
     Node * new_left) noexcept
 {
-	if constexpr (Options::has_pointer_set_callback) {
-		Options::PointerSetCallback::set_left();
-	}
 	this->_bst_children[0] = new_left;
 }
 
@@ -132,9 +108,6 @@ void
 BSTNodeBase<Node, Options, Tag, ParentContainer>::set_right(
     Node * new_right) noexcept
 {
-	if constexpr (Options::has_pointer_set_callback) {
-		Options::PointerSetCallback::set_right();
-	}
 	this->_bst_children[1] = new_right;
 }
 
@@ -323,7 +296,7 @@ void
 BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::verify_size()
     const
 {
-	if constexpr (Options::constant_time_size) {
+	if (Options::constant_time_size) {
 		size_t count = 0;
 		for (const Node & n : *this) {
 			(void)n;
@@ -624,11 +597,6 @@ typename BinarySearchTree<Node, Options, Tag, Compare,
 BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::find(
     const Comparable & query, Callbacks * cbs)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_search(reinterpret_cast<const void *>(&query),
-	                          Options::SequenceInterface::get_key(query));
-#endif
-
 	Node * cur = this->root;
 	cbs->init_root(cur);
 
@@ -682,51 +650,24 @@ typename BinarySearchTree<Node, Options, Tag, Compare,
 BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::find(
     const Comparable & query) CMP_NOEXCEPT(query)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_search(reinterpret_cast<const void *>(&query),
-	                          Options::SequenceInterface::get_key(query));
-#endif
-
 	Node * cur = this->root;
 	Node * last_left = nullptr;
 
 	while (cur != nullptr) {
 
-		if constexpr (Options::micro_prefetch) {
-			__builtin_prefetch(cur->NB::get_left());
-			__builtin_prefetch(cur->NB::get_right());
-		}
-
-		if constexpr (Options::micro_avoid_conditionals) {
-			(void)last_left;
-
-			if (__builtin_expect(
-			        (!this->cmp(*cur, query)) && (!this->cmp(query, *cur)), false)) {
-				if constexpr (ensure_first) {
-					cur = this->get_first_equal(cur);
-				}
-				return iterator<false>(cur);
-			}
-			cur = utilities::go_right_if(this->cmp(*cur, query), cur);
+		if (this->cmp(*cur, query)) {
+			cur = cur->NB::get_right();
 		} else {
-			if (this->cmp(*cur, query)) {
-				cur = cur->NB::get_right();
-			} else {
-				last_left = cur;
-				cur = cur->NB::get_left();
-			}
+			last_left = cur;
+			cur = cur->NB::get_left();
 		}
 	}
 
-	if constexpr (!Options::micro_avoid_conditionals) {
-		if ((last_left != nullptr) && (!this->cmp(query, *last_left))) {
-			if constexpr (ensure_first) {
-				last_left = this->get_first_equal(last_left);
-			}
-			return iterator<false>(last_left);
-		} else {
-			return this->end();
+	if ((last_left != nullptr) && (!this->cmp(query, *last_left))) {
+		if (ensure_first) {
+			last_left = this->get_first_equal(last_left);
 		}
+		return iterator<false>(last_left);
 	} else {
 		return this->end();
 	}
@@ -743,7 +684,7 @@ BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::find(
 	// TODO this should be the other way round! The non-const variant should
 	// utilize the const variant.
 	return const_iterator<false>(
-	    const_cast<std::remove_const_t<decltype(this)>>(this)
+	    const_cast<typename std::remove_const<decltype(this)>::type>(this)
 	        ->template find<Comparable, ensure_first>(query));
 }
 
@@ -755,11 +696,6 @@ typename BinarySearchTree<Node, Options, Tag, Compare,
 BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::lower_bound(
     const Comparable & query) CMP_NOEXCEPT(query)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_lbound(reinterpret_cast<const void *>(&query),
-	                          Options::SequenceInterface::get_key(query));
-#endif
-
 	// TODO avoid conditionals!
 	Node * cur = this->root;
 	Node * last_left = nullptr;
@@ -788,11 +724,6 @@ typename BinarySearchTree<Node, Options, Tag, Compare,
 BinarySearchTree<Node, Options, Tag, Compare, ParentContainer>::upper_bound(
     const Comparable & query) CMP_NOEXCEPT(query)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_ubound(reinterpret_cast<const void *>(&query),
-	                          Options::SequenceInterface::get_key(query));
-#endif
-
 	// TODO avoid conditionals!
 	Node * cur = this->root;
 	Node * last_left = nullptr;

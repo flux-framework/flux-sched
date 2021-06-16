@@ -234,47 +234,10 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::insert_leaf_base(Node & node,
 	while (cur != nullptr) {
 		parent = cur;
 
-		if constexpr (Options::micro_prefetch) {
-			__builtin_prefetch(cur->NB::get_left());
-			__builtin_prefetch(cur->NB::get_right());
-		}
-
-		if constexpr (Options::multiple) {
-			if constexpr (Options::micro_avoid_conditionals) {
-				cur = utilities::go_right_if(this->cmp(*cur, node), cur);
-			} else {
-				if (this->cmp(*cur, node)) {
-					cur = cur->NB::get_right();
-				} else {
-					cur = cur->NB::get_left();
-				}
-			}
+		if (this->cmp(*cur, node)) {
+			cur = cur->NB::get_right();
 		} else {
-			// Multiple are not allowed - we need three-way comparisons!
-			// on_equality_prefer_left has no effect here
-
-			if constexpr (Options::micro_avoid_conditionals) {
-				if (__builtin_expect(
-				        (!this->cmp(*cur, node)) && (!this->cmp(node, *cur)), false)) {
-					// Same as existing. Reduce size (because we increased it earlier)
-					// and exit.
-					this->s.reduce(1);
-					return;
-				}
-
-				cur = utilities::go_left_if(this->cmp(node, *cur), cur);
-			} else {
-				if (this->cmp(*cur, node)) {
-					cur = cur->NB::get_right();
-				} else if (this->cmp(node, *cur)) {
-					cur = cur->NB::get_left();
-				} else {
-					// Same as existing. Reduce size (because we increased it earlier)
-					// and exit.
-					this->s.reduce(1);
-					return;
-				}
-			}
+			cur = cur->NB::get_left();
 		}
 	}
 
@@ -295,15 +258,7 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::insert_leaf_base(Node & node,
 		} else if (this->cmp(*parent, node)) {
 			parent->NB::set_right(&node);
 		} else {
-			// assert(multiple);
-
-			if constexpr (!Options::multiple) {
-				// We already added to the size, subtract it again!
-				this->s.reduce(1);
-				return;
-			} else {
-				parent->NB::set_left(&node);
-			}
+			parent->NB::set_left(&node);
 		}
 
 		NodeTraits::leaf_inserted(node, *this);
@@ -449,10 +404,6 @@ void
 RBTree<Node, NodeTraits, Options, Tag, Compare>::insert(Node & node)
     CMP_NOEXCEPT(node)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_insert(reinterpret_cast<const void *>(&node),
-	                          Options::SequenceInterface::get_key(node));
-#endif
 	// TODO merge this
 	this->s.add(1);
 	this->insert_leaf_base(node, this->root);
@@ -464,10 +415,6 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::insert(Node & node,
                                                         Node & hint)
     CMP_NOEXCEPT(node)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_insert(reinterpret_cast<const void *>(&node),
-	                          Options::SequenceInterface::get_key(node));
-#endif
 	this->s.add(1);
 
 	/* TODO this code does not work. We need to traverse the path up until
@@ -559,10 +506,6 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::insert(
     RBTree<Node, NodeTraits, Options, Tag, Compare>::iterator<false> hint)
     CMP_NOEXCEPT(node)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_insert(reinterpret_cast<const void *>(&node),
-	                          Options::SequenceInterface::get_key(node));
-#endif
 	this->s.add(1);
 
 	if (hint == this->end()) {
@@ -894,36 +837,27 @@ ygg::utilities::select_type_t<size_t, Node *, Options::stl_erase>
 RBTree<Node, NodeTraits, Options, Tag, Compare>::erase(const Comparable & c)
     CMP_NOEXCEPT(c)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_erase(reinterpret_cast<const void *>(&c),
-	                         Options::SequenceInterface::get_key(c));
-#endif
-
 	// If we allow multisets and want to be STL-conform, we must find the *first*
 	// node carrying c, so that we can iteratively delete all of them
 	auto el = this->template find<Comparable,
-	                              (Options::stl_erase && Options::multiple)>(c);
+	                              (Options::stl_erase)>(c);
 
 	if (el != this->end()) {
-		if constexpr (Options::stl_erase) {
+		if (Options::stl_erase) {
 			size_t count = 1;
 
 			auto next = el + 1;
 			this->remove_to_leaf(*el);
-			if (Options::multiple) {
-				el = next;
+			el = next;
 
-				// el points to the first element comparing equal to c.
-				// For all elements after it, we must only check if they are larger
-				while (__builtin_expect((el != this->end()) && (!this->cmp(c, *el)),
-				                        false)) {
-					count++;
-					next = el + 1;
-					this->remove_to_leaf(*el);
-					el = next;
-				}
-			} else {
-				(void)next;
+			// el points to the first element comparing equal to c.
+			// For all elements after it, we must only check if they are larger
+			while (__builtin_expect((el != this->end()) && (!this->cmp(c, *el)),
+			                        false)) {
+				count++;
+				next = el + 1;
+				this->remove_to_leaf(*el);
+				el = next;
 			}
 			this->s.reduce(count);
 			return count;
@@ -934,7 +868,7 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::erase(const Comparable & c)
 		}
 	}
 
-	if constexpr (Options::stl_erase) {
+	if (Options::stl_erase) {
 		return 0;
 	} else {
 		return static_cast<Node *>(nullptr);
@@ -950,12 +884,7 @@ ygg::utilities::select_type_t<
 RBTree<Node, NodeTraits, Options, Tag, Compare>::erase(
     const iterator<reverse> & it) CMP_NOEXCEPT(*it)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_erase(reinterpret_cast<const void *>(&(*it)),
-	                         Options::SequenceInterface::get_key(*it));
-#endif
-
-	if constexpr (!Options::stl_erase) {
+	if (!Options::stl_erase) {
 		Node * n = &(*it);
 		this->remove(*it);
 
@@ -977,14 +906,10 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::fixup_after_delete(
 
 	while (propagating_up) {
 		// We just deleted a black node from under parent.
-		if constexpr (Options::micro_avoid_conditionals) {
-			sibling = utilities::go_right_if(deleted_left, parent);
+		if (deleted_left) {
+			sibling = parent->NB::get_right();
 		} else {
-			if (deleted_left) {
-				sibling = parent->NB::get_right();
-			} else {
-				sibling = parent->NB::get_left();
-			}
+			sibling = parent->NB::get_left();
 		}
 
 		// sibling must exist! If it didn't, then that branch would have had too few
@@ -1087,11 +1012,6 @@ void
 RBTree<Node, NodeTraits, Options, Tag, Compare>::remove(Node & node)
     CMP_NOEXCEPT(node)
 {
-#ifdef YGG_STORE_SEQUENCE
-	this->bss.register_delete(reinterpret_cast<const void *>(&node),
-	                          Options::SequenceInterface::get_key(node));
-#endif
-
 	this->remove_to_leaf(node);
 	this->s.reduce(1);
 }

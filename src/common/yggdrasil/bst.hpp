@@ -11,26 +11,12 @@
 #include <set>
 #include <type_traits>
 
-#ifdef YGG_STORE_SEQUENCE
-#include "benchmark_sequence.hpp"
-#endif
-
 // Only for debugging purposes
 #include <fstream>
 #include <vector>
 
 namespace ygg {
 namespace bst {
-
-#ifdef YGG_STORE_SEQUENCE
-class DummySequenceInterface {
-public:
-	using KeyT = bool; // Set this to whatever your nodes use as key. Anything
-	                   // non-numeric will probably blow up
-	static KeyT
-	    get_key(/* Your node class */) = delete; // You must implement this!
-};
-#endif
 
 template <class Node>
 class DefaultParentContainer {
@@ -81,13 +67,9 @@ private:
 	/* Determine whether our parent storage allows us to obtain a
 	 * reference to the parent pointer. Used for set-by-arithmetic magic. */
 	constexpr static auto
-	compute_parent_pointer_type()
+	compute_parent_pointer_type() -> decltype(utilities::TypeHolder<Node *&>{})
 	{
-		if constexpr (ParentContainer::parent_reference) {
-			return utilities::TypeHolder<Node *&>{};
-		} else {
-			return utilities::TypeHolder<Node *>{};
-		}
+		return utilities::TypeHolder<Node *&>{};
 	}
 
 protected:
@@ -104,8 +86,8 @@ public:
 	[[gnu::always_inline, gnu::pure]] inline Node * get_parent() const noexcept;
 	template <class InnerPC = ParentContainer>
 
-	[[gnu::always_inline]] inline std::enable_if_t<InnerPC::parent_reference,
-	                                               Node *&>
+	[[gnu::always_inline]] inline typename std::enable_if<InnerPC::parent_reference,
+	                                               Node *&>::type
 	get_parent() const noexcept;
 
 	[[gnu::always_inline]] inline void set_left(Node * new_left) noexcept;
@@ -478,12 +460,6 @@ protected:
 	void verify_order() const;
 	void verify_size() const;
 	// @endcond
-
-#ifdef YGG_STORE_SEQUENCE
-	typename ygg::utilities::template BenchmarkSequenceStorage<
-	    typename Options::SequenceInterface::KeyT>
-	    bss;
-#endif
 };
 
 } // namespace bst
