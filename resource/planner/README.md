@@ -14,8 +14,11 @@ allows you to update your resource uses using a start time,
 duration and resource requirement.
 
 Planner is designed for speed. Specifically,
-it uses Linux OS kernel's red-black binary search tree code
-to update and query the resource states over time.
+it initially used Linux OS kernel's red-black binary search tree code
+to update and query the resource states over time,
+which was then later ported to Yggrasil's red-black
+tree code (with a more permissive
+licensing, MIT license): https://github.com/tinloaf/ygg.
 It manages each of the two scheduled points of spans
 using two highly efficient binary search trees:
 
@@ -61,4 +64,6 @@ https://en.wikipedia.org/wiki/Red-black_tree
 
 [2] Red-black Trees (restorer) in Linux (Visited 9/27/2017), Rob Landley,
 https://www.kernel.org/doc/Documentation/rbtree.txt
+
+[3] Yggdrasill (Visitied 6/16/2021), https://github.com/tinloaf/ygg
 
