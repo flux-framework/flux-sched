@@ -17,7 +17,6 @@ planner_test01_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner
 planner_test01_LDADD = \
 	$(top_builddir)/resource/planner/libplanner.la \
 	$(top_builddir)/src/common/libutil/libutil.la \
-	$(top_builddir)/src/common/librbtree/librbtree.la \
 	$(top_builddir)/src/common/libtap/libtap.la \
 	$(CZMQ_LIBS)
 
@@ -26,7 +25,6 @@ planner_test02_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner
 planner_test02_LDADD = \
 	$(top_builddir)/resource/planner/libplanner.la \
 	$(top_builddir)/src/common/libutil/libutil.la \
-	$(top_builddir)/src/common/librbtree/librbtree.la \
 	$(top_builddir)/src/common/libtap/libtap.la \
 	$(CZMQ_LIBS)
 
