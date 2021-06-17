@@ -36,7 +36,6 @@ extern "C" {
 #include <flux/core.h>
 #include <flux/idset.h>
 #include <jansson.h>
-#include "src/common/libutil/shortjansson.h"
 }
 
 #include "resource/schema/resource_graph.hpp"
