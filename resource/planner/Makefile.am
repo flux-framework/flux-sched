@@ -36,5 +36,4 @@ libplanner_la_SOURCES = \
 	mintime_resource_tree.cpp
 
 libplanner_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resource/planner
-libplanner_la_LIBADD = \
-	$(top_builddir)/src/common/libutil/libutil.la
+

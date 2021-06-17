@@ -16,6 +16,8 @@ shellplugindir = \
 	$(fluxlibdir)/shell/plugins
 
 shellplugin_LTLIBRARIES = datastaging.la
+noinst_HEADERS = \
+        $(top_srcdir)/src/common/libutil/json.hpp
 
 datastaging_la_SOURCES = \
 	data-staging.cpp
