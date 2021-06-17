@@ -7,6 +7,7 @@ coverage:
  - "**/tests/*.c"
  - "src/common/libtap/.*"
  - "src/common/libutil/json.hpp"
+ - "src/common/yggdrasil/.*""
 
  # Allow coverage to drop up to 0.1%
  status:
