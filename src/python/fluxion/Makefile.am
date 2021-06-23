@@ -3,7 +3,9 @@ nobase_fluxionpy_PYTHON = \
 	jsongraph/objects/edge.py \
 	jsongraph/objects/graph.py \
 	jsongraph/objects/multigraph.py \
-	jsongraph/objects/node.py
+	jsongraph/objects/node.py \
+	resourcegraph/__init__.py \
+	resourcegraph/V1.py
 
 clean-local:
 	-rm -f *.pyc */*.pyc *.pyo */*.pyo
