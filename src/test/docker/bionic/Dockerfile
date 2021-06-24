@@ -12,7 +12,8 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
 	libboost-regex-dev \
 	libxml2-dev \
 	python-yaml \
-	libyaml-cpp-dev
+	libyaml-cpp-dev \
+	libedit-dev
 
 # Add configured user to image with sudo access:
 #

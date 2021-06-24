@@ -13,7 +13,8 @@ RUN sudo yum -y install \
 	libxml2-devel \
 	readline-devel \
 	python3-pyyaml \
-	yaml-cpp-devel
+	yaml-cpp-devel \
+	libedit-devel
 
 # Add configured user to image with sudo access:
 #
