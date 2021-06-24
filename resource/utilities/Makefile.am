@@ -35,7 +35,7 @@ resource_query_CXXFLAGS = \
     $(FLUX_HOSTLIST_CFLAGS)
 resource_query_LDADD = \
     ../libresource.la \
-    $(READLINE_LIBS) \
+    $(LIBEDIT_LIBS) \
     $(FLUX_HOSTLIST_LIBS) \
     $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \

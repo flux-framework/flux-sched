@@ -61,11 +61,7 @@ AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_GRAPH
 AX_BOOST_REGEX
-AC_CHECK_LIB([readline], [readline],
-             [AC_SUBST([READLINE_LIBS], ["-lreadline"])
-              AC_DEFINE([HAVE_LIBREADLINE], [1],
-                        [Define if you have libreadline])],
-             [AC_MSG_ERROR([Please install GNU readline])])
+PKG_CHECK_MODULES(LIBEDIT, libedit)
 
 #  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
 PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
