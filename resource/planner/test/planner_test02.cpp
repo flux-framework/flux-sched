@@ -67,20 +67,19 @@ static int test_multi_basics ()
     planner_multi_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_totals, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 5, counts10, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 1, counts10, len);
-    ok ((!rc && !errno), "checking multi avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "checking multi avail works (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1000, counts5, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 1, 1000, counts5, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span1 = planner_multi_add_span (ctx, 1, 1000, counts5, len);
     ok ((span1 != -1), "span1 added for (%s)", ss.str ().c_str ());
@@ -94,12 +93,12 @@ static int test_multi_basics ()
     ss.str ("");
     to_stream (-1, 2990, counts1, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 10, 2991, counts1, len);
-    ok ((rc == -1) && !errno, "over-alloc multi: (%s)", ss.str ().c_str ());
+    ok (rc == -1, "over-alloc multi: (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1990, counts1, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 10, 1990, counts1, len);
-    ok ((!rc && !errno), "overlapped multi resources (%s)", ss.str ().c_str ());
+    ok (!rc, "overlapped multi resources (%s)", ss.str ().c_str ());
     span3 = planner_multi_add_span (ctx, 10, 1990, counts1, len);
     ok ((span3 != -1), "span3 added for (%s)", ss.str ().c_str ());
 
@@ -121,7 +120,7 @@ static int test_multi_basics ()
     bo = (bo || avail != 0);
     avail = planner_multi_avail_resources_at (ctx, 3001, 2);
     bo = (bo || avail != 30);
-    ok (!bo && !errno, "avail_at_resources_* works");
+    ok (!bo, "avail_at_resources_* works");
 
     bo = false;
     t = planner_multi_avail_time_first (ctx, 0, 9, counts_only_C, len);
@@ -163,10 +162,9 @@ static int test_multi_getters ()
     uint64_t resource_total[] = {10, 20};
     const char *resource_types[] = {"1", "2"};
 
-    errno = 0;
     to_stream (0, 9999, resource_total, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, 9999, resource_total, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     rc = planner_multi_base_time (ctx);
     ok ((rc == 0), "base_time works for (%s)", ss.str ().c_str ());
@@ -180,7 +178,7 @@ static int test_multi_getters ()
     avail = planner_multi_resource_total_by_type (ctx, "2");
     bo = (bo || (avail != 20));
 
-    ok ((!bo && !errno), "planner_multi getters work");
+    ok (!bo, "planner_multi getters work");
 
     planner_multi_destroy (&ctx);
     return 0;
@@ -206,10 +204,9 @@ static int test_multi_strictly_larger ()
     planner_multi_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_totals, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     /* The resource state will become the following after
        planner_multi_add_span calls:
@@ -225,7 +222,7 @@ static int test_multi_strictly_larger ()
     ss.str ("");
     to_stream (0, 1000, request1, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 1000, request1, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 1000, request1, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -233,7 +230,7 @@ static int test_multi_strictly_larger ()
     ss.str ("");
     to_stream (0, 2000, request2, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 2000, request2, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 2000, request2, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -241,7 +238,7 @@ static int test_multi_strictly_larger ()
     ss.str ("");
     to_stream (0, 3000, request3, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 3000, request3, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 3000, request3, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -249,7 +246,7 @@ static int test_multi_strictly_larger ()
     ss.str ("");
     to_stream (0, 4000, request4, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 4000, request4, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 4000, request4, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -257,7 +254,7 @@ static int test_multi_strictly_larger ()
     ss.str ("");
     to_stream (0, 5000, request5, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 5000, request5, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 5000, request5, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -333,10 +330,9 @@ static int test_multi_partially_larger ()
     planner_multi_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_totals, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     /* The resource state will become the following after
        planner_multi_add_span calls:
@@ -352,7 +348,7 @@ static int test_multi_partially_larger ()
     ss.str ("");
     to_stream (0, 1000, request1, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 1000, request1, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 0, 1000, request1, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -360,7 +356,7 @@ static int test_multi_partially_larger ()
     ss.str ("");
     to_stream (1000, 1000, request2, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 1000, 1000, request2, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 1000, 1000, request2, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -368,7 +364,7 @@ static int test_multi_partially_larger ()
     ss.str ("");
     to_stream (2000, 1000, request3, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 2000, 1000, request3, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 2000, 1000, request3, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -376,7 +372,7 @@ static int test_multi_partially_larger ()
     ss.str ("");
     to_stream (3000, 1000, request4, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 3000, 1000, request4, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 3000, 1000, request4, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -384,7 +380,7 @@ static int test_multi_partially_larger ()
     ss.str ("");
     to_stream (4000, 1000, request5, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 4000, 1000, request5, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span = planner_multi_add_span (ctx, 4000, 1000, request5, len);
     ok ((span != -1), "span added for (%s)", ss.str ().c_str ());
@@ -440,10 +436,9 @@ static int test_multi_many_spans ()
     planner_multi_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_totals, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     for (int i = 0; i < 1000; i++) {
         uint64_t request[] = {0, 0, 0};
@@ -458,7 +453,7 @@ static int test_multi_many_spans ()
                                        (const uint64_t *)request, len);
         bo = (bo || span == -1);
     }
-    ok ((!bo && !errno), "many multi_add_spans work");
+    ok (!bo, "many multi_add_spans work");
 
     ss.str ("");
     to_stream (-1, 1000, requestA, (const char **)resource_types, len, ss);
@@ -518,15 +513,14 @@ static int test_multi_add_remove ()
     planner_multi_t *ctx = NULL;
     std::stringstream ss;
 
-    errno = 0;
     to_stream (0, tmax, resource_totals, (const char **)resource_types, len, ss);
     ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    ok ((ctx && !errno), "new with (%s)", ss.str ().c_str ());
+    ok (ctx != nullptr, "new with (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (0, 1000, request1, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 0, 1000, request1, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span1 = planner_multi_add_span (ctx, 0, 1000, request1, len);
     ok ((span1 != -1), "span added for (%s)", ss.str ().c_str ());
@@ -534,7 +528,7 @@ static int test_multi_add_remove ()
     ss.str ("");
     to_stream (1000, 1000, request2, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 1000, 1000, request2, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span2 = planner_multi_add_span (ctx, 1000, 1000, request2, len);
     ok ((span2 != -1), "span added for (%s)", ss.str ().c_str ());
@@ -542,13 +536,13 @@ static int test_multi_add_remove ()
     ss.str ("");
     to_stream (2000, 1000, request3, (const char **)resource_types, len, ss);
     rc = planner_multi_avail_during (ctx, 2000, 1000, request3, len);
-    ok ((!rc && !errno), "multi-resource avail works (%s)", ss.str ().c_str ());
+    ok (!rc, "multi-resource avail works (%s)", ss.str ().c_str ());
 
     span3 = planner_multi_add_span (ctx, 2000, 1000, request3, len);
     ok ((span3 != -1), "span added for (%s)", ss.str ().c_str ());
 
     rc = planner_multi_rem_span (ctx, span2);
-    ok ((!rc && !errno), "multi_rem_span works");
+    ok (!rc, "multi_rem_span works");
 
     size = planner_multi_span_size (ctx);
     ok ((size == 2), "planner_multi_span_size works");

@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  Copyright (c) 2014 Lawrence Livermore National Security, LLC.  Produced at
+ *  Copyright (c) 2021 Lawrence Livermore National Security, LLC.  Produced at
  *  the Lawrence Livermore National Laboratory (cf, AUTHORS, DISCLAIMER.LLNS).
  *  LLNL-CODE-658032 All rights reserved.
  *
@@ -22,35 +22,29 @@
  *  See also:  http://www.gnu.org/licenses/
 \*****************************************************************************/
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef PLANNER_INTERNAL_TREE_HPP
+#define PLANNER_INTERNAL_TREE_HPP
 
-#include "xzmalloc.h"
-#include "oom.h"
+#include "scheduled_point_tree.hpp"
+#include "mintime_resource_tree.hpp"
 
-void *xzmalloc (size_t size)
-{
-    void *new;
+/*! Scheduled point: time at which resource state changes.  Each point's resource
+ *  requirements are tracked as a node in a min-time resource (MTR) binary search
+ *  tree.
+ */
+struct scheduled_point_t {
+    scheduled_point_rb_node_t point_rb; /* BST node for scheduled point tree */
+    mt_resource_rb_node_t resource_rb;  /* BST node for min-time resource tree */
+    int64_t at;                  /* Resource-state changing time */
+    int in_mt_resource_tree;     /* 1 when inserted in min-time resource tree */
+    int new_point;               /* 1 when this point is newly created */
+    int ref_count;               /* reference counter */
+    int64_t scheduled;           /* scheduled quantity at this point */
+    int64_t remaining;           /* remaining resources (available) */
+};
 
-    new = malloc (size);
-    if (!new)
-        oom ();
-    memset (new, 0, size);
-    return new;
-}
-
-char *xstrdup (const char *s)
-{
-    char *cpy = strdup (s);
-    if (!cpy)
-        oom ();
-    return cpy;
-}
+#endif // PLANNER_INTERNAL_TREE_HPP
 
 /*
- * vi:tabstop=4 shiftwidth=4 expandtab
+ * vi: ts=4 sw=4 expandtab
  */

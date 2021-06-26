@@ -205,7 +205,6 @@ bool planner_is_active_span (planner_t *ctx, int64_t span_id);
 //! Getters for span. Return -1 on an error.
 int64_t planner_span_start_time (planner_t *ctx, int64_t span_id);
 int64_t planner_span_duration (planner_t *ctx, int64_t span_id);
-int64_t planner_span_id (planner_t *ctx, int64_t span_id);
 int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id);
 
 #ifdef __cplusplus
