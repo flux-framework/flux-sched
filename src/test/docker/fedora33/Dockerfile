@@ -17,6 +17,7 @@ RUN sudo yum -y update \
 	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \
+	libedit-devel \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:

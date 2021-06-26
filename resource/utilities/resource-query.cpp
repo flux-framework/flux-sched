@@ -31,8 +31,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <editline/readline.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "resource/utilities/command.hpp"

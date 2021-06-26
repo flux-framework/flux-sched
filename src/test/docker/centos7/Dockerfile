@@ -10,9 +10,9 @@ RUN sudo yum -y install \
 	libboost-filesystem-devel \
 	libboost-regex-devel \
 	libxml2-devel \
-	readline-devel \
 	python-yaml \
-	yaml-cpp-devel
+	yaml-cpp-devel \
+	libedit-devel
 
 # Add configured user to image with sudo access:
 #
