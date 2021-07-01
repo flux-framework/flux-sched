@@ -9,11 +9,7 @@ import re
 
 docker_run_checks = "src/test/docker/docker-run-checks.sh"
 
-default_args = (
-    "--prefix=/usr"
-    " --sysconfdir=/etc"
-    " --localstatedir=/var"
-)
+default_args = "--prefix=/usr" " --sysconfdir=/etc" " --localstatedir=/var"
 
 DOCKER_REPO = "fluxrm/flux-sched"
 
@@ -114,7 +110,7 @@ matrix.add_build(
         CXX="g++-8",
         DISTCHECK="t",
     ),
-    args="--prefix=/usr"
+    args="--prefix=/usr",
 )
 
 # Ubuntu: coverage

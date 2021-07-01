@@ -14,6 +14,7 @@ from flux.idset import IDset
 from flux.hostlist import Hostlist
 from fluxion.jsongraph.objects.graph import Graph, Node, Edge
 
+
 class FluxionResourcePoolV1(Node):
 
     """

@@ -10,5 +10,6 @@
 ##############################################################
 import sys
 from flux.core.inner import raw
-from flux.constants import FLUX_CONF_AUTO;
+from flux.constants import FLUX_CONF_AUTO
+
 print(raw.flux_conf_builtin_get(sys.argv[1], FLUX_CONF_AUTO).decode("utf-8"))
