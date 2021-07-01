@@ -4,7 +4,7 @@ SUBDIRS = src resource qmanager etc t
 
 EXTRA_DIST= \
 	config/tap-driver.sh \
-	DISCLAIMER.LLNS \
+	NOTICE.LLNS \
 	README.md
 
 CODE_COVERAGE_IGNORE_PATTERN = \
