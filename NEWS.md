@@ -1,3 +1,32 @@
+flux-sched version 0.17.0 - 2021-07-01
+--------------------------------------
+
+This version re-releases Fluxion under the LGPL-3.0 license.
+
+This version also changes the default match policy to first-match
+and the default queue-depth to 32, resulting in further performance
+improvements.
+
+### Features
+
+ * LLNS re-release under LGPL-3.0 (#850)
+ * python: export FluxionResource classes (#845)
+ * Default policy changes (#843)
+
+### Fixes
+
+ * Fix cancel race (#838)
+ * bugfix: include missing header (limits.h) (#837)
+ * datastaging: add -avoid-version to LDFLAGS (#835)
+
+### Cleanup
+
+ * Replace GNU readline with editline (#849)
+ * planner: port to Yggdrasil's augmented red-black library (#846)
+ * github: fix ci builds on master (#848)
+ * github: fixes for auto-release deployment (#834)
+
+
 flux-sched version 0.16.0 - 2021-05-05
 --------------------------------------
 
