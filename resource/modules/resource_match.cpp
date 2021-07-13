@@ -2194,28 +2194,24 @@ error:
 static void disconnect_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg)
 {
-    char *route = NULL;
+    const char *route;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if (flux_msg_get_route_first (msg, &route) < 0) {
-        flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
-        goto error;
+    if (!(route = flux_msg_route_first (msg))) {
+        flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
+        return;
     }
     if (ctx->notify_msgs.find (route) != ctx->notify_msgs.end ()) {
         ctx->notify_msgs.erase (route);
         flux_log (h, LOG_DEBUG, "%s: a notify request aborted", __FUNCTION__);
     }
-
-error:
-    free (route);
-    return;
 }
 
 static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg)
 {
     try {
-        char *route = NULL;
+        const char *route;
         std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
         std::shared_ptr<msg_wrap_t> m = std::make_shared<msg_wrap_t> ();
 
@@ -2228,9 +2224,8 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
             flux_log_error (h, "%s: streaming flag not set", __FUNCTION__);
             goto error;
         }
-        if (flux_msg_get_route_first (msg, &route) < 0) {
-            free (route);
-            flux_log_error (h, "%s: flux_msg_get_route_first", __FUNCTION__);
+        if (!(route = flux_msg_route_first (msg))) {
+            flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
             goto error;
         }
 
@@ -2238,7 +2233,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w,
         auto ret = ctx->notify_msgs.insert (
                        std::pair<std::string,
                                  std::shared_ptr<msg_wrap_t>> (route, m));
-        free (route);
         if (!ret.second) {
             errno = EEXIST;
             flux_log_error (h, "%s: insert", __FUNCTION__);
