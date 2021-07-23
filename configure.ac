@@ -8,7 +8,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
 AC_CONFIG_SRCDIR([NEWS])
 
-AM_INIT_AUTOMAKE([subdir-objects tar-ustar filename-length-max=256])
+AM_INIT_AUTOMAKE([subdir-objects tar-ustar filename-length-max=256 foreign])
 AM_SILENT_RULES([yes])
 AM_CONFIG_HEADER([config.h])
 AM_MAINTAINER_MODE([enable])
