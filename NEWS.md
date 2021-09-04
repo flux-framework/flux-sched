@@ -1,3 +1,13 @@
+flux-sched version 0.18.0 - 2021-09-04
+--------------------------------------
+
+This version of Fluxion includes updates required for compatibility
+with flux-core v0.29.0.
+
+### Fixes
+
+ * resource: update for libflux API change (#852)
+
 flux-sched version 0.17.0 - 2021-07-01
 --------------------------------------
 
