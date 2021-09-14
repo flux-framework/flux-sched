@@ -282,7 +282,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                     rc = -1;
                     break;
                 }
-                if (remap_id > std::numeric_limits<int>::max ()) {
+                if (remap_id 
+                        > static_cast<uint64_t> (std::numeric_limits<int>::max ())) {
                     errno = EOVERFLOW;
                     m_err_msg += "Remapped gpu id too large; ";
                     rc = -1;
