@@ -282,7 +282,8 @@ int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
         m_err_msg += std::to_string (f.rank) + ".\n";
         goto error;
     }
-    if (remap_rank > std::numeric_limits<int64_t>::max ()) {
+    if (remap_rank 
+            > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
         errno = EOVERFLOW;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": remapped rank too large.\n";
@@ -297,7 +298,8 @@ int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
             m_err_msg += " rank=" + std::to_string (f.rank) + ".\n";
             goto error;
         }
-        if (remap_id > std::numeric_limits<int>::max ()) {
+        if (remap_id 
+                > static_cast<uint64_t> (std::numeric_limits<int>::max ())) {
             errno = EOVERFLOW;
             m_err_msg += __FUNCTION__;
             m_err_msg += ": remapped id too large.\n";
