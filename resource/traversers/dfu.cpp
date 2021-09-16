@@ -83,8 +83,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
             m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
         }
-        // The planner layer returns ENOENT when no scheduleable point exists
-        if (rc < 0 && errno == ENOENT) {
+        // The planner layer returns
+        //     ENOENT when no scheduleable point exists
+        //     ERANGE when the total available core count at the root < the request
+        if (rc < 0 && (errno == ENOENT || errno == ERANGE)) {
             errno = EBUSY;
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
             meta.at = planner_multi_base_time (p)

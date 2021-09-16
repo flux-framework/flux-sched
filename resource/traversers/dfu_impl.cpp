@@ -168,7 +168,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, &(aggs[0]), len)) == -1) {
-        if (errno != 0) {
+        if (errno != 0 && errno != ERANGE) {
             m_err_msg += "by_subplan: planner_multi_avail_during returned -1.\n";
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
