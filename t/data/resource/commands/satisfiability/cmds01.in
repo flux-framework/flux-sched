@@ -18,4 +18,8 @@ match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiabilit
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test005.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test005.yaml
 
+# node[3]->slot[1]->socket[1]->core[99]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test017.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test017.yaml
+
 quit
