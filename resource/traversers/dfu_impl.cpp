@@ -456,10 +456,8 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta, vtx_t u,
     int rc = -1;
     int rc2 = -1;
     auto iter = m_graph_db->metadata.by_outedges.find (u);
-    if (iter == m_graph_db->metadata.by_outedges.end ()) {
-        errno = ENOENT;
+    if (iter == m_graph_db->metadata.by_outedges.end ())
         return rc;
-    }
 
     // Once a resource type is sufficiently discovered, not need find more
     std::set<std::string> sat_types;
