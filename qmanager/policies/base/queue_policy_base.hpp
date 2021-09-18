@@ -142,11 +142,14 @@ protected:
     uint64_t m_cq_cnt = 0;
     uint64_t m_oq_cnt = 0;
     uint64_t m_cancel_cnt = 0;
+    uint64_t m_reprio_cnt = 0;
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
     std::map<std::vector<double>, flux_jobid_t> m_pending;
     std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
     std::map<uint64_t, flux_jobid_t> m_pending_cancel_provisional;
+    std::map<uint64_t, std::pair<flux_jobid_t,
+	                         unsigned int>> m_pending_reprio_provisional;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
     std::map<uint64_t, flux_jobid_t> m_complete;
