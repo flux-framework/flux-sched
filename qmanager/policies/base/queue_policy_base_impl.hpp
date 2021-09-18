@@ -609,6 +609,7 @@ int queue_policy_base_impl_t::process_provisional_cancel ()
             m_schedulable = true;
         }
     }
+    m_pending_cancel_provisional.clear ();
     return 0;
 }
 
