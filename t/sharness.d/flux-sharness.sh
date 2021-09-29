@@ -8,7 +8,7 @@
 #
 run_timeout() {
     if test -z "$LD_PRELOAD" ; then
-        "${PYTHON:-python3}" -S "${SHARNESS_TEST_SRCDIR}/scripts/run_timeout.py" "$@"
+        "${PYTHON:-python3}" "${SHARNESS_TEST_SRCDIR}/scripts/run_timeout.py" "$@"
     else
         (
             TIMEOUT_PRELOAD="$LD_PRELOAD"
@@ -32,6 +32,29 @@ test_size_large() {
     echo ${size}
 }
 
+
+#
+#  Like test_must_fail(), but additionally allow process to be
+#   terminated by SIGKILL or SIGTERM
+#
+test_must_fail_or_be_terminated() {
+    "$@"
+    exit_code=$?
+    # Allow death by SIGTERM or SIGKILL
+    if test $exit_code = 143 -o $exit_code = 137; then
+        return 0
+    elif test $exit_code = 0; then
+        echo >&2 "test_must_fail: command succeeded: $*"
+        return 1
+    elif test $exit_code -gt 129 -a $exit_code -le 192; then
+        echo >&2 "test_must_fail: died by non-SIGTERM signal: $*"
+        return 1
+    elif test $exit_code = 127; then
+        echo >&2 "test_must_fail: command not found: $*"
+        return 1
+    fi
+    return 0
+}
 
 #
 #  Tests using test_under_flux() and which load their own modules should
@@ -64,15 +87,103 @@ check_module_list() {
 }
 
 #
-#  Reinvoke a test file under a flux comms instance
+#  Generate configuration for test bootstrap and print args for flux-start
+#  Usage:  args=$(make_bootstrap_config workdir sockdir size)
 #
-#  Usage: test_under_flux <size>
+make_bootstrap_config() {
+    local workdir=$1
+    local sockdir=$2
+    local size=$3
+    local fakehosts="fake[0-$(($size-1))]"
+    local full="0-$(($size-1))"
+
+    mkdir $workdir/conf.d
+    flux keygen $workdir/cert
+    cat >$workdir/conf.d/bootstrap.toml <<-EOT
+	[bootstrap]
+	    curve_cert = "$workdir/cert"
+	    default_bind = "ipc://$sockdir/tbon-%h"
+	    default_connect = "ipc://$sockdir/tbon-%h"
+	    hosts = [
+	        { host = "$fakehosts" },
+	    ]
+	EOT
+    flux R encode --hosts=$fakehosts -r$full >$workdir/R
+    cat >$workdir/conf.d/resource.toml <<-EOT2
+	[resource]
+	    path = "$workdir/R"
+	    noverify = true
+	EOT2
+    echo "--test-hosts=$fakehosts -o,-c$workdir/conf.d"
+    echo "--test-exit-mode=${TEST_UNDER_FLUX_EXIT_MODE:-leader}"
+    echo "--test-exit-timeout=${TEST_UNDER_FLUX_EXIT_TIMEOUT:-0}"
+    echo "-o,-Sbroker.quorum=${TEST_UNDER_FLUX_QUORUM:-$full}"
+    echo "--test-start-mode=${TEST_UNDER_FLUX_START_MODE:-all}"
+    echo "-o,-Stbon.fanout=${TEST_UNDER_FLUX_FANOUT:-$size}"
+}
+
+#
+#  Remove any outer trash-directory wrapper used by "system"
+#   personality test_under_flux() tests.
+#
+remove_trashdir_wrapper() {
+    local trashdir=$(dirname $SHARNESS_TRASH_DIRECTORY)
+    case $trashdir in
+        */trash-directory.[!/]*) rm -rf $trashdir
+    esac
+}
+
+#
+#  Reinvoke a test file under a flux instance
+#
+#  Usage: test_under_flux <size> [personality]
+#
+#  where personality is one of:
+#
+#  full (default)
+#    Run with all services.
+#    The default broker rc scripts are executed.
+#
+#  minimal
+#    Run with only built-in services.
+#    No broker rc scripts are executed.
+#
+#  job
+#    Load minimum services needed to run jobs.
+#    Fake resources are loaded into the resource module.
+#    Environment variables:
+#    - TEST_UNDER_FLUX_CORES_PER_RANK
+#        Set the number of fake cores per fake node (default: 2).
+#    - TEST_UNDER_FLUX_NO_JOB_EXEC
+#        If set, skip loading job-exec module (default: load job-exec).
+#    - TEST_UNDER_FLUX_SCHED_SIMPLE_MODE
+#        Change mode argument to sched-simple (default: limited=8)
+#
+#  kvs
+#    Load minimum services needed for kvs.
+#
+#  system
+#    Like full, but bootstrap with a generated config file.
+#    Environment variables:
+#    - TEST_UNDER_FLUX_EXIT_MODE
+#        Set the flux-start exit mode (default: leader)
+#    - TEST_UNDER_FLUX_EXIT_TIMEOUT
+#        Set the flux-start exit timeout (default: 0)
+#    - TEST_UNDER_FLUX_QUORUM
+#        Set the broker.quorum attribute (default: 0-<highest_rank>)
+#    - TEST_UNDER_FLUX_START_MODE
+#        Set the flux-start start mode (default: all)
+#    - TEST_UNDER_FLUX_FANOUT
+#        Set the TBON fanout (default: size (flat))
 #
 test_under_flux() {
     size=${1:-1}
     personality=${2:-full}
     log_file="$TEST_NAME.broker.log"
     if test -n "$TEST_UNDER_FLUX_ACTIVE" ; then
+        if test "$TEST_UNDER_FLUX_PERSONALITY" = "system"; then
+            test "$debug" = "t" || cleanup remove_trashdir_wrapper
+        fi
         test "$debug" = "t" || cleanup rm "${SHARNESS_TEST_DIRECTORY:-..}/$log_file"
         flux_module_list > module-list.initial
         cleanup check_module_list
@@ -94,16 +205,19 @@ test_under_flux() {
     if test -n "$SHARNESS_TEST_DIRECTORY"; then
         cd $SHARNESS_TEST_DIRECTORY
     fi
-    timeout="-o -Sinit.rc2_timeout=300"
-    if test -n "$FLUX_TEST_DISABLE_TIMEOUT"; then
-        timeout=""
-    elif test_have_prereq LONGTEST; then
-        timeout="-o,-Sinit.rc2_timeout=900"
-    fi
 
     if test "$personality" = "minimal"; then
         RC1_PATH=""
         RC3_PATH=""
+    elif test "$personality" = "system"; then
+        # Pre-create broker rundir so we know it in advance and
+        # make_bootstrap_config() can use it for ipc:// socket paths.
+        BROKER_RUNDIR=$(mktemp --directory --tmpdir flux-system-XXXXXX)
+        sysopts=$(make_bootstrap_config \
+          $SHARNESS_TRASH_DIRECTORY $BROKER_RUNDIR $size)
+        # Place the re-executed test script trash within the first invocation's
+        # trash to preserve config files for broker restart in test
+        flags="${flags} --root=$SHARNESS_TRASH_DIRECTORY"
     elif test "$personality" != "full"; then
         RC1_PATH=$FLUX_SOURCE_DIR/t/rc/rc1-$personality
         RC3_PATH=$FLUX_SOURCE_DIR/t/rc/rc3-$personality
@@ -113,6 +227,7 @@ test_under_flux() {
         unset RC1_PATH
         unset RC3_PATH
     fi
+
     if test -n "$FLUX_TEST_VALGRIND" ; then
         VALGRIND_SUPPRESSIONS=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind.supp
         valgrind="--wrap=libtool,e"
@@ -120,24 +235,23 @@ test_under_flux() {
         valgrind="$valgrind,--trace-children=no,--child-silent-after-fork=yes"
         valgrind="$valgrind,--leak-resolution=med,--error-exitcode=1"
         valgrind="$valgrind,--suppressions=${VALGRIND_SUPPRESSIONS}"
-        gracetime="-o,-g,10"
     fi
     # Extend timeouts when running under AddressSanitizer
     if test_have_prereq ASAN; then
-        gracetime="-o,-g,10"
-        timeout="-o -Sinit.rc2_timeout=800"
         # Set log_path for ASan o/w errors from broker may be lost
         ASAN_OPTIONS=${ASAN_OPTIONS}:log_path=${TEST_NAME}.asan
     fi
     logopts="-o -Slog-filename=${log_file},-Slog-forward-level=7"
     TEST_UNDER_FLUX_ACTIVE=t \
     TERM=${ORIGINAL_TERM} \
-      exec flux start -s${size} \
+    TEST_UNDER_FLUX_PERSONALITY="${personality:-default}" \
+      exec flux start --test-size=${size} \
+                      ${BROKER_RUNDIR+--test-rundir=${BROKER_RUNDIR}} \
+                      ${BROKER_RUNDIR+--test-rundir-cleanup} \
                       ${RC1_PATH+-o -Sbroker.rc1_path=${RC1_PATH}} \
                       ${RC3_PATH+-o -Sbroker.rc3_path=${RC3_PATH}} \
+                      ${sysopts} \
                       ${logopts} \
-                      ${timeout} \
-                      ${gracetime} \
                       ${valgrind} \
                      "sh $0 ${flags}"
 }
