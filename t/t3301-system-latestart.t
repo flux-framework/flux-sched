@@ -12,10 +12,25 @@ and ensure that it wires up.
 
 export TEST_UNDER_FLUX_QUORUM=0
 export TEST_UNDER_FLUX_START_MODE=leader
+export FLUX_RC_EXTRA=${SHARNESS_TEST_SRCDIR}/rc
+unset FLUXION_RESOURCE_RC_NOOP
+unset FLUXION_QMANAGER_RC_NOOP
+TEST_UNDER_FLUX_AUGMENT_R=t
 
 test_under_flux 2 system
 
 startctl="flux python ${SHARNESS_TEST_SRCDIR}/scripts/startctl.py"
+
+SCHED_MODULE=$(flux module list | awk '$6 == "sched" {print $1}')
+
+test_expect_success 'sched service provided by fluxion' '
+	test_debug "echo sched service provided by ${SCHED_MODULE}" &&
+	test "$SCHED_MODULE" = "sched-fluxion-qmanager"
+'
+
+test_expect_success 'flux resource list works' '
+	flux resource list
+'
 
 test_expect_success 'broker.quorum was set to 0 by system test personality' '
 	echo 0 >quorum.exp &&
