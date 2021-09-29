@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
+#define FLUX_SHELL_PLUGIN_NAME "data-staging"
 
 extern "C" {
 #include <flux/core.h>
@@ -211,7 +212,7 @@ static int main_init (flux_plugin_t *p)
     char *info_cstr = NULL;
 
     flux_shell_t *s = flux_plugin_get_shell (p);
-    flux_plugin_set_name (p, "data-staging");
+    flux_plugin_set_name (p, FLUX_SHELL_PLUGIN_NAME);
     if (flux_shell_get_info (s, &info_cstr) < 0) {
         shell_log_error ("Error retrieving shell info string");
         errno = EINVAL;
