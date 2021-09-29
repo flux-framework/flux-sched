@@ -142,7 +142,7 @@ test_expect_success 'datastaging logging is not overly verbose by default' '
 
 test_expect_success 'datastaging logging can be access with verbose option' '
     flux mini run -o verbose=2 hostname 2> verbose-run.err &&
-        grep -q " DEBUG: Jobspec does not contain data-staging attributes. "\
+        grep -q " DEBUG:.* Jobspec does not contain data-staging attributes. "\
 "No staging necessary." verbose-run.err
 '
 
