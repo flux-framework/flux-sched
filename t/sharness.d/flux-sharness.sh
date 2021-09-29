@@ -109,6 +109,10 @@ make_bootstrap_config() {
 	    ]
 	EOT
     flux R encode --hosts=$fakehosts -r$full >$workdir/R
+    if test -n "$TEST_UNDER_FLUX_AUGMENT_R"; then
+        flux ion-R encode <$workdir/R >$workdir/R.augmented
+        mv $workdir/R.augmented $workdir/R
+    fi
     cat >$workdir/conf.d/resource.toml <<-EOT2
 	[resource]
 	    path = "$workdir/R"
