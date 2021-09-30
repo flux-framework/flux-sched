@@ -819,8 +819,10 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
 
     if (!(f = flux_rpc (ctx->h, "resource.get-xml", NULL, 0, 0)))
         goto done;
-    if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0)
+    if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s", future_strerror (f, errno));
         goto done;
+    }
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         if (rank != IDSET_INVALID_ID) {
             if (!(hwloc_xml = get_array_string (xml_array, rank)))
