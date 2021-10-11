@@ -34,7 +34,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                vtx_t root,
                                std::unordered_map<std::string, int64_t> &dfv)
 {
-    int t = 0;
+    int64_t t = 0;
     int rc = -1;
     size_t len = 0;
     std::vector<uint64_t> agg;
