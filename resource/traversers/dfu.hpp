@@ -87,8 +87,9 @@ public:
                     std::shared_ptr<resource_graph_db_t> db,
                     std::shared_ptr<dfu_match_cb_t> m);
 
-    /*! Begin a graph traversal for the jobspec and either allocate or
-     *  reserve the resources in the resource graph. Best-matching resources
+    /*! Begin a graph traversal for the jobspec and allocate,
+     *  reserve or check its satisfiability on the resources
+     *  in the resource graph. Best-matching resources
      *  are selected in accordance with the scoring done by the match callback
      *  methods. Initialization must have successfully finished before this
      *  method is called.
@@ -96,7 +97,8 @@ public:
      *  \param jobspec   Jobspec object.
      *  \param writers   vertex/edge writers to emit the matched labels
      *  \param op        schedule operation:
-     *                       allocate or allocate_orelse_reserve.
+     *                       allocate, allocate_with_satisfiability,
+     *                       allocate_orelse_reserve or satisfiability.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
      *  \return          0 on success; -1 on error.
@@ -184,6 +186,9 @@ public:
     int mark (std::set<int64_t> &ranks, resource_pool_t::status_t status);
 
 private:
+    int is_satisfiable (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
+                        bool x, vtx_t root,
+                        std::unordered_map<std::string, int64_t> &dfv);
     int schedule (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
                   bool x, match_op_t op, vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);
