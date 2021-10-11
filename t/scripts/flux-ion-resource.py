@@ -301,16 +301,16 @@ def main():
     subpar = parser.add_subparsers(
         title="Available Commands", description="Valid commands", help="Additional help"
     )
-    mstr = "Find the best matching resources for a jobspec"
-    ustr = "Update the resource database"
-    istr = "Print info on a single job"
-    sstr = "Print overall performance statistics"
-    cstr = "Cancel an allocated or reserved job"
-    fstr = "Find resources matching with a crieria"
-    ststr = "Display resource status"
+    mstr = "Find the best matching resources for a jobspec."
+    ustr = "Update the resource database."
+    istr = "Print info on a single job."
+    sstr = "Print overall performance statistics."
+    cstr = "Cancel an allocated or reserved job."
+    fstr = "Find resources matching with a crieria."
+    ststr = "Display resource status."
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
-    nstr = "Get remapped ID given raw ID seen by the selected reader."
+    nstr = "Get remapped ID given raw ID seen by the reader."
     parser_m = subpar.add_parser("match", help=mstr, description=mstr)
     parser_u = subpar.add_parser("update", help=ustr, description=ustr)
     parser_i = subpar.add_parser("info", help=istr, description=istr)
@@ -329,14 +329,14 @@ def main():
         title="Available Commands", description="Valid commands", help="Additional help"
     )
 
-    mastr = "Allocate the best matching resources if found"
+    mastr = "Allocate the best matching resources if found."
     msstr = (
         "Allocate the best matching resources if found. "
-        "If not found, check jobspec's overall satisfiability"
+        "If not found, check jobspec's overall satisfiability."
     )
     mrstr = (
         "Allocate the best matching resources if found. "
-        "If not found, reserve them instead at earliest time"
+        "If not found, reserve them instead at earliest time."
     )
     parser_ma = subparsers_m.add_parser("allocate", help=mastr)
     parser_ms = subparsers_m.add_parser("allocate_with_satisfiability", help=msstr)
