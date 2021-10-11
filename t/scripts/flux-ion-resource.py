@@ -98,6 +98,10 @@ class ResourceModuleInterface:
         payload = {"rank": rank, "type-name": type_name, "id": identity}
         return self.f.rpc("sched-fluxion-resource.ns-info", payload).get()
 
+    def rpc_satisfiability(self, jobspec):
+        payload = {"jobspec": jobspec}
+        return self.f.rpc("sched-fluxion-resource.satisfiability", payload).get()
+
 
 """
     Action for match allocate sub-command
@@ -148,6 +152,21 @@ def match_reserve_action(args):
         print("=" * width())
         print("MATCHED RESOURCES:")
         print(resp["R"])
+
+
+"""
+    Action for match satisfiability sub-command
+"""
+
+
+def satisfiability_action(args):
+    with open(args.jobspec, "r") as stream:
+        jobspec = yaml.safe_load(stream)
+        r = ResourceModuleInterface()
+        resp = r.rpc_satisfiability(jobspec)
+        print("=" * width())
+        print("Satisfiable request")
+        print("=" * width())
 
 
 """
@@ -338,9 +357,12 @@ def main():
         "Allocate the best matching resources if found. "
         "If not found, reserve them instead at earliest time."
     )
+    festr = "Check jobspec's overall satisfiability."
+
     parser_ma = subparsers_m.add_parser("allocate", help=mastr)
     parser_ms = subparsers_m.add_parser("allocate_with_satisfiability", help=msstr)
     parser_mr = subparsers_m.add_parser("allocate_orelse_reserve", help=mrstr)
+    parser_fe = subparsers_m.add_parser("satisfiability", help=festr)
 
     #
     # Positional argument for update sub-command
@@ -447,6 +469,14 @@ def main():
         "Id", metavar="Id", type=int, help="raw Id seen by the reader"
     )
     parser_n.set_defaults(func=namespace_info_action)
+
+    #
+    # Positional argument for match satisfiability sub-command
+    #
+    parser_fe.add_argument(
+        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
+    )
+    parser_fe.set_defaults(func=satisfiability_action)
 
     #
     # Parse the args and call an action routine as part of that
