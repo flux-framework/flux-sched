@@ -108,5 +108,5 @@ EXTRA_DIST= \
 	rc
 
 clean-local:
-	rm -rf *.o test-results trash-directory*
+	rm -fr trash-directory.* test-results .prove *.broker.log */*.broker.log *.output python/__pycache__
 
