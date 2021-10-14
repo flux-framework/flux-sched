@@ -33,6 +33,9 @@ INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
+INFO: Satisfiable request
+INFO: =============================
+INFO: =============================
 INFO: No matching resources found
 INFO: Unsatisfiable request
 INFO: JOBID=3
@@ -41,6 +44,9 @@ INFO: =============================
 INFO: No matching resources found
 INFO: Unsatisfiable request
 INFO: JOBID=4
+INFO: =============================
+INFO: =============================
+INFO: Unsatisfiable request
 INFO: =============================
 INFO: =============================
 INFO: No matching resources found
@@ -74,6 +80,9 @@ INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=3600
 INFO: =============================
 INFO: =============================
+INFO: Satisfiable request
+INFO: =============================
+INFO: =============================
 INFO: No matching resources found
 INFO: JOBID=7
 INFO: =============================
@@ -103,6 +112,9 @@ INFO: =============================
 INFO: JOBID=8
 INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=3600
+INFO: =============================
+INFO: =============================
+INFO: Satisfiable request
 INFO: =============================
 INFO: =============================
 INFO: No matching resources found
@@ -156,6 +168,9 @@ INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=3600
 INFO: =============================
 INFO: =============================
+INFO: Satisfiable request
+INFO: =============================
+INFO: =============================
 INFO: No matching resources found
 INFO: Unsatisfiable request
 INFO: JOBID=11
@@ -164,4 +179,7 @@ INFO: =============================
 INFO: No matching resources found
 INFO: Unsatisfiable request
 INFO: JOBID=12
+INFO: =============================
+INFO: =============================
+INFO: Unsatisfiable request
 INFO: =============================

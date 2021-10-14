@@ -257,6 +257,9 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
                                 const flux_msg_t *msg, void *arg);
 
+static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                       const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -286,6 +289,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.status", status_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.ns-info", ns_info_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1527,7 +1532,7 @@ out:
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                 const char *cmd, const std::string &jstr, int64_t *at)
 {
-    int rc = 0;
+    int rc = -1;
     Flux::Jobspec::Jobspec j {jstr};
     dfu_traverser_t &tr = *(ctx->traverser);
 
@@ -1539,6 +1544,12 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     else if (std::string ("allocate_orelse_reserve") == cmd)
         rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                      jobid, at);
+    else if (std::string ("satisfiability") == cmd)
+        rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY,
+                     jobid, at);
+    else
+        errno = EINVAL;
+
    return rc;
 }
 
@@ -1581,7 +1592,8 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     }
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0
-        && strcmp ("allocate_with_satisfiability", cmd) != 0) {
+        && strcmp ("allocate_with_satisfiability", cmd) != 0
+        && strcmp ("satisfiability", cmd) != 0) {
         rc = -1;
         errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: unknown cmd: %s", __FUNCTION__, cmd);
@@ -1605,10 +1617,13 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     *ov = get_elapse_time (start, end);
     update_match_perf (ctx, *ov);
 
-    if ( (rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *ov)) != 0) {
-        flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
-                        __FUNCTION__, (intmax_t)jobid);
-        goto done;
+    if (cmd != std::string ("satisfiability")) {
+        if ( (rc = track_schedule_info (ctx, jobid,
+                                        rsv, *at, jstr, o, *ov)) != 0) {
+            flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
+                            __FUNCTION__, (intmax_t)jobid);
+            goto done;
+        }
     }
 
 done:
@@ -2391,6 +2406,48 @@ static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
 
 error:
     if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                       const flux_msg_t *msg, void *arg)
+{
+    int64_t at = 0;
+    int64_t now = 0;
+    double ov = 0.0f;
+    int saved_errno = 0;
+    std::stringstream R;
+    json_t *jobspec = nullptr;
+    const char *js_str = nullptr;
+    const char *respond_msg = nullptr;
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (flux_request_unpack (msg, NULL, "{s:o}", "jobspec", &jobspec) < 0)
+        goto error;
+    if ( !(js_str = json_dumps (jobspec, JSON_INDENT (0)))) {
+        errno = ENOMEM;
+        goto error;
+    }
+    if (run_match (ctx, -1, "satisfiability", js_str, &now, &at, &ov, R) < 0) {
+        if (errno == ENODEV) {
+            respond_msg = "Unsatisfiable request";
+        } else {
+            respond_msg = "Internal match error";
+            flux_log_error (ctx->h, "%s: %s", __FUNCTION__, respond_msg);
+        }
+        goto error_memfree;
+    }
+    free ((void *)js_str);
+    if (flux_respond_pack (h, msg, "{s:i}", "errnum", 0) < 0)
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+    return;
+
+error_memfree:
+    saved_errno = errno;
+    free ((void *)js_str);
+    errno = saved_errno;
+error:
+    if (flux_respond_error (h, msg, errno, respond_msg) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 

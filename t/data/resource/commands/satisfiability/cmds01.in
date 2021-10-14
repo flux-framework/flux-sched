@@ -1,22 +1,28 @@
 # cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[19]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test001.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test001.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test001.yaml
 
 # slot[1]->socket[1]->core[30]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test002.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test002.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test002.yaml
+
 
 # slot[1]->socket[3]->core[1]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test003.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test003.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test003.yaml
 
 # node[1]->slot[2]->socket[2]->core[1]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test004.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test004.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test004.yaml
 
 # node[3]->slot[1]->socket[1]->core[1]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test005.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test005.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test004.yaml
 
 # node[3]->slot[1]->socket[1]->core[99]
 match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test017.yaml

@@ -31,7 +31,8 @@ struct command_t {
 
 command_t commands[] = {
     { "match",  "m", cmd_match, "Allocate or reserve matching resources (subcmd: "
-"allocate | allocate_with_satisfiability | allocate_orelse_reserve): "
+"allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
+"satisfiability: "
 "resource-query> match allocate jobspec"},
     { "multi-match",  "M", cmd_match_multi, "Allocate or reserve for "
 "multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
@@ -79,6 +80,24 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
         ctx->traverser->clear_err_message ();
     }
     return rc;
+}
+
+static void print_sat_info (std::shared_ptr<resource_context_t> &ctx,
+                            std::ostream &out, bool sat, double elapse,
+                            unsigned int pre, unsigned int post)
+{
+    std::string satstr = sat? "Satisfiable" : "Unsatisfiable";
+    out << "INFO:" << " =============================" << std::endl;
+    out << "INFO: " << satstr << " request" << std::endl;
+    out << "INFO:" << " =============================" << std::endl;
+    if (ctx->params.elapse_time) {
+        std::cout << "INFO:" << " ELAPSE=" << std::to_string (elapse)
+                  << std::endl;
+        std::cout << "INFO:" << " PREORDER VISIT COUNT=" << pre
+                  << std::endl;
+        std::cout << "INFO:" << " POSTORDER VISIT COUNT=" << post
+                  << std::endl;
+    }
 }
 
 static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
@@ -179,6 +198,12 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx, int64_t jobid,
         rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
                                    MATCH_ALLOCATE_ORELSE_RESERVE,
                                    (int64_t)jobid, &at);
+    else if (cmd == "satisfiability")
+        rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                   MATCH_SATISFIABILITY,
+                                   (int64_t)jobid, &at);
+    else
+        goto done;
 
     if ((rc2 != 0) && (errno == ENODEV))
         sat = false;
@@ -205,9 +230,13 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx, int64_t jobid,
     postorder_count = ctx->traverser->get_total_postorder_count ();
     update_match_perf (ctx, elapse);
 
-    print_schedule_info (ctx, out, jobid,
-                         jobspec_fn, rc2 == 0, at, sat,
-                         elapse, preorder_count, postorder_count);
+    if (cmd != "satisfiability")
+        print_schedule_info (ctx, out, jobid,
+                             jobspec_fn, rc2 == 0, at, sat,
+                             elapse, preorder_count, postorder_count);
+    else
+        print_sat_info (ctx, out, sat, elapse, preorder_count, postorder_count);
+
 done:
     return rc + rc2;
 }
@@ -221,7 +250,8 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
     }
     std::string subcmd = args[1];
     if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability")) {
+          || subcmd == "allocate_with_satisfiability"
+          || subcmd == "satisfiability")) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }

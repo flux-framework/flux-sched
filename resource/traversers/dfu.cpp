@@ -29,12 +29,42 @@ using namespace Flux::Jobspec;
  *                                                                          *
  ****************************************************************************/
 
+int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
+                                     detail::jobmeta_t &meta, bool x,
+                                     vtx_t root,
+                                     std::unordered_map<std::string,
+                                                        int64_t> &dfv)
+{
+    int rc = 0;
+    std::vector<uint64_t> agg;
+    int saved_errno = errno;
+    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+
+    meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
+    planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
+    meta.at = planner_multi_base_time (p)
+              + planner_multi_duration (p) - meta.duration - 1;
+    detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
+    errno = 0;
+    if ( (rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) < 0) {
+        rc = -1;
+        errno = (!errno)? ENODEV : errno;
+        detail::dfu_impl_t::update ();
+    }
+    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
+    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+
+    if (!errno)
+        errno = saved_errno;
+    return rc;
+}
+
 int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                detail::jobmeta_t &meta, bool x, match_op_t op,
                                vtx_t root,
                                std::unordered_map<std::string, int64_t> &dfv)
 {
-    int t = 0;
+    int64_t t = 0;
     int rc = -1;
     size_t len = 0;
     std::vector<uint64_t> agg;
@@ -264,7 +294,11 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at);
-    if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
+
+    if ( (op == match_op_t::MATCH_SATISFIABILITY)
+        && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
+        detail::dfu_impl_t::update ();
+    } else if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
         rc = detail::dfu_impl_t::update (root, writers, meta);
     }

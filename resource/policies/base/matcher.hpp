@@ -29,7 +29,8 @@ enum match_score_t { MATCH_UNMET = 0, MATCH_MET = 1 };
 
 enum class match_op_t { MATCH_ALLOCATE,
                         MATCH_ALLOCATE_W_SATISFIABILITY,
-                        MATCH_ALLOCATE_ORELSE_RESERVE };
+                        MATCH_ALLOCATE_ORELSE_RESERVE,
+                        MATCH_SATISFIABILITY };
 
 /*! Base matcher data class.
  *  Provide idioms to specify the target subsystems and
