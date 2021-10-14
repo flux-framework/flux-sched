@@ -159,5 +159,43 @@ test_expect_success 'prune: use gpu-level pruning' '
     test_cmp cmp06 visit_count.out06
 '
 
+
+cmds07="${cmd_dir}/cmds04.in"
+test_expect_success 'prune: pruning not affected by satisfiability (p=high)' '
+    cat <<-EOF >cmp07 &&
+	INFO: PREORDER VISIT COUNT=100
+	INFO: POSTORDER VISIT COUNT=80
+	INFO: PREORDER VISIT COUNT=100
+	INFO: POSTORDER VISIT COUNT=80
+	INFO: PREORDER VISIT COUNT=100
+	INFO: POSTORDER VISIT COUNT=80
+	INFO: PREORDER VISIT COUNT=100
+	INFO: POSTORDER VISIT COUNT=80
+	EOF
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds07} > cmds07 &&
+    ${query} -L ${grugs} -S CA -P high -t 007.R.out -e < cmds07 > out07 &&
+    cat out07 | grep ORDER > visit_count.out07 &&
+    test_cmp cmp07 visit_count.out07
+'
+
+
+cmds08="${cmd_dir}/cmds04.in"
+test_expect_success 'prune: pruning not affected by satisfiability (p=first)' '
+    cat <<-EOF >cmp08 &&
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	INFO: PREORDER VISIT COUNT=27
+	INFO: POSTORDER VISIT COUNT=22
+	EOF
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds08} > cmds08 &&
+    ${query} -L ${grugs} -S CA -P first -t 008.R.out -e < cmds08 > out08 &&
+    cat out08 | grep ORDER > visit_count.out08 &&
+    test_cmp cmp08 visit_count.out08
+'
+
 test_done
 
