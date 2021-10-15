@@ -1,3 +1,30 @@
+flux-sched version 0.19.0 - 2021-10-15
+--------------------------------------
+
+This version of Fluxion includes bug fixes for the issues
+discovered during system instance testing on an LLNL
+cluster.
+
+### Features
+
+ * Add `sched.feasibility` service for flux-core's jobspec feasibility
+   validator (#871)
+
+### Fixes
+
+ * queue: add provisional queuing for reprioritization in support
+   of async. execution (#862)
+ * resource: fix a satisfiabilty bug with backfilling (#859) 
+ * testsuite: fix logging test in t7000-shell-datastaging.t (#865)
+ * Using static_cast to ensure type compatibility in readers. (#858)
+ * Fix an assortment of issues discovered during system instance testing
+   on LLNL's Fluke machine (#872)
+
+### Cleanup
+
+ * data-staging: define FLUX_SHELL_PLUGIN_NAME (#864)
+
+
 flux-sched version 0.18.0 - 2021-09-04
 --------------------------------------
 
