@@ -819,8 +819,10 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
 
     if (!(f = flux_rpc (ctx->h, "resource.get-xml", NULL, 0, 0)))
         goto done;
-    if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0)
+    if (flux_rpc_get_unpack (f, "{s:o}", "xml", &xml_array) < 0) {
+        flux_log (ctx->h, LOG_ERR, "%s", future_strerror (f, errno));
         goto done;
+    }
     if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
         if (rank != IDSET_INVALID_ID) {
             if (!(hwloc_xml = get_array_string (xml_array, rank)))
@@ -1354,15 +1356,18 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     // Perform the initial status marking only when "up" rankset is available
     // Rankless reader cases (required for testing e.g., GRUG) must not
     // exectute the following branch.
-    if (ctx->is_ups_set ()) {
+    // Use ctx->update_f != nullptr to differentiate
+    if (ctx->update_f) {
         if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: mark (down)", __FUNCTION__);
             return -1;
         }
-        if (mark (ctx, ctx->get_ups ().c_str (),
-                  resource_pool_t::status_t::UP) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: mark (up)", __FUNCTION__);
-            return -1;
+        if (ctx->is_ups_set ()) {
+            if (mark (ctx, ctx->get_ups ().c_str (),
+                      resource_pool_t::status_t::UP) < 0) {
+                flux_log (ctx->h, LOG_ERR, "%s: mark (up)", __FUNCTION__);
+                return -1;
+            }
         }
     }
     return 0;

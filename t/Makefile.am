@@ -77,6 +77,8 @@ TESTS = \
     t3028-resource-grow.t \
     t3029-resource-prune.t \
     t3030-resource-multi.t \
+    t3300-system-dontblock.t \
+    t3301-system-latestart.t \
     t4000-match-params.t \
     t4001-match-allocate.t \
     t4002-match-reserve.t \
@@ -108,5 +110,5 @@ EXTRA_DIST= \
 	rc
 
 clean-local:
-	rm -rf *.o test-results trash-directory*
+	rm -fr trash-directory.* test-results .prove *.broker.log */*.broker.log *.output python/__pycache__
 
