@@ -104,6 +104,15 @@ public:
     unsigned int calc_count (const Flux::Jobspec::Resource &resource,
                              unsigned int qual_cnt) const;
 
+    /*! Calculate the effective max count that should be allocated.
+     *
+     *  \param resource  resource section of the jobspec.
+     *  \return          Effective max count; 0 if an error is encountered.
+     */
+    unsigned int calc_effective_max (
+                     const Flux::Jobspec::Resource &resource) const;
+
+
     /*! Set prune filters based on spec. The spec should comply with
      *  the following format:
      *  <HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>
