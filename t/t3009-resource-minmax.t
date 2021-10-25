@@ -129,4 +129,20 @@ test_expect_success "${test013_desc}" '
     test_cmp 013.R.out ${exp_dir}/013.R.out
 '
 
+cmds014="${cmd_dir}/cmds04.in"
+test014_desc="min/max with OP=addition on node type works (pol=first)"
+test_expect_success "${test014_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+    ${query} -L ${grugs} -S CA -P first -t 014.R.out < cmds014 &&
+    test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
+cmds015="${cmd_dir}/cmds05.in"
+test015_desc="min/max with OP=power on node type works (pol=first)"
+test_expect_success "${test015_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+    ${query} -L ${grugs} -S CA -P first -t 015.R.out < cmds015 &&
+    test_cmp 015.R.out ${exp_dir}/015.R.out
+'
+
 test_done
