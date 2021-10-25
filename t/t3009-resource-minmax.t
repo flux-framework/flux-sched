@@ -56,8 +56,8 @@ test_expect_success "${test005_desc}" '
 '
 
 #
-# Selection Policy -- High ID first (-P low)
-#     The resource vertex with higher ID is preferred among its kind
+# Selection Policy -- Low ID first (-P low)
+#     The resource vertex with lower ID is preferred among its kind
 #     (e.g., node0 is preferred over node1 if available)
 #
 
