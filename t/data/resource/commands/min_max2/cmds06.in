@@ -1,0 +1,4 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/min_max2/test007.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/min_max2/test008.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/min_max2/test008.yaml
+quit

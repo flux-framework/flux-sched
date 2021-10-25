@@ -1,0 +1,34 @@
+version: 9999
+resources:
+  - type: node
+    count: 1
+    with:
+    - type: slot
+      label: default
+      count: 1
+      with:
+        - type: socket
+          count: 1
+          with:
+            - type: core
+              count:
+                min: 1
+                max: 99999
+                operator: "+"
+                operand: 1
+            - type: gpu
+              count:
+                min: 1
+                max: 99999
+                operator: "+"
+                operand: 1
+
+# a comment
+attributes:
+  system:
+    duration: 57600
+tasks:
+  - command: [ "default" ]
+    slot: socketlevel
+    count:
+      per_slot: 1
