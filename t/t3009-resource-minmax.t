@@ -103,7 +103,6 @@ test_expect_success "${test010_desc}" '
 
 #
 # Selection Policy -- First Match (-P first)
-#    Only min should be selected under match first policy
 #
 
 cmds011="${cmd_dir}/cmds01.in"
