@@ -34,6 +34,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <cstdint>
+#include <limits>
 #include <yaml-cpp/yaml.h>
 
 namespace Flux {
@@ -55,7 +56,7 @@ public:
     std::string type;
     struct {
         unsigned min;
-        unsigned max;
+        unsigned max = std::numeric_limits<unsigned int>::max();
         char oper = '+';
         int operand = 1;
     } count;
