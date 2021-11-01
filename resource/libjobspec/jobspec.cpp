@@ -45,7 +45,7 @@ parse_error::parse_error(const YAML::Node &node, const char *msg)
 namespace {
 void parse_yaml_count (Resource& res, const YAML::Node &cnode)
 {
-    /* count can have an unsigned interger value */
+    /* count can have an unsigned integer value */
     if (cnode.IsScalar()) {
         res.count.min = cnode.as<unsigned>();
         res.count.max = res.count.min;
@@ -57,41 +57,40 @@ void parse_yaml_count (Resource& res, const YAML::Node &cnode)
         throw parse_error (cnode, "count is not a mapping");
     }
 
-    /* Verify existance of required entries */
+    /* Verify existence of required entries */
     if (!cnode["min"]) {
         throw parse_error (cnode, "Key \"min\" missing from count");
     }
     if (!cnode["min"].IsScalar()) {
         throw parse_error (cnode["min"], "Value of \"min\" must be a scalar");
     }
-    if (!cnode["max"]) {
-        throw parse_error (cnode, "Key \"max\" missing from count");
-    }
-    if (!cnode["max"].IsScalar()) {
+    if (cnode["max"] && !cnode["max"].IsScalar()) {
         throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
     }
-    if (!cnode["operator"]) {
-        throw parse_error (cnode, "Key \"operator\" missing from count");
-    }
-    if (!cnode["operator"].IsScalar()) {
+    if (cnode["operator"] && !cnode["operator"].IsScalar()) {
         throw parse_error (cnode["operator"],
                            "Value of \"operator\" must be a scalar");
     }
-    if (!cnode["operand"]) {
-        throw parse_error (cnode, "Key \"operand\" missing from count");
-    }
-    if (!cnode["operand"].IsScalar()) {
+    if (cnode["operand"] && !cnode["operand"].IsScalar()) {
         throw parse_error (cnode["operand"],
                            "Value of \"operand\" must be a scalar");
     }
 
     /* Validate values of entries */
     res.count.min = cnode["min"].as<unsigned>();
+    if (cnode["max"]) {
+        res.count.max = cnode["max"].as<unsigned>();
+    }
+    if (cnode["operator"]) {
+        res.count.oper = cnode["operator"].as<char>();
+    }
+    if (cnode["operand"]) {
+        res.count.operand = cnode["operand"].as<int>();
+    }
+
     if (res.count.min < 1) {
         throw parse_error (cnode["min"], "\"min\" must be greater than zero");
     }
-
-    res.count.max = cnode["max"].as<unsigned>();
     if (res.count.max < 1) {
         throw parse_error (cnode["max"], "\"max\" must be greater than zero");
     }
@@ -99,8 +98,6 @@ void parse_yaml_count (Resource& res, const YAML::Node &cnode)
         throw parse_error (cnode["max"],
                            "\"max\" must be greater than or equal to \"min\"");
     }
-
-    res.count.oper = cnode["operator"].as<char>();
     switch (res.count.oper) {
     case '+':
     case '*':
@@ -109,8 +106,6 @@ void parse_yaml_count (Resource& res, const YAML::Node &cnode)
     default:
         throw parse_error (cnode["operator"], "Invalid count operator");
     }
-
-    res.count.operand = cnode["operand"].as<int>();
 }
 }
 
