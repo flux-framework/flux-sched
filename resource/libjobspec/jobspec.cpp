@@ -45,7 +45,7 @@ parse_error::parse_error(const YAML::Node &node, const char *msg)
 namespace {
 void parse_yaml_count (Resource& res, const YAML::Node &cnode)
 {
-    /* count can have an unsigned interger value */
+    /* count can have an unsigned integer value */
     if (cnode.IsScalar()) {
         res.count.min = cnode.as<unsigned>();
         res.count.max = res.count.min;
@@ -57,7 +57,7 @@ void parse_yaml_count (Resource& res, const YAML::Node &cnode)
         throw parse_error (cnode, "count is not a mapping");
     }
 
-    /* Verify existance of required entries */
+    /* Verify existence of required entries */
     if (!cnode["min"]) {
         throw parse_error (cnode, "Key \"min\" missing from count");
     }
