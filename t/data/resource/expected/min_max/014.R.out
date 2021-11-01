@@ -3753,13 +3753,6 @@ INFO: =============================
       ---------------core35[1:x]
       ------------socket1[1:x]
       ---------node31[1:x]
-      ------rack1[1:s]
-      ---resv_test0[1:s]
-INFO: =============================
-INFO: JOBID=2
-INFO: RESOURCES=ALLOCATED
-INFO: SCHEDULED AT=Now
-INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
       ---------------core2[1:x]
@@ -4073,13 +4066,6 @@ INFO: =============================
       ---------------core35[1:x]
       ------------socket1[1:x]
       ---------node103[1:x]
-      ------rack5[1:s]
-      ---resv_test0[1:s]
-INFO: =============================
-INFO: JOBID=3
-INFO: RESOURCES=ALLOCATED
-INFO: SCHEDULED AT=Now
-INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
       ---------------core2[1:x]
@@ -4239,11 +4225,11 @@ INFO: =============================
       ------rack5[1:s]
       ---resv_test0[1:s]
 INFO: =============================
-INFO: JOBID=4
+INFO: JOBID=2
 INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
 INFO: No matching resources found
-INFO: JOBID=5
+INFO: JOBID=3
 INFO: =============================

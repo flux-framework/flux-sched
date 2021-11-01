@@ -238,7 +238,7 @@ int dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
                 for (auto &c_resource : resource.with)
                     if (c_resource.type == "slot") {
                         *slot_resource = &c_resource;
-                        *nslots = c_resource.count.min;
+                        *nslots = m_match->calc_effective_max (c_resource);
                     }
             }
             matched = true;
@@ -248,7 +248,7 @@ int dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
             if (matched == true)
                 goto ret;
             *slot_resource = &resource;
-            *nslots = resource.count.min; // slot is limited to only min
+            *nslots = m_match->calc_effective_max (resource);
             matched = true;
         }
     }
@@ -422,7 +422,9 @@ bool dfu_impl_t::is_enough (const subsystem_t &subsystem,
                [&] (const Resource &resource) {
                    unsigned int total = dfu.total_count (subsystem,
                                                          resource.type);
-                   unsigned int required = multiplier * resource.count.min;
+                   unsigned int required = multiplier
+                                           * m_match->calc_effective_max (
+                                                          resource);
                    return total >= required;
                });
 }
@@ -434,7 +436,8 @@ int dfu_impl_t::new_sat_types (const subsystem_t &subsystem,
 {
     for (auto &resource : resources) {
         unsigned int total = dfu.total_count (subsystem, resource.type);
-        unsigned int required = multiplier * resource.count.min;
+        unsigned int required = multiplier
+                                * m_match->calc_effective_max (resource);
         bool sat = total >= required;
         if (sat && sat_types.find (resource.type) == sat_types.end ()) {
             auto ret = sat_types.insert (resource.type);

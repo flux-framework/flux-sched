@@ -56,8 +56,8 @@ test_expect_success "${test005_desc}" '
 '
 
 #
-# Selection Policy -- High ID first (-P low)
-#     The resource vertex with higher ID is preferred among its kind
+# Selection Policy -- Low ID first (-P low)
+#     The resource vertex with lower ID is preferred among its kind
 #     (e.g., node0 is preferred over node1 if available)
 #
 
@@ -103,7 +103,6 @@ test_expect_success "${test010_desc}" '
 
 #
 # Selection Policy -- First Match (-P first)
-#    Only min should be selected under match first policy
 #
 
 cmds011="${cmd_dir}/cmds01.in"
@@ -128,6 +127,22 @@ test_expect_success "${test013_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
     ${query} -L ${grugs} -S CA -P first -t 013.R.out < cmds013 &&
     test_cmp 013.R.out ${exp_dir}/013.R.out
+'
+
+cmds014="${cmd_dir}/cmds04.in"
+test014_desc="min/max with OP=addition on node type works (pol=first)"
+test_expect_success "${test014_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+    ${query} -L ${grugs} -S CA -P first -t 014.R.out < cmds014 &&
+    test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
+cmds015="${cmd_dir}/cmds05.in"
+test015_desc="min/max with OP=power on node type works (pol=first)"
+test_expect_success "${test015_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+    ${query} -L ${grugs} -S CA -P first -t 015.R.out < cmds015 &&
+    test_cmp 015.R.out ${exp_dir}/015.R.out
 '
 
 test_done

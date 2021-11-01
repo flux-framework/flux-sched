@@ -1,0 +1,2 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/min_max2/test001.yaml
+quit

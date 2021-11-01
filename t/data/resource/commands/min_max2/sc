@@ -1,0 +1,55 @@
+#cmds012="${cmd_dir}/cmds02.in"
+#test012_desc="min=1/max=99999 on core works (pol=first)"
+#test_expect_success "${test012_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+#    ${query} -L ${grugs} -S CA -P first -t 012.R.out < cmds012 &&
+#    test_cmp 012.R.out ${exp_dir}/012.R.out
+#'
+#
+#cmds013="${cmd_dir}/cmds03.in"
+#test013_desc="min=1/max=18 on core min=1/max=2 on gpu works (pol=first)"
+#test_expect_success "${test013_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
+#    ${query} -L ${grugs} -S CA -P first -t 013.R.out < cmds013 &&
+#    test_cmp 013.R.out ${exp_dir}/013.R.out
+#'
+#
+#cmds014="${cmd_dir}/cmds04.in"
+#test014_desc="min=1/max=99999 on core min=1/max=99999 on gpu works (pol=first)"
+#test_expect_success "${test014_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+#    ${query} -L ${grugs} -S CA -P first -t 014.R.out < cmds014 &&
+#    test_cmp 014.R.out ${exp_dir}/014.R.out
+#'
+#
+#cmds015="${cmd_dir}/cmds05.in"
+#test015_desc="min=1/max=18 on core results in count=4 (pol=first)"
+#test_expect_success "${test015_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+#    ${query} -L ${grugs} -S CA -P first -t 015.R.out < cmds015 &&
+#    test_cmp 015.R.out ${exp_dir}/015.R.out
+#'
+#
+#cmds016="${cmd_dir}/cmds06.in"
+#test016_desc="A node exclusive request (node=1) works (pol=first)"
+#test_expect_success "${test016_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds016} > cmds016 &&
+#    ${query} -L ${grugs} -S CA -P first -t 016.R.out < cmds016 &&
+#    test_cmp 016.R.out ${exp_dir}/016.R.out
+#'
+#
+#cmds018="${cmd_dir}/cmds08.in"
+#test018_desc="A multi-level min/max works (pol=first)"
+#test_expect_success "${test018_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds018} > cmds018 &&
+#    ${query} -L ${grugs} -S CA -P first -t 018.R.out < cmds018 &&
+#    test_cmp 018.R.out ${exp_dir}/018.R.out
+#'
+#
+#cmds019="${cmd_dir}/cmds09.in"
+#test019_desc="A multi-level min/max works with an existing allocation (pol=first)"
+#test_expect_success "${test019_desc}" '
+#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds019} > cmds019 &&
+#    ${query} -L ${grugs} -S CA -P first -t 019.R.out < cmds019 &&
+#    test_cmp 019.R.out ${exp_dir}/019.R.out
+#'

@@ -9,7 +9,7 @@
 \*****************************************************************************/
 
 #include <algorithm>
-
+#include <limits>
 #include "policies/base/matcher.hpp"
 
 namespace Flux {
@@ -138,6 +138,12 @@ unsigned int matcher_util_api_t::calc_count (
         break;
     }
     return count;
+}
+
+unsigned int matcher_util_api_t::calc_effective_max (
+    const Flux::Jobspec::Resource &resource) const
+{
+    return calc_count (resource, std::numeric_limits<unsigned int>::max ());
 }
 
 int matcher_util_api_t::register_resource_pair (const std::string &subsystem,

@@ -77,6 +77,7 @@ TESTS = \
     t3028-resource-grow.t \
     t3029-resource-prune.t \
     t3030-resource-multi.t \
+    t3031-resource-minmax2.t \
     t3300-system-dontblock.t \
     t3301-system-latestart.t \
     t4000-match-params.t \
