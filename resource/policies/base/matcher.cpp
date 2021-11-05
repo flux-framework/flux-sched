@@ -116,9 +116,13 @@ unsigned int matcher_util_api_t::calc_count (
         count -= (range % resource.count.operand);
         break;
     case '*':
-        while (cur <= qc && cur <= resource.count.max) {
+        if (resource.count.operand == 1)
             count = cur;
-            cur *= resource.count.operand;
+        else {
+            while (cur <= qc && cur <= resource.count.max) {
+                count = cur;
+                cur *= resource.count.operand;
+            }
         }
         break;
     case '^':
