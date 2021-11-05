@@ -105,15 +105,15 @@ unsigned int matcher_util_api_t::calc_count (
         || resource.count.min > qc)
         return 0;
 
+    unsigned int range = 0;
     unsigned int count = 0;
     unsigned int cur = resource.count.min;
 
     switch (resource.count.oper) {
     case '+':
-        while (cur <= qc && cur <= resource.count.max) {
-            count = cur;
-            cur += resource.count.operand;
-        }
+        count = (qc < resource.count.max)? qc : resource.count.max;
+        range = count - cur;
+        count -= (range % resource.count.operand);
         break;
     case '*':
         while (cur <= qc && cur <= resource.count.max) {
