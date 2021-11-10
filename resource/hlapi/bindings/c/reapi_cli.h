@@ -117,24 +117,6 @@ int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V, int64_t *E,
                     int64_t *J, double *load,
                     double *min, double *max, double *avg);
 
-/*! Set the opaque handle to the reapi cli context.
- *
- *  \param ctx       reapi_cli_ctx_t context object
- *  \param h         Opaque handle. How it is used is an implementation
- *                   detail. However, when it is used within a Flux's
- *                   service cli, it is expected to be a pointer
- *                   to a flux_t object.
- *  \return          0 on success; -1 on error.
- */
-int reapi_cli_set_handle (reapi_cli_ctx_t *ctx, void *handle);
-
-/*! Set the opaque handle to the reapi cli context.
- *
- *  \param ctx       reapi_cli_ctx_t context object
- *  \return          handle
- */
-void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx);
-
 /*! Get the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object

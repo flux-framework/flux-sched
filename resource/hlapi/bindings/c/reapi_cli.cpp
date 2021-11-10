@@ -27,24 +27,39 @@ using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
 struct reapi_cli_ctx {
-    flux_t *h;
+    resource_query_t *rqt;
+    std::string err_msg;
 };
 
 extern "C" reapi_cli_ctx_t *reapi_cli_new ()
 {
-    reapi_cli_ctx_t *ctx = NULL;
-    if (!(ctx = (reapi_cli_ctx_t *)malloc (sizeof (*ctx)))) {
+    reapi_cli_ctx_t *ctx = nullptr;
+
+    try {
+        ctx = new reapi_cli_ctx_t;
+    }
+    catch (const std::bad_alloc &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: " 
+                         + std::string (e.what ()) + "\n";
         errno = ENOMEM;
         goto out;
     }
-    ctx->h = NULL;
+
+    ctx->rqt = nullptr;
+    ctx->err_msg = "";
+
 out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
-    free (ctx);
+    int saved_errno = errno;
+    if (ctx->rqt)
+        delete ctx->rqt;
+    delete ctx;
+    errno = saved_errno;
 }
 
 extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
@@ -128,25 +143,6 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V,
         return -1;
     }
     return reapi_cli_t::stat (ctx->h, *V, *E, *J, *load, *min, *max, *avg);
-}
-
-extern "C" int reapi_cli_set_handle (reapi_cli_ctx_t *ctx, void *handle)
-{
-    if (!ctx) {
-        errno = EINVAL;
-        return -1;
-    }
-    ctx->h = (flux_t *)handle;
-    return 0;
-}
-
-extern "C" void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx)
-{
-    if (!ctx) {
-        errno = EINVAL;
-        return NULL;
-    }
-    return ctx->h;
 }
 
 extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
