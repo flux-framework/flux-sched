@@ -174,6 +174,9 @@ AC_CONFIG_FILES([Makefile
   resource/hlapi/Makefile
   resource/hlapi/bindings/Makefile
   resource/hlapi/bindings/c/Makefile
+  resource/policies/Makefile
+  resource/policies/base/Makefile
+  resource/policies/base/test/Makefile
   qmanager/Makefile
   qmanager/modules/Makefile
   etc/Makefile
