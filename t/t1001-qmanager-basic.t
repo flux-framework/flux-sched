@@ -44,7 +44,7 @@ test_expect_success 'qmanager: basic job runs in simulated mode' '
 '
 
 test_expect_success 'qmanager: canceling job during execution works' '
-    jobid=$(flux jobspec srun -t 100 hostname | \
+    jobid=$(flux mini run --dry-run -t 100m hostname | \
         exec_test | flux job submit) &&
     flux job wait-event -vt 10 ${jobid} start &&
     flux job cancel ${jobid} &&
@@ -56,7 +56,7 @@ test_expect_success 'qmanager: canceling job during execution works' '
 '
 
 test_expect_success 'qmanager: exception during initialization is supported' '
-    flux jobspec srun hostname | \
+    flux mini run --dry-run hostname | \
       exec_testattr mock_exception init > ex1.json &&
     jobid=$(flux job submit ex1.json) &&
     flux job wait-event -t 10 ${jobid} exception > exception.1.out &&
@@ -69,7 +69,7 @@ test_expect_success 'qmanager: exception during initialization is supported' '
 '
 
 test_expect_success 'qmanager: exception during run is supported' '
-	flux jobspec srun hostname | \
+	flux mini run --dry-run hostname | \
 	  exec_testattr mock_exception run > ex2.json &&
 	jobid=$(flux job submit ex2.json) &&
 	flux job wait-event -t 10 ${jobid} exception > exception.2.out &&
@@ -81,7 +81,7 @@ test_expect_success 'qmanager: exception during run is supported' '
 '
 
 test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
-    jobid=$(flux jobspec srun -N 64 hostname | \
+    jobid=$(flux mini run --dry-run -N 64 -n 64 hostname | \
         exec_test | flux job submit) &&
     flux job wait-event -t 10 ${jobid} clean &&
     flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"

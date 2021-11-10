@@ -16,17 +16,17 @@ test_under_flux 1
 exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
 
 test_expect_success 'qmanager: generate jobspecs of varying requirements' '
-    flux jobspec srun  -n8 -t 60 hostname | exec_test > C08.T3600.json && #1
-    flux jobspec srun -n10 -t 60 hostname | exec_test > C10.T3600.json && #2
-    flux jobspec srun -n12 -t 60 hostname | exec_test > C12.T3600.json && #3
-    flux jobspec srun -n14 -t 60 hostname | exec_test > C14.T3600.json && #4
-    flux jobspec srun -n16 -t 60 hostname | exec_test > C16.T3600.json && #5
-    flux jobspec srun -n6 -t 121 hostname | exec_test > C06.T7260.json && #6
-    flux jobspec srun -n4 -t 179 hostname | exec_test > C04.T10800.json && #7
-    flux jobspec srun -n4 -t 239 hostname | exec_test > C04.T14400.json && #8
-    flux jobspec srun -n2 -t 239 hostname | exec_test > C02.T14400.json && #9
-    flux jobspec srun -n2 -t 299 hostname | exec_test > C02.T18000.json && #10
-    flux jobspec srun -n2 -t 59 hostname | exec_test > C02.T3600.json #11
+    flux mini run --dry-run -n8 -t 60m hostname | exec_test > C08.T3600.json && #1
+    flux mini run --dry-run -n10 -t 60m hostname | exec_test > C10.T3600.json && #2
+    flux mini run --dry-run -n12 -t 60m hostname | exec_test > C12.T3600.json && #3
+    flux mini run --dry-run -n14 -t 60m hostname | exec_test > C14.T3600.json && #4
+    flux mini run --dry-run -n16 -t 60m hostname | exec_test > C16.T3600.json && #5
+    flux mini run --dry-run -n6 -t 121m hostname | exec_test > C06.T7260.json && #6
+    flux mini run --dry-run -n4 -t 179m hostname | exec_test > C04.T10800.json && #7
+    flux mini run --dry-run -n4 -t 239m hostname | exec_test > C04.T14400.json && #8
+    flux mini run --dry-run -n2 -t 239m hostname | exec_test > C02.T14400.json && #9
+    flux mini run --dry-run -n2 -t 299m hostname | exec_test > C02.T18000.json && #10
+    flux mini run --dry-run -n2 -t 59m hostname | exec_test > C02.T3600.json #11
 '
 
 test_expect_success 'load test resources' '
