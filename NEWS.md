@@ -1,3 +1,22 @@
+flux-sched version 0.20.0 - 2021-11-09
+--------------------------------------
+This version of Fluxion lays a foundation for
+node-exclusive scheduling, which will
+use a moldable jobspec to match every node-local
+resource of each selected compute node.
+
+### Fixes
+
+ * jobspec: make max/operator/operand optional (#879)
+ * resource: improve effective max calc performance for operator="+"
+   (#882)
+ * resource: beefing up min/max count-based matching (#878)
+
+### Cleanup
+
+ * build: drop ax_python_devel.m4 (#881)
+
+
 flux-sched version 0.19.0 - 2021-10-15
 --------------------------------------
 
