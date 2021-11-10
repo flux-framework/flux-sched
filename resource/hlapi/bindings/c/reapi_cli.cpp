@@ -62,6 +62,34 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
     errno = saved_errno;
 }
 
+extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
+                                     const char *options)
+{
+    int rc = -1;
+    ctx->rqt = nullptr;
+
+    try {
+        ctx->rqt = new resource_query_t (rgraph, options);
+    } catch (std::bad_alloc &e) {
+        ctx->err_msg += __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: "
+                         + std::string (e.what ()) + "\n";
+        errno = ENOMEM;
+        goto out;
+    } catch (std::runtime_error &e) {
+        ctx->err_msg += __FUNCTION__;
+        ctx->err_msg += ": Runtime error: "
+                         + std::string (e.what ()) + "\n";
+        errno = EPROTO;
+        goto out;
+    }
+
+    rc = 0;
+
+out:
+    return rc;    
+}
+
 extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                    bool orelse_reserve, const char *jobspec,
                    const uint64_t jobid, bool *reserved,
