@@ -185,3 +185,10 @@ for time-varying variables,
 our Fluxion scheduler uses scalable techniques to
 describe [the motion of scheduled points in time](https://github.com/flux-framework/flux-sched/blob/master/resource/planner/README.md)
 for a diverse set of resources. 
+
+
+#### License
+
+SPDX-License-Identifier: LGPL-3.0
+
+LLNL-CODE-764420
