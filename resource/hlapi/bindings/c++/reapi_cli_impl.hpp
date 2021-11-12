@@ -30,6 +30,13 @@ namespace detail {
 
 const int NOT_YET_IMPLEMENTED = -1;
 
+static double get_elapsed_time (timeval &st, timeval &et)
+{
+    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
+    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
+    return ts2 - ts1;
+}
+
 /****************************************************************************
  *                                                                          *
  *               REAPI CLI Class Private Definitions                        *
@@ -49,7 +56,67 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
                                  const uint64_t jobid, bool &reserved,
                                  std::string &R, int64_t &at, double &ov)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+    at = 0;
+    ov = 0.0f;
+    struct timeval start_time, end_time;
+
+    try {
+        Flux::Jobspec::Jobspec job {jobspec};
+        std::stringstream o;
+
+        if ( (rc = gettimeofday (&start_time, NULL)) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: gettimeofday: "
+                          + std::string (strerror (errno)) + "\n";
+            goto out;
+        }
+
+        if (orelse_reserve)
+            rc = rq->traverser_run (job,
+                                match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                                (int64_t)jobid, at);
+        else
+            rc = rq->traverser_run (job, match_op_t::MATCH_ALLOCATE, 
+                                    (int64_t)jobid, at);
+
+        if (rq->get_traverser_err_msg () != "") {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
+            rq->clear_traverser_err_msg ();
+            rc = -1;
+            goto out;
+        }
+        if ( (rc = rq->writers->emit (o)) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: match writer emit: "
+                          + std::string (strerror (errno)) + "\n";
+            goto out;
+        }
+
+        R = o.str ();
+
+        if ( (rc = gettimeofday (&end_time, NULL)) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: gettimeofday: "
+                          + std::string (strerror (errno)) + "\n";
+            goto out;
+        }
+    } 
+    catch (Flux::Jobspec::parse_error &e) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: Jobspec error for "
+                      + std::to_string (rq->get_job_counter ())
+                      + ": " + std::string (e.what ()) + "\n";
+        rc = -1;
+        goto out;
+    }
+
+    ov = get_elapsed_time (start_time, end_time);
+
+out:
+    return rc;
 }
 
 int reapi_cli_t::update_allocate (void *h, const uint64_t jobid,

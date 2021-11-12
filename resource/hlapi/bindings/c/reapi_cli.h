@@ -63,7 +63,7 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx, bool orelse_reserve,
-                              const char *jobspec, const uint64_t jobid,
+                              const char *jobspec, uint64_t *jobid,
                               bool *reserved,
                               char **R, int64_t *at, double *ov);
 
