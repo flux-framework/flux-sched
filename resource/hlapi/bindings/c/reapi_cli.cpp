@@ -173,11 +173,11 @@ out:
 extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
                                  const uint64_t jobid, bool noent_ok)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::cancel (ctx->h, jobid, noent_ok);
+    return reapi_cli_t::cancel (ctx->rqt, jobid, noent_ok);
 }
 
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,

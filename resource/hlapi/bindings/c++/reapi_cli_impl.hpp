@@ -133,9 +133,32 @@ int reapi_cli_t::match_allocate_multi (void *h, bool orelse_reserve,
     return NOT_YET_IMPLEMENTED;
 }
 
-int reapi_cli_t::cancel (void *h, const int64_t jobid, bool noent_ok)
+int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    if (rq->allocation_exists (jobid)) {
+        if ( (rc = rq->remove_job (jobid)) == 0)
+            rq->erase_allocation (jobid);
+    } else if (rq->reservation_exists (jobid)) {
+        if ( (rc = rq->remove_job (jobid)) == 0)
+            rq->erase_reservation (jobid);
+    } else {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: nonexistent job "
+                      + std::to_string (jobid) + "\n";
+        goto out;
+    }
+
+    if (rc != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: error encountered while removing job "
+                      + std::to_string (jobid) + "\n";
+    }
+
+out:
+    return rc;
 }
 
 int reapi_cli_t::info (void *h, const int64_t jobid,
