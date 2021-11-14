@@ -161,10 +161,26 @@ out:
     return rc;
 }
 
-int reapi_cli_t::info (void *h, const int64_t jobid,
+int reapi_cli_t::info (void *h, const uint64_t jobid, std::string &mode,
                        bool &reserved, int64_t &at, double &ov)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    std::shared_ptr<job_info_t> info = nullptr;
+
+    if ( !(rq->job_exists (jobid))) {
+       m_err_msg += __FUNCTION__;
+       m_err_msg += ": ERROR: nonexistent job "
+                     + std::to_string (jobid) + "\n";
+       return -1;
+    }
+
+    info = rq->get_job (jobid);
+    get_jobstate_str (info->state, mode);
+    reserved = (info->state == job_lifecycle_t::RESERVED)? true : false;
+    at = info->scheduled_at;
+    ov = info->overhead;
+
+    return 0;
 }
 
 int reapi_cli_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,

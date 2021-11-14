@@ -98,6 +98,7 @@ int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobid     const jobid of the uint64_t type.
+ *  \param mode      return string containing the job state.
  *  \param reserved  Boolean into which to return true if this job has been
  *                   reserved instead of allocated.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
@@ -108,7 +109,8 @@ int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
-                    bool *reserved, int64_t *at, double *ov);
+                    char **mode, bool *reserved, int64_t *at, 
+                    double *ov);
 
 /*! Get the performance information about the resource infrastructure.
  *
