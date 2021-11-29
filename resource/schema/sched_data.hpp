@@ -27,7 +27,7 @@ struct schedule_t {
 
     std::map<int64_t, int64_t> allocations;
     std::map<int64_t, int64_t> reservations;
-    planner_t *plans = NULL;
+    planner_t *plans = nullptr;
 };
 
 } // Flux::resource_model
