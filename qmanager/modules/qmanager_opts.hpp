@@ -124,7 +124,7 @@ public:
 private:
     int parse_queues (const std::string &queues);
 
-    const std::string m_default_queue_name = "default";
+    std::string m_default_queue_name = "default";
     std::string m_default_queue = QMANAGER_OPTS_UNSET_STR;
 
     // default queue properties
