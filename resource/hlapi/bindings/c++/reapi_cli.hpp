@@ -27,7 +27,10 @@ namespace resource_model {
 namespace detail {
 
 class reapi_cli_t : public reapi_t {
-public:
+private:
+    static std::string m_err_msg;
+
+public:  
     static int match_allocate (void *h, bool orelse_reserve,
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,
@@ -43,6 +46,8 @@ public:
                      bool &reserved, int64_t &at, double &ov);
     static int stat (void *h, int64_t &V, int64_t &E,int64_t &J,
                      double &load, double &min, double &max, double &avg);
+    static const std::string &get_err_message ();
+    static void clear_err_message ();
 };
 
 

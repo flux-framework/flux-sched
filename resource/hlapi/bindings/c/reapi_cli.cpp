@@ -149,6 +149,27 @@ extern "C" void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx)
     return ctx->h;
 }
 
+extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
+{
+    std::string err_buf = "";
+
+    if (ctx->rqt)
+        err_buf = ctx->rqt->get_resource_query_err_msg () 
+                    + reapi_cli_t::get_err_message () + ctx->err_msg;
+    else
+        err_buf = reapi_cli_t::get_err_message () + ctx->err_msg;
+
+    return strdup (err_buf.c_str ());
+}
+
+extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
+{
+    if (ctx->rqt)
+        ctx->rqt->clear_resource_query_err_msg ();
+    reapi_cli_t::clear_err_message ();
+    ctx->err_msg = "";
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

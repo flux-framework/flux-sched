@@ -135,6 +135,19 @@ int reapi_cli_set_handle (reapi_cli_ctx_t *ctx, void *handle);
  */
 void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx);
 
+/*! Get the reapi cli error message.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \return          string containing the error message
+ */
+const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
+
+/*! Clear the reapi cli error message.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ */
+void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx);
+
 #ifdef __cplusplus
 }
 #endif
