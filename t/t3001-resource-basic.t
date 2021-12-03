@@ -64,15 +64,6 @@ test_expect_success "${test006_desc}" '
     test_cmp 006.R.out ${exp_dir}/006.R.out
 '
 
-# FIXME: investigate the failure
-#cmds007="${cmd_dir}/cmds07.in"
-#test007_desc="match allocate 9 jobspecs with 1 slot (8c,2m) (pol=hi)"
-#test_expect_success "${test007_desc}" '
-#    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds007} > cmds007 &&
-#    ${query} -L ${grugs} -S CA -P high -t 007.R.out < cmds007 &&
-#    test_cmp 007.R.out ${exp_dir}/007.R.out
-#'
-
 cmds008="${cmd_dir}/cmds08.in"
 test008_desc="36 core (satisfiable) cores and 37 cores (unsatisfiable) (pol=hi)"
 test_expect_success "${test008_desc}" '
@@ -82,10 +73,11 @@ test_expect_success "${test008_desc}" '
 '
 
 
-## Selection Policy -- Low ID first (-P low)
-##     The resource vertex with lower ID is preferred among its kind
-##     (e.g., node0 is preferred over node1 if available)
-##
+#
+# Selection Policy -- Low ID first (-P low)
+#     The resource vertex with lower ID is preferred among its kind
+#     (e.g., node0 is preferred over node1 if available)
+#
 
 cmds009="${cmd_dir}/cmds01.in"
 test009_desc="match allocate 4 jobspecs with 1 slot: 1 socket: 1 core (pol=low)"
@@ -163,6 +155,7 @@ test_expect_success "${test040_desc}" '
 #
 # Selection Policy -- First Match (-P first)
 #
+
 cmds041="${cmd_dir}/cmds01.in"
 test041_desc="match alloc 4 jobs with 1 slot: 1 socket: 1 core (pol=first)"
 test_expect_success "${test041_desc}" '
