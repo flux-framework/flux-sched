@@ -212,4 +212,168 @@ test_expect_success "${test048_desc}" '
     test_cmp 048.R.out ${exp_dir}/048.R.out
 '
 
+#
+# Selection Policy -- High node first (-P hinode)
+#     Within node-level locality constraint, the resource vertex
+#     with higher ID is preferred among its kind
+#     (e.g., core1 is preferred over core0 but those in node1
+#            is selected first before those in node0 is selected)
+#     If a node-level locality contraint is already specified in
+#     the jobspec, this policy is identical to high: e.g.,
+#         node[2]->slot[2]->core[2].
+#     Only when node-level locality contraint is absent, the
+#     match behavior is deviated from high: e.g.,
+#         slot[2]->core[2].
+
+cmds051="${cmd_dir}/cmds01.in"
+test051_desc="match allocate 4 jobs with 1 slot: 1 socket: 1 core (pol=hinode)"
+test_expect_success "${test051_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds051} > cmds051 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 051.R.out < cmds051 &&
+    test_cmp 051.R.out ${exp_dir}/001.R.out
+'
+
+cmds052="${cmd_dir}/cmds02.in"
+test052_desc="match allocate 5 jobs instead - last one must fail (pol=hinode)"
+test_expect_success "${test052_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds052} > cmds052 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 052.R.out < cmds052 &&
+    test_cmp 052.R.out ${exp_dir}/002.R.out
+'
+
+cmds053="${cmd_dir}/cmds03.in"
+test053_desc="match allocate_orelse_reserve 10 jobspecs (pol=hinode)"
+test_expect_success "${test053_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds053} > cmds053 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 053.R.out < cmds053 &&
+    test_cmp 053.R.out ${exp_dir}/003.R.out
+'
+
+### Note that the memory pool granularity is 2GB
+cmds054="${cmd_dir}/cmds04.in"
+test054_desc="match allocate 3 jobs with 1 slot: 2 sockets (pol=hinode)"
+test_expect_success "${test054_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds054} > cmds054 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 054.R.out < cmds054 &&
+    test_cmp 054.R.out ${exp_dir}/004.R.out
+'
+
+cmds055="${cmd_dir}/cmds05.in"
+test055_desc="match allocate_orelse_reserve 100 jobs instead (pol=hinode)"
+test_expect_success "${test055_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds055} > cmds055 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 055.R.out < cmds055 &&
+    test_cmp 055.R.out ${exp_dir}/005.R.out
+'
+
+cmds056="${cmd_dir}/cmds06.in"
+test056_desc="match allocate 2 jobs with 2 nodes - last must fail (pol=hinode)"
+test_expect_success "${test056_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds056} > cmds056 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 056.R.out < cmds056 &&
+    test_cmp 056.R.out ${exp_dir}/006.R.out
+'
+
+cmds057="${cmd_dir}/cmds07.in"
+test057_desc="match allocate 9 jobs with 1 slot (8c,2m) (pol=hinode)"
+test_expect_success "${test057_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds057} > cmds057 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 057.R.out < cmds057 &&
+    test_cmp 057.R.out ${exp_dir}/057.R.out
+'
+
+cmds058="${cmd_dir}/cmds08.in"
+test058_desc="36 core (sat) cores and 37 cores (unsat) (pol=hinode)"
+test_expect_success "${test058_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds058} > cmds058 &&
+    ${query} -L ${grugs} -S CA -P hinode -t 058.R.out < cmds058 &&
+    test_cmp 058.R.out ${exp_dir}/008.R.out
+'
+
+#
+# Selection Policy -- Low node first (-P lonode)
+#     Within node-level locality constraint, the resource vertex
+#     with lower ID is preferred among its kind
+#     (e.g., core0 is preferred over core1 but those in node0
+#            is selected first before those in node1 is selected)
+#     If a node-level locality contraint is already specified in
+#     the jobspec, this policy is identical to low: e.g.,
+#         node[2]->slot[2]->core[2].
+#     Only when node-level locality contraint is absent, the
+#     match behavior is deviated from low: e.g.,
+#         slot[2]->core[2].
+
+cmds061="${cmd_dir}/cmds01.in"
+test061_desc="match allocate 4 jobs with 1 slot: 1 socket: 1 core (pol=lonode)"
+test_expect_success "${test061_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds061} > cmds061 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 061.R.out < cmds061 &&
+    test_cmp 061.R.out ${exp_dir}/009.R.out
+'
+
+cmds062="${cmd_dir}/cmds02.in"
+test062_desc="match allocate 5 jobs instead - last one must fail (pol=lonode)"
+test_expect_success "${test062_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds062} > cmds062 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 062.R.out < cmds062 &&
+    test_cmp 062.R.out ${exp_dir}/010.R.out
+'
+
+cmds063="${cmd_dir}/cmds03.in"
+test063_desc="match allocate_orelse_reserve 10 jobspecs (pol=lonode)"
+test_expect_success "${test063_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds063} > cmds063 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 063.R.out < cmds063 &&
+    test_cmp 063.R.out ${exp_dir}/011.R.out
+'
+
+### Note that the memory pool granularity is 2GB
+cmds064="${cmd_dir}/cmds04.in"
+test064_desc="match allocate 3 jobs with 1 slot: 2 sockets (pol=lonode)"
+test_expect_success "${test064_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds064} > cmds064 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 064.R.out < cmds064 &&
+    test_cmp 064.R.out ${exp_dir}/012.R.out
+'
+
+cmds065="${cmd_dir}/cmds05.in"
+test065_desc="match allocate_orelse_reserve 100 jobs instead (pol=lonode)"
+test_expect_success "${test065_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds065} > cmds065 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 065.R.out < cmds065 &&
+    test_cmp 065.R.out ${exp_dir}/013.R.out
+'
+
+cmds066="${cmd_dir}/cmds06.in"
+test066_desc="match allocate 2 jobs with 2 nodes - last must fail (pol=lonode)"
+test_expect_success "${test066_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds066} > cmds066 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 066.R.out < cmds066 &&
+    test_cmp 066.R.out ${exp_dir}/014.R.out
+'
+
+cmds067="${cmd_dir}/cmds07.in"
+test067_desc="match allocate 9 jobs with 1 slot (8c,2m) (pol=lonode)"
+test_expect_success "${test067_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds067} > cmds067 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 067.R.out < cmds067 &&
+    test_cmp 067.R.out ${exp_dir}/067.R.out
+'
+
+cmds068="${cmd_dir}/cmds08.in"
+test068_desc="36 core (sat) cores and 37 cores (unsat) (pol=lonode)"
+test_expect_success "${test068_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds068} > cmds068 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 068.R.out < cmds068 &&
+    test_cmp 068.R.out ${exp_dir}/016.R.out
+'
+
+cmds069="${cmd_dir}/cmds40.in"
+test069_desc="Once all sockets are exclusively allocated, no jobs can match"
+test_expect_success "${test069_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds069} > cmds069 &&
+    ${query} -L ${grugs} -S CA -P lonode -t 069.R.out < cmds069 &&
+    test_cmp 069.R.out ${exp_dir}/040.R.out
+'
+
 test_done
