@@ -1,0 +1,3 @@
+# 1x slot[37]->core[1]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_locality/test002.yaml
+quit
