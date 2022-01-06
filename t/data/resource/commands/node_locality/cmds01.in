@@ -1,0 +1,4 @@
+# 2x slot[2]->core[8]:memory[2]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_locality/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/node_locality/test001.yaml
+quit

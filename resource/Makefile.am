@@ -15,8 +15,6 @@ EXTRA_DIST= \
     utilities/conf
 
 libresource_la_SOURCES = \
-    policies/dfu_match_high_id_first.cpp \
-    policies/dfu_match_low_id_first.cpp \
     policies/dfu_match_locality.cpp \
     policies/dfu_match_var_aware.cpp \
     policies/dfu_match_policy_factory.cpp \
@@ -47,6 +45,8 @@ libresource_la_SOURCES = \
     utilities/command.hpp \
     policies/dfu_match_high_id_first.hpp \
     policies/dfu_match_low_id_first.hpp \
+    policies/dfu_match_multilevel_id.hpp \
+    policies/dfu_match_multilevel_id_impl.hpp \
     policies/dfu_match_locality.hpp \
     policies/dfu_match_var_aware.hpp \
     policies/dfu_match_policy_factory.hpp \
