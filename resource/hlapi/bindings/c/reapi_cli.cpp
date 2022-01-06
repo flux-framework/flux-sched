@@ -97,11 +97,11 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
-    if (!ctx || !ctx->h || !R) {
+    if (!ctx || !ctx->rqt || !R) {
         errno = EINVAL;
         goto out;
     }
-    if ( (rc = reapi_cli_t::update_allocate (ctx->h,
+    if ( (rc = reapi_cli_t::update_allocate (ctx->rqt,
                                              jobid, R, *at, *ov, R_buf)) < 0) {
         goto out;
     }
@@ -138,11 +138,11 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V,
                                int64_t *E, int64_t *J, double *load,
                                double *min, double *max, double *avg)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::stat (ctx->h, *V, *E, *J, *load, *min, *max, *avg);
+    return reapi_cli_t::stat (ctx->rqt, *V, *E, *J, *load, *min, *max, *avg);
 }
 
 extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
