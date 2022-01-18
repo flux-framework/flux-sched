@@ -391,11 +391,20 @@ private:
                       vtx_t u, const subsystem_t &aux,
                       const vtx_predicates_override_t &p);
 
+
+    int has_root (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                  scoring_api_t &dfu, unsigned int *needs);
+    int has_remaining (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                       scoring_api_t &dfu);
+
     // Resolve and enforce hierarchical constraints
     int resolve_graph (vtx_t root, std::vector<Jobspec::Resource> &resources,
                        scoring_api_t &dfu, bool excl, unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
     int enforce (const subsystem_t &subsystem, scoring_api_t &dfu);
+    int enforce_constrained (scoring_api_t &dfu);
+    int enforce_dfv (vtx_t u, scoring_api_t &dfu);
+    int enforce_remaining (vtx_t u, scoring_api_t &dfu);
 
 
     /************************************************************************
