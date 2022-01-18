@@ -251,6 +251,19 @@ void scoring_api_t::set_avail (unsigned int avail)
     m_avail = avail;
 }
 
+bool scoring_api_t::is_contained (const subsystem_t &s,
+                                  const std::string &r)
+{
+    bool rc = false;
+    if (m_ssys_map.find (s) != m_ssys_map.end ()) {
+        if (m_ssys_map[s]->find (r) != m_ssys_map[s]->end ()) {
+            rc = true;
+        }
+    }
+    return rc;
+}
+
+
 } // Flux::resource_model
 } // Flux
 
