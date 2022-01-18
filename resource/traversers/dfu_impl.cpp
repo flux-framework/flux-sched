@@ -798,8 +798,9 @@ done:
     return rc;
 }
 
-int dfu_impl_t::resolve (vtx_t root, std::vector<Resource> &resources,
-                         scoring_api_t &dfu, bool excl, unsigned int *needs)
+int dfu_impl_t::resolve_graph (vtx_t root, std::vector<Resource> &resources,
+                               scoring_api_t &dfu,
+                               bool excl, unsigned int *needs)
 {
     int rc = -1;
     unsigned int qc;
@@ -1063,7 +1064,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
         eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
-        rc = resolve (root, j.resources, dfu, excl, &needs);
+        rc = resolve_graph (root, j.resources, dfu, excl, &needs);
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in,
                                                                   m_best_k_cnt);
     }

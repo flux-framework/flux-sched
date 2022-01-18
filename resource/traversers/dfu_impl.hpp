@@ -392,8 +392,8 @@ private:
                       const vtx_predicates_override_t &p);
 
     // Resolve and enforce hierarchical constraints
-    int resolve (vtx_t root, std::vector<Jobspec::Resource> &resources,
-                 scoring_api_t &dfu, bool excl, unsigned int *needs);
+    int resolve_graph (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                       scoring_api_t &dfu, bool excl, unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
     int enforce (const subsystem_t &subsystem, scoring_api_t &dfu);
 
