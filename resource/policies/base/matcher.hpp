@@ -150,10 +150,16 @@ public:
                                const std::string &anchor_type,
                                std::vector<std::string> &out_prune_types);
 
+    int add_exclusive_resource_type (const std::string &type);
+
+    bool is_resource_type_exclusive (const std::string &type);
+
 private:
 
     int register_resource_pair (const std::string &subsystem,
                                 std::string &r_pair);
+
+    std::set<std::string> m_x_resource_types;
 
     // resource types that will be used for scheduler driven aggregate updates
     // Examples:

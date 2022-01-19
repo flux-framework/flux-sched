@@ -300,6 +300,25 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
     return rc;
 }
 
+int matcher_util_api_t::add_exclusive_resource_type (const std::string &type)
+{
+    int rc = 0;
+    if (m_x_resource_types.find (type) == m_x_resource_types.end ()) {
+        auto ret = m_x_resource_types.insert (type);
+        if (!ret.second) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+    }
+    return rc;
+}
+
+bool matcher_util_api_t::is_resource_type_exclusive (const std::string &type)
+{
+    return m_x_resource_types.find (type) != m_x_resource_types.end ();
+}
+
+
 } // resource_model
 } // Flux
 /*
