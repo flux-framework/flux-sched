@@ -65,7 +65,7 @@ test_expect_success "${test006_desc}" '
 '
 
 cmds008="${cmd_dir}/cmds08.in"
-test008_desc="36 core (satisfiable) cores and 37 cores (unsatisfiable) (pol=hi)"
+test008_desc="1s,18c slot (sat) and 1s,19c slot (unsat) (pol=hi)"
 test_expect_success "${test008_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds008} > cmds008 &&
     ${query} -L ${grugs} -S CA -P high -t 008.R.out < cmds008 &&
@@ -137,7 +137,7 @@ test_expect_success "${test015_desc}" '
 '
 
 cmds016="${cmd_dir}/cmds08.in"
-test016_desc="36 core (satisfiable) cores and 37 cores (unsatisfiable) (pol=low)"
+test016_desc="1s,18c slot (sat) and 1s,19c slot (unsat) (pol=low)"
 test_expect_success "${test016_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds016} > cmds016 &&
     ${query} -L ${grugs} -S CA -P low -t 016.R.out < cmds016 &&
@@ -205,7 +205,7 @@ test_expect_success "${test046_desc}" '
 '
 
 cmds048="${cmd_dir}/cmds08.in"
-test048_desc="36 core (satisfiable) cores and 37 cores (unsatisfiable) (pol=first)"
+test048_desc="1s,18c slot (sat) and 1s,19c slot (unsat) (pol=first)"
 test_expect_success "${test048_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds048} > cmds048 &&
     ${query} -L ${grugs} -S CA -P first -t 048.R.out < cmds048 &&
@@ -283,7 +283,7 @@ test_expect_success "${test057_desc}" '
 '
 
 cmds058="${cmd_dir}/cmds08.in"
-test058_desc="36 core (sat) cores and 37 cores (unsat) (pol=hinode)"
+test058_desc="1s,18c slot (sat) and 1s,19c slot (unsat) (pol=hinode)"
 test_expect_success "${test058_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds058} > cmds058 &&
     ${query} -L ${grugs} -S CA -P hinode -t 058.R.out < cmds058 &&
@@ -361,7 +361,7 @@ test_expect_success "${test067_desc}" '
 '
 
 cmds068="${cmd_dir}/cmds08.in"
-test068_desc="36 core (sat) cores and 37 cores (unsat) (pol=lonode)"
+test068_desc="1s,18c slot (sat) and 1s,19c slot (unsat) (pol=lonode)"
 test_expect_success "${test068_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds068} > cmds068 &&
     ${query} -L ${grugs} -S CA -P lonode -t 068.R.out < cmds068 &&
