@@ -29,6 +29,8 @@ const std::string HIGH_ID_FIRST = "high";
 const std::string LOW_ID_FIRST = "low";
 const std::string LOW_NODE_FIRST = "lonode";
 const std::string HIGH_NODE_FIRST = "hinode";
+const std::string LOW_NODEX_FIRST = "lonodex";
+const std::string HIGH_NODEX_FIRST = "hinodex";
 const std::string LOCALITY_AWARE = "locality";
 const std::string VAR_AWARE = "variation";
 

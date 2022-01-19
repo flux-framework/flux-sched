@@ -271,31 +271,62 @@ int dfu_impl_t::upd_upv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
     return 0;
 }
 
+bool dfu_impl_t::modify_traversal (vtx_t u, bool emit_shadow_from_parent) const
+{
+    // We modify our traversal if the parent says so if the
+    // visiting vertex resource type is exclusive by configuration
+    return emit_shadow_from_parent
+           || m_match->is_resource_type_exclusive ((*m_graph)[u].type);
+}
+
+bool dfu_impl_t::stop_explore_best (edg_t e, bool mod_trav) const
+{
+    return (*m_graph)[e].idata.get_trav_token () != m_best_k_cnt && !mod_trav;
+}
+
+bool dfu_impl_t::get_eff_exclusive (bool x, bool mod_trav) const
+{
+    return x || mod_trav;
+}
+
+unsigned dfu_impl_t::get_eff_needs (unsigned needs,
+                                    unsigned size, bool mod_trav) const
+{
+    return mod_trav? size : needs;
+}
+
 int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
                          unsigned int needs, bool excl,
                          const jobmeta_t &jobmeta, bool full,
-                         std::map<std::string, int64_t> &to_parent)
+                         std::map<std::string, int64_t> &to_parent,
+                         bool emit_shadow)
 {
     int n_plans = 0;
     std::map<std::string, int64_t> dfu;
     const std::string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
+    bool mod = modify_traversal (u, emit_shadow);
+    excl = excl || mod;
     m_trav_level++;
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     for (auto &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
                 continue;
-            if ((*m_graph)[*ei].idata.get_trav_token () != m_best_k_cnt)
+            if (stop_explore_best (*ei, mod))
                 continue;
 
-            int n_plan_sub = 0;
-            bool x = (*m_graph)[*ei].idata.get_exclusive ();
-            unsigned int needs = (*m_graph)[*ei].idata.get_needs ();
             vtx_t tgt = target (*ei, *m_graph);
+            int n_plan_sub = 0;
+            bool x = get_eff_exclusive (
+                         (*m_graph)[*ei].idata.get_exclusive (), mod);
+            unsigned needs = get_eff_needs (
+                                 (*m_graph)[*ei].idata.get_needs (),
+                                 (*m_graph)[tgt].size, mod);
+
             if (subsystem == dom) {
                 n_plan_sub += upd_dfv (tgt, writers,
-                                       needs, x, jobmeta, full, dfu);
+                                       needs, x, jobmeta, full, dfu, mod);
             } else {
                 n_plan_sub += upd_upv (tgt, writers, subsystem,
                                        needs, x, jobmeta, full, dfu);
@@ -528,7 +559,9 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int needs = m_graph_db->metadata.v_rt_edges[dom].get_needs ();
     m_color.reset ();
 
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu)) > 0) {
+    bool emit_shadow = modify_traversal (root, false);
+    if ((rc = upd_dfv (root, writers, needs,
+                       x, jobmeta, true, dfu, emit_shadow)) > 0) {
          uint64_t starttime = jobmeta.at;
          uint64_t endtime = jobmeta.at + jobmeta.duration;
          if (writers->emit_tm (starttime, endtime) == -1) {
@@ -590,8 +623,9 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     needs = static_cast<unsigned int>(m_graph_db->metadata
                                           .v_rt_edges[dom].get_needs ());
     m_color.reset ();
-
-    if ( (rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu)) > 0) {
+    bool emit_shadow = modify_traversal (root, false);
+    if ( (rc = upd_dfv (root, writers, needs,
+                        x, jobmeta, false, dfu, emit_shadow)) > 0) {
          uint64_t starttime = jobmeta.at;
          uint64_t endtime = jobmeta.at + jobmeta.duration;
          if (writers->emit_tm (starttime, endtime) == -1) {
