@@ -162,4 +162,155 @@ test_expect_success "${test023_desc}" '
     test_cmp 023.R.out ${exp_dir}/023.R.out
 '
 
+
+#
+# Selection Policy -- High node first with node exclusivity (-P hinodex)
+#     Selection behavior is identical to hinode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available highest node.
+#
+
+# cluster and rack exclusivity must not lead to the emission
+# of the entire cluster resources
+cmds031="${cmd_dir}/cmds01.in"
+test031_desc="allocate entire cluster then nothing scheduled (pol=hinodex)"
+test_expect_success "${test031_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds031} > cmds031 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 031.R.out < cmds031 &&
+    test_cmp 031.R.out ${exp_dir}/031.R.out
+'
+
+cmds032="${cmd_dir}/cmds02.in"
+test032_desc="allocate 1 node then rack4x shouldn't match (pol=hinodex)"
+test_expect_success "${test032_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds032} > cmds032 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 032.R.out < cmds032 &&
+    test_cmp 032.R.out ${exp_dir}/032.R.out
+'
+
+cmds033="${cmd_dir}/cmds03.in"
+test033_desc="match allocate with several rack exclusives 1 (pol=hinodex)"
+test_expect_success "${test033_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds033} > cmds033 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 033.R.out < cmds033 &&
+    test_cmp 033.R.out ${exp_dir}/033.R.out
+'
+
+cmds034="${cmd_dir}/cmds04.in"
+test034_desc="match allocate 4 full rack exclusives (pol=hinodex)"
+test_expect_success "${test034_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds034} > cmds034 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 034.R.out < cmds034 &&
+    test_cmp 034.R.out ${exp_dir}/034.R.out
+'
+
+cmds035="${cmd_dir}/cmds05.in"
+test035_desc="match allocate with several rack exclusives 2 (pol=hinodex)"
+test_expect_success "${test035_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds035} > cmds035 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 035.R.out < cmds035 &&
+    test_cmp 035.R.out ${exp_dir}/035.R.out
+'
+
+# full resource emission on only one node per each rack
+cmds036="${cmd_dir}/cmds06.in"
+test036_desc="allocate 4 rack exclusively then nothing matched 1 (pol=hinodex)"
+test_expect_success "${test036_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds036} > cmds036 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 036.R.out < cmds036 &&
+    test_cmp 036.R.out ${exp_dir}/036.R.out
+'
+
+cmds037="${cmd_dir}/cmds07.in"
+test037_desc="allocate 4 rack exclusively then nothing matched 2 (pol=hinodex)"
+test_expect_success "${test037_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds037} > cmds037 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 037.R.out < cmds037 &&
+    test_cmp 037.R.out ${exp_dir}/037.R.out
+'
+
+#
+# Selection Policy -- Low node first with node exclusivity (-P lonodex)
+#     Selection behavior is identical to lonode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available lowest node.
+#
+
+# cluster and rack exclusivity must not lead to the emission
+# of the entire cluster resources
+cmds041="${cmd_dir}/cmds01.in"
+test041_desc="allocate entire cluster then nothing scheduled (pol=lonodex)"
+test_expect_success "${test041_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds041} > cmds041 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 041.R.out < cmds041 &&
+    test_cmp 041.R.out ${exp_dir}/041.R.out
+'
+
+cmds042="${cmd_dir}/cmds02.in"
+test042_desc="allocate 1 node then rack4x shouldn't match (pol=lonodex)"
+test_expect_success "${test042_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds042} > cmds042 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 042.R.out < cmds042 &&
+    test_cmp 042.R.out ${exp_dir}/042.R.out
+'
+
+cmds043="${cmd_dir}/cmds04.in"
+test043_desc="match allocate with several rack exclusives 1 (pol=lonodex)"
+test_expect_success "${test043_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds043} > cmds043 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 043.R.out < cmds043 &&
+    test_cmp 043.R.out ${exp_dir}/043.R.out
+'
+
+cmds044="${cmd_dir}/cmds04.in"
+test044_desc="match allocate 4 full rack exclusives (pol=lonodex)"
+test_expect_success "${test044_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds044} > cmds044 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 044.R.out < cmds044 &&
+    test_cmp 044.R.out ${exp_dir}/044.R.out
+'
+
+cmds045="${cmd_dir}/cmds05.in"
+test045_desc="match allocate with several rack exclusives 2 (pol=lonodex)"
+test_expect_success "${test045_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds045} > cmds045 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 045.R.out < cmds045 &&
+    test_cmp 045.R.out ${exp_dir}/045.R.out
+'
+
+# full resource emission on only one node per each rack
+cmds046="${cmd_dir}/cmds06.in"
+test046_desc="allocate 4 rack exclusively then nothing matched 1 (pol=lonodex)"
+test_expect_success "${test046_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds046} > cmds046 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 046.R.out < cmds046 &&
+    test_cmp 046.R.out ${exp_dir}/046.R.out
+'
+
+cmds047="${cmd_dir}/cmds07.in"
+test047_desc="allocate 4 rack exclusively then nothing matched 2 (pol=lonodex)"
+test_expect_success "${test047_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds047} > cmds047 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 047.R.out < cmds047 &&
+    test_cmp 047.R.out ${exp_dir}/047.R.out
+'
+
 test_done
