@@ -111,17 +111,23 @@ bool sim_match_writers_t::empty ()
 
 int sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
+    int rc = 0;
     json_t *o = NULL;
     std::string str = m_out.str ();
 
     if (!str.empty ()) {
         if ( !(o = json_string (str.c_str ()))) {
             errno = ENOMEM;
-            return -1;
+            rc = -1;
+            goto done;
         }
     }
     *j_o = o;
-    return 0;
+
+done:
+    m_out.str ("");
+    m_out.clear ();
+    return rc;
 }
 
 int sim_match_writers_t::emit (std::stringstream &out)
