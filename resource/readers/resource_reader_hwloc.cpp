@@ -53,8 +53,8 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (
     const std::map<std::string, std::string> properties;
     vtx_t v = add_new_vertex (g, m, boost::
                               graph_traits<resource_graph_t>::
-                              null_vertex (),
-                              0, subsys, "cluster", "cluster", properties, 1);
+                              null_vertex (), 0, subsys,
+                             "cluster", "cluster", "", properties, 1);
     m.roots.emplace (subsys, v);
     m.v_rt_edges.emplace (subsys, relation_infra_t ());
 
@@ -67,6 +67,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
                                                const std::string &subsys,
                                                const std::string &type,
                                                const std::string &basename,
+                                               const std::string &name,
                                                const std::map<std::string, std::string> &properties,
                                                int size, int rank)
 {
@@ -88,7 +89,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].idata.x_checker = planner_new (0, INT64_MAX,
                                            X_CHECKER_NJOBS, X_CHECKER_JOBS_STR);
     g[v].id = id;
-    g[v].name = basename + istr;
+    g[v].name = (name != "")? name : basename + istr;
     g[v].paths[subsys] = prefix + "/" + g[v].name;
     g[v].idata.member_of[subsys] = "*";
     g[v].status = resource_pool_t::status_t::UP;
@@ -145,6 +146,7 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
 {
     bool supported_resource = true;
     std::string type, basename;
+    std::string name = "";
     int id = obj->logical_index;
     int rc = 0;
     unsigned int size = 1;
@@ -159,8 +161,43 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
             break;
         }
         type = "node";
+        name = hwloc_name;
         basename = hwloc_name;
-        id = -1; // TODO: is this the right thing to do?
+        id = -1;
+
+        std::size_t last = basename.find_last_not_of ("0123456789");
+        if (last == (basename.size () - 1))
+            break; // no numeric suffix, done
+
+        std::string suffix;
+        if (last != std::string::npos) {
+            // has numeric suffix
+            suffix = basename.substr (last + 1);
+            basename = basename.substr (0, last + 1);
+        } else {
+            // all numbers
+            suffix = basename;
+        }
+        std::size_t first = suffix.find_first_not_of ("0");
+        if (first == std::string::npos) {
+            id = 0; // all 0s
+            break;
+        }
+
+        suffix = suffix.substr (first); // remove leading 0s
+        try {
+            id = std::stoi (suffix);
+        } catch (std::invalid_argument &e) {
+            errno = EINVAL;
+            m_err_msg += "Error converting node id=" + suffix + "; ";
+            rc = -1;
+            break;
+        } catch (std::out_of_range &e) {
+            errno = ERANGE;
+            m_err_msg += "Error converting node id=" + suffix + "; ";
+            rc = -1;
+            break;
+        }
         break;
     }
     case HWLOC_OBJ_GROUP: {
@@ -346,7 +383,7 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         const std::string subsys = "containment";
         vtx_t v = add_new_vertex (g, m, parent,
                                   id, subsys, type, basename,
-                                  properties, size, rank);
+                                  name, properties, size, rank);
         valid_ancestor = v;
         std::string relation = "contains";
         std::string rev_relation = "in";

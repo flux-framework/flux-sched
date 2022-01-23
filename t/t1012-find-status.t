@@ -99,7 +99,7 @@ test_expect_success 'find/status: a 1sock jobspec cannot run' '
 test_expect_success 'find/status: find status=reserved must not be null' '
     flux ion-resource find "sched-future=reserved" | tail -1 > rsv.out &&
     rank=$(cat rsv.out | jq .execution.R_lite[].rank) &&
-    test ${rank} = "\"0\""
+    test ${rank} = "\"2\""
 '
 
 test_expect_success 'find/status: flux ion-resource status works' '

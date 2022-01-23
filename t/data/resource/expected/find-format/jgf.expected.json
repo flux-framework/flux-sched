@@ -261,9 +261,9 @@
         "id": "1",
         "metadata": {
           "type": "node",
-          "basename": "cab1234",
+          "basename": "cab",
           "name": "cab1234",
-          "id": -1,
+          "id": 1234,
           "uniq_id": 1,
           "exclusive": true,
           "unit": "",
