@@ -73,4 +73,72 @@ test_expect_success "${test008_desc}" '
     test_cmp 008.R.out ${exp_dir}/008.R.out
 '
 
+#
+# Selection Policy -- node exclusive policies
+#
+
+cmds011="${cmd_dir}/cmds01.in"
+test011_desc="match allocate 4 jobs with 1TB L0 ssds - rest fails (pol=hinodex)"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds012="${cmd_dir}/cmds02.in"
+test012_desc="match allocate_orelse_reserve works with MTS L0 (pol=hinodex)"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 012.R.out < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
+cmds013="${cmd_dir}/cmds01.in"
+test013_desc="match allocate 4 jobs with 1TB L0 ssds - rest fails (pol=lonodex)"
+test_expect_success "${test013_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 013.R.out < cmds013 &&
+    test_cmp 013.R.out ${exp_dir}/013.R.out
+'
+
+cmds014="${cmd_dir}/cmds02.in"
+test014_desc="match allocate_orelse_reserve works with MTS L0 (pol=lonodex)"
+test_expect_success "${test014_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 014.R.out < cmds014 &&
+    test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
+cmds015="${cmd_dir}/cmds-ssd-constrained-alloc.in"
+test015_desc="match allocate 5 jobs with 2TB L0 ssds - last fails (pol=hinodex)"
+test_expect_success "${test015_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 015.R.out < cmds015 &&
+    test_cmp 015.R.out ${exp_dir}/015.R.out
+'
+
+cmds016="${cmd_dir}/cmds-ssd-constrained-alloc-orelse.in"
+test016_desc="match allocate_orelse_reserve works with MTS L0 (pol=hinodex)"
+test_expect_success "${test016_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds016} > cmds016 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 016.R.out < cmds016 &&
+    test_cmp 016.R.out ${exp_dir}/016.R.out
+'
+
+cmds017="${cmd_dir}/cmds-ssd-constrained-alloc.in"
+test017_desc="match allocate 5 jobs with 2TB L0 ssds - last fails (pol=lonodex)"
+test_expect_success "${test017_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds017} > cmds017 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 017.R.out < cmds017 &&
+    test_cmp 017.R.out ${exp_dir}/017.R.out
+'
+
+cmds018="${cmd_dir}/cmds-ssd-constrained-alloc-orelse.in"
+test018_desc="match allocate_orelse_reserve works with MTS L0 (pol=lonodex)"
+test_expect_success "${test018_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds008} > cmds018 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 018.R.out < cmds018 &&
+    test_cmp 018.R.out ${exp_dir}/018.R.out
+'
+
 test_done
