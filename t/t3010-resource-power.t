@@ -37,4 +37,21 @@ test_expect_success "${test002_desc}" '
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
 
+cmds011="${cmd_dir}/cmds01.in"
+test011_desc="match allocate with simple power configuration (pol=hinodex)"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${grugs} -S PA -P hinodex -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds021="${cmd_dir}/cmds01.in"
+test021_desc="match allocate with simple power configuration (pol=lonodex)"
+test_expect_success "${test021_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds021} > cmds021 &&
+    ${query} -L ${grugs} -S PA -P lonodex -t 021.R.out < cmds021 &&
+    test_cmp 021.R.out ${exp_dir}/021.R.out
+'
+
+
 test_done
