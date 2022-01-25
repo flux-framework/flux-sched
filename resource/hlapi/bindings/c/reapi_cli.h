@@ -32,6 +32,15 @@ reapi_cli_ctx_t *reapi_cli_new ();
  */
 void reapi_cli_destroy (reapi_cli_ctx_t *ctx);
 
+/*! Initialize Fluxion with resource graph
+ *
+ * \param ctx           reapi_cli_ctx_t context object
+ * \param rgraph        string encoding the resource graph
+ * \param options       json string initialization options
+ */
+int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
+                          const char *options);
+
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
  *  the selected match policy.
@@ -54,7 +63,7 @@ void reapi_cli_destroy (reapi_cli_ctx_t *ctx);
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx, bool orelse_reserve,
-                              const char *jobspec, const uint64_t jobid,
+                              const char *jobspec, uint64_t *jobid,
                               bool *reserved,
                               char **R, int64_t *at, double *ov);
 
@@ -89,6 +98,7 @@ int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobid     const jobid of the uint64_t type.
+ *  \param mode      return string containing the job state.
  *  \param reserved  Boolean into which to return true if this job has been
  *                   reserved instead of allocated.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
@@ -99,7 +109,8 @@ int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
-                    bool *reserved, int64_t *at, double *ov);
+                    char **mode, bool *reserved, int64_t *at, 
+                    double *ov);
 
 /*! Get the performance information about the resource infrastructure.
  *
@@ -117,23 +128,18 @@ int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V, int64_t *E,
                     int64_t *J, double *load,
                     double *min, double *max, double *avg);
 
-/*! Set the opaque handle to the reapi cli context.
+/*! Get the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object
- *  \param h         Opaque handle. How it is used is an implementation
- *                   detail. However, when it is used within a Flux's
- *                   service cli, it is expected to be a pointer
- *                   to a flux_t object.
- *  \return          0 on success; -1 on error.
+ *  \return          string containing the error message
  */
-int reapi_cli_set_handle (reapi_cli_ctx_t *ctx, void *handle);
+const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
 
-/*! Set the opaque handle to the reapi cli context.
+/*! Clear the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object
- *  \return          handle
  */
-void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx);
+void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx);
 
 #ifdef __cplusplus
 }

@@ -14,8 +14,6 @@
 #include "resource/hlapi/bindings/c++/reapi.hpp"
 #include "resource/hlapi/bindings/c++/reapi_module.hpp"
 #include "resource/hlapi/bindings/c++/reapi_module_impl.hpp"
-#include "resource/hlapi/bindings/c++/reapi_cli.hpp"
-#include "resource/hlapi/bindings/c++/reapi_cli_impl.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_fcfs.hpp"
@@ -45,30 +43,19 @@ std::shared_ptr<queue_policy_base_t> create_queue_policy (
         if (policy == "fcfs") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_fcfs_t<reapi_module_t>> ();
-            else if (reapi == "cli")
-                p = std::make_shared<queue_policy_fcfs_t<reapi_cli_t>> ();
         }
         else if (policy == "easy") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_easy_t<reapi_module_t>> ();
-            else if (reapi == "cli")
-                p = std::make_shared<queue_policy_easy_t<reapi_cli_t>> ();
         }
         else if (policy == "hybrid") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_hybrid_t<reapi_module_t>> ();
-            else if (reapi == "cli")
-                p = std::make_shared<queue_policy_hybrid_t<reapi_cli_t>> ();
         }
         else if (policy == "conservative") {
-            if (reapi == "module") {
+            if (reapi == "module")
                 p = std::make_shared<queue_policy_conservative_t<
                                          reapi_module_t>> ();
-            }
-            else if (reapi == "cli") {
-                p = std::make_shared<queue_policy_conservative_t<
-                                         reapi_cli_t>> ();
-            }
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;

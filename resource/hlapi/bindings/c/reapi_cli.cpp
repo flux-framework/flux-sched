@@ -27,49 +27,120 @@ using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
 struct reapi_cli_ctx {
-    flux_t *h;
+    resource_query_t *rqt;
+    std::string err_msg;
 };
 
 extern "C" reapi_cli_ctx_t *reapi_cli_new ()
 {
-    reapi_cli_ctx_t *ctx = NULL;
-    if (!(ctx = (reapi_cli_ctx_t *)malloc (sizeof (*ctx)))) {
+    reapi_cli_ctx_t *ctx = nullptr;
+
+    try {
+        ctx = new reapi_cli_ctx_t;
+    }
+    catch (const std::bad_alloc &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: " 
+                         + std::string (e.what ()) + "\n";
         errno = ENOMEM;
         goto out;
     }
-    ctx->h = NULL;
+
+    ctx->rqt = nullptr;
+    ctx->err_msg = "";
+
 out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
-    free (ctx);
+    int saved_errno = errno;
+    if (ctx->rqt)
+        delete ctx->rqt;
+    delete ctx;
+    errno = saved_errno;
+}
+
+extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
+                                     const char *options)
+{
+    int rc = -1;
+    ctx->rqt = nullptr;
+
+    try {
+        ctx->rqt = new resource_query_t (rgraph, options);
+    } catch (std::bad_alloc &e) {
+        ctx->err_msg += __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: "
+                         + std::string (e.what ()) + "\n";
+        errno = ENOMEM;
+        goto out;
+    } catch (std::runtime_error &e) {
+        ctx->err_msg += __FUNCTION__;
+        ctx->err_msg += ": Runtime error: "
+                         + std::string (e.what ()) + "\n";
+        errno = EPROTO;
+        goto out;
+    }
+
+    rc = 0;
+
+out:
+    return rc;    
 }
 
 extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                    bool orelse_reserve, const char *jobspec,
-                   const uint64_t jobid, bool *reserved,
+                   uint64_t *jobid, bool *reserved,
                    char **R, int64_t *at, double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
-    char *R_buf_c = NULL;
+    char *R_buf_c = nullptr;
+    job_lifecycle_t st;
+    std::shared_ptr<job_info_t> job_info = nullptr;
 
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         goto out;
     }
-    if ((rc = reapi_cli_t::match_allocate (ctx->h, orelse_reserve, jobspec,
-                                           jobid, *reserved,
+
+    *jobid = ctx->rqt->get_job_counter ();
+    if ((rc = reapi_cli_t::match_allocate (ctx->rqt, orelse_reserve,
+                                           jobspec, *jobid, *reserved,
                                            R_buf, *at, *ov)) < 0) {
         goto out;
     }
     if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory\n";
+        errno = ENOMEM;
         rc = -1;
         goto out;
     }
     (*R) = R_buf_c;
+    *reserved = (at != 0)? true : false;
+    st = (*reserved)? 
+                job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
+    if (*reserved)
+        ctx->rqt->set_reservation (*jobid);
+    else
+        ctx->rqt->set_allocation (*jobid);
+
+    try {
+        job_info = std::make_shared<job_info_t> (*jobid, st, *at, "", "", *ov);
+    } catch (std::bad_alloc &e) {
+        ctx->err_msg += __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: "
+                         + std::string (e.what ()) + "\n";
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+
+    ctx->rqt->set_job (*jobid, job_info);
+    ctx->rqt->incr_job_counter ();
 
 out:
     return rc;
@@ -82,11 +153,11 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
-    if (!ctx || !ctx->h || !R) {
+    if (!ctx || !ctx->rqt || !R) {
         errno = EINVAL;
         goto out;
     }
-    if ( (rc = reapi_cli_t::update_allocate (ctx->h,
+    if ( (rc = reapi_cli_t::update_allocate (ctx->rqt,
                                              jobid, R, *at, *ov, R_buf)) < 0) {
         goto out;
     }
@@ -102,51 +173,72 @@ out:
 extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
                                  const uint64_t jobid, bool noent_ok)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::cancel (ctx->h, jobid, noent_ok);
+    return reapi_cli_t::cancel (ctx->rqt, jobid, noent_ok);
 }
 
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
-                               bool *reserved, int64_t *at, double *ov)
+                               char **mode, bool *reserved, int64_t *at, 
+                               double *ov)
 {
-    if (!ctx || !ctx->h) {
+    int rc = -1;
+    std::string mode_buf = "";
+    char *mode_buf_c = nullptr;
+
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::info (ctx->h, jobid, *reserved, *at, *ov);
+    if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, 
+                                 *reserved, *at, *ov)) < 0)
+        goto out;
+    if ( !(mode_buf_c = strdup (mode_buf.c_str ()))) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory\n";
+        errno = ENOMEM;
+        rc = -1;
+        goto out;
+    }
+
+    (*mode) = mode_buf_c;
+
+out:
+    return rc;
 }
 
 extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V,
                                int64_t *E, int64_t *J, double *load,
                                double *min, double *max, double *avg)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::stat (ctx->h, *V, *E, *J, *load, *min, *max, *avg);
+    return reapi_cli_t::stat (ctx->rqt, *V, *E, *J, *load, *min, *max, *avg);
 }
 
-extern "C" int reapi_cli_set_handle (reapi_cli_ctx_t *ctx, void *handle)
+extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 {
-    if (!ctx) {
-        errno = EINVAL;
-        return -1;
-    }
-    ctx->h = (flux_t *)handle;
-    return 0;
+    std::string err_buf = "";
+
+    if (ctx->rqt)
+        err_buf = ctx->rqt->get_resource_query_err_msg () 
+                    + reapi_cli_t::get_err_message () + ctx->err_msg;
+    else
+        err_buf = reapi_cli_t::get_err_message () + ctx->err_msg;
+
+    return strdup (err_buf.c_str ());
 }
 
-extern "C" void *reapi_cli_get_handle (reapi_cli_ctx_t *ctx)
+extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
 {
-    if (!ctx) {
-        errno = EINVAL;
-        return NULL;
-    }
-    return ctx->h;
+    if (ctx->rqt)
+        ctx->rqt->clear_resource_query_err_msg ();
+    reapi_cli_t::clear_err_message ();
+    ctx->err_msg = "";
 }
 
 /*

@@ -116,8 +116,8 @@ public:
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h, bool orelse_reserve,
-                               const std::string &jobspec, const uint64_t jobid,
-                               bool &reserved,
+                               const std::string &jobspec,
+                               const uint64_t jobid, bool &reserved,
                                std::string &R, int64_t &at, double &ov)
     {
         return -1;
@@ -191,6 +191,7 @@ public:
      *                   service module, it is expected to be a pointer
      *                   to a flux_t object.
      *  \param jobid     const jobid of the uint64_t type.
+     *  \param mode      return string containing the job state.
      *  \param reserved  Boolean into which to return true if this job has been
      *                   reserved instead of allocated.
      *  \param at        If allocated, 0 is returned; if reserved, actual time
@@ -201,7 +202,8 @@ public:
      *  \return          0 on success; -1 on error.
      */
     static int info (void *h, const uint64_t jobid,
-                     bool &reserved, int64_t &at, double &ov)
+                     std::string &mode, bool &reserved, int64_t &at, 
+                     double &ov)
     {
         return -1;
     }
