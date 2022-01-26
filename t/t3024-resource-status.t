@@ -113,7 +113,7 @@ test_expect_success "${test013_desc}" '
 '
 
 cmds014="${cmd_dir}/cmds14.in"
-test014_desc="attempt to allocate w/sat cluster when node1 is set down then up"
+test014_desc="attempt to allocate w/sat when node1 is set down then up"
 test_expect_success "${test014_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
     ${query} -L ${grugs} -F simple -S CA -P high -t 014.R.out < cmds014 &&
@@ -121,7 +121,7 @@ test_expect_success "${test014_desc}" '
 '
 
 cmds015="${cmd_dir}/cmds15.in"
-test015_desc="attempt to allocate/res cluster when node1 is set down then up"
+test015_desc="attempt to allocate/reserve when node1 is set down then up"
 test_expect_success "${test015_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
     ${query} -L ${grugs} -F simple -S CA -P high -t 015.R.out < cmds015 &&
