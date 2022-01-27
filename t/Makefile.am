@@ -43,6 +43,7 @@ TESTS = \
     t1018-rv1-bootstrap2.t \
     t1019-qmanager-async.t \
     t1020-qmanager-feasibility.t \
+    t1021-qmanager-nodex.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
