@@ -318,7 +318,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     json_t *tmp_json = NULL, *opt_json = NULL;
 
     // Set default values
-    perf.min = DBL_MAX;
+    perf.min = std::numeric_limits<double>::max();
     perf.max = 0.0f;
     perf.accum = 0.0f;
     params.load_file = "conf/default";
