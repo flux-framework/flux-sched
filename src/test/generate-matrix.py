@@ -141,17 +141,17 @@ matrix.add_build(
     docker_tag=True,
 )
 
-# Centos7
+# RHEL7 clone
 matrix.add_build(
-    name="centos7",
-    image="centos7",
+    name="el7",
+    image="el7",
     docker_tag=True,
 )
 
-# Centos8
+# RHEL8 clone
 matrix.add_build(
-    name="centos8",
-    image="centos8",
+    name="el8",
+    image="el8",
     docker_tag=True,
 )
 

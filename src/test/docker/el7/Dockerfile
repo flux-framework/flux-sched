@@ -1,18 +1,16 @@
-FROM fluxrm/flux-core:centos8
+FROM fluxrm/flux-core:el7
 
 ARG USER=flux
 ARG UID=1000
 
 # Install extra buildrequires for flux-sched:
 RUN sudo yum -y install \
-	boost-devel \
-	boost-graph \
-	boost-system \
-	boost-filesystem \
-	boost-regex \
+	libboost-graph-devel \
+	libboost-system-devel \
+	libboost-filesystem-devel \
+	libboost-regex-devel \
 	libxml2-devel \
-	readline-devel \
-	python3-pyyaml \
+	python-yaml \
 	yaml-cpp-devel \
 	libedit-devel
 
