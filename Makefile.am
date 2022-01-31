@@ -5,7 +5,8 @@ SUBDIRS = src resource qmanager etc t
 EXTRA_DIST= \
 	config/tap-driver.sh \
 	NOTICE.LLNS \
-	README.md
+	README.md \
+	NEWS.md
 
 CODE_COVERAGE_IGNORE_PATTERN = \
     "$(abs_top_builddir)/t/*" \
