@@ -16,7 +16,7 @@ query="../../resource/utilities/resource-query"
 #
 
 cmds001="${cmd_dir}/cmds01.in"
-test001_desc="match allocate with different rack contraints (pol=hi)"
+test001_desc="match allocate with different rack constraints (pol=hi)"
 test_expect_success "${test001_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds001} > cmds001 &&
     ${query} -L ${grugs} -S CA -P high -t 001.R.out < cmds001 &&
@@ -47,6 +47,55 @@ test_expect_success "${test003_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds003} > cmds003 &&
     ${query} -L ${grugs} -S CA -P first -t 003.R.out < cmds003 &&
     test_cmp 003.R.out ${exp_dir}/003.R.out
+'
+
+
+#
+# Selection Policy -- High node first with node exclusivity (-P hinodex)
+#     Selection behavior is identical to hinode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available highest node.
+#
+
+cmds004="${cmd_dir}/cmds01.in"
+test004_desc="match allocate with different rack contraints (pol=hinodex)"
+test_expect_success "${test004_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 004.R.out < cmds004 &&
+    test_cmp 004.R.out ${exp_dir}/004.R.out
+'
+
+#
+# Selection Policy -- Low node first with node exclusivity (-P lonodex)
+#     Selection behavior is identical to lonode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available lowest node.
+#
+
+cmds005="${cmd_dir}/cmds01.in"
+test005_desc="match allocate with different rack contraints (pol=lonodex)"
+test_expect_success "${test005_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 005.R.out < cmds005 &&
+    test_cmp 005.R.out ${exp_dir}/005.R.out
 '
 
 test_done

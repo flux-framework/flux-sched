@@ -57,7 +57,7 @@ test_expect_success 'rv1-bootstrap: killing a nested job works' '
     flux job wait-event ${JOBID} release
 '
 
-# 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
+# 2 full nodes are scheduled for a nest flux instance
 test_expect_success 'rv1-bootstrap: 2N nesting works (policy=high)' '
     JOBID1=$(flux mini batch -n2 -N2 -c44 -g4 \
 	./nest.sh high 2 2 44 4 nest1.json) &&
@@ -65,8 +65,8 @@ test_expect_success 'rv1-bootstrap: 2N nesting works (policy=high)' '
     remap_rv1_resource_type nest1.json core > nest1.csv &&
     remap_rv1_resource_type nest1.json gpu > nest1.gpu.csv &&
     flux job info ${JOBID1} R | jq . > job1.json &&
-    remap_rv1_resource_type job1.json core > job1.csv &&
-    remap_rv1_resource_type job1.json gpu > job1.gpu.csv &&
+    remap_rv1_resource_type job1.json core 0 0 0 1 0 > job1.csv &&
+    remap_rv1_resource_type job1.json gpu 0 0 0 1 0 > job1.gpu.csv &&
     test_cmp job1.csv nest1.csv &&
     test_cmp job1.gpu.csv nest1.gpu.csv
 '
@@ -79,8 +79,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (high)' '
     flux job info ${JOBID2} R | jq . > job2.json &&
     remap_rv1_resource_type nest2.json core > nest2.csv &&
     remap_rv1_resource_type nest2.json gpu > nest2.gpu.csv &&
-    remap_rv1_resource_type job2.json core 34 0 0 2 2 > job2.csv &&
-    remap_rv1_resource_type job2.json gpu 0 0 2 2 2 > job2.gpu.csv &&
+    remap_rv1_resource_type job2.json core 34 0 1 0 2 > job2.csv &&
+    remap_rv1_resource_type job2.json gpu 0 0 1 0 2 > job2.gpu.csv &&
     test_cmp job2.csv nest2.csv &&
     test_cmp job2.gpu.csv nest2.gpu.csv &&
     flux jobs -a > before
@@ -105,7 +105,7 @@ match-format=rv1 policy=low &&
     load_qmanager
 '
 
-# 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
+# 2 full nodes are scheduled for a nest flux instance
 test_expect_success 'rv1-bootstrap: 2N nesting works (policy=low)' '
     JOBID3=$(flux mini batch -n2 -N2 -c44 -g4 \
 	./nest.sh low 2 2 44 4 nest3.json) &&
@@ -113,8 +113,8 @@ test_expect_success 'rv1-bootstrap: 2N nesting works (policy=low)' '
     remap_rv1_resource_type nest3.json core > nest3.csv &&
     remap_rv1_resource_type nest3.json gpu > nest3.gpu.csv &&
     flux job info ${JOBID3} R | jq . > job3.json &&
-    remap_rv1_resource_type job3.json core > job3.csv &&
-    remap_rv1_resource_type job3.json gpu > job3.gpu.csv &&
+    remap_rv1_resource_type job3.json core 0 0 1 0 2 > job3.csv &&
+    remap_rv1_resource_type job3.json gpu 0 0 1 0 2 > job3.gpu.csv &&
     test_cmp job3.csv nest3.csv &&
     test_cmp job3.gpu.csv nest3.gpu.csv
 '
@@ -126,8 +126,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (low)' '
     flux job info ${JOBID4} R | jq . > job4.json &&
     remap_rv1_resource_type nest4.json core > nest4.csv &&
     remap_rv1_resource_type nest4.json gpu > nest4.gpu.csv &&
-    remap_rv1_resource_type job4.json core 0 0 0 2 2 > job4.csv &&
-    remap_rv1_resource_type job4.json gpu 0 0 0 2 2 > job4.gpu.csv &&
+    remap_rv1_resource_type job4.json core 0 0 0 1 0 > job4.csv &&
+    remap_rv1_resource_type job4.json gpu 0 0 0 1 0 > job4.gpu.csv &&
     test_cmp job4.csv nest4.csv &&
     test_cmp job4.gpu.csv nest4.gpu.csv
 '

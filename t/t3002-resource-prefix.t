@@ -96,4 +96,84 @@ test_expect_success "${test003_desc}" '
     test_cmp 013.R.out ${exp_dir}/013.R.out
 '
 
+#
+# Selection Policy -- High node first with node exclusivity (-P hinodex)
+#     Selection behavior is identical to hinode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available highest node.
+#
+
+cmds021="${cmd_dir}/cmds01.in"
+test021_desc="match allocate with fully specified (pol=hinodex)"
+test_expect_success "${test021_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds021} > cmds021 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 021.R.out < cmds021 &&
+    test_cmp 021.R.out ${exp_dir}/021.R.out
+'
+
+cmds022="${cmd_dir}/cmds02.in"
+test022_desc="match allocate with partially specified from rack (pol=hinodex)"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/022.R.out
+'
+
+cmds023="${cmd_dir}/cmds03.in"
+test023_desc="match allocate with partially specified from node (pol=hinodex)"
+test_expect_success "${test023_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds023} > cmds023 &&
+    ${query} -L ${grugs} -S CA -P hinodex -t 023.R.out < cmds023 &&
+    test_cmp 023.R.out ${exp_dir}/023.R.out
+'
+
+#
+# Selection Policy -- Low node first with node exclusivity (-P lonodex)
+#     Selection behavior is identical to lonode except that
+#     it marks each selected node as exclusive even if the
+#     jobspec doen not require node exclusivity and
+#     that it selects and emits all of the node-local resources
+#     for each node where at least one node-local resource is selected.
+#
+#     For a jobspec with node[1]->slot[1]->core[1], it selects
+#     36 cores from the selected node if there is a total of
+#     36 cores in that node.
+#
+#     For a jobspec with slot[18]->core[1], it selects
+#     again all 36 cores from the current available lowest node.
+#
+
+cmds031="${cmd_dir}/cmds01.in"
+test031_desc="match allocate with fully specified (pol=lonodex)"
+test_expect_success "${test031_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds031} > cmds031 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 031.R.out < cmds031 &&
+    test_cmp 031.R.out ${exp_dir}/031.R.out
+'
+
+cmds032="${cmd_dir}/cmds02.in"
+test032_desc="match allocate with partially specified from rack (pol=lonodex)"
+test_expect_success "${test032_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds032} > cmds032 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 032.R.out < cmds032 &&
+    test_cmp 032.R.out ${exp_dir}/032.R.out
+'
+
+cmds033="${cmd_dir}/cmds03.in"
+test033_desc="match allocate with partially specified from node (pol=lonodex)"
+test_expect_success "${test033_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds033} > cmds033 &&
+    ${query} -L ${grugs} -S CA -P lonodex -t 033.R.out < cmds033 &&
+    test_cmp 033.R.out ${exp_dir}/033.R.out
+'
+
 test_done

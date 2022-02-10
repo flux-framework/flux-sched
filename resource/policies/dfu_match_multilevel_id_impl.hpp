@@ -34,14 +34,39 @@ multilevel_id_t<FOLD>::score_factor_t::score_factor_t (const std::string &type,
 }
 
 template<typename FOLD>
-unsigned multilevel_id_t<FOLD>::score_factor_t::calc_factor (
-                                                    unsigned base_factor) const
+int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
+                                    int64_t base_factor,
+                                    int64_t break_tie) const
 {
-    return (base_factor + m_add_by) * m_multiply_by;
+    int64_t add, mul, tie, factor;
+    if (base_factor < 0 || break_tie < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (base_factor > (std::numeric_limits<int64_t>::max () - m_add_by)) {
+        errno = EOVERFLOW;
+        return -1;
+    }
+    add = base_factor + m_add_by;
+
+    if (add > (std::numeric_limits<int64_t>::max () / m_multiply_by)) {
+        errno = EOVERFLOW;
+        return -1;
+    }
+    mul = add * m_multiply_by;
+    tie =  break_tie % m_multiply_by - 1;
+
+    if (mul > (std::numeric_limits<int64_t>::max () - tie)) {
+        errno = EOVERFLOW;
+        return -1;
+    }
+    factor = mul + tie;
+    return factor;
 }
 
 template<typename FOLD>
-unsigned multilevel_id_t<FOLD>::calc_multilevel_scores () const
+int64_t multilevel_id_t<FOLD>::calc_multilevel_scores () const
 {
     return std::accumulate (m_multilevel_scores.begin (),
                             m_multilevel_scores.end (), 0);
@@ -136,8 +161,13 @@ int multilevel_id_t<FOLD>::dom_discover_vtx (
                                const f_resource_graph_t &g)
 {
     if (m_multilevel_factors.find (g[u].type) != m_multilevel_factors.end ()) {
+        if (g[u].id < -1)
+            return -1;
         auto &f = m_multilevel_factors[g[u].type];
-        m_multilevel_scores.push_back (f.calc_factor (g[u].id));
+        int64_t factor =  f.calc_factor (g[u].id+1, g[u].uniq_id);
+        if (factor < 0)
+            return factor;
+        m_multilevel_scores.push_back (factor);
     }
     incr ();
     return 0;

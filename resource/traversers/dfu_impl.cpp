@@ -798,40 +798,123 @@ done:
     return rc;
 }
 
-int dfu_impl_t::resolve (vtx_t root, std::vector<Resource> &resources,
-                         scoring_api_t &dfu, bool excl, unsigned int *needs)
+int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
 {
-    int rc = -1;
+    int rc = 0;
+    const std::string &dom = m_match->dom_subsystem ();
+    f_out_edg_iterator_t ei, ei_end;
+    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
+
+    for (auto &subsystem : m_match->subsystems ()) {
+        for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
+            if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
+                continue;
+            vtx_t tgt = target (*ei, *m_graph);
+            bool tgt_constrained = true;
+            if (dfu.is_contained (subsystem, (*m_graph)[tgt].type)) {
+                if (!dfu.best_k (subsystem, (*m_graph)[tgt].type))
+                    tgt_constrained = false;
+            }
+
+            if (tgt_constrained) {
+                // We already decided best_k for the target resource vertex type
+                // Thus, as soon as we encounter one best_k edge, the ancestor
+                // edge should be marked best_k.
+                if ((*m_graph)[*ei].idata.get_trav_token () == m_best_k_cnt) {
+                    rc = 1;
+                    break;
+                }
+            } else {
+                // We have not decided best_k for the target.
+                // Thus, the subtree must be explored to decide if the ancestor
+                // edge should be marked best_k.
+                if (enforce_dfv (tgt, dfu) == 1) {
+                     (*m_graph)[*ei].idata.set_for_trav_update ((*m_graph)[tgt].size,
+                                                                false,
+                                                                m_best_k_cnt);
+                     rc = 1;
+                     continue;
+                }
+            }
+        }
+    }
+    (*m_graph)[u].idata.colors[dom] = m_color.black ();
+
+    return rc;
+}
+
+int dfu_impl_t::has_root (vtx_t root, std::vector<Resource> &resources,
+                          scoring_api_t &dfu, unsigned int *needs)
+{
+    int rc = 0;
     unsigned int qc;
     unsigned int count;
-    const subsystem_t &dom = m_match->dom_subsystem ();
-    if (m_match->dom_finish_graph (dom, resources, *m_graph, dfu) != 0)
-        goto done;
-
     *needs = 1; // if the root is not specified, assume we need 1
     for (auto &resource : resources) {
         if (resource.type == (*m_graph)[root].type) {
             qc = dfu.avail ();
-            if ((count = m_match->calc_count (resource, qc)) == 0)
+            if ((count = m_match->calc_count (resource, qc)) == 0) {
+                rc = -1;
                 goto done;
+            }
             *needs = count; // if the root is specified, give that much
         }
     }
+done:
+    return rc;
+}
 
-    // resolve remaining unconstrained resource types
+int dfu_impl_t::has_remaining (vtx_t root, std::vector<Resource> &resources,
+                               scoring_api_t &dfu)
+{
+    int rc = 0;
     for (auto &subsystem : m_match->subsystems ()) {
         std::vector<std::string> types;
         dfu.resrc_types (subsystem, types);
         for (auto &type : types) {
-            if (dfu.qualified_count (subsystem, type) == 0)
+            if (dfu.qualified_count (subsystem, type) == 0) {
+                rc = -1;
                 goto done;
-            else if (!dfu.best_k (subsystem, type))
-                dfu.choose_accum_all (subsystem, type);
+            }
         }
     }
-    rc = 0;
+done:
+    return rc;
+}
+
+int dfu_impl_t::enforce_constrained (scoring_api_t &dfu)
+{
+    int rc = 0;
     for (auto subsystem : m_match->subsystems ())
         rc += enforce (subsystem, dfu);
+    return rc;
+}
+
+int dfu_impl_t::enforce_remaining (vtx_t root, scoring_api_t &dfu)
+{
+    int rc = 0;
+    m_color.reset ();
+    rc = enforce_dfv (root, dfu);
+    m_color.reset ();
+    return (rc < 0)? -1 : 0;
+}
+
+int dfu_impl_t::resolve_graph (vtx_t root, std::vector<Resource> &resources,
+                               scoring_api_t &dfu,
+                               bool excl, unsigned int *needs)
+{
+    int rc = -1;
+    const subsystem_t &dom = m_match->dom_subsystem ();
+    if (m_match->dom_finish_graph (dom, resources, *m_graph, dfu) != 0)
+        goto done;
+    if (has_root (root, resources, dfu, needs) != 0)
+        goto done;
+    if (has_remaining (root, resources, dfu) != 0)
+        goto done;
+    if (enforce_constrained (dfu) != 0)
+        goto done;
+    if ( (rc = enforce_remaining (root, dfu)) != 0)
+        goto done;
 done:
     return rc;
 }
@@ -858,6 +941,9 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
         std::vector<std::string> resource_types;
         dfu.resrc_types (subsystem, resource_types);
         for (auto &t : resource_types) {
+            if (!dfu.best_k (subsystem, t))
+                continue;
+
             int best_i = dfu.best_i (subsystem, t);
             for (int i = 0; i < best_i; i++) {
                 if (dfu.at (subsystem, t, i).root)
@@ -1063,7 +1149,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
         eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
-        rc = resolve (root, j.resources, dfu, excl, &needs);
+        rc = resolve_graph (root, j.resources, dfu, excl, &needs);
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in,
                                                                   m_best_k_cnt);
     }

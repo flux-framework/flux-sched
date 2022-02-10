@@ -113,7 +113,7 @@ test_expect_success "${test013_desc}" '
 '
 
 cmds014="${cmd_dir}/cmds14.in"
-test014_desc="attempt to allocate w/sat cluster when node1 is set down then up"
+test014_desc="attempt to allocate w/sat when node1 is set down then up"
 test_expect_success "${test014_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
     ${query} -L ${grugs} -F simple -S CA -P high -t 014.R.out < cmds014 &&
@@ -121,7 +121,7 @@ test_expect_success "${test014_desc}" '
 '
 
 cmds015="${cmd_dir}/cmds15.in"
-test015_desc="attempt to allocate/res cluster when node1 is set down then up"
+test015_desc="attempt to allocate/reserve when node1 is set down then up"
 test_expect_success "${test015_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
     ${query} -L ${grugs} -F simple -S CA -P high -t 015.R.out < cmds015 &&
@@ -136,5 +136,68 @@ test_expect_success "${test016_desc}" '
     test_cmp 016.R.out ${exp_dir}/016.R.out
 '
 
+cmds029="${cmd_dir}/cmds09.in"
+test029_desc="allocate basic job w/ node exclusivity when cluster is marked up"
+test_expect_success "${test029_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds029} > cmds029 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 029.R.out < cmds029 &&
+    test_cmp 029.R.out ${exp_dir}/029.R.out
+'
+
+cmds030="${cmd_dir}/cmds10.in"
+test030_desc="allocate basic job w/ node exclusivity on down cluster root"
+test_expect_success "${test030_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds030} > cmds030 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 030.R.out < cmds030 &&
+    test_cmp 030.R.out ${exp_dir}/030.R.out
+'
+
+cmds031="${cmd_dir}/cmds11.in"
+test031_desc="allocate basic job w/ node exclusivity when node1 is set down"
+test_expect_success "${test031_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds031} > cmds031 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 031.R.out < cmds031 &&
+    test_cmp 031.R.out ${exp_dir}/031.R.out
+'
+
+cmds032="${cmd_dir}/cmds12.in"
+test032_desc="allocate w/ node exclusivity when node1 is set down then up"
+test_expect_success "${test032_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds032} > cmds032 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 032.R.out < cmds032 &&
+    test_cmp 032.R.out ${exp_dir}/032.R.out
+'
+
+cmds033="${cmd_dir}/cmds13.in"
+test033_desc="allocate basic job when cluster is set down then up"
+test_expect_success "${test033_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds033} > cmds033 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 033.R.out < cmds033 &&
+    test_cmp 033.R.out ${exp_dir}/033.R.out
+'
+
+cmds034="${cmd_dir}/cmds14.in"
+test034_desc="allocate w/sat when node1 is set down then up"
+test_expect_success "${test034_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds034} > cmds034 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 034.R.out < cmds034 &&
+    test_cmp 034.R.out ${exp_dir}/034.R.out
+'
+
+cmds035="${cmd_dir}/cmds15.in"
+test035_desc="attempt to allocate/reserve when node1 is set down then up"
+test_expect_success "${test035_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds035} > cmds035 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 035.R.out < cmds035 &&
+    test_cmp 035.R.out ${exp_dir}/035.R.out
+'
+
+cmds036="${cmd_dir}/cmds16.in"
+test036_desc="submit unsatisfiable request to cluster with one node down"
+test_expect_success "${test036_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds036} > cmds036 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 036.R.out < cmds036 &&
+    test_cmp 036.R.out ${exp_dir}/036.R.out
+'
 
 test_done

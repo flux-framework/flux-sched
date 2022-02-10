@@ -59,6 +59,7 @@ public:
     void set_overall_score (int64_t overall);
     unsigned int avail ();
     void set_avail (unsigned int avail);
+    bool is_contained (const subsystem_t &s, const std::string &r);
 
     template<class compare_op = fold::greater, class binary_op = fold::plus>
     int64_t choose_accum_best_k (const subsystem_t &s, const std::string &r,

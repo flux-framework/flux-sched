@@ -304,6 +304,11 @@ private:
     void tick ();
     bool in_subsystem (edg_t e, const subsystem_t &subsystem) const;
     bool stop_explore (edg_t e, const subsystem_t &subsystem) const;
+    bool modify_traversal (vtx_t u, bool emit_shadow_from_parent) const;
+    bool stop_explore_best (edg_t e, bool mod) const;
+    bool get_eff_exclusive (bool x, bool mod) const;
+    unsigned get_eff_needs (unsigned needs, unsigned size, bool mod) const;
+
 
     /*! Various pruning methods
      */
@@ -391,11 +396,20 @@ private:
                       vtx_t u, const subsystem_t &aux,
                       const vtx_predicates_override_t &p);
 
+
+    int has_root (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                  scoring_api_t &dfu, unsigned int *needs);
+    int has_remaining (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                       scoring_api_t &dfu);
+
     // Resolve and enforce hierarchical constraints
-    int resolve (vtx_t root, std::vector<Jobspec::Resource> &resources,
-                 scoring_api_t &dfu, bool excl, unsigned int *needs);
+    int resolve_graph (vtx_t root, std::vector<Jobspec::Resource> &resources,
+                       scoring_api_t &dfu, bool excl, unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
     int enforce (const subsystem_t &subsystem, scoring_api_t &dfu);
+    int enforce_constrained (scoring_api_t &dfu);
+    int enforce_dfv (vtx_t u, scoring_api_t &dfu);
+    int enforce_remaining (vtx_t u, scoring_api_t &dfu);
 
 
     /************************************************************************
@@ -437,7 +451,8 @@ private:
                  std::map<std::string, int64_t> &to_parent);
     int upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
                  unsigned int needs, bool excl, const jobmeta_t &jobmeta,
-                 bool full, std::map<std::string, int64_t> &to_parent);
+                 bool full, std::map<std::string, int64_t> &to_parent,
+                 bool emit_shadow);
 
     int rem_txfilter (vtx_t u, int64_t jobid, bool &stop);
     int rem_agfilter (vtx_t u, int64_t jobid, const std::string &s);
