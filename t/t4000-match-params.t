@@ -68,7 +68,7 @@ test_expect_success 'loading resource module with a nonexistent GRUG fails' '
 prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error1 &&
-    test_must_fail grep -i Success error1
+    grep -i "opening ${ne_grug}: No such file or directory" error1
 '
 
 test_expect_success 'loading resource module with a nonexistent XML fails' '
@@ -78,7 +78,7 @@ test_expect_success 'loading resource module with a nonexistent XML fails' '
 prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error2 &&
-    test_must_fail grep -i Success error2
+    grep -i "opening ${ne_xml}: No such file or directory" error2
 '
 
 test_expect_success 'loading resource module with incorrect reader fails' '
@@ -88,7 +88,7 @@ test_expect_success 'loading resource module with incorrect reader fails' '
 prune-filters=ALL:core policy=high &&
     test_must_fail flux module stats sched-fluxion-resource &&
     flux dmesg > error3 &&
-    grep -i "Invalid argument" error3
+    grep -i "error in reading grug string" error3
 '
 
 test_expect_success 'loading resource module with known policies works' '
