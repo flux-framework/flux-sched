@@ -209,6 +209,8 @@ AC_CONFIG_FILES([Makefile
   resource/policies/base/test/Makefile
   qmanager/Makefile
   qmanager/modules/Makefile
+  doc/Makefile
+  doc/test/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT
