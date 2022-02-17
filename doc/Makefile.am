@@ -2,7 +2,8 @@
 
 SUBDIRS = . test
 
-MAN5_FILES =
+MAN5_FILES = \
+	man5/flux-config-sched-fluxion-qmanager.5
 
 RST_FILES = \
 	$(MAN5_FILES:.5=.rst)

@@ -5,3 +5,4 @@ man5
   :caption: File formats and conventions
   :maxdepth: 1
 
+  flux-config-sched-fluxion-qmanager
