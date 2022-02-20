@@ -1,0 +1,51 @@
+#!/bin/bash
+
+if test $man_base_dir; then
+    set ${man_base_dir}/man*/*.rst
+fi
+
+if test $# == 0; then
+    echo "Usage: spellcheck file [file...]" >&2
+    exit 1
+fi
+
+dict=${pws_dict:-./spell.en.pws}
+if ! test -r $dict; then
+   echo Dictionary $dict not found >&2
+   exit 1
+fi
+if egrep -q '^[[:space:]]*$' $dict; then
+   echo Dictionary $dict contains blank line >&2
+   exit 1
+fi
+if test  -z "$ASPELL"; then
+   echo "1..0 # skip because aspell is not installed"
+   exit 0
+fi
+if ! $ASPELL -n list </dev/null >/dev/null; then
+   echo "1..$# # skip because aspell dry run failed"
+   exit 0
+fi
+
+exit_val=0
+echo "1..$#"
+count=1
+for f in $*; do
+    filename=$(basename $f)
+    dir=$(basename $(dirname $f))
+    tmpfile=$(mktemp)
+    rc=$(cat $f | $ASPELL -p $dict --encoding='utf-8' -n list \
+        | sort | uniq | tee $tmpfile | wc -l)
+    if test $rc == 0; then
+        echo "ok $count - spell check $dir/$filename"
+    else
+	echo "not ok $count - spell check $dir/$filename failed"
+        echo "---"
+	exit_val=1
+    fi
+    cat $tmpfile | sed -e "s!^!$(basename $f): !"
+    rm -f $tmpfile
+    ((count++))
+done
+
+exit $exit_val

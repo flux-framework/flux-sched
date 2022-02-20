@@ -38,6 +38,36 @@ if test "$GXX" = "yes"; then
   AC_SUBST([WARNING_CXXFLAGS])
 fi
 
+# Checks for docs.
+AC_ARG_ENABLE([docs],
+              AS_HELP_STRING([--disable-docs], [disable building docs]))
+AS_IF([test "x$enable_docs" != "xno"], [
+        PYTHON_VERSION=3
+        AM_PATH_PYTHON([3])
+        AM_CHECK_PYMOD(sphinx,
+                       [StrictVersion(sphinx.__version__) >= StrictVersion ('1.6.7')],
+                       [sphinx=true],
+                       [sphinx=false; AC_MSG_WARN([could not find sphinx to generate docs, version 1.6.7+ required])]
+                       )
+        AM_CHECK_PYMOD(docutils,
+                       [StrictVersion(docutils.__version__) >= StrictVersion ('0.11.0')],
+                       [docutils=true],
+                       [docutils=false; AC_MSG_WARN([could not find docutils to generate docs, version 0.11.0+ required])]
+                       )
+])
+#  If --enable-docs=yes, but no doc generator found,
+#   then error immediately:
+#
+AS_IF([test "x$enable_docs" = "xyes" -a "x$sphinx" = "xfalse"],[
+  AC_MSG_ERROR([--enable-docs used but no document generator found!])
+])
+AS_IF([test "x$enable_docs" = "xyes" -a "x$docutils" = "xfalse"],[
+  AC_MSG_ERROR([--enable-docs used but docutils not found!])
+])
+AM_CONDITIONAL([ENABLE_DOCS], [test "x$sphinx" = "xtrue" -a "x$docutils" = "xtrue"])
+AC_CHECK_PROG(ASPELL,[aspell],[aspell])
+
+
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([CZMQ], [libczmq >= 3.0.0])
@@ -179,6 +209,8 @@ AC_CONFIG_FILES([Makefile
   resource/policies/base/test/Makefile
   qmanager/Makefile
   qmanager/modules/Makefile
+  doc/Makefile
+  doc/test/Makefile
   etc/Makefile
   t/Makefile])
 AC_OUTPUT
