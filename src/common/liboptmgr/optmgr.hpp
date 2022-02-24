@@ -72,6 +72,16 @@ public:
         return m_opt;
     }
 
+    /*!
+     * Return the set option parameters as an JSON string
+     *
+     *  \param json_out  output JSON string
+     *  \return          0 on success; -1 on error.
+     */
+    int jsonify (std::string &json_out) const {
+        return m_opt.jsonify (json_out);
+    }
+
 private:
     T m_opt;
 };
