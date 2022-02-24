@@ -92,6 +92,7 @@ TESTS = \
     t4007-match-var-aware.t \
     t4008-match-jgf.t \
     t4009-match-update.t \
+    t4010-match-conf.t \
     t5000-valgrind.t \
     t6000-graph-size.t \
     t6001-match-formats.t \
