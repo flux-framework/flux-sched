@@ -4,5 +4,7 @@ dist_fluxrc1_SCRIPTS = \
 dist_fluxrc3_SCRIPTS = \
     02-sched-fluxion-resource-stop \
     01-sched-fluxion-qmanager-stop
-EXTRA_DIST = sched-fluxion-qmanager.toml
+EXTRA_DIST = \
+    sched-fluxion-qmanager.toml \
+    sched-fluxion-resource.toml
 
