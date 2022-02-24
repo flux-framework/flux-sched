@@ -1355,7 +1355,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_ERR, "%s: traverser initialization",
                   __FUNCTION__);
         return -1;
-
     }
 
     // Perform the initial status marking only when "up" rankset is available
