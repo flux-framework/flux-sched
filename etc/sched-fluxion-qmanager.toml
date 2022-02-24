@@ -5,7 +5,7 @@
 [sched-fluxion-qmanager]
 
 # queueing policy type
-queue-policy = "fcfs"
+queue-policy = "easy"
 
 # general queue parameters
     # queue-depth (applied to all policies)
