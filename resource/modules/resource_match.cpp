@@ -252,6 +252,9 @@ static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
                                        const flux_msg_t *msg, void *arg);
 
+static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -283,6 +286,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.ns-info", ns_info_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.params", params_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -2453,6 +2458,39 @@ error_memfree:
     errno = saved_errno;
 error:
     if (flux_respond_error (h, msg, errno, respond_msg) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    int saved_errno;
+    json_error_t jerr;
+    std::string params;
+    json_t *o{nullptr};
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (ctx->opts.jsonify (params) < 0)
+        goto error;
+    if (!(o = json_loads (params.c_str (), 0, &jerr))) {
+        errno = ENOMEM;
+        goto error;
+    }
+    if (flux_respond_pack (h, msg, "{s:o}", "params", o) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: params succeeded", __FUNCTION__);
+    return;
+
+error:
+    if (o) {
+        saved_errno = errno;
+        json_decref (o);
+        errno = saved_errno;
+    }
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
