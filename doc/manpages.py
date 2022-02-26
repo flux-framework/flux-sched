@@ -18,4 +18,5 @@ author = 'This page is maintained by the Flux community.'
 # - Manual section
 man_pages = [
     ('man5/flux-config-sched-fluxion-qmanager', 'flux-config-sched-fluxion-qmanager', 'Fluxion qmanager configuration file', [author], 5),
+    ('man5/flux-config-sched-fluxion-resource', 'flux-config-sched-fluxion-resource', 'Fluxion resource configuration file', [author], 5),
 ]
