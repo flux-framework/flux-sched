@@ -9,4 +9,7 @@ queue-policy = "fcfs"                    # queueing policy type
 # general queue parameters
     # max queue depth (applied to all policies)
     # queue-depth (applied to all policies)
-queue-params = "max-queue-depth=1000000,queue-depth=8192"
+[sched-fluxion-qmanager.queue-params]
+
+max-queue-depth = 1000000
+queue-depth = 8192

@@ -1,5 +1,3 @@
-#!/bin/sh
-
 test_description='Test configuration file support for qmanager'
 
 ORIG_HOME=${HOME}
@@ -215,8 +213,10 @@ test_expect_success 'qmanager: load succeeds on no qmanager category' '
     conf_name="15-no-qmanager" &&
     outfile=${conf_name}.out &&
     start_qmanager ${conf_base}/${conf_name} ${outfile} &&
-    check_queue_params ${outfile} "\"\"" &&
-    check_policy_params ${outfile} "\"\""
+    check_queue_params ${outfile} \
+	"\"max-queue-depth=1000000,queue-depth=8192\"" &&
+    check_policy_params ${outfile} \
+	"\"max-reservation-depth=100000,reservation-depth=64\""
 '
 
 test_expect_success 'qmanager: homogeneous multiqueue configuration works' '

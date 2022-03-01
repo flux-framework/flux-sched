@@ -9,5 +9,8 @@ queue-policy = "fcfs"                    # queueing policy type
 # queue policy parameters
     # max depth for "conservative" and "hybrid"
     # reservation depth for HYBRID
-policy-params = "max-reservation-depth=100000,reservation-depth=64"
+[sched-fluxion-qmanager.policy-params]
+
+max-reservation-depth = 100000
+reservation-depth = 64
 

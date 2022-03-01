@@ -10,10 +10,16 @@ queue-policy = "easy"
 # general queue parameters
     # queue-depth (applied to all policies)
     # max queue depth (applied to all policies)
-queue-params = "queue-depth=8192,max-queue-depth=1000000"
+[sched-fluxion-qmanager.queue-params]
+
+queue-depth = 8192
+max-queue-depth = 1000000
 
 # queue policy parameters
     # max depth for "conservative" and "hybrid"
     # reservation depth for HYBRID
-policy-params = "reservation-depth=64,max-reservation-depth=100000"
+[sched-fluxion-qmanager.policy-params]
+
+reservation-depth = 64
+max-reservation-depth = 100000
 

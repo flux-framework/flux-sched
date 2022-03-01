@@ -105,6 +105,25 @@ static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
     return rc;
 }
 
+static int subtable_dumps (json_t *o, std::string &value)
+{
+    std::stringstream ss;
+    const char *k = nullptr;
+    json_t *v = nullptr;
+
+    json_object_foreach (o, k, v) {
+        char *str;
+        if (!(str = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT))) {
+            errno = ENOMEM;
+            return -1;
+        }
+        ss << k << "=" << str << ",";
+        free (str);
+    }
+    value = ss.str ();
+    return 0;
+}
+
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
@@ -119,13 +138,30 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     }
 
     const char *k = NULL;
+    char *tmp = nullptr;
     json_t *v = NULL;
     optmgr_kv_t<qmanager_opts_t> opts_store;
     std::string info_str = "";
     json_object_foreach (conf, k, v) {
-        std::string value = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT);
-        if (json_typeof (v) == JSON_STRING)
-            value = value.substr (1, value.length () - 2);
+        std::string value;
+        if (json_is_object (v)) {
+            if (subtable_dumps (v, value) < 0) {
+                flux_log_error (ctx->h, "%s: sub_table_dumps on key=%s",
+                                __FUNCTION__, k);
+            }
+            if (!value.empty ())
+                value = value.substr (0, value.length () - 1);
+        } else {
+            if (!(tmp = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT))) {
+                errno = ENOMEM;
+                return -1;
+            }
+            value = tmp;
+            free (tmp);
+            tmp = nullptr;
+            if (json_typeof (v) == JSON_STRING)
+                value = value.substr (1, value.length () - 2);
+        }
         if ( (rc = opts_store.put (k, value)) < 0) {
             flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s, %s)",
                              __FUNCTION__, k, value.c_str ());
@@ -312,11 +348,9 @@ static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
     return;
 
 error:
-    if (o) {
-        saved_errno = errno;
-        json_decref (o);
-        errno = saved_errno;
-    }
+    saved_errno = errno;
+    json_decref (o);
+    errno = saved_errno;
     if (flux_respond_error (h, msg, errno, nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
