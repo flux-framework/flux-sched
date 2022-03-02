@@ -1,3 +1,32 @@
+flux-sched version 0.21.0 - 2021-03-02
+--------------------------------------
+Check out our new node-exclusive scheduling support!
+
+### Features
+ * HLAPI: add CLI initialization and implement match_allocate, cancel,
+   and info (#888)
+ * fluxion-resource: Introduce multilevel ID match policy support (#895)
+ * fluxion-resource: Add node-exclusive scheduling (#900)
+ * doc: add infrastructure for sphinx documentation (#906)
+ * config: Add TOML config support for sched-fluxion-[qmanager|resource]
+   (#906, #910)
+
+### Fixes
+ * doc: add LLNL code release number to README.md (#885)
+ * build: Fix compilation issues with clang-12 and gcc-11 (#891)
+ * build: add JANSSON_CFLAGS into Makefile.am (#892)
+ * Replace DBL_MAX with std::numeric_limits (#902)
+ * testsuite: fix a couple brittle tests (#909)
+
+### Cleanup
+ * testsuite: use flux mini not flux jobspec (#884)
+ * t5000-valgrind.t: do not run valgrind test by default (#887)
+ * testsuite: drop flux overlay status from test (#890)
+ * mergify: update configuration to replace deprecated keys (#901)
+ * ci: rename centos7 and centos8 docker images to el7 and el8 (#904)
+ * testsuite: update flux-sharness.sh and add fedora34 (#905)
+
+
 flux-sched version 0.20.0 - 2021-11-09
 --------------------------------------
 This version of Fluxion lays a foundation for
