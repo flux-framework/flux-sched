@@ -6,3 +6,4 @@ man5
   :maxdepth: 1
 
   flux-config-sched-fluxion-qmanager
+  flux-config-sched-fluxion-resource

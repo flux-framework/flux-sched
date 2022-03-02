@@ -6,11 +6,6 @@
 
 queue-policy = "easy"
 
-# general queue parameters
-    # max queue depth (applied to all policies)
-    # queue-depth (applied to all policies)
-queue-params = "max-queue-depth=1000000,queue-depth=8192"
-
 # multiple queues
 queues = "debug batch"
 
@@ -22,4 +17,13 @@ queue-policy-per-queue = "debug:fcfs"
     # max queue depth (applied to all policies)
     # queue-depth (applied to all policies)
 queue-params-per-queue = "debug:queue-depth=16"
+
+# general queue parameters
+    # max queue depth (applied to all policies)
+    # queue-depth (applied to all policies)
+#queue-params = "max-queue-depth=1000000,queue-depth=8192"
+[sched-fluxion-qmanager.queue-params]
+
+max-queue-depth = 1000000
+queue-depth = 8192
 

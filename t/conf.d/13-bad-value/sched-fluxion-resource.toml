@@ -1,0 +1,5 @@
+[sched-fluxion-resource]
+
+match-policy = "lonodex"
+reserve-vtx-vec="foo"
+

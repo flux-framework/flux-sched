@@ -4,3 +4,7 @@
 
 [sched-fluxion-qmanager]
 
+[sched-fluxion-qmanager.queue-params]
+
+[sched-fluxion-qmanager.policy-params]
+

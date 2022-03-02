@@ -102,6 +102,9 @@ class ResourceModuleInterface:
         payload = {"jobspec": jobspec}
         return self.f.rpc("sched-fluxion-resource.satisfiability", payload).get()
 
+    def rpc_params(self):
+        return self.f.rpc("sched-fluxion-resource.params").get()
+
 
 """
     Action for match allocate sub-command
@@ -297,6 +300,17 @@ def namespace_info_action(args):
 
 
 """
+    Action for params sub-command
+"""
+
+
+def params_action(args):
+    r = ResourceModuleInterface()
+    resp = r.rpc_params()
+    print(json.dumps(resp))
+
+
+"""
     Main entry point
 """
 
@@ -330,6 +344,7 @@ def main():
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
     nstr = "Get remapped ID given raw ID seen by the reader."
+    pastr = "Display the module's parameter values."
     parser_m = subpar.add_parser("match", help=mstr, description=mstr)
     parser_u = subpar.add_parser("update", help=ustr, description=ustr)
     parser_i = subpar.add_parser("info", help=istr, description=istr)
@@ -340,6 +355,7 @@ def main():
     parser_sp = subpar.add_parser("set-property", help=pstr, description=pstr)
     parser_gp = subpar.add_parser("get-property", help=gstr, description=gstr)
     parser_n = subpar.add_parser("ns-info", help=nstr, description=nstr)
+    parser_pa = subpar.add_parser("params", help=pastr, description=pastr)
 
     #
     # Add subparser for the match sub-command
@@ -477,6 +493,12 @@ def main():
         "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
     )
     parser_fe.set_defaults(func=satisfiability_action)
+
+    #
+    # Positional argument for params sub-command
+    #
+    pa_help = "Parameters"
+    parser_pa.set_defaults(func=params_action)
 
     #
     # Parse the args and call an action routine as part of that

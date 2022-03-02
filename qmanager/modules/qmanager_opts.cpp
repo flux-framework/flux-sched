@@ -118,6 +118,21 @@ bool queue_prop_t::is_policy_params_set () const
     return policy_params != QMANAGER_OPTS_UNSET_STR;
 }
 
+json_t *queue_prop_t::jsonify () const
+{
+    return json_pack ("{ s:s? s:s? s:s? }",
+                          "queue-policy", is_queue_policy_set ()
+                                              ? queue_policy.c_str ()
+                                              : nullptr,
+                          "queue-params", is_queue_params_set ()
+                                              ? queue_params.c_str ()
+                                              : nullptr,
+                          "policy-params", is_policy_params_set ()
+                                              ? policy_params.c_str ()
+                                              : nullptr);
+}
+
+
 qmanager_opts_t::qmanager_opts_t ()
 {
     // Note: std::pair<>() is guaranteed to throw only an exception
@@ -286,6 +301,44 @@ bool qmanager_opts_t::operator ()(const std::string &k1,
         || m_tab.find (k2) == m_tab.end ())
         return k1 < k2;
     return m_tab.at (k1) < m_tab.at (k2);
+}
+
+int qmanager_opts_t::jsonify (std::string &json_out) const
+{
+    int rc = -1;
+    int save_errno;
+    json_t *o{nullptr};
+    const char *json_str{nullptr};
+
+    if (!(o = m_queue_prop.jsonify ())) {
+        errno = ENOMEM;
+        goto ret;
+    }
+    for (auto &kv : m_per_queue_prop) {
+        json_t *sub_o{nullptr};
+        if (!(sub_o = kv.second.jsonify ())) {
+            json_decref (sub_o);
+            errno = ENOMEM;
+            goto ret;
+        }
+        if (json_object_set_new (o, kv.first.c_str (), sub_o) < 0) {
+            errno = ENOMEM;
+            goto ret;
+        }
+    }
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+        errno = ENOMEM;
+        goto ret;
+    }
+    json_out = json_str;
+    rc = 0;
+
+ret:
+    save_errno = errno;
+    json_decref (o);
+    free ((char *)json_str);
+    errno = save_errno;
+    return rc;
 }
 
 int qmanager_opts_t::parse (const std::string &k, const std::string &v,

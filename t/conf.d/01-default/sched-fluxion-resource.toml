@@ -1,0 +1,7 @@
+[sched-fluxion-resource]
+
+load-allowlist="node,core,gpu"
+match-policy = "lonodex"
+reserve-vtx-vec=200000
+prune-filters="ALL:core,ALL:gpu"
+

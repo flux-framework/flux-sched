@@ -17,7 +17,9 @@ fluxmod_LTLIBRARIES = sched-fluxion-resource.la
 # resource service module
 #
 sched_fluxion_resource_la_SOURCES = \
-    resource_match.cpp
+    resource_match.cpp \
+    resource_match_opts.cpp \
+    resource_match_opts.hpp
 sched_fluxion_resource_la_CXXFLAGS = \
     $(AM_CXXFLAGS) \
     $(JOBSPEC_CFLAGS) \

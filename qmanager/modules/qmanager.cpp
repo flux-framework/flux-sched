@@ -105,6 +105,25 @@ static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
     return rc;
 }
 
+static int subtable_dumps (json_t *o, std::string &value)
+{
+    std::stringstream ss;
+    const char *k = nullptr;
+    json_t *v = nullptr;
+
+    json_object_foreach (o, k, v) {
+        char *str;
+        if (!(str = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT))) {
+            errno = ENOMEM;
+            return -1;
+        }
+        ss << k << "=" << str << ",";
+        free (str);
+    }
+    value = ss.str ();
+    return 0;
+}
+
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
@@ -119,13 +138,30 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     }
 
     const char *k = NULL;
+    char *tmp = nullptr;
     json_t *v = NULL;
     optmgr_kv_t<qmanager_opts_t> opts_store;
     std::string info_str = "";
     json_object_foreach (conf, k, v) {
-        std::string value = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT);
-        if (json_typeof (v) == JSON_STRING)
-            value = value.substr (1, value.length () - 2);
+        std::string value;
+        if (json_is_object (v)) {
+            if (subtable_dumps (v, value) < 0) {
+                flux_log_error (ctx->h, "%s: sub_table_dumps on key=%s",
+                                __FUNCTION__, k);
+            }
+            if (!value.empty ())
+                value = value.substr (0, value.length () - 1);
+        } else {
+            if (!(tmp = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT))) {
+                errno = ENOMEM;
+                return -1;
+            }
+            value = tmp;
+            free (tmp);
+            tmp = nullptr;
+            if (json_typeof (v) == JSON_STRING)
+                value = value.substr (1, value.length () - 2);
+        }
         if ( (rc = opts_store.put (k, value)) < 0) {
             flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s, %s)",
                              __FUNCTION__, k, value.c_str ());
@@ -281,6 +317,42 @@ error:
     if (flux_respond_error (h, msg, errno, flux_future_error_string (f)) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
     flux_future_destroy (f);
+}
+
+
+static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg)
+{
+    int saved_errno;
+    json_error_t jerr;
+    void *d{nullptr};
+    std::string params;
+    json_t *o{nullptr};
+    std::shared_ptr<qmanager_ctx_t> ctx;
+
+    if (!(d = flux_aux_get (h, "sched-fluxion-qmanager")))
+        goto error;
+    ctx = *(static_cast<std::shared_ptr<qmanager_ctx_t> *>(d));
+    if (ctx->opts.jsonify (params) < 0)
+        goto error;
+    if (!(o = json_loads (params.c_str (), 0, &jerr))) {
+        errno = ENOMEM;
+        goto error;
+    }
+    if (flux_respond_pack (h, msg, "{s:o}", "params", o) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: params succeeded", __FUNCTION__);
+    return;
+
+error:
+    saved_errno = errno;
+    json_decref (o);
+    errno = saved_errno;
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx,
@@ -507,6 +579,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched.resource-status", status_request_cb, FLUX_ROLE_USER },
     { FLUX_MSGTYPE_REQUEST,
       "*.feasibility", feasibility_request_cb, FLUX_ROLE_USER },
+    { FLUX_MSGTYPE_REQUEST,
+      "*.params", params_request_cb, FLUX_ROLE_USER },
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -525,6 +599,9 @@ int mod_start (flux_t *h, int argc, char **argv)
         flux_log_error (h, "%s: qmanager_new", __FUNCTION__);
         return rc;
     }
+    // Because mod_main is always active, the following is safe.
+    flux_aux_set (h, "sched-fluxion-qmanager", &ctx, nullptr);
+
     if ( (rc = process_config_file (ctx)) < 0) {
         flux_log_error (h, "%s: config file parsing", __FUNCTION__);
         qmanager_destroy (ctx);

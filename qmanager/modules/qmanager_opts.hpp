@@ -11,6 +11,10 @@
 #ifndef QMANAGER_OPTS_HPP
 #define QMANAGER_OPTS_HPP
 
+extern "C" {
+#include <jansson.h>
+}
+
 #include <string>
 #include <vector>
 #include <map>
@@ -34,6 +38,8 @@ public:
     bool is_queue_policy_set () const;
     bool is_queue_params_set () const;
     bool is_policy_params_set () const;
+
+    json_t *jsonify () const;
 
 private:
     bool known_queue_policy (const std::string &policy);
@@ -120,6 +126,13 @@ public:
      *  \return          0 on success; -1 on error.
      */
     int parse (const std::string &k, const std::string &v, std::string &info);
+
+    /*! Return the set option parameters as an JSON string
+     *
+     *  \param json_out  output JSON string
+     *  \return          0 on success; -1 on error.
+     */
+    int jsonify (std::string &json_out) const;
 
 private:
     int parse_queues (const std::string &queues);

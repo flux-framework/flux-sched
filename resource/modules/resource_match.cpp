@@ -29,25 +29,16 @@ extern "C" {
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
+#include "resource_match_opts.hpp"
 
 using namespace Flux::resource_model;
+using namespace Flux::opts_manager;
 
 /******************************************************************************
  *                                                                            *
  *                Resource Matching Service Module Context                    *
  *                                                                            *
  ******************************************************************************/
-
-struct resource_args_t {
-    std::string load_file;          /* load file name */
-    std::string load_format;        /* load reader format */
-    std::string load_allowlist;     /* load resource allowlist */
-    std::string match_subsystems;
-    std::string match_policy;
-    std::string prune_filters;
-    std::string match_format;
-    int reserve_vtx_vec;           /* Allow for reserving vertex vector size */
-};
 
 struct match_perf_t {
     double load;                   /* Graph load time */
@@ -100,7 +91,8 @@ struct resource_ctx_t : public resource_interface_t {
     ~resource_ctx_t ();
     flux_t *h;                     /* Flux handle */
     flux_msg_handler_t **handlers; /* Message handlers */
-    resource_args_t args;          /* Module load options */
+    Flux::opts_manager::optmgr_composer_t<
+        Flux::opts_manager::resource_opts_t> opts; /* Option manager */
     std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
@@ -260,6 +252,9 @@ static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
                                        const flux_msg_t *msg, void *arg);
 
+static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
+                               const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -291,6 +286,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.ns-info", ns_info_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.params", params_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -307,16 +304,15 @@ static double get_elapse_time (timeval &st, timeval &et)
  *                                                                            *
  ******************************************************************************/
 
-static void set_default_args (resource_args_t &args)
+static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
 {
-    args.load_file = "";
-    args.load_format = "hwloc";
-    args.load_allowlist = "";
-    args.match_subsystems = "containment";
-    args.match_policy = "first";
-    args.prune_filters = "ALL:core";
-    args.match_format = "rv1_nosched";
-    args.reserve_vtx_vec = 0;
+    resource_opts_t ct_opts;
+    ct_opts.set_load_format ("hwloc");
+    ct_opts.set_match_subsystems ("containment");
+    ct_opts.set_match_policy ("first");
+    ct_opts.set_prune_filters ("ALL:core");
+    ct_opts.set_match_format ("rv1_nosched");
+    ctx->opts += ct_opts;
 }
 
 static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
@@ -337,7 +333,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         }
         ctx->h = h;
         ctx->handlers = NULL;
-        set_default_args (ctx->args);
+        set_default_args (ctx);
         ctx->perf.load = 0.0f;
         ctx->perf.njobs = 0;
         ctx->perf.min = std::numeric_limits<double>::max();
@@ -357,74 +353,73 @@ static int process_args (std::shared_ptr<resource_ctx_t> &ctx,
                          int argc, char **argv)
 {
     int rc = 0;
-    resource_args_t &args = ctx->args;
-    std::string dflt = "";
+    optmgr_kv_t<resource_opts_t> opts_store;
+    std::string info_str = "";
 
     for (int i = 0; i < argc; i++) {
-        if (!strncmp ("load-file=", argv[i], sizeof ("load-file"))) {
-            args.load_file = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("load-format=", argv[i], sizeof ("load-format"))) {
-            dflt = args.load_format;
-            args.load_format = strstr (argv[i], "=") + 1;
-            if (!known_resource_reader (args.load_format)) {
-                flux_log (ctx->h, LOG_ERR,
-                          "%s: unknown resource reader (%s)! use default (%s).",
-                          __FUNCTION__,
-                           args.load_format.c_str (), dflt.c_str ());
-                args.load_format = dflt;
-            }
-            args.load_format = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("load-allowlist=",
-                             argv[i], sizeof ("load-allowlist"))) {
-            args.load_allowlist = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("subsystems=", argv[i], sizeof ("subsystems"))) {
-            dflt = args.match_subsystems;
-            args.match_subsystems = strstr (argv[i], "=") + 1;
-        } else if (!strncmp ("policy=", argv[i], sizeof ("policy"))) {
-            dflt = args.match_policy;
-            args.match_policy = strstr (argv[i], "=") + 1;
-            if (!known_match_policy (args.match_policy)) {
-                flux_log (ctx->h, LOG_ERR,
-                          "%s: unknown match policy (%s)! use default (%s).",
-                           __FUNCTION__,
-                           args.match_policy.c_str (), dflt.c_str ());
-                args.match_policy = dflt;
-            }
-        } else if (!strncmp ("prune-filters=",
-                             argv[i], sizeof ("prune-filters"))) {
-            std::string token = strstr (argv[i], "=") + 1;
-            if(token.find_first_not_of(' ') != std::string::npos) {
-                args.prune_filters += ",";
-                args.prune_filters += token;
-            }
-        } else if (!strncmp ("match-format=",
-                             argv[i], sizeof ("match-format"))) {
-            dflt = args.match_format;
-            args.match_format = strstr (argv[i], "=") + 1;
-            if (!known_match_format (args.match_format)) {
-                flux_log (ctx->h, LOG_ERR,
-                          "%s: unknown match format (%s)! use default (%s).",
-                          __FUNCTION__,
-                          args.match_format.c_str (), dflt.c_str ());
-                args.match_format = dflt;
-            }
-        } else if (!strncmp ("reserve-vtx-vec=",
-                             argv[i], sizeof ("reserve-vtx-vec"))) {
-            args.reserve_vtx_vec = atoi (strstr (argv[i], "=") + 1);
-            if ( args.reserve_vtx_vec <= 0 || args.reserve_vtx_vec > 2000000) {
-                flux_log (ctx->h, LOG_ERR,
-                          "%s: out of range specified for reserve-vtx-vec (%d)",
-                          __FUNCTION__, args.reserve_vtx_vec);
-                args.reserve_vtx_vec = 0;
-            }
-        } else {
-            rc = -1;
-            errno = EINVAL;
-            flux_log (ctx->h, LOG_ERR, "%s: unknown option `%s'",
-                      __FUNCTION__, argv[i]);
+        const std::string kv (argv[i]);
+        if ( (rc = opts_store.put (kv)) < 0) {
+            flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s)",
+                             __FUNCTION__, argv[i]);
+            return rc;
         }
     }
+    if ( (rc = opts_store.parse (info_str)) < 0) {
+        flux_log_error (ctx->h, "%s: optmgr_kv_t::parse: %s",
+                        __FUNCTION__, info_str.c_str ());
+        return rc;
+    }
+    if (info_str != "") {
+        flux_log (ctx->h, LOG_DEBUG, "%s: %s", __FUNCTION__, info_str.c_str ());
+    }
+    ctx->opts += opts_store.get_opt ();
+    return rc;
+}
 
+static int process_config_file (std::shared_ptr<resource_ctx_t> &ctx)
+{
+    int rc = 0;
+    json_t *conf = nullptr;
+
+    if ( (rc = flux_conf_unpack (flux_get_conf (ctx->h), nullptr,
+                                     "{ s?:o }",
+                                         "sched-fluxion-resource",
+                                         &conf)) < 0) {
+        flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
+        return rc;
+    }
+
+    const char *k = nullptr;
+    char *tmp = nullptr;
+    json_t *v = nullptr;
+    optmgr_kv_t<resource_opts_t> opts_store;
+    std::string info_str = "";
+    json_object_foreach (conf, k, v) {
+        std::string value;
+        if (!(tmp  = json_dumps (v, JSON_ENCODE_ANY|JSON_COMPACT))) {
+            errno = ENOMEM;
+            return -1;
+        }
+        value = tmp;
+        free (tmp);
+        tmp = nullptr;
+        if (json_typeof (v) == JSON_STRING)
+            value = value.substr (1, value.length () - 2);
+        if ( (rc = opts_store.put (k, value)) < 0) {
+            flux_log_error (ctx->h, "%s: optmgr_kv_t::put (%s, %s)",
+                             __FUNCTION__, k, value.c_str ());
+            return rc;
+        }
+    }
+    if ( (rc = opts_store.parse (info_str)) < 0) {
+        flux_log_error (ctx->h, "%s: optmgr_kv_t::parse: %s",
+                        __FUNCTION__, info_str.c_str ());
+        return rc;
+    }
+    if (info_str != "") {
+        flux_log (ctx->h, LOG_DEBUG, "%s: %s", __FUNCTION__, info_str.c_str ());
+    }
+    ctx->opts += opts_store.get_opt ();
     return rc;
 }
 
@@ -449,7 +444,15 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h,
                   __FUNCTION__);
         goto error;
     }
-    process_args (ctx, argc, argv);
+    if (process_config_file (ctx) < 0) {
+        flux_log_error (h, "%s: config file parsing", __FUNCTION__);
+        goto error;
+    }
+    if (process_args (ctx, argc, argv) < 0) {
+        flux_log_error (h, "%s: load line argument parsing", __FUNCTION__);
+        goto error;
+    }
+    ctx->opts.canonicalize ();
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log_error (h, "%s: error registering resource event handler",
                         __FUNCTION__);
@@ -469,13 +472,13 @@ error:
  ******************************************************************************/
 
 static int create_reader (std::shared_ptr<resource_ctx_t> &ctx,
-                          const std::string &format,
-                          const std::string &allowlist)
+                          const std::string &format)
 {
     if ( (ctx->reader = create_resource_reader (format)) == nullptr)
         return -1;
-    if (allowlist != "") {
-        if (ctx->reader->set_allowlist (ctx->args.load_allowlist) < 0)
+    if (ctx->opts.get_opt ().is_load_allowlist_set ()) {
+        if (ctx->reader->set_allowlist (
+                             ctx->opts.get_opt ().get_load_allowlist ()) < 0)
             flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
         if (!ctx->reader->is_allowlist_supported ())
             flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported",
@@ -492,15 +495,15 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
     std::stringstream buffer{};
 
     if (ctx->reader == nullptr
-        && create_reader (ctx, ctx->args.load_format,
-                          ctx->args.load_allowlist) < 0) {
+        && create_reader (ctx, ctx->opts.get_opt ().get_load_format ()) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create reader", __FUNCTION__);
         goto done;
     }
 
     saved_errno = errno;
     errno = 0;
-    in_file.open (ctx->args.load_file.c_str (), std::ifstream::in);
+    in_file.open (ctx->opts.get_opt ().get_load_file ().c_str (),
+                  std::ifstream::in);
     if (!in_file.good ()) {
         if (errno == 0) {
             // C++ standard doesn't guarantee to set errno but
@@ -508,8 +511,8 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
             // we manually set errno only when it is not set at all.
             errno = EIO;
         }
-        flux_log_error (ctx->h, "%s: opening %s",
-                  __FUNCTION__, ctx->args.load_file.c_str ());
+        flux_log_error (ctx->h, "%s: opening %s", __FUNCTION__,
+                                ctx->opts.get_opt ().get_load_file ().c_str ());
         goto done;
     }
     errno = saved_errno;
@@ -999,18 +1002,14 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         goto done;
     }
     if (jgf) {
-        if (ctx->reader == nullptr
-            && (rc = create_reader (ctx, "jgf",
-                                    ctx->args.load_allowlist)) < 0) {
+        if (ctx->reader == nullptr && (rc = create_reader (ctx, "jgf")) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: can't create jgf reader",
                       __FUNCTION__);
             goto done;
         }
         rc = grow_resource_db_jgf (ctx, r_lite, jgf);
     } else {
-        if (ctx->reader == nullptr
-            && (rc = create_reader (ctx, "hwloc",
-                                    ctx->args.load_allowlist)) < 0) {
+        if (ctx->reader == nullptr && (rc = create_reader (ctx, "hwloc")) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: can't create hwloc reader",
                       __FUNCTION__);
             goto done;
@@ -1208,17 +1207,19 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     double elapse;
     struct timeval st, et;
 
-    if (ctx->args.reserve_vtx_vec != 0)
-        ctx->db->resource_graph.m_vertices.reserve (ctx->args.reserve_vtx_vec);
+    if (ctx->opts.get_opt ().is_reserve_vtx_vec_set ())
+        ctx->db->resource_graph.m_vertices.reserve (
+            ctx->opts.get_opt ().get_reserve_vtx_vec ());
     if ( (rc = gettimeofday (&st, NULL)) < 0) {
         flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
         goto done;
     }
-    if (ctx->args.load_file != "") {
+    if (ctx->opts.get_opt ().is_load_file_set ()) {
         if (populate_resource_db_file (ctx) < 0)
             goto done;
         flux_log (ctx->h, LOG_INFO, "%s: loaded resources from %s",
-                  __FUNCTION__,  ctx->args.load_file.c_str ());
+                  __FUNCTION__,
+                  ctx->opts.get_opt ().get_load_file ().c_str ());
     } else {
         if (populate_resource_db_acquire (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR,
@@ -1248,7 +1249,7 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
      * subsystem1[:relation1[:relation2...]],subsystem2[...
      */
     int rc = 0;
-    std::stringstream ss (ctx->args.match_subsystems);
+    std::stringstream ss (ctx->opts.get_opt ().get_match_subsystems ());
     subsystem_t subsystem;
     std::string token;
 
@@ -1311,7 +1312,8 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = 0;
 
     // Select the appropriate matcher based on CLI policy.
-    if ( !(ctx->matcher = create_match_cb (ctx->args.match_policy))) {
+    if ( !(ctx->matcher = create_match_cb (
+                              ctx->opts.get_opt ().get_match_policy ()))) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create match callback",
                   __FUNCTION__);
         return -1;
@@ -1325,23 +1327,26 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
     if ( (rc = select_subsystems (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "%s: error processing subsystems %s",
-                  __FUNCTION__, ctx->args.match_subsystems.c_str ());
+                  __FUNCTION__,
+                  ctx->opts.get_opt ().get_match_subsystems ().c_str ());
         return rc;
     }
     if ( !(ctx->fgraph = create_filtered_graph (ctx)))
         return -1;
 
     // Create a writers object for matched vertices and edges
-    match_format_t format = match_writers_factory_t::
-                                get_writers_type (ctx->args.match_format);
+    match_format_t format = match_writers_factory_t::get_writers_type (
+                                ctx->opts.get_opt ().get_match_format ());
     if ( !(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
-    if (ctx->args.prune_filters != ""
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->args.prune_filters) < 0) {
+    if (ctx->opts.get_opt ().is_prune_filters_set ()
+        && ctx->matcher->set_pruning_types_w_spec (
+                             ctx->matcher->dom_subsystem (),
+                             ctx->opts.get_opt ().get_prune_filters ()) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: error setting pruning types with: %s",
-                  __FUNCTION__, ctx->args.prune_filters.c_str ());
+                  __FUNCTION__,
+                  ctx->opts.get_opt ().get_prune_filters ().c_str ());
         return -1;
     }
 
@@ -1350,7 +1355,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_ERR, "%s: traverser initialization",
                   __FUNCTION__);
         return -1;
-
     }
 
     // Perform the initial status marking only when "up" rankset is available
@@ -2453,6 +2457,39 @@ error_memfree:
     errno = saved_errno;
 error:
     if (flux_respond_error (h, msg, errno, respond_msg) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    int saved_errno;
+    json_error_t jerr;
+    std::string params;
+    json_t *o{nullptr};
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    if (ctx->opts.jsonify (params) < 0)
+        goto error;
+    if (!(o = json_loads (params.c_str (), 0, &jerr))) {
+        errno = ENOMEM;
+        goto error;
+    }
+    if (flux_respond_pack (h, msg, "{s:o}", "params", o) < 0) {
+        flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        goto error;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: params succeeded", __FUNCTION__);
+    return;
+
+error:
+    if (o) {
+        saved_errno = errno;
+        json_decref (o);
+        errno = saved_errno;
+    }
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
