@@ -141,14 +141,16 @@ class FluxionResourceGraphV1(Graph):
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
         self._add_and_tick_uniq_id(vtx, edg)
 
-    def _encode_rank(self, ppid, rank, children, hList, hIndex):
-        hPath = f"/cluster0/{hList[hIndex]}"
-        iden = self._extract_id_from_hn(hList[hIndex])
+    def _encode_rank(self, ppid, rank, children, hList, rdict):
+        if rdict[rank] >= len(hList):
+            raise Exception(f"nodelist doesn't include node for rank={rank}")
+        hPath = f"/cluster0/{hList[rdict[rank]]}"
+        iden = self._extract_id_from_hn(hList[rdict[rank]])
         vtx = FluxionResourcePoolV1(
             self._uniqId,
             "node",
             "node",
-            hList[hIndex],
+            hList[rdict[rank]],
             iden,
             self._uniqId,
             rank,
@@ -163,14 +165,11 @@ class FluxionResourceGraphV1(Graph):
             for i in IDset(val):
                 self._encode_child(vtx.get_id(), hPath, rank, str(key), i)
 
-    def _encode_rlite(self, ppid, entry, hList, hIndex):
+    def _encode_rlite(self, ppid, entry, hList, rdict):
         for rank in list(IDset(entry["rank"])):
-            hIndex += 1
-            self._encode_rank(ppid, rank, entry["children"], hList, hIndex)
-        return hIndex
+            self._encode_rank(ppid, rank, entry["children"], hList, rdict)
 
     def _encode(self):
-        hIndex = -1
         hList = Hostlist(self._rv1NoSched["execution"]["nodelist"])
         vtx = FluxionResourcePoolV1(
             self._uniqId,
@@ -186,5 +185,13 @@ class FluxionResourceGraphV1(Graph):
             "/cluster0",
         )
         self._add_and_tick_uniq_id(vtx, None)
+        i = 0
+        rdict = {}
         for entry in self._rv1NoSched["execution"]["R_lite"]:
-            hIndex = self._encode_rlite(vtx.get_id(), entry, hList, hIndex)
+            for rank in list(IDset(entry["rank"])):
+                if rank in rdict:
+                    raise Exception(f"R_lite: rank={rank} found again!")
+                rdict[rank] = i
+                i += 1
+        for entry in self._rv1NoSched["execution"]["R_lite"]:
+            self._encode_rlite(vtx.get_id(), entry, hList, rdict)
