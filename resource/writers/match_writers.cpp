@@ -725,8 +725,9 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
 {
     int rc = 0;
     int saved_errno;
-    char *hl_in = NULL;
-    char *hl_out = NULL;
+    char *hl_out = nullptr;
+    std::vector<rank_host_t> rankhosts_vec;
+
 
     // m_gl_gatherer is keyed by the "children" signature of each node
     // the value is the set of ranks that have the same signature.
@@ -741,28 +742,16 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
                    [] (const rank_host_t &a, const rank_host_t &b) {
                        return a.rank < b.rank;
                    });
-        std::transform (kv.second.begin (), kv.second.end(),
+        std::transform (kv.second.begin (), kv.second.end (),
                         std::back_inserter (ranks_vec),
                         [] (rank_host_t &o) {
                             return o.rank;
                         });
         if ( (rc = compress_ids (s, ranks_vec)) < 0)
             goto ret;
-
-        if (host_array) {
-            std::vector<std::string> hosts_vec;
-            std::transform (kv.second.begin (), kv.second.end (),
-                            std::back_inserter (hosts_vec),
-                            [] (rank_host_t &o) {
-                                return o.host;
-                            });
-            if ( (rc = compress_hosts (hosts_vec, hl_in, &hl_out)) < 0)
-                goto ret;
-            if (hl_in)
-                free (hl_in);
-            hl_in = hl_out;
-        }
-
+        if (host_array)
+            std::copy (kv.second.begin (),
+                       kv.second.end (), std::back_inserter (rankhosts_vec));
         if ( !(robj = json_object ())) {
             rc = -1;
             errno = ENOMEM;
@@ -797,13 +786,28 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
         }
     }
 
-    if (host_array && hl_out) {
-       if ( (rc = json_array_append_new (host_array,
-                                         json_string (hl_out))) < 0) {
-           json_decref (rlite_array);
-           errno = ENOMEM;
-           goto ret;
-       }
+    if (host_array) {
+        // The primary sorting order for compression is rank
+        std::sort (rankhosts_vec.begin (), rankhosts_vec.end (),
+                   [] (const rank_host_t &a, const rank_host_t &b) {
+                       return a.rank < b.rank;
+                   });
+        std::vector<std::string> hosts_vec;
+        std::transform (rankhosts_vec.begin (), rankhosts_vec.end (),
+                        std::back_inserter (hosts_vec),
+                        [] (rank_host_t &o) {
+                            return o.host;
+                        });
+        if ( (rc = compress_hosts (hosts_vec, nullptr, &hl_out)) < 0)
+            goto ret;
+        if (hl_out) {
+            if ( (rc = json_array_append_new (host_array,
+                                              json_string (hl_out))) < 0) {
+                json_decref (rlite_array);
+                errno = ENOMEM;
+                goto ret;
+            }
+        }
     }
 
 ret:
