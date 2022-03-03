@@ -97,7 +97,8 @@ TESTS = \
     t6000-graph-size.t \
     t6001-match-formats.t \
     t6002-graph-hwloc.t \
-    t7000-shell-datastaging.t
+    t7000-shell-datastaging.t \
+    t8001-util-ion-R.t
 
 check_SCRIPTS = $(TESTS)
 
