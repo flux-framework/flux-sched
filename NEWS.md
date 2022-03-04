@@ -1,3 +1,13 @@
+flux-sched version 0.21.1 - 2021-03-04
+--------------------------------------
+A minor release fixing two problems discovered during system
+instance testing of v0.21.0.
+
+### Fixes
+ * Encode the nodelist key in strict rank order (#893, #916)
+ * build: fix missing doc file in distributed tarball (#915)
+
+
 flux-sched version 0.21.0 - 2021-03-02
 --------------------------------------
 Check out our new node-exclusive scheduling support!
