@@ -33,6 +33,7 @@ class FluxionResourcePoolV1(Node):
         exclusive,
         unit,
         size,
+        properties,
         path,
     ):
         """Constructor
@@ -48,6 +49,7 @@ class FluxionResourcePoolV1(Node):
         exclusive -- Exclusivity
         unit -- Unit of this resource
         size -- Amount of individual resources in this resource pool in unit
+        properties -- Comma-separated list of property strings
         paths -- Fully qualified paths dictionary
         """
         if not self.constraints(resType):
@@ -65,6 +67,7 @@ class FluxionResourcePoolV1(Node):
                 "exclusive": exclusive,
                 "unit": unit,
                 "size": size,
+                "properties": properties,
                 "paths": {"containment": path},
             },
         )
@@ -123,8 +126,31 @@ class FluxionResourceGraphV1(Graph):
             rc = int(postfix[0])
         return rc
 
-    def _encode_child(self, ppid, hPath, rank, resType, i):
+    def _add_to_rankdict(self, key, gLabel, rankdict):
+        if key in rankdict:
+            rankdict[key].append(gLabel)
+        else:
+            rankdict[key] = [gLabel]
+
+    def _contains_any(self, prop_str, charset):
+        for c in charset:
+            if c in prop_str:
+                return True
+        return False
+
+    def _per_rank_property_dict(self, properties, rankdict):
+        for p in properties:
+            # This can be extended later to suport scheduler specific
+            # string (@suffix)
+            if self._contains_any(p, "!&'\"^`|()"):
+                raise ValueError(f"invalid character used in property={p}")
+            self._add_to_rankdict("node", p, rankdict)
+
+    def _encode_child(self, ppid, hPath, rank, resType, i, rpd):
         path = f"{hPath}/{resType}{i}"
+        properties = []
+        # This can be extended later to suport fine grained property
+        # attachment using rpd
         vtx = FluxionResourcePoolV1(
             self._uniqId,
             resType,
@@ -136,16 +162,20 @@ class FluxionResourceGraphV1(Graph):
             True,
             "",
             1,
+            properties,
             path,
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
         self._add_and_tick_uniq_id(vtx, edg)
 
-    def _encode_rank(self, ppid, rank, children, hList, rdict):
+    def _encode_rank(self, ppid, rank, children, hList, rdict, rpd):
         if rdict[rank] >= len(hList):
-            raise Exception(f"nodelist doesn't include node for rank={rank}")
+            raise ValueError(f"nodelist doesn't include node for rank={rank}")
         hPath = f"/cluster0/{hList[rdict[rank]]}"
         iden = self._extract_id_from_hn(hList[rdict[rank]])
+        properties = []
+        if "node" in rpd:
+            properties = rpd["node"]
         vtx = FluxionResourcePoolV1(
             self._uniqId,
             "node",
@@ -157,17 +187,21 @@ class FluxionResourceGraphV1(Graph):
             True,
             "",
             1,
+            properties,
             hPath,
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
         self._add_and_tick_uniq_id(vtx, edg)
         for key, val in children.items():
             for i in IDset(val):
-                self._encode_child(vtx.get_id(), hPath, rank, str(key), i)
+                self._encode_child(vtx.get_id(), hPath, rank, str(key), i, rpd)
 
-    def _encode_rlite(self, ppid, entry, hList, rdict):
+    def _encode_rlite(self, ppid, entry, hList, rdict, pdict):
         for rank in list(IDset(entry["rank"])):
-            self._encode_rank(ppid, rank, entry["children"], hList, rdict)
+            rpd = {}
+            if rank in pdict:
+                self._per_rank_property_dict(pdict[rank], rpd)
+            self._encode_rank(ppid, rank, entry["children"], hList, rdict, rpd)
 
     def _encode(self):
         hList = Hostlist(self._rv1NoSched["execution"]["nodelist"])
@@ -182,6 +216,7 @@ class FluxionResourceGraphV1(Graph):
             True,
             "",
             1,
+            "",
             "/cluster0",
         )
         self._add_and_tick_uniq_id(vtx, None)
@@ -190,8 +225,19 @@ class FluxionResourceGraphV1(Graph):
         for entry in self._rv1NoSched["execution"]["R_lite"]:
             for rank in list(IDset(entry["rank"])):
                 if rank in rdict:
-                    raise Exception(f"R_lite: rank={rank} found again!")
+                    raise ValueError(f"R_lite: rank={rank} found again!")
                 rdict[rank] = i
                 i += 1
+        props = []
+        if "properties" in self._rv1NoSched["execution"]:
+            props = self._rv1NoSched["execution"]["properties"]
+        pdict = {}
+        for p in props:
+            for rank in list(IDset(props[p])):
+                if rank in pdict:
+                    pdict[rank].append(p)
+                else:
+                    pdict[rank] = [p]
+
         for entry in self._rv1NoSched["execution"]["R_lite"]:
-            self._encode_rlite(vtx.get_id(), entry, hList, rdict)
+            self._encode_rlite(vtx.get_id(), entry, hList, rdict, pdict)
