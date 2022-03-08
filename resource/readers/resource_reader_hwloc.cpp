@@ -291,9 +291,16 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     }
     case HWLOC_OBJ_OS_DEVICE: {
         supported_resource = false;
-        if (!obj->attr) {
+        if (!obj->attr)
             break;
-        } else if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC) {
+
+        /*  Detect any COPROC as GPU device.
+         *  Also, some AMD GPUs are detected as type == GPU with
+         *   subtype RSMI (rsmiX), detect those also:
+         */
+        if (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_COPROC
+           || (obj->attr->osdev.type == HWLOC_OBJ_OSDEV_GPU
+               && strncmp (obj->name, "rsmi", 4) == 0)) {
             if (!in_allowlist ("gpu")) {
                 break;
             }
@@ -302,6 +309,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
              * better support.
              */
             if (strncmp (obj->name, "cuda", 4) == 0)
+                id = atoi (obj->name + 4);
+            else if (strncmp (obj->name, "rsmi", 4) == 0)
                 id = atoi (obj->name + 4);
             else if (strncmp (obj->name, "opencl", 6) == 0) {
                 /* Naming convention of opencl devices for hwloc:
