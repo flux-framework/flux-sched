@@ -1,0 +1,20 @@
+      ------------gpu6[1:x]
+      ------------gpu7[1:x]
+      ---------socket1[1:s]
+      ------corona240[1:s]
+      ---cluster0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ------------gpu5[1:x]
+      ------------gpu4[1:x]
+      ---------socket1[1:s]
+      ------corona240[1:s]
+      ---cluster0[1:s]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
