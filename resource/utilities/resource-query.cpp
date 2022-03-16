@@ -97,7 +97,7 @@ static void usage (int code)
 "            Input file from which to load the resource graph data store\n"
 "            (default=conf/default)\n"
 "\n"
-"    -f, --load-format=<grug|hwloc|jgf>\n"
+"    -f, --load-format=<grug|hwloc|jgf|rv1exec>\n"
 "            Format of the load file (default=grug)\n"
 "\n"
 "    -W, --load-allowlist=<resource1[,resource2[,resource3...]]>\n"
