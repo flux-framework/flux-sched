@@ -861,6 +861,9 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
         rank = idset_next (ids, rank);
     }
 
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource graph datastore loaded with hwloc reader");
+
 done:
     flux_future_destroy (f);
     return rc;
@@ -1008,6 +1011,10 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx,
             goto done;
         }
     }
+
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource graph datastore loaded with JGF reader");
+
 done:
     saved_errno = errno;
     json_decref (p_r_lite);
