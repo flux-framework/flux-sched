@@ -10,7 +10,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 
 verify() {
     local of=$1
-    echo "{\"[0-3]\": 37}" | jq ' ' > ref.out
+    echo "{\"[0-3]\": 17}" | jq ' ' > ref.out
     cat ${of} | grep Rank: | awk '{ print $6 $7}' | jq ' ' > cmp.out
     diff cmp.out ref.out
     return $?
