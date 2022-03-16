@@ -35,6 +35,7 @@ libresource_la_SOURCES = \
     readers/resource_reader_grug.cpp \
     readers/resource_reader_hwloc.cpp \
     readers/resource_reader_jgf.cpp \
+    readers/resource_reader_rv1exec.cpp \
     readers/resource_reader_factory.cpp \
     evaluators/scoring_api.cpp \
     evaluators/edge_eval_api.cpp \
@@ -68,6 +69,7 @@ libresource_la_SOURCES = \
     readers/resource_reader_grug.hpp \
     readers/resource_reader_hwloc.hpp \
     readers/resource_reader_jgf.hpp \
+    readers/resource_reader_rv1exec.hpp \
     readers/resource_reader_factory.hpp \
     evaluators/scoring_api.hpp \
     evaluators/edge_eval_api.hpp \
@@ -84,12 +86,14 @@ libresource_la_CXXFLAGS = \
     $(WARNING_CXXFLAGS) \
     $(CODE_COVERAGE_CFLAGS) \
     $(AM_CXXFLAGS) \
-    $(FLUX_HOSTLIST_CFLAGS)
+    $(FLUX_HOSTLIST_CFLAGS) \
+    $(FLUX_IDSET_CFLAGS)
 
 libresource_la_LIBADD = \
     $(top_builddir)/resource/planner/libplanner.la \
     $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
     $(FLUX_HOSTLIST_LIBS) \
+    $(FLUX_IDSET_LIBS) \
     $(BOOST_LDFLAGS) \
     $(BOOST_SYSTEM_LIB) \
     $(BOOST_FILESYSTEM_LIB) \
