@@ -34,7 +34,7 @@ public:
      * \param rank   assign rank to all of the newly created resource vertices
      * \return       0 on success; non-zero integer on an error
      *                   ENOMEM: out of memory
-     *                   EINVAL: input input or operation (e.g. malformed str,
+     *                   EINVAL: invalid input or operation (e.g. malformed str,
      *                               hwloc version or operation error)
      */
     virtual int unpack (resource_graph_t &g, resource_graph_metadata_t &m,
