@@ -15,7 +15,7 @@ test_expect_success 'load sched-simple and wait for resources to be acquired' '
 '
 
 test_expect_success 'sync: fluxion-resource cannot load w/ sched-simple' '
-    load_resource policy=low load-allowlist=node,socket,core,gpu &&
+    load_resource policy=low &&
     test_must_fail flux module stats sched-fluxion-resource
 '
 
@@ -29,7 +29,7 @@ test_expect_success 'remove sched-simple' '
 
 # sched-simple releases the exclusive access to resource.
 test_expect_success 'sync: fluxion-resource loads w/ sched-simple unloaded' '
-    load_resource load-allowlist=node,socket,core,gpu policy=high
+    load_resource policy=high
 '
 
 test_expect_success 'sync: qmanager loads w/ sched-fluxion-resource loaded' '
@@ -56,7 +56,7 @@ test_expect_success 'sync: remove sched-simple' '
 '
 
 test_expect_success 'sync: qmanager will not prematurely proceed' '
-    load_resource load-allowlist=node,socket,core,gpu policy=high &&
+    load_resource policy=high &&
     flux dmesg -C &&
     load_qmanager &&
     flux module stats sched-fluxion-qmanager &&

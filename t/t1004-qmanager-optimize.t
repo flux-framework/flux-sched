@@ -34,10 +34,8 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'qmanager: loading with easy+queue-depth=5' '
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=cluster,node,core &&
-    load_qmanager queue-policy=easy \
-queue-params=queue-depth=5
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
+    load_qmanager queue-policy=easy queue-params=queue-depth=5
 '
 
 test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
@@ -68,8 +66,7 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
 
 test_expect_success 'qmanager: loading with hybrid+queue-depth=5' '
     remove_resource &&
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=cluster,node,core &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
     load_qmanager queue-policy=hybrid \
 queue-params=queue-depth=5 policy-params=reservation-depth=3
 '
@@ -97,10 +94,8 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
 
 test_expect_success 'qmanager: loading with conservative+queue-depth=5' '
     remove_resource &&
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=cluster,node,core &&
-    load_qmanager queue-policy=conservative \
-queue-params=queue-depth=5
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
+    load_qmanager queue-policy=conservative queue-params=queue-depth=5
 '
 
 test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '

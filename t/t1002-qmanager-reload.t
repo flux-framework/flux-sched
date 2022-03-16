@@ -31,8 +31,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=node,socket,core,gpu &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
     load_qmanager
 '
 

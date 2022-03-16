@@ -30,8 +30,7 @@ start_qmanager () {
     QMANAGER_OPTIONS=$*
     echo $QMANAGER_OPTIONS > options
     flux broker --config-path=${config} bash -c \
-"flux module reload -f sched-fluxion-resource load-allowlist=node,core,gpu "\
-"policy=high && "\
+"flux module reload -f sched-fluxion-resource policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux module stats sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-resource && "\
@@ -42,8 +41,7 @@ start_qmanager_noconfig () {
     local outfile=$1; shift
     QMANAGER_OPTIONS=$*
     flux broker bash -c \
-"flux module reload -f sched-fluxion-resource load-allowlist=node,core,gpu "\
-"policy=high && "\
+"flux module reload -f sched-fluxion-resource policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux module stats sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-resource && "\

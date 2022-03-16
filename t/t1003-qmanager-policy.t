@@ -34,8 +34,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=easy)' '
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=first load-allowlist=cluster,node,core &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=first &&
     load_qmanager queue-policy=easy
 '
 
@@ -67,10 +66,8 @@ test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=hybrid)' '
     remove_resource &&
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=cluster,node,core &&
-    load_qmanager queue-policy=hybrid \
-policy-params=reservation-depth=3
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
+    load_qmanager queue-policy=hybrid policy-params=reservation-depth=3
 '
 
 test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
@@ -101,8 +98,7 @@ test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
 
 test_expect_success 'qmanager: loading qmanager (queue-policy=conservative)' '
     remove_resource &&
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=high load-allowlist=cluster,node,core &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=high &&
     load_qmanager queue-policy=conservative
 '
 

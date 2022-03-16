@@ -61,7 +61,7 @@ test_expect_success 'find/status: reloading resources works' '
 '
 
 test_expect_success 'find/status: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core &&
+    load_resource &&
     load_qmanager queue-policy=easy
 '
 

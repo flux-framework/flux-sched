@@ -33,7 +33,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu match-format=rv1 &&
+    load_resource match-format=rv1 &&
     load_qmanager
 '
 
@@ -118,7 +118,7 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu match-format=rv1 &&
+    load_resource match-format=rv1 &&
     load_qmanager queue-policy=easy
 '
 
@@ -141,7 +141,7 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu match-format=rv1 &&
+    load_resource match-format=rv1 &&
     load_qmanager queues="batch debug" \
 queue-policy-per-queue="batch:easy debug:fcfs"
 '
@@ -171,7 +171,7 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu match-format=rv1 &&
+    load_resource match-format=rv1 &&
     load_qmanager
 '
 

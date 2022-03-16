@@ -33,7 +33,7 @@ test_expect_success 'qmanager-nodex: load test resources' '
 '
 
 test_expect_success 'qmanager-nodex: loading fluxion modules works (hinodex)' '
-    load_resource load-allowlist=cluster,node,gpu,core policy=hinodex &&
+    load_resource policy=hinodex &&
     load_qmanager
 '
 
@@ -93,7 +93,7 @@ test_expect_success 'qmanager-nodex: removing fluxion modules (hinodex)' '
 '
 
 test_expect_success 'qmanager-nodex: loading fluxion modules works (lonodex)' '
-    load_resource load-allowlist=cluster,node,gpu,core policy=lonodex &&
+    load_resource policy=lonodex &&
     load_qmanager
 '
 

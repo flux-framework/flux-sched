@@ -25,7 +25,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'recovery: loading flux-sched modules works (rv1_nosched)' '
-    load_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
+    load_resource match-format=rv1_nosched &&
     load_qmanager
 '
 
@@ -35,7 +35,7 @@ test_expect_success 'recovery: submit a job (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: qmanager w/o an option must fail (rv1_nosched)' '
-    reload_resource load-allowlist=node,core,gpu match-format=rv1_nosched &&
+    reload_resource match-format=rv1_nosched &&
     reload_qmanager &&
     test_must_fail flux module stats sched-fluxion-qmanager
 '
