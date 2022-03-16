@@ -91,6 +91,72 @@ void resource_reader_base_t::clear_err_message ()
     m_err_msg = "";
 }
 
+int resource_reader_base_t::split_hostname (const std::string &hn,
+                                            std::string &basename,
+                                            int &id) const
+{
+    std::string suffix;
+    std::size_t first;
+    basename = hn;
+    std::size_t last = basename.find_last_not_of ("0123456789");
+
+    if (last == (basename.size () - 1)) {
+        id = -1;
+        return 0;
+    }
+    if (last != std::string::npos) {
+        // has numeric suffix
+        suffix = basename.substr (last + 1);
+        basename = basename.substr (0, last + 1);
+    } else {
+        // all numbers
+        suffix = basename;
+    }
+
+    first = suffix.find_first_not_of ("0");
+    if (first == std::string::npos) {
+        id = 0; // all 0s
+        return 0;
+    }
+
+    suffix = suffix.substr (first);
+    try {
+        id = std::stoi (suffix);
+    } catch (std::invalid_argument &e) {
+        errno = EINVAL;
+        goto error;
+    } catch (std::out_of_range &e) {
+        errno = EOVERFLOW;
+        goto error;
+    }
+    return 0;
+
+error:
+    return -1;
+}
+
+int resource_reader_base_t::get_hostname_suffix (const std::string &hn,
+                                                 int &id) const
+{
+    if (hn == "") {
+        errno = EINVAL;
+        return -1;
+    }
+    std::string basename;
+    return split_hostname (hn, basename, id);
+}
+
+int resource_reader_base_t::get_host_basename (const std::string &hn,
+                                               std::string &basename) const
+{
+    if (hn == "") {
+        errno = EINVAL;
+        return -1;
+    }
+    int id;
+    return split_hostname (hn, basename, id);
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

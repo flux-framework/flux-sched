@@ -94,6 +94,25 @@ public:
      */
     const std::string &err_message () const;
 
+    /*! Query the numeric ID suffix from hostname.
+     *
+     * \param hn        hostname string
+     * \param id        (Output) integer ID suffix of hostname
+     *                  -1 if hostname does not end with a numeric suffix.
+     *
+     * \return          0 if succeeds or -1 with errno if an error encountered
+     */
+    int get_hostname_suffix (const std::string &hn, int &id) const;
+
+    /*! Query the host basename from hostname.
+     *
+     * \param hn        hostname string
+     * \param basename  (Output) host basename
+     *
+     * \return          0 if succeeds or -1 with errno if an error encountered
+     */
+    int get_host_basename (const std::string &hn, std::string &basename) const;
+
     /*! Clear the error message string.
      */
     void clear_err_message ();
@@ -104,6 +123,8 @@ public:
 
 protected:
     bool in_allowlist (const std::string &resource);
+    int split_hostname (const std::string &hn,
+                        std::string &basename, int &id) const;
     std::set<std::string> allowlist;
     std::string m_err_msg = "";
 };
