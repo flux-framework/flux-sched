@@ -53,6 +53,7 @@ struct jobmeta_t {
     int64_t at = -1;
     int64_t now = -1;
     uint64_t duration = SYSTEM_DEFAULT_DURATION; // will need config ultimately
+    std::map<std::string, std::set<std::string>> properties;
 
     bool is_queue_set () const {
         return m_queue_set;
@@ -62,7 +63,7 @@ struct jobmeta_t {
         return m_queue;
     }
 
-    void build (Jobspec::Jobspec &jobspec,
+    int build (Jobspec::Jobspec &jobspec,
                 alloc_type_t alloc, int64_t id, int64_t t)
     {
         at = t;
@@ -78,6 +79,29 @@ struct jobmeta_t {
             m_queue = jobspec.attributes.system.queue;
             m_queue_set = true;
         }
+        if (jobspec.attributes.system
+                                  .constraints.properties.size () != 0) {
+            for (auto &p : jobspec.attributes.system.constraints.properties) {
+                std::string prop = p;
+                if (properties.find ("node") == properties.end ()) {
+                    auto res = properties.insert (
+                                   std::pair<
+                                       std::string,
+                                       std::set<std::string>> ("node",
+                                                               std::set<std::string> ()));
+                    if (!res.second) {
+                        errno = ENOMEM;
+                        return -1;
+                    }
+                }
+                auto res2 = properties["node"].insert (prop);
+                if (!res2.second) {
+                    errno = ENOMEM;
+                    return -1;
+                }
+            }
+        }
+        return 0;
     }
 
 private:
