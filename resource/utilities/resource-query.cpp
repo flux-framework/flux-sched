@@ -493,9 +493,9 @@ static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
                      ctx->db->metadata.by_name.size () << std::endl;
         std::cout << "INFO: by_path Key-Value Pairs: " <<
                      ctx->db->metadata.by_path.size () << std::endl;
-        for (auto it = ctx->db->metadata.by_rank.begin (); 
+        for (auto it = ctx->db->metadata.by_rank.begin ();
                      it != ctx->db->metadata.by_rank.end (); ++it) {
-            std::cout << "INFO: number of vertices with rank " 
+            std::cout << "INFO: number of vertices with rank "
                         << it->first << ": " << it->second.size () << "\n";
         }
     }
