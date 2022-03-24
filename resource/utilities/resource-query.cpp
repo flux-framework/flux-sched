@@ -326,7 +326,8 @@ static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
 static void flatten (f_resource_graph_t &fg,
                      std::map<vtx_t, std::string> &paths,
                      std::map<vtx_t, std::string> &subsystems,
-                     std::map<edg_t, std::string> &esubsystems)
+                     std::map<edg_t, std::string> &esubsystems,
+                     std::map<vtx_t, std::string> &properties)
 {
     f_vtx_iterator_t vi, v_end;
     f_edg_iterator_t ei, e_end;
@@ -346,6 +347,13 @@ static void flatten (f_resource_graph_t &fg,
             subsystems[*vi] += kv.first + "=" + kv.second;
         }
         subsystems[*vi] += "}";
+        properties[*vi] = "{";
+        for (auto &kv : fg[*vi].properties) {
+            if (properties[*vi].size () > 1)
+                properties[*vi] += ",";
+            properties[*vi] += kv.first + "=" + kv.second;
+        }
+        properties[*vi] += "}";
     }
     for (tie (ei, e_end) = edges (fg); ei != e_end; ++ei) {
         esubsystems[*ei] = "{";
@@ -372,7 +380,7 @@ static void write_to_graphml (f_resource_graph_t &fg, std::fstream &o)
     boost::associative_property_map<
         std::map<vtx_t, std::string>> paths_map (paths);
 
-    flatten (fg, paths, subsystems, esubsystems);
+    flatten (fg, paths, subsystems, esubsystems, properties);
 
     // Resource pool vertices
     dp.property ("paths", paths_map);
