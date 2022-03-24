@@ -29,6 +29,53 @@ using namespace Flux::resource_model;
  *                                                                              *
  ********************************************************************************/
 
+int resource_reader_rv1exec_t::properties_t::insert (
+                                                 const std::string &res_type,
+                                                 const std::string &property)
+{
+    if (m_properties.find (res_type) == m_properties.end ()) {
+        auto res = m_properties.insert (
+                       std::pair<std::string,
+                                 std::map<std::string,
+                                          std::string>> (
+                                              res_type,
+                                              std::map<std::string,
+                                                       std::string> ()));
+        if (!res.second) {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    auto res2 = m_properties[res_type].insert (std::pair<std::string,
+                                                         std::string> (property,
+                                                                       ""));
+    if (!res2.second) {
+        errno = ENOMEM;
+        return -1;
+    }
+    return 0;
+}
+
+bool resource_reader_rv1exec_t::properties_t::exist (
+                                                  const std::string &res_type)
+{
+    return (m_properties.find (res_type) != m_properties.end ())? true : false;
+}
+
+
+int resource_reader_rv1exec_t::properties_t::copy (
+                                   const std::string &res_type,
+                                   std::map<std::string,
+                                            std::string> &properties)
+{
+    int rc = -1;
+    if (m_properties.find (res_type) != m_properties.end ()) {
+        properties = m_properties[res_type];
+        rc = 0;
+    }
+    return rc;
+}
+
 vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
                                              vtx_t parent, int64_t id,
@@ -238,12 +285,69 @@ error:
     return -1;
 }
 
+int resource_reader_rv1exec_t::build_pmap (json_t *properties,
+                                           std::map<unsigned,
+                                                    properties_t> &pmap)
+{
+    const char *key = nullptr;
+    json_t *val = nullptr;
+    struct idset *ranks = nullptr;
+
+    json_object_foreach (properties, key, val) {
+        unsigned rank = IDSET_INVALID_ID;
+
+        if (!json_is_string (val)) {
+            errno = EINVAL;
+            goto error;
+        }
+        if ( !(ranks = idset_decode (json_string_value (val)))) {
+            errno = ENOMEM;
+            goto error;
+        }
+
+        rank = idset_first (ranks);
+        while (rank != IDSET_INVALID_ID) {
+            std::string prop = key;
+
+            // When fine-grained resource property tagging use case comes along,
+            // the following code can be extended: fetching @resource_type and
+            // add the property to the corresponding resource_type vertices.
+            // For now, we just add the property to compute node vertices.
+            if (pmap.find (rank) != pmap.end ()) {
+                if (pmap[rank].insert ("node", key) < 0)
+                    goto error;
+            } else {
+                auto res = pmap.insert (
+                                    std::pair<unsigned,
+                                              properties_t> (rank,
+                                                             properties_t ()));
+                if (!res.second) {
+                    errno = ENOMEM;
+                    goto error;
+                }
+                if (pmap[rank].insert ("node", key) < 0)
+                    goto error;
+            }
+            rank = idset_next (ranks, rank);
+        }
+        idset_destroy (ranks);
+        ranks = nullptr;
+    }
+    return 0;
+
+error:
+    idset_destroy (ranks);
+    return -1;
+}
+
 int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
                                              vtx_t parent,
                                              const char *resource_type,
                                              const char *resource_ids,
-                                             unsigned rank)
+                                             unsigned rank,
+                                             std::map<unsigned,
+                                                      properties_t> &pmap)
 {
     int rc = -1;
     unsigned id;
@@ -262,6 +366,12 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
         vtx_t v;
         std::string name = resource_type + std::to_string (id);
         std::map<std::string, std::string> p;
+        if (pmap.find (rank) != pmap.end ()) {
+            if (pmap[rank].exist (resource_type)) {
+                if (pmap[rank].copy (resource_type, p) < 0)
+                    goto ret;
+            }
+        }
         v = add_vertex (g, m, parent, id,
                         "containment", resource_type,
                         resource_type, name, p, 1, rank);
@@ -284,7 +394,9 @@ int resource_reader_rv1exec_t::unpack_children (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
                                                 vtx_t parent,
                                                 json_t *children,
-                                                unsigned rank)
+                                                unsigned rank,
+                                                std::map<unsigned,
+                                                         properties_t> &pmap)
 {
     json_t *res_ids = nullptr;
     const char *res_type = nullptr;
@@ -300,7 +412,7 @@ int resource_reader_rv1exec_t::unpack_children (resource_graph_t &g,
             goto error;
         }
         const char *ids_str = json_string_value (res_ids);
-        if (unpack_child (g, m, parent, res_type, ids_str, rank) < 0)
+        if (unpack_child (g, m, parent, res_type, ids_str, rank, pmap) < 0)
             goto error;
     } 
     return 0;
@@ -315,7 +427,9 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
                                             unsigned rank,
                                             json_t *children,
                                             struct hostlist *hlist,
-                                            std::map<unsigned, unsigned> &rmap)
+                                            std::map<unsigned, unsigned> &rmap,
+                                            std::map<unsigned,
+                                                     properties_t> &pmap)
 {
     edg_t e;
     vtx_t v;
@@ -342,6 +456,12 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
         m_err_msg += hostname + std::string ("; ");
         goto error;
     }
+    if (pmap.find (rank) != pmap.end ()) {
+        if (pmap[rank].exist ("node")) {
+            if (pmap[rank].copy ("node", properties) < 0)
+                goto error;
+        }
+    }
 
     // Create and add a node vertex and link with cluster vertex
     v = add_vertex (g, m, parent, iden, "containment",
@@ -351,7 +471,7 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
     if (add_edges (g, m, parent, v, "containment", "contains", "in") < 0)
         goto error;
     // Unpack children node-local resources
-    if (unpack_children (g, m, v, children, rank) < 0)
+    if (unpack_children (g, m, v, children, rank, pmap) < 0)
         goto error;
 
     return 0;
@@ -366,7 +486,9 @@ int resource_reader_rv1exec_t::unpack_rlite_entry (resource_graph_t &g,
                                                    json_t *entry,
                                                    struct hostlist *hlist,
                                                    std::map<unsigned,
-                                                            unsigned> &rmap)
+                                                            unsigned> &rmap,
+                                                   std::map<unsigned,
+                                                            properties_t> &pmap)
 {
     int rc = -1;
     unsigned rank;
@@ -391,7 +513,7 @@ int resource_reader_rv1exec_t::unpack_rlite_entry (resource_graph_t &g,
 
     rank = idset_first (r_ids);
     while (rank != IDSET_INVALID_ID) {
-        if (unpack_rank (g, m, parent, rank, children, hlist, rmap) < 0)
+        if (unpack_rank (g, m, parent, rank, children, hlist, rmap, pmap) < 0)
             goto ret;
 
         rank = idset_next (r_ids, rank);
@@ -407,7 +529,9 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
                                              json_t *rlite,
                                              struct hostlist *hlist,
-                                             std::map<unsigned, unsigned> &rmap)
+                                             std::map<unsigned, unsigned> &rmap,
+                                             std::map<unsigned,
+                                                      properties_t> &pmap)
 {
     size_t index;
     vtx_t cluster_vtx;
@@ -425,7 +549,8 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
 
     cluster_vtx = m.roots["containment"];
     json_array_foreach (rlite, index, entry) {
-        if (unpack_rlite_entry (g, m, cluster_vtx, entry, hlist, rmap) < 0)
+        if (unpack_rlite_entry (g, m, cluster_vtx,
+                                entry, hlist, rmap, pmap) < 0)
             goto error;
     }
     return 0;
@@ -444,14 +569,17 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
     json_t *val = nullptr;
     json_t *rlite = nullptr;
     json_t *nodelist = nullptr;
+    json_t *properties = nullptr;
     struct hostlist *hlist = nullptr;
     std::map<unsigned, unsigned> rmap; 
+    std::map<unsigned, properties_t> pmap;
 
-    if (json_unpack (rv1, "{s:i s:{s:o s:o}}",
+    if (json_unpack (rv1, "{s:i s:{s:o s:o s?o}}",
                               "version", &version,
                               "execution",
                                   "R_lite", &rlite,
-                                  "nodelist", &nodelist) < 0) {
+                                  "nodelist", &nodelist,
+                                  "properties", &properties) < 0) {
         errno = EINVAL;
         goto ret;
     }
@@ -461,6 +589,8 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
     }
     // Create rank-to-0-based-index mapping.
     if (build_rmap (rlite, rmap) < 0)
+        goto ret;
+    if (build_pmap (properties, pmap) < 0)
         goto ret;
     if ( !(hlist = hostlist_create ()))
         goto ret;
@@ -479,7 +609,7 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
         if (hostlist_append (hlist, hlist_str) < 0)
             goto ret;
     }
-    if (unpack_rlite (g, m, rlite, hlist, rmap) < 0)
+    if (unpack_rlite (g, m, rlite, hlist, rmap, pmap) < 0)
         goto ret;
 
     rc = 0;

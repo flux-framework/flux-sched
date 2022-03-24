@@ -81,6 +81,18 @@ public:
     virtual bool is_allowlist_supported ();
 
 private:
+
+    class properties_t {
+    public:
+       int insert (const std::string &res_type, const std::string &property);
+       bool exist (const std::string &res_type);
+       int copy (const std::string &res_type,
+                 std::map<std::string, std::string> &properties);
+
+    private:
+        std::map<std::string, std::map<std::string, std::string>> m_properties;
+    };
+
     vtx_t add_vertex (resource_graph_t &g,
                       resource_graph_metadata_t &m,
                       vtx_t parent, int64_t id,
@@ -106,30 +118,39 @@ private:
 
     int build_rmap (json_t *rlite, std::map<unsigned, unsigned> &rmap);
 
+    int build_pmap (json_t *properties,
+                    std::map<unsigned, properties_t> &pmap);
+
     int unpack_child (resource_graph_t &g,
                       resource_graph_metadata_t &m, vtx_t parent,
                       const char *resource_type,
-                      const char *resource_ids, unsigned rank);
+                      const char *resource_ids, unsigned rank,
+                      std::map<unsigned, properties_t> &pmap);
 
     int unpack_children (resource_graph_t &g,
                          resource_graph_metadata_t &m,
-                         vtx_t parent, json_t *children, unsigned rank);
+                         vtx_t parent, json_t *children, unsigned rank,
+                         std::map<unsigned, properties_t> &pmap);
 
     int unpack_rank (resource_graph_t &g,
                      resource_graph_metadata_t &m,
                      vtx_t parent, unsigned rank, json_t *children,
-                     struct hostlist *hlist, std::map<unsigned,
-                                                      unsigned> &rmap);
+                     struct hostlist *hlist,
+                     std::map<unsigned, unsigned> &rmap,
+                     std::map<unsigned, properties_t> &pmap);
 
     int unpack_rlite_entry (resource_graph_t &g,
                             resource_graph_metadata_t &m,
                             vtx_t parent, json_t *entry,
-                            struct hostlist *hlist, std::map<unsigned,
-                                                             unsigned> &rmap);
+                            struct hostlist *hlist,
+                            std::map<unsigned, unsigned> &rmap,
+                            std::map<unsigned, properties_t> &pmap);
+
     int unpack_rlite (resource_graph_t &g,
                       resource_graph_metadata_t &m, json_t *rlite,
-                      struct hostlist *hlist, std::map<unsigned,
-                                                       unsigned> &rmap);
+                      struct hostlist *hlist,
+                      std::map<unsigned, unsigned> &rmap,
+                      std::map<unsigned, properties_t> &pmap);
 
     int unpack_internal (resource_graph_t &g,
                          resource_graph_metadata_t &m, json_t *rv1);
