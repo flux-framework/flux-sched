@@ -358,6 +358,8 @@ private:
     const std::vector<Jobspec::Resource> &test (vtx_t u,
              const std::vector<Jobspec::Resource> &resources,
              bool &prestine, unsigned int &nslots, match_kind_t &ko);
+    bool is_pconstraint_matched (vtx_t u, const std::string &property);
+
 
     /*! Accumulate count into accum if type matches with one of the resource
      *  types used in the scheduler-driven aggregate update (SDAU) scheme.

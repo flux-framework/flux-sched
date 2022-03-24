@@ -327,6 +327,24 @@ done:
     return *ret;
 }
 
+bool dfu_impl_t::is_pconstraint_matched (vtx_t u, const std::string &property)
+{
+    bool neg = false;
+    bool found = false;
+    std::string p_operand = property;
+
+    if (property.find_first_of ("^") == 0) {
+        neg = true;
+        p_operand = property.substr (1);
+    }
+    found = (*m_graph)[u].properties.find (p_operand)
+                != (*m_graph)[u].properties.end ();
+
+    // W/ no operator, matched == found
+    // W/ negation operator, matched == unfound
+    return neg? !found : found;
+}
+
 /* Accumulate counts into accum[type] if the type is one of the pruning
  * filter type.
  */
@@ -688,6 +706,17 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
+
+    if (!meta.properties.empty ()) {
+        if (meta.properties.find ((*m_graph)[u].type)
+            != meta.properties.end ()) {
+            auto iter = meta.properties.find ((*m_graph)[u].type);
+            for (auto &k : iter->second) {
+                if (!is_pconstraint_matched (u, k))
+                    goto done;
+            }
+        }
+    }
     p = (*m_graph)[u].schedule.plans;
     if ( (avail = planner_avail_resources_during (p, at, duration)) == 0) {
         goto done;
