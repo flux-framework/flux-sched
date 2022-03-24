@@ -84,12 +84,17 @@ public:
     Task(const YAML::Node&);
 };
 
+struct Constraints {
+    std::vector<std::string> properties;
+};
+
 struct System {
     double duration = 0.0f;
     std::string queue = "";
     std::string cwd = "";
     std::unordered_map<std::string, std::string> environment;
     std::unordered_map<std::string, YAML::Node> optional;
+    Constraints constraints;
 
     System() = default;
     System(const System &s) = delete; // Force to use move ctor
