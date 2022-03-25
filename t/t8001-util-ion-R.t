@@ -10,6 +10,10 @@ print_schema (){
     jq -r '.graph.nodes[].metadata | "\(.paths.containment) \(.rank)"' $1 > $2
 }
 
+print_schema2 (){
+    jq -r '.graph.nodes[].metadata | "\(.paths.containment) \(.rank) \(.properties)"' $1 > $2
+}
+
 test_expect_success 'fluxion-R: encoding nodelists on heterogeneity works' '
     cat <<-EOF >expected1 &&
 	/cluster0 -1
@@ -151,6 +155,38 @@ test_expect_success 'fluxion-R: can detect insufficient nodelist' '
     flux R encode -r 2-3 -c 0-1 -H foo[1,4] > out5.json &&
     jq ".execution.nodelist= \"foo1\"" out5.json > c5.error.json &&
     cat c5.error.json | flux ion-R encode 2>&1 | tee err5 | grep -i error
+'
+
+test_expect_success 'fluxion-R: encoding properties on heterogeneity works' '
+    cat <<-EOF >expected6 &&
+	/cluster0 -1 []
+	/cluster0/foo2 0 ["arm-v9@core"]
+	/cluster0/foo2/core0 0 []
+	/cluster0/foo2/core1 0 []
+	/cluster0/foo2/gpu0 0 []
+	/cluster0/foo2/gpu1 0 []
+	/cluster0/foo3 2 ["arm-v9@core","amd-mi60@gpu"]
+	/cluster0/foo3/core0 2 []
+	/cluster0/foo3/core1 2 []
+	/cluster0/foo3/gpu0 2 []
+	/cluster0/foo3/gpu1 2 []
+	/cluster0/foo1 3 ["arm-v9@core","amd-mi60@gpu"]
+	/cluster0/foo1/core0 3 []
+	/cluster0/foo1/core1 3 []
+	/cluster0/foo1/gpu0 3 []
+	/cluster0/foo1/gpu1 3 []
+	/cluster0/foo4 1 ["arm-v8@core"]
+	/cluster0/foo4/core0 1 []
+	EOF
+    flux R encode -r 0 -c 0-1 -g 0-1 -p "arm-v9@core:0" -H foo2 > out6 &&
+    flux R encode -r 1 -c 0 -H foo3 -p "arm-v8@core:1" >> out6 &&
+    flux R encode -r 2-3 -c 0-1 -g 0-1 -p "arm-v9@core:2-3" \
+	-p "amd-mi60@gpu:2-3" -H foo[1,4] >> out6 &&
+    cat out6 | flux R append > combined6.json &&
+    cat combined6.json | flux ion-R encode > augmented6.json &&
+    jq .scheduling augmented6.json > jgf6.json &&
+    print_schema2 jgf6.json paths6 &&
+    test_cmp expected6 paths6
 '
 
 test_done
