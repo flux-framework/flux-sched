@@ -216,7 +216,7 @@ class FluxionResourceGraphV1(Graph):
             True,
             "",
             1,
-            "",
+            [],
             "/cluster0",
         )
         self._add_and_tick_uniq_id(vtx, None)
