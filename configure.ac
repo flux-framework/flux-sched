@@ -93,6 +93,14 @@ AX_BOOST_GRAPH
 AX_BOOST_REGEX
 PKG_CHECK_MODULES(LIBEDIT, libedit)
 
+AC_ARG_WITH([perfflowaspect], [AS_HELP_STRING([--with-perfflowaspect=PATH],
+            [specify directory for installed PerfFlowAspect package.])])
+if test "x$with_perfflow_aspect" != x; then
+  LD_LIBRARY_PATH="$with_perfflowaspect/lib:$LD_LIBRARY_PATH"
+  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$with_perfflowaspect/lib"
+  EXTRA_CXX_FLAGS="EXTRA_CXX_FLAGS -Wc,-Xclang,-load,-Xclang,-L$with_perfflowaspect/lib/lib/libWeavePass.so"
+fi
+
 #  Set PYTHON_VERSION to FLUX_PYTHON_VERSION here
 PYTHON_VERSION=${PYTHON_VERSION:-$FLUX_PYTHON_VERSION}
 
