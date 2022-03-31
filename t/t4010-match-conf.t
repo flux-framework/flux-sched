@@ -77,7 +77,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no config' '
     outfile=noconfig.out &&
     start_resource_noconfig ${outfile} &&
     check_load_file ${outfile} null &&
-    check_load_format ${outfile} "\"hwloc\"" &&
+    check_load_format ${outfile} "\"rv1exec\"" &&
     check_load_allowlist ${outfile} null &&
     check_match_policy ${outfile} "\"first\"" &&
     check_match_format ${outfile} "\"rv1_nosched\"" &&
@@ -91,7 +91,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with valid toml' '
     outfile=${conf_name}.out &&
     start_resource ${conf_base}/${conf_name} ${outfile} &&
     check_load_file ${outfile} null &&
-    check_load_format ${outfile} "\"hwloc\"" &&
+    check_load_format ${outfile} "\"rv1exec\"" &&
     check_load_allowlist ${outfile} "\"node,core,gpu\"" &&
     check_match_policy ${outfile} "\"lonodex\"" &&
     check_match_format ${outfile} "\"rv1_nosched\"" &&
@@ -106,7 +106,7 @@ test_expect_success 'resource: module load options take precedence' '
     start_resource ${conf_base}/${conf_name} ${outfile} \
 	policy=high match-format=rv1 &&
     check_load_file ${outfile} null &&
-    check_load_format ${outfile} "\"hwloc\"" &&
+    check_load_format ${outfile} "\"rv1exec\"" &&
     check_load_allowlist ${outfile} "\"node,core,gpu\"" &&
     check_match_policy ${outfile} "\"high\"" &&
     check_match_format ${outfile} "\"rv1\"" &&
@@ -120,7 +120,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no keys' '
     outfile=${conf_name}.out &&
     start_resource ${conf_base}/${conf_name} ${outfile} &&
     check_load_file ${outfile} null &&
-    check_load_format ${outfile} "\"hwloc\"" &&
+    check_load_format ${outfile} "\"rv1exec\"" &&
     check_load_allowlist ${outfile} null &&
     check_match_policy ${outfile} "\"first\"" &&
     check_match_format ${outfile} "\"rv1_nosched\"" &&
@@ -134,7 +134,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
     outfile=${conf_name}.out &&
     start_resource ${conf_base}/${conf_name} ${outfile} &&
     check_load_file ${outfile} null &&
-    check_load_format ${outfile} "\"hwloc\"" &&
+    check_load_format ${outfile} "\"rv1exec\"" &&
     check_load_allowlist ${outfile} "\"node,core,gpu,foo\"" &&
     check_match_policy ${outfile} "\"lonodex\"" &&
     check_match_format ${outfile} "\"rv1_nosched\"" &&

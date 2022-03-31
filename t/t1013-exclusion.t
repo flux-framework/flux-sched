@@ -32,7 +32,7 @@ test_expect_success 'load test resources' '
 '
 
 test_expect_success 'exclusion: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu policy=high &&
+    load_resource policy=high &&
     load_qmanager
 '
 
@@ -58,7 +58,7 @@ EOF
 '
 
 test_expect_success 'exclusion: loading fluxion modules works' '
-    load_resource load-allowlist=cluster,node,core,gpu &&
+    load_resource &&
     load_qmanager
 '
 

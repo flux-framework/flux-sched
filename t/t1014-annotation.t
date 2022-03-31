@@ -49,7 +49,7 @@ test_expect_success 'load test resources' '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=easy)' '
     load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=cluster,node,core &&
+subsystems=containment policy=low &&
     load_qmanager queue-policy=easy
 '
 

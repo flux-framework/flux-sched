@@ -17,7 +17,7 @@ test_expect_success 'feasibility: loading test resources works' '
 
 test_expect_success 'feasibility: loading resource and qmanager modules works' '
     flux module load sched-fluxion-resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=node,core &&
+subsystems=containment policy=low &&
     load_qmanager
 '
 

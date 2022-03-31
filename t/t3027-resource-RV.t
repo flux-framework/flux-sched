@@ -96,4 +96,66 @@ EOF
     test_cmp exp6 res6
 '
 
+test_expect_success 'RV1 with nosched correct on heterogeneous configuration' '
+    flux mini submit -n 28 --dry-run hostname > n28.json &&
+    cat > cmds007 <<-EOF &&
+        match allocate n28.json
+        quit
+EOF
+    flux R encode -r 79-83 -c 0-3 -H fluke[82-86] > out7 &&
+    flux R encode -r 91-92 -c 0-2 -H fluke[94-95] >> out7 &&
+    flux R encode -r 97,99 -c 3 -H fluke[100,102] >> out7 &&
+    cat out7 | flux R append > c7.json &&
+    print_ranks_nodes c7.json > exp7 &&
+    ${query} -L c7.json -f rv1exec -F rv1_nosched -t R7.out -P lonode < cmds007 &&
+    grep -v INFO R7.out > R7.json &&
+    print_ranks_nodes R7.json > res7 &&
+    test_cmp exp7 res7
+'
+
+test_expect_success 'RV1 with nosched correct on heterogeneous config 2' '
+    flux mini submit -n 14 --dry-run hostname > n14.json &&
+    cat > cmds008 <<-EOF &&
+        match allocate n14.json
+        quit
+EOF
+    cat > exp8 <<-EOF &&
+	79-81
+	82
+	fluke[82-85]
+EOF
+    ${query} -L c7.json -f rv1exec -F rv1_nosched -t R8.out -P lonode < cmds008 &&
+    grep -v INFO R8.out > R8.json &&
+    print_ranks_nodes R8.json > res8 &&
+    test_cmp exp8 res8
+'
+
+test_expect_success 'RV1 with nosched correct on heterogeneous config 3' '
+    cat > exp9 <<-EOF &&
+	82
+	83
+	91-92
+	97,99
+	fluke[85-86,94-95,100,102]
+EOF
+    ${query} -L c7.json -f rv1exec -F rv1_nosched -t R9.out -P hinode < cmds008 &&
+    grep -v INFO R9.out > R9.json &&
+    print_ranks_nodes R9.json > res9 &&
+    test_cmp exp9 res9
+'
+
+test_expect_success 'RV1 with nosched correct on nonconforming hostnames' '
+    flux mini submit -n 8 --dry-run hostname > n8.json &&
+    cat > cmds010 <<-EOF &&
+        match allocate n8.json
+        quit
+EOF
+    flux R encode -r 0-1 -c 0-3 -H foo,bar > c10.json &&
+    print_ranks_nodes c10.json > exp10 &&
+    ${query} -L c10.json -f rv1exec -F rv1_nosched -t R10.out -P lonode < cmds010 &&
+    grep -v INFO R10.out > R10.json &&
+    print_ranks_nodes R10.json > res10 &&
+    test_cmp exp10 res10
+'
+
 test_done

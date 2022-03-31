@@ -25,8 +25,7 @@ get_queue() {
 }
 
 test_expect_success 'qmanager: loading qmanager with multiple queues' '
-    load_resource prune-filters=ALL:core \
-	subsystems=containment policy=low load-allowlist=node,core,gpu &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
     load_qmanager "queues=all batch debug"
 '
 

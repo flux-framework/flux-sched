@@ -35,6 +35,7 @@ test_expect_success 'rv1-bootstrap2: creating a nested batch script' '
 load-allowlist=cluster,node,gpu,core match-format=rv1 policy=\$1
 	flux module load sched-fluxion-qmanager
 	nested_jobid=\$(flux mini submit -n\$2 -N\$3 -c\$4 -g\$5 sleep 0)
+	flux job wait-event -t10 \${nested_jobid} start
 	flux job info \${nested_jobid} R > \$6
 	sleep inf
 EOF

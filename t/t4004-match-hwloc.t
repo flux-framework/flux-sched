@@ -101,7 +101,7 @@ test_expect_success 'resource-query works with allowlist' '
 
 # Test using the full resource matching service
 test_expect_success 'loading resource module with a tiny hwloc xml file works' '
-    load_resource load-file=${hwloc_4core}
+    load_resource load-file=${hwloc_4core} load-format=hwloc
 '
 
 test_expect_success 'match-allocate works with four one-core jobspecs' '
@@ -128,7 +128,7 @@ test_expect_success 'load test resources (4N4B)' '
 
 test_expect_success 'loading resource module with default resource info source' '
     load_resource subsystems=containment policy=high \
-load-allowlist=node,socket,core
+	load-format=hwloc load-allowlist=node,socket,core
 '
 
 test_expect_success 'match-allocate works with four two-socket jobspecs' '
@@ -154,8 +154,8 @@ test_expect_success 'load test resources (4N4B_sierra2)' '
 '
 
 test_expect_success 'load fluxion resource' '
-    load_resource subsystems=containment \
-        policy=high load-allowlist=node,socket,core,gpu
+    load_resource subsystems=containment policy=high \
+	load-format=hwloc load-allowlist=node,socket,core,gpu
 '
 
 test_expect_success 'match allocate' '

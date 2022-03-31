@@ -162,41 +162,9 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         }
         type = "node";
         name = hwloc_name;
-        basename = hwloc_name;
-        id = -1;
-
-        std::size_t last = basename.find_last_not_of ("0123456789");
-        if (last == (basename.size () - 1))
-            break; // no numeric suffix, done
-
-        std::string suffix;
-        if (last != std::string::npos) {
-            // has numeric suffix
-            suffix = basename.substr (last + 1);
-            basename = basename.substr (0, last + 1);
-        } else {
-            // all numbers
-            suffix = basename;
-        }
-        std::size_t first = suffix.find_first_not_of ("0");
-        if (first == std::string::npos) {
-            id = 0; // all 0s
-            break;
-        }
-
-        suffix = suffix.substr (first); // remove leading 0s
-        try {
-            id = std::stoi (suffix);
-        } catch (std::invalid_argument &e) {
-            errno = EINVAL;
-            m_err_msg += "Error converting node id=" + suffix + "; ";
+        if (split_hostname (name, basename, id) < 0) {
+            m_err_msg += "Error converting node id for " + name + "; ";
             rc = -1;
-            break;
-        } catch (std::out_of_range &e) {
-            errno = ERANGE;
-            m_err_msg += "Error converting node id=" + suffix + "; ";
-            rc = -1;
-            break;
         }
         break;
     }

@@ -21,8 +21,7 @@ if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
 fi
 
 test_expect_success 'flux-tree: prep for testing in real mode works' '
-    load_resource prune-filters=ALL:core \
-subsystems=containment policy=low load-allowlist=node,core,gpu &&
+    load_resource prune-filters=ALL:core subsystems=containment policy=low &&
     load_qmanager
 '
 

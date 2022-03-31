@@ -307,7 +307,7 @@ static double get_elapse_time (timeval &st, timeval &et)
 static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
 {
     resource_opts_t ct_opts;
-    ct_opts.set_load_format ("hwloc");
+    ct_opts.set_load_format ("rv1exec");
     ct_opts.set_match_subsystems ("containment");
     ct_opts.set_match_policy ("first");
     ct_opts.set_prune_filters ("ALL:core");
@@ -861,8 +861,39 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
         rank = idset_next (ids, rank);
     }
 
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource graph datastore loaded with hwloc reader");
+
 done:
     flux_future_destroy (f);
+    return rc;
+}
+
+static int grow_resource_db_rv1exec (std::shared_ptr<resource_ctx_t> &ctx,
+                                     struct idset *ids, json_t *resobj)
+{
+    int rc = -1;
+    int saved_errno;
+    resource_graph_db_t &db = *(ctx->db);
+    char *rv1_str = nullptr;
+
+    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+        if ( (rv1_str = json_dumps (resobj, JSON_INDENT (0))) == NULL) {
+            errno = ENOMEM;
+            goto done;
+        }
+        if ( (rc = db.load (rv1_str, ctx->reader, -1)) < 0) {
+            flux_log_error (ctx->h, "%s: db.load: %s",
+                            __FUNCTION__, ctx->reader->err_message ().c_str ());
+            goto done;
+        }
+        flux_log (ctx->h, LOG_DEBUG,
+                  "resource graph datastore loaded with rv1exec reader");
+    }
+done:
+    saved_errno = errno;
+    free (rv1_str);
+    errno = saved_errno;
     return rc;
 }
 
@@ -980,6 +1011,10 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx,
             goto done;
         }
     }
+
+    flux_log (ctx->h, LOG_DEBUG,
+              "resource graph datastore loaded with JGF reader");
+
 done:
     saved_errno = errno;
     json_decref (p_r_lite);
@@ -1009,12 +1044,24 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         }
         rc = grow_resource_db_jgf (ctx, r_lite, jgf);
     } else {
-        if (ctx->reader == nullptr && (rc = create_reader (ctx, "hwloc")) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: can't create hwloc reader",
-                      __FUNCTION__);
-            goto done;
+        if (ctx->opts.get_opt ().get_load_format () == "hwloc") {
+             if ( !ctx->reader && (rc = create_reader (ctx, "hwloc")) < 0) {
+                 flux_log (ctx->h, LOG_ERR, "%s: can't create hwloc reader",
+                           __FUNCTION__);
+                 goto done;
+             }
+             rc = grow_resource_db_hwloc (ctx, grow_set, r_lite);
+        } else if (ctx->opts.get_opt ().get_load_format () == "rv1exec") {
+             if ( !ctx->reader && (rc = create_reader (ctx, "rv1exec")) < 0) {
+                 flux_log (ctx->h, LOG_ERR, "%s: can't create rv1exec reader",
+                           __FUNCTION__);
+                 goto done;
+             }
+             rc = grow_resource_db_rv1exec (ctx, grow_set, resources);
+        } else {
+            errno = EINVAL;
+            rc = -1;
         }
-        rc = grow_resource_db_hwloc (ctx, grow_set, r_lite);
    }
 
 done:
