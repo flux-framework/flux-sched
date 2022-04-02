@@ -10,6 +10,10 @@ exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/resource_property"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 query="../../resource/utilities/resource-query"
 
+filter_run_variations(){
+   sed "s/ (vtx's uniq_id=[[:digit:]])//g" ${1}
+}
+
 #
 # Selection Policy -- High ID first (-P high)
 #     The resource vertex with higher ID is preferred among its kind
@@ -37,7 +41,8 @@ test003_desc="test get-property without setting any properties"
 test_expect_success "${test003_desc}" '
    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds003} > cmds003 &&
    ${query} -L ${grugs} -S CA -P high -t 003.R.out < cmds003 &&
-   test_cmp 003.R.out ${exp_dir}/003.R.out
+   filter_run_variations 003.R.out > 003.R.out.filt &&
+   test_cmp 003.R.out.filt ${exp_dir}/003.R.out
 '
 
 cmds004="${cmd_dir}/cmds04.in"
@@ -61,7 +66,8 @@ test006_desc="test incorrect inputs to set-property"
 test_expect_success "${test006_desc}" '
    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
    ${query} -L ${grugs} -S CA -P high -t 006.R.out < cmds006 &&
-   test_cmp 006.R.out ${exp_dir}/006.R.out
+   filter_run_variations 006.R.out > 006.R.out.filt &&
+   test_cmp 006.R.out.filt ${exp_dir}/006.R.out
 '
 
 test_done

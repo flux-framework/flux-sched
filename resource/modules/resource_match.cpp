@@ -2152,7 +2152,7 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     std::string property_key = "", property_value = "";
     size_t pos;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
-    std::map<std::string, vtx_t>::const_iterator it;
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
@@ -2186,15 +2186,17 @@ static void set_property_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error;
      }
 
-    v = it->second;
+    for (auto &v : it->second) {
+        ret = ctx->db->resource_graph[v].properties.insert (
+            std::pair<std::string, std::string> (property_key,
+                                                 property_value));
 
-    ret = ctx->db->resource_graph[v].properties.insert (
-        std::pair<std::string, std::string> (property_key,property_value));
-
-    if (ret.second == false) {
-        ctx->db->resource_graph[v].properties.erase (property_key);
-        ctx->db->resource_graph[v].properties.insert (
-            std::pair<std::string, std::string> (property_key,property_value));
+        if (ret.second == false) {
+            ctx->db->resource_graph[v].properties.erase (property_key);
+            ctx->db->resource_graph[v].properties.insert (
+                std::pair<std::string, std::string> (property_key,
+                                                     property_value));
+        }
     }
 
     if (flux_respond_pack (h, msg, "{}") < 0)
@@ -2213,10 +2215,11 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
     const char *rp = NULL, *gp_key = NULL;
     std::string resource_path = "", property_key = "";
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
-    std::map<std::string, vtx_t>::const_iterator it;
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::map<std::string, std::string>::const_iterator p_it;
     vtx_t v;
-    std::string resp_value = "";
+    std::vector<std::string> resp_values;
+    json_t *resp_array = nullptr;
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}",
                                         "gp_resource_path", &rp,
@@ -2235,16 +2238,15 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error;
      }
 
-    v = it->second;
+     for (auto &v : it->second) {
+        for (p_it = ctx->db->resource_graph[v].properties.begin ();
+             p_it != ctx->db->resource_graph[v].properties.end (); p_it++) {
 
-    for (p_it = ctx->db->resource_graph[v].properties.begin ();
-         p_it != ctx->db->resource_graph[v].properties.end (); p_it++) {
-
-         if (property_key.compare (p_it->first) == 0)
-             resp_value = p_it->second;
+             if (property_key.compare (p_it->first) == 0)
+                 resp_values.push_back (p_it->second);
+         }
      }
-
-     if (resp_value.empty ()) {
+     if (resp_values.empty ()) {
          errno = ENOENT;
          flux_log_error (h, "%s: Property %s was not found for resource %s.",
                          __FUNCTION__, property_key.c_str (),
@@ -2252,7 +2254,23 @@ static void get_property_request_cb (flux_t *h, flux_msg_handler_t *w,
          goto error;
      }
 
-     if (flux_respond_pack (h, msg, "{s:s}", "value", resp_value.c_str ()) < 0)
+     if ( !(resp_array = json_array ())) {
+         errno = ENOMEM;
+         goto error;
+     }
+     for (auto &resp_value : resp_values) {
+         json_t *value = nullptr;
+         if ( !(value = json_string (resp_value.c_str ()))) {
+             errno = EINVAL;
+             goto error;
+         }
+         if (json_array_append_new (resp_array, value) < 0) {
+             json_decref (value);
+             errno = EINVAL;
+             goto error;
+         }
+     }
+     if (flux_respond_pack (h, msg, "{s:o}", "values", resp_array) < 0)
          flux_log_error (h, "%s", __FUNCTION__);
 
      return;

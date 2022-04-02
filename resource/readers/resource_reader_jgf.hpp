@@ -91,8 +91,10 @@ private:
                       json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
-    vtx_t vtx_in_graph (const resource_graph_metadata_t &m, 
-                        const std::map<std::string, std::string> &paths);
+    vtx_t vtx_in_graph (const resource_graph_t &g,
+                        const resource_graph_metadata_t &m,
+                        const std::map<std::string,
+                                       std::string> &paths, int rank);
     bool is_root (const std::string &path);
     int check_root (vtx_t v, resource_graph_t &g,
                     std::map<std::string, bool> &is_roots);
@@ -104,6 +106,10 @@ private:
     int add_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
                  std::map<std::string, vmap_val_t> &vmap,
                  const fetch_helper_t &fetcher);
+    int exist (resource_graph_t &g,
+               resource_graph_metadata_t &m,
+               const std::string &path, int rank,
+               const std::string &vid, vtx_t &v);
     int find_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
                   std::map<std::string, vmap_val_t> &vmap,
                   const fetch_helper_t &fetcher, vtx_t &ret_v);

@@ -654,7 +654,7 @@ int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 int dfu_impl_t::mark (const std::string &root_path, 
                       resource_pool_t::status_t status)
 {
-    std::map<std::string, vtx_t>::const_iterator vit_root =
+    std::map<std::string, std::vector<vtx_t>>::const_iterator vit_root =
         m_graph_db->metadata.by_path.find (root_path);
 
     if (vit_root == m_graph_db->metadata.by_path.end ()) {
@@ -664,7 +664,8 @@ int dfu_impl_t::mark (const std::string &root_path,
                   + root_path + ") in resource graph.\n";
         return -1;
     }
-    (*m_graph)[vit_root->second].status = status;
+    for (auto &v : vit_root->second)
+        (*m_graph)[v].status = status;
     
     return 0;
 }
