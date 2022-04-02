@@ -158,4 +158,20 @@ EOF
     test_cmp exp10 res10
 '
 
+test_expect_success 'RV1 with same hostnames work' '
+    flux mini submit -n 8 --dry-run hostname > n8.json &&
+    cat > cmds011 <<-EOF &&
+	match allocate n8.json
+	quit
+EOF
+    flux R encode -r 0-1 -c 0-3 -H fluke,fluke | flux ion-R encode > out11 &&
+    print_ranks_nodes out11 > exp11 &&
+    jq ".scheduling" out11 > c11.json &&
+    ${query} -L c11.json -f jgf -F rv1_nosched -t R11.out -P lonode \
+	< cmds011 &&
+    grep -v INFO R11.out > R11.json &&
+    print_ranks_nodes R11.json > res11 &&
+    test_cmp exp11 res11
+'
+
 test_done
