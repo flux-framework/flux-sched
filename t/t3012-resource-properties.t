@@ -70,4 +70,20 @@ test_expect_success "${test006_desc}" '
    test_cmp 006.R.out.filt ${exp_dir}/006.R.out
 '
 
+test_expect_success 'get|set property works on multiple same hostnames' '
+	cat > cmds007 <<-EOF &&
+	set-property /cluster0/fluke class=1
+	get-property /cluster0/fluke
+	quit
+	EOF
+	cat > expected7 <<-EOF &&
+	class=1
+	class=1
+	EOF
+	flux R encode -r 0-1 -c 0-3 -H fluke,fluke > out7.json &&
+	${query} -L out7.json -f rv1exec -F rv1_nosched -t 007.R.out -P lonode \
+		< cmds007 &&
+	test_cmp 007.R.out expected7
+'
+
 test_done
