@@ -16,12 +16,12 @@ test_expect_success 'namespace: load test resources' '
     load_test_resources ${excl_1N1B}
 '
 
-test_expect_success 'namespace: loading resource and qmanager modules works' '
+test_expect_success HAVE_GETXML 'namespace: loading resource and qmanager modules works' '
     load_resource load-allowlist=cluster,node,gpu,core policy=high &&
     load_qmanager
 '
 
-test_expect_success 'namespace: gpu id remapping works with hwloc (pol=hi)' '
+test_expect_success HAVE_GETXML 'namespace: gpu id remapping works with hwloc (pol=hi)' '
     cat >nest.sh <<-EOF &&
 	#!/bin/sh
 	flux module load sched-fluxion-resource load-format=hwloc load-allowlist=cluster,node,gpu,core policy=high
@@ -44,7 +44,7 @@ EOF
     diff out1.a.fin exp1
 '
 
-test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
+test_expect_success HAVE_GETXML 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES="0,1,2,3" &&
     jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
@@ -53,16 +53,16 @@ test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     diff out1.b.fin exp1
 '
 
-test_expect_success 'namespace: removing resource and qmanager modules' '
+test_expect_success HAVE_GETXML 'namespace: removing resource and qmanager modules' '
     remove_resource
 '
 
-test_expect_success 'namespace: loading resource and qmanager modules works' '
+test_expect_success HAVE_GETXML 'namespace: loading resource and qmanager modules works' '
     load_resource load-format=hwloc load-allowlist=cluster,node,gpu,core policy=low &&
     load_qmanager
 '
 
-test_expect_success 'namespace: gpu id remapping works with hwloc (pol=low)' '
+test_expect_success HAVE_GETXML 'namespace: gpu id remapping works with hwloc (pol=low)' '
     cat >exp2 <<-EOF &&
 	0
 	1
@@ -75,7 +75,7 @@ EOF
     diff out2.a.fin exp2
 '
 
-test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
+test_expect_success HAVE_GETXML 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES=-1 &&
     jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
@@ -84,7 +84,7 @@ test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     diff out2.b.fin exp2
 '
 
-test_expect_success 'namespace: removing resource and qmanager modules' '
+test_expect_success HAVE_GETXML 'namespace: removing resource and qmanager modules' '
     remove_resource
 '
 
