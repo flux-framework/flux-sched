@@ -1,4 +1,18 @@
-flux-sched version 0.21.1 - 2021-03-04
+flux-sched version 0.22.0 - 2022-04-11
+--------------------------------------
+
+### Features
+
+ * Add rv1exec reader support (#921)
+ * resource: support discovery of AMD RSMI GPUs in hwloc reader (#918)
+
+### Testsuite
+
+ * testsuite: disable hwloc reader tests (#926)
+ * testsuite: disable more failing test that need resource.get-xml (#929)
+
+
+flux-sched version 0.21.1 - 2022-03-04
 --------------------------------------
 A minor release fixing two problems discovered during system
 instance testing of v0.21.0.
@@ -8,7 +22,7 @@ instance testing of v0.21.0.
  * build: fix missing doc file in distributed tarball (#915)
 
 
-flux-sched version 0.21.0 - 2021-03-02
+flux-sched version 0.21.0 - 2022-03-02
 --------------------------------------
 Check out our new node-exclusive scheduling support!
 
