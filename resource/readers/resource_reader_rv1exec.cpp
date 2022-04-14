@@ -176,7 +176,7 @@ int resource_reader_rv1exec_t::build_rmap (json_t *rlite,
                                            std::map<unsigned, unsigned> &rmap)
 {
     int i;
-    int index;
+    size_t index;
     unsigned rank;
     json_t *entry = nullptr;
     const char *ranks = nullptr;
