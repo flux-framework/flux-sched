@@ -253,7 +253,7 @@ def get_property_action(args):
     gp_resource_path = args.gp_resource_path
     gp_key = args.gp_key
     resp = r.rpc_get_property(gp_resource_path, gp_key)
-    print(args.gp_key, "=", resp["value"])
+    print(args.gp_key, "=", resp["values"])
 
 
 """

@@ -455,15 +455,20 @@ done:
     return v;
 }
 
-vtx_t resource_reader_jgf_t::vtx_in_graph (const resource_graph_metadata_t &m,
+vtx_t resource_reader_jgf_t::vtx_in_graph (const resource_graph_t &g,
+                                           const resource_graph_metadata_t &m,
                                            const std::map<std::string, 
-                                                          std::string> &paths)
+                                                          std::string> &paths,
+                                           int rank)
 {
-    std::map<std::string, vtx_t>::const_iterator bp_it;
     for (auto const &paths_it : paths) {
-        bp_it = m.by_path.find (paths_it.second);
-        if (bp_it != m.by_path.end ()) {
-            return bp_it->second;
+        auto iter = m.by_path.find (paths_it.second);
+        if (iter != m.by_path.end ()) {
+            for (auto &v : iter->second) {
+                if (g[v].rank == rank) {
+                    return v;
+                }
+            }
         }
     }
 
@@ -512,7 +517,7 @@ int resource_reader_jgf_t::add_graph_metadata (vtx_t v,
                 goto done;
             }
         }
-        m.by_path[kv.second] = v;
+        m.by_path[kv.second].push_back (v);
     }
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
@@ -580,6 +585,31 @@ done:
     return rc;
 }
 
+int resource_reader_jgf_t::exist (resource_graph_t &g,
+                                  resource_graph_metadata_t &m,
+                                  const std::string &path, int rank,
+                                  const std::string &vid, vtx_t &v)
+{
+    try {
+        auto &vect = m.by_path.at (path);
+        for (auto &u : vect) {
+            if (g[u].rank == rank) {
+                v = u;
+                return 0;
+            }
+        }
+    } catch (std::out_of_range &e) {
+        goto error;
+    }
+
+error:
+    errno = ENOENT;
+    m_err_msg += __FUNCTION__;
+    m_err_msg += ": inconsistent input vertex: nonexistent path (";
+    m_err_msg += path + ") " + vid + ".\n";
+    return -1;
+}
+
 int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
                                      resource_graph_metadata_t &m,
                                      std::map<std::string, vmap_val_t> &vmap,
@@ -587,6 +617,7 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
                                      vtx_t &v)
 {
     int rc = -1;
+    vtx_t u;
     vtx_t nullvtx = boost::graph_traits<resource_graph_t>::null_vertex ();
     v = nullvtx;
 
@@ -599,23 +630,16 @@ int resource_reader_jgf_t::find_vtx (resource_graph_t &g,
     }
 
     for (auto &kv : fetcher.paths) {
-        try {
-            vtx_t u = m.by_path.at (kv.second);
-            if (v != nullvtx && u != v) {
-                errno = EINVAL;
-                m_err_msg += __FUNCTION__;
-                m_err_msg += ": inconsistent input vertex for " + kv.second;
-                m_err_msg += " (id=" + std::string (fetcher.vertex_id) + ").\n";
-                m_err_msg += std::to_string (u) + " != " + std::to_string (v) + ".\n";
-                goto done;
-            }
+        if (exist (g, m, kv.second, fetcher.rank, fetcher.vertex_id, u) < 0)
+            goto done;
+        if (v == nullvtx) {
             v = u;
-        } catch (std::out_of_range &e) {
-            errno = ENOENT;
+        } else if (v != u) {
+            errno = EINVAL;
             m_err_msg += __FUNCTION__;
-            m_err_msg += ": inconsistent input vertex: nonexistent path (";
-            m_err_msg += kv.second + ") " + fetcher.vertex_id + ".\n";
-            v = nullvtx;
+            m_err_msg += ": inconsistent input vertex for " + kv.second;
+            m_err_msg += " (id=" + std::string (fetcher.vertex_id) + ").\n";
+            m_err_msg += std::to_string (u) + " != " + std::to_string (v) + ".\n";
             goto done;
         }
     }
@@ -770,7 +794,8 @@ int resource_reader_jgf_t::unpack_vertices (resource_graph_t &g,
 
         // If the vertex isn't in the graph, add it
         vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
-        if ( (v = vtx_in_graph (m, fetcher.paths)) == null_vtx) {
+        if ( (v = vtx_in_graph (g, m,
+                                fetcher.paths, fetcher.rank)) == null_vtx) {
             if (add_vtx (g, m, vmap, fetcher) != 0)
                 goto done;
             auto res = added_vtcs.insert (std::string (fetcher.vertex_id));
@@ -929,7 +954,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                                                    g[vmap[target].v].uniq_id);
             auto ret = iter->second.insert (std::make_pair (key, e));
             if (!ret.second) {
-                errno = ENOMEM;
+                errno = EEXIST;
                 m_err_msg += "error inserting an edge to outedge metadata map: "
                              + g[vmap[source].v].name + " -> "
                              + g[vmap[target].v].name + "; ";

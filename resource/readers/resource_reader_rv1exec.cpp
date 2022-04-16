@@ -75,7 +75,7 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
     g[v].properties = props;
 
     // Indexing for fast look-up
-    m.by_path[g[v].paths[subsys]] = v;
+    m.by_path[g[v].paths[subsys]].push_back (v);
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
     m.by_rank[rank].push_back (v);

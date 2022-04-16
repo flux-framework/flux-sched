@@ -239,7 +239,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     //
     // Indexing for fast look-up...
     //
-    m.by_path[g[v].paths[ssys]] = v;
+    m.by_path[g[v].paths[ssys]].push_back (v);
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
     m.by_rank[m_rank].push_back (v);
@@ -347,7 +347,8 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
-                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
+                const std::string &tp = g[tgt_vtx].paths[recipe[e].e_subsystem];
+                m.by_path[tp].push_back (tgt_vtx);
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);
@@ -377,7 +378,8 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 g[tgt_vtx].paths[recipe[e].e_subsystem]
                     = g[src_vtx].paths[recipe[e].e_subsystem]
                           + "/" + g[tgt_vtx].name;
-                m.by_path[g[tgt_vtx].paths[recipe[e].e_subsystem]] = tgt_vtx;
+                const std::string &tp = g[tgt_vtx].paths[recipe[e].e_subsystem];
+                m.by_path[tp].push_back (tgt_vtx);
                 g[tgt_vtx].idata.member_of[recipe[e].e_subsystem]
                     = "*";
                 emit_edges (e, recipe, src_vtx, tgt_vtx);

@@ -575,7 +575,7 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
         property_value = args[2].substr (pos + 1);
     }
 
-    std::map<std::string, vtx_t>::const_iterator it =
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (resource_path);
 
     if (it == ctx->db->metadata.by_path.end ()) {
@@ -583,19 +583,19 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
             << " in resource graph." << std::endl;
     }
     else {
-        vtx_t v = it->second;
+        for (auto &v : it->second) {
+            /* Note that map.insert () does not insert if the key exists.
+             * Assuming we want to update the value though, we do an erase
+             * before we insert. */
 
-        /* Note that map.insert () does not insert if the key exists.
-         * Assuming we want to update the value though, we do an erase
-         * before we insert. */
-
-        if (ctx->db->resource_graph[v].properties.find (property_key)
-             != ctx->db->resource_graph[v].properties.end ()) {
-            ctx->db->resource_graph[v].properties.erase (property_key);
+            if (ctx->db->resource_graph[v].properties.find (property_key)
+                 != ctx->db->resource_graph[v].properties.end ()) {
+                ctx->db->resource_graph[v].properties.erase (property_key);
+            }
+            ctx->db->resource_graph[v].properties.insert (
+                std::pair<std::string, std::string> (property_key,
+                                                     property_value));
         }
-        ctx->db->resource_graph[v].properties.insert (
-            std::pair<std::string, std::string> (property_key,
-                                                 property_value));
     }
     return 0;
 }
@@ -612,7 +612,7 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
     std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out
                                                     : std::cout;
 
-    std::map<std::string, vtx_t>::const_iterator it =
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (resource_path);
 
     if (it == ctx->db->metadata.by_path.end ()) {
@@ -620,16 +620,18 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
             << " in resource graph." << std::endl;
     }
     else {
-        vtx_t v = it->second;
-        if (ctx->db->resource_graph[v].properties.size () == 0) {
-            out << "No properties were found for " << resource_path
-                << ". " << std::endl;
-        }
-        else {
-            std::map<std::string, std::string>::const_iterator p_it;
-            for (p_it = ctx->db->resource_graph[v].properties.begin ();
-                p_it != ctx->db->resource_graph[v].properties.end (); p_it++)
-                    out << p_it->first << "=" << p_it->second << std::endl;
+        for (auto &v : it->second) {
+            if (ctx->db->resource_graph[v].properties.size () == 0) {
+                out << "No properties were found for " << resource_path
+                    << " (vtx's uniq_id=" << ctx->db->resource_graph[v].uniq_id
+                    << ")." << std::endl;
+            }
+            else {
+                std::map<std::string, std::string>::const_iterator p_it;
+                for (p_it = ctx->db->resource_graph[v].properties.begin ();
+                    p_it != ctx->db->resource_graph[v].properties.end (); p_it++)
+                        out << p_it->first << "=" << p_it->second << std::endl;
+            }
         }
     }
     return 0;
@@ -644,7 +646,7 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx,
     }
     std::string vtx_path = args[1];
     std::string status = args[2];
-    std::map<std::string, vtx_t>::const_iterator it =
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
 
@@ -674,7 +676,7 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
         return 0;
     }
     std::string vtx_path = args[1];
-    std::map<std::string, vtx_t>::const_iterator it =
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::string status = "";
@@ -689,20 +691,23 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx,
         return 0;
     }
 
-    for (auto &status_it : sts) {
-        if (status_it.second == ctx->db->resource_graph[it->second].status) {
-            status = status_it.first;
-            break;
+    for (auto &v : it->second) {
+        for (auto &status_it : sts) {
+            if (status_it.second == ctx->db->resource_graph[v].status) {
+                status = status_it.first;
+                break;
+            }
         }
-    }
 
-    if (status == "") {
-        std::cerr << "ERROR: vertex " << vtx_path
-                  << " has unknown status." << std::endl;
-        return 0;     
-    }
+        if (status == "") {
+            std::cerr << "ERROR: vertex " << vtx_path << "(vtx's uniq_id="
+                      << ctx->db->resource_graph[v].uniq_id
+                      << ") has unknown status." << std::endl;
+            return 0;
+        }
 
-    out << vtx_path << " is " << status << std::endl;
+        out << vtx_path << " is " << status << std::endl;
+    }
 
     return 0;
 }
