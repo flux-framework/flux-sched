@@ -174,4 +174,112 @@ EOF
     test_cmp exp11 res11
 '
 
+test_expect_success 'Scheduling RV1 with high node num works (pol=lonode)' '
+	flux mini submit -n 16 -c 94 --dry-run hostname > n94.json &&
+	cat > cmds012 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204,6647] > out12.json &&
+	print_ranks_nodes out12.json > exp12 &&
+	${query} -L out12.json -f rv1exec -F rv1_nosched \
+		-t R12.out -P lonode < cmds012 &&
+	grep -v INFO R12.out > R12.json &&
+	print_ranks_nodes R12.json > res12 &&
+	test_cmp exp12 res12
+'
+
+test_expect_success 'Scheduling RV1 with extreme node num works (pol=lonode)' '
+	cat > cmds013 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204000000,6647000000] \
+		> out13.json &&
+	print_ranks_nodes out13.json > exp13 &&
+	${query} -L out13.json -f rv1exec -F rv1_nosched \
+		-t R13.out -P lonode < cmds013 &&
+	grep -v INFO R13.out > R13.json &&
+	print_ranks_nodes R13.json > res13 &&
+	test_cmp exp13 res13
+'
+
+test_expect_success 'Scheduling RV1-JGF with high node num works (pol=lonode)' '
+	cat > cmds014 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204,6647] | \
+		flux ion-R encode > out14.json &&
+	print_ranks_nodes out14.json > exp14 &&
+	jq ".scheduling" out14.json > c14.json &&
+	${query} -L c14.json -f jgf -F rv1_nosched \
+		-t R14.out -P lonode < cmds014 &&
+	grep -v INFO R14.out > R14.json &&
+	print_ranks_nodes R14.json > res14 &&
+	test_cmp exp14 res14
+'
+
+test_expect_success 'Scheduling RV1-JGF with extreme num work (pol=lonode)' '
+	cat > cmds015 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204000000,6647000000] | \
+		flux ion-R encode > out15.json &&
+	print_ranks_nodes out15.json > exp15 &&
+	jq ".scheduling" out15.json > c15.json &&
+	${query} -L c15.json -f jgf -F rv1_nosched \
+		-t R15.out -P lonode < cmds015 &&
+	grep -v INFO R15.out > R15.json &&
+	print_ranks_nodes R15.json > res15 &&
+	test_cmp exp15 res15
+'
+
+test_expect_success 'Scheduling RV1 with high node num works (pol=first)' '
+	cat > cmds016 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204,6647] > out16.json &&
+	print_ranks_nodes out16.json > exp16 &&
+	${query} -L out16.json -f rv1exec -F rv1_nosched \
+		-t R16.out -P first < cmds016 &&
+	grep -v INFO R16.out > R16.json &&
+	print_ranks_nodes R16.json > res16 &&
+	test_cmp exp16 res16
+'
+
+test_expect_success 'Scheduling RV1 with extreme node num works (pol=first)' '
+	cat > cmds017 <<-EOF &&
+	match allocate n94.json
+	quit
+	EOF
+	flux R encode -r 0-15 -c 0-93 \
+		-H fluke[1-10,4432,4832,5318,5761,6204000000,6647000000] \
+		> out17.json &&
+	print_ranks_nodes out17.json > exp17 &&
+	${query} -L out17.json -f rv1exec -F rv1_nosched \
+		-t R17.out -P first < cmds017 &&
+	grep -v INFO R17.out > R17.json &&
+	print_ranks_nodes R17.json > res17 &&
+	test_cmp exp17 res17
+'
+
+test_expect_success 'node num > max(int64_t) must fail to load' '
+	cat > cmds018 <<-EOF &&
+	quit
+	EOF
+	flux R encode -r 0 -c 0-93 -H fluke1 | \
+		jq " .execution.nodelist |= [\"fluke9223372036854775808\"]" \
+		> out18.json &&
+	print_ranks_nodes out18.json > exp18 &&
+	test_must_fail ${query} -L out18.json -f rv1exec -F rv1_nosched < cmds018
+'
+
 test_done
