@@ -84,7 +84,7 @@ private:
     vtx_t create_cluster_vertex (resource_graph_t &g,
                                  resource_graph_metadata_t &m);
     vtx_t add_new_vertex (resource_graph_t &g, resource_graph_metadata_t &m,
-                          const vtx_t &parent, int id,
+                          const vtx_t &parent, int64_t id,
                           const std::string &subsys, const std::string &type,
                           const std::string &basename, const std::string &name,
                           const std::map<std::string, std::string> &properties,

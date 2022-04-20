@@ -102,7 +102,7 @@ public:
      *
      * \return          0 if succeeds or -1 with errno if an error encountered
      */
-    int get_hostname_suffix (const std::string &hn, int &id) const;
+    int get_hostname_suffix (const std::string &hn, int64_t &id) const;
 
     /*! Query the host basename from hostname.
      *
@@ -124,7 +124,7 @@ public:
 protected:
     bool in_allowlist (const std::string &resource);
     int split_hostname (const std::string &hn,
-                        std::string &basename, int &id) const;
+                        std::string &basename, int64_t &id) const;
     std::set<std::string> allowlist;
     std::string m_err_msg = "";
 };
