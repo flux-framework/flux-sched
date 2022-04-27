@@ -83,7 +83,7 @@ public:
 private:
     vtx_t add_vertex (resource_graph_t &g,
                       resource_graph_metadata_t &m,
-                      vtx_t parent, int id,
+                      vtx_t parent, int64_t id,
                       const std::string &subsys,
                       const std::string &type,
                       const std::string &basename,

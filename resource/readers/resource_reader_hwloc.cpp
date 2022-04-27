@@ -63,7 +63,7 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (
 
 vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
                                                resource_graph_metadata_t &m,
-                                               const vtx_t &parent, int id,
+                                               const vtx_t &parent, int64_t id,
                                                const std::string &subsys,
                                                const std::string &type,
                                                const std::string &basename,
@@ -147,7 +147,7 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     bool supported_resource = true;
     std::string type, basename;
     std::string name = "";
-    int id = obj->logical_index;
+    int64_t id = obj->logical_index;
     int rc = 0;
     unsigned int size = 1;
     std::map<std::string, std::string> properties;

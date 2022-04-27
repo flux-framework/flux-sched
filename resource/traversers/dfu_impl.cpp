@@ -622,7 +622,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
     qual_num_slots = cnt_slot (slot_shape, dfu_slot);
     for (unsigned int i = 0; i < qual_num_slots; ++i) {
         eval_egroup_t edg_group;
-        int score = MATCH_MET;
+        int64_t score = MATCH_MET;
         for (auto &slot_elem : slot_shape) {
             unsigned int j = 0;
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);

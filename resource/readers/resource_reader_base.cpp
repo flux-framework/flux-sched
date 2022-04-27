@@ -93,7 +93,7 @@ void resource_reader_base_t::clear_err_message ()
 
 int resource_reader_base_t::split_hostname (const std::string &hn,
                                             std::string &basename,
-                                            int &id) const
+                                            int64_t &id) const
 {
     std::string suffix;
     std::size_t first;
@@ -121,7 +121,7 @@ int resource_reader_base_t::split_hostname (const std::string &hn,
 
     suffix = suffix.substr (first);
     try {
-        id = std::stoi (suffix);
+        id = std::stoll (suffix);
     } catch (std::invalid_argument &e) {
         errno = EINVAL;
         goto error;
@@ -136,7 +136,7 @@ error:
 }
 
 int resource_reader_base_t::get_hostname_suffix (const std::string &hn,
-                                                 int &id) const
+                                                 int64_t &id) const
 {
     if (hn == "") {
         errno = EINVAL;
@@ -153,7 +153,7 @@ int resource_reader_base_t::get_host_basename (const std::string &hn,
         errno = EINVAL;
         return -1;
     }
-    int id;
+    int64_t id;
     return split_hostname (hn, basename, id);
 }
 

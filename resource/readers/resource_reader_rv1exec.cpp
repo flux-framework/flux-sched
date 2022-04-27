@@ -31,7 +31,7 @@ using namespace Flux::resource_model;
 
 vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
-                                             vtx_t parent, int id,
+                                             vtx_t parent, int64_t id,
                                              const std::string &subsys,
                                              const std::string &type,
                                              const std::string &basename,
@@ -319,7 +319,7 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
 {
     edg_t e;
     vtx_t v;
-    int iden;
+    int64_t iden;
     const char *hostname = nullptr;
     std::string basename;
     std::map<std::string, std::string> properties;
@@ -335,10 +335,13 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
 
     if ( !(hostname = hostlist_nth (hlist, static_cast<int> (rmap[rank]))))
         goto error;
-    if (get_hostname_suffix (hostname, iden) < 0)
+    if (get_hostname_suffix (hostname, iden) < 0
+        || get_host_basename (hostname, basename) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": error splitting hostname=";
+        m_err_msg += hostname + std::string ("; ");
         goto error;
-    if (get_host_basename (hostname, basename) < 0)
-        goto error;
+    }
 
     // Create and add a node vertex and link with cluster vertex
     v = add_vertex (g, m, parent, iden, "containment",
