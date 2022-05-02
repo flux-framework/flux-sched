@@ -119,6 +119,7 @@ INFO: JOBID=73
 INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=3600
 INFO: =============================
+```
 
 `test.yaml` used in the above examples are the following:
 
