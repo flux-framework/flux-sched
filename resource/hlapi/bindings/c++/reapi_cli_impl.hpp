@@ -594,7 +594,7 @@ int resource_query_t::remove_job (const uint64_t jobid)
 {
     int rc = -1;
 
-    if (jobid > std::numeric_limits<int64_t>::max ()) {
+    if (jobid > (uint64_t) std::numeric_limits<int64_t>::max ()) {
         errno = EOVERFLOW;
         return rc;
     }
