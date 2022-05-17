@@ -760,12 +760,12 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
         if ( !(ranks = json_string (s.str ().c_str ()))) {
             json_decref (robj);
             rc = -1;
-            errno = ENOMEM;
+            errno = EINVAL;
             goto ret;
         }
         if ( (rc = json_object_set_new (robj, "rank", ranks)) < 0) {
             json_decref (robj);
-            errno = ENOMEM;
+            errno = EINVAL;
             goto ret;
         }
         if ( !(cobj = json_loads (kv.first.c_str (), 0, &err))) {
@@ -804,7 +804,7 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
             if ( (rc = json_array_append_new (host_array,
                                               json_string (hl_out))) < 0) {
                 json_decref (rlite_array);
-                errno = ENOMEM;
+                errno = EINVAL;
                 goto ret;
             }
         }
@@ -895,7 +895,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         json_decref (ndlist_o);
         json_decref (jgf_o);
         rc = -1;
-        errno = ENOMEM;
+        errno = EINVAL;
         goto ret;
     }
     if (!m_attrs.empty ()) {
@@ -907,7 +907,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         }
         if ( (rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
             json_decref (o);
-            errno = ENOMEM;
+            errno = EINVAL;
             goto ret;
         }
     }
@@ -1009,7 +1009,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         json_decref (rlite_o);
         json_decref (ndlist_o);
         rc = -1;
-        errno = ENOMEM;
+        errno = EINVAL;
         goto ret;
     }
 
