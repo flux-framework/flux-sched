@@ -137,12 +137,14 @@ private:
     bool m_reducer_set ();
     int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
     int get_gatherer_children (std::string &children);
-    int fill (json_t *rlite_array, json_t *host_array);
+    int fill (json_t *rlite_array, json_t *host_array, json_t *props);
     int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
 
     std::map<std::string, std::vector<int64_t>> m_reducer;
     std::map<std::string, std::vector<rank_host_t>> m_gl_gatherer;
+    std::map<std::string, std::vector<int64_t>> m_gl_prop_gatherer;
     std::set<std::string> m_gatherer;
+
 };
 
 

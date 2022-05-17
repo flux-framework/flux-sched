@@ -400,18 +400,55 @@ json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
                                             unsigned int needs, bool exclusive)
 {
     json_t *o = NULL;
+    json_t *prop = nullptr;
 
-    if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:b s:s s:I}",
-                            "type", g[u].type.c_str (),
-                            "basename", g[u].basename.c_str (),
-                            "name", g[u].name.c_str (),
-                            "id", g[u].id,
-                            "uniq_id", g[u].uniq_id,
-                            "rank", g[u].rank,
-                            "exclusive", (exclusive)? 1 : 0,
-                            "unit", g[u].unit.c_str (),
-                            "size", static_cast<int64_t> (needs)))) {
-        errno = ENOMEM;
+    if (!g[u].properties.empty ()) {
+        if ( !(prop = json_object ())) {
+            errno = ENOMEM;
+            return nullptr;
+        }
+        for (auto &kv : g[u].properties) {
+            json_t *value = nullptr;
+            if ( !(value = json_string (kv.second.c_str ()))) {
+                json_decref (prop);
+                errno = EINVAL;
+                return nullptr;
+            }
+            if (json_object_set_new (prop, kv.first.c_str (), value) < 0) {
+                json_decref (prop);
+                errno = EINVAL;
+                return nullptr;
+            }
+        }
+    }
+
+    if (prop) {
+        if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:o s:b s:s s:I}",
+                                "type", g[u].type.c_str (),
+                                "basename", g[u].basename.c_str (),
+                                "name", g[u].name.c_str (),
+                                "id", g[u].id,
+                                "uniq_id", g[u].uniq_id,
+                                "rank", g[u].rank,
+                                "properties", prop,
+                                "exclusive", (exclusive)? 1 : 0,
+                                "unit", g[u].unit.c_str (),
+                                "size", static_cast<int64_t> (needs)))) {
+            errno = EINVAL;
+        }
+    } else {
+        if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:b s:s s:I}",
+                                "type", g[u].type.c_str (),
+                                "basename", g[u].basename.c_str (),
+                                "name", g[u].name.c_str (),
+                                "id", g[u].id,
+                                "uniq_id", g[u].uniq_id,
+                                "rank", g[u].rank,
+                                "exclusive", (exclusive)? 1 : 0,
+                                "unit", g[u].unit.c_str (),
+                                "size", static_cast<int64_t> (needs)))) {
+            errno = EINVAL;
+        }
     }
     return o;
 }
@@ -537,6 +574,7 @@ int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
     int saved_errno;
     json_t *rlite_array = NULL;
     json_t *host_array = NULL;
+    json_t *props = nullptr;
 
     if (m_gl_gatherer.empty ()) {
         errno = EINVAL;
@@ -554,24 +592,46 @@ int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
         errno = ENOMEM;
         goto ret;
     }
-    if ( (rc = fill (rlite_array, host_array)) < 0) {
+    if (!m_gl_prop_gatherer.empty () && !(props = json_object ())) {
+        json_decref (rlite_array);
+        json_decref (host_array);
+        rc = -1;
+        errno = ENOMEM;
+        goto ret;
+    }
+    if ( (rc = fill (rlite_array, host_array, props)) < 0) {
         saved_errno = errno;
         json_decref (rlite_array);
         if (host_array)
             json_decref (host_array);
+        if (props)
+            json_decref (props);
         errno = saved_errno;
         goto ret;
-
     }
 
     m_gl_gatherer.clear ();
 
+    m_gl_prop_gatherer.clear ();
+
     if ( (rc = json_array_size (rlite_array)) != 0) {
         *o = rlite_array;
-        if (aux)
-            *aux = host_array;
+        if (aux) {
+            if ( !(*aux = json_pack ("{ s:o }",
+                                          "nodelist", host_array))) {
+                 rc = -1;
+                 errno = EINVAL;
+                 goto ret;
+             }
+            if (props) {
+                if (json_object_set_new (*aux, "properties", props)) {
+                    rc = -1;
+                    errno = EINVAL;
+                    goto ret;
+                }
+            }
+        }
     }
-
 ret:
     return rc;
 }
@@ -712,6 +772,26 @@ int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
             m_gl_gatherer[children] = std::vector<rank_host_t> ();
 
         m_gl_gatherer[children].push_back ({g[u].rank, g[u].name});
+
+        // emit properties
+        for (auto &kv : g[u].properties) {
+            std::string prop = kv.first;
+            if (kv.second != "")
+                prop = prop + "=" + kv.second;
+            if (m_gl_prop_gatherer.find (prop)
+                    == m_gl_prop_gatherer.end ()) {
+                auto ret = m_gl_prop_gatherer.insert (
+                               std::pair<std::string,
+                                         std::vector<int64_t>> (
+                                   prop, std::vector<int64_t> ()));
+                if (!ret.second) {
+                    errno = ENOMEM;
+                    rc = -1;
+                    goto ret;
+                }
+            }
+            m_gl_prop_gatherer[prop].push_back (g[u].rank);
+        }
     } catch (std::bad_alloc &) {
         rc = -1;
         errno = ENOMEM;
@@ -721,7 +801,8 @@ ret:
     return rc;
 }
 
-int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
+int rlite_match_writers_t::fill (json_t *rlite_array,
+                                 json_t *host_array, json_t *props)
 {
     int rc = 0;
     int saved_errno;
@@ -776,13 +857,36 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array)
         }
         if ( (rc = json_object_set_new (robj, "children", cobj)) < 0) {
             json_decref (robj);
-            errno = ENOMEM;
+            errno = EINVAL;
             goto ret;
         }
         if ( (rc = json_array_append_new (rlite_array, robj)) < 0) {
             json_decref (robj);
-            errno = ENOMEM;
+            errno = EINVAL;
             goto ret;
+        }
+    }
+
+    if (props) {
+        for (auto &kv : m_gl_prop_gatherer) {
+            std::stringstream s;
+            json_t *ranks = nullptr;
+
+            // kv.second is a std::vector with ranks
+            std::sort (kv.second.begin (), kv.second.end ());
+            if ( (rc = compress_ids (s, kv.second)) < 0)
+                goto ret;
+            if ( !(ranks = json_string (s.str ().c_str ()))) {
+                rc = -1;
+                errno = EINVAL;
+                goto ret;
+            }
+            if (json_object_set_new (props, kv.first.c_str (), ranks) < 0) {
+                json_decref (ranks);
+                rc = -1;
+                errno = EINVAL;
+                goto ret;
+            }
         }
     }
 
@@ -868,36 +972,63 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     int saved_errno;
     json_t *o = NULL;
     json_t *rlite_o = NULL;
-    json_t *ndlist_o = NULL;
+    json_t *rlite_aux_o = nullptr;
     json_t *jgf_o = NULL;
     json_t *attrs_o = NULL;
 
     if (rlite.empty () || jgf.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o, &ndlist_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
     if ( (rc = jgf.emit_json (&jgf_o)) < 0) {
         saved_errno = errno;
-        json_decref (rlite_o);
-        json_decref (ndlist_o);
+        json_decref (rlite_aux_o);
         errno = saved_errno;
         goto ret;
     }
-    if ( !(o = json_pack ("{s:i s:{s:o s:o s:I s:I} s:o}",
-                              "version", 1,
-                              "execution",
-                                  "R_lite", rlite_o,
-                                  "nodelist", ndlist_o,
-                                  "starttime", m_starttime,
-                                  "expiration", m_expiration,
-                              "scheduling", jgf_o))) {
-        json_decref (rlite_o);
-        json_decref (ndlist_o);
-        json_decref (jgf_o);
-        rc = -1;
-        errno = EINVAL;
-        goto ret;
+    if (json_object_get (rlite_aux_o, "properties")) {
+        if ( !(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
+                                  "version", 1,
+                                  "execution",
+                                      "R_lite", rlite_o,
+                                      "nodelist", json_object_get (
+                                                      rlite_aux_o,
+                                                      "nodelist"),
+                                      "properties", json_object_get (
+                                                        rlite_aux_o,
+                                                        "properties"),
+                                      "starttime", m_starttime,
+                                      "expiration", m_expiration,
+                                  "scheduling", jgf_o))) {
+            json_decref (rlite_o);
+            json_decref (jgf_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
+        }
+    } else {
+        if ( !(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
+                                  "version", 1,
+                                  "execution",
+                                      "R_lite", rlite_o,
+                                      "nodelist", json_object_get (
+                                                      rlite_aux_o,
+                                                      "nodelist"),
+                                      "starttime", m_starttime,
+                                      "expiration", m_expiration,
+                                  "scheduling", jgf_o))) {
+            json_decref (rlite_o);
+            json_decref (jgf_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
+        }
     }
+
+    json_decref (rlite_aux_o);
+
     if (!m_attrs.empty ()) {
         if ((rc = attrs_json (&attrs_o)) < 0) {
             saved_errno = errno;
@@ -993,25 +1124,50 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 {
     int rc = 0;
     json_t *rlite_o = NULL;
-    json_t *ndlist_o = NULL;
+    json_t *rlite_aux_o = nullptr;
 
     if (rlite.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o, &ndlist_o)) < 0)
+    if ( (rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
-    if ( !(*j_o = json_pack ("{s:i s:{s:o s:o s:I s:I}}",
-                                "version", 1,
-                                "execution",
-                                    "R_lite",  rlite_o,
-                                    "nodelist", ndlist_o,
-                                    "starttime", m_starttime,
-                                    "expiration", m_expiration))) {
-        json_decref (rlite_o);
-        json_decref (ndlist_o);
-        rc = -1;
-        errno = EINVAL;
-        goto ret;
+    if (json_object_get (rlite_aux_o, "properties")) {
+        if ( !(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
+                                     "version", 1,
+                                     "execution",
+                                         "R_lite", rlite_o,
+                                         "nodelist", json_object_get (
+                                                         rlite_aux_o,
+                                                         "nodelist"),
+                                         "properties", json_object_get (
+                                                           rlite_aux_o,
+                                                           "properties"),
+                                         "starttime", m_starttime,
+                                         "expiration", m_expiration))) {
+            json_decref (rlite_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
+        }
+    } else {
+        if ( !(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
+                                     "version", 1,
+                                     "execution",
+                                         "R_lite", rlite_o,
+                                         "nodelist", json_object_get (
+                                                         rlite_aux_o,
+                                                         "nodelist"),
+                                         "starttime", m_starttime,
+                                         "expiration", m_expiration))) {
+            json_decref (rlite_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
+        }
     }
+
+    json_decref (rlite_aux_o);
 
 ret:
     return rc;
