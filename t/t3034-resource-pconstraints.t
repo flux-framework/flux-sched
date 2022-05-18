@@ -122,6 +122,14 @@ test_expect_success 'allocate 1 job with invalid property (pol=hinodex)' '
 	grep "Jobspec error" 007.R.out2
 '
 
+test_expect_success 'graphml output can be generated with properties' '
+	cat <<-EOF > cmds008 &&
+	quit
+	EOF
+	${query} -L hetero.json -f rv1exec -S CA -P hinodex -t 008.R.out \
+		-o 008 -g graphml -F rv1_nosched < cmds008
+'
+
 test_expect_success 'allocate 1 job with arm-v9@core and rv1 (pol=hinodex)' '
 	cat <<-EOF > cmds011 &&
 	match allocate job.arm-v9.json
