@@ -282,4 +282,24 @@ test_expect_success 'node num > max(int64_t) must fail to load' '
 	test_must_fail ${query} -L out18.json -f rv1exec -F rv1_nosched < cmds018
 '
 
+test_expect_success 'Misconfigured RV1 is handled correctly' '
+        cat > cmds019 <<-EOF &&
+	quit
+	EOF
+	flux R encode -r 0 -c 0-1 -H fluke1 | \
+		jq " .execution.R_lite[0].rank |= 0 " > out19.json &&
+	test_must_fail ${query} -L out19.json -f rv1exec -F rv1_nosched \
+		-t R19.out -P first < cmds019
+'
+
+test_expect_success 'Misconfigured RV1 is handled correctly 2' '
+        cat > cmds020 <<-EOF &&
+	quit
+	EOF
+	flux R encode -r 0-1 -c 0-1 -H fluke[1-0] | \
+		jq " .execution.R_lite[0].rank |= \"0^2\" " > out20.json &&
+	test_must_fail ${query} -L out20.json -f rv1exec -F rv1_nosched \
+		-t R20.out -P first < cmds020
+'
+
 test_done
