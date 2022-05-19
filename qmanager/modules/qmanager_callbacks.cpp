@@ -229,6 +229,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, e.what ()) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
                             __FUNCTION__);
+        free (jobspec_str);
         return;
     }
     if (jobspec_obj.attributes.system.queue != "")
