@@ -1,3 +1,20 @@
+flux-sched version 0.23.0 - 2022-05-19
+--------------------------------------
+
+### Features
+
+ * Add property constraints-based matching support (#922)
+
+### Fixes
+
+ * qmanager: fix potential leak in alloc callback (#943)
+ * hlapi: workaround integer compare error with gcc 9.4.0 (#937)
+ * docs: fix code sample in resource README (#935)
+ * Fix an integer overflow bug etc. (#933)
+ * reader: fix index type (#934)
+ * Don't assume each hierarchical path is unique (#924)
+
+
 flux-sched version 0.22.0 - 2022-04-11
 --------------------------------------
 
