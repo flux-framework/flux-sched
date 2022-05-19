@@ -293,7 +293,9 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
     std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
-    meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at);
+    if (meta.build (jobspec,
+                    detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at) < 0)
+        return -1;
 
     if ( (op == match_op_t::MATCH_SATISFIABILITY)
         && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {

@@ -44,6 +44,7 @@ TESTS = \
     t1019-qmanager-async.t \
     t1020-qmanager-feasibility.t \
     t1021-qmanager-nodex.t \
+    t1022-property-constraints.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
@@ -80,6 +81,7 @@ TESTS = \
     t3030-resource-multi.t \
     t3031-resource-minmax2.t \
     t3033-resource-nodex.t \
+    t3034-resource-pconstraints.t \
     t3300-system-dontblock.t \
     t3301-system-latestart.t \
     t4000-match-params.t \

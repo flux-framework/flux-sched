@@ -1589,24 +1589,29 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                 const char *cmd, const std::string &jstr, int64_t *at)
 {
     int rc = -1;
-    Flux::Jobspec::Jobspec j {jstr};
-    dfu_traverser_t &tr = *(ctx->traverser);
+    try {
+        Flux::Jobspec::Jobspec j {jstr};
 
-    if (std::string ("allocate") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
-    else if (std::string ("allocate_with_satisfiability") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::
-                     MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
-    else if (std::string ("allocate_orelse_reserve") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                     jobid, at);
-    else if (std::string ("satisfiability") == cmd)
-        rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY,
-                     jobid, at);
-    else
+        dfu_traverser_t &tr = *(ctx->traverser);
+
+        if (std::string ("allocate") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
+        else if (std::string ("allocate_with_satisfiability") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::
+                         MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
+        else if (std::string ("allocate_orelse_reserve") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                         jobid, at);
+        else if (std::string ("satisfiability") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY,
+                         jobid, at);
+        else
+            errno = EINVAL;
+    } catch (const Flux::Jobspec::parse_error& e) {
         errno = EINVAL;
+    }
 
-   return rc;
+    return rc;
 }
 
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,

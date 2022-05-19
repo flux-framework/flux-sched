@@ -223,7 +223,14 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->userid = userid;
     job->t_submit = t_submit;
     job->priority = calc_priority (priority);
-    jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
+    try {
+        jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
+    } catch (const Flux::Jobspec::parse_error& e) {
+        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, e.what ()) < 0)
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
+                            __FUNCTION__);
+        return;
+    }
     if (jobspec_obj.attributes.system.queue != "")
         queue_name = jobspec_obj.attributes.system.queue;
     job->jobspec = jobspec_str;

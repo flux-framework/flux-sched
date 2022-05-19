@@ -329,7 +329,37 @@ Attributes parse_yaml_attributes (const YAML::Node &attrs)
                             = e.second.as<std::string>();
                     }
                 }
-                else {
+                else if (s.first.as<std::string>() == "constraints") {
+                    for (auto&& kv2 : s.second) {
+                        if (kv2.first.as<std::string>() == "properties") {
+                            if (!kv2.second.IsSequence()) {
+                                throw parse_error (
+                                          kv2.second,
+                                          "\"properties\" is not a sequence");
+                            }
+                            for (auto&& p : kv2.second) {
+                                std::string p_validate = p.as<std::string> ();
+                                if (p_validate.find_first_of ("^") == 0) {
+                                    // '^' is valid only when appears before
+                                    // the property string per RFC31.
+                                    p_validate = p_validate.substr (1);
+                                }
+
+                                if (p_validate.find_first_of (
+                                        "!&\'\"^`|()") != std::string::npos) {
+                                    std::string errmsg = p.as<std::string> ()
+                                                             + " is invalid";
+                                    throw parse_error (p, errmsg.c_str ());
+                                }
+                                a.system
+                                      .constraints
+                                           .properties
+                                                .push_back (
+                                                     p.as<std::string>());
+                            }
+                        }
+                    }
+                } else {
                     a.system.optional[s.first.as<std::string>()] = s.second;
                 }
             }
@@ -479,6 +509,11 @@ std::ostream& Flux::Jobspec::operator<<(std::ostream& s, Jobspec const& jobspec)
     s << "    " << "environment:" << std::endl;
     for (auto&& e : jobspec.attributes.system.environment) {
         s << "      " << e.first << ": " << e.second << std::endl;
+    }
+    s << "    " << "constraints:" << std::endl;
+    s << "      " << "properties:" << std::endl;
+    for (auto&& p : jobspec.attributes.system.constraints.properties) {
+        s << "        " << p << std::endl;
     }
 
     return s;
