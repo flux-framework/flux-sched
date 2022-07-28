@@ -1149,6 +1149,12 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
 {
     const subsystem_t &subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
+        // If the resource is requested as exclusive in the 
+        // jobspec, add it to the matcher's exclusive resource 
+        // set. This ensures that the full resource set (which 
+        // includes shadow resources) is emitted.
+        if (resource.exclusive == Jobspec::tristate_t::TRUE)
+            m_match->add_exclusive_resource_type (resource.type);
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
