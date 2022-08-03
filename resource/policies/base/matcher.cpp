@@ -313,6 +313,25 @@ int matcher_util_api_t::add_exclusive_resource_type (const std::string &type)
     return rc;
 }
 
+const std::set<std::string> &matcher_util_api_t::get_exclusive_resource_types () const
+{
+    return m_x_resource_types;
+}
+
+int matcher_util_api_t::reset_exclusive_resource_types (const std::set<std::string> &x_types)
+{
+    int rc = 0;
+    m_x_resource_types.clear ();
+    for (auto &x_type : x_types) {
+        auto ret = m_x_resource_types.insert (x_type);
+        if (!ret.second) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+    }
+    return rc;
+}
+
 bool matcher_util_api_t::is_resource_type_exclusive (const std::string &type)
 {
     return m_x_resource_types.find (type) != m_x_resource_types.end ();

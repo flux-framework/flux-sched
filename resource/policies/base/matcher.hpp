@@ -154,6 +154,10 @@ public:
 
     bool is_resource_type_exclusive (const std::string &type);
 
+    const std::set<std::string> &get_exclusive_resource_types () const;
+
+    int reset_exclusive_resource_types (const std::set<std::string> &x_types);
+
 private:
 
     int register_resource_pair (const std::string &subsystem,
