@@ -1,3 +1,11 @@
+flux-sched version 0.24.0 - 2022-08-03
+--------------------------------------
+
+### Fixes
+
+ * Always emit exclusive resources with --exclusive (#951)
+
+
 flux-sched version 0.23.0 - 2022-05-19
 --------------------------------------
 
