@@ -132,12 +132,14 @@ public:
     const expr_eval_api_t &get_expr_eval () const;
     const unsigned int get_preorder_count () const;
     const unsigned int get_postorder_count () const;
+    const std::set<std::string> &get_exclusive_resource_types () const;
 
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
     void reset_color ();
+    int reset_exclusive_resource_types (const std::set<std::string> &x_types);
 
     /*! Exclusive request? Return true if a resource in resources vector
      *  matches resource vertex u and its exclusivity field value is TRUE.

@@ -291,6 +291,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
+    const std::set<std::string> exclusive_types =
+                        detail::dfu_impl_t::get_exclusive_resource_types ();
     std::unordered_map<std::string, int64_t> dfv;
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     if (meta.build (jobspec,
@@ -302,8 +304,12 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         detail::dfu_impl_t::update ();
     } else if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
+        // returns 0 or -1
         rc = detail::dfu_impl_t::update (root, writers, meta);
     }
+    // returns 0 or -1
+    rc += detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+
     return rc;
 }
 

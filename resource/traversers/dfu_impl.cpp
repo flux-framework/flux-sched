@@ -1071,6 +1071,11 @@ const unsigned int dfu_impl_t::get_postorder_count () const
     return m_postorder;
 }
 
+const std::set<std::string> &dfu_impl_t::get_exclusive_resource_types () const
+{
+    return m_match->get_exclusive_resource_types ();
+}
+
 void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
@@ -1094,6 +1099,11 @@ void dfu_impl_t::clear_err_message ()
 void dfu_impl_t::reset_color ()
 {
     m_color.reset ();
+}
+
+int dfu_impl_t::reset_exclusive_resource_types (const std::set<std::string> &x_types)
+{
+    return m_match->reset_exclusive_resource_types (x_types);
 }
 
 int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
