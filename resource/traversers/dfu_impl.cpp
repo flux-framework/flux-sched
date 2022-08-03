@@ -1071,6 +1071,11 @@ const unsigned int dfu_impl_t::get_postorder_count () const
     return m_postorder;
 }
 
+const std::set<std::string> &dfu_impl_t::get_exclusive_resource_types () const
+{
+    return m_match->get_exclusive_resource_types ();
+}
+
 void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
 {
     m_graph = g;
@@ -1094,6 +1099,11 @@ void dfu_impl_t::clear_err_message ()
 void dfu_impl_t::reset_color ()
 {
     m_color.reset ();
+}
+
+int dfu_impl_t::reset_exclusive_resource_types (const std::set<std::string> &x_types)
+{
+    return m_match->reset_exclusive_resource_types (x_types);
 }
 
 int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
@@ -1149,6 +1159,12 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
 {
     const subsystem_t &subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
+        // If the resource is requested as exclusive in the 
+        // jobspec, add it to the matcher's exclusive resource 
+        // set. This ensures that the full resource set (which 
+        // includes shadow resources) is emitted.
+        if (resource.exclusive == Jobspec::tristate_t::TRUE)
+            m_match->add_exclusive_resource_type (resource.type);
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
