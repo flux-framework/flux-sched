@@ -27,8 +27,9 @@ easy-to-use environment.
 ### Fluxion Scheduler in Flux
 
 Fluxion introduces queuing and resource matching services to extend Flux
-to provide advanced batch scheduling. Jobs are submitted to Fluxion via
-`flux job submit` which are then added to our queues for scheduling.
+to provide advanced batch scheduling. Jobs are submitted to Flux as usual,
+and Fluxion makes a schedule to assign available resources to the job
+requests according to its configured algorithm.
 
 At the core of its functionality lie its two service modules:
 `sched-fluxion-qmanager` and `sched-fluxion-resource`.
