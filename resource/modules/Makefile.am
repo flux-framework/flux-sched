@@ -30,7 +30,6 @@ sched_fluxion_resource_la_LIBADD = \
     $(FLUX_IDSET_LIBS) \
     $(FLUX_HOSTLIST_LIBS) \
     $(FLUX_CORE_LIBS) \
-    $(DL_LIBS) \
     $(HWLOC_LIBS) \
     $(UUID_LIBS) \
     $(JANSSON_LIBS) \

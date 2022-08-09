@@ -13,7 +13,6 @@ RUN sudo yum -y update \
 	boost-system \
 	boost-filesystem \
 	boost-regex \
-	libxml2-devel \
 	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \

@@ -27,31 +27,16 @@ easy-to-use environment.
 ### Fluxion Scheduler in Flux
 
 Fluxion introduces queuing and resource matching services to extend Flux
-to provide advanced batch scheduling. Jobs are submitted to Fluxion via
-`flux job submit` which are then added to our queues for scheduling.
+to provide advanced batch scheduling. Jobs are submitted to Flux as usual,
+and Fluxion makes a schedule to assign available resources to the job
+requests according to its configured algorithm.
 
-At the core of its functionality lie its two service modules:
-`sched-fluxion-qmanager` and `sched-fluxion-resource`.
-The first module is designed to manage our job queues and
-to enforce queueing policies that are configurable (e.g.,
-first-come-first-served, EASY, conservative backfilling policies etc).
-The second module uses a graph to represent
-resources of arbitrary types
-as well as their complex relationships and to match the highly sophisticated
-resource requirements of a Flux jobspec to the compute and other resources
-on this graph. Both of these modules are loaded into a Flux instance and
-work in tandem to provide highly effective scheduling.
+Fluxion installs two modules that are loaded by the Flux broker:
 
-Clearly, we recognize that a single scheduling policy will not sufficiently
-optimize the scheduling of different kinds of workflows. In fact, one of the
-main design points of flux-sched is its ability to customize the scheduling
-behaviors. Users can use environment variables or module-load time options
-to select and to tune the policies as to how resources are selected
-and when to run their jobs.
-
-Overall, the advanced job scheduling facility within Fluxion offers vastly
-many opportunities for modern HPC and other worfklows to meet their highly
-challenging scheduling objectives.
+* `sched-fluxion-qmanager`, which manages one or more prioritized job queues
+  with configurable queuing policies (fcfs, easy, conservative, or hybrid).
+* `sched-fluxion-resource`, which matches resource requests to available
+  resources using Fluxion's graph-based matching algorithm.
 
 
 #### Building Fluxion
@@ -75,7 +60,6 @@ boost-system              | libboost-system-dev     | == 1.53 or > 1.58 | *1*
 boost-filesystem          | libboost-filesystem-dev | == 1.53 or > 1.58 | *1*
 boost-regex               | libboost-regex-dev      | == 1.53 or > 1.58 | *1*
 libedit-devel             | libedit-dev             | >= 3.0            |
-libxml2-devel             | libxml2-dev             | >= 2.9.1          |
 python3-pyyaml            | python3-yaml            | >= 3.10           |
 yaml-cpp-devel            | libyaml-cpp-dev         | >= 0.5.1          |
 
@@ -92,14 +76,14 @@ jq                | jq                |
 
 ##### Installing RedHat/CentOS Packages
 ```
-sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel libxml2-devel python3-pyyaml yaml-cpp-devel
+sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel python3-pyyaml yaml-cpp-devel
 ```
 
 ##### Installing Ubuntu Packages
 
 ```
 sudo apt-get update
-sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libxml2-dev libyaml-cpp-dev python3-yaml
+sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libyaml-cpp-dev python3-yaml
 ```
 
 Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:
