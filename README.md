@@ -31,28 +31,12 @@ to provide advanced batch scheduling. Jobs are submitted to Flux as usual,
 and Fluxion makes a schedule to assign available resources to the job
 requests according to its configured algorithm.
 
-At the core of its functionality lie its two service modules:
-`sched-fluxion-qmanager` and `sched-fluxion-resource`.
-The first module is designed to manage our job queues and
-to enforce queueing policies that are configurable (e.g.,
-first-come-first-served, EASY, conservative backfilling policies etc).
-The second module uses a graph to represent
-resources of arbitrary types
-as well as their complex relationships and to match the highly sophisticated
-resource requirements of a Flux jobspec to the compute and other resources
-on this graph. Both of these modules are loaded into a Flux instance and
-work in tandem to provide highly effective scheduling.
+Fluxion installs two modules that are loaded by the Flux broker:
 
-Clearly, we recognize that a single scheduling policy will not sufficiently
-optimize the scheduling of different kinds of workflows. In fact, one of the
-main design points of flux-sched is its ability to customize the scheduling
-behaviors. Users can use environment variables or module-load time options
-to select and to tune the policies as to how resources are selected
-and when to run their jobs.
-
-Overall, the advanced job scheduling facility within Fluxion offers vastly
-many opportunities for modern HPC and other worfklows to meet their highly
-challenging scheduling objectives.
+* `sched-fluxion-qmanager`, which manages one or more prioritized job queues
+  with configurable queuing policies (fcfs, easy, conservative, or hybrid).
+* `sched-fluxion-resource`, which matches resource requests to available
+  resources using Fluxion's graph-based matching algorithm.
 
 
 #### Building Fluxion
