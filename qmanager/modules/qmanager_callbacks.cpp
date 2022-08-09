@@ -203,6 +203,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     double t_submit;
     json_t *jobspec;
     char *jobspec_str = NULL;
+    char errbuf[80];
 
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s:o}",
@@ -237,12 +238,14 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->jobspec = jobspec_str;
     free (jobspec_str);
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
-        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
+        snprintf (errbuf,
+                  sizeof (errbuf),
+                  "queue (%s) doesn't exist",
+                  queue_name.c_str());
+        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, errbuf) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
                             __FUNCTION__);
         errno = ENOENT;
-        flux_log (h, LOG_DEBUG, "%s: queue (%s) doesn't exist",
-                  __FUNCTION__, queue_name.c_str ());
         return;
     }
 
