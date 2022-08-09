@@ -9,7 +9,6 @@ RUN sudo yum -y install \
 	libboost-system-devel \
 	libboost-filesystem-devel \
 	libboost-regex-devel \
-	libxml2-devel \
 	python-yaml \
 	yaml-cpp-devel \
 	libedit-devel

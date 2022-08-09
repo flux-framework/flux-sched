@@ -75,7 +75,6 @@ boost-system              | libboost-system-dev     | == 1.53 or > 1.58 | *1*
 boost-filesystem          | libboost-filesystem-dev | == 1.53 or > 1.58 | *1*
 boost-regex               | libboost-regex-dev      | == 1.53 or > 1.58 | *1*
 libedit-devel             | libedit-dev             | >= 3.0            |
-libxml2-devel             | libxml2-dev             | >= 2.9.1          |
 python3-pyyaml            | python3-yaml            | >= 3.10           |
 yaml-cpp-devel            | libyaml-cpp-dev         | >= 0.5.1          |
 
@@ -92,14 +91,14 @@ jq                | jq                |
 
 ##### Installing RedHat/CentOS Packages
 ```
-sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel libxml2-devel python3-pyyaml yaml-cpp-devel
+sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel python3-pyyaml yaml-cpp-devel
 ```
 
 ##### Installing Ubuntu Packages
 
 ```
 sudo apt-get update
-sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libxml2-dev libyaml-cpp-dev python3-yaml
+sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libyaml-cpp-dev python3-yaml
 ```
 
 Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:

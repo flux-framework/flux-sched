@@ -78,7 +78,6 @@ AC_CHECK_LIB([dl], [dlerror],
              [AC_MSG_ERROR([Please install dl])])
 PKG_CHECK_MODULES([HWLOC], [hwloc >= 1.11.1], [], [])
 PKG_CHECK_MODULES([JANSSON], [jansson >= 2.10], [], [])
-PKG_CHECK_MODULES([XML2], [libxml-2.0])
 AX_VALGRIND_H
 
 PKG_CHECK_MODULES([UUID], [uuid], [], [])

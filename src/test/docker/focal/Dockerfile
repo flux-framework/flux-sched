@@ -10,7 +10,6 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
 	libboost-system-dev \
 	libboost-filesystem-dev \
 	libboost-regex-dev \
-	libxml2-dev \
 	python-yaml \
 	libyaml-cpp-dev \
 	libedit-dev
