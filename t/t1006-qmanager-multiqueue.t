@@ -117,8 +117,9 @@ test_expect_success 'qmanager: job enqueued into explicitly default queue' '
 '
 
 test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
-    test_must_fail flux mini run -n 1 --setattr system.queue=foo hostname &&
-    flux dmesg -C
+    test_must_fail flux mini run -n 1 --setattr system.queue=foo \
+	hostname 2>unknown.err &&
+    grep "queue (foo) doesn" unknown.err
 '
 
 test_expect_success 'qmanager: incorrect default-queue name can be caught' '
