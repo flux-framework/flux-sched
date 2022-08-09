@@ -252,9 +252,13 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->msg = flux_msg_copy (msg, true);
     auto &queue = ctx->queues.at (queue_name);
     if (queue->insert (job) < 0) {
+        snprintf (errbuf,
+                  sizeof (errbuf),
+                  "fluxion could not insert job into queue %s",
+                  queue_name.c_str());
         flux_log_error (h, "%s: queue insert (id=%jd)", __FUNCTION__,
                        static_cast<intmax_t> (job->id));
-        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, NULL) < 0)
+        if (schedutil_alloc_respond_deny (ctx->schedutil, msg, errbuf) < 0)
             flux_log_error (h, "%s: schedutil_alloc_respond_deny",
                             __FUNCTION__);
         return;
