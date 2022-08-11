@@ -6,15 +6,7 @@ test_description='Test resource-match using JGF resource information
 Ensure that the match (allocate) handler within the resource module works
 '
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
 # slot[1]->core[1]

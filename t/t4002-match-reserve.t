@@ -6,15 +6,7 @@ test_description='Test the basic functionality of allocate_orelse_reserve
 Ensure that the match (allocate_orelse_reserve) handler within resource works
 '
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"

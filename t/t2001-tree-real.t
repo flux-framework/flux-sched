@@ -2,15 +2,7 @@
 
 test_description='Test flux-tree correctness in real running mode'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 export FLUX_SCHED_MODULE=none
 test_under_flux 1

@@ -2,15 +2,7 @@
 
 test_description='Test flux-tree correctness'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then

@@ -5,15 +5,7 @@ test_description='Test functionality of variation aware scheduler in
 flux ion-resource match service.
 '
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/small.graphml"
 j1N="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/var_aware/job_1N.yaml"
