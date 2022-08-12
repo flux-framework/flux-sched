@@ -6,3 +6,6 @@ if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
     flux module remove -f sched-fluxion-qmanager
 fi
 
+if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
+    flux module remove -f sched-fluxion-resource
+fi
