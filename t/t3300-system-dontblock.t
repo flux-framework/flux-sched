@@ -7,7 +7,7 @@ test_description='Test fluxion does not block on R w/ no scheduling key
 
 export TEST_UNDER_FLUX_QUORUM=0
 export TEST_UNDER_FLUX_START_MODE=leader
-export FLUX_RC_EXTRA=${SHARNESS_TEST_SRCDIR}/rc
+export FLUX_RC_EXTRA=${SHARNESS_TEST_SRCDIR}/../etc
 unset FLUXION_RESOURCE_RC_NOOP
 unset FLUXION_QMANAGER_RC_NOOP
 export FLUXION_RESOURCE_OPTIONS="load-allowlist=node,core,gpu load-format=hwloc"

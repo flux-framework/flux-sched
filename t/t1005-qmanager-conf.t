@@ -17,7 +17,7 @@ export FLUX_SCHED_MODULE=none
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then
-     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/rc"
+     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/../etc"
 fi
 
 skip_all_unless_have jq

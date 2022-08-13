@@ -14,7 +14,7 @@ HOME=${ORIG_HOME}
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then
-     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/rc"
+     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/../etc"
 fi
 
 remove_prefix(){

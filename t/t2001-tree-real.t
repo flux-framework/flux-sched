@@ -17,7 +17,7 @@ test_under_flux 1
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then
-     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/rc"
+     export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/../etc"
 fi
 
 test_expect_success 'flux-tree: prep for testing in real mode works' '

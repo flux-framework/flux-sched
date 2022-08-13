@@ -113,8 +113,7 @@ EXTRA_DIST= \
 	sharness.sh \
 	sharness.d \
 	schemas \
-	conf.d \
-	rc
+	conf.d
 
 clean-local:
 	rm -fr trash-directory.* test-results .prove *.broker.log */*.broker.log *.output python/__pycache__
