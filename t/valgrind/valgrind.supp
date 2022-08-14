@@ -90,3 +90,12 @@
    fun:_dl_open
    ...
 }
+{
+   <fd_reify>
+   Memcheck:Param
+   epoll_ctl(event)
+   fun:epoll_ctl
+   fun:epoll_modify
+   fun:fd_reify
+   ...
+}
