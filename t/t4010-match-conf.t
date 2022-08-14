@@ -27,7 +27,6 @@ start_resource () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux ion-resource params >${outfile}"
 }
 start_resource_noconfig () {
@@ -37,7 +36,6 @@ start_resource_noconfig () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux ion-resource params >${outfile}"
 }
 check_load_file(){

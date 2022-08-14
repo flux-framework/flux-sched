@@ -33,9 +33,7 @@ test_expect_success 'sync: fluxion-resource loads w/ sched-simple unloaded' '
 '
 
 test_expect_success 'sync: qmanager loads w/ sched-fluxion-resource loaded' '
-    load_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource
+    load_qmanager_sync
 '
 
 test_expect_success 'sync: unloading fluxion-resource removes qmanager' '
@@ -58,9 +56,7 @@ test_expect_success 'sync: remove sched-simple' '
 test_expect_success 'sync: qmanager will not prematurely proceed' '
     load_resource policy=high &&
     flux dmesg -C &&
-    load_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource &&
+    load_qmanager_sync &&
     flux dmesg > out &&
     sync1=$(grep -n "handshaking with sched-fluxion-resource" out) &&
     sync2=$(grep -n "handshaking with job-manager" out) &&

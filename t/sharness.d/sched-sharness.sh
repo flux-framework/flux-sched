@@ -47,12 +47,27 @@ load_qmanager () {
     flux module load sched-fluxion-qmanager "$@"
 }
 
+# See reload_qmanager_sync() description
+load_qmanager_sync () {
+    flux module load sched-fluxion-qmanager "$@" &&
+    flux module stats sched-fluxion-qmanager
+}
+
 load_resource () {
     flux module load sched-fluxion-resource "$@"
 }
 
 reload_qmanager () {
     flux module reload -f sched-fluxion-qmanager "$@"
+}
+
+# qmanager calls flux_module_set_running() before it has completed its
+# synchronous handshake with fluxion-resource.  This function reloads
+# qmanager and returns after it has completed the handshake, so that tests
+# may probe fluxion-resource directly and assume it is fully initialized.
+reload_qmanager_sync () {
+    flux module reload -f sched-fluxion-qmanager "$@" &&
+    flux module stats sched-fluxion-qmanager
 }
 
 reload_resource () {

@@ -98,7 +98,6 @@ test_expect_success 'namespace: gpu id remapping works with rv1exec (pol=hi)' '
 	#!/bin/sh
 	flux module load sched-fluxion-resource policy=high
 	flux module load sched-fluxion-qmanager
-	flux module stats sched-fluxion-resource
 	flux module stats sched-fluxion-qmanager
 	flux resource list
 	echo \${CUDA_VISIBLE_DEVICES}
