@@ -2,18 +2,10 @@
 
 test_description='Test multiple queue support within qmanager'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
 
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
 

@@ -6,15 +6,7 @@ test_description='Test the basic functionality of cancel and info within resourc
 Ensure that the cancel and info handlers within the resource module works
 '
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"

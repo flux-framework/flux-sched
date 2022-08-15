@@ -24,16 +24,6 @@ fi
 flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
 eval $(flux env)
 
-# Return canonicalized path to a file in the *build* tree
-sched_build_path () {
-    readlink -e "${SHARNESS_BUILD_DIRECTORY}/${1}"
-}
-
-# Return canonicalized path to a file in the *src* tree
-sched_src_path () {
-    readlink -e "${SHARNESS_TEST_SRCDIR}/../${1}"
-}
-
 export FLUX_EXEC_PATH_PREPEND
 export FLUXION_RESOURCE_RC_NOOP
 export FLUXION_QMANAGER_RC_NOOP
@@ -45,62 +35,22 @@ export FLUX_LUA_PATH_PREPEND
 export LUA_PATH
 export LUA_CPATH
 
-sched_instance_size=0
-sched_test_session=0
-sched_start_jobid=0
-sched_end_jobid=0
-
 if test "$TEST_LONG" = "t"; then
     test_set_prereq LONGTEST
 fi
 
-#
-# Internal subroutines
-#
-sched_debug_to_file () {
-    local fn=$1
-    local str=$2
-cat > $fn <<-HEREDOC
-    $str
-HEREDOC
-}
-
 # PUBLIC:
 #   Accessors 
 #
-get_instance_size () {
-    if test $sched_instance_size -eq 0; then
-        sched_instance_size=$(flux getattr size)
-    fi
-    echo $sched_instance_size
-}
-
-get_session () {
-    echo $sched_test_session
-}
-
-get_start_jobid () {
-    echo $sched_start_jobid
-}
-
-get_end_jobid () {
-    echo $sched_end_jobid
-}
-
-set_session () {
-    sched_test_session=$1
-}
-
-adjust_session_info () {
-    local njobs=$1
-    set_session $(($(get_session) + 1))
-    set_start_jobid $(($(get_end_jobid) + 1))
-    set_end_jobid $(($(get_start_jobid) + $njobs - 1))
-    return 0
-}
 
 load_qmanager () {
     flux module load sched-fluxion-qmanager "$@"
+}
+
+# See reload_qmanager_sync() description
+load_qmanager_sync () {
+    flux module load sched-fluxion-qmanager "$@" &&
+    flux module stats sched-fluxion-qmanager
 }
 
 load_resource () {
@@ -109,6 +59,15 @@ load_resource () {
 
 reload_qmanager () {
     flux module reload -f sched-fluxion-qmanager "$@"
+}
+
+# qmanager calls flux_module_set_running() before it has completed its
+# synchronous handshake with fluxion-resource.  This function reloads
+# qmanager and returns after it has completed the handshake, so that tests
+# may probe fluxion-resource directly and assume it is fully initialized.
+reload_qmanager_sync () {
+    flux module reload -f sched-fluxion-qmanager "$@" &&
+    flux module stats sched-fluxion-qmanager
 }
 
 reload_resource () {

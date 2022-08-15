@@ -1,14 +1,6 @@
 test_description='Test configuration file support for qmanager'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
 unset FLUXION_RESOURCE_RC_NOOP
@@ -33,7 +25,6 @@ start_qmanager () {
 "flux module reload -f sched-fluxion-resource policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux qmanager-params >${outfile}"
 }
 
@@ -44,7 +35,6 @@ start_qmanager_noconfig () {
 "flux module reload -f sched-fluxion-resource policy=high && "\
 "flux module reload -f sched-fluxion-qmanager ${QMANAGER_OPTIONS} && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux qmanager-params >${outfile}"
 }
 

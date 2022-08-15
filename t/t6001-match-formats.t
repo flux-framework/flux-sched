@@ -2,15 +2,7 @@
 
 test_description='Test Correctness of Match Emit Format'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 tiny_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 large_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/sierra.graphml"

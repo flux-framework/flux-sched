@@ -54,9 +54,7 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1)' '
 test_expect_success 'recovery: works when both modules restart (rv1)' '
     flux dmesg -C &&
     reload_resource match-format=rv1 policy=high &&
-    reload_qmanager "queues=batch debug" &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource &&
+    reload_qmanager_sync "queues=batch debug" &&
     check_requeue ${jobid1} batch &&
     check_requeue ${jobid2} debug &&
     test_must_fail flux job wait-event -t 0.5 ${jobid3} start &&

@@ -77,8 +77,7 @@ test_expect_success 'mark down 1 node and find status=up and status=down' '
 	quit
 EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t down3.out < cmds005 &&
-    nl=$(wc -l down3.out | awk "{ print \$1 }") &&
-    test ${nl} -eq 3
+    test $(wc -l <down3.out) -eq 3
 '
 
 test_expect_success 'mark down 1 node and find status=up or status=down' '

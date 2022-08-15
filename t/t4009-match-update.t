@@ -6,15 +6,7 @@ test_description='Test sched-fluxion-resource.update RPC using RV1
 Ensure that the resource.update handler within the resource module works
 '
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)

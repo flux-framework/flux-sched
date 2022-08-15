@@ -2,16 +2,7 @@
 
 test_description='Test the module load options of resource-match service'
 
-
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 ne_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/ne.graphml"

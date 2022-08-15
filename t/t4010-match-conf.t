@@ -2,15 +2,7 @@
 
 test_description='Test configuration file support for sched-fluxion-resource'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
 unset FLUXION_RESOURCE_RC_NOOP
@@ -35,7 +27,6 @@ start_resource () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux ion-resource params >${outfile}"
 }
 start_resource_noconfig () {
@@ -45,7 +36,6 @@ start_resource_noconfig () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux module stats sched-fluxion-resource && "\
 "flux ion-resource params >${outfile}"
 }
 check_load_file(){

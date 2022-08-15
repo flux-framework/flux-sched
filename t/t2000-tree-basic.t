@@ -2,15 +2,7 @@
 
 test_description='Test flux-tree correctness'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
  then
@@ -293,10 +285,8 @@ EOF
 test_expect_success 'flux-tree: --perf-out generates a perf output file' '
     flux tree --dry-run -T 4 -N 4 -c 4 -J 10 -o p.out /bin/hostname &&
     test -f p.out &&
-    lcount=$(wc -l p.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 &&
-    wcount=$(wc -w p.out | awk "{print \$1}") &&
-    test ${wcount} -eq 18
+    test $(wc -l <p.out) -eq 2 &&
+    test $(wc -w <p.out) -eq 18
 '
 
 test_expect_success 'flux-tree: --perf-format works with custom format' '
@@ -304,10 +294,8 @@ test_expect_success 'flux-tree: --perf-format works with custom format' '
          --perf-format="{treeid}\ {elapse:f}\ {my_nodes:d}" \
          /bin/hostname &&
     test -f perf.out &&
-    lcount=$(wc -l perf.out | awk "{print \$1}") &&
-    test ${lcount} -eq 2 &&
-    wcount=$(wc -w perf.out | awk "{print \$1}") &&
-    test ${wcount} -eq 6
+    test $(wc -l <perf.out) -eq 2 &&
+    test $(wc -w <perf.out) -eq 6
 '
 
 test_expect_success 'flux-tree: -T4x2 on 4 nodes/4 cores work' '

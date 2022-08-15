@@ -2,15 +2,7 @@
 
 test_description='Test flux-tree correctness in real running mode'
 
-ORIG_HOME=${HOME}
-
 . `dirname $0`/sharness.sh
-
-#
-# sharness modifies $HOME environment variable, but this interferes
-# with python's package search path, in particular its user site package.
-#
-HOME=${ORIG_HOME}
 
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
@@ -28,28 +20,22 @@ test_expect_success 'flux-tree: prep for testing in real mode works' '
 test_expect_success 'flux-tree: --leaf in real mode' '
     flux tree --leaf -N 1 -c 1 -J 1 -o p.out2 hostname &&
     test -f p.out2 &&
-    lcount=$(wc -l p.out2 | awk "{print \$1}") &&
-    test ${lcount} -eq 2 &&
-    wcount=$(wc -w p.out2 | awk "{print \$1}") &&
-    test ${wcount} -eq 18
+    test $(wc -l <p.out2) -eq 2 &&
+    test $(wc -w <p.out2) -eq 18
 '
 
 test_expect_success 'flux-tree: -T1 in real mode' '
     flux tree -T1 -N 1 -c 1 -J 1 -o p.out3 hostname &&
     test -f p.out3 &&
-    lcount=$(wc -l p.out3 | awk "{print \$1}") &&
-    test ${lcount} -eq 3 &&
-    wcount=$(wc -w p.out3 | awk "{print \$1}") &&
-    test ${wcount} -eq 27
+    test $(wc -l <p.out3) -eq 3 &&
+    test $(wc -w <p.out3) -eq 27
 '
 
 test_expect_success 'flux-tree: -T1x1 in real mode' '
     flux tree -T1x1 -N 1 -c 1 -J 1 -o p.out4 hostname &&
     test -f p.out4 &&
-    lcount=$(wc -l p.out4 | awk "{print \$1}") &&
-    test ${lcount} -eq 4 &&
-    wcount=$(wc -w p.out4 | awk "{print \$1}") &&
-    test ${wcount} -eq 36
+    test $(wc -l <p.out4) -eq 4 &&
+    test $(wc -w <p.out4) -eq 36
 '
 
 test_expect_success 'flux-tree: -T2 with exit code rollup works' '

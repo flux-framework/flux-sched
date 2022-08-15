@@ -49,16 +49,9 @@ test_expect_success 'recovery: cancel one running job without fluxion' '
     flux job wait-event -t 10 ${jobid1} release
 '
 
-# Because by the time fluxion module loads return, qmanager can
-# still send RPCs to fluxion resource, the flux ion-resource info
-# JOBID may fail. JOBID has not been re-requested by qmanager.
-# flux module stats commands ensure a proper sync between
-# flux ion-resource info and the rest of fluxion module loads
 test_expect_success 'recovery: works when both modules restart (rv1)' '
     reload_resource match-format=rv1 policy=high &&
-    reload_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource &&
+    reload_qmanager_sync &&
     test_must_fail flux ion-resource info ${jobid1} &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
@@ -92,9 +85,7 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
     reload_resource match-format=rv1_nosched \
     policy=high &&
-    reload_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource &&
+    reload_qmanager_sync &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid6} | grep "ALLOCATED" &&
@@ -102,8 +93,7 @@ test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
 '
 
 test_expect_success 'recovery: only qmanager restarts (rv1->rv1_nosched)' '
-    reload_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
+    reload_qmanager_sync &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid6} | grep "ALLOCATED" &&
@@ -124,9 +114,7 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
     reload_resource match-format=rv1_nosched \
     policy=high &&
-    reload_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
-    flux module stats sched-fluxion-resource
+    reload_qmanager_sync
 '
 
 test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '
@@ -140,8 +128,7 @@ test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: qmanager restarts (rv1_nosched->rv1_nosched)' '
-    reload_qmanager &&
-    flux module stats sched-fluxion-qmanager &&
+    reload_qmanager_sync &&
     flux ion-resource info ${jobid1} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
