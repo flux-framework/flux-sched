@@ -22,7 +22,7 @@ exec_testattr() {
 }
 
 test_expect_success 'qmanager: generate jobspec for a simple test job' '
-    flux mini submit -n1 -t 100 --dry-run hostname > basic.json
+    flux mini submit -n1 -t 100s --dry-run hostname > basic.json
 '
 
 test_expect_success 'load test resources' '

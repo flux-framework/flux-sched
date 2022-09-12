@@ -54,11 +54,11 @@ subsystems=containment policy=low &&
 '
 
 test_expect_success 'annotation: works with EASY policy' '
-    jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
-    jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid3=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
-    jobid4=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
-    jobid5=$(flux mini submit -n 2 -t 180 sleep 100) &&
+    jobid1=$(flux mini submit -n 8 -t 360s sleep 300) &&
+    jobid2=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid3=$(flux mini submit -n 16 -t 360s sleep 300) && # skipped
+    jobid4=$(flux mini submit -n 16 -t 360s sleep 300) && # skipped
+    jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
     validate_sched_annotation ${jobid1} default TRUE &&
@@ -84,11 +84,11 @@ subsystems=containment policy=low load-allowlist=cluster,node,core &&
 '
 
 test_expect_success 'annotation: works with HYBRID policy' '
-    jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
-    jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid3=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid4=$(flux mini submit -n 16 -t 360 sleep 300) && # skipped
-    jobid5=$(flux mini submit -n 2 -t 180 sleep 100) &&
+    jobid1=$(flux mini submit -n 8 -t 360s sleep 300) &&
+    jobid2=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid3=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid4=$(flux mini submit -n 16 -t 360s sleep 300) && # skipped
+    jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
     validate_sched_annotation ${jobid1} default TRUE &&
@@ -112,11 +112,11 @@ subsystems=containment policy=low load-allowlist=cluster,node,core &&
 '
 
 test_expect_success 'annotation: works with CONSERVATIVE policy' '
-    jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
-    jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid3=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid4=$(flux mini submit -n 16 -t 360 sleep 300) && # reserved
-    jobid5=$(flux mini submit -n 2 -t 180 sleep 100) &&
+    jobid1=$(flux mini submit -n 8 -t 360s sleep 300) &&
+    jobid2=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid3=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid4=$(flux mini submit -n 16 -t 360s sleep 300) && # reserved
+    jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
     validate_sched_annotation ${jobid1} default TRUE &&
@@ -140,11 +140,11 @@ subsystems=containment policy=low load-allowlist=cluster,node,core &&
 '
 
 test_expect_success 'annotation: works with FCFS policy' '
-    jobid1=$(flux mini submit -n 8 -t 360 sleep 300) &&
-    jobid2=$(flux mini submit -n 16 -t 360 sleep 300) && # block
-    jobid3=$(flux mini submit -n 16 -t 360 sleep 300) &&
-    jobid4=$(flux mini submit -n 16 -t 360 sleep 300) &&
-    jobid5=$(flux mini submit -n 2 -t 180 sleep 100) &&
+    jobid1=$(flux mini submit -n 8 -t 360s sleep 300) &&
+    jobid2=$(flux mini submit -n 16 -t 360s sleep 300) && # block
+    jobid3=$(flux mini submit -n 16 -t 360s sleep 300) &&
+    jobid4=$(flux mini submit -n 16 -t 360s sleep 300) &&
+    jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid5} submit &&
