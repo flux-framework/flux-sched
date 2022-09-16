@@ -7,8 +7,6 @@ test_description='Test multiple queue support within qmanager'
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
-conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
-
 get_queue() {
     queue=$1 &&
     jobid=$(flux job id $2) &&
