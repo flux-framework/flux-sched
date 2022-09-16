@@ -121,8 +121,8 @@ json_t *test_jobspec_template::emit_count (unsigned int min, unsigned int max,
                                            const std::string &oper,
                                            unsigned int op)
 {
-    return json_pack ("{s:i s:i s:s s:i}",
-                        "min", min, "max", max,
+    return json_pack ("{s:i s:I s:s s:i}",
+                        "min", min, "max", (json_int_t)max,
                         "operator", oper.c_str (), "operand", op);
 }
 
