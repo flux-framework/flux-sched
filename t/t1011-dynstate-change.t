@@ -4,6 +4,8 @@ test_description='Test Fluxion on Dynamic Resource State Changes'
 
 . `dirname $0`/sharness.sh
 
+mkdir -p config
+
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers, each (exclusively) have:
 # 1 node, 2 sockets, 44 cores (22 per socket), 4 gpus (2 per socket)
@@ -12,7 +14,7 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 skip_all_unless_have jq
 
 export FLUX_SCHED_MODULE=none
-test_under_flux 4
+test_under_flux 4 full -o,--config-path=$(pwd)/config
 
 test_expect_success 'dyn-state: generate jobspecs' '
 	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h \
@@ -148,10 +150,28 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 	remove_resource
 '
 
+test_expect_success 'configure queues' '
+	cat >config/queues.toml <<-EOT &&
+	[ingest]
+	frobnicator.plugins = [ "defaults" ]
+
+	[queues.batch]
+	[queues.debug]
+
+	[policy.jobspec.defaults.system]
+	queue = "batch"
+
+	# remove qmanager config once flux-framework/flux-sched#950 is fixed
+	[sched-fluxion-qmanager]
+	queues = "batch debug"
+	queue-policy-per-queue = "batch:easy debug:fcfs"
+	EOT
+	flux config reload
+'
+
 test_expect_success 'dyn-state: loading fluxion modules works' '
 	load_resource match-format=rv1 &&
-	load_qmanager queues="batch debug" \
-	    queue-policy-per-queue="batch:easy debug:fcfs"
+	load_qmanager
 '
 
 test_expect_success 'dyn-state: a full job blocks a later job for fcfs queue' '
@@ -176,6 +196,10 @@ test_expect_success 'dyn-state: a job skipped for a later job for easy queue' '
 test_expect_success 'dyn-state: removing fluxion modules' '
 	remove_qmanager &&
 	remove_resource
+'
+test_expect_success 'unconfigure queues' '
+	rm -f config/queues.toml &&
+	flux config reload
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '

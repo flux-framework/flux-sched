@@ -4,12 +4,14 @@ test_description='Test the full state recovery of qmanager for multiple queues'
 
 . `dirname $0`/sharness.sh
 
+mkdir -p config
+
 hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
 export FLUX_SCHED_MODULE=none
-test_under_flux 1
+test_under_flux 1 full -o,--config-path=$(pwd)/config
 
 check_requeue() {
 	local jobid=$(flux job id ${1})
@@ -36,9 +38,27 @@ test_expect_success 'load test resources' '
 	load_test_resources ${excl_1N1B}
 '
 
-test_expect_success 'recovery: loading flux-sched modules with two queues' '
-	load_resource match-format=rv1 policy=high &&
-	load_qmanager "queues=batch debug"
+test_expect_success 'recovery: loading fluxion resource module' '
+	load_resource match-format=rv1 policy=high
+'
+
+test_expect_success 'qmanager: configure qmanager with two queues' '
+	cat >config/queues.toml <<-EOT &&
+	[ingest]
+	frobnicator.plugins = [ "defaults" ]
+
+	[queues.batch]
+	[queues.debug]
+
+	[policy.jobspec.defaults.system]
+	queue = "batch"
+
+	# remove qmanager config once flux-framework/flux-sched#950 is fixed
+	[sched-fluxion-qmanager]
+	queues = "batch debug"
+	EOT
+	flux config reload &&
+	load_qmanager
 '
 
 # jobid1 - 2 will be scheduled; jobid 3 - 4 pending
