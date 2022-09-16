@@ -63,16 +63,31 @@ struct jobmeta_t {
         return m_queue;
     }
 
-    int build (Jobspec::Jobspec &jobspec,
-                alloc_type_t alloc, int64_t id, int64_t t)
+    int build (Jobspec::Jobspec &jobspec, alloc_type_t alloc, int64_t id,
+               int64_t t, graph_duration_t &graph_duration)
     {
         at = t;
         now = t;
         jobid = id;
         alloc_type = alloc;
-        if (jobspec.attributes.system.duration == 0.0f
-            || jobspec.attributes.system.duration > (double)UINT64_MAX)
-            duration = SYSTEM_MAX_DURATION; // need config support ultimately
+        int64_t g_duration = std::chrono::duration_cast<std::chrono::seconds>
+            (graph_duration.graph_end - graph_duration.graph_start).count ();
+
+        if (g_duration <= 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        // Ensure that duration is shorter than expressable
+        // int64_t max () for comparison with at in dfu_traverser_t::run
+        if ( (jobspec.attributes.system.duration >
+                                            static_cast<double> (g_duration))
+                || (jobspec.attributes.system.duration > 
+                static_cast<double> (std::numeric_limits<int64_t>::max ()))) {
+            errno = EINVAL;
+            return -1;
+        }
+        if (jobspec.attributes.system.duration == 0.0f)
+            duration = g_duration;
         else
             duration = (int64_t)jobspec.attributes.system.duration;
         if (jobspec.attributes.system.queue != "") {
