@@ -21,22 +21,15 @@ nonexistent_annotation(){
 
 validate_sched_annotation(){
     jobid=$(flux job id ${1}) &&
-    queue_name=${2} &&
-    start_time_is_zero=${3} &&
+    start_time_is_zero=${2} &&
     ann=$(flux job list -A | grep ${jobid} | jq -c '.annotations') &&
-    queue=$(echo ${ann} | jq '.sched.queue') &&
     t_est=$(echo ${ann} | jq '.sched.t_estimate') &&
-    test "\"${queue_name}\"" = "${queue}" &&
     if test x"${start_time_is_zero}" = x"TRUE";
     then
         test "${t_est}" = "null"
     else
         test "${t_est}" != "0"
     fi
-}
-
-print_queue() {
-    flux jobs -o '{sched.queue:>10h}'
 }
 
 print_t_estimate() {
@@ -61,12 +54,11 @@ test_expect_success 'annotation: works with EASY policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} default TRUE &&
-    validate_sched_annotation ${jobid2} default FALSE &&
+    validate_sched_annotation ${jobid1} TRUE &&
+    validate_sched_annotation ${jobid2} FALSE &&
     nonexistent_annotation ${jobid3} &&
     nonexistent_annotation ${jobid4} &&
-    validate_sched_annotation ${jobid5} default TRUE &&
-    print_queue &&
+    validate_sched_annotation ${jobid5} TRUE &&
     print_t_estimate
 '
 
@@ -91,11 +83,11 @@ test_expect_success 'annotation: works with HYBRID policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} default TRUE &&
-    validate_sched_annotation ${jobid2} default FALSE &&
-    validate_sched_annotation ${jobid3} default FALSE &&
+    validate_sched_annotation ${jobid1} TRUE &&
+    validate_sched_annotation ${jobid2} FALSE &&
+    validate_sched_annotation ${jobid3} FALSE &&
     nonexistent_annotation ${jobid4} &&
-    validate_sched_annotation ${jobid5} default TRUE
+    validate_sched_annotation ${jobid5} TRUE
 '
 
 test_expect_success 'annotation: cancel all active jobs 2' '
@@ -119,11 +111,11 @@ test_expect_success 'annotation: works with CONSERVATIVE policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} default TRUE &&
-    validate_sched_annotation ${jobid2} default FALSE &&
-    validate_sched_annotation ${jobid3} default FALSE &&
-    validate_sched_annotation ${jobid4} default FALSE &&
-    validate_sched_annotation ${jobid5} default TRUE
+    validate_sched_annotation ${jobid1} TRUE &&
+    validate_sched_annotation ${jobid2} FALSE &&
+    validate_sched_annotation ${jobid3} FALSE &&
+    validate_sched_annotation ${jobid4} FALSE &&
+    validate_sched_annotation ${jobid5} TRUE
 '
 
 test_expect_success 'annotation: cancel all active jobs 3' '
@@ -148,7 +140,7 @@ test_expect_success 'annotation: works with FCFS policy' '
 
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid5} submit &&
-    validate_sched_annotation ${jobid1} default TRUE &&
+    validate_sched_annotation ${jobid1} TRUE &&
     nonexistent_annotation ${jobid2} &&
     nonexistent_annotation ${jobid3} &&
     nonexistent_annotation ${jobid4} &&
