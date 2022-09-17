@@ -69,8 +69,8 @@ test_expect_success 'annotation: cancel all active jobs 1' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=hybrid)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=hybrid policy-params=reservation-depth=2
 '
@@ -97,8 +97,8 @@ test_expect_success 'annotation: cancel all active jobs 2' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=conservative)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=conservative
 '
@@ -125,8 +125,8 @@ test_expect_success 'annotation: cancel all active jobs 3' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=fcfs)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager
 '

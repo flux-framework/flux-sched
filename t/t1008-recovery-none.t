@@ -35,8 +35,9 @@ test_expect_success 'recovery: submit a job (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: qmanager w/o an option must fail (rv1_nosched)' '
+    remove_qmanager &&
     reload_resource match-format=rv1_nosched &&
-    reload_qmanager &&
+    load_qmanager &&
     test_must_fail flux module stats sched-fluxion-qmanager
 '
 
