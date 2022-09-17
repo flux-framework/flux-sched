@@ -154,6 +154,36 @@ test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
 	flux dmesg | grep "Unknown queuing policy"
 '
 
+test_expect_success 'reconfigure queues so only fluxion config is active' '
+	cat >config/queues.toml <<-EOT &&
+	[sched-fluxion-qmanager]
+	queues = "foo"
+	EOT
+	flux config reload &&
+	reload_qmanager
+'
+
+test_expect_success 'job submitted with no queue gets fatal exception' '
+	test_must_fail flux mini run /bin/true 2>noqueue.err &&
+	grep "job.exception type=alloc severity=0" noqueue.err
+'
+
+test_expect_success 'deconfigure queues' '
+	cp /dev/null config/queues.toml &&
+	flux config reload &&
+	reload_qmanager
+'
+
+test_expect_success 'job submitted with no queue runs' '
+	flux mini run /bin/true
+'
+
+test_expect_success 'job submitted with queue gets fatal exception' '
+	test_must_fail flux mini run --setattr queue=foo /bin/true \
+	    2>foo.err &&
+	grep "job.exception type=alloc severity=0 queue" foo.err
+'
+
 test_expect_success 'cleanup active jobs' '
 	cleanup_active_jobs
 '
