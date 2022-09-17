@@ -169,7 +169,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
         goto out;
     }
 
-    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
+    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue_name ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
@@ -195,7 +195,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     Flux::Jobspec::Jobspec jobspec_obj;
-    std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
+    std::string queue_name = ctx->opts.get_opt ().get_default_queue_name ();
     std::shared_ptr<job_t> job = std::make_shared<job_t> ();
     flux_jobid_t id;
     unsigned int priority;
