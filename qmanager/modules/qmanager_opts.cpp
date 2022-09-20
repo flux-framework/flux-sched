@@ -147,10 +147,6 @@ qmanager_opts_t::qmanager_opts_t ()
               static_cast<int> (qmanager_opts_key_t::QUEUES)));
     inserted &= ret.second;
     ret = m_tab.insert (std::pair<std::string, int> (
-              "default-queue",
-              static_cast<int> (qmanager_opts_key_t::DEFAULT_QUEUE)));
-    inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
               "queue-policy",
               static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY)));
     inserted &= ret.second;
@@ -179,11 +175,6 @@ qmanager_opts_t::qmanager_opts_t ()
         throw std::bad_alloc ();
 }
 
-void qmanager_opts_t::set_default_queue (const std::string &o)
-{
-    m_default_queue = o;
-}
-
 bool qmanager_opts_t::set_queue_policy (const std::string &o)
 {
     return m_queue_prop.set_queue_policy (o);
@@ -209,11 +200,6 @@ const queue_prop_t &qmanager_opts_t::get_queue_prop () const
     return m_queue_prop;
 }
 
-const std::string &qmanager_opts_t::get_default_queue () const
-{
-    return m_default_queue;
-}
-
 const std::string &qmanager_opts_t::get_queue_policy () const
 {
     return m_queue_prop.get_queue_policy ();
@@ -235,11 +221,6 @@ const std::map<std::string, queue_prop_t> &
     return m_per_queue_prop;
 }
 
-bool qmanager_opts_t::is_default_queue_set () const
-{
-    return m_default_queue != QMANAGER_OPTS_UNSET_STR;
-}
-
 bool qmanager_opts_t::is_queue_policy_set () const
 {
     return m_queue_prop.is_queue_policy_set ();
@@ -258,8 +239,7 @@ bool qmanager_opts_t::is_policy_params_set () const
 qmanager_opts_t &qmanager_opts_t::canonicalize ()
 {
     if (m_per_queue_prop.empty ()) {
-        std::string qn = is_default_queue_set ()? m_default_queue
-                                                : m_default_queue_name;
+        std::string qn = m_default_queue_name;
         auto ret = m_per_queue_prop.insert (
                        std::pair<std::string, queue_prop_t> (qn,
                                                              queue_prop_t ()));
@@ -267,8 +247,6 @@ qmanager_opts_t &qmanager_opts_t::canonicalize ()
             throw std::bad_alloc ();
     }
     for (auto &kv : m_per_queue_prop) {
-        if (!is_default_queue_set ())
-            m_default_queue = kv.first;
         if (!kv.second.is_queue_policy_set ())
             kv.second.set_queue_policy (m_queue_prop.get_queue_policy ());
         if (!kv.second.is_queue_params_set ())
@@ -283,8 +261,6 @@ qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
 {
     if (src.m_queue_prop.is_queue_policy_set ())
         m_queue_prop.set_queue_policy (src.m_queue_prop.get_queue_policy ());
-    if (src.is_default_queue_set ())
-        set_default_queue (src.get_default_queue ());
     if (src.m_queue_prop.is_queue_params_set ())
         m_queue_prop.set_queue_params (src.m_queue_prop.get_queue_params ());
     if (src.m_queue_prop.is_policy_params_set ())
@@ -355,17 +331,6 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
     switch (key) {
     case static_cast<int> (qmanager_opts_key_t::QUEUES):
         rc = parse_queues (v);
-        break;
-
-    case static_cast<int> (qmanager_opts_key_t::DEFAULT_QUEUE):
-        dflt = m_default_queue;
-        m_default_queue = v;
-        if (!m_per_queue_prop.empty ()
-            && m_per_queue_prop.find (v) == m_per_queue_prop.end ()) {
-            info += "Unknown default queue (" + v + ")! ";
-            info += "Using default.";
-            m_default_queue = dflt;
-        }
         break;
 
     case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):

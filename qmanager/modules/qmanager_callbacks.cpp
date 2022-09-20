@@ -64,9 +64,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
         while ( (job = queue->alloced_pop ()) != nullptr) {
             if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
                                                       job->schedule.R.c_str (),
-                                                      "{ s:{s:s s:n} }",
+                                                      "{ s:{s:n} }",
                                                       "sched",
-                                                          "queue", queue_name.c_str (),
                                                           "t_estimate") < 0) {
                 flux_log_error (h, "%s: schedutil_alloc_respond_pack (queue=%s)",
                                 __FUNCTION__, queue_name.c_str ());
@@ -105,9 +104,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                 continue;
             if (schedutil_alloc_respond_annotate_pack (
                     schedutil, job->msg,
-                    "{ s:{s:s s:f} }",
+                    "{ s:{s:f} }",
                     "sched",
-                        "queue", queue_name.c_str (),
                         "t_estimate", static_cast<double> (job->schedule.at))) {
                 flux_log_error (h, "%s: schedutil_alloc_respond_annotate_pack",
                                 __FUNCTION__);
@@ -169,7 +167,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
         goto out;
     }
 
-    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue ();
+    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue_name ();
     json_decref (o);
     queue = ctx->queues.at (queue_name);
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
@@ -195,7 +193,7 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     Flux::Jobspec::Jobspec jobspec_obj;
-    std::string queue_name = ctx->opts.get_opt ().get_default_queue ();
+    std::string queue_name = ctx->opts.get_opt ().get_default_queue_name ();
     std::shared_ptr<job_t> job = std::make_shared<job_t> ();
     flux_jobid_t id;
     unsigned int priority;
