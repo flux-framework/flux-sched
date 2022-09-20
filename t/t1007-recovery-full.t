@@ -50,8 +50,8 @@ test_expect_success 'recovery: cancel one running job without fluxion' '
 '
 
 test_expect_success 'recovery: works when both modules restart (rv1)' '
-    reload_resource match-format=rv1 policy=high &&
-    reload_qmanager_sync &&
+    load_resource match-format=rv1 policy=high &&
+    load_qmanager_sync &&
     test_must_fail flux ion-resource info ${jobid1} &&
     flux ion-resource info ${jobid2} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid3} | grep "ALLOCATED" &&
@@ -83,9 +83,9 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
 '
 
 test_expect_success 'recovery: both modules restart (rv1->rv1_nosched)' '
-    reload_resource match-format=rv1_nosched \
-    policy=high &&
-    reload_qmanager_sync &&
+    remove_qmanager &&
+    reload_resource match-format=rv1_nosched policy=high &&
+    load_qmanager_sync &&
     flux ion-resource info ${jobid4} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid5} | grep "ALLOCATED" &&
     flux ion-resource info ${jobid6} | grep "ALLOCATED" &&
@@ -112,9 +112,9 @@ test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
 '
 
 test_expect_success 'recovery: restart w/ no running jobs (rv1_nosched)' '
-    reload_resource match-format=rv1_nosched \
-    policy=high &&
-    reload_qmanager_sync
+    remove_qmanager &&
+    reload_resource match-format=rv1_nosched policy=high &&
+    load_qmanager_sync
 '
 
 test_expect_success 'recovery: submit to occupy resources fully (rv1_nosched)' '

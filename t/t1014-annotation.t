@@ -1,6 +1,22 @@
 #!/bin/sh
 
-test_description='Test job annotation'
+test_description='Test job annotation
+
+qmanager annotates jobs with a sched.t_estimate (time in seconds since
+epoch when job will start).  The annotation is provided by qmanager to
+the job manager in streaming responses to the sched.alloc RPC.
+
+After each scheduling loop, if the start estimate has changed since the
+last estimate, an alloc response is sent with the new value.  Upon resource
+allocation, the final alloc response is sent with the estimate set to JSON
+null (which means delete key).
+
+Note that annotation updates are not posted to the KVS eventlogs, but are
+recorded in the job-manager and job-list modules, and may be accessed with
+`flux job list-ids` and `flux jobs`, respectively.
+
+See RFC 27 for more details on alloc response and annotations.
+'
 
 . `dirname $0`/sharness.sh
 
@@ -13,23 +29,11 @@ skip_all_unless_have jq
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
-nonexistent_annotation(){
-    jobid=$(flux job id ${1}) &&
-    ann=$(flux job list -A | grep ${jobid} | jq 'has("annotations")') &&
-    test "${ann}" = "false"
+has_annotation() {
+    flux job list-ids $1 | jq -e ".annotations.sched.t_estimate > 0"
 }
-
-validate_sched_annotation(){
-    jobid=$(flux job id ${1}) &&
-    start_time_is_zero=${2} &&
-    ann=$(flux job list -A | grep ${jobid} | jq -c '.annotations') &&
-    t_est=$(echo ${ann} | jq '.sched.t_estimate') &&
-    if test x"${start_time_is_zero}" = x"TRUE";
-    then
-        test "${t_est}" = "null"
-    else
-        test "${t_est}" != "0"
-    fi
+hasnt_annotation() {
+    test_must_fail has_annotation $1
 }
 
 print_t_estimate() {
@@ -54,11 +58,11 @@ test_expect_success 'annotation: works with EASY policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} TRUE &&
-    validate_sched_annotation ${jobid2} FALSE &&
-    nonexistent_annotation ${jobid3} &&
-    nonexistent_annotation ${jobid4} &&
-    validate_sched_annotation ${jobid5} TRUE &&
+    hasnt_annotation ${jobid1} &&
+    has_annotation ${jobid2} &&
+    hasnt_annotation ${jobid3} &&
+    hasnt_annotation ${jobid4} &&
+    hasnt_annotation ${jobid5} &&
     print_t_estimate
 '
 
@@ -69,8 +73,8 @@ test_expect_success 'annotation: cancel all active jobs 1' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=hybrid)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=hybrid policy-params=reservation-depth=2
 '
@@ -83,11 +87,11 @@ test_expect_success 'annotation: works with HYBRID policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} TRUE &&
-    validate_sched_annotation ${jobid2} FALSE &&
-    validate_sched_annotation ${jobid3} FALSE &&
-    nonexistent_annotation ${jobid4} &&
-    validate_sched_annotation ${jobid5} TRUE
+    hasnt_annotation ${jobid1} &&
+    has_annotation ${jobid2} &&
+    has_annotation ${jobid3} &&
+    hasnt_annotation ${jobid4} &&
+    hasnt_annotation ${jobid5}
 '
 
 test_expect_success 'annotation: cancel all active jobs 2' '
@@ -97,8 +101,8 @@ test_expect_success 'annotation: cancel all active jobs 2' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=conservative)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager queue-policy=conservative
 '
@@ -111,11 +115,11 @@ test_expect_success 'annotation: works with CONSERVATIVE policy' '
     jobid5=$(flux mini submit -n 2 -t 180s sleep 100) &&
 
     flux job wait-event -t 10 ${jobid5} start &&
-    validate_sched_annotation ${jobid1} TRUE &&
-    validate_sched_annotation ${jobid2} FALSE &&
-    validate_sched_annotation ${jobid3} FALSE &&
-    validate_sched_annotation ${jobid4} FALSE &&
-    validate_sched_annotation ${jobid5} TRUE
+    hasnt_annotation ${jobid1} &&
+    has_annotation ${jobid2} &&
+    has_annotation ${jobid3} &&
+    has_annotation ${jobid4} &&
+    hasnt_annotation ${jobid5}
 '
 
 test_expect_success 'annotation: cancel all active jobs 3' '
@@ -125,8 +129,8 @@ test_expect_success 'annotation: cancel all active jobs 3' '
 '
 
 test_expect_success 'annotation: loading qmanager (queue-policy=fcfs)' '
-    remove_resource  &&
-    load_resource prune-filters=ALL:core \
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
 subsystems=containment policy=low load-allowlist=cluster,node,core &&
     load_qmanager
 '
@@ -140,11 +144,11 @@ test_expect_success 'annotation: works with FCFS policy' '
 
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid5} submit &&
-    validate_sched_annotation ${jobid1} TRUE &&
-    nonexistent_annotation ${jobid2} &&
-    nonexistent_annotation ${jobid3} &&
-    nonexistent_annotation ${jobid4} &&
-    nonexistent_annotation ${jobid5} &&
+    hasnt_annotation ${jobid1} &&
+    hasnt_annotation ${jobid2} &&
+    hasnt_annotation ${jobid3} &&
+    hasnt_annotation ${jobid4} &&
+    hasnt_annotation ${jobid5} &&
     active_jobs=$(flux job list --state=active | jq .id) &&
     for job in ${active_jobs}; do flux job cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
