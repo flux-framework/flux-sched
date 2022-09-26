@@ -154,8 +154,13 @@ test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
 	flux dmesg | grep "Unknown queuing policy"
 '
 
-test_expect_success 'reconfigure queues so only fluxion config is active' '
+test_expect_success 'reconfigure queues with frobnicator disabled' '
 	cat >config/queues.toml <<-EOT &&
+	[ingest]
+	frobnicator.disable = true
+
+	[queues.foo]
+
 	[sched-fluxion-qmanager]
 	queues = "foo"
 	EOT
