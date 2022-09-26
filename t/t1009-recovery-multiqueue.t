@@ -29,9 +29,9 @@ check_requeue() {
 
 test_expect_success 'recovery: generate test jobspecs' '
 	flux mini run --dry-run -N 1 -n 8 -t 1h \
-	    --setattr system.queue=batch sleep 3600 > basic.batch.json &&
+	    --queue=batch sleep 3600 > basic.batch.json &&
 	flux mini run --dry-run -N 1 -n 8 -t 1h \
-	    --setattr system.queue=debug sleep 3600 > basic.debug.json
+	    --queue=debug sleep 3600 > basic.debug.json
 '
 
 test_expect_success 'load test resources' '
