@@ -44,9 +44,6 @@ test_expect_success 'recovery: loading fluxion resource module' '
 
 test_expect_success 'qmanager: configure qmanager with two queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.batch]
 	[queues.debug]
 

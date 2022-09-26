@@ -22,9 +22,6 @@ test_expect_success 'qmanager: load resource' '
 
 test_expect_success 'qmanager: loading qmanager with multiple queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.all]
 	[queues.batch]
 	[queues.debug]
@@ -82,9 +79,6 @@ test_expect_success 'qmanager: job enqueued into implicitly default queue' '
 
 test_expect_success 'reconfigure qmanager with queues with different policies' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.queue1]
 	[queues.queue2]
 	[queues.queue3]

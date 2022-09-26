@@ -148,9 +148,6 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 
 test_expect_success 'configure queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.batch]
 	[queues.debug]
 
