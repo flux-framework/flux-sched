@@ -141,10 +141,19 @@ test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
 	grep "Invalid queue" unknown.err
 '
 
-test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
-	flux module reload -f sched-fluxion-qmanager \
-	    queues="queue1 queue2 queue3" \
-	    queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
+test_expect_success 'qmanager: incorrect queue policy can be caught' '
+	cat >config/queues.toml <<-EOT &&
+	[queues.queue1]
+	[queues.queue2]
+	[queues.queue3]
+
+	# remove qmanager config once flux-framework/flux-sched#950 is fixed
+	[sched-fluxion-qmanager]
+	queues = "queue1 queue2 queue3"
+	queue-policy-per-queue = "queue1:easy queue2:foo queue3:fcfs"
+	EOT
+	flux config reload &&
+	reload_qmanager &&
 	flux dmesg | grep "Unknown queuing policy"
 '
 
