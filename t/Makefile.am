@@ -45,6 +45,7 @@ TESTS = \
     t1020-qmanager-feasibility.t \
     t1021-qmanager-nodex.t \
     t1022-property-constraints.t \
+    t1023-multiqueue-constraints.t \
     t2000-tree-basic.t \
     t2001-tree-real.t \
     t3000-jobspec.t \
