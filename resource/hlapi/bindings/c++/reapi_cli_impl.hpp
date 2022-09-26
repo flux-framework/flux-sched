@@ -60,11 +60,13 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     int rc = -1;
     at = 0;
     ov = 0.0f;
+    job_lifecycle_t st;
+    std::shared_ptr<job_info_t> job_info = nullptr;
     struct timeval start_time, end_time;
+    std::stringstream o;
 
     try {
         Flux::Jobspec::Jobspec job {jobspec};
-        std::stringstream o;
 
         if ( (rc = gettimeofday (&start_time, NULL)) < 0) {
             m_err_msg += __FUNCTION__;
@@ -88,21 +90,6 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
             rc = -1;
             goto out;
         }
-        if ( (rc = rq->writers->emit (o)) < 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: match writer emit: "
-                          + std::string (strerror (errno)) + "\n";
-            goto out;
-        }
-
-        R = o.str ();
-
-        if ( (rc = gettimeofday (&end_time, NULL)) < 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: gettimeofday: "
-                          + std::string (strerror (errno)) + "\n";
-            goto out;
-        }
     } 
     catch (Flux::Jobspec::parse_error &e) {
         m_err_msg += __FUNCTION__;
@@ -110,6 +97,44 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
                       + std::to_string (rq->get_job_counter ())
                       + ": " + std::string (e.what ()) + "\n";
         rc = -1;
+        goto out;
+    }
+    
+    if ( (rc = rq->writers->emit (o)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: match writer emit: "
+                      + std::string (strerror (errno)) + "\n";
+        goto out;
+    }
+
+    R = o.str ();
+
+
+    reserved = (at != 0)? true : false; 
+    st = (reserved)? 
+                job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED; 
+    if (reserved) 
+        rq->set_reservation (jobid); 
+    else
+        rq->set_allocation (jobid);
+ 
+    job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov); 
+    if (job_info == nullptr) {
+        errno = ENOMEM; 
+        m_err_msg += __FUNCTION__; 
+        m_err_msg += ": ERROR: can't allocate memory: " 
+                     + std::string (strerror (errno))+ "\n"; 
+        rc = -1; 
+        goto out; 
+    } 
+ 
+    rq->set_job (jobid, job_info); 
+    rq->incr_job_counter ();
+                         
+    if ( (rc = gettimeofday (&end_time, NULL)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: gettimeofday: "
+                      + std::string (strerror (errno)) + "\n";
         goto out;
     }
 
