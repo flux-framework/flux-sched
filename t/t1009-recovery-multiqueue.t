@@ -29,9 +29,9 @@ check_requeue() {
 
 test_expect_success 'recovery: generate test jobspecs' '
 	flux mini run --dry-run -N 1 -n 8 -t 1h \
-	    --setattr system.queue=batch sleep 3600 > basic.batch.json &&
+	    --queue=batch sleep 3600 > basic.batch.json &&
 	flux mini run --dry-run -N 1 -n 8 -t 1h \
-	    --setattr system.queue=debug sleep 3600 > basic.debug.json
+	    --queue=debug sleep 3600 > basic.debug.json
 '
 
 test_expect_success 'load test resources' '
@@ -44,9 +44,6 @@ test_expect_success 'recovery: loading fluxion resource module' '
 
 test_expect_success 'qmanager: configure qmanager with two queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.batch]
 	[queues.debug]
 
@@ -75,7 +72,7 @@ test_expect_success 'recovery: works when both modules restart (rv1)' '
 	flux dmesg -C &&
 	remove_qmanager &&
 	reload_resource match-format=rv1 policy=high &&
-	load_qmanager_sync "queues=batch debug" &&
+	load_qmanager_sync &&
 	check_requeue ${jobid1} batch &&
 	check_requeue ${jobid2} debug &&
 	test_must_fail flux job wait-event -t 0.5 ${jobid3} start &&

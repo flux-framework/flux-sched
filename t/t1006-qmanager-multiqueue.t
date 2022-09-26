@@ -22,9 +22,6 @@ test_expect_success 'qmanager: load resource' '
 
 test_expect_success 'qmanager: loading qmanager with multiple queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.all]
 	[queues.batch]
 	[queues.debug]
@@ -41,7 +38,7 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=all' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=all hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=all hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = all &&
@@ -51,7 +48,7 @@ test_expect_success 'qmanager: job can be submitted to queue=all' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=batch' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=batch hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=batch hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = batch &&
@@ -61,7 +58,7 @@ test_expect_success 'qmanager: job can be submitted to queue=batch' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=debug' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=debug hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=debug hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = debug &&
@@ -82,9 +79,6 @@ test_expect_success 'qmanager: job enqueued into implicitly default queue' '
 
 test_expect_success 'reconfigure qmanager with queues with different policies' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.queue1]
 	[queues.queue2]
 	[queues.queue3]
@@ -102,7 +96,7 @@ test_expect_success 'reconfigure qmanager with queues with different policies' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=queue3 hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=queue3 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue3 &&
@@ -112,7 +106,7 @@ test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=queue2 hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=queue2 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue2 &&
@@ -122,7 +116,7 @@ test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
 '
 
 test_expect_success 'qmanager: job submitted to queue=queue1 (conservative)' '
-	jobid=$(flux mini submit -n 1 --setattr system.queue=queue1 hostname) &&
+	jobid=$(flux mini submit -n 1 --queue=queue1 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue1 &&
@@ -142,20 +136,34 @@ test_expect_success 'qmanager: job enqueued into explicitly default queue' '
 '
 
 test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
-	test_must_fail flux mini run -n 1 --setattr system.queue=foo \
+	test_must_fail flux mini run -n 1 --queue=foo \
 	    hostname 2>unknown.err &&
 	grep "Invalid queue" unknown.err
 '
 
-test_expect_success 'qmanager: incorrect queue-policy-per-queue can be caught' '
-	flux module reload -f sched-fluxion-qmanager \
-	    queues="queue1 queue2 queue3" \
-	    queue-policy-per-queue="queue1:easy queue2:foo queue3:fcfs" &&
+test_expect_success 'qmanager: incorrect queue policy can be caught' '
+	cat >config/queues.toml <<-EOT &&
+	[queues.queue1]
+	[queues.queue2]
+	[queues.queue3]
+
+	# remove qmanager config once flux-framework/flux-sched#950 is fixed
+	[sched-fluxion-qmanager]
+	queues = "queue1 queue2 queue3"
+	queue-policy-per-queue = "queue1:easy queue2:foo queue3:fcfs"
+	EOT
+	flux config reload &&
+	reload_qmanager &&
 	flux dmesg | grep "Unknown queuing policy"
 '
 
-test_expect_success 'reconfigure queues so only fluxion config is active' '
+test_expect_success 'reconfigure queues with frobnicator disabled' '
 	cat >config/queues.toml <<-EOT &&
+	[ingest]
+	frobnicator.disable = true
+
+	[queues.foo]
+
 	[sched-fluxion-qmanager]
 	queues = "foo"
 	EOT
@@ -179,7 +187,7 @@ test_expect_success 'job submitted with no queue runs' '
 '
 
 test_expect_success 'job submitted with queue gets fatal exception' '
-	test_must_fail flux mini run --setattr queue=foo /bin/true \
+	test_must_fail flux mini run --queue=foo /bin/true \
 	    2>foo.err &&
 	grep "job.exception type=alloc severity=0 queue" foo.err
 '

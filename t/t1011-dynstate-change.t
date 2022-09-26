@@ -23,17 +23,13 @@ test_expect_success 'dyn-state: generate jobspecs' '
 	    sleep 3600 > 1N.json &&
 	flux mini run --dry-run -N 4 -n 4 -c 45 -g 4 -t 1h \
 	    sleep 3600 > unsat.json &&
-	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h \
-	    --setattr system.queue=debug \
+	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=debug \
 	    sleep 3600 > basic.debug.json &&
-	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h \
-	    --setattr system.queue=debug \
+	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=debug \
 	    sleep 3600 > 1N.debug.json &&
-	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h \
-	    --setattr system.queue=batch \
+	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=batch \
 	    sleep 3600 > basic.batch.json &&
-	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h \
-	    --setattr system.queue=batch \
+	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=batch \
 	    sleep 3600 > 1N.batch.json
 '
 
@@ -152,9 +148,6 @@ test_expect_success 'dyn-state: removing fluxion modules' '
 
 test_expect_success 'configure queues' '
 	cat >config/queues.toml <<-EOT &&
-	[ingest]
-	frobnicator.plugins = [ "defaults" ]
-
 	[queues.batch]
 	[queues.debug]
 
