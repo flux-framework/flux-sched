@@ -98,8 +98,6 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     char *R_buf_c = nullptr;
-    job_lifecycle_t st;
-    std::shared_ptr<job_info_t> job_info = nullptr;
 
     if (!ctx || !ctx->rqt) {
         errno = EINVAL;
@@ -120,27 +118,6 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
         goto out;
     }
     (*R) = R_buf_c;
-    *reserved = (at != 0)? true : false;
-    st = (*reserved)? 
-                job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
-    if (*reserved)
-        ctx->rqt->set_reservation (*jobid);
-    else
-        ctx->rqt->set_allocation (*jobid);
-
-    try {
-        job_info = std::make_shared<job_info_t> (*jobid, st, *at, "", "", *ov);
-    } catch (std::bad_alloc &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: "
-                         + std::string (e.what ()) + "\n";
-        errno = ENOMEM;
-        rc = -1;
-        goto out;
-    }
-
-    ctx->rqt->set_job (*jobid, job_info);
-    ctx->rqt->incr_job_counter ();
 
 out:
     return rc;
