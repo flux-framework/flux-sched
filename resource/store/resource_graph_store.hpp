@@ -13,12 +13,21 @@
 
 #include <string>
 #include <memory>
+#include <chrono>
 #include "resource/schema/resource_graph.hpp"
+#include "resource/config/system_defaults.hpp"
 
 namespace Flux {
 namespace resource_model {
 
 class resource_reader_base_t;
+
+struct graph_duration_t {
+    std::chrono::time_point<std::chrono::system_clock> graph_start =
+                                    std::chrono::system_clock::from_time_t (0);
+    std::chrono::time_point<std::chrono::system_clock> graph_end =
+        std::chrono::system_clock::from_time_t (detail::SYSTEM_MAX_DURATION);
+};
 
 /*! Resource graph data metadata.
  *  Adjacency_list graph, roots of this graph and various indexing.
@@ -35,6 +44,14 @@ struct resource_graph_metadata_t {
     std::map<vtx_t,
              std::map<std::pair<uint64_t, int64_t>, edg_t,
                       std::greater<std::pair<uint64_t, int64_t>>>> by_outedges;
+    graph_duration_t graph_duration;
+
+    /*! Set the resource graph duration.
+     *
+     * \param g_duration  graph_duration_t of time_points used to set
+     *                    the graph duration
+     */
+    void set_graph_duration (graph_duration_t &g_duration);
 };
 
 /*! Resource graph data store.

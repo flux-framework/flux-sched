@@ -11,6 +11,8 @@ Ensure that the match (allocate) handler within the resource module works
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 malform="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/bad.yaml"
+duration_too_large="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test001.yaml"
+duration_negative="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test002.yaml"
 
 #
 # test_under_flux is under sharness.d/
@@ -53,6 +55,12 @@ test_expect_success 'detecting of a non-existent jobspec file works' '
 test_expect_success 'handling of a malformed jobspec works' '
     test_expect_code 2 flux ion-resource match allocate ${malform}
 '
+
+test_expect_success 'invalid duration is caught' '
+    test_must_fail flux ion-resource match allocate ${duration_too_large} &&
+    test_must_fail flux ion-resource match allocate ${duration_negative}
+'
+
 
 test_expect_success 'removing resource works' '
     remove_resource

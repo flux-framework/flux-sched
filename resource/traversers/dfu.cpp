@@ -279,6 +279,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           match_op_t op, int64_t jobid, int64_t *at)
 {
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    graph_duration_t graph_duration =
+                                      get_graph_db ()->metadata.graph_duration;
     if (!get_graph () || !get_graph_db ()
         || (get_graph_db ()->metadata.roots.find (dom)
             == get_graph_db ()->metadata.roots.end ())
@@ -288,15 +290,17 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     }
 
     int rc = -1;
+    int64_t graph_end = graph_duration.graph_end.time_since_epoch ().count ();
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
     const std::set<std::string> exclusive_types =
                         detail::dfu_impl_t::get_exclusive_resource_types ();
     std::unordered_map<std::string, int64_t> dfv;
+
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
-    if (meta.build (jobspec,
-                    detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at) < 0)
+    if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid,
+                    *at, graph_duration) < 0)
         return -1;
 
     if ( (op == match_op_t::MATCH_SATISFIABILITY)
@@ -304,6 +308,19 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         detail::dfu_impl_t::update ();
     } else if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
+        if (*at < 0 or *at >= graph_end) {
+            detail::dfu_impl_t::reset_exclusive_resource_types
+                                                        (exclusive_types);
+            errno = EINVAL;
+            return -1;
+        }
+        // If job ends after the resource graph expires, reduce the duration
+        // so it coincides with the graph expiration. Note that we could
+        // arguably return ENOTSUP/EINVAL instead. Also note that we 
+        // know *at < graph_end from the previous check, and meta.duration 
+        // is < int64_t max from meta.build.
+        if ( (*at + static_cast<int64_t> (meta.duration)) > graph_end)
+            meta.duration = graph_end - *at;
         // returns 0 or -1
         rc = detail::dfu_impl_t::update (root, writers, meta);
     }

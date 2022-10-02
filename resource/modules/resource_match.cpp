@@ -14,6 +14,7 @@
 #include <cerrno>
 #include <map>
 #include <cinttypes>
+#include <chrono>
 
 extern "C" {
 #if HAVE_CONFIG_H
@@ -105,7 +106,6 @@ struct resource_ctx_t : public resource_interface_t {
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
     std::map<std::string, std::shared_ptr<msg_wrap_t>> notify_msgs;
 };
-
 
 msg_wrap_t::msg_wrap_t (const msg_wrap_t &o)
 {
@@ -493,6 +493,7 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
     int saved_errno;
     std::ifstream in_file;
     std::stringstream buffer{};
+    graph_duration_t duration;
 
     if (ctx->reader == nullptr
         && create_reader (ctx, ctx->opts.get_opt ().get_load_format ()) < 0) {
@@ -523,6 +524,8 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
                   __FUNCTION__, ctx->reader->err_message ().c_str ());
         goto done;
     }
+    ctx->db->metadata.set_graph_duration (duration);
+
     rc = 0;
 
 done:
@@ -608,13 +611,14 @@ ret:
 /* Given 'resobj' in Rv1 form, decode the set of execution target ranks
  * contained in it as well as r_lite key.
  */
-static int unpack_resources (json_t *resobj,
-                             struct idset **idset,
-                             json_t **r_lite_p, json_t **jgf_p)
+static int unpack_resources (json_t *resobj, struct idset **idset,
+                             json_t **r_lite_p, json_t **jgf_p,
+                             graph_duration_t &duration)
 {
     int rc = 0;
     struct idset *ids;
     int version;
+    double start = 0.0, end = 0.0;
     json_t *r_lite = NULL;
     json_t *jgf = NULL;
     size_t index;
@@ -624,14 +628,48 @@ static int unpack_resources (json_t *resobj,
         return -1;
     if (resobj) {
         if (json_unpack (resobj,
-                         "{s:i s:{s:o} s?:o}",
+                         "{s:i s:{s:o s?F s?F} s?:o}",
                          "version", &version,
                          "execution",
                            "R_lite", &r_lite,
+                           "starttime", &start,
+                           "expiration", &end,
                          "scheduling", &jgf) < 0)
             goto inval;
+        // flux-core validates these numbers, but checking here
+        // in case Fluxin is plugged into another resource manager
         if (version != 1)
             goto inval;
+        if (start != 0 && (start == end))
+            goto inval;
+        if (start < 0.0 || end < 0.0)
+            goto inval;
+        if (start > end)
+            goto inval;
+        // Greatest lower bound is int64_t in the rest of Fluxion
+        if (start > static_cast<double> (std::numeric_limits<int64_t>::max ())
+                  || end > static_cast<double>
+                                       (std::numeric_limits<int64_t>::max ()))
+            goto inval;
+        // Ensure start and end are representable in system clock
+        if (start > static_cast<double>
+            (std::chrono::duration_cast<std::chrono::seconds>
+                (std::chrono::time_point<std::chrono::system_clock>::max ().time_since_epoch ()).count ())
+              || end > static_cast<double>
+                (std::chrono::duration_cast<std::chrono::seconds>
+                    (std::chrono::time_point<std::chrono::system_clock>::max ().time_since_epoch ()).count ()))
+            goto inval;
+        // Expects int type argument
+        duration.graph_start = std::chrono::system_clock::from_time_t (static_cast<int64_t> (start));
+        duration.graph_end = std::chrono::system_clock::from_time_t (static_cast<int64_t> (end));
+        // Ensure there is no overflow in system clock representation
+        // (should be handled by previous check).
+        if (std::chrono::duration_cast<std::chrono::seconds>
+                        (duration.graph_start.time_since_epoch ()).count () < 0
+            || std::chrono::duration_cast<std::chrono::seconds>
+                       (duration.graph_end.time_since_epoch ()).count () < 0) {
+            goto inval;
+        }
         json_array_foreach (r_lite, index, val) {
             struct idset *r_ids;
             unsigned long id;
@@ -950,6 +988,8 @@ static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
 {
     int rc = 0;
     int saved_errno;
+    // Unused: necessary to avoid function overload and duplicated code
+    graph_duration_t duration;
     json_t *p_jgf = NULL;
     json_t *p_r_lite = NULL;
     json_t *p_resources = NULL;
@@ -957,8 +997,8 @@ static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
     if ( (rc = get_parent_job_resources (ctx, &p_resources)) < 0
          || !p_resources)
         goto done;
-    if ( (rc = unpack_resources (p_resources,
-                                 &p_grow_set, &p_r_lite, &p_jgf)) < 0)
+    if ( (rc = unpack_resources (p_resources, &p_grow_set, &p_r_lite,
+                                 &p_jgf, duration)) < 0)
         goto done;
     if (!p_grow_set || !p_r_lite || !p_jgf) {
         errno = EINVAL;
@@ -1027,12 +1067,13 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                              json_t *resources)
 {
     int rc = 0;
+    graph_duration_t duration;
     struct idset *grow_set = NULL;
     json_t *r_lite = NULL;
     json_t *jgf = NULL;
 
     if ( (rc = unpack_resources (resources,
-                                 &grow_set, &r_lite, &jgf)) < 0) {
+                                 &grow_set, &r_lite, &jgf, duration)) < 0) {
         flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
         goto done;
     }
@@ -1062,7 +1103,8 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
             errno = EINVAL;
             rc = -1;
         }
-   }
+    }
+    ctx->db->metadata.set_graph_duration (duration);
 
 done:
     idset_destroy (grow_set);
@@ -1175,6 +1217,8 @@ static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                                const char *up, const char *down)
 {
     int rc = 0;
+    // Will need to get duration update and set graph metadata when
+    // resource.acquire duration update is supported in the future.
     if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
         flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
         goto done;

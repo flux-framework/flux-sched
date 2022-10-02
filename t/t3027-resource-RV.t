@@ -7,6 +7,7 @@ test_description='Test emitted resource-set correctness as schema changes'
 skip_all_unless_have jq
 
 full_job="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/RV/full.yaml"
+duration3600="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/RV/duration3600.yaml"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/RV"
 jgf_dir="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs"
 jgf_orig="${jgf_dir}/4node.rank0123.nid0123.orig.json"
@@ -300,6 +301,19 @@ test_expect_success 'Misconfigured RV1 is handled correctly 2' '
 		jq " .execution.R_lite[0].rank |= \"0^2\" " > out20.json &&
 	test_must_fail ${query} -L out20.json -f rv1exec -F rv1_nosched \
 		-t R20.out -P first < cmds020
+'
+
+test_expect_success 'Jobs with too long of a duration are rejected' '
+	cat > cmds021 <<-EOF &&
+	match allocate ${duration3600}
+	quit
+	EOF
+	flux R encode -r 0-1 -c 0-1 -H fluke[0-1] | \
+		jq ".execution.starttime |= $(date +%s) | \
+		.execution.expiration |= $(($(date +%s) + 20))" > out21.json &&
+	${query} -L out21.json -f rv1exec -F rv1_nosched \
+		-t R21.out -P first < cmds021 &&
+	test_cmp R21.out ${exp_dir}/R21.out
 '
 
 test_done
