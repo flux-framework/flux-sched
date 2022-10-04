@@ -127,12 +127,14 @@ static int subtable_dumps (json_t *o, std::string &value)
 static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
-    json_t *conf = NULL;
+    json_t *qmanager_conf = NULL, *queues_conf = NULL;
 
     if ( (rc = flux_conf_unpack (flux_get_conf (ctx->h), NULL,
-                                     "{ s?:o }",
+                                     "{ s?:o , s?:o }",
                                          "sched-fluxion-qmanager",
-                                         &conf)) < 0) {
+                                         &qmanager_conf,
+                                         "queues",
+                                         &queues_conf)) < 0) {
         flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
         return rc;
     }
@@ -142,8 +144,25 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     json_t *v = NULL;
     optmgr_kv_t<qmanager_opts_t> opts_store;
     std::string info_str = "";
-    json_object_foreach (conf, k, v) {
+    if (queues_conf){
+        // workaround to satisfy RFC 33
+        std::ostringstream queues;
+        json_object_foreach (queues_conf, k, v) {
+            queues << std::string(k) << " ";
+        }
+        if ( (rc = opts_store.put ("queues", queues.str()) ) < 0) {
+            flux_log_error (ctx->h, "%s: optmgr_kv_t::put ('queues', %s)",
+                             __FUNCTION__, queues.str().c_str());
+            return rc;
+        }
+    }
+    json_object_foreach (qmanager_conf, k, v) {
         std::string value;
+        if (k == std::string("queues")) {
+            flux_log_error (ctx->h, "%s: 'queues' key not supported, "
+                            "use RFC33 format instead", __FUNCTION__);
+            return -1;
+        }
         if (json_is_object (v)) {
             if (subtable_dumps (v, value) < 0) {
                 flux_log_error (ctx->h, "%s: sub_table_dumps on key=%s",

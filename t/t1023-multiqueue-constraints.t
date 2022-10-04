@@ -18,10 +18,6 @@ requires = ["debug"]
 [queues.batch]
 requires = ["batch"]
 
-# remove qmanager config once flux-framework/flux-sched#950 is fixed
-[sched-fluxion-qmanager]
-queues = "debug batch"
-
 [sched-fluxion-resource]
 match-policy = "lonodex"
 match-format = "rv1_nosched"
