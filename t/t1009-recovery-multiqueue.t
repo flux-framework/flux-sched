@@ -49,10 +49,6 @@ test_expect_success 'qmanager: configure qmanager with two queues' '
 
 	[policy.jobspec.defaults.system]
 	queue = "batch"
-
-	# remove qmanager config once flux-framework/flux-sched#950 is fixed
-	[sched-fluxion-qmanager]
-	queues = "batch debug"
 	EOT
 	flux config reload &&
 	load_qmanager

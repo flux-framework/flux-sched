@@ -255,4 +255,10 @@ test_expect_success 'qmanager: per-queue parameter overriding works' '
     check_policy_params2 ${outfile}.qbatch "\"\""
 '
 
+test_expect_success 'qmanager: load must fail when pre-rfc33 queues are provided' '
+    conf_name="19-pre-rfc33-queues" &&
+    outfile=${conf_name}.out &&
+    test_must_fail start_qmanager ${conf_base}/${conf_name} ${outfile}
+'
+
 test_done

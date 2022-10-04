@@ -2,12 +2,12 @@
 # Configuration for the qmanager module
 #
 
+[queues.debug]
+[queues.batch]
+
 [sched-fluxion-qmanager]
 
 queue-policy = "easy"
-
-# multiple queues
-queues = "debug batch"
 
 # queueing policy type for one or more named queue
 #     batch should inherit the base policy (easy)
