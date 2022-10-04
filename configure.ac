@@ -195,9 +195,9 @@ AC_CONFIG_FILES([Makefile
   resource/utilities/Makefile
   resource/utilities/test/Makefile
   resource/modules/Makefile
-  resource/hlapi/Makefile
-  resource/hlapi/bindings/Makefile
-  resource/hlapi/bindings/c/Makefile
+  resource/reapi/Makefile
+  resource/reapi/bindings/Makefile
+  resource/reapi/bindings/c/Makefile
   resource/policies/Makefile
   resource/policies/base/Makefile
   resource/policies/base/test/Makefile

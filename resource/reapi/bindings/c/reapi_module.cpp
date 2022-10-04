@@ -13,14 +13,14 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
-#include "resource/hlapi/bindings/c/reapi_module.h"
+#include "resource/reapi/bindings/c/reapi_module.h"
 }
 
 #include <cstdlib>
 #include <cstdint>
 #include <cerrno>
-#include "resource/hlapi/bindings/c++/reapi_module.hpp"
-#include "resource/hlapi/bindings/c++/reapi_module_impl.hpp"
+#include "resource/reapi/bindings/c++/reapi_module.hpp"
+#include "resource/reapi/bindings/c++/reapi_module_impl.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;

@@ -24,9 +24,9 @@ sched_fluxion_qmanager_la_SOURCES = \
     $(top_srcdir)/src/common/liboptmgr/optmgr.hpp \
     $(top_srcdir)/src/common/liboptmgr/optmgr_impl.hpp \
     $(top_srcdir)/resource/libjobspec/jobspec.hpp \
-    $(top_srcdir)/resource/hlapi/bindings/c++/reapi.hpp \
-    $(top_srcdir)/resource/hlapi/bindings/c++/reapi_module.hpp \
-    $(top_srcdir)/resource/hlapi/bindings/c++/reapi_module_impl.hpp \
+    $(top_srcdir)/resource/reapi/bindings/c++/reapi.hpp \
+    $(top_srcdir)/resource/reapi/bindings/c++/reapi_module.hpp \
+    $(top_srcdir)/resource/reapi/bindings/c++/reapi_module_impl.hpp \
     $(top_srcdir)/qmanager/config/queue_system_defaults.hpp \
     $(top_srcdir)/qmanager/policies/base/queue_policy_base.hpp \
     $(top_srcdir)/qmanager/policies/base/queue_policy_base_impl.hpp \

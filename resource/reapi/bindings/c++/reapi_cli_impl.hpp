@@ -21,7 +21,7 @@ extern "C" {
 #include <stdexcept>
 #include <jansson.h>
 #include <boost/algorithm/string.hpp>
-#include "resource/hlapi/bindings/c++/reapi_cli.hpp"
+#include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
 
 namespace Flux {

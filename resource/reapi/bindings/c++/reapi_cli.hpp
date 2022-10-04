@@ -22,7 +22,7 @@ extern "C" {
 
 #include <fstream>
 #include <memory>
-#include "resource/hlapi/bindings/c++/reapi.hpp"
+#include "resource/reapi/bindings/c++/reapi.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/traversers/dfu.hpp"
