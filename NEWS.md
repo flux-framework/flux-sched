@@ -1,3 +1,31 @@
+flux-sched version 0.25.0 - 2022-10-04
+--------------------------------------
+
+Note: the flux-sched test suite requires flux-core 0.44.0 or newer.
+
+### New Features
+
+ * qmanager: support RFC33 TOML queue config (#980, #971)
+
+### Fixes
+ * Resource graph duration and job expiration to conform to RFC 14 (#969)
+ * Fix REAPI C++ bindings  (#974)
+ * add an exception note to fatal queue exceptions (#957)
+
+### Cleanup
+
+ * rc: combine fluxion rc scripts (#958)
+ * move flux-tree to the test suite (#956)
+ * build: drop unnecessary preqreqs, update README (#954)
+
+### Testsuite
+
+ * testsuite: fix coverage method for queue exception (#978)
+ * testsuite: cover queues with non-overlapping resource constraints (#976)
+ * testsuite: fix integer overflow (#968)
+ * testsuite: use explicit duration units (#966)
+ * minor cleanup (#973, #959)
+
 flux-sched version 0.24.0 - 2022-08-03
 --------------------------------------
 
