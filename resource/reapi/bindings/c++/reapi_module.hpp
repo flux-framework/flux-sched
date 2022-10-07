@@ -20,7 +20,7 @@ extern "C" {
 
 #include <cstdint>
 #include <string>
-#include "resource/hlapi/bindings/c++/reapi.hpp"
+#include "resource/reapi/bindings/c++/reapi.hpp"
 
 namespace Flux {
 namespace resource_model {

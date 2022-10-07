@@ -25,7 +25,7 @@ extern "C" {
 #include <memory>
 #include <cstdint>
 
-#include "resource/hlapi/bindings/c++/reapi.hpp"
+#include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
 
 namespace Flux {

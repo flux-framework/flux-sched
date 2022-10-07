@@ -19,7 +19,7 @@ extern "C" {
 }
 
 #include <cerrno>
-#include "resource/hlapi/bindings/c++/reapi_module.hpp"
+#include "resource/reapi/bindings/c++/reapi_module.hpp"
 
 namespace Flux {
 namespace resource_model {

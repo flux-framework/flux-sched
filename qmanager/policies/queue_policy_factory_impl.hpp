@@ -11,9 +11,9 @@
 #ifndef QUEUE_POLICY_FACTORY_IMPL_HPP
 #define QUEUE_POLICY_FACTORY_IMPL_HPP
 
-#include "resource/hlapi/bindings/c++/reapi.hpp"
-#include "resource/hlapi/bindings/c++/reapi_module.hpp"
-#include "resource/hlapi/bindings/c++/reapi_module_impl.hpp"
+#include "resource/reapi/bindings/c++/reapi.hpp"
+#include "resource/reapi/bindings/c++/reapi_module.hpp"
+#include "resource/reapi/bindings/c++/reapi_module_impl.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
 #include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_fcfs.hpp"
