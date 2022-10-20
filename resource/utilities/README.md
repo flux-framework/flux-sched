@@ -637,6 +637,7 @@ resources:
                   - type: slot
                     count: 2
                     label: bicore
+                    with:
                       - type: socket
                         count: 1
                         with:
