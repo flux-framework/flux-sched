@@ -104,7 +104,11 @@ class PerfOutputFormat(flux.util.OutputFormat):
         Throws an exception if any format fields do not match the allowed
         list of headings above.
         """
-        super().__init__(PerfOutputFormat.headings, fmt)
+        # Support both new and old style OutputFormat constructor:
+        try:
+            super().__init__(fmt, headings=self.headings, prepend="")
+        except TypeError:
+            super().__init__(PerfOutputFormat.headings, fmt)
 
 
 def write_data_to_file(output_filename, output_format, data):
