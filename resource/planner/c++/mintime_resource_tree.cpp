@@ -26,7 +26,7 @@ extern "C" {
  *                                                                             *
  *******************************************************************************/
 
-int64_t mintime_resource_tree_t::right_branch_mintime (mt_resource_rb_node_t *n)
+int64_t mintime_resource_tree_t::right_branch_mintime (mt_resource_rb_node_t *n) const
 {
     int64_t min_time = std::numeric_limits<int64_t>::max ();
     mt_resource_rb_node_t *right = n->get_right ();
@@ -36,7 +36,7 @@ int64_t mintime_resource_tree_t::right_branch_mintime (mt_resource_rb_node_t *n)
 }
 
 scheduled_point_t *mintime_resource_tree_t::find_mintime_point (
-                       mt_resource_rb_node_t *anchor, int64_t min_time)
+                       mt_resource_rb_node_t *anchor, int64_t min_time) const
 {
     if (!anchor)
         return nullptr;
@@ -62,7 +62,7 @@ scheduled_point_t *mintime_resource_tree_t::find_mintime_point (
 }
 
 int64_t mintime_resource_tree_t::find_mintime_anchor (
-            int64_t request, mt_resource_rb_node_t **anchor_p)
+            int64_t request, mt_resource_rb_node_t **anchor_p) const
 {
     mt_resource_rb_node_t *node = m_tree.get_root ();
     int64_t min_time = std::numeric_limits<int64_t>::max ();
@@ -144,7 +144,6 @@ template <class BaseTree>
 void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::leaf_inserted (
          mt_resource_rb_node_t &node, BaseTree &tree)
 {
-    scheduled_point_t *p = node.get_point ();
     node.subtree_min = node.at;
     mt_resource_rb_node_t *n = &node;
     while ( (n = n->get_parent ()) != nullptr
@@ -240,11 +239,16 @@ int mintime_resource_tree_t::remove (scheduled_point_t *point)
     return 0;
 }
 
-scheduled_point_t *mintime_resource_tree_t::get_mintime (int64_t request)
+scheduled_point_t *mintime_resource_tree_t::get_mintime (int64_t request) const
 {
     mt_resource_rb_node_t *anchor = nullptr;
     int64_t min_time = find_mintime_anchor (request, &anchor);
     return find_mintime_point (anchor, min_time);
+}
+
+void mintime_resource_tree_t::clear ()
+{
+    m_tree.clear ();
 }
 
 /*

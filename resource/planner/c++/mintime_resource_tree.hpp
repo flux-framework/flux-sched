@@ -59,14 +59,16 @@ class mintime_resource_tree_t {
 public:
     int insert (scheduled_point_t *point);
     int remove (scheduled_point_t *point);
-    scheduled_point_t *get_mintime (int64_t request);
+    scheduled_point_t *get_mintime (int64_t request) const;
+    void clear ();
 
 private:
-    int64_t right_branch_mintime (mt_resource_rb_node_t *n);
+    int64_t right_branch_mintime (mt_resource_rb_node_t *n) const;
     scheduled_point_t *find_mintime_point (mt_resource_rb_node_t *anchor,
-                                           int64_t min_time);
+                                           int64_t min_time) const;
     int64_t find_mintime_anchor (int64_t request,
-                                 mt_resource_rb_node_t **anchor_p);
+                                 mt_resource_rb_node_t **anchor_p) const;
+
     mt_resource_rb_tree_t m_tree;
 };
 
