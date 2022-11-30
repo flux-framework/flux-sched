@@ -24,7 +24,7 @@ public:
     scheduled_point_t *get_point () {
         return m_point;
     }
-    const scheduled_point_t *get_point () const {
+    scheduled_point_t *get_point () const {
         return m_point;
     }
 private:
@@ -43,16 +43,19 @@ using scheduled_point_rb_tree_t = ygg::RBTree<scheduled_point_rb_node_t,
 class scheduled_point_tree_t {
 public:
     ~scheduled_point_tree_t ();
+    scheduled_point_t *next (scheduled_point_t *point) const;
     scheduled_point_t *next (scheduled_point_t *point);
     scheduled_point_t *search (int64_t tm);
-    scheduled_point_t *get_state (int64_t at);
+    scheduled_point_t *get_state (int64_t at) const;
     int insert (scheduled_point_t *point);
     int remove (scheduled_point_t *point);
     void destroy ();
+    bool empty () const;
+    size_t get_size () const;
 
 private:
     scheduled_point_t *get_recent_state (scheduled_point_t *new_point,
-                                         scheduled_point_t *old_point);
+                                         scheduled_point_t *old_point) const;
     void destroy (scheduled_point_rb_node_t *node);
     scheduled_point_rb_tree_t m_tree;
 };
