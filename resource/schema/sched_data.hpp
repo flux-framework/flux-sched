@@ -13,6 +13,7 @@
 
 #include <map>
 #include <cstdint>
+#include <stdexcept>
 #include "resource/planner/c/planner.h"
 
 namespace Flux {

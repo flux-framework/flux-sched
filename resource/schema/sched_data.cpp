@@ -19,40 +19,47 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-schedule_t::schedule_t ()
-{
-
-}
+schedule_t::schedule_t () = default;
 
 schedule_t::schedule_t (const schedule_t &o)
 {
-    int64_t base_time = 0;
-    uint64_t duration = 0;
+    allocations = o.allocations;
+    reservations = o.reservations;
 
-    // copy constructor does not copy the contents
-    // of the schedule tables and of the planner objects.
-    if (o.plans) {
-        base_time = planner_base_time (o.plans);
-        duration = planner_duration (o.plans);
-        plans = planner_new (base_time, duration,
-                             planner_resource_total (o.plans),
-                             planner_resource_type (o.plans));
+    if (plans) {
+        if (o.plans) {
+            planner_assign (plans, o.plans);
+        } else {
+            planner_destroy (&plans);
+        }
+    } else {
+        if (o.plans) {
+            plans = planner_copy (o.plans);
+            if (!plans)
+                throw std::runtime_error ("ERROR copying planners\n");
+        }
     }
 }
 
 schedule_t &schedule_t::operator= (const schedule_t &o)
 {
-    int64_t base_time = 0;
-    uint64_t duration = 0;
-
-    // assign operator does not copy the contents
-    // of the schedule tables and of the planner objects.
-    if (o.plans) {
-        base_time = planner_base_time (o.plans);
-        duration = planner_duration (o.plans);
-        plans = planner_new (base_time, duration,
-                             planner_resource_total (o.plans),
-                             planner_resource_type (o.plans));
+    allocations.clear ();
+    reservations.clear ();
+    allocations = o.allocations;
+    reservations = o.reservations;
+    
+    if (plans) {
+        if (o.plans) {
+            planner_assign (plans, o.plans);
+        } else {
+            planner_destroy (&plans);
+        }
+    } else {
+        if (o.plans) {
+            plans = planner_copy (o.plans);
+            if (!plans)
+                throw std::runtime_error ("ERROR copying planners\n");
+        }
     }
     return *this;
 }
