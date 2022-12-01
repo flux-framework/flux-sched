@@ -1,3 +1,13 @@
-attach @TEST_SRCDIR@/data/resource/jgfs/power.json
+find sched-now=free
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
 find status=up
+find sched-now=allocated
+find sched-future=reserved
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
+attach @TEST_SRCDIR@/data/resource/jgfs/elastic/node-add-test.json
+find status=up
+find sched-now=allocated
+find sched-future=reserved
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
 quit
