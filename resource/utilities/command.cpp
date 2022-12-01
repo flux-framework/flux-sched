@@ -41,7 +41,7 @@ command_t commands[] = {
     { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
 "allocate | reserve): "
 "resource-query> update allocate jgf_file jobid starttime duration" },
-    { "attach", "j", cmd_attach, "Experimental: attach a JGF subgraph to the "
+    { "attach", "j", cmd_attach, "Attach a JGF subgraph to the "
 "resource graph: resource-query> attach jgf_file" },
     { "find", "f", cmd_find, "Find resources matched with criteria "
 "(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free}): "
@@ -453,11 +453,6 @@ int cmd_attach (std::shared_ptr<resource_context_t> &ctx,
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        if ( !(ctx->allocations.empty () && ctx->reservations.empty ())) {
-            std::cerr << "ERROR: attach isn't currently supported when an"
-                      << " allocation or reservation exists" << std::endl;
-            return 0;
-        }        
         attach (ctx, args);
 
     } catch (std::ifstream::failure &e) {
