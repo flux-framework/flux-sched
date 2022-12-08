@@ -90,7 +90,7 @@ test_expect_success 'a job with multiple constraints works in both queues' '
 	flux mini run --queue=batch --requires=bigmem /bin/true
 '
 test_expect_success 'stop queues' '
-	flux queue stop
+	flux queue stop --all
 '
 test_expect_success 'submit a held job to the first queue' '
 	flux mini submit --flags=waitable \
@@ -116,7 +116,7 @@ test_expect_success 'drain a node' '
 	flux resource drain 1 testing...
 '
 test_expect_success 'start queues - bunch of alloc requests arrive at once' '
-	flux queue start
+	flux queue start --all
 '
 test_expect_success 'submit some additional work on top of that' '
 	flux mini submit --flags=waitable --cc=1-10 \

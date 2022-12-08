@@ -91,7 +91,7 @@ load_test_resources () {
 
 # N.B. this assumes that a scheduler is loaded
 cleanup_active_jobs () {
-    flux queue stop &&
+    flux queue stop --all &&
         flux job cancelall -f &&
         flux queue idle
 }
