@@ -31,7 +31,8 @@ public:
 
 private:
     std::map<std::string, std::string> m_store;
-    uint64_t m_epoch;
+    // Need to initialize; Valgrind reports errors.
+    uint64_t m_epoch = 0;
 };
 
 } // resource_model
