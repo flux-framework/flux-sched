@@ -15,7 +15,7 @@
 #include "src/common/yggdrasil/rbtree.hpp"
 
 struct scheduled_point_t;
-struct rb_node_base_t;
+class rb_node_base_t;
 
 struct mt_resource_rb_node_t
         : public rb_node_base_t,
