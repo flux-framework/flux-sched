@@ -27,6 +27,7 @@ public:
                    const char **resource_types, size_t len);
     planner_multi (const planner_multi &o);
     planner_multi &operator= (const planner_multi &o);
+    bool operator== (const planner_multi &o) const;
     void erase ();
     ~planner_multi ();
 

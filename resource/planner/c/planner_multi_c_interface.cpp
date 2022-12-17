@@ -467,6 +467,12 @@ extern "C" size_t planner_multi_span_size (planner_multi_t *ctx)
     return ctx->plan_multi->get_span_lookup ().size ();
 }
 
+extern "C" bool planner_multis_equal (planner_multi_t *lhs,
+                                      planner_multi_t *rhs)
+{
+    return (*(lhs->plan_multi) == *(rhs->plan_multi));
+}
+
 /*
  * vi: ts=4 sw=4 expandtab
  */

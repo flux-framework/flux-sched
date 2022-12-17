@@ -146,6 +146,38 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
     return *this;
 }
 
+bool planner_multi::operator== (const planner_multi &o) const
+{
+    if (m_span_counter != o.m_span_counter)
+        return false;
+    if (m_resource_totals != o.m_resource_totals)
+        return false;
+    if (m_span_lookup != o.m_span_lookup)
+        return false;
+    if (m_iter.on_or_after != o.m_iter.on_or_after)
+        return false;
+    if (m_iter.duration != o.m_iter.duration)
+        return false;
+    if (m_iter.counts != o.m_iter.counts)
+        return false;
+
+    if (m_resource_types.size () != o.m_resource_types.size ())
+        return false;
+    for (size_t i = 0; i < m_resource_types.size (); ++i) {
+        if (strcmp (m_resource_types[i], o.m_resource_types[i]) != 0)
+            return false;
+    }
+
+    if (m_planners.size () != o.m_planners.size ())
+        return false;
+    for (size_t i = 0; i < m_planners.size (); ++i) {
+        if (!(*(m_planners[i]->plan) == *(o.m_planners[i]->plan)))
+            return false;
+    }
+
+    return true;
+}
+
 void planner_multi::erase ()
 {
     if (!m_planners.empty ()) {

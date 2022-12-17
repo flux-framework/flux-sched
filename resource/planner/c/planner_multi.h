@@ -286,6 +286,12 @@ int64_t planner_multi_span_next (planner_multi_t *ctx);
 
 size_t planner_multi_span_size (planner_multi_t *ctx);
 
+/*
+ *  Returns true if all the member variables and objects are equal.
+ *  Used by testsuite.
+*/
+bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs);
+
 #ifdef __cplusplus
 }
 #endif
