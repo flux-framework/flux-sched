@@ -693,6 +693,11 @@ extern "C" int64_t planner_span_resource_count (planner_t *ctx,
     return span->planned;
 }
 
+extern "C" bool planners_equal (planner_t *lhs, planner_t *rhs)
+{
+    return (*(lhs->plan) == *(rhs->plan));
+}
+
 /*
  * vi: ts=4 sw=4 expandtab
  */

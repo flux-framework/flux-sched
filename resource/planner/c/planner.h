@@ -223,6 +223,12 @@ int64_t planner_span_start_time (planner_t *ctx, int64_t span_id);
 int64_t planner_span_duration (planner_t *ctx, int64_t span_id);
 int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id);
 
+/*
+ *  Returns true if all the member variables and objects are equal.
+ *  Used by testsuite.
+*/
+bool planners_equal (planner_t *lhs, planner_t *rhs);
+
 #ifdef __cplusplus
 }
 #endif

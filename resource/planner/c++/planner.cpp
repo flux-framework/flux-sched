@@ -102,6 +102,36 @@ planner &planner::operator= (const planner &o)
     return *this;
 }
 
+bool planner::operator== (const planner &o) const
+{
+    if (m_total_resources != o.m_total_resources)
+        return false;
+    if (m_resource_type != o.m_resource_type)
+        return false;
+    if (m_plan_start != o.m_plan_start)
+        return false;
+    if (m_plan_end != o.m_plan_end)
+        return false;
+    if (m_avail_time_iter_set != o.m_avail_time_iter_set)
+        return false;
+    if (m_span_counter != o.m_span_counter)
+        return false;
+    // m_p0 or o.m_p0 could be uninitialized
+    if (m_p0 && o.m_p0) {
+        if (!scheduled_points_equal (*m_p0, *(o.m_p0)))
+            return false;
+    } else if (m_p0 || o.m_p0) {
+        return false;
+    } // else both nullptr
+    if (!span_lookups_equal (o))
+        return false;
+    if (!avail_time_iters_equal (o))
+        return false;
+    if (!trees_equal (o))
+        return false;
+    return true;
+}
+
 planner::~planner ()
 {
     // Destructor is nothrow
@@ -398,6 +428,105 @@ int planner::copy_maps (const planner &o)
     return rc;
 }
 
+bool planner::scheduled_points_equal (const scheduled_point_t &lhs,
+                                      const scheduled_point_t &rhs) const
+{
+    if (lhs.at != rhs.at)
+        return false;
+    if (lhs.in_mt_resource_tree != rhs.in_mt_resource_tree)
+        return false;
+    if (lhs.new_point != rhs.new_point)
+        return false;
+    if (lhs.ref_count != rhs.ref_count)
+        return false;
+    if (lhs.remaining != rhs.remaining)
+        return false;
+    if (lhs.scheduled != rhs.scheduled)
+        return false;
+
+    return true;
+}
+
+bool planner::span_lookups_equal (const planner &o) const
+{
+    if (m_span_lookup.size () != o.m_span_lookup.size ())
+        return false;
+    if (!m_span_lookup.empty ()) {
+        // Iterate through indices to use the auto range-based for loop
+        // semantics; otherwise need to create a "zip" function for two maps.
+        for (auto const &this_it : m_span_lookup) {
+            auto const other = o.m_span_lookup.find (this_it.first);
+            if (other == o.m_span_lookup.end ())
+                return false;
+            if (this_it.first != other->first)
+                return false;
+            if (this_it.second->start != other->second->start)
+                return false;
+            if (this_it.second->last != other->second->last)
+                return false;
+            if (this_it.second->span_id != other->second->span_id)
+                return false;
+            if (this_it.second->planned != other->second->planned)
+                return false;
+            if (this_it.second->in_system != other->second->in_system)
+                return false;
+            if (this_it.second->in_system != other->second->in_system)
+                return false;
+            if (!scheduled_points_equal (*(this_it.second->start_p),
+                                         *(other->second->start_p)))
+                return false;
+            if (!scheduled_points_equal (*(this_it.second->last_p),
+                                         *(other->second->last_p)))
+                return false;
+        }
+    }
+    return true;
+}
+
+bool planner::avail_time_iters_equal (const planner &o) const
+{
+    if (m_avail_time_iter.size () != o.m_avail_time_iter.size ())
+        return false;
+    if (!m_avail_time_iter.empty ()) {
+        // Iterate through indices to use the auto range-based for loop
+        // semantics; otherwise need to create a "zip" function for two maps.
+        for (auto const &this_it : m_avail_time_iter) {
+            auto const other = o.m_avail_time_iter.find (this_it.first);
+            if (other == o.m_avail_time_iter.end ())
+                return false;
+            if (this_it.first != other->first)
+                return false;
+            if (this_it.second && other->second) {
+                if (!scheduled_points_equal (*(this_it.second),
+                                             *(other->second)))
+                    return false;
+            } else if (this_it.second || other->second) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool planner::trees_equal (const planner &o) const
+{
+    if (m_sched_point_tree.get_size () != o.m_sched_point_tree.get_size ())
+        return false;
+    if (!m_sched_point_tree.empty ()) {
+        scheduled_point_t *this_pt =
+                        m_sched_point_tree.get_state (m_plan_start);
+        scheduled_point_t *o_pt =
+                        o.m_sched_point_tree.get_state (o.m_plan_start);
+        while (this_pt) {
+            if (!scheduled_points_equal (*this_pt, *o_pt))
+                return false;
+            this_pt = m_sched_point_tree.next (this_pt);
+            o_pt = o.m_sched_point_tree.next (o_pt);
+        }
+    }
+    return true;
+}
+
 /****************************************************************************
  *                                                                          *
  *                     Public Planner_t methods                             *
@@ -438,8 +567,6 @@ planner_t::~planner_t ()
 {
     delete plan;
 }
-
-
 
 /*
  * vi: ts=4 sw=4 expandtab

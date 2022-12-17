@@ -41,6 +41,7 @@ public:
              const uint64_t resource_totals, const char *in_resource_type);
     planner (const planner &o);
     planner &operator= (const planner &o);
+    bool operator== (const planner &o) const;
     ~planner ();
     // Public class utilities
     int erase ();
@@ -107,6 +108,11 @@ private:
     // Private class utilities
     int copy_trees (const planner &o);
     int copy_maps (const planner &o);
+    bool scheduled_points_equal (const scheduled_point_t &lhs,
+                                 const scheduled_point_t &rhs) const;
+    bool span_lookups_equal (const planner &o) const;
+    bool avail_time_iters_equal (const planner &o) const;
+    bool trees_equal (const planner &o) const;
 };
 
 struct planner_t {
