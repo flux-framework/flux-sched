@@ -16,7 +16,7 @@
 #include <limits>
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/ephemeral.hpp"
-#include "resource/planner/planner_multi.h"
+#include "resource/planner/c/planner_multi.h"
 
 namespace Flux {
 namespace resource_model {

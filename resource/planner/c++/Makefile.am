@@ -14,6 +14,7 @@ AM_LDFLAGS = \
 noinst_LTLIBRARIES = libplanner_cxx.la
 noinst_HEADERS = \
         planner.hpp \
+        planner_multi.hpp \
         planner_internal_tree.hpp \
         scheduled_point_tree.hpp \
         mintime_resource_tree.hpp \
@@ -30,6 +31,7 @@ noinst_HEADERS = \
 
 libplanner_cxx_la_SOURCES = \
         planner.cpp \
+        planner_multi.cpp \
         scheduled_point_tree.cpp \
         mintime_resource_tree.cpp
 

@@ -14,7 +14,9 @@ AM_LDFLAGS = \
 noinst_LTLIBRARIES = libplanner.la
 noinst_HEADERS = \
 	planner.h \
+	planner_multi.h \
 	$(top_srcdir)/resource/planner/c++/planner.hpp \
+	$(top_srcdir)/resource/planner/c++/planner_multi.hpp \
 	$(top_srcdir)/resource/planner/c++/planner_internal_tree.hpp \
 	$(top_srcdir)/resource/planner/c++/scheduled_point_tree.hpp \
 	$(top_srcdir)/resource/planner/c++/mintime_resource_tree.hpp \
@@ -30,7 +32,8 @@ noinst_HEADERS = \
 	$(top_srcdir)/src/common/yggdrasil/util.hpp
 
 libplanner_la_SOURCES = \
-	planner_c_interface.cpp
+	planner_c_interface.cpp \
+	planner_multi_c_interface.cpp
 
 libplanner_la_LIBADD = \
 	$(top_builddir)/resource/planner/c++/libplanner_cxx.la
