@@ -2517,7 +2517,8 @@ static void ns_info_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: namespace_remapper.query", __FUNCTION__);
         goto error;
     }
-    if (remapped_id > std::numeric_limits<int64_t>::max ()) {
+    if (remapped_id >
+            static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
         errno = EOVERFLOW;
         flux_log_error (h, "%s: remapped id too large", __FUNCTION__);
         goto error;
