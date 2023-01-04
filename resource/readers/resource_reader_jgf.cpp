@@ -20,7 +20,7 @@ extern "C" {
 #include <jansson.h>
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
-#include "resource/planner/planner.h"
+#include "resource/planner/c/planner.h"
 
 using namespace Flux;
 using namespace Flux::resource_model;

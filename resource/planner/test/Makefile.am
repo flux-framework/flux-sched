@@ -13,16 +13,16 @@ TESTS = planner_test01 planner_test02
 
 check_PROGRAMS = $(TESTS)
 planner_test01_SOURCES = planner_test01.cpp
-planner_test01_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner
+planner_test01_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner/c -I$(top_srcdir)/resource/planner/c++
 planner_test01_LDADD = \
-	$(top_builddir)/resource/planner/libplanner.la \
+	$(top_builddir)/resource/planner/c/libplanner.la \
 	$(top_builddir)/src/common/libtap/libtap.la \
 	$(CZMQ_LIBS)
 
 planner_test02_SOURCES = planner_test02.cpp
-planner_test02_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner
+planner_test02_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/resource/planner/c -I$(top_srcdir)/resource/planner/c++
 planner_test02_LDADD = \
-	$(top_builddir)/resource/planner/libplanner.la \
+	$(top_builddir)/resource/planner/c/libplanner.la \
 	$(top_builddir)/src/common/libtap/libtap.la \
 	$(CZMQ_LIBS)
 

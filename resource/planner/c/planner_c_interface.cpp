@@ -13,7 +13,7 @@
 #include <list>
 #include <string>
 
-#include "planner.hpp"
+#include "resource/planner/c++/planner.hpp"
 
 /*******************************************************************************
  *                                                                             *
