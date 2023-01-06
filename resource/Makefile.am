@@ -7,7 +7,8 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 	      $(BOOST_CPPFLAGS)
 
-SUBDIRS = libjobspec planner . utilities modules reapi evaluators policies
+SUBDIRS = libjobspec planner . utilities modules reapi evaluators \
+          policies schema
 
 noinst_LTLIBRARIES = libresource.la
 
