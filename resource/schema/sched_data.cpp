@@ -64,6 +64,18 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
     return *this;
 }
 
+bool schedule_t::operator== (const schedule_t &o) const
+{
+    if (allocations != o.allocations)
+        return false;
+    if (reservations != o.reservations)
+        return false;
+    if (!planners_equal (plans, o.plans))
+        return false;
+
+    return true;
+}
+
 schedule_t::~schedule_t ()
 {
     if (plans)
