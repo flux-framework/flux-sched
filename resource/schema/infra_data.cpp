@@ -110,6 +110,33 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
     return *this;
 }
 
+bool pool_infra_t::operator== (const pool_infra_t &o) const
+{
+    if (tags != o.tags)
+        return false;
+    if (x_spans != o.x_spans)
+        return false;
+    if (job2span != o.job2span)
+        return false;
+    if (colors != o.colors)
+        return false;
+    if (!planners_equal (x_checker, o.x_checker))
+        return false;
+    if (subplans.size () != o.subplans.size ())
+        return false;
+    for (auto const &this_it : subplans) {
+        auto const other = o.subplans.find (this_it.first);
+        if (other == o.subplans.end ())
+            return false;
+        if (this_it.first != other->first)
+            return false;
+        if (!planner_multis_equal (this_it.second, other->second))
+            return false;
+    }
+
+    return true;
+}
+
 pool_infra_t::~pool_infra_t ()
 {
     for (auto &kv : subplans)
