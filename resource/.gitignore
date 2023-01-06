@@ -2,5 +2,7 @@ evaluators/test/expr_eval_test01
 libjobspec/flux-jobspec-validate
 planner/test/planner_test01
 planner/test/planner_test02
+schema/test/schema_test01
+schema/test/schema_test02
 utilities/grug2dot
 utilities/resource-query
