@@ -30,6 +30,7 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
 	queue = "all"
 	EOT
 	flux config reload &&
+	flux queue start --all &&
 	load_qmanager
 '
 
@@ -86,6 +87,7 @@ test_expect_success 'reconfigure qmanager with queues with different policies' '
 	queue-policy-per-queue = "queue1:easy queue2:hybrid queue3:fcfs"
 	EOT
 	flux config reload &&
+	flux queue start --all &&
 	reload_qmanager
 '
 
@@ -145,6 +147,7 @@ test_expect_success 'qmanager: incorrect queue policy can be caught' '
 	queue-policy-per-queue = "queue1:easy queue2:foo queue3:fcfs"
 	EOT
 	flux config reload &&
+	flux queue start --all &&
 	reload_qmanager &&
 	flux dmesg | grep "Unknown queuing policy"
 '
@@ -162,6 +165,7 @@ test_expect_success 'reconfigure with one queue and load qmanager' '
 	[queues.foo]
 	EOT
 	flux config reload &&
+	flux queue start --all &&
 	load_qmanager
 '
 test_expect_success 'job submitted with no queue gets fatal exception' '
