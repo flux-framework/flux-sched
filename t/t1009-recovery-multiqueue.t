@@ -51,6 +51,7 @@ test_expect_success 'qmanager: configure qmanager with two queues' '
 	queue = "batch"
 	EOT
 	flux config reload &&
+	flux queue start --all &&
 	load_qmanager
 '
 

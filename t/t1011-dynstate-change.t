@@ -157,7 +157,8 @@ test_expect_success 'configure queues' '
 	[sched-fluxion-qmanager]
 	queue-policy-per-queue = "batch:easy debug:fcfs"
 	EOT
-	flux config reload
+	flux config reload &&
+	flux queue start --all
 '
 
 test_expect_success 'dyn-state: loading fluxion modules works' '

@@ -12,19 +12,22 @@ export FLUX_SCHED_MODULE=none
 
 mkdir -p conf.d
 
-cat >conf.d/conf.toml<<-EOF
-[queues.debug]
-requires = ["debug"]
-[queues.batch]
-requires = ["batch"]
-
-[sched-fluxion-resource]
-match-policy = "lonodex"
-match-format = "rv1_nosched"
-EOF
-
 test_under_flux 4 full -o,--config-path=$(pwd)/conf.d
 
+test_expect_success 'load queue configuration' '
+	cat >conf.d/conf.toml <<-EOT &&
+	[queues.debug]
+	requires = ["debug"]
+	[queues.batch]
+	requires = ["batch"]
+
+	[sched-fluxion-resource]
+	match-policy = "lonodex"
+	match-format = "rv1_nosched"
+	EOT
+	flux config reload &&
+	flux queue start --all
+'
 
 test_expect_success 'reload resource with properties set' '
 	flux kvs get resource.R >R.orig &&
