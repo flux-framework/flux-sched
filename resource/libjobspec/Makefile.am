@@ -7,6 +7,7 @@ flux_jobspec_validate_LDADD = \
     $(YAMLCPP_LIBS)
 
 libjobspec_conv_la_CXXFLAGS = \
+	-I$(top_srcdir) \
 	$(WARNING_CXXFLAGS) \
 	$(CODE_COVERAGE_CXXFLAGS) \
 	$(YAMLCPP_CFLAGS)
