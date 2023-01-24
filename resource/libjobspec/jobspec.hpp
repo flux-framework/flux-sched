@@ -38,6 +38,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "parse_error.hpp"
+#include "constraint.hpp"
 
 namespace Flux {
 namespace Jobspec {
@@ -77,17 +78,13 @@ public:
     Task(const YAML::Node&);
 };
 
-struct Constraints {
-    std::vector<std::string> properties;
-};
-
 struct System {
     double duration = 0.0f;
     std::string queue = "";
     std::string cwd = "";
     std::unordered_map<std::string, std::string> environment;
     std::unordered_map<std::string, YAML::Node> optional;
-    Constraints constraints;
+    std::shared_ptr<Constraint> constraint = nullptr;
 
     System() = default;
     System(const System &s) = delete; // Force to use move ctor
