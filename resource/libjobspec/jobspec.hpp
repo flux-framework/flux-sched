@@ -37,17 +37,10 @@
 #include <limits>
 #include <yaml-cpp/yaml.h>
 
+#include "parse_error.hpp"
+
 namespace Flux {
 namespace Jobspec {
-
-class parse_error : public std::runtime_error {
-public:
-    int position;
-    int line;
-    int column;
-    parse_error(const char *msg);
-    parse_error(const YAML::Node& node, const char *msg);
-};
 
 enum class tristate_t { FALSE, TRUE, UNSPECIFIED };
 
