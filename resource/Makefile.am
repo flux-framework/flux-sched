@@ -56,6 +56,7 @@ libresource_la_SOURCES = \
     schema/data_std.hpp \
     schema/infra_data.hpp \
     schema/sched_data.hpp \
+    schema/resource_base.hpp \
     schema/resource_data.hpp \
     schema/color.hpp \
     schema/ephemeral.hpp \

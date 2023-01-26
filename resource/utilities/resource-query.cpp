@@ -316,7 +316,7 @@ static int set_subsystems_use (std::shared_ptr<resource_context_t> &ctx,
 static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
                                std::fstream &o)
 {
-    f_res_name_map_t vmap = get (&resource_pool_t::name, fg);
+    f_res_name_map_t vmap = get (&resource_t::name, fg);
     f_edg_infra_map_t emap = get (&resource_relation_t::idata, fg);
     label_writer_t<f_res_name_map_t, vtx_t> vwr (vmap);
     edg_label_writer_t ewr (emap, ss);
