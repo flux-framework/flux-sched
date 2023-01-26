@@ -124,6 +124,14 @@ struct match_test match_tests[] = {
       "{\"hostlist\": [\"foo[1-3]\"]}",
       false,
     },
+    { "ranks operator works",
+      "{\"ranks\": [\"0-2\"]}",
+      true,
+    },
+    { "ranks operator works with non-intersecting ranks",
+      "{\"ranks\": [\"1-3\"]}",
+      false,
+    },
     { NULL, NULL, false },
 };
 
@@ -232,6 +240,16 @@ struct validate_test validate_tests[] = {
       "{\"hostlist\": [\"foo0-10]\"]}",
       -1,
       "Invalid hostlist `foo0-10]'",
+    },
+    { "ranks can be included",
+      "{\"ranks\": [\"0-10\"]}",
+      0,
+      NULL
+    },
+    { "invalid ranks entry fails",
+      "{\"ranks\": [\"5,1-3\"]}",
+      -1,
+      "Invalid idset `5,1-3'",
     },
     { NULL, NULL, 0, NULL }
 };
