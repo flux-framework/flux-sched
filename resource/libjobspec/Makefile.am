@@ -12,15 +12,22 @@ flux_jobspec_validate_LDADD = \
 libjobspec_conv_la_CXXFLAGS = \
 	$(WARNING_CXXFLAGS) \
 	$(CODE_COVERAGE_CXXFLAGS) \
-	$(YAMLCPP_CFLAGS)
+	$(YAMLCPP_CFLAGS) \
+	$(FLUX_HOSTLIST_CFLAGS)
 
-libjobspec_conv_la_LIBADD = $(CODE_COVERAGE_LIBS) $(YAMLCPP_LIBS)
+libjobspec_conv_la_LIBADD = \
+	$(CODE_COVERAGE_LIBS) \
+	$(YAMLCPP_LIBS) \
+	$(FLUX_HOSTLIST_LIBS)
+
 libjobspec_conv_la_SOURCES = \
 	jobspec.cpp \
 	jobspec.hpp \
 	parse_error.hpp \
 	constraint.hpp \
-	constraint.cpp
+	constraint.cpp \
+	hostlist_constraint.hpp \
+	hostlist_constraint.cpp
 
 TESTS = \
 	test_constraint.t

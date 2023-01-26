@@ -19,6 +19,7 @@ extern "C" {
 
 #include "jobspec.hpp"
 #include "constraint.hpp"
+#include "hostlist_constraint.hpp"
 
 using namespace Flux::Jobspec;
 
@@ -82,6 +83,9 @@ Flux::Jobspec::constraint_parser (const YAML::Node &constraint)
     if (operation == "properties")
         return std::unique_ptr<PropertyConstraint>
             (new PropertyConstraint (operands));
+    else if (operation == "hostlist")
+        return std::unique_ptr<HostlistConstraint>
+            (new HostlistConstraint (operands));
     else if (operation == "and" || operation == "or" || operation == "not")
         return std::unique_ptr<ConditionalConstraint>
             (new ConditionalConstraint (operation, operands));
