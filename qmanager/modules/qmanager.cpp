@@ -618,6 +618,7 @@ int mod_start (flux_t *h, int argc, char **argv)
         flux_log_error (h, "%s: qmanager_new", __FUNCTION__);
         return rc;
     }
+
     // Because mod_main is always active, the following is safe.
     flux_aux_set (h, "sched-fluxion-qmanager", &ctx, nullptr);
 
@@ -664,6 +665,9 @@ int mod_start (flux_t *h, int argc, char **argv)
 extern "C" int mod_main (flux_t *h, int argc, char **argv)
 {
     eh_wrapper_t exception_safe_main;
+
+    flux_log (h, LOG_INFO, "version %s", PACKAGE_VERSION);
+
     int rc = exception_safe_main (mod_start, h, argc, argv);
     if (exception_safe_main.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__,
