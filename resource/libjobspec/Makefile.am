@@ -13,12 +13,14 @@ libjobspec_conv_la_CXXFLAGS = \
 	$(WARNING_CXXFLAGS) \
 	$(CODE_COVERAGE_CXXFLAGS) \
 	$(YAMLCPP_CFLAGS) \
-	$(FLUX_HOSTLIST_CFLAGS)
+	$(FLUX_HOSTLIST_CFLAGS) \
+	$(FLUX_IDSET_CFLAGS)
 
 libjobspec_conv_la_LIBADD = \
 	$(CODE_COVERAGE_LIBS) \
 	$(YAMLCPP_LIBS) \
-	$(FLUX_HOSTLIST_LIBS)
+	$(FLUX_HOSTLIST_LIBS) \
+	$(FLUX_IDSET_LIBS)
 
 libjobspec_conv_la_SOURCES = \
 	jobspec.cpp \
@@ -27,7 +29,9 @@ libjobspec_conv_la_SOURCES = \
 	constraint.hpp \
 	constraint.cpp \
 	hostlist_constraint.hpp \
-	hostlist_constraint.cpp
+	hostlist_constraint.cpp \
+	rank_constraint.hpp \
+	rank_constraint.cpp
 
 TESTS = \
 	test_constraint.t

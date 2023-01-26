@@ -20,6 +20,7 @@ extern "C" {
 #include "jobspec.hpp"
 #include "constraint.hpp"
 #include "hostlist_constraint.hpp"
+#include "rank_constraint.hpp"
 
 using namespace Flux::Jobspec;
 
@@ -86,6 +87,9 @@ Flux::Jobspec::constraint_parser (const YAML::Node &constraint)
     else if (operation == "hostlist")
         return std::unique_ptr<HostlistConstraint>
             (new HostlistConstraint (operands));
+    else if (operation == "ranks")
+        return std::unique_ptr<RankConstraint>
+            (new RankConstraint (operands));
     else if (operation == "and" || operation == "or" || operation == "not")
         return std::unique_ptr<ConditionalConstraint>
             (new ConditionalConstraint (operation, operands));
