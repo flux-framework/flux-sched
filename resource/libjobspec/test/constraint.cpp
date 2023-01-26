@@ -116,6 +116,14 @@ struct match_test match_tests[] = {
        }",
        false,
     },
+    { "hostlist operator works",
+      "{\"hostlist\": [\"foo[0-2]\"]}",
+      true,
+    },
+    { "hostlist operator works with non-matching hostlist",
+      "{\"hostlist\": [\"foo[1-3]\"]}",
+      false,
+    },
     { NULL, NULL, false },
 };
 
@@ -214,6 +222,16 @@ struct validate_test validate_tests[] = {
       }",
       0,
       NULL
+    },
+    { "hostlist can be included",
+      "{\"hostlist\": [\"foo[0-10]\"]}",
+      0,
+      NULL
+    },
+    { "invalid hostlist fails",
+      "{\"hostlist\": [\"foo0-10]\"]}",
+      -1,
+      "Invalid hostlist `foo0-10]'",
     },
     { NULL, NULL, 0, NULL }
 };
