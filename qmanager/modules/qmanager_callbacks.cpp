@@ -120,6 +120,31 @@ out:
     return rc;
 }
 
+/* workaround for flux-framework/flux-core#991
+ * Instead of a scheduler fatality, raise a fatal job exception.
+ */
+static void raise_fatal_exception_issue991 (flux_t *h, flux_jobid_t id)
+{
+    flux_future_t *f;
+    const char *note = "scheduler could not process running job on reload";
+
+    flux_log (h,
+              LOG_INFO,
+              "raising fatal exception on running job id=%ju",
+              (uintmax_t)id);
+
+    if (!(f = flux_job_raise (h, id, "scheduler", 0, note))
+        || flux_future_get (f, NULL) < 0) {
+        flux_log (h,
+                  LOG_ERR,
+                  "%s: could not raise exception on id=%ju: %s",
+                  __func__,
+                  (uintmax_t)id,
+                  future_strerror (f, errno));
+    }
+    flux_future_destroy (f);
+}
+
 int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                         const char *R, void *arg)
 
@@ -164,6 +189,11 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
         json_decref (o);
         errno = EPROTO;
         flux_log (h, LOG_ERR, "%s: json_unpack for attributes", __FUNCTION__);
+        goto out;
+    }
+
+    if (qn_attr == NULL) {
+        raise_fatal_exception_issue991 (h, id);
         goto out;
     }
 
