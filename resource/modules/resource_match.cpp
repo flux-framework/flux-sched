@@ -2617,6 +2617,9 @@ error:
 extern "C" int mod_main (flux_t *h, int argc, char **argv)
 {
     int rc = -1;
+
+    flux_log (h, LOG_INFO, "version %s", PACKAGE_VERSION);
+
     try {
         std::shared_ptr<resource_ctx_t> ctx = nullptr;
         uint32_t rank = 1;
