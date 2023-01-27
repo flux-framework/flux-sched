@@ -306,15 +306,19 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
+    /* See flux-framework/flux-sched#991
+     * Treat free of unknown job as non-fatal so job can go inactive.
+     */
     if (ctx->find_queue (id, queue_name, queue) < 0) {
         flux_log_error (h, "%s: can't find queue for job (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (id));
-        return;
     }
-    if ((queue->remove (id)) < 0) {
-        flux_log_error (h, "%s: remove (queue=%s id=%jd)", __FUNCTION__,
-                       queue_name.c_str (), static_cast<intmax_t> (id));
-        return;
+    else {
+        if ((queue->remove (id)) < 0) {
+            flux_log_error (h, "%s: remove (queue=%s id=%jd)", __FUNCTION__,
+                           queue_name.c_str (), static_cast<intmax_t> (id));
+            return;
+        }
     }
     if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
