@@ -1,0 +1,24 @@
+version: 9999
+resources:
+  - type: slot
+    count: 4
+    label: default
+    with:
+      - type: node
+        count: 1
+tasks:
+  - command: [ "flux", "start" ]
+    slot: default
+    count:
+      per_slot: 1
+attributes:
+  system:
+    duration: 3600.0
+    constraints:
+      and:
+      - or:
+        - hostlist: [ "foo" ]
+        - ranks: [ 0 ]
+        - properties: [ "bar", "baz" ]
+      - not:
+        - properties: [ "foo", "bar" ]
