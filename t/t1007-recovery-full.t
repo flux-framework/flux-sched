@@ -142,17 +142,6 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1_nosched)' '
     flux job wait-event -t 60 ${jobid5} start
 '
 
-test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '
-    flux job cancel ${jobid2} &&
-    flux job cancel ${jobid3} &&
-    flux job cancel ${jobid4} &&
-    flux job cancel ${jobid5} &&
-    flux job wait-event -t 10 ${jobid2} clean &&
-    flux job wait-event -t 10 ${jobid3} clean &&
-    flux job wait-event -t 10 ${jobid4} clean &&
-    flux job wait-event -t 10 ${jobid5} clean
-'
-
 test_expect_success 'cleanup active jobs' '
     cleanup_active_jobs
 '
