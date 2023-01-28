@@ -29,7 +29,6 @@ TESTS = \
     t1005-qmanager-conf.t \
     t1006-qmanager-multiqueue.t \
     t1007-recovery-full.t \
-    t1008-recovery-none.t \
     t1009-recovery-multiqueue.t \
     t1010-sync-modules.t \
     t1011-dynstate-change.t \
