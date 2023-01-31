@@ -1,10 +1,14 @@
 #!/bin/sh
 
-test_description='Test pconstraints complementing t3034-resource-pconstraints.t'
+test_description='Test constraints complementing t3034-resource-pconstraints.t'
 
 . `dirname $0`/sharness.sh
 
 skip_all_unless_have jq
+
+if flux python -m flux.constraint.parser >/dev/null 2>&1; then
+   test_set_prereq RFC35_SYNTAX
+fi
 
 export FLUX_SCHED_MODULE=none
 
@@ -65,6 +69,55 @@ test_expect_success 'invalid property works' '
 	flux job wait-event -t 10 ${JOBID5} clean &&
 	flux job eventlog ${JOBID5} > evlog5 &&
 	grep "f^oo is invalid" evlog5
+'
+
+test_expect_success RFC35_SYNTAX 'complex constraints work' '
+	flux mini run --requires="foo&bar" flux getattr rank > c1.rank &&
+	test_debug "cat c1.rank" &&
+	test $(cat c1.rank) -eq 1 &&
+	flux mini run -N3 --requires="foo|baz" flux getattr rank \
+		| sort > c2.ranks &&
+	cat <<-EOF >c2.expected &&
+	0
+	1
+	3
+	EOF
+	test_cmp c2.expected c2.ranks &&
+	flux mini run --requires="foo and not bar" flux getattr rank \
+		> c3.rank &&
+	test_debug "cat c3.rank" &&
+	test $(cat c3.rank) -eq 0
+'
+
+test_expect_success RFC35_SYNTAX 'invalid complex constraint fails' '
+	test_must_fail flux mini run --requires="foo|bar badop:meep" hostname \
+		> badop.out 2>&1 &&
+	grep -i "unknown constraint operator: badop" badop.out
+'
+
+test_expect_success RFC35_SYNTAX 'ranks constraint works' '
+	flux mini run --requires=rank:2 flux getattr rank > rank.out &&
+	test_debug "cat rank.out" &&
+	test $(cat rank.out) -eq 2 &&
+	flux mini run -N2 --requires=rank:2-3 flux getattr rank \
+		| sort > rank2-3.out &&
+	test_debug "cat rank2-3.out" &&
+	cat <<-EOF >rank2-3.expected &&
+	2
+	3
+	EOF
+	test_cmp rank2-3.expected rank2-3.out
+'
+test_expect_success RFC35_SYNTAX 'invalid rank constraint fails' '
+	test_must_fail flux mini run --requires=ranks:5-4 hostname
+'
+
+test_expect_success RFC35_SYNTAX 'hostlist constraint works' '
+	flux mini run --requires=host:$(hostname) hostname
+'
+
+test_expect_success RFC35_SYNTAX 'invalid hostlist constraint fails' '
+	test_must_fail flux mini run --requires=host:foo\[  hostname
 '
 
 test_expect_success 'removing resource and qmanager modules' '
