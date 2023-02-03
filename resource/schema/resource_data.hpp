@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <set>
 #include "resource/schema/color.hpp"
+#include "resource/schema/resource_base.hpp"
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/sched_data.hpp"
 #include "resource/schema/infra_data.hpp"
@@ -27,7 +28,7 @@ namespace Flux {
 namespace resource_model {
 
 //! Resource pool data type
-struct resource_pool_t {
+struct resource_pool_t : public resource_t {
     resource_pool_t ();
     resource_pool_t (const resource_pool_t &o);
     resource_pool_t &operator= (const resource_pool_t &o);
@@ -43,15 +44,9 @@ struct resource_pool_t {
     static const std::string status_to_str (status_t s);
 
     // Resource pool data
-    std::string type;
     std::map<std::string, std::string> paths;
-    std::string basename;
-    std::string name;
-    std::map<std::string, std::string> properties;
-    int64_t id = -1;
     int64_t uniq_id;
     unsigned int size = 0;
-    int rank = -1;
     std::string unit;
 
     schedule_t schedule;    //!< schedule data
