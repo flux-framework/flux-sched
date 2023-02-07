@@ -148,7 +148,9 @@ void test_match ()
     struct match_test *t = match_tests;
     while (t->desc) {
         auto c = constraint_parser (YAML::Load (t->json));
+        errno = 0;
         ok (c->match (resource) == t->result, "%s", t->desc);
+        ok (errno == 0, "errno is preserved");
         t++;
     }
 }
