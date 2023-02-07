@@ -1630,7 +1630,8 @@ out:
 }
 
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
-                const char *cmd, const std::string &jstr, int64_t *at)
+                const char *cmd, const std::string &jstr, int64_t *at,
+                flux_error_t *errp)
 {
     int rc = -1;
     try {
@@ -1653,6 +1654,11 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
             errno = EINVAL;
     } catch (const Flux::Jobspec::parse_error& e) {
         errno = EINVAL;
+        if (errp && e.what()) {
+            int n = snprintf (errp->text, sizeof (errp->text), "%s", e.what());
+            if (n > (int) sizeof (errp->text))
+                errp->text[sizeof (errp->text) - 2] = '+';
+        }
     }
 
     return rc;
@@ -1683,7 +1689,8 @@ out:
 
 static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       const char *cmd, const std::string &jstr, int64_t *now,
-                      int64_t *at, double *ov, std::stringstream &o)
+                      int64_t *at, double *ov, std::stringstream &o,
+                      flux_error_t *errp)
 {
     int rc = 0;
     double elapse = 0.0f;
@@ -1706,7 +1713,7 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     }
 
     *at = *now = (int64_t)start.tv_sec;
-    if ( (rc = run (ctx, jobid, cmd, jstr, at)) < 0) {
+    if ( (rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
         goto done;
     }
     if ( (rc = ctx->writers->emit (o)) < 0) {
@@ -1899,7 +1906,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                         __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
@@ -1968,7 +1975,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
                             __FUNCTION__, static_cast<intmax_t> (jobid));
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R) < 0) {
+        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                         "%s: match failed due to match error (id=%jd)",
@@ -2542,7 +2549,8 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
     std::stringstream R;
     json_t *jobspec = nullptr;
     const char *js_str = nullptr;
-    const char *respond_msg = nullptr;
+    std::string errmsg;
+    flux_error_t error;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     if (flux_request_unpack (msg, NULL, "{s:o}", "jobspec", &jobspec) < 0)
@@ -2551,12 +2559,21 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
         errno = ENOMEM;
         goto error;
     }
-    if (run_match (ctx, -1, "satisfiability", js_str, &now, &at, &ov, R) < 0) {
-        if (errno == ENODEV) {
-            respond_msg = "Unsatisfiable request";
-        } else {
-            respond_msg = "Internal match error";
-            flux_log_error (ctx->h, "%s: %s", __FUNCTION__, respond_msg);
+    error.text[0] = '\0';
+    if (run_match (ctx,
+                   -1,
+                   "satisfiability",
+                   js_str,
+                   &now,
+                   &at,
+                   &ov,
+                   R,
+                   &error) < 0) {
+        if (errno == ENODEV)
+            errmsg = "Unsatisfiable request";
+        else {
+            errmsg = "Internal match error: ";
+            errmsg += error.text;
         }
         goto error_memfree;
     }
@@ -2570,7 +2587,7 @@ error_memfree:
     free ((void *)js_str);
     errno = saved_errno;
 error:
-    if (flux_respond_error (h, msg, errno, respond_msg) < 0)
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 

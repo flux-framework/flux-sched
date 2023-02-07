@@ -24,7 +24,9 @@ test_expect_success 'load fluxion' '
 	load_resource policy=hinodex &&
 	load_qmanager
 '
-
+test_expect_success 'reload ingest without validator' '
+	flux module reload -f job-ingest disable-validator
+'
 test_expect_success 'simple property reqirement works' '
 	JOBID1=$(flux mini submit --requires="baz" hostname) &&
 	flux job wait-event -t 10 ${JOBID1} clean &&
@@ -56,21 +58,21 @@ test_expect_success '^property reqirement works' '
 	PROP_RANK3=$(cat JOBID3.R | jq -r ".execution.properties.baz") &&
 	test "${RANK3}" = "3" -a "${LENGTH3}" = "1" -a "${PROP_RANK3}" = "3"
 '
-
 test_expect_success 'nonexistient property works' '
 	JOBID4=$(flux mini submit --requires="yyy" hostname) &&
 	flux job wait-event -t 10 ${JOBID4} clean &&
-	flux job eventlog ${JOBID4} > evlog4 &&
-	grep "unsatisfiable" evlog4
+	flux job eventlog ${JOBID4} > evlog4 2>&1 &&
+	grep -i "unsatisfiable" evlog4
 '
-
 test_expect_success 'invalid property works' '
 	JOBID5=$(flux mini submit --requires="f^oo" hostname) &&
 	flux job wait-event -t 10 ${JOBID5} clean &&
 	flux job eventlog ${JOBID5} > evlog5 &&
 	grep "f^oo is invalid" evlog5
 '
-
+test_expect_success 'reload ingest with feasibility' '
+	flux module reload -f job-ingest validator-plugins=feasibility
+'
 test_expect_success RFC35_SYNTAX 'complex constraints work' '
 	flux mini run --requires="foo&bar" flux getattr rank > c1.rank &&
 	test_debug "cat c1.rank" &&
@@ -108,6 +110,7 @@ test_expect_success RFC35_SYNTAX 'ranks constraint works' '
 	EOF
 	test_cmp rank2-3.expected rank2-3.out
 '
+
 test_expect_success RFC35_SYNTAX 'invalid rank constraint fails' '
 	test_must_fail flux mini run --requires=ranks:5-4 hostname
 '
