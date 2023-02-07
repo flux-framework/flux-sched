@@ -115,6 +115,12 @@ test_expect_success RFC35_SYNTAX 'invalid rank constraint fails' '
 	test_must_fail flux mini run --requires=ranks:5-4 hostname
 '
 
+test_expect_success RFC35_SYNTAX 'unknown rank returns unsatisfiable' '
+	test_must_fail flux mini run --requires=ranks:999 hostname \
+	 >unknown-rank.out 2>&1 &&
+	grep -i unsatisfiable unknown-rank.out
+'
+
 test_expect_success RFC35_SYNTAX 'hostlist constraint works' '
 	flux mini run --requires=host:$(hostname) hostname
 '
@@ -123,6 +129,13 @@ test_expect_success RFC35_SYNTAX 'invalid hostlist constraint fails' '
 	test_must_fail flux mini run --requires=host:foo\[  hostname
 '
 
+test_expect_success RFC35_SYNTAX 'unknown host returns unsatisfiable' '
+	if test "$(hostname)" != "host:xyz123"; then
+		test_must_fail flux mini run --requires=host:xyz123 hostname \
+		 >host-unknown.out 2>&1 &&
+		grep -i unsatisfiable host-unknown.out
+	fi
+'
 test_expect_success 'removing resource and qmanager modules' '
 	remove_qmanager &&
 	remove_resource

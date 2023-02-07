@@ -34,9 +34,10 @@ HostlistConstraint::HostlistConstraint (const YAML::Node &values)
 
 bool HostlistConstraint::match (const Flux::resource_model::resource_t &r) const
 {
-    if (hostlist_find (hl, r.name.c_str()) < 0)
-        return false;
-    return true;
+    int saved_errno = errno;
+    int rc = hostlist_find (hl, r.name.c_str());
+    errno = saved_errno;
+    return rc < 0 ? false : true;
 }
 
 YAML::Node HostlistConstraint::as_yaml () const
