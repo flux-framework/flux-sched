@@ -20,21 +20,21 @@ namespace resource_model {
 
 namespace fold {
 struct greater {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
+    inline bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
     {
         return a.score > b.score;
     }
 };
 
 struct less {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
+    inline bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
     {
         return a.score < b.score;
     }
 };
 
 struct interval_greater {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
+    inline bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
     {
         return *(ivset.find (a.score)) > *(ivset.find (b.score));
     }
@@ -42,7 +42,7 @@ struct interval_greater {
 };
 
 struct interval_less {
-    bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
+    inline bool operator() (const eval_egroup_t &a, const eval_egroup_t &b) const
     {
         return *(ivset.find (a.score)) < *(ivset.find (b.score));
     }
@@ -50,8 +50,8 @@ struct interval_less {
 };
 
 struct plus {
-    const int64_t operator() (const int64_t result,
-                              const eval_egroup_t &a) const
+    inline const int64_t operator() (const int64_t &result,
+                                     const eval_egroup_t &a) const
     {
         return result + a.score;
     }
