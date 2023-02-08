@@ -1,3 +1,27 @@
+flux-sched version 0.26.0 - 2023-02-07
+--------------------------------------
+
+### New Features
+
+ * support for RFC 31 Job Constraints (#997)
+ * report Fluxion version when broker modules are loaded (#998)
+
+### Fixes
+
+ * reapi: Rename resource/hlapi to resource/reapi (#983)
+ * resource: improve error messages for jobspec parse errors (#1003)
+ * resource: fix 'Internal match error' when hostlist constraint is provided
+   (#1005)
+
+### Testsuite
+
+ * testsuite: adjust expectations of recovery in `rv1_nosched` mode (#1000)
+ * testsuite: do not assume queues started by default (#996)
+ * testsuite: start/stop all queues with --all option (#992)
+ * github: change ubuntu version for python ci (#993)
+ * testsuite: update flux-tree-helper.py for new OutputFormat constructor
+   (#985)
+
 flux-sched version 0.25.0 - 2022-10-04
 --------------------------------------
 
