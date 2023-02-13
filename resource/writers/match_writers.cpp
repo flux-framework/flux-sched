@@ -148,6 +148,59 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
     return 0;
 }
 
+/****************************************************************************
+ *                                                                          *
+ *              K8S Writers Class Public Method Definitions              *
+ *                                                                          *
+ ****************************************************************************/
+
+
+int k8s_match_writers_t::emit (std::stringstream &out)
+{
+    out  << m_out.str ();
+    return 0;
+}
+
+
+bool k8s_match_writers_t::empty ()
+{
+    m_out.str ("");
+    m_out.clear ();
+    return true;
+}
+
+int k8s_match_writers_t::emit_json (json_t **j_o, json_t **aux)
+{
+    json_t *o = NULL;
+    std::string str = m_out.str ();
+
+    if (!str.empty ()) {
+        if ( !(o = json_string (str.c_str ()))) {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+    *j_o = o;
+    return 0;
+}
+
+
+int k8s_match_writers_t::emit_vtx (const std::string &prefix,
+                                    const f_resource_graph_t &g, const vtx_t &u,
+                                    unsigned int needs, bool exclusive)
+{
+    std::string mode = (exclusive)? "x" : "s";
+    m_out <<  prefix << g[u].name << "[" << needs << ":" << mode  << "] " << std::endl;
+    if (g[u].type == "node")
+        m_nodename = g[u].name;
+    return 0;
+}
+
+
+std::string k8s_match_writers_t::get_node ()
+{
+    return m_nodename;
+}
 
 /****************************************************************************
  *                                                                          *
@@ -400,6 +453,8 @@ json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
                                             unsigned int needs, bool exclusive)
 {
     json_t *o = NULL;
+    if (g[u].type == "node")
+        m_nodename =  g[u].basename;
     json_t *prop = nullptr;
 
     if (!g[u].properties.empty ()) {
@@ -451,6 +506,11 @@ json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
         }
     }
     return o;
+}
+
+std::string jgf_match_writers_t::get_node ()
+{
+    return m_nodename;
 }
 
 int jgf_match_writers_t::map2json (json_t *o,
@@ -1292,6 +1352,9 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::
         case match_format_t::JGF:
             w = std::make_shared<jgf_match_writers_t> ();
             break;
+        case match_format_t::K8S:
+            w = std::make_shared<k8s_match_writers_t> ();
+            break;
         case match_format_t::RLITE:
             w = std::make_shared<rlite_match_writers_t> ();
             break;
@@ -1319,6 +1382,8 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
     match_format_t format = match_format_t::SIMPLE;
     if (n == "jgf")
         format = match_format_t::JGF;
+    else if (n == "k8s")
+        format = match_format_t::K8S;
     else if (n == "rlite")
         format = match_format_t::RLITE;
     else if (n == "rv1")
@@ -1334,6 +1399,7 @@ bool known_match_format (const std::string &format)
 {
    return (format == "simple"
            || format == "jgf"
+           || format == "k8s"
            || format == "rlite"
            || format == "rv1"
            || format == "rv1_nosched"

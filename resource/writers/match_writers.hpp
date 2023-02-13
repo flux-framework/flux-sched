@@ -24,6 +24,7 @@ namespace Flux {
 namespace resource_model {
 
 enum class match_format_t { SIMPLE,
+                            K8S,
                             JGF,
                             RLITE,
                             RV1,
@@ -55,6 +56,7 @@ public:
     int compress_ids (std::stringstream &o, const std::vector<int64_t> &ids);
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init, char **hostlist);
+    virtual std::string get_node () { return "not available"; } 
 };
 
 
@@ -72,6 +74,24 @@ public:
                           unsigned int needs, bool exclusive);
 private:
     std::stringstream m_out;
+};
+
+/*! K8S match writers class for a matched resource set
+ */
+class k8s_match_writers_t : public match_writers_t
+{
+public:
+    virtual ~k8s_match_writers_t () {}
+    virtual int emit (std::stringstream &out);
+    virtual bool empty ();
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
+    virtual int emit_vtx (const std::string &prefix,
+                          const f_resource_graph_t &g, const vtx_t &u,
+                          unsigned int needs, bool exclusive);
+    virtual std::string get_node ();
+private:
+    std::stringstream m_out;
+    std::string m_nodename;
 };
 
 
@@ -93,6 +113,7 @@ public:
                           unsigned int needs, bool exclusive);
     virtual int emit_edg (const std::string &prefix,
                           const f_resource_graph_t &g, const edg_t &e);
+    virtual std::string get_node ();
 private:
     json_t *emit_vtx_base (const f_resource_graph_t &g, const vtx_t &u,
                            unsigned int needs, bool exclusive);
@@ -108,6 +129,7 @@ private:
 
     json_t *m_vout = NULL;
     json_t *m_eout = NULL;
+    std::string m_nodename;
 };
 
 
