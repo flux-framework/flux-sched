@@ -37,7 +37,7 @@ extern "C" reapi_module_ctx_t *reapi_module_new ()
         errno = ENOMEM;
         goto out;
     }
-    ctx->h = NULL;
+    ctx->h = flux_open (NULL, 0);
 out:
     return ctx;
 }
