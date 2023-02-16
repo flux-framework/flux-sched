@@ -107,7 +107,8 @@ private:
                         unsigned int add_by,
                         unsigned int multiply_by);
         score_factor_t (const score_factor_t &o) = default;
-        int64_t calc_factor (int64_t base_factor, int64_t break_tie) const;
+        int64_t calc_factor (int64_t base_factor, int64_t break_tie);
+        int64_t m_factor = 0;
 
     private:
         std::string m_type;
@@ -116,11 +117,10 @@ private:
     };
 
     void set_base_factor (const std::string &type, unsigned int id);
-    int64_t calc_multilevel_scores () const;
 
     FOLD m_comp;
     unsigned m_stop_on_k_matches = 0;
-    std::vector<int64_t> m_multilevel_scores;
+    int64_t m_multilevel_scores = 0;
     std::unordered_map<std::string, score_factor_t> m_multilevel_factors;
 };
 

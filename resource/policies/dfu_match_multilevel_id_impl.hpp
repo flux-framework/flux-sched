@@ -36,9 +36,9 @@ multilevel_id_t<FOLD>::score_factor_t::score_factor_t (const std::string &type,
 template<typename FOLD>
 int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
                                     int64_t base_factor,
-                                    int64_t break_tie) const
+                                    int64_t break_tie)
 {
-    int64_t add, mul, tie, factor;
+    int64_t add, mul, tie;
     if (base_factor < 0 || break_tie < 0) {
         errno = EINVAL;
         return -1;
@@ -61,15 +61,8 @@ int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
         errno = EOVERFLOW;
         return -1;
     }
-    factor = mul + tie;
-    return factor;
-}
-
-template<typename FOLD>
-int64_t multilevel_id_t<FOLD>::calc_multilevel_scores () const
-{
-    return std::accumulate (m_multilevel_scores.begin (),
-                            m_multilevel_scores.end (), 0);
+    m_factor = mul + tie;
+    return m_factor;
 }
 
 
@@ -138,6 +131,7 @@ int multilevel_id_t<FOLD>::dom_finish_graph (
         dfu.choose_accum_best_k (subsystem, type, count, m_comp);
     }
     dfu.set_overall_score (score);
+    m_multilevel_scores = 0;
     return (score == MATCH_MET)? 0 : -1;
 }
 
@@ -164,10 +158,10 @@ int multilevel_id_t<FOLD>::dom_discover_vtx (
         if (g[u].id < -1)
             return -1;
         auto &f = m_multilevel_factors[g[u].type];
-        int64_t factor =  f.calc_factor (g[u].id+1, g[u].uniq_id);
+        int64_t factor = f.calc_factor (g[u].id+1, g[u].uniq_id);
         if (factor < 0)
             return factor;
-        m_multilevel_scores.push_back (factor);
+        m_multilevel_scores += factor;
     }
     incr ();
     return 0;
@@ -184,7 +178,6 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (
 {
     int64_t score = MATCH_MET;
     int64_t overall;
-    unsigned prefix;
 
     for (auto &resource : resources) {
         if (resource.type != g[u].type)
@@ -203,11 +196,12 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (
         }
     }
 
-    if (m_multilevel_factors.find (g[u].type) != m_multilevel_factors.end ())
-        m_multilevel_scores.pop_back ();
+    auto factor = m_multilevel_factors.find (g[u].type);
+    if (factor != m_multilevel_factors.end ())
+        m_multilevel_scores -= factor->second.m_factor;
 
-    prefix = calc_multilevel_scores ();
-    overall = (score == MATCH_MET)? (score + prefix + g[u].id + 1) : score;
+    overall = (score == MATCH_MET)? (score + m_multilevel_scores
+                                     + g[u].id + 1) : score;
     dfu.set_overall_score (overall);
     decr ();
     return (score == MATCH_MET)? 0 : -1;
