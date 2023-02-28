@@ -19,7 +19,7 @@ export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 test_expect_success 'update: generate jobspec for a simple test job' '
-    flux mini run --dry-run -N 1 -n 1 -t 1h hostname > basic.json
+    flux run --dry-run -N 1 -n 1 -t 1h hostname > basic.json
 '
 
 test_expect_success 'update: load test resources' '

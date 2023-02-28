@@ -35,7 +35,7 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=all' '
-	jobid=$(flux mini submit -n 1 --queue=all hostname) &&
+	jobid=$(flux submit -n 1 --queue=all hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = all &&
@@ -45,7 +45,7 @@ test_expect_success 'qmanager: job can be submitted to queue=all' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=batch' '
-	jobid=$(flux mini submit -n 1 --queue=batch hostname) &&
+	jobid=$(flux submit -n 1 --queue=batch hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = batch &&
@@ -55,7 +55,7 @@ test_expect_success 'qmanager: job can be submitted to queue=batch' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=debug' '
-	jobid=$(flux mini submit -n 1 --queue=debug hostname) &&
+	jobid=$(flux submit -n 1 --queue=debug hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = debug &&
@@ -65,7 +65,7 @@ test_expect_success 'qmanager: job can be submitted to queue=debug' '
 '
 
 test_expect_success 'qmanager: job enqueued into implicitly default queue' '
-	jobid=$(flux mini submit -n 1 hostname) &&
+	jobid=$(flux submit -n 1 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = all &&
@@ -92,7 +92,7 @@ test_expect_success 'reconfigure qmanager with queues with different policies' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
-	jobid=$(flux mini submit -n 1 --queue=queue3 hostname) &&
+	jobid=$(flux submit -n 1 --queue=queue3 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue3 &&
@@ -102,7 +102,7 @@ test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
-	jobid=$(flux mini submit -n 1 --queue=queue2 hostname) &&
+	jobid=$(flux submit -n 1 --queue=queue2 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue2 &&
@@ -112,7 +112,7 @@ test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
 '
 
 test_expect_success 'qmanager: job submitted to queue=queue1 (conservative)' '
-	jobid=$(flux mini submit -n 1 --queue=queue1 hostname) &&
+	jobid=$(flux submit -n 1 --queue=queue1 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue1 &&
@@ -122,7 +122,7 @@ test_expect_success 'qmanager: job submitted to queue=queue1 (conservative)' '
 '
 
 test_expect_success 'qmanager: job enqueued into explicitly default queue' '
-	jobid=$(flux mini submit -n 1 hostname) &&
+	jobid=$(flux submit -n 1 hostname) &&
 	flux job wait-event -t 10 ${jobid} finish &&
 	queue=$(get_queue alloc ${jobid}) &&
 	test ${queue} = queue3 &&
@@ -132,7 +132,7 @@ test_expect_success 'qmanager: job enqueued into explicitly default queue' '
 '
 
 test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
-	test_must_fail flux mini run -n 1 --queue=foo \
+	test_must_fail flux run -n 1 --queue=foo \
 	    hostname 2>unknown.err &&
 	grep "Invalid queue" unknown.err
 '
@@ -158,7 +158,7 @@ test_expect_success 'unload qmanager and deconfigure queues' '
 	flux config reload
 '
 test_expect_success 'submit job with no queue' '
-	flux mini submit /bin/true >noqueue.jobid
+	flux submit /bin/true >noqueue.jobid
 '
 test_expect_success 'reconfigure with one queue and load qmanager' '
 	cat >config/queues.toml <<-EOT &&
@@ -176,7 +176,7 @@ test_expect_success 'unload qmanager' '
 	remove_qmanager
 '
 test_expect_success 'submit job with queue' '
-	flux mini submit --queue=foo /bin/true >withqueue.jobid
+	flux submit --queue=foo /bin/true >withqueue.jobid
 '
 test_expect_success 'deconfigure queues and load qmanager' '
 	cp /dev/null config/queues.toml &&

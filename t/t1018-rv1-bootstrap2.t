@@ -34,7 +34,7 @@ test_expect_success 'rv1-bootstrap2: creating a nested batch script' '
 	flux module load sched-fluxion-resource \
 load-allowlist=cluster,node,gpu,core match-format=rv1 policy=\$1
 	flux module load sched-fluxion-qmanager
-	nested_jobid=\$(flux mini submit -n\$2 -N\$3 -c\$4 -g\$5 sleep 0)
+	nested_jobid=\$(flux submit -n\$2 -N\$3 -c\$4 -g\$5 sleep 0)
 	flux job wait-event -t10 \${nested_jobid} start
 	flux job info \${nested_jobid} R > \$6
 	sleep inf
@@ -44,7 +44,7 @@ EOF
 
 # Idempotency check
 test_expect_success 'rv1-bootstrap: resource idempotency preserved' '
-    JOBID=$(flux mini batch -n4 -N4 -c44 -g4 \
+    JOBID=$(flux batch -n4 -N4 -c44 -g4 \
 	./nest.sh high 4 4 44 4 nest.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest.json &&
     jq " del(.execution.starttime, .execution.expiration) " \
@@ -63,7 +63,7 @@ test_expect_success 'rv1-bootstrap2: killing a nested job works' '
 
 # 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=high)' '
-    JOBID1=$(flux mini batch -n2 -N2 -c44 -g4 \
+    JOBID1=$(flux batch -n2 -N2 -c44 -g4 \
 	./nest.sh high 2 2 44 4 nest1.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest1.json &&
     remap_rv1_resource_type nest1.json core > nest1.csv &&
@@ -77,7 +77,7 @@ test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=high)' '
 
 # 2 nodes each with partial resource set using match policy=high
 test_expect_success 'rv1-bootstrap2: 2 partial node nesting works (high)' '
-    JOBID2=$(flux mini batch -n2 -N2 -c10 -g2 \
+    JOBID2=$(flux batch -n2 -N2 -c10 -g2 \
 	./nest.sh high 2 2 10 2 nest2.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest2.json &&
     flux job info ${JOBID2} R | jq . > job2.json &&
@@ -110,7 +110,7 @@ match-format=rv1 policy=low &&
 
 # 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=low)' '
-    JOBID3=$(flux mini batch -n2 -N2 -c44 -g4 \
+    JOBID3=$(flux batch -n2 -N2 -c44 -g4 \
 	./nest.sh low 2 2 44 4 nest3.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest3.json &&
     remap_rv1_resource_type nest3.json core > nest3.csv &&
@@ -123,7 +123,7 @@ test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=low)' '
 '
 
 test_expect_success 'rv1-bootstrap2: 2 partial node nesting works (low)' '
-    JOBID4=$(flux mini batch -n2 -N2 -c10 -g2 \
+    JOBID4=$(flux batch -n2 -N2 -c10 -g2 \
 	./nest.sh low 2 2 10 2 nest4.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest4.json &&
     flux job info ${JOBID4} R | jq . > job4.json &&
@@ -151,9 +151,9 @@ load-allowlist=cluster,node,gpu,core match-format=rv1 policy=\$1
 	flux module load sched-fluxion-qmanager
 	hc=\$(expr \$4 / 2)
 	hg=\$(expr \$5 / 2)
-	job1=\$(flux mini batch -n\$2 -N\$3 -c\${hc} -g\${hg} \
+	job1=\$(flux batch -n\$2 -N\$3 -c\${hc} -g\${hg} \
 		./nest.sh \$1 \$2 \$3 \${hc} \${hg} \$8)
-	job2=\$(flux mini batch -n\$2 -N\$3 -c\${hc} -g\${hg} \
+	job2=\$(flux batch -n\$2 -N\$3 -c\${hc} -g\${hg} \
 		./nest.sh \$1 \$2 \$3 \${hc} \${hg} \$9)
 	\$WAITFILE -t 600 -v -p \"R_lite\" \$8
 	flux job info \${job1} R > \$6
@@ -165,7 +165,7 @@ EOF
 '
 
 test_expect_success 'rv1-bootstrap2: double nesting works' '
-    JOBID5=$(flux mini batch -n2 -N2 -c10 -g2 ./dnest.sh low 2 2 10 2 \
+    JOBID5=$(flux batch -n2 -N2 -c10 -g2 ./dnest.sh low 2 2 10 2 \
 	job5.1.json job5.2.json nest5.1.json nest5.2.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" job5.1.json &&
     $WAITFILE -t 600 -v -p \"R_lite\" job5.2.json &&

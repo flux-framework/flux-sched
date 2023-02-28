@@ -48,7 +48,7 @@ test_expect_success 'RV1 correct on rank/node ID mismatch + core ID modified' '
 '
 
 test_expect_success 'RV1 correct on heterogeneous configuration' '
-	flux mini submit -n 28 --dry-run hostname > n28.json &&
+	flux submit -n 28 --dry-run hostname > n28.json &&
 	cat > cmds004 <<-EOF &&
 	match allocate n28.json
 	quit
@@ -67,7 +67,7 @@ test_expect_success 'RV1 correct on heterogeneous configuration' '
 '
 
 test_expect_success 'RV1 correct on heterogeneous configuration 2' '
-	flux mini submit -n 14 --dry-run hostname > n14.json &&
+	flux submit -n 14 --dry-run hostname > n14.json &&
 	cat > cmds005 <<-EOF &&
 	match allocate n14.json
 	quit
@@ -98,7 +98,7 @@ test_expect_success 'RV1 correct on heterogeneous configuration 3' '
 '
 
 test_expect_success 'RV1 with nosched correct on heterogeneous configuration' '
-	flux mini submit -n 28 --dry-run hostname > n28.json &&
+	flux submit -n 28 --dry-run hostname > n28.json &&
 	cat > cmds007 <<-EOF &&
 	match allocate n28.json
 	quit
@@ -115,7 +115,7 @@ test_expect_success 'RV1 with nosched correct on heterogeneous configuration' '
 '
 
 test_expect_success 'RV1 with nosched correct on heterogeneous config 2' '
-	flux mini submit -n 14 --dry-run hostname > n14.json &&
+	flux submit -n 14 --dry-run hostname > n14.json &&
 	cat > cmds008 <<-EOF &&
 	match allocate n14.json
 	quit
@@ -146,7 +146,7 @@ test_expect_success 'RV1 with nosched correct on heterogeneous config 3' '
 '
 
 test_expect_success 'RV1 with nosched correct on nonconforming hostnames' '
-	flux mini submit -n 8 --dry-run hostname > n8.json &&
+	flux submit -n 8 --dry-run hostname > n8.json &&
 	cat > cmds010 <<-EOF &&
 	match allocate n8.json
 	quit
@@ -160,7 +160,7 @@ test_expect_success 'RV1 with nosched correct on nonconforming hostnames' '
 '
 
 test_expect_success 'RV1 with same hostnames work' '
-	flux mini submit -n 8 --dry-run hostname > n8.json &&
+	flux submit -n 8 --dry-run hostname > n8.json &&
 	cat > cmds011 <<-EOF &&
 	match allocate n8.json
 	quit
@@ -176,7 +176,7 @@ test_expect_success 'RV1 with same hostnames work' '
 '
 
 test_expect_success 'Scheduling RV1 with high node num works (pol=lonode)' '
-	flux mini submit -n 16 -c 94 --dry-run hostname > n94.json &&
+	flux submit -n 16 -c 94 --dry-run hostname > n94.json &&
 	cat > cmds012 <<-EOF &&
 	match allocate n94.json
 	quit

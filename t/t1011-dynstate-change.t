@@ -17,19 +17,19 @@ export FLUX_SCHED_MODULE=none
 test_under_flux 4 full -o,--config-path=$(pwd)/config
 
 test_expect_success 'dyn-state: generate jobspecs' '
-	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h \
+	flux run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h \
 	    sleep 3600 > basic.json &&
-	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h \
+	flux run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h \
 	    sleep 3600 > 1N.json &&
-	flux mini run --dry-run -N 4 -n 4 -c 45 -g 4 -t 1h \
+	flux run --dry-run -N 4 -n 4 -c 45 -g 4 -t 1h \
 	    sleep 3600 > unsat.json &&
-	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=debug \
+	flux run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=debug \
 	    sleep 3600 > basic.debug.json &&
-	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=debug \
+	flux run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=debug \
 	    sleep 3600 > 1N.debug.json &&
-	flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=batch \
+	flux run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h --queue=batch \
 	    sleep 3600 > basic.batch.json &&
-	flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=batch \
+	flux run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h --queue=batch \
 	    sleep 3600 > 1N.batch.json
 '
 

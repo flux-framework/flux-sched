@@ -136,12 +136,12 @@ test_expect_success 'submitting combined storage jobspec succeeded' '
 '
 
 test_expect_success 'datastaging logging is not overly verbose by default' '
-    flux mini run hostname 2> non-verbose.err &&
+    flux run hostname 2> non-verbose.err &&
         test_must_be_empty non-verbose.err
 '
 
 test_expect_success 'datastaging logging can be access with verbose option' '
-    flux mini run -o verbose=2 hostname 2> verbose-run.err &&
+    flux run -o verbose=2 hostname 2> verbose-run.err &&
         grep -q " DEBUG:.* Jobspec does not contain data-staging attributes. "\
 "No staging necessary." verbose-run.err
 '

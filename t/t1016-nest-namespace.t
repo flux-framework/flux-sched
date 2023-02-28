@@ -37,7 +37,7 @@ EOF
 	2,3
 EOF
     chmod u+x nest.sh &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out1.a &&
     tail -3 out1.a > out1.a.fin &&
@@ -46,7 +46,7 @@ EOF
 
 test_expect_success HAVE_GETXML 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES="0,1,2,3" &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out1.b &&
     tail -3 out1.b > out1.b.fin &&
@@ -68,7 +68,7 @@ test_expect_success HAVE_GETXML 'namespace: gpu id remapping works with hwloc (p
 	1
 	0,1
 EOF
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out2.a &&
     tail -3 out2.a > out2.a.fin &&
@@ -77,7 +77,7 @@ EOF
 
 test_expect_success HAVE_GETXML 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES=-1 &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out2.b &&
     tail -3 out2.b > out2.b.fin &&
@@ -106,7 +106,7 @@ EOF
 	2,3
 EOF
     chmod u+x nest2.sh &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out3.a &&
     tail -1 out3.a > out3.a.fin &&
@@ -115,7 +115,7 @@ EOF
 
 test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES="0,1,2,3" &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out3.b &&
     tail -1 out3.b > out3.b.fin &&
@@ -135,7 +135,7 @@ test_expect_success 'namespace: gpu id remapping works with rv1exec (pol=hi)' '
     cat >exp4 <<-EOF &&
 	0,1
 EOF
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out4.a &&
     tail -1 out4.a > out4.a.fin &&
@@ -144,7 +144,7 @@ EOF
 
 test_expect_success 'namespace: parent CUDA_VISIBLE_DEVICES has no effect' '
     export CUDA_VISIBLE_DEVICES="0,1,2,3" &&
-    jobid=$(flux mini batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
+    jobid=$(flux batch --output=kvs -n1 -N1 -c22 -g2 ./nest2.sh) &&
     flux job wait-event -t10 ${jobid} release &&
     flux job attach ${jobid} > out4.b &&
     tail -1 out4.b > out4.b.fin &&

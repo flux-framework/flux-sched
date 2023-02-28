@@ -644,7 +644,7 @@ submit() {
             continue
         fi
         jobid=$(\
-flux mini submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
+flux submit --job-name=${FT_JOB_NAME} -N${N} -n${N} -c${c} ${G} \
      flux start ${o} \
      flux tree -N${N} -c${c} ${G} ${T} ${Q} ${P} ${M} ${F} ${R} ${X} ${J} \
      -- "${FT_CL[@]}")

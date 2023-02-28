@@ -23,15 +23,15 @@ test_expect_success 'priority: loading fluxion modules works' '
 '
 
 test_expect_success 'priority: a full-size job can be scheduled and run' '
-    jobid1=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
+    jobid1=$(flux submit -N 1 -n 1 -c 44 -g 4 -t 1h \
 --urgency 16 sleep 3600) &&
     flux job wait-event -t 10 ${jobid1} start
 '
 
 test_expect_success 'priority: 2 jobs with higher urgency will not run' '
-    jobid2=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
+    jobid2=$(flux submit -N 1 -n 1 -c 44 -g 4 -t 1h \
 --urgency 17 sleep 3600) &&
-    jobid3=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
+    jobid3=$(flux submit -N 1 -n 1 -c 44 -g 4 -t 1h \
 --urgency 18 sleep 3600) &&
     test_must_fail flux job wait-event -t 1 ${jobid2} start
 '
@@ -42,7 +42,7 @@ test_expect_success 'priority: canceling the first job starts the last job' '
 '
 
 test_expect_success 'priority: submit job with higher urgency' '
-    jobid4=$(flux mini submit -N 1 -n 1 -c 44 -g 4 -t 1h \
+    jobid4=$(flux submit -N 1 -n 1 -c 44 -g 4 -t 1h \
 --urgency 20 sleep 3600) &&
     test_must_fail flux job wait-event -t 1 ${jobid4} start
 '
