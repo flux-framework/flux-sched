@@ -12,6 +12,7 @@
 #define JOBINFO_HPP
 
 #include <string>
+#include <stdint.h>
 
 namespace Flux {
 namespace resource_model {
