@@ -677,7 +677,7 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v, resource_graph_t &g,
     if ( (avail = planner_avail_resources_during (plans, at, dur)) == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": planner_avail_resource_during return -1 for ";
-        m_err_msg + g[v].name + ".\n";
+        m_err_msg += g[v].name + ".\n";
         goto done;
     }
 
