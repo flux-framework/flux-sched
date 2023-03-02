@@ -524,7 +524,7 @@ int dfu_impl_t::rem_exv (int64_t jobid)
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_rem_span returned -1.\n";
             m_err_msg += "name=" + g[*vi].name + "uniq_id=";
-            m_err_msg + std::to_string (g[*vi].uniq_id) + ".\n";
+            m_err_msg += std::to_string (g[*vi].uniq_id) + ".\n";
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
         }
