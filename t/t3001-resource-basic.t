@@ -6,6 +6,8 @@ test_description='Test Scheduling On Tiny Machine Configuration'
 
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
+jobspecs_suffix="data/resource/jobspecs/basics"
+jobspecs_dir="${SHARNESS_TEST_SRCDIR}/${jobspecs_suffix}"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 query="../../resource/utilities/resource-query"
 
@@ -538,5 +540,34 @@ test_expect_success "${test088_desc}" '
     test_cmp 088.R.out ${exp_dir}/088.R.out
 '
 
+#
+# Test deferred_orelse_reserve behavior
+# Selection Policy -- High ID first (-P high)
+#
+
+cmds100="${cmd_dir}/cmds13.in"
+test100_desc="match defer_orelse_reserve 4 jobspecs"
+test_expect_success "${test100_desc}" '
+    mkdir jobspecs &&
+    cp -r ${jobspecs_dir}/* jobspecs/ &&
+    sed "s~@TEST_SRCDIR@/${jobspecs_suffix}/~jobspecs/~g" ${cmds100} > cmds100 &&
+    epoch=$( date +%s ) &&
+    sed -i "s~deferred_from:.*~deferred_from: ${epoch}~" jobspecs/* &&
+    ${query} -L ${grugs} -S CA -P high -t 100.R.out < cmds100 &&
+    test_numcmp 100.R.out ${exp_dir}/100.R.out
+'
+
+cmds101="${cmd_dir}/cmds14.in"
+test101_desc="match allocate 4 jobs then defer_orelse_reserve 5 jobs"
+test_expect_success "${test101_desc}" '
+    rm -rf jobspecs &&
+    mkdir jobspecs &&
+    cp -r ${jobspecs_dir}/* jobspecs/ &&
+    sed "s~@TEST_SRCDIR@/${jobspecs_suffix}/~jobspecs/~g" ${cmds101} > cmds101 &&
+    epoch=$( date +%s ) &&
+    sed -i "s~deferred_from:.*~deferred_from: ${epoch}~" jobspecs/* &&
+    ${query} -L ${grugs} -S CA -P high -t 101.R.out < cmds101 &&
+    test_numcmp 101.R.out ${exp_dir}/101.R.out
+'
 
 test_done

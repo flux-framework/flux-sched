@@ -129,3 +129,17 @@ else .rank - ${rank_remap3} end, .id - ${id_rebase}, \
     echo Name,Rank,Id,Id-in-paths &&
     jq -r " ${filter} " ${json}
 }
+
+# Compare reservation times for deferred allocations. The allocations are relative to the system time,
+# so allow a 100s drift.
+test_numcmp() {
+    if test "$( sdiff -s "$@" | grep -v "INFO: SCHEDULED AT=" | wc -l )" -gt 0; then
+        return 1
+    fi
+	for i in $( sdiff -s "$@" | sed "s/INFO: SCHEDULED AT=//g" | sed "s/|//g" | awk '{print $1 - $2}' | sed "s/-//g" ); do
+		if test "${i}" -gt 100; then
+			return 1
+		fi
+	done
+	return 0
+}

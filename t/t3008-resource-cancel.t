@@ -6,6 +6,8 @@ test_description='Test reservations of jobs of varying geometries and durations'
 
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/cancel"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/cancel"
+jobspecs_suffix="data/resource/jobspecs/cancel"
+jobspecs_dir="${SHARNESS_TEST_SRCDIR}/${jobspecs_suffix}"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
 query="../../resource/utilities/resource-query"
 
@@ -51,6 +53,18 @@ test_expect_success "${test004_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
     ${query} -L ${grugs} -S CA -P low -t 004.R.out < cmds004 &&
     test_cmp 004.R.out ${exp_dir}/004.R.out
+'
+
+cmds005="${cmd_dir}/cmds03.in"
+test005_desc="defer or reserve 17 jobs, cancel all (pol=low)"
+test_expect_success "${test005_desc}" '
+    mkdir jobspecs &&
+    cp -r ${jobspecs_dir}/* jobspecs/ &&
+    sed "s~@TEST_SRCDIR@/${jobspecs_suffix}/~jobspecs/~g" ${cmds005} > cmds005 &&
+    epoch=$( date +%s ) &&
+    sed -i "s~deferred_from:.*~deferred_from: ${epoch}~" jobspecs/* &&
+    ${query} -L ${grugs} -S CA -P low -t 005.R.out < cmds005 &&
+    test_numcmp 005.R.out ${exp_dir}/005.R.out
 '
 
 #
