@@ -1643,6 +1643,9 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         else if (std::string ("allocate_orelse_reserve") == cmd)
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                          jobid, at);
+        else if (std::string ("deferred_orelse_reserve") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::DEFERRED_ORELSE_RESERVE,
+                         jobid, at);
         else if (std::string ("satisfiability") == cmd)
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY,
                          jobid, at);
