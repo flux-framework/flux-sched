@@ -95,6 +95,24 @@ struct jobmeta_t {
             m_queue_set = true;
         }
         constraint = jobspec.attributes.system.constraint;
+        // If user specifies optional deferred_start and deferred_from keys
+        // use the elapsed time between now and deferred_from as the offset
+        // to compute the updated "at" time for the allocation.
+        auto deferred_start = 
+                jobspec.attributes.system.optional.find ("deferred_start");
+        auto deferred_from =
+                jobspec.attributes.system.optional.find ("deferred_from");
+        if (deferred_start != jobspec.attributes.system.optional.end ()
+            && deferred_from != jobspec.attributes.system.optional.end ()) {
+            int64_t now = std::chrono::duration_cast<std::chrono::seconds>
+                (std::chrono::system_clock::now ().time_since_epoch ()).count ();
+            int64_t elapsed = now - deferred_from->second.as<int64_t> ();
+            if (elapsed < 0)
+                at = 0;
+            else
+                at = deferred_start->second.as<int64_t> () - elapsed;
+        }
+
         return 0;
     }
 
