@@ -23,6 +23,14 @@ libtool
 .libs/
 libltdl/
 
+# cmake and ninja
+*.counts
+.ninja_deps
+.ninja_log
+.cmake/
+/*build*
+/Testing
+
 # generated library version header
 /src/common/libflux/version.h
 

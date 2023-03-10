@@ -1,0 +1,9 @@
+{
+global:
+    flux_plugin_init;
+    mod_main;
+    mod_name;
+    mod_service;
+local:
+    *;
+};
