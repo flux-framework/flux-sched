@@ -1,0 +1,3 @@
+# Generating the library TESTS
+add_executable(exception_safe_wrapper_test01 exception_safe_wrapper_test01.cpp)
+target_link_libraries(exception_safe_wrapper_test01 PRIVATE cppwrappers libtap)

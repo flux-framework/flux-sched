@@ -5,7 +5,11 @@ test_description='Test data-staging job shell plugin'
 . `dirname $0`/sharness.sh
 
 shell_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/shell`
-shell_plugin_path="$(readlink -e ${SHARNESS_BUILD_DIRECTORY}/src/shell/.libs)"
+if [ -d "${SHARNESS_BUILD_DIRECTORY}/src/shell/.libs" ] ; then
+  shell_plugin_path="$(readlink -e ${SHARNESS_BUILD_DIRECTORY}/src/shell/.libs)"
+else
+  shell_plugin_path="$(readlink -e ${SHARNESS_BUILD_DIRECTORY}/src/shell)"
+fi
 jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
 
 
