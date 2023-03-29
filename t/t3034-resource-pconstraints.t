@@ -17,19 +17,19 @@ test_expect_success 'pconstraints: configuring a heterogeneous machine works' '
 '
 
 test_expect_success 'pconstraints: generate property-based jobspecs' '
-	flux mini submit --requires="arm-v9@core" --dry-run hostname \
+	flux submit --requires="arm-v9@core" --dry-run hostname \
 		> job.arm-v9.json &&
-	flux mini submit --requires="arm-v8@core,amd-mi60@gpu" \
+	flux submit --requires="arm-v8@core,amd-mi60@gpu" \
 		 --dry-run hostname > job.arm-v9+amd-mi60.json &&
-	flux mini submit --requires="amd-m50@gpu" --dry-run hostname \
+	flux submit --requires="amd-m50@gpu" --dry-run hostname \
 		> job.amd-mi50.json &&
-	flux mini submit -n2 -c1 -g2 --requires="arm-v9@core" \
+	flux submit -n2 -c1 -g2 --requires="arm-v9@core" \
 		 --dry-run hostname > job.arm-v9+gpu.json &&
-	flux mini submit -n1 --requires="^arm-v9@core" \
+	flux submit -n1 --requires="^arm-v9@core" \
 		--dry-run hostname > job.not-arm-v9.json &&
-	flux mini submit -n1 --requires="ar^m-v9@core" \
+	flux submit -n1 --requires="ar^m-v9@core" \
 		--dry-run hostname > job.invalid.json &&
-	flux mini submit -n1 -c1 -g1 --dry-run hostname > job.gpu.json
+	flux submit -n1 -c1 -g1 --dry-run hostname > job.gpu.json
 '
 
 #

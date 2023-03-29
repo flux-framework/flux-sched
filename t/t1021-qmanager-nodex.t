@@ -38,12 +38,12 @@ test_expect_success 'qmanager-nodex: loading fluxion modules works (hinodex)' '
 '
 
 test_expect_success 'qmanager-nodex: submit a one-core jobs (hinodex)' '
-    JOBID1=$(flux mini submit sleep inf) &&
+    JOBID1=$(flux submit sleep inf) &&
     flux job wait-event -t 10 ${JOBID1} start
 '
 
 test_expect_success 'qmanager-nodex: submit a 8-core jobs (hinodex)' '
-    JOBID2=$(flux mini submit -n8 sleep inf) &&
+    JOBID2=$(flux submit -n8 sleep inf) &&
     flux job wait-event -t 10 ${JOBID2} start
 '
 
@@ -64,7 +64,7 @@ EOF
 '
 
 test_expect_success 'qmanager-nodex: submit a -N2 -n2 jobs (hinodex)' '
-    JOBID3=$(flux mini submit -N2 -n2 sleep inf) &&
+    JOBID3=$(flux submit -N2 -n2 sleep inf) &&
     flux job wait-event -t 10 ${JOBID3} start
 '
 
@@ -98,12 +98,12 @@ test_expect_success 'qmanager-nodex: loading fluxion modules works (lonodex)' '
 '
 
 test_expect_success 'qmanager-nodex: submit a one-core jobs (lonodex)' '
-    JOBID1=$(flux mini submit sleep inf) &&
+    JOBID1=$(flux submit sleep inf) &&
     flux job wait-event -t 10 ${JOBID1} start
 '
 
 test_expect_success 'qmanager-nodex: submit a 8-core jobs (lonodex)' '
-    JOBID2=$(flux mini submit -n8 sleep inf) &&
+    JOBID2=$(flux submit -n8 sleep inf) &&
     flux job wait-event -t 10 ${JOBID2} start
 '
 
@@ -124,7 +124,7 @@ EOF
 '
 
 test_expect_success 'qmanager-nodex: submit a -N2 -n2 jobs (lonodex)' '
-    JOBID3=$(flux mini submit -N2 -n2 sleep inf) &&
+    JOBID3=$(flux submit -N2 -n2 sleep inf) &&
     flux job wait-event -t 10 ${JOBID3} start
 '
 

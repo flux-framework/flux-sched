@@ -22,10 +22,10 @@ subsystems=containment policy=low &&
 '
 
 test_expect_success HAVE_JQ 'feasibility: --plugins=feasibility works ' '
-    flux mini run -n 999 --dry-run hostname | \
+    flux run -n 999 --dry-run hostname | \
         flux job-validator --jobspec-only --plugins=feasibility \
         | jq -e ".errnum != 0" &&
-    flux mini run -n 999 --dry-run hostname | \
+    flux run -n 999 --dry-run hostname | \
         flux job-validator --jobspec-only \
         --plugins=feasibility \
         --feasibility-service=sched-fluxion-resource.satisfiability \
@@ -37,16 +37,16 @@ test_expect_success 'feasibility: loading job-ingest with feasibilty works' '
  '
 
  test_expect_success 'feasibility: unsatisfiable jobs are rejected' '
-    test_must_fail flux mini submit -n 170 hostname 2>err1 &&
+    test_must_fail flux submit -n 170 hostname 2>err1 &&
     grep "Unsatisfiable request" err1 &&
-    test_must_fail flux mini submit -N 2 -n2 hostname 2>err2 &&
+    test_must_fail flux submit -N 2 -n2 hostname 2>err2 &&
     grep "Unsatisfiable request" err2 &&
-    test_must_fail flux mini submit -g 1 hostname 2>err3 &&
+    test_must_fail flux submit -g 1 hostname 2>err3 &&
     grep -i "Unsatisfiable request" err3
  '
 
 test_expect_success 'feasibility: satisfiable jobs are accepted' '
-    jobid=$(flux mini submit -n 8 hostname) &&
+    jobid=$(flux submit -n 8 hostname) &&
     flux job wait-event -t 10 ${jobid} start &&
     flux job wait-event -t 10 ${jobid} finish &&
     flux job wait-event -t 10 ${jobid} release &&
@@ -58,16 +58,16 @@ test_expect_success 'feasibility: load job-ingest with two validators' '
  '
 
  test_expect_success 'feasibility: unsatisfiable jobs are rejected' '
-    test_must_fail flux mini submit -n 170 hostname 2>err4 &&
+    test_must_fail flux submit -n 170 hostname 2>err4 &&
     grep "Unsatisfiable request" err4 &&
-    test_must_fail flux mini submit -N 2 -n2 hostname 2>err5 &&
+    test_must_fail flux submit -N 2 -n2 hostname 2>err5 &&
     grep "Unsatisfiable request" err5 &&
-    test_must_fail flux mini submit -g 1 hostname 2>err6 &&
+    test_must_fail flux submit -g 1 hostname 2>err6 &&
     grep -i "Unsatisfiable request" err6
  '
 
 test_expect_success 'feasibility: satisfiable jobs are accepted' '
-    jobid=$(flux mini submit -n 8 hostname) &&
+    jobid=$(flux submit -n 8 hostname) &&
     flux job wait-event -t 10 ${jobid} start &&
     flux job wait-event -t 10 ${jobid} finish &&
     flux job wait-event -t 10 ${jobid} release &&

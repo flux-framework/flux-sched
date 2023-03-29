@@ -28,9 +28,9 @@ check_requeue() {
 }
 
 test_expect_success 'recovery: generate test jobspecs' '
-	flux mini run --dry-run -N 1 -n 8 -t 1h \
+	flux run --dry-run -N 1 -n 8 -t 1h \
 	    --queue=batch sleep 3600 > basic.batch.json &&
-	flux mini run --dry-run -N 1 -n 8 -t 1h \
+	flux run --dry-run -N 1 -n 8 -t 1h \
 	    --queue=debug sleep 3600 > basic.debug.json
 '
 

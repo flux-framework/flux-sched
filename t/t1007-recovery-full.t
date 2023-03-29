@@ -20,7 +20,7 @@ flux setattr log-stderr-level 6
 
 
 test_expect_success 'recovery: generate a test jobspec' '
-    flux mini run --dry-run -N 1 -n 4 -t 1h sleep 3600 > basic.json
+    flux run --dry-run -N 1 -n 4 -t 1h sleep 3600 > basic.json
 '
 
 test_expect_success 'load test resources' '

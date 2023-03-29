@@ -134,8 +134,8 @@ flux module list
 
 Submit jobs:
 ```
-flux mini submit -N3 -n3 hostname
-flux mini submit -N3 -n3 sleep 30
+flux submit -N3 -n3 hostname
+flux submit -N3 -n3 sleep 30
 ```
 
 Examine the status of these jobs:

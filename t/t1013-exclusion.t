@@ -15,8 +15,8 @@ export FLUX_SCHED_MODULE=none
 test_under_flux 4
 
 test_expect_success 'exclusion: generate jobspecs' '
-    flux mini run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h sleep 3600 > basic.json &&
-    flux mini run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h sleep 3600 > 1N.json
+    flux run --dry-run -N 4 -n 4 -c 44 -g 4 -t 1h sleep 3600 > basic.json &&
+    flux run --dry-run -N 1 -n 1 -c 44 -g 4 -t 1h sleep 3600 > 1N.json
 '
 
 test_expect_success 'exclusion: load config with resource exclusions' '

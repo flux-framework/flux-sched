@@ -23,7 +23,7 @@ submit_jobs()   {
 }
 
 test_expect_success 'qmanager: generate jobspec for a simple test job' '
-    flux mini submit -n 1 -t 100s --dry-run sleep 10 > basic.json
+    flux submit -n 1 -t 100s --dry-run sleep 10 > basic.json
 '
 
 test_expect_success 'load test resources' '
