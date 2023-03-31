@@ -1,3 +1,16 @@
+flux-sched version 0.27.0 - 2023-03-31
+--------------------------------------
+
+### Fixes
+
+ * performance: fix match performance degradation (#1007)
+ * resource: fix GCC build errors (#1011)
+
+### Testsuite
+
+ * testsuite: update uses of `flux mini CMD` (#1010)
+ * github: add workflow dispatch (#1012)
+
 flux-sched version 0.26.0 - 2023-02-07
 --------------------------------------
 
