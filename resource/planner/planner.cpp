@@ -284,7 +284,7 @@ static inline void erase (planner_t *ctx)
     ctx->sched_point_tree.destroy ();
 }
 
-static inline bool not_feasable (planner_t *ctx, int64_t start_time,
+static inline bool not_feasible (planner_t *ctx, int64_t start_time,
                                  uint64_t duration, int64_t request)
 {
     bool rc = (start_time < ctx->plan_start) || (duration < 1)
@@ -297,7 +297,7 @@ static int span_input_check (planner_t *ctx, int64_t start_time,
                              uint64_t duration, int64_t request)
 {
     int rc = -1;
-    if (!ctx || not_feasable (ctx, start_time, duration, request)) {
+    if (!ctx || not_feasible (ctx, start_time, duration, request)) {
         errno = EINVAL;
         goto done;
     } else if (request > ctx->total_resources || request < 0) {
