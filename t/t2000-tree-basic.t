@@ -66,8 +66,8 @@ EOF
     test_cmp cmp.01.2 out.01.2.a
 '
 
-test_expect_success 'flux-tree: nonexistant script can be detected' '
-    test_must_fail flux tree --dry-run -N 1 -c 1 ./nonexistant
+test_expect_success 'flux-tree: nonexistent script can be detected' '
+    test_must_fail flux tree --dry-run -N 1 -c 1 ./nonexistent
 '
 
 test_expect_success 'flux-tree: --njobs works' '

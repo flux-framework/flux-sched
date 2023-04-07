@@ -30,7 +30,7 @@ test_expect_success "${test001_desc}" '
 #
 
 cmds002="${cmd_dir}/cmds01.in"
-test002_desc="match allocate with different rack contraints (pol=low)"
+test002_desc="match allocate with different rack constraints (pol=low)"
 test_expect_success "${test002_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds002} > cmds002 &&
     ${query} -L ${grugs} -S CA -P low -t 002.R.out < cmds002 &&
@@ -42,7 +42,7 @@ test_expect_success "${test002_desc}" '
 #
 
 cmds003="${cmd_dir}/cmds01.in"
-test003_desc="match allocate with different rack contraints (pol=first)"
+test003_desc="match allocate with different rack constraints (pol=first)"
 test_expect_success "${test003_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds003} > cmds003 &&
     ${query} -L ${grugs} -S CA -P first -t 003.R.out < cmds003 &&
@@ -54,7 +54,7 @@ test_expect_success "${test003_desc}" '
 # Selection Policy -- High node first with node exclusivity (-P hinodex)
 #     Selection behavior is identical to hinode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #
@@ -67,7 +67,7 @@ test_expect_success "${test003_desc}" '
 #
 
 cmds004="${cmd_dir}/cmds01.in"
-test004_desc="match allocate with different rack contraints (pol=hinodex)"
+test004_desc="match allocate with different rack constraints (pol=hinodex)"
 test_expect_success "${test004_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
     ${query} -L ${grugs} -S CA -P hinodex -t 004.R.out < cmds004 &&
@@ -78,7 +78,7 @@ test_expect_success "${test004_desc}" '
 # Selection Policy -- Low node first with node exclusivity (-P lonodex)
 #     Selection behavior is identical to lonode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #
@@ -91,7 +91,7 @@ test_expect_success "${test004_desc}" '
 #
 
 cmds005="${cmd_dir}/cmds01.in"
-test005_desc="match allocate with different rack contraints (pol=lonodex)"
+test005_desc="match allocate with different rack constraints (pol=lonodex)"
 test_expect_success "${test005_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
     ${query} -L ${grugs} -S CA -P lonodex -t 005.R.out < cmds005 &&

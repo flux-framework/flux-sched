@@ -89,18 +89,18 @@ public:
     bool is_queue_params_set () const;
     bool is_policy_params_set () const;
 
-    /*! Canonicalize the option set -- apply the general queue properities
-     *  to per_queue queue properities if the latters are not explictly set.
+    /*! Canonicalize the option set -- apply the general queue properties
+     *  to per_queue queue properties if the latters are not explicitly set.
      */
     qmanager_opts_t &canonicalize ();
 
-    /*! Add an option with a higher precendence than "this" object.
+    /*! Add an option with a higher precedence than "this" object.
      *  Modify this object according to the following "add" semantics
      *  and return the modified object:
      *  For each option key in o which has a non-default value,
      *  override the same key in this object.
      *
-     *  \param o         an option set object with a higher precendence.
+     *  \param o         an option set object with a higher precedence.
      *  \return          the composed qmanager_opts_t object.
      */
     qmanager_opts_t &operator+= (const qmanager_opts_t &o);

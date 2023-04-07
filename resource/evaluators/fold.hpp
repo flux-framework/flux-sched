@@ -66,7 +66,7 @@ inline boost::icl::interval_set<int64_t>::interval_type to_interval (
 } // namespace fold
 
 } // namespace resource_model
-} // namesapce Flux
+} // namespace Flux
 
 #endif // FOLD_HPP
 

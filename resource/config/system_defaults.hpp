@@ -11,7 +11,7 @@
 #ifndef SYSTEM_DEFAULT_HPP
 #define SYSTEM_DEFAULT_HPP
 
-// FIXME: These need to be coverted into a resource configuration file
+// FIXME: These need to be converted into a resource configuration file
 namespace Flux {
 namespace resource_model {
 namespace detail {

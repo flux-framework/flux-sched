@@ -27,7 +27,7 @@ namespace resource_model {
  *  Example: if the status of the parent resource vertex (e.g.,
  *  compute node vertex) is "down", the status of a child vertex (e.g.,
  *  compute core vertex) must also be "down" even if its status
- *  was not explictly marked "down".
+ *  was not explicitly marked "down".
  */
 struct vtx_predicates_override_t {
     bool status_down{false};
@@ -78,7 +78,7 @@ public:
      *  This must be called before the validate and evaluate interfaces
      *  can be used.
      *
-     *  \param p         overriden predicates (see the description
+     *  \param p         overridden predicates (see the description
      *                   of vtx_predicates_override_t above)
      *  \param g         shared pointer pointing to a filtered resource graph
      *  \param u         vertex. g[u] must return the corresponding state.

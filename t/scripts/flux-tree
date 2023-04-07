@@ -101,7 +101,7 @@ the flux-job submit command or its variants.\n\
 Jobscript is passed with five environment variables:\n\
 FLUX_TREE_ID, FLUX_TREE_JOBSCRIPT_INDEX, FLUX_TREE_NNODES,\n\
 FLUX_TREE_NCORES_PER_NODE and FLUX_TREE_NGPUS_PER_NODE.\n\
-FLUX_TREE_ID is an ID string uniquely identifing the hierarchical\n\
+FLUX_TREE_ID is an ID string uniquely identifying the hierarchical\n\
 path of the Flux instance on which Jobscript is being executed.\n\
 FLUX_TREE_JOBSCRIPT_INDEX is the integer ID of each jobscript\n\
 invocation local to the Flux instance. It starts from 1 and\n\
@@ -169,7 +169,7 @@ dr_print() { echo -e "${prog}: dry-run:" "$@"; }
 
 #
 # Roll up the performance records for each Flux instance to the KVS
-# guest namesapce of the parent Flux instance or print them out if top level.
+# guest namespace of the parent Flux instance or print them out if top level.
 #
 rollup() {
     local prefix="${1}"
@@ -751,7 +751,7 @@ main() {
              "${out}" "${format}"
     else
         #
-        # flux-tree is invoked to instantate ${size} internal Flux instances
+        # flux-tree is invoked to instantiate ${size} internal Flux instances
         # at the next level of the calling instance.
         #
         size=${topo%%${t_delim}*}

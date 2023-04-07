@@ -121,17 +121,17 @@ public:
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
 
-    /*! Canonicalize the option set -- apply the general resource properities
+    /*! Canonicalize the option set -- apply the general resource properties
      */
     resource_opts_t &canonicalize ();
 
-    /*! Add an option with a higher precendence than "this" object.
+    /*! Add an option with a higher precedence than "this" object.
      *  Modify this object according to the following "add" semantics
      *  and return the modified object:
      *  For each option key in o which has a non-default value,
      *  override the same key in this object.
      *
-     *  \param o         an option set object with a higher precendence.
+     *  \param o         an option set object with a higher precedence.
      *  \return          the composed resource_opts_t object.
      */
     resource_opts_t &operator+= (const resource_opts_t &o);

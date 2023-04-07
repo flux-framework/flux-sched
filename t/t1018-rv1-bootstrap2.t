@@ -61,7 +61,7 @@ test_expect_success 'rv1-bootstrap2: killing a nested job works' '
     flux job wait-event ${JOBID} release
 '
 
-# 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
+# 2 full nodes are scheduled for a nest flux instance -- requiring no remap
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=high)' '
     JOBID1=$(flux batch -n2 -N2 -c44 -g4 \
 	./nest.sh high 2 2 44 4 nest1.json) &&
@@ -108,7 +108,7 @@ match-format=rv1 policy=low &&
     load_qmanager
 '
 
-# 2 full nodes are scheduled for a nest flux instnace -- requiring no remap
+# 2 full nodes are scheduled for a nest flux instance -- requiring no remap
 test_expect_success 'rv1-bootstrap2: 2N nesting works (policy=low)' '
     JOBID3=$(flux batch -n2 -N2 -c44 -g4 \
 	./nest.sh low 2 2 44 4 nest3.json) &&

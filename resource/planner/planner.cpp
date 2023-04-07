@@ -43,7 +43,7 @@ struct planner {
     int64_t plan_start;          /* base time of the planner */
     int64_t plan_end;            /* end time of the planner */
     scheduled_point_tree_t sched_point_tree;  /* scheduled point rb tree */
-    mintime_resource_tree_t mt_resource_tree; /* min-time resrouce rb tree */
+    mintime_resource_tree_t mt_resource_tree; /* min-time resource rb tree */
     scheduled_point_t *p0;       /* system's scheduled point at base time */
     std::map<int64_t, std::shared_ptr<span_t>> span_lookup; /* span lookup */
     std::map<int64_t, std::shared_ptr<span_t>>::iterator span_lookup_iter;

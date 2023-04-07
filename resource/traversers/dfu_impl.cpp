@@ -120,7 +120,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
         goto done;
     }
 
-    // If a resource request is under slot or an explict exclusivity is
+    // If a resource request is under slot or an explicit exclusivity is
     // requested, we check the validity of the visiting vertex using
     // its x_checker planner.
     if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
@@ -293,7 +293,7 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
      * For this case, when you visit the "node" resource vertex, the next
      * Jobspec resource that should be used at the next recursion should
      * be socket[1]. And we enable this if pristine is true.
-     * But then once the first match is made, any mis-mismatch afterwards
+     * But then once the first match is made, any mismatch afterwards
      * should result in a match failure. For example,
      *    socket[1]->core[2] must fail to match
      *        cluster[1]->socket[1]->numanode[1]->core[22].
@@ -732,7 +732,7 @@ done:
 }
 
 int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
-                              const std::string &critiera,
+                              const std::string &criteria,
                               vtx_t u, const subsystem_t &aux,
                               const vtx_predicates_override_t &p)
 {
@@ -752,8 +752,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
     bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
     bool reserved = !(*m_graph)[u].schedule.reservations.empty ();
-    Flux::resource_model::vtx_predicates_override_t p_overriden = p;
-    p_overriden.set (down, allocated, reserved);
+    Flux::resource_model::vtx_predicates_override_t p_overridden = p;
+    p_overridden.set (down, allocated, reserved);
 
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     m_trav_level++;
@@ -762,8 +762,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             if (!in_subsystem (*ei, s) || stop_explore (*ei, s))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
-            rc = (s == dom)? dom_find_dfv (w, criteria, tgt, p_overriden)
-                           : aux_find_upv (w, criteria, tgt, s, p_overriden);
+            rc = (s == dom)? dom_find_dfv (w, criteria, tgt, p_overridden)
+                           : aux_find_upv (w, criteria, tgt, s, p_overridden);
             if (rc > 0) {
                 if (w->emit_edg (level (), *m_graph, *ei) < 0) {
                     m_err_msg += __FUNCTION__;
@@ -775,7 +775,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             }
         }
     }
-    vtx_target.initialize (p_overriden, m_graph, u);
+    vtx_target.initialize (p_overridden, m_graph, u);
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
 
     if ( (rc = m_expr_eval.evaluate (criteria, vtx_target, result)) < 0) {
@@ -1186,7 +1186,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers,
     int rc = -1;
     vtx_t root;
     expr_eval_vtx_target_t target;
-    vtx_predicates_override_t p_overriden;
+    vtx_predicates_override_t p_overridden;
 
     if (!m_match || !m_graph || !m_graph_db || !writers) {
         errno = EINVAL;
@@ -1199,7 +1199,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers,
         goto done;
     }
     root = m_graph_db->metadata.roots.at (dom);
-    target.initialize (p_overriden, m_graph, root);
+    target.initialize (p_overridden, m_graph, root);
     if ( (rc = m_expr_eval.validate (criteria, target)) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": invalid criteria: " + criteria + ".\n";
@@ -1208,7 +1208,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers,
 
     tick ();
 
-    if ( (rc = dom_find_dfv (writers, criteria, root, p_overriden)) < 0)
+    if ( (rc = dom_find_dfv (writers, criteria, root, p_overridden)) < 0)
         goto done;
 
     if (writers->emit_tm (0, 0) == -1) {

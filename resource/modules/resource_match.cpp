@@ -1450,7 +1450,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 
     // Perform the initial status marking only when "up" rankset is available
     // Rankless reader cases (required for testing e.g., GRUG) must not
-    // exectute the following branch.
+    // execute the following branch.
     // Use ctx->update_f != nullptr to differentiate
     if (ctx->update_f) {
         if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {

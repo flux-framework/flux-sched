@@ -103,7 +103,7 @@ int dfu_match_cb_t::aux_finish_vtx (
 
 int dfu_match_cb_t::set_stop_on_k_matches (unsigned int k)
 {
-    // Unless the dervied class supports limited traversal,
+    // Unless the derived class supports limited traversal,
     // this knob cannot be set
     return -1;
 }

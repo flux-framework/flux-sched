@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test_description='Test for exclusivitiy at various levels'
+test_description='Test for exclusivity at various levels'
 
 . $(dirname $0)/sharness.sh
 
@@ -167,7 +167,7 @@ test_expect_success "${test023_desc}" '
 # Selection Policy -- High node first with node exclusivity (-P hinodex)
 #     Selection behavior is identical to hinode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #
@@ -242,7 +242,7 @@ test_expect_success "${test037_desc}" '
 # Selection Policy -- Low node first with node exclusivity (-P lonodex)
 #     Selection behavior is identical to lonode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #
