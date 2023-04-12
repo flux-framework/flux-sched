@@ -21,7 +21,7 @@ test_under_flux 2 system
 
 startctl="flux python ${SHARNESS_TEST_SRCDIR}/scripts/startctl.py"
 
-SCHED_MODULE=$(flux module list | awk '$6 == "sched" {print $1}')
+SCHED_MODULE=$(flux module list | awk '$NF == "sched" {print $1}')
 
 test_expect_success 'sched service provided by fluxion' '
 	test_debug "echo sched service provided by ${SCHED_MODULE}" &&
