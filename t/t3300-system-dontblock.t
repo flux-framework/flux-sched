@@ -17,7 +17,7 @@ export FLUXION_RESOURCE_OPTIONS="load-allowlist=node,core,gpu load-format=hwloc"
 
 test_under_flux 2 system
 
-SCHED_MODULE=$(flux module list | awk '$6 == "sched" {print $1}')
+SCHED_MODULE=$(flux module list | awk '$NF == "sched" {print $1}')
 
 test_expect_success 'fluxion immediately fails to be loaded with hwloc reader' '
     test_debug "echo sched service provided by ${SCHED_MODULE}" &&
