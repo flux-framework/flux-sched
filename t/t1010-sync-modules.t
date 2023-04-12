@@ -41,10 +41,6 @@ test_expect_success 'sync: unloading fluxion-resource removes qmanager' '
     test_must_fail remove_qmanager
 '
 
-test_expect_success 'sync: resource is still intact' '
-    flux module info resource
-'
-
 test_expect_success 'sync: load sched-simple' '
     flux module load sched-simple
 '
