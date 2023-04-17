@@ -18,3 +18,10 @@ CODE_COVERAGE_IGNORE_PATTERN = \
     "/usr/lib/*"
 CODE_COVERAGE_LCOV_OPTIONS =
 @CODE_COVERAGE_RULES@
+
+export DEB_BUILD_OPTIONS ?= nocheck terse
+deb: debian scripts/debbuild.sh
+	+@$(top_srcdir)/scripts/debbuild.sh $(abs_top_srcdir)
+
+clean-local:
+	@rm -rf debbuild
