@@ -146,7 +146,7 @@ public:
      *                   which is also interpreted as "and" logical
      *                   operator of two expressions. Parentheses
      *                   are supported to group expressions with a higher
-     *                   operator precedence. For example, in "staus=up and
+     *                   operator precedence. For example, in "status=up and
      *                   (sched-now=allocated or sched-future=reserved)"
      *                   The parenthesized expression is evaluated
      *                   before taking the "and" operator with the
