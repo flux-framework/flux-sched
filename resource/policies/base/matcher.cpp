@@ -223,7 +223,7 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
         // If so, remove it as you want to install it against ANY_RESOURCE_TYPE.
         for (auto &kv : s)
             kv.second.erase (prune_type);
-        // final container is "set" so it will only allow uniqe prune_types
+        // final container is "set" so it will only allow unique prune_types
         s[anchor_type].insert (prune_type);
     } else {
         if ((s.find (ANY_RESOURCE_TYPE) != s.end ())) {

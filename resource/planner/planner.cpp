@@ -43,7 +43,7 @@ struct planner {
     int64_t plan_start;          /* base time of the planner */
     int64_t plan_end;            /* end time of the planner */
     scheduled_point_tree_t sched_point_tree;  /* scheduled point rb tree */
-    mintime_resource_tree_t mt_resource_tree; /* min-time resrouce rb tree */
+    mintime_resource_tree_t mt_resource_tree; /* min-time resource rb tree */
     scheduled_point_t *p0;       /* system's scheduled point at base time */
     std::map<int64_t, std::shared_ptr<span_t>> span_lookup; /* span lookup */
     std::map<int64_t, std::shared_ptr<span_t>>::iterator span_lookup_iter;
@@ -284,7 +284,7 @@ static inline void erase (planner_t *ctx)
     ctx->sched_point_tree.destroy ();
 }
 
-static inline bool not_feasable (planner_t *ctx, int64_t start_time,
+static inline bool not_feasible (planner_t *ctx, int64_t start_time,
                                  uint64_t duration, int64_t request)
 {
     bool rc = (start_time < ctx->plan_start) || (duration < 1)
@@ -297,7 +297,7 @@ static int span_input_check (planner_t *ctx, int64_t start_time,
                              uint64_t duration, int64_t request)
 {
     int rc = -1;
-    if (!ctx || not_feasable (ctx, start_time, duration, request)) {
+    if (!ctx || not_feasible (ctx, start_time, duration, request)) {
         errno = EINVAL;
         goto done;
     } else if (request > ctx->total_resources || request < 0) {

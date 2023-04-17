@@ -188,7 +188,7 @@ EOF
     test ${gpus} = "\"0-1\""
 '
 
-# NOTE: this should never happend because on second DOWN, the reservation
+# NOTE: this should never happen because on second DOWN, the reservation
 # will be freed by the qmanager. But fluxion resource infrastructure
 # is external driven so this condition can be tested.
 test_expect_success 'status=up (sched-now=allocated sched-future=reserved)' '

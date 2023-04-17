@@ -21,7 +21,7 @@ class Graph:
             nodes -- [Nodes]        list of nodes that are a part of the graph
             edges -- [Edges]        list of edges that are a part of the graph
             type -- string          (optionally) the typename of the graph (default None)
-            lable -- string         (optionally) the label of the graph (default None)
+            label -- string         (optionally) the label of the graph (default None)
             directed -- bool        (optionally) boolean indicating whether the graph is directed or not (default True)
             metadata -- dictionary  (optionally) a dictionary representing the metadata that belongs to the graph (default None)
 
@@ -46,9 +46,9 @@ class Graph:
 
 
 
-    def _isJsonSerializable(self, dictionay):
+    def _isJsonSerializable(self, dictionary):
         try:
-            json.dumps(dictionay)
+            json.dumps(dictionary)
             return True
         except Exception:
             return False
@@ -218,7 +218,7 @@ class Graph:
         return self._label
 
     def is_directed(self):
-        """Method to see whehter the graph is directed or not.
+        """Method to see whether the graph is directed or not.
 
         Returns:
             bool        True if the graph directed, else False
@@ -237,7 +237,7 @@ class Graph:
     def to_JSON(self, asString=False):
         """Convert the graph to JSON.
 
-        Creates a dictionary object of the graph comforming the JSON Graph Format.
+        Creates a dictionary object of the graph conforming to the JSON Graph Format.
 
         Arguments:
             asString -- bool    if set to True the method returns the JSON as string

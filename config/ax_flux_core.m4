@@ -60,7 +60,7 @@ AC_DEFUN([AX_FLUX_CORE], [
       AC_SUBST(LIBFLUX_VERSION)
 
       #  Ensure we find the same flux executable as corresponds to
-      #  to libflux-core found by pkg-config by puting FLUX_PREFIX/bin
+      #  to libflux-core found by pkg-config by putting FLUX_PREFIX/bin
       #  first in AC_PATH_PROG's path
       #
       AC_PATH_PROG(FLUX,[flux],

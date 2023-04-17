@@ -176,7 +176,7 @@ cluster.
 
  * queue: add provisional queuing for reprioritization in support
    of async. execution (#862)
- * resource: fix a satisfiabilty bug with backfilling (#859) 
+ * resource: fix a satisfiability bug with backfilling (#859) 
  * testsuite: fix logging test in t7000-shell-datastaging.t (#865)
  * Using static_cast to ensure type compatibility in readers. (#858)
  * Fix an assortment of issues discovered during system instance testing

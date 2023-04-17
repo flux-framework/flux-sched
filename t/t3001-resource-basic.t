@@ -218,10 +218,10 @@ test_expect_success "${test048_desc}" '
 #     with higher ID is preferred among its kind
 #     (e.g., core1 is preferred over core0 but those in node1
 #            is selected first before those in node0 is selected)
-#     If a node-level locality contraint is already specified in
+#     If a node-level locality constraint is already specified in
 #     the jobspec, this policy is identical to high: e.g.,
 #         node[2]->slot[2]->core[2].
-#     Only when node-level locality contraint is absent, the
+#     Only when node-level locality constraint is absent, the
 #     match behavior is deviated from high: e.g.,
 #         slot[2]->core[2].
 
@@ -296,10 +296,10 @@ test_expect_success "${test058_desc}" '
 #     with lower ID is preferred among its kind
 #     (e.g., core0 is preferred over core1 but those in node0
 #            is selected first before those in node1 is selected)
-#     If a node-level locality contraint is already specified in
+#     If a node-level locality constraint is already specified in
 #     the jobspec, this policy is identical to low: e.g.,
 #         node[2]->slot[2]->core[2].
-#     Only when node-level locality contraint is absent, the
+#     Only when node-level locality constraint is absent, the
 #     match behavior is deviated from low: e.g.,
 #         slot[2]->core[2].
 
@@ -380,7 +380,7 @@ test_expect_success "${test069_desc}" '
 # Selection Policy -- High node first with node exclusivity (-P hinodex)
 #     Selection behavior is identical to hinode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #
@@ -461,7 +461,7 @@ test_expect_success "${test078_desc}" '
 # Selection Policy -- Low node first with node exclusivity (-P lonodex)
 #     Selection behavior is identical to lonode except that
 #     it marks each selected node as exclusive even if the
-#     jobspec doen not require node exclusivity and
+#     jobspec does not require node exclusivity and
 #     that it selects and emits all of the node-local resources
 #     for each node where at least one node-local resource is selected.
 #

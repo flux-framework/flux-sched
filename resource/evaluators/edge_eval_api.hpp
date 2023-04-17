@@ -21,7 +21,7 @@ namespace resource_model {
 struct eval_edg_t {
     eval_edg_t (unsigned int c, unsigned int n, unsigned int x, edg_t e);
     eval_edg_t (unsigned int c, unsigned int n, unsigned int x);
-    // compiler willl generate a correct copy constructor
+    // compiler will generate a correct copy constructor
 
     unsigned int count = 0;
     unsigned int needs = 0;
@@ -132,7 +132,7 @@ private:
 
 } // namespace detail
 
-} // namesapce resource_model
+} // namespace resource_model
 } // namespace Flux
 
 #endif // EDGE_EVAL_API_HPP

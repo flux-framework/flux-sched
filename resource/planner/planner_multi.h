@@ -19,7 +19,7 @@ extern "C" {
 
 typedef struct planner_multi planner_multi_t;
 
-/*! Construct a planner_multi_t contex that creates and manages len number of
+/*! Construct a planner_multi_t context that creates and manages len number of
  *  planner_t objects. Individual planner_t context can be accessed via
  *  planner_multi_at (i). Index i corresponds to the resource type of
  *  i^th element of resource_types array.

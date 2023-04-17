@@ -708,7 +708,7 @@ you need to introduce new traversal types. For example, an ability
 to traverse a subtree more than once for depth-first walk--e.g., Loop-aware
 DFU--can solve the examples shown above.
 We designed our scheduling infrastructure to be extendable, and a part
-of our future plan is to extend our infrastracture with more capable
+of our future plan is to extend our infrastructure with more capable
 traversal types.
 
 If you are interested in our earlier discussions on the different classes

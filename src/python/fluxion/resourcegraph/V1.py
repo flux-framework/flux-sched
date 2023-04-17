@@ -140,7 +140,7 @@ class FluxionResourceGraphV1(Graph):
 
     def _per_rank_property_dict(self, properties, rankdict):
         for p in properties:
-            # This can be extended later to suport scheduler specific
+            # This can be extended later to support scheduler specific
             # string (@suffix)
             if self._contains_any(p, "!&'\"^`|()"):
                 raise ValueError(f"invalid character used in property={p}")
@@ -149,7 +149,7 @@ class FluxionResourceGraphV1(Graph):
     def _encode_child(self, ppid, hPath, rank, resType, i, rpd):
         path = f"{hPath}/{resType}{i}"
         properties = []
-        # This can be extended later to suport fine grained property
+        # This can be extended later to support fine grained property
         # attachment using rpd
         vtx = FluxionResourcePoolV1(
             self._uniqId,

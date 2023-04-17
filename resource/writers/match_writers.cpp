@@ -151,7 +151,7 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
 
 /****************************************************************************
  *                                                                          *
- *       JSON Graph Format (JGF) Writers Classs Public Definitions          *
+ *       JSON Graph Format (JGF) Writers Class Public Definitions           *
  *                                                                          *
  ****************************************************************************/
 
@@ -345,7 +345,7 @@ out:
 
 /****************************************************************************
  *                                                                          *
- *       JSON Graph Format (JGF) Writers Classs Private Definitions         *
+ *       JSON Graph Format (JGF) Writers Class Private Definitions          *
  *                                                                          *
  ****************************************************************************/
 

@@ -77,7 +77,7 @@ struct jobmeta_t {
             errno = EINVAL;
             return -1;
         }
-        // Ensure that duration is shorter than expressable
+        // Ensure that duration is shorter than expressible
         // int64_t max () for comparison with at in dfu_traverser_t::run
         if ( (jobspec.attributes.system.duration >
                                             static_cast<double> (g_duration))
@@ -203,7 +203,7 @@ public:
      *  racks. What is best matching is defined by the resource selection logic
      *  (derived class of dfu_match_cb_t).
      *
-     *  Note that how many resoure vertices have been selected is encoded in the
+     *  Note that how many resource vertices have been selected is encoded in the
      *  incoming edge of that vertex for the general case. However, the root
      *  vertex does not have an incoming edge and thus "needs" are passed as
      *  the output from this method to handle the root special case.
@@ -235,7 +235,7 @@ public:
      *                   which is also interpreted as "and" logical
      *                   operator of two expressions. Parentheses
      *                   are supported to group expressions with a higher
-     *                   operator precedence. For example, in "staus=up and
+     *                   operator precedence. For example, in "status=up and
      *                   (sched-now=allocated or sched-future=reserved)"
      *                   The parenthesized expression is evaluated
      *                   before taking the "and" operator with the
@@ -245,7 +245,7 @@ public:
      *  \return          0 on success; -1 on error.
      */
     int find (std::shared_ptr<match_writers_t> &writers,
-              const std::string &critera);
+              const std::string &criteria);
 
     /*! Update the resource state based on the previous select invocation
      *  and emit the allocation/reservation information.
@@ -414,7 +414,7 @@ private:
                       const std::string &criteria,
                       vtx_t u, const vtx_predicates_override_t &p);
     int aux_find_upv (std::shared_ptr<match_writers_t> &writers,
-                      const std::string &critiera,
+                      const std::string &criteria,
                       vtx_t u, const subsystem_t &aux,
                       const vtx_predicates_override_t &p);
 

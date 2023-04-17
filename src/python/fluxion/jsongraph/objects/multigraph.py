@@ -31,9 +31,9 @@ class Multigraph:
             self.set_metadata(metadata)
 
 
-    def _isJsonSerializable(self, dictionay):
+    def _isJsonSerializable(self, dictionary):
         try:
-            json.dumps(dictionay)
+            json.dumps(dictionary)
             return True
         except Exception:
             return False
@@ -154,7 +154,7 @@ class Multigraph:
     def to_JSON(self, asString=False):
         """Convert the multigraph to JSON.
 
-        Creates a dictionary object of the multigraph comforming the JSON Graph Format.
+        Creates a dictionary object of the multigraph conforming to the JSON Graph Format.
 
         Arguments:
             asString -- bool    if set to True the method returns the JSON as string

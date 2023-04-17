@@ -114,7 +114,7 @@ class Node:
     def to_JSON(self):
         """Convert the node to JSON.
 
-        Creates a dictionary object of the node comforming the JSON Graph Format.
+        Creates a dictionary object of the node conforming to the JSON Graph Format.
 
         Returns:
             dictionary      the node as dictionary ready to serialize

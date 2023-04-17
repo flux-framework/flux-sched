@@ -36,9 +36,9 @@ class Edge:
             self.set_metadata(metadata)
 
 
-    def _isJsonSerializable(self, dictionay):
+    def _isJsonSerializable(self, dictionary):
         try:
-            json.dumps(dictionay)
+            json.dumps(dictionary)
             return True
         except Exception:
             return False
@@ -178,7 +178,7 @@ class Edge:
     def to_JSON(self):
         """Convert the edge to JSON.
 
-        Creates a dictionary object of the edge comforming the JSON Graph Format.
+        Creates a dictionary object of the edge conforming to the JSON Graph Format.
 
         Returns:
             dictionary      the edge as dictionary ready to serialize

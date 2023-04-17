@@ -40,7 +40,7 @@ public:
 
     /*!
      *  Called back when all of the graph vertices and edges have been visited.
-     *  Must be overriden by a derived class if this visit event should
+     *  Must be overridden by a derived class if this visit event should
      *  be programed.
      *
      *  \param subsystem subsystem_t object of the dominant subsystem.
@@ -65,7 +65,7 @@ public:
 
     /*!
      *  Called back on each preorder visit of the dominant subsystem.
-     *  Must be overriden by a derived class if this visit event should
+     *  Must be overridden by a derived class if this visit event should
      *  be programed.
      *
      *  \param u         descriptor of the visiting vertex.
@@ -84,10 +84,10 @@ public:
 
     /*!
      *  Called back on each postorder visit of the dominant subsystem.
-     *  Must be overriden by a derived class if this visit event should
+     *  Must be overridden by a derived class if this visit event should
      *  be programed.
      *  Should return a score calculated based on the subtree and up walks
-     *  using the score API object (dfu). Any score aboved MATCH_MET
+     *  using the score API object (dfu). Any score above MATCH_MET
      *  is qualified to be a match.
      *
      *  \param u         descriptor of the visiting vertex
@@ -106,11 +106,11 @@ public:
                                 scoring_api_t &dfu);
 
     /*! Called back on each pre-up visit of an auxiliary subsystem.
-     *  Must be overriden by a derived class if this visit event should
+     *  Must be overridden by a derived class if this visit event should
      *  be programed.
      *
      *  \param u         descriptor of the visiting vertex
-     *  \param subsystem subsytem_t of the auxiliary subsystem being walked
+     *  \param subsystem subsystem_t of the auxiliary subsystem being walked
      *  \param resources vector of resources to be matched
      *  \param g         filtered resource graph
      *
@@ -124,13 +124,13 @@ public:
 
     /*
      *  Called back on each post-up visit of the auxiliary subsystem.
-     *  Must be overriden by a derived class if this visit event should
+     *  Must be overridden by a derived class if this visit event should
      *  be programed. Should return a score calculated based on the subtree
      *  and up walks using the score API object (dfu).
-     *  Any score aboved MATCH_MET is qualified to be a match.
+     *  Any score above MATCH_MET is qualified to be a match.
      *
      *  \param u         descriptor of the visiting vertex
-     *  \param subsystem subsytem_t object of an auxiliary subsystem
+     *  \param subsystem subsystem_t object of an auxiliary subsystem
      *  \param resources vector of resources to be matched
      *  \param g         filtered resource graph object
      *  \param dfu       score interface object - -- See utilities/README.md
