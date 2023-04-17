@@ -1,0 +1,26 @@
+Source: flux-sched
+Section: devel
+Priority: optional
+Maintainer: Mark A. Grondona <mark.grondona@gmail.com>
+Standards-Version: 4.1.2
+Build-Depends:
+  debhelper (>= 10),
+  flux-core (>= 0.49.0),
+  libhwloc-dev,
+  libboost-dev,
+  libboost-graph-dev,
+  libboost-filesystem-dev,
+  libboost-regex-dev,
+  libedit-dev,
+  libyaml-cpp-dev,
+  jq
+
+Homepage: https://github.com/flux-framework/flux-sched
+Package: flux-sched
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description:  Fluxion graph-based scheduler for Flux
+ flux-sched contains the Fluxion graph-based scheduler for the Flux
+ Resource Manager Framework. It consists of the sched-fluxion-resource
+ and sched-fluxion-qmanager modules which handle graph-based resource
+ matching and queue management services, respectively.
