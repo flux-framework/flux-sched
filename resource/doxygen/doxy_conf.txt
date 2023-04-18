@@ -520,7 +520,7 @@ COMPACT_RTF            = YES
 RTF_HYPERLINKS         = NO
 
 # Load stylesheet definitions from file. Syntax is similar to doxygen's
-# config file, i.e. a series of assigments. You only have to provide
+# config file, i.e. a series of assignments. You only have to provide
 # replacements, missing definitions are set to their default value.
 
 RTF_STYLESHEET_FILE    =
