@@ -9985,7 +9985,7 @@ class binary_reader
 
     @return whether conversion completed
 
-    @note This function needs to respect the system's endianess, because
+    @note This function needs to respect the system's endianness, because
           bytes in CBOR, MessagePack, and UBJSON are stored in network order
           (big endian) and therefore need reordering on little endian systems.
     */
@@ -10157,7 +10157,7 @@ class binary_reader
     /// the number of characters read
     std::size_t chars_read = 0;
 
-    /// whether we can assume little endianess
+    /// whether we can assume little endianness
     const bool is_little_endian = little_endianess();
 
     /// the SAX parser
@@ -14301,7 +14301,7 @@ class binary_writer
     @tparam OutputIsLittleEndian Set to true if output data is
                                  required to be little endian
 
-    @note This function needs to respect the system's endianess, because bytes
+    @note This function needs to respect the system's endianness, because bytes
           in CBOR, MessagePack, and UBJSON are stored in network order (big
           endian) and therefore need reordering on little endian systems.
     */
@@ -14384,7 +14384,7 @@ class binary_writer
     }
 
   private:
-    /// whether we can assume little endianess
+    /// whether we can assume little endianness
     const bool is_little_endian = little_endianess();
 
     /// the output
