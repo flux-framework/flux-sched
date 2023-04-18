@@ -182,7 +182,7 @@ trap 'die' EXIT
 # implicitly by specifying the prerequisite name in calls to test_expect_success
 # or test_expect_failure.
 #
-# $1 - Name of prerequiste (a simple word, in all capital letters by convention)
+# $1 - Name of prerequisite (a simple word, in all capital letters by convention)
 #
 # Examples
 #
