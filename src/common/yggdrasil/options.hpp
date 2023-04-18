@@ -9,7 +9,7 @@
 
 namespace ygg {
 
-// DHA: Heavily modifiy TreeOptions for Planner's use: 
+// DHA: Heavily modify TreeOptions for Planner's use: 
 // 1) A bit better self-containment as the original "Options"
 //    includes options for *all* of the supported data structures
 //    beyond the augmented rbtree;
