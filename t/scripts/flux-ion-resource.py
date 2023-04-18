@@ -340,7 +340,7 @@ def main():
     sstr = "Print overall performance statistics."
     cstr = "Cancel an allocated or reserved job."
     fstr = "Find resources matching with a crieria."
-    ststr = "Display resource status."
+    strstr = "Display resource status."
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
     nstr = "Get remapped ID given raw ID seen by the reader."
@@ -351,7 +351,7 @@ def main():
     parser_s = subpar.add_parser("stat", help=sstr, description=sstr)
     parser_c = subpar.add_parser("cancel", help=cstr, description=cstr)
     parser_f = subpar.add_parser("find", help=fstr, description=fstr)
-    parser_st = subpar.add_parser("status", help=ststr, description=ststr)
+    parser_st = subpar.add_parser("status", help=strstr, description=strstr)
     parser_sp = subpar.add_parser("set-property", help=pstr, description=pstr)
     parser_gp = subpar.add_parser("get-property", help=gstr, description=gstr)
     parser_n = subpar.add_parser("ns-info", help=nstr, description=nstr)
