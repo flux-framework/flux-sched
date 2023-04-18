@@ -271,7 +271,7 @@ public:
     int insert (std::shared_ptr<job_t> pending_job);
 
     /*! Remove a job whose jobid is id from any internal queues
-     *  (e.g., pending queue, running queue, and alloced queue.)
+     *  (e.g., pending queue, running queue, and allocated queue.)
      *  If succeeds, it changes the pending queue or resource
      *  state. This queue becomes "schedulable" if pending job
      *  queue is not empty: i.e., is_schedulable() returns true;
@@ -342,7 +342,7 @@ public:
      */
     std::shared_ptr<job_t> pending_next ();
 
-    /*! Pop the first job from the alloced job queue. The popped
+    /*! Pop the first job from the allocated job queue. The popped
      *  job still remains in the queue policy layer (i.e., in the
      *  internal running job queue).
      *  \return          a shared pointer pointing to a job_t object
