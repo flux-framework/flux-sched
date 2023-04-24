@@ -4,6 +4,7 @@ SUBDIRS = src resource qmanager doc etc t
 
 EXTRA_DIST= \
 	config/tap-driver.sh \
+	LICENSE \
 	NOTICE.LLNS \
 	README.md \
 	NEWS.md
