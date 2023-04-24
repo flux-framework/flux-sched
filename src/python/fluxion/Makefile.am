@@ -7,6 +7,9 @@ nobase_fluxionpy_PYTHON = \
 	resourcegraph/__init__.py \
 	resourcegraph/V1.py
 
+EXTRA_DIST = \
+	jsongraph/LICENSE
+
 clean-local:
 	-rm -f *.pyc */*.pyc *.pyo */*.pyo
 	-rm -rf __pycache__ */__pycache__
