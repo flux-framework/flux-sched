@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #  Test runner script meant to be executed inside of a docker container
 #
@@ -41,7 +41,10 @@ fi
 
 # source check_group and check_time functions:
 . src/test/checks-lib.sh
-
+if [[ $1 == "--cmake" ]] ; then
+  CMAKE=t
+  shift
+fi
 ARGS="$@"
 JOBS=${JOBS:-2}
 MAKECMDS="${MAKE} -j ${JOBS}"
@@ -70,6 +73,14 @@ if echo "$CC" | grep -q "clang"; then
     CCACHE_CPP=1
 fi
 
+if test -z "$CMAKE"; then
+CHECK_PREP="check-prep"
+CHECK="check"
+else
+CHECK_PREP="all"
+CHECK="test VERBOSE=1"
+fi
+
 if test "$PROJECT" = "flux-core"; then
   # Ensure ci builds libev such that libfaketime will work:
   # (force libev to *not* use syscall interface for clock_gettime())
@@ -79,6 +90,14 @@ if test "$PROJECT" = "flux-core"; then
   #  in the same path as ZMQ_FLAGS:
   sudo sh -c "mkdir -p /usr/include/flux \
     && echo '#error Non-build-tree flux/core.h!' > /usr/include/flux/core.h"
+fi
+
+if test -z "$CMAKE"; then
+CHECK_PREP="check-prep"
+CHECK="check"
+else
+CHECK_PREP="all"
+CHECK="test VERBOSE=1"
 fi
 
 # Enable coverage for $CC-coverage build
@@ -110,9 +129,11 @@ if test "$COVERAGE" = "t"; then
 	relative_files = True
 	EOF
 
-	rm -f .coverage .coverage*
-
-	ARGS="$ARGS --enable-code-coverage"
+	if test -z "$CMAKE"; then
+		COV_FLAG="--enable-code-coverage"
+	else
+		COV_FLAG="-DFLUX_SCHED_ENABLE_COVERAGE"
+	fi
 	CHECKCMDS="\
 	ENABLE_USER_SITE=1 \
 	COVERAGE_PROCESS_START=$(pwd)/coverage.rc \
@@ -122,10 +143,11 @@ if test "$COVERAGE" = "t"; then
 	coverage html && coverage xml &&
 	chmod 444 coverage.xml &&
 	coverage report"
+	rm -f .coverage .coverage*
+	ARGS="$ARGS $COV_FLAG"
 
 # Use make install for T_INSTALL:
 elif test "$TEST_INSTALL" = "t"; then
-    ARGS="$ARGS --prefix=/usr --sysconfdir=/etc"
     CHECKCMDS="sudo make install && \
               FLUX_TEST_INSTALLED_PATH=/usr/bin ${MAKE} -j $JOBS check"
 
@@ -168,15 +190,22 @@ sudo /sbin/runuser -u munge /usr/sbin/munged
 
 checks_group_end # Setup
 
-checks_group "autogen.sh" ./autogen.sh
+if test -z "$CMAKE" ; then
+	checks_group "autogen.sh" ./autogen.sh
+fi
 
 if test -n "$BUILD_DIR" ; then
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"
 fi
 
-checks_group "configure ${ARGS}"  /usr/src/configure ${ARGS} \
-	|| (printf "::error::configure failed\n"; cat config.log; exit 1)
+if test -z "$CMAKE"; then
+	checks_group "configure ${ARGS}"  /usr/src/configure ${ARGS} \
+		|| (printf "::error::configure failed\n"; cat config.log; exit 1)
+else
+	checks_group "cmake ${ARGS}"  cmake /usr/src ${ARGS} \
+		|| (printf "::error::configure failed\n"; cat config.log; exit 1)
+fi
 checks_group "make clean..." make clean
 
 if test "$POISON" = "t" -a "$PROJECT" = "flux-core"; then

@@ -34,8 +34,6 @@ add_definitions( [=[-DPACKAGE_VERSION="${CMAKE_PROJECT_VERSION}"]=] )
 # We build a lot of shared libs, build them all with PIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# variable to store paths to add to module path for tests
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
@@ -78,6 +76,27 @@ set(FLUX_MOD_DIR "${FLUX_LIB_DIR}/modules")
 set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
 set(FLUX_RC1_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/flux/rc1.d")
 set(FLUX_RC3_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/flux/rc3.d")
+
+  include(CheckCXXCompilerFlag)
+
+  #Add option for enabling gcov coverage
+  option(FLUX_SCHED_ENABLE_COVERAGE "Build with gcov support." OFF)
+  mark_as_advanced(FLUX_SCHED_ENABLE_COVERAGE)
+
+  if(FLUX_SCHED_ENABLE_COVERAGE)
+    #We're setting the CXX flags and C flags beacuse they're propagated down
+    #independent of build type.
+    if(CMAKE_COMPILER_IS_GNUCXX)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
+      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
+    else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage -fno-elide-constructors -fprofile-instr-generate -fcoverage-mapping")
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping")
+    endif()
+  endif()
+
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
@@ -191,3 +210,15 @@ add_subdirectory( qmanager )
 # add_subdirectory( doc )
 # add_subdirectory( etc )
 add_subdirectory( t )
+
+# Emulate the interface of automake-based build systems to reduce friction
+add_custom_target(check cmake --build ${CMAKE_BINARY_DIR} --target test)
+add_custom_target(check-prep cmake --build ${CMAKE_BINARY_DIR})
+if(FLUX_SCHED_ENABLE_COVERAGE)
+  # Coverage is enabled, all good, just run tests
+  add_custom_target(check-code-coverage cmake --build ${CMAKE_BINARY_DIR} --target test)
+else()
+  add_custom_target(check-code-coverage echo Coverage was not enabled in build
+    COMMAND exit 1 )
+endif()
+add_custom_target(recheck ctest -T Test --rerun-failed --output-on-failure)

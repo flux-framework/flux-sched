@@ -6,10 +6,14 @@
 import json
 import os
 import re
+import sys
 
 docker_run_checks = "src/test/docker/docker-run-checks.sh"
 
-default_args = "--prefix=/usr" " --sysconfdir=/etc" " --localstatedir=/var"
+if sys.argv[1] == "--cmake":
+    default_args = "-DCMAKE_INSTALL_PREFIX=/usr"
+else:
+    default_args = "--prefix=/usr" " --sysconfdir=/etc" " --localstatedir=/var"
 
 DOCKER_REPO = "fluxrm/flux-sched"
 

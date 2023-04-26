@@ -68,6 +68,7 @@ while true; do
     case "$1" in
       -h|--help)                   echo -ne "$usage";          exit 0  ;;
       -q|--quiet)                  QUIET="--quiet";            shift   ;;
+      -c|--cmake)                  CMAKE=t;                    shift   ;;
       -i|--image)                  IMAGE="$2";                 shift 2 ;;
       -S|--flux-security-version)  FLUX_SECURITY_VERSION="$2"; shift 2 ;;
       -j|--jobs)                   JOBS="$2";                  shift 2 ;;
@@ -98,9 +99,13 @@ if test "$DISTCHECK" = "t"; then
         case $arg in
           --sysconfdir=*|systemdsystemunitdir=*)
             die "distcheck incompatible with configure arg $arg"
+          --cmake*)
+            die "distcheck incompatible with cmake"
         esac
     done
 fi
+if test "$cmake" = "t"; then
+    test "$RECHECK" = "t" && die "--recheck not allowed with --cmake"
 
 CONFIGURE_ARGS="$@"
 
@@ -145,16 +150,23 @@ export BUILD_DIR
 export chain_lint
 
 if [[ "$INSTALL_ONLY" == "t" ]]; then
+    if [[ "$CMAKE" = "t" ]]; then
+      command="cmake /usr/src"
+    else
+      command="(cd .. ; ./autogen.sh) &&
+        ../configure --prefix=/usr --sysconfdir=/etc \
+        --with-systemdsystemunitdir=/etc/systemd/system \
+        --localstatedir=/var \
+        --with-flux-security \
+        --enable-caliper"
+    fi
     docker run --rm \
         --workdir=/usr/src \
         --volume=$TOP:/usr/src \
         ${BUILD_IMAGE} \
-        sh -c "./autogen.sh &&
-               ./configure --prefix=/usr --sysconfdir=/etc \
-                --with-systemdsystemunitdir=/etc/systemd/system \
-                --localstatedir=/var \
-                --with-flux-security \
-                --enable-caliper &&
+        sh -c "mkdir build &&
+               cd build &&
+               $command &&
                make clean &&
                make -j${JOBS}" \
     || (docker rm tmp.$$; die "docker run of 'make install' failed")
@@ -200,7 +212,7 @@ else
         ${INTERACTIVE:+--interactive} \
         --network=host \
         ${BUILD_IMAGE} \
-        ${INTERACTIVE:-./src/test/checks_run.sh ${CONFIGURE_ARGS}} \
+        ${INTERACTIVE:-./src/test/checks_run.sh ${CMAKE:+--cmake} ${CONFIGURE_ARGS}} \
     || die "docker run failed"
 fi
 
