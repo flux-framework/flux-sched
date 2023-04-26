@@ -15,4 +15,12 @@ target_link_libraries(resource-query
   PkgConfig::LIBEDIT
   PkgConfig::JANSSON
   )
+
+install(
+  TARGETS
+  grug2dot
+  resource-query
+  )
+
 add_subdirectory(test)
+
