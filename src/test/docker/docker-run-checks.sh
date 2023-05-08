@@ -215,7 +215,7 @@ else
         -e chain_lint \
         -e JOBS \
         -e USER \
-	-e PROJECT \
+        -e PROJECT \
         -e CI \
         -e TAP_DRIVER_QUIET \
         -e FLUX_TEST_TIMEOUT \
@@ -230,6 +230,7 @@ else
         -e S3_SECRET_ACCESS_KEY \
         -e S3_HOSTNAME \
         -e S3_BUCKET \
+        -e WITH_GO \
         --cap-add SYS_PTRACE \
         --tty \
         ${INTERACTIVE:+--interactive} \
