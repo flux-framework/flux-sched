@@ -141,6 +141,15 @@ matrix.add_build(
     docker_tag=True,
 )
 
+# Ubuntu 20.04: py3.8
+matrix.add_build(
+    name="focal - golang-test",
+    image="focal-golang",
+    env=dict(
+        WITH_GO="yes",
+    ),
+)
+
 # RHEL7 clone
 matrix.add_build(
     name="el7",
