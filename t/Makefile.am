@@ -100,7 +100,8 @@ TESTS = \
     t6001-match-formats.t \
     t6002-graph-hwloc.t \
     t7000-shell-datastaging.t \
-    t8001-util-ion-R.t
+    t8001-util-ion-R.t \
+    t9001-golang-basic.t
 
 check_SCRIPTS = $(TESTS)
 
