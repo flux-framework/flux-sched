@@ -28,6 +28,14 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_CC_C_O
 AX_CODE_COVERAGE
+# Check to build with Go
+AC_PROG_GO([go])
+AC_PATH_PROG(GO, go, nogo)
+AS_IF([test "$ac_cv_path_GO" = "nogo"],AC_MSG_NOTICE([could not find go]),[])
+AM_CONDITIONAL([WITH_GO], [test "X$WITH_GO" != "X"])
+if test "$WITH_GO" = yes; then
+  GO_PRINTOUT=$( echo "GO...............: $(go version | sed 's/go version //')" )
+fi
 
 if test "$GCC" = yes; then
   WARNING_CFLAGS="-Wall -Werror -Werror=missing-field-initializers -Wno-error=deprecated-declarations"
@@ -202,6 +210,9 @@ AC_CONFIG_FILES([Makefile
   resource/reapi/Makefile
   resource/reapi/bindings/Makefile
   resource/reapi/bindings/c/Makefile
+  resource/reapi/bindings/go/Makefile
+  resource/reapi/bindings/go/src/Makefile
+  resource/reapi/bindings/go/src/test/Makefile
   resource/policies/Makefile
   resource/policies/base/Makefile
   resource/policies/base/test/Makefile
@@ -231,4 +242,5 @@ echo "
   LDFLAGS..........: $LDFLAGS
   LIBS.............: $LIBS
   Linker...........: $LD
+  $GO_PRINTOUT
 "
