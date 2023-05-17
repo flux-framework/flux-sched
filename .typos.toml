@@ -1,0 +1,20 @@
+# do not check code copied into the project
+# do not check testing data
+[files]
+extend-exclude = [
+  "config/*",
+  "m4/*",
+  "src/common/libutil/json.hpp",
+  "src/common/yggdrasil/*",
+  "resource/doxygen/*",
+  "t/sharness.sh",
+  "t/t0000-sharness.t",
+  "t/data/*",
+]
+
+[default.extend-words]
+# commonly used names/variables that aren't typos
+BA = "BA"
+inout = "inout"
+ststr = "ststr"
+alloced = "alloced"
