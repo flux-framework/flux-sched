@@ -186,6 +186,32 @@ out:
     return rc;
 }
 
+int reapi_cli_t::find (void *h, std::string criteria,
+                       json_t *&o )
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    
+    if ( (rc = rq->traverser_find (criteria)) < 0) {
+        if (rq->get_traverser_err_msg () != "") {
+             m_err_msg += __FUNCTION__;
+             m_err_msg += rq->get_traverser_err_msg ();
+            rq->clear_traverser_err_msg ();
+        }
+        return rc;
+    }
+    
+
+    if ( (rc = rq->writers->emit_json (&o)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: find writer emit: "
+                      + std::string (strerror (errno)) + "\n";
+       return rc;
+    }
+
+    return rc;
+}
+
 int reapi_cli_t::info (void *h, const uint64_t jobid, std::string &mode,
                        bool &reserved, int64_t &at, double &ov)
 {
@@ -646,6 +672,11 @@ int resource_query_t::traverser_run (Flux::Jobspec::Jobspec &job, match_op_t op,
                                      int64_t jobid, int64_t &at)
 {
     return traverser->run (job, writers, op, jobid, &at);
+}
+
+int resource_query_t::traverser_find (std::string criteria)
+{
+    return traverser->find (writers, criteria);
 }
 
 
