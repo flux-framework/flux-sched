@@ -97,6 +97,7 @@ TESTS = \
     t4010-match-conf.t \
     t4011-match-duration.t \
     t5000-valgrind.t \
+    t5100-issues-test-driver.t \
     t6000-graph-size.t \
     t6001-match-formats.t \
     t6002-graph-hwloc.t \
@@ -104,6 +105,9 @@ TESTS = \
     t8001-util-ion-R.t
 
 check_SCRIPTS = $(TESTS)
+
+dist_check_SCRIPTS = \
+	issues/t1035-fluxion-reload.sh
 
 EXTRA_DIST= \
 	$(check_SCRIPTS) \

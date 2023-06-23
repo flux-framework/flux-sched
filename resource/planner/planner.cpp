@@ -519,7 +519,7 @@ extern "C" int64_t planner_avail_resources_during (planner_t *ctx,
 extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
 {
     scheduled_point_t *state = nullptr;
-    if (!ctx || at > ctx->plan_end) {
+    if (!ctx || at > ctx->plan_end || at < ctx->plan_start) {
         errno = EINVAL;
         return -1;
     }
