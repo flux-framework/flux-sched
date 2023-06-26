@@ -530,8 +530,9 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &aux,
     if ((prune (meta, x_in, aux, u, resources) == -1)
         || (m_match->aux_discover_vtx (u, aux, resources, *m_graph)) != 0)
         goto done;
+    (*m_graph)[u].idata.colors[aux] = m_color.gray ();
 
-    if (u != (*m_roots)[aux])
+    if (u != m_graph_db->metadata.roots[aux])
         explore (meta, u, aux, resources, pristine, excl, visit_t::UPV, upv);
 
     p = (*m_graph)[u].schedule.plans;
@@ -543,6 +544,7 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta, vtx_t u, const subsystem_t &aux,
         m_err_msg += ".\n";
         goto done;
     }
+    (*m_graph)[u].idata.colors[aux] = m_color.black ();
     if (m_match->aux_finish_vtx (u, aux, resources, *m_graph, upv) != 0)
         goto done;
     if ((rc = resolve (upv, to_parent)) != 0)
