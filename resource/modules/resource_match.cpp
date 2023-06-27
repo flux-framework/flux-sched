@@ -1114,14 +1114,10 @@ done:
 static int decode_all (std::shared_ptr<resource_ctx_t> &ctx,
                        std::set<int64_t> &ranks)
 {
-    unsigned int size = 0;
-    unsigned int rank = 0;
-    if (flux_get_size (ctx->h, &size) < -1) {
-        flux_log (ctx->h, LOG_ERR, "%s: flux_get_size", __FUNCTION__);
-        return -1;
-    }
-    for (rank = 0; rank < size; ++rank) {
-        auto ret = ranks.insert (static_cast<int64_t> (rank));
+    int64_t size = ctx->db->metadata.by_rank.size();
+    
+    for (int64_t rank = 0; rank < size; ++rank) {
+        auto ret = ranks.insert (rank);
         if (!ret.second) {
             errno = EEXIST;
             return -1;
