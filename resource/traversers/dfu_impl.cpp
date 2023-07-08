@@ -124,6 +124,17 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta, const std::string &s, vtx_t u,
     // requested, we check the validity of the visiting vertex using
     // its x_checker planner.
     if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
+        // If it's exclusive, the traversal type is an allocation, and
+        // there are no other allocations on the vertex, then proceed. This
+        // check prevents the observed multiple booking issue, where
+        // resources with jobs running beyond their walltime can be
+        // allocated to another job since the planner considers them
+        // available. Note: if Fluxion needs to support shared
+        // resources at the leaf level this check will not catch
+        // multiple booking.
+        if (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC &&
+            !(*m_graph)[u].schedule.allocations.empty ())
+            goto done;
         errno = 0;
         p = (*m_graph)[u].idata.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
