@@ -47,7 +47,7 @@ test_expect_failure 'no jobs received alloc-check exception' '
 test_expect_success 'clean up' '
 	flux job cancelall -f &&
 	flux queue idle &&
-	flux resource undrain 0
+	(flux resource undrain 0 || true)
 '
 test_expect_success 'submit non-exclusive jobs that exceed their time limit' '
 	(for i in $(seq 10); do \
