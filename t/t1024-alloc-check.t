@@ -41,7 +41,7 @@ test_expect_success 'submit node-exclusive jobs that exceed their time limit' '
 test_expect_success 'some jobs received timeout exception' '
 	grep "job.exception type=timeout" joberr
 '
-test_expect_failure 'no jobs received alloc-check exception' '
+test_expect_success 'no jobs received alloc-check exception' '
 	test_must_fail grep "job.exception type=alloc-check" joberr
 '
 test_expect_success 'clean up' '
@@ -57,7 +57,7 @@ test_expect_success 'submit non-exclusive jobs that exceed their time limit' '
 test_expect_success 'some jobs received timeout exception' '
 	grep "job.exception type=timeout" joberr2
 '
-test_expect_failure 'no jobs received alloc-check exception' '
+test_expect_success 'no jobs received alloc-check exception' '
 	test_must_fail grep "job.exception type=alloc-check" joberr2
 '
 test_expect_success 'clean up' '
