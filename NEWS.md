@@ -1,3 +1,32 @@
+flux-sched version 0.28.0 - 2023-07-11
+--------------------------------------
+
+This release fixes a critical bug (#1043) where resources that are allocated
+to a job that exceeds its time limit could be re-allocated to a new job while
+the first job is still in CLEANUP state.
+
+### New Features
+
+ * reapi: implement find (#1020)
+
+### Fixes
+
+ * Prevent allocation of currently allocated resources (#1046)
+ * mark all ranks known to graph when "all" is specified (#1042)
+ * planner: ensure result in planner_avail_resources_at (#1038)
+
+### Build/Testsuite
+
+ * testsuite: t1024-alloc-check.t: do not fail if rank 0 not drained (#1047)
+ * testsuite: add test for double-booking (#1044)
+ * Add false positives typos config (#1030)
+ * Update sphinx version (#1032)
+ * ensure licenses appear in distribution tarball (#1031)
+ * add spell check for news and readme (#1021)
+ * build: add `make deb` target to build test debian package (#1024)
+ * testsuite: drop meaningless check (#1023)
+ * testsuite: make module list awk less fragile (#1022)
+
 flux-sched version 0.27.0 - 2023-03-31
 --------------------------------------
 
