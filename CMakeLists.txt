@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(flux-sched VERSION 0.40.0 LANGUAGES CXX C)
 # Option to Enable SPHINX
 option( SPHINX "Enable SPHINX" OFF )
@@ -193,3 +193,4 @@ add_subdirectory( qmanager )
 # add_subdirectory( etc )
 add_subdirectory( t )
 add_custom_target(check COMMAND ctest)
+add_custom_target(distcheck COMMAND ctest)
