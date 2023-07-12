@@ -118,10 +118,12 @@ jobs:
       env: ${{matrix.env}}
       run: ${{matrix.command}}
 
-    - name: annotate errors
-      if: failure() || cancelled()
-      env: ${{matrix.env}}
-      run: src/test/checks-annotate.sh
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.name}}
+        path: test-results.xml
 
     - name: coverage report
       if: success() && matrix.coverage
@@ -160,3 +162,32 @@ jobs:
         asset_path: ${{ steps.prep_release.outputs.tarball }}
         asset_name: ${{ steps.prep_release.outputs.tarball }}
         asset_content_type: "application/gzip"
+
+  publish-test-results:
+    name: "Publish Tests Results"
+    needs: ci-checks
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # only needed for private repository
+      contents: read
+
+      # only needed for private repository
+      issues: read
+    if: always()
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/**/*.xml"
+          comment_mode: off
