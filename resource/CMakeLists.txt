@@ -71,15 +71,16 @@ add_library(resource SHARED
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
+    )
+target_link_libraries(resource PUBLIC
     flux::hostlist
     flux::idset
     PkgConfig::JANSSON
     PkgConfig::HWLOC
+    PkgConfig::UUID
     Boost::system
     Boost::graph
     Boost::regex
-    )
-target_link_libraries(resource PUBLIC
     jobspec_conv
     Boost::filesystem
     )

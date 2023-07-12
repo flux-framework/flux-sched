@@ -10,7 +10,9 @@ add_library ( jobspec_conv STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/rank_constraint.hpp
     )
 target_link_libraries(jobspec_conv PUBLIC flux::hostlist flux::idset
-    flux::core yaml-cpp)
+    flux::core yaml-cpp PkgConfig::JANSSON 
+    PkgConfig::UUID
+    )
 
 add_executable(flux-jobspec-validate
     ${CMAKE_CURRENT_SOURCE_DIR}/flux-jobspec-validate.cpp

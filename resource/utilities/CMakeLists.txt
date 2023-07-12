@@ -14,6 +14,7 @@ target_link_libraries(resource-query
   resource
   PkgConfig::LIBEDIT
   PkgConfig::JANSSON
+  PkgConfig::UUID
   )
 
 install(

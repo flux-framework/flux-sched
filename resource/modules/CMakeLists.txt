@@ -6,4 +6,5 @@ flux_add_module ( sched-fluxion-resource
 target_link_libraries (sched-fluxion-resource PRIVATE
     resource
     PkgConfig::JANSSON
+    PkgConfig::UUID
     )
