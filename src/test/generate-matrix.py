@@ -45,7 +45,7 @@ class BuildMatrix:
     def add_build(
         self,
         name=None,
-        image="bionic",
+        image="fedora38",
         args=default_args,
         jobs=4,
         env=None,
@@ -104,10 +104,8 @@ matrix = BuildMatrix()
 
 # Ubuntu: gcc-8, distcheck
 matrix.add_build(
-    name="bionic - gcc-8,distcheck",
+    name="fedora38 - distcheck",
     env=dict(
-        CC="gcc-8",
-        CXX="g++-8",
         DISTCHECK="t",
     ),
     args="--prefix=/usr",
@@ -118,10 +116,10 @@ matrix.add_build(name="coverage", coverage=True, jobs=2)
 
 # Ubuntu: py3.7,clang-6.0
 matrix.add_build(
-    name="bionic - clang-6.0",
+    name="fedora38 - clang",
     env=dict(
-        CC="clang-6.0",
-        CXX="clang++-6.0",
+        CC="clang",
+        CXX="clang++",
         chain_lint="t",
         TEST_CHECK_PREREQS="t",
     ),
@@ -129,24 +127,24 @@ matrix.add_build(
 
 # Ubuntu: TEST_INSTALL
 matrix.add_build(
-    name="bionic - test-install",
+    name="fedora38 - test-install",
     env=dict(TEST_INSTALL="t"),
     docker_tag=True,
 )
 
-# Ubuntu 20.04: py3.8
-matrix.add_build(
-    name="focal",
-    image="focal",
-    docker_tag=True,
-)
+# # Ubuntu 20.04: py3.8
+# matrix.add_build(
+#     name="focal",
+#     image="focal",
+#     docker_tag=True,
+# )
 
-# RHEL7 clone
-matrix.add_build(
-    name="el7",
-    image="el7",
-    docker_tag=True,
-)
+# # RHEL7 clone
+# matrix.add_build(
+#     name="el7",
+#     image="el7",
+#     docker_tag=True,
+# )
 
 # RHEL8 clone
 matrix.add_build(

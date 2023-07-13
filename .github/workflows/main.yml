@@ -170,14 +170,6 @@ jobs:
     permissions:
       checks: write
 
-      # only needed unless run with comment_mode: off
-      pull-requests: write
-
-      # only needed for private repository
-      contents: read
-
-      # only needed for private repository
-      issues: read
     if: always()
 
     steps:
