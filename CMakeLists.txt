@@ -22,8 +22,15 @@ file(APPEND ${CONFIG_H} "/* Define _GNU_SOURCE so that we get all necessary prot
 file(APPEND ${CONFIG_H} "#define _GNU_SOURCE 1 \n\n ")
 include( GNUInstallDirs ) # convenience names for gnu-style directories
 # RPATH setup
-list( APPEND CMAKE_BUILD_RPATH ${CMAKE_BINARY_DIR}/resource )
-list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR} )
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set( CMAKE_BUILD_RPATH
+  ${CMAKE_BINARY_DIR}/resource:${CMAKE_BINARY_DIR}/src/common/libtap )
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
+
 
 # Setting the include directory for the application to find config.h
 include_directories( ${CMAKE_BINARY_DIR} )
@@ -47,7 +54,10 @@ if(DEFINED FLUX_CORE_PREFIX)
 endif()
 find_package(FluxCore REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(Python 3.6...<4.0 COMPONENTS Interpreter Development) # 3.6 or higher
+if(DEFINED ENV{PYTHON})
+  set(Python_EXECUTABLE $ENV{PYTHON} CACHE FILEPATH "")
+endif()
+find_package(Python 3.6...<4.0 COMPONENTS Interpreter Development REQUIRED) # 3.6 or higher
 execute_process(
   COMMAND "${Python_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('purelib', vars={'base':'${CMAKE_INSTALL_PREFIX}'}))"
   OUTPUT_VARIABLE PYTHON_INSTALL_SITELIB
@@ -74,11 +84,11 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths
 set(FLUX_CMD_DIR "${CMAKE_INSTALL_PREFIX}/libexec/cmd")
-set(FLUX_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/flux")
+set(FLUX_LIB_DIR "${CMAKE_INSTALL_LIBDIR}/flux")
 set(FLUX_MOD_DIR "${FLUX_LIB_DIR}/modules")
 set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
-set(FLUX_RC1_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/flux/rc1.d")
-set(FLUX_RC3_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/flux/rc3.d")
+set(FLUX_RC1_DIR "${CMAKE_INSTALL_SYSCONFDIR}/flux/rc1.d")
+set(FLUX_RC3_DIR "${CMAKE_INSTALL_SYSCONFDIR}/flux/rc3.d")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
@@ -192,5 +202,21 @@ add_subdirectory( qmanager )
 # add_subdirectory( doc )
 # add_subdirectory( etc )
 add_subdirectory( t )
-add_custom_target(check COMMAND ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
-add_custom_target(distcheck COMMAND ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+  set(BUILD_COMMAND make -C)
+else()
+  set(BUILD_COMMAND ${CMAKE_COMMAND} --build)
+endif()
+add_custom_target(build-all
+  # build all target, set CMAKE_BUILD_PARALLEL_LEVEL in env
+  COMMAND ${BUILD_COMMAND} ${CMAKE_BINARY_DIR}
+  )
+add_custom_target(check
+  DEPENDS build-all
+  COMMAND ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml
+  )
+add_custom_target(installcheck
+  DEPENDS build-all
+  COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
+add_custom_target(distcheck
+  DEPENDS installcheck)

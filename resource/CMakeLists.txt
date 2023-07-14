@@ -84,6 +84,8 @@ target_link_libraries(resource PUBLIC
     jobspec_conv
     Boost::filesystem
     )
+install(TARGETS resource
+        LIBRARY)
 
 add_subdirectory(modules)
 add_subdirectory(reapi)
