@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(flux-sched VERSION 0.40.0 LANGUAGES CXX C)
+
+cmake_policy(SET CMP0140 NEW)
 # Option to Enable SPHINX
 option( SPHINX "Enable SPHINX" OFF )
 
@@ -106,12 +108,11 @@ function(flux_find_python_module Name Version)
     # COMMAND_ECHO STDOUT
     )
   if(MOD_VER VERSION_GREATER_EQUAL Version)
-    set(${Name}_MOD $MOD_VER)
+    set(${Name}_MOD $MOD_VER PARENT_SCOPE)
   else()
-    set(${Name}_MOD NOTFOUND)
+    set(${Name}_MOD NOTFOUND PARENT_SCOPE)
     message(FATAL_ERROR "Python module ${Name} not found or version too low, need ${Version} got ${MOD_VER}")
   endif()
-  return(PRESERVE ${Name}_MOD)
 endfunction()
 function(flux_add_shell_plugin TargetName)
   # This odd construction is as close as we can get to
