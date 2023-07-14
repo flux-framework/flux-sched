@@ -28,7 +28,7 @@ set( CMAKE_BUILD_RPATH
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
 
@@ -49,10 +49,11 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 # external dependencies
 find_package(PkgConfig REQUIRED)
 set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
-if(DEFINED FLUX_CORE_PREFIX)
-  set(ENV{PKG_CONFIG_PATH} "${FLUX_CORE_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-endif()
 find_package(FluxCore REQUIRED)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  message(STATUS "flux core found and no specific prefix specified, using ${FLUX_CORE_PREFIX}")
+  set(CMAKE_INSTALL_PREFIX ${FLUX_CORE_PREFIX} CACHE PATH "..." FORCE)
+endif()
 find_package(yaml-cpp REQUIRED)
 if(DEFINED ENV{PYTHON})
   set(Python_EXECUTABLE $ENV{PYTHON} CACHE FILEPATH "")

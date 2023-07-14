@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Autotools-style (./configure) wrapper for CMake
 # <https://github.com/nemequ/configure-cmake>
 #
@@ -28,7 +27,7 @@ if [ "${CMAKE_CMD}" = "" ]; then
 fi
 
 BUILD_TYPE="Debug"
-PREFIX=/usr/local
+# PREFIX=/usr/local
 LIBDIR=
 CMAKE_ARGS=
 
@@ -302,8 +301,11 @@ while [ $# != 0 ]; do
     shift
 done
 
-if [ "x${LIBDIR}" = "x" ]; then
-    LIBDIR="${PREFIX}/lib"
+if [ -n "${LIBDIR}" ]; then
+    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_INSTALL_LIBDIR=\"${LIBDIR}\""
+fi
+if [ -n "${PREFIX}" ]; then
+    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=\"${PREFIX}\""
 fi
 
 # Unlike CFLAGS/CXXFLAGS/CC/CXX, LDFLAGS isn't handled by CMake, so we
@@ -314,4 +316,4 @@ if [ "x${LDFLAGS}" != "x" ]; then
     done
 fi
 
-eval "${CMAKE_CMD}" "${TOP_SRCDIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_INSTALL_LIBDIR="${LIBDIR}" ${CMAKE_ARGS}
+eval "${CMAKE_CMD}" "${TOP_SRCDIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" ${CMAKE_ARGS}
