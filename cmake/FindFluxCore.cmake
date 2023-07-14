@@ -1,4 +1,5 @@
-
+set(saved_PKG_CONFIG_PATH $ENV{PKG_CONFIG_PATH})
+set(ENV{PKG_CONFIG_PATH} ${CMAKE_INSTALL_PREFIX}:$ENV{PKG_CONFIG_PATH})
 pkg_check_modules(FLUX_CORE REQUIRED IMPORTED_TARGET flux-core)
 set(FLUX_PREFIX ${FLUX_CORE_PREFIX})
 set(LIBFLUX_VERSION ${FLUX_CORE_VERSION})
@@ -28,3 +29,5 @@ add_library(flux::taskmap ALIAS PkgConfig::FLUX_TASKMAP)
 add_library(flux-all INTERFACE)
 target_link_libraries(flux-all INTERFACE flux::core flux::hostlist flux::idset flux::optparse flux::schedutil flux::taskmap)
 add_library(flux::all ALIAS flux-all)
+
+set(ENV{PKG_CONFIG_PATH} ${saved_PKG_CONFIG_PATH})

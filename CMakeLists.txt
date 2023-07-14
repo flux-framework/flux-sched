@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(flux-sched VERSION 0.40.0 LANGUAGES CXX C)
 # Option to Enable SPHINX
 option( SPHINX "Enable SPHINX" OFF )
