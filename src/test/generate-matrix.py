@@ -196,13 +196,6 @@ matrix.add_build(
     ),
 )
 
-# RHEL7 clone
-matrix.add_build(
-    name="el7",
-    image="el7",
-    docker_tag=True,
-)
-
 # RHEL8 clone
 matrix.add_build(
     name="el8",

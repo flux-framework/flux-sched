@@ -13,8 +13,8 @@ package fluxcli
 import "testing"
 
 func TestFluxcli(t *testing.T) {
-	ctx := NewReapiCli()
-	if ctx == nil {
+	cli := NewReapiClient()
+	if !cli.HasContext() {
 		t.Errorf("Context is null")
 	}
 

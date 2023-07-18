@@ -38,7 +38,7 @@ reserved: false
 allocated: {"graph": {"nodes": [{"id": "79", "metadata": {"type": "core", "basename": "core", "name": "core35", "id": 35, "uniq_id": 79, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node1/socket1/core35"}}}, {"id": "7", "metadata": {"type": "socket", "basename": "socket", "name": "socket1", "id": 1, "uniq_id": 7, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node1/socket1"}}}, {"id": "3", "metadata": {"type": "node", "basename": "node", "name": "node1", "id": 1, "uniq_id": 3, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node1"}}}, {"id": "1", "metadata": {"type": "rack", "basename": "rack", "name": "rack0", "id": 0, "uniq_id": 1, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0"}}}, {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "id": 0, "uniq_id": 0, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0"}}}], "edges": [{"source": "7", "target": "79", "metadata": {"name": {"containment": "contains"}}}, {"source": "3", "target": "7", "metadata": {"name": {"containment": "contains"}}}, {"source": "1", "target": "3", "metadata": {"name": {"containment": "contains"}}}, {"source": "0", "target": "1", "metadata": {"name": {"containment": "contains"}}}]}}
 
 at: 0
-error: 0
+error: <nil>
 Errors so far: 
  
 
@@ -48,7 +48,7 @@ reserved: false
 allocated: {"graph": {"nodes": [{"id": "43", "metadata": {"type": "core", "basename": "core", "name": "core35", "id": 35, "uniq_id": 43, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0/socket1/core35"}}}, {"id": "5", "metadata": {"type": "socket", "basename": "socket", "name": "socket1", "id": 1, "uniq_id": 5, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0/socket1"}}}, {"id": "2", "metadata": {"type": "node", "basename": "node", "name": "node0", "id": 0, "uniq_id": 2, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0"}}}, {"id": "1", "metadata": {"type": "rack", "basename": "rack", "name": "rack0", "id": 0, "uniq_id": 1, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0"}}}, {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "id": 0, "uniq_id": 0, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0"}}}], "edges": [{"source": "5", "target": "43", "metadata": {"name": {"containment": "contains"}}}, {"source": "2", "target": "5", "metadata": {"name": {"containment": "contains"}}}, {"source": "1", "target": "2", "metadata": {"name": {"containment": "contains"}}}, {"source": "0", "target": "1", "metadata": {"name": {"containment": "contains"}}}]}}
 
 at: 0
-error: 0
-Cancel output: 0
-Info output jobid 1: false, 0, 0.000000, CANCELED, 0
-Info output jobid 2: false, 0, 0.000000, 0
+error: <nil>
+Cancel output: <nil>
+Info output jobid 1: false, 0, 0.000000, CANCELED, <nil>
+Info output jobid 2: false, 0, 0.000000, <nil>

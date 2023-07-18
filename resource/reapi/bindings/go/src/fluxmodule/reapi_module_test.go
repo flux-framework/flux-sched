@@ -12,17 +12,17 @@ package fluxmodule
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestFluxmodule(t *testing.T) {
-	ctx := NewReapiModule()
-	jobspec, err := ioutil.ReadFile("/root/flux-sched/t/data/resource/jobspecs/basics/test001.yaml")
-	if ctx == nil {
+	mod := NewReapiModule()
+	jobspec, err := os.ReadFile("/root/flux-sched/t/data/resource/jobspecs/basics/test001.yaml")
+	if !mod.HasContext() {
 		t.Errorf("Context is null")
 	}
-	reserved, allocated, at, overhead, err1 := ReapiModuleMatchAllocate(ctx, false, string(jobspec), 4)
+	reserved, allocated, at, overhead, err1 := mod.MatchAllocate(false, string(jobspec), 4)
 	fmt.Printf("%t, %s, %d, %f, %d, %s", reserved, allocated, at, overhead, err1, err)
 
 }
