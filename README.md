@@ -104,7 +104,7 @@ be set to the same prefix as was used to install the target flux-core.
 
 For example, if flux-core was installed in `$FLUX_CORE_PREFIX`:
 
-```
+```bash
 ./configure --prefix=${FLUX_CORE_PREFIX}
 make
 make check

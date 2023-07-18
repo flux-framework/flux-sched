@@ -1,6 +1,7 @@
 # NOTE: skipping tree tests, since they're long broken
 #  t2000-tree-basic.t
 #  t2001-tree-real.t
+
 set(ALL_TESTS
   t0000-sharness.t
   t1001-qmanager-basic.t
@@ -81,6 +82,7 @@ set(ALL_TESTS
   t6002-graph-hwloc.t
   t7000-shell-datastaging.t
   t8001-util-ion-R.t
+  t9001-golang-basic.t
   )
 foreach(test ${ALL_TESTS})
   flux_add_test(NAME ${test}
