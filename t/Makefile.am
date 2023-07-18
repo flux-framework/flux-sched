@@ -33,7 +33,6 @@ TESTS = \
     t1010-sync-modules.t \
     t1011-dynstate-change.t \
     t1012-find-status.t \
-    t1013-exclusion.t \
     t1013-qmanager-priority.t \
     t1014-annotation.t \
     t1015-find-format.t \
