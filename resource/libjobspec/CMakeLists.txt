@@ -22,4 +22,4 @@ target_link_libraries(flux-jobspec-validate PRIVATE jobspec_conv)
 
 add_executable(test_constraint.t test/constraint.cpp)
 target_link_libraries(test_constraint.t jobspec_conv libtap)
-add_test(NAME test_constraint COMMAND test_constraint.t)
+flux_add_test(NAME test_constraint COMMAND test_constraint.t)

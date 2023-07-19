@@ -26,7 +26,7 @@ if [ "${CMAKE_CMD}" = "" ]; then
     CMAKE_CMD="cmake"
 fi
 
-BUILD_TYPE="Debug"
+BUILD_TYPE="RelWithDebInfo"
 # PREFIX=/usr/local
 LIBDIR=
 CMAKE_ARGS=
@@ -102,8 +102,10 @@ prefix_to_offset() {
 print_help() {
     cat <<EOF >&2
   -h, --help              display this help and exit
-  --disable-debug         disable debugging mode
-  --pass-thru             pass remaining arguments through to CMake
+  --build-type=BUILD_TYPE explicitly set build type [$BUILD_TYPE]
+                          Options: Debug, Release, RelWithDebInfo, MinSizeRel
+  --compiler-launcher=L   Set the compiler launcher, for example ccache, distcc
+  --pass-thru, or --      pass remaining arguments through to CMake
 
   --prefix=PREFIX         install architecture-independent files in PREFIX
                           [$PREFIX]
@@ -259,20 +261,12 @@ while [ $# != 0 ]; do
         "-h")
             print_help;;
 
-        # This flag is the only one which may be a bit surprising to
-        # people.  Autotools always builds with debugging symbols enabled
-        # (AFAIK), but for cmake you have to do -DCMAKE_BUILD_TYPE=Debug.
-        # Unfortunately this can change other things as well, so although
-        # I realize there is no --disable-debug flag I thought it would be
-        # prudent to support one here.
-        "--disable-debug")
-            BUILD_TYPE="Release";;
+        "--compiler-launcher=")
+            CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CXX_COMPILER_LAUNCHER=$(quote "${1#*=}")"
+            CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_C_COMPILER_LAUNCHER=$(quote "${1#*=}")";;
 
-        "--pass-thru")
-            while [ $# != 1 ]; do
-                shift;
-                CMAKE_ARGS="$CMAKE_ARGS $(quote "${1}")";
-            done;;
+        "--build-type=")
+            BUILD_TYPE="${1#*=}";;
 
         "--enable-"*)
             set_config_var "$1"
@@ -292,6 +286,12 @@ while [ $# != 0 ]; do
                     shift;;
             esac
             ;;
+
+        "--pass-thru"|--)
+            while [ $# != 1 ]; do
+                shift;
+                CMAKE_ARGS="$CMAKE_ARGS $(quote "${1}")";
+            done;;
 
         *)
             echo "$0: error: unrecognized option: \`$1'" >&2

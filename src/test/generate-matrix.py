@@ -132,6 +132,13 @@ matrix.add_build(
     docker_tag=True,
 )
 
+# Ubuntu 18.04: py3.8
+matrix.add_build(
+    name="bionic",
+    image="bionic",
+    docker_tag=True,
+)
+
 # # Ubuntu 20.04: py3.8
 # matrix.add_build(
 #     name="focal",

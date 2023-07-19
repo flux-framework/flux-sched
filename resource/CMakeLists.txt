@@ -1,35 +1,6 @@
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
-
-add_library(resource SHARED
-    policies/dfu_match_locality.cpp
-    policies/dfu_match_var_aware.cpp
-    policies/dfu_match_policy_factory.cpp
-    jobinfo/jobinfo.cpp
-    schema/resource_data.cpp
-    schema/infra_data.cpp
-    schema/sched_data.cpp
-    schema/color.cpp
-    schema/ephemeral.cpp
-    traversers/dfu.cpp
-    traversers/dfu_impl.cpp
-    traversers/dfu_impl_update.cpp
-    policies/base/dfu_match_cb.cpp
-    policies/base/matcher.cpp
-    readers/resource_namespace_remapper.cpp
-    readers/resource_reader_base.cpp
-    readers/resource_spec_grug.cpp
-    readers/resource_reader_grug.cpp
-    readers/resource_reader_hwloc.cpp
-    readers/resource_reader_jgf.cpp
-    readers/resource_reader_rv1exec.cpp
-    readers/resource_reader_factory.cpp
-    writers/match_writers.cpp
-    evaluators/scoring_api.cpp
-    evaluators/edge_eval_api.cpp
-    evaluators/expr_eval_api.cpp
-    evaluators/expr_eval_vtx_target.cpp
-    store/resource_graph_store.cpp
+set(RESOURCE_HEADERS 
     utilities/command.hpp
     policies/dfu_match_high_id_first.hpp
     policies/dfu_match_low_id_first.hpp
@@ -67,6 +38,38 @@ add_library(resource SHARED
     evaluators/expr_eval_vtx_target.hpp
     config/system_defaults.hpp
     store/resource_graph_store.hpp
+    )
+
+add_library(resource SHARED
+    policies/dfu_match_locality.cpp
+    policies/dfu_match_var_aware.cpp
+    policies/dfu_match_policy_factory.cpp
+    jobinfo/jobinfo.cpp
+    schema/resource_data.cpp
+    schema/infra_data.cpp
+    schema/sched_data.cpp
+    schema/color.cpp
+    schema/ephemeral.cpp
+    traversers/dfu.cpp
+    traversers/dfu_impl.cpp
+    traversers/dfu_impl_update.cpp
+    policies/base/dfu_match_cb.cpp
+    policies/base/matcher.cpp
+    readers/resource_namespace_remapper.cpp
+    readers/resource_reader_base.cpp
+    readers/resource_spec_grug.cpp
+    readers/resource_reader_grug.cpp
+    readers/resource_reader_hwloc.cpp
+    readers/resource_reader_jgf.cpp
+    readers/resource_reader_rv1exec.cpp
+    readers/resource_reader_factory.cpp
+    writers/match_writers.cpp
+    evaluators/scoring_api.cpp
+    evaluators/edge_eval_api.cpp
+    evaluators/expr_eval_api.cpp
+    evaluators/expr_eval_vtx_target.cpp
+    store/resource_graph_store.cpp
+    ${RESOURCE_HEADERS}
     )
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE

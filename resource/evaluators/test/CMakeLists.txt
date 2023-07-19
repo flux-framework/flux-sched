@@ -6,4 +6,4 @@ target_link_libraries(expr_eval_test PRIVATE
   resource
   )
 
-add_test(NAME expr_eval_test COMMAND expr_eval_test)
+flux_add_test(NAME expr_eval_test COMMAND expr_eval_test)

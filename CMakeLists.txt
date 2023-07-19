@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(flux-sched VERSION 0.40.0 LANGUAGES CXX C)
 
 cmake_policy(SET CMP0140 NEW)
@@ -8,7 +8,7 @@ option( SPHINX "Enable SPHINX" OFF )
 # Option to AS_HELP_STRING([--disable-docs
 option( DOCS "Enable docs generation" OFF )
 
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 14 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -93,10 +93,7 @@ set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
 set(FLUX_RC1_DIR "${CMAKE_INSTALL_SYSCONFDIR}/flux/rc1.d")
 set(FLUX_RC3_DIR "${CMAKE_INSTALL_SYSCONFDIR}/flux/rc3.d")
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  include(CTest)
-endif()
-
+include(config_testing)
 ### HELPERS
 function(flux_find_python_module Name Version)
   execute_process(
@@ -172,30 +169,32 @@ function(flux_add_module TargetName)
   target_link_options(${TargetName} PRIVATE
     "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" "LINKER:--no-undefined")
 endfunction()
-function(flux_add_test)
-  # This odd construction is as close as we can get to
-  # generic argument forwarding
-  set(options "")
-  set(oneValueArgs "")
-  set(multiValueArgs "")
-
-  cmake_parse_arguments(PARSE_ARGV 1 ARG
-    "${options}" "${oneValueArgs}" "${multiValueArgs}")
-
-  set(__argsQuoted)
-  foreach(__item IN LISTS ARG_UNPARSED_ARGUMENTS)
-    string(APPEND __argsQuoted " [==[${__item}]==]")
-  endforeach()
-  cmake_language(EVAL CODE "
-  add_test(
-    ${__argsQuoted}
-    )"
-    )
-endfunction()
 ### END HELPERS
 flux_find_python_module(yaml 3.10)
 flux_find_python_module(jsonschema 2.3.0)
 
+# make our own BUILD_COMMAND to preserve make jobserver
+# if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+#   set(BUILD_COMMAND make -C)
+# else()
+#   set(BUILD_COMMAND ${CMAKE_COMMAND} --build)
+# endif()
+add_custom_target(build-all
+  # build all target, set CMAKE_BUILD_PARALLEL_LEVEL in env
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
+  )
+if(ENABLE_COVERAGE)
+  include(CodeCoverage)
+
+  SET(COVERAGE_FLAGS "--coverage -g -fprofile-arcs -ftest-coverage")
+  SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${COVERAGE_FLAGS}" )
+  SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}" )
+  SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${COVERAGE_FLAGS}" )
+  blt_add_code_coverage_target(NAME check-code-coverage
+    RUNNER ctest
+    REMOVE "*/include/boost/*" "/nix/store/*" "*/include/boost/*" "*/src/common/libutil/*" "*/src/common/libtap/*" "*/src/common/yggdrasil/*")
+  add_dependencies(check-code-coverage build-all)
+endif()
 include_directories(.)
 add_subdirectory( etc )
 add_subdirectory( src )
@@ -204,15 +203,6 @@ add_subdirectory( qmanager )
 # add_subdirectory( doc )
 # add_subdirectory( etc )
 add_subdirectory( t )
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-  set(BUILD_COMMAND make -C)
-else()
-  set(BUILD_COMMAND ${CMAKE_COMMAND} --build)
-endif()
-add_custom_target(build-all
-  # build all target, set CMAKE_BUILD_PARALLEL_LEVEL in env
-  COMMAND ${BUILD_COMMAND} ${CMAKE_BINARY_DIR}
-  )
 add_custom_target(check
   DEPENDS build-all
   COMMAND ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml
