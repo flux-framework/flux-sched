@@ -53,6 +53,10 @@ public:
     virtual int unpack_at (resource_graph_t &g, resource_graph_metadata_t &m,
                            vtx_t &vtx, const std::string &str, int rank = -1) = 0;
 
+    virtual int remove_subgraph (resource_graph_t &g,
+                                 resource_graph_metadata_t &m,
+                                 const std::string &path) = 0;
+
     /*! Update resource graph g with str.
      *
      * \param g      resource graph

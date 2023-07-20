@@ -74,6 +74,10 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token);
 
+    virtual int remove_subgraph (resource_graph_t &g,
+                                 resource_graph_metadata_t &m,
+                                 const std::string &path);
+
     /*! Is the selected reader format support allowlist
      *
      * \return       false
@@ -100,7 +104,13 @@ private:
                     std::map<std::string, bool> &is_roots);
     int add_graph_metadata (vtx_t v, resource_graph_t &g,
                             resource_graph_metadata_t &m);
-    int update_vmap (std::map<std::string, vmap_val_t> &vmap, vtx_t v, 
+    int remove_graph_metadata (vtx_t v, resource_graph_t &g,
+                               resource_graph_metadata_t &m);
+    int remove_metadata_outedges (vtx_t source_vertex,
+                                  vtx_t dest_vertex,
+                                  resource_graph_t &g,
+                                  resource_graph_metadata_t &m);
+    int update_vmap (std::map<std::string, vmap_val_t> &vmap, vtx_t v,
                      const std::map<std::string, bool> &root_checks,
                      const fetch_helper_t &fetcher);
     int add_vtx (resource_graph_t &g, resource_graph_metadata_t &m,
@@ -121,19 +131,19 @@ private:
                     const fetch_helper_t &fetcher, uint64_t jobid, int64_t at,
                     uint64_t dur, bool rsv);
     int unpack_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, 
+                         std::map<std::string, vmap_val_t> &vmap,
                          json_t *nodes,
                          std::unordered_set<std::string> &added_vtcs);
     int undo_vertices (resource_graph_t &g,
                        std::map<std::string, vmap_val_t> &vmap,
                        uint64_t jobid, bool rsv);
     int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, 
-                         json_t *nodes, int64_t jobid, int64_t at, 
+                         std::map<std::string, vmap_val_t> &vmap,
+                         json_t *nodes, int64_t jobid, int64_t at,
                          uint64_t dur, bool rsv);
     int update_vertices (resource_graph_t &g, resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap, 
-                         json_t *nodes, int64_t jobid, int64_t at, 
+                         std::map<std::string, vmap_val_t> &vmap,
+                         json_t *nodes, int64_t jobid, int64_t at,
                          uint64_t dur);
     int unpack_edge (json_t *element, std::map<std::string, vmap_val_t> &vmap,
                      std::string &source, std::string &target, json_t **name);
@@ -145,12 +155,18 @@ private:
                          std::string &source, std::string &target,
                          uint64_t token);
     int unpack_edges (resource_graph_t &g, resource_graph_metadata_t &m,
-                      std::map<std::string, vmap_val_t> &vmap, 
+                      std::map<std::string, vmap_val_t> &vmap,
                       json_t *edges,
                       const std::unordered_set<std::string> &added_vtcs);
     int update_edges (resource_graph_t &g, resource_graph_metadata_t &m,
                       std::map<std::string, vmap_val_t> &vmap,
                       json_t *edges, uint64_t token);
+    int get_subgraph_vertices (resource_graph_t &g,
+                               vtx_t node,
+                               std::vector<vtx_t> &node_list);
+    int get_parent_vtx (resource_graph_t &g,
+                        vtx_t node,
+                        vtx_t &parent_node);
 };
 
 } // namespace resource_model

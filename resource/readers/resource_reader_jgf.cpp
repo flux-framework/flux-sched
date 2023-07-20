@@ -282,7 +282,7 @@ int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
         m_err_msg += std::to_string (f.rank) + ".\n";
         goto error;
     }
-    if (remap_rank 
+    if (remap_rank
             > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
         errno = EOVERFLOW;
         m_err_msg += __FUNCTION__;
@@ -298,7 +298,7 @@ int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
             m_err_msg += " rank=" + std::to_string (f.rank) + ".\n";
             goto error;
         }
-        if (remap_id 
+        if (remap_id
                 > static_cast<uint64_t> (std::numeric_limits<int>::max ())) {
             errno = EOVERFLOW;
             m_err_msg += __FUNCTION__;
@@ -457,7 +457,7 @@ done:
 
 vtx_t resource_reader_jgf_t::vtx_in_graph (const resource_graph_t &g,
                                            const resource_graph_metadata_t &m,
-                                           const std::map<std::string, 
+                                           const std::map<std::string,
                                                           std::string> &paths,
                                            int rank)
 {
@@ -528,17 +528,75 @@ done:
     return rc;
 }
 
-int resource_reader_jgf_t::update_vmap (std::map<std::string, 
+int resource_reader_jgf_t::remove_graph_metadata (vtx_t v,
+                                                  resource_graph_t &g,
+                                                  resource_graph_metadata_t &m)
+{
+    int rc = -1;
+    for (auto kv : g[v].paths) {
+        m.by_path.erase (kv.second);
+    }
+    
+    m.by_outedges.erase (v);
+
+    for (auto it = m.by_type[g[v].type].begin (); it != m.by_type[g[v].type].end (); ++it) {
+        if (*it == v) {
+            m.by_type[g[v].type].erase (it);
+            break;
+        }
+    }
+
+    for (auto it = m.by_name[g[v].name].begin (); it != m.by_name[g[v].name].end (); ++it) {
+        if (*it == v) {
+            m.by_name[g[v].name].erase (it);
+            break;
+        }
+    }
+
+    for (auto it = m.by_rank[g[v].rank].begin (); it != m.by_rank[g[v].rank].end (); ++it) {
+        if (*it == v) {
+            m.by_rank[g[v].rank].erase (it);
+            break;
+        }
+    }
+
+    rc = 0;
+    return rc;
+}
+
+int resource_reader_jgf_t::remove_metadata_outedges (vtx_t source_vertex,
+                                                     vtx_t dest_vertex,
+                                                     resource_graph_t &g,
+                                                     resource_graph_metadata_t &m)
+{
+    int rc = -1;
+    std::vector<edg_t> remove_edges;
+    auto iter = m.by_outedges.find (source_vertex);
+    if (iter == m.by_outedges.end ())
+        return rc;
+    auto &outedges = iter->second;
+    for (auto kv = outedges.begin (); kv != outedges.end (); ++kv) {
+        if (boost::target (kv->second, g) == dest_vertex) {
+            kv = outedges.erase (kv); 
+            // TODO: Consider adding break here 
+        }
+    }
+
+    rc = 0;
+    return rc;
+}
+
+int resource_reader_jgf_t::update_vmap (std::map<std::string,
                                                  vmap_val_t> &vmap,
-                                        vtx_t v, 
-                                        const std::map<std::string, 
+                                        vtx_t v,
+                                        const std::map<std::string,
                                                        bool> &root_checks,
                                         const fetch_helper_t &fetcher)
 {
     int rc = -1;
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
-    ptr = vmap.emplace (std::string (fetcher.vertex_id), 
-                        vmap_val_t{v, root_checks, 
+    ptr = vmap.emplace (std::string (fetcher.vertex_id),
+                        vmap_val_t{v, root_checks,
                         static_cast<unsigned int> (fetcher.size),
                         static_cast<unsigned int> (fetcher.exclusive)});
     if (!ptr.second) {
@@ -776,7 +834,7 @@ int resource_reader_jgf_t::unpack_vertices (resource_graph_t &g,
                                             resource_graph_metadata_t &m,
                                             std::map<std::string,
                                                      vmap_val_t> &vmap,
-                                            json_t *nodes, 
+                                            json_t *nodes,
                                             std::unordered_set<std::string>
                                             &added_vtcs)
 {
@@ -894,7 +952,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                                          resource_graph_metadata_t &m,
                                          std::map<std::string,
                                                   vmap_val_t> &vmap,
-                                         json_t *edges, 
+                                         json_t *edges,
                                          const std::unordered_set
                                          <std::string> &added_vtcs)
 {
@@ -914,7 +972,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
         if ( (unpack_edge (element, vmap, source, target, &name)) != 0)
             goto done;
         // We only add the edge when it connects at least one newly added vertex
-        if ( (added_vtcs.count (source) == 1) 
+        if ( (added_vtcs.count (source) == 1)
               || (added_vtcs.count (target) == 1)) {
             tie (e, inserted) = add_edge (vmap[source].v, vmap[target].v, g);
             if (inserted == false) {
@@ -1053,6 +1111,57 @@ done:
     return rc;
 }
 
+int resource_reader_jgf_t::get_subgraph_vertices (resource_graph_t &g,
+                                                  vtx_t vtx,
+                                                  std::vector<vtx_t> &vtx_list)
+{
+    vtx_t next_vtx;
+    boost::graph_traits<resource_graph_t>::out_edge_iterator ei, ei_end;
+    boost::tie (ei, ei_end) = boost::out_edges (vtx, g);
+
+    for (; ei != ei_end; ++ei) {
+        next_vtx =  boost::target (*ei, g);
+        
+        for (auto const &paths_it : g[next_vtx].paths) {
+            // check that we don't recurse on parent edges 
+            if (paths_it.second.find (g[vtx].name) != std::string::npos &&
+                paths_it.second.find (g[vtx].name) < paths_it.second.find (g[next_vtx].name)) {
+                vtx_list.push_back (next_vtx);
+                get_subgraph_vertices (g, next_vtx, vtx_list);
+                break;
+            }
+        }      
+  }
+
+  return 0;
+}
+
+int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
+                                           vtx_t vtx,
+                                           vtx_t &parent_vtx)
+                                            
+{
+    vtx_t next_vtx;
+    boost::graph_traits<resource_graph_t>::out_edge_iterator ei, ei_end;
+    boost::tie (ei, ei_end) = boost::out_edges (vtx, g);
+    int rc = -1;
+
+    for (; ei != ei_end; ++ei) {
+        next_vtx =  boost::target (*ei, g);
+        for (auto const &paths_it : g[vtx].paths) {
+            // check that the parent's name exists in the child's path before the child's name
+            if (paths_it.second.find (g[next_vtx].name) != std::string::npos &&
+                paths_it.second.find (g[vtx].name) > paths_it.second.find (g[next_vtx].name)) {
+                parent_vtx = next_vtx;
+                rc = 0;
+                break;
+            }
+        }    
+  }
+
+  return rc;
+}
+
 
 /********************************************************************************
  *                                                                              *
@@ -1099,12 +1208,12 @@ int resource_reader_jgf_t::unpack_at (resource_graph_t &g,
                                       resource_graph_metadata_t &m, vtx_t &vtx,
                                       const std::string &str, int rank)
 {
-    /* This functionality is currently experimental, as resource graph 
-     * growth causes a resize of the boost vecS vertex container type. 
-     * Resizing the vecS results in lost job allocations and reservations 
+    /* This functionality is currently experimental, as resource graph
+     * growth causes a resize of the boost vecS vertex container type.
+     * Resizing the vecS results in lost job allocations and reservations
      * as there is no copy constructor for planner.
-     * vtx_t vtx is not implemented and may be used in the future 
-     * for optimization. 
+     * vtx_t vtx is not implemented and may be used in the future
+     * for optimization.
      */
 
     return unpack (g, m, str, rank);
@@ -1142,6 +1251,44 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
 done:
     json_decref (jgf);
     return rc;
+}
+
+int resource_reader_jgf_t::remove_subgraph (resource_graph_t &g,
+                                            resource_graph_metadata_t &m,
+                                            const std::string &path)
+{
+    vtx_t subgraph_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+    vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+    std::vector<vtx_t> vtx_list;
+
+    auto iter = m.by_path.find (path);
+    if (iter == m.by_path.end ()) {
+        return -1;
+    }
+
+    for (auto &v : iter->second) {
+        subgraph_root_vtx = v;
+    }
+
+    vtx_list.push_back (subgraph_root_vtx);
+
+    get_subgraph_vertices (g, subgraph_root_vtx, vtx_list);
+    
+    if ( get_parent_vtx (g, subgraph_root_vtx, parent_vtx) )
+        return -1;
+    
+    if ( remove_metadata_outedges (parent_vtx, subgraph_root_vtx, g, m) )
+        return -1;
+
+    for (auto & vtx : vtx_list)
+    {   
+        // clear vertex edges but don't delete vertex
+        boost::clear_vertex (vtx, g);
+        remove_graph_metadata (vtx, g, m);
+    }
+
+    return 0;
+
 }
 
 bool resource_reader_jgf_t::is_allowlist_supported ()
