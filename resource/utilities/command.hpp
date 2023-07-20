@@ -75,6 +75,8 @@ int cmd_update (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
 int cmd_attach (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
+int cmd_remove (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args);
 int cmd_find (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
 int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
