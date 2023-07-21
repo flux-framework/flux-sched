@@ -18,6 +18,7 @@ RUN sudo yum -y update \
 	yaml-cpp-devel \
 	libedit-devel \
 	cmake \
+	clang \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:
