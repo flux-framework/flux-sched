@@ -139,19 +139,19 @@ matrix.add_build(
     docker_tag=True,
 )
 
-# # Ubuntu 20.04: py3.8
-# matrix.add_build(
-#     name="focal",
-#     image="focal",
-#     docker_tag=True,
-# )
+# Ubuntu 20.04: py3.8
+matrix.add_build(
+    name="focal",
+    image="focal",
+    docker_tag=True,
+)
 
-# # RHEL7 clone
-# matrix.add_build(
-#     name="el7",
-#     image="el7",
-#     docker_tag=True,
-# )
+# RHEL7 clone
+matrix.add_build(
+    name="el7",
+    image="el7",
+    docker_tag=True,
+)
 
 # RHEL8 clone
 matrix.add_build(
