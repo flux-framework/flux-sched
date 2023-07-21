@@ -120,7 +120,7 @@ function(flux_find_python_module Name Version)
     message(FATAL_ERROR "Python module ${Name} not found or version too low, need ${Version} got ${MOD_VER}")
   endif()
 endfunction()
-function(flux_add_shell_plugin TargetName)
+function(flux_add_library TargetName)
   # This odd construction is as close as we can get to
   # generic argument forwarding
   set(options "NOINSTALL")
@@ -137,6 +137,32 @@ function(flux_add_shell_plugin TargetName)
   cmake_language(EVAL CODE "
   add_library(
     ${TargetName}
+    # List these last so they can override things we set above
+    ${__argsQuoted}
+    )"
+    )
+  if (NOT ARG_NOINSTALL)
+    install(TARGETS ${TargetName} LIBRARY)
+  endif()
+endfunction()
+function(flux_add_shell_plugin TargetName)
+  # This odd construction is as close as we can get to
+  # generic argument forwarding
+  set(options "NOINSTALL")
+  set(oneValueArgs "")
+  set(multiValueArgs "")
+
+  cmake_parse_arguments(PARSE_ARGV 1 ARG
+    "${options}" "${oneValueArgs}" "${multiValueArgs}")
+
+  set(__argsQuoted)
+  foreach(__item IN LISTS ARG_UNPARSED_ARGUMENTS)
+    string(APPEND __argsQuoted " [==[${__item}]==]")
+  endforeach()
+  cmake_language(EVAL CODE "
+  flux_add_library(
+    ${TargetName}
+    NOINSTALL
     MODULE
     # List these last so they can override things we set above
     ${__argsQuoted}
@@ -188,10 +214,6 @@ flux_find_python_module(jsonschema 2.3.0)
 # else()
 #   set(BUILD_COMMAND ${CMAKE_COMMAND} --build)
 # endif()
-add_custom_target(build-all
-  # build all target, set CMAKE_BUILD_PARALLEL_LEVEL in env
-  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
-  )
 if(ENABLE_COVERAGE)
   include(CodeCoverage)
 
@@ -200,10 +222,10 @@ if(ENABLE_COVERAGE)
   SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}" )
   SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${COVERAGE_FLAGS}" )
   blt_add_code_coverage_target(NAME check-code-coverage
-    RUNNER ctest
+    RUNNER ${CMAKE_CTEST_COMMAND}
     REMOVE "*/include/boost/*" "/nix/store/*" "*/include/boost/*" "*/src/common/libutil/*" "*/src/common/libtap/*" "*/src/common/yggdrasil/*")
-  add_dependencies(check-code-coverage build-all)
 endif()
+
 include_directories(.)
 add_subdirectory( etc )
 add_subdirectory( src )
