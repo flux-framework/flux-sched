@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
-project(flux-sched VERSION 0.40.0 LANGUAGES CXX C)
+set(VER_FILE ${CMAKE_SOURCE_DIR}/flux-sched.ver)
+if(EXISTS ${VER_FILE})
+  file(READ ${VER_FILE} FLUX_SCHED_VER)
+  string(STRIP ${FLUX_SCHED_VER} FLUX_SCHED_VER)
+else()
+  execute_process(COMMAND sh -c [=[git describe --always | awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']=] OUTPUT_VARIABLE FLUX_SCHED_VER)
+endif()
+string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT ${FLUX_SCHED_VER})
+project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
+message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 
 cmake_policy(SET CMP0140 NEW)
 # Option to Enable SPHINX
@@ -38,7 +47,7 @@ endif("${isSystemDir}" STREQUAL "-1")
 include_directories( ${CMAKE_BINARY_DIR} )
 # Since we have created a config.h add a global define for it
 add_definitions( "-DHAVE_CONFIG_H" )
-add_definitions( [=[-DPACKAGE_VERSION="${CMAKE_PROJECT_VERSION}"]=] )
+add_definitions( "-DPACKAGE_VERSION=\"${FLUX_SCHED_VER}\"" )
 
 # We build a lot of shared libs, build them all with PIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -203,12 +212,47 @@ add_subdirectory( qmanager )
 # add_subdirectory( doc )
 # add_subdirectory( etc )
 add_subdirectory( t )
+
+function (_get_all_real_cmake_targets out_var current_dir)
+    get_property(curdir_targets DIRECTORY ${current_dir} PROPERTY BUILDSYSTEM_TARGETS)
+    get_property(subdirs DIRECTORY ${current_dir} PROPERTY SUBDIRECTORIES)
+
+    set(targets "")
+    foreach(tgt ${curdir_targets})
+      get_property(tgt_type TARGET ${tgt} PROPERTY TYPE)
+      message(STATUS "checking ${tgt} type ${tgt_type}")
+      set(REAL_TGT_LIST "STATIC_LIBRARY;MODULE_LIBRARY;SHARED_LIBRARY;OBJECT_LIBRARY;EXECUTABLE")
+      if(tgt_type IN_LIST REAL_TGT_LIST)
+        message(STATUS "${tgt} matched")
+        list(APPEND targets ${tgt})
+      endif()
+    endforeach()
+    foreach(subdir ${subdirs})
+      _get_all_real_cmake_targets(subdir_targets ${subdir})
+      list(APPEND targets ${subdir_targets})
+    endforeach()
+
+    set(${out_var} ${targets} PARENT_SCOPE)
+endfunction()
+
+# Run at end of top-level CMakeLists
+_get_all_real_cmake_targets(check_targets ${CMAKE_CURRENT_LIST_DIR})
+message(STATUS "Check targets: ${check_targets}")
+if(ENABLE_COVERAGE)
+  add_dependencies(check-code-coverage ${check_targets})
+endif()
 add_custom_target(check
-  DEPENDS build-all
-  COMMAND ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml
+  DEPENDS ${check_targets}
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml
   )
 add_custom_target(installcheck
-  DEPENDS build-all
-  COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ctest --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
+  DEPENDS ${check_targets}
+  COMMAND ${CMAKE_COMMAND} --build .
+  COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
+# run installcheck, if it passes then write out version information and pack up
+# a tarball with the result
 add_custom_target(distcheck
-  DEPENDS installcheck)
+  DEPENDS installcheck
+  COMMAND sh -c "echo ${FLUX_SCHED_VER} > '${VER_FILE}'"
+  COMMAND git archive --format=tar.gz --add-file=flux-sched.ver --prefix=flux-sched-${FLUX_SCHED_VER} -o flux-sched-${FLUX_SCHED_VER}.tar.gz
+  )
