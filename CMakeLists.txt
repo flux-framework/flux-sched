@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
-set(VER_FILE ${CMAKE_SOURCE_DIR}/flux-sched.ver)
+set(VER_FILE ${CMAKE_BINARY_DIR}/flux-sched.ver)
 if(EXISTS ${VER_FILE})
   file(READ ${VER_FILE} FLUX_SCHED_VER)
   string(STRIP ${FLUX_SCHED_VER} FLUX_SCHED_VER)
 else()
   execute_process(COMMAND sh -c [=[git describe --always | awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']=] OUTPUT_VARIABLE FLUX_SCHED_VER)
 endif()
+message(STATUS "VER ${FLUX_SCHED_VER}")
 string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT ${FLUX_SCHED_VER})
 project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
 message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
@@ -120,14 +121,21 @@ function(flux_find_python_module Name Version)
     message(FATAL_ERROR "Python module ${Name} not found or version too low, need ${Version} got ${MOD_VER}")
   endif()
 endfunction()
-function(flux_add_library TargetName)
+function(flux_add_plugin TargetName PluginType)
   # This odd construction is as close as we can get to
   # generic argument forwarding
   set(options "NOINSTALL")
   set(oneValueArgs "")
   set(multiValueArgs "")
 
-  cmake_parse_arguments(PARSE_ARGV 1 ARG
+  if(PluginType STREQUAL "MODULE")
+    set(LinkerOpts "LINKER:--no-undefined")
+    set(InstallDest ${FLUX_MOD_DIR})
+  elseif(PluginType STREQUAL "SHELL")
+    set(InstallDest ${FLUX_SHELL_PLUGIN_DIR})
+  endif()
+
+  cmake_parse_arguments(PARSE_ARGV 2 ARG
     "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
   set(__argsQuoted)
@@ -137,83 +145,25 @@ function(flux_add_library TargetName)
   cmake_language(EVAL CODE "
   add_library(
     ${TargetName}
-    # List these last so they can override things we set above
-    ${__argsQuoted}
-    )"
-    )
-  if (NOT ARG_NOINSTALL)
-    install(TARGETS ${TargetName} LIBRARY)
-  endif()
-endfunction()
-function(flux_add_shell_plugin TargetName)
-  # This odd construction is as close as we can get to
-  # generic argument forwarding
-  set(options "NOINSTALL")
-  set(oneValueArgs "")
-  set(multiValueArgs "")
-
-  cmake_parse_arguments(PARSE_ARGV 1 ARG
-    "${options}" "${oneValueArgs}" "${multiValueArgs}")
-
-  set(__argsQuoted)
-  foreach(__item IN LISTS ARG_UNPARSED_ARGUMENTS)
-    string(APPEND __argsQuoted " [==[${__item}]==]")
-  endforeach()
-  cmake_language(EVAL CODE "
-  flux_add_library(
-    ${TargetName}
-    NOINSTALL
+    ${LibFlags}
     MODULE
     # List these last so they can override things we set above
     ${__argsQuoted}
     )"
     )
   target_link_options(${TargetName} PRIVATE
-    "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map")
+    "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" ${LinkerOpts})
   target_link_libraries(${TargetName} PRIVATE flux::core)
   if (NOT ARG_NOINSTALL)
     install(TARGETS ${TargetName}
-      LIBRARY DESTINATION ${FLUX_SHELL_PLUGIN_DIR})
+      LIBRARY DESTINATION ${InstallDest})
   endif()
   set_property(TARGET ${TargetName} PROPERTY PREFIX "")
-endfunction()
-function(flux_add_module TargetName)
-  # This odd construction is as close as we can get to
-  # generic argument forwarding
-  set(options "")
-  set(oneValueArgs "")
-  set(multiValueArgs "")
-
-  cmake_parse_arguments(PARSE_ARGV 1 ARG
-    "${options}" "${oneValueArgs}" "${multiValueArgs}")
-
-  set(__argsQuoted)
-  foreach(__item IN LISTS ARG_UNPARSED_ARGUMENTS)
-    string(APPEND __argsQuoted " [==[${__item}]==]")
-  endforeach()
-  cmake_language(EVAL CODE "
-  flux_add_shell_plugin(
-    ${TargetName}
-    NOINSTALL
-    # List these last so they can override things we set above
-    ${__argsQuoted}
-    )"
-    )
-  install(TARGETS ${TargetName}
-    LIBRARY DESTINATION ${FLUX_MOD_DIR})
-  target_link_options(${TargetName} PRIVATE
-    "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" "LINKER:--no-undefined")
 endfunction()
 ### END HELPERS
 flux_find_python_module(yaml 3.10)
 flux_find_python_module(jsonschema 2.3.0)
 
-# make our own BUILD_COMMAND to preserve make jobserver
-# if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-#   set(BUILD_COMMAND make -C)
-# else()
-#   set(BUILD_COMMAND ${CMAKE_COMMAND} --build)
-# endif()
 if(ENABLE_COVERAGE)
   include(CodeCoverage)
 
@@ -221,9 +171,6 @@ if(ENABLE_COVERAGE)
   SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${COVERAGE_FLAGS}" )
   SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}" )
   SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${COVERAGE_FLAGS}" )
-  blt_add_code_coverage_target(NAME check-code-coverage
-    RUNNER ${CMAKE_CTEST_COMMAND}
-    REMOVE "*/include/boost/*" "/nix/store/*" "*/include/boost/*" "*/src/common/libutil/*" "*/src/common/libtap/*" "*/src/common/yggdrasil/*")
 endif()
 
 include_directories(.)
@@ -232,47 +179,32 @@ add_subdirectory( src )
 add_subdirectory( resource )
 add_subdirectory( qmanager )
 # add_subdirectory( doc )
-# add_subdirectory( etc )
 add_subdirectory( t )
 
-function (_get_all_real_cmake_targets out_var current_dir)
-    get_property(curdir_targets DIRECTORY ${current_dir} PROPERTY BUILDSYSTEM_TARGETS)
-    get_property(subdirs DIRECTORY ${current_dir} PROPERTY SUBDIRECTORIES)
-
-    set(targets "")
-    foreach(tgt ${curdir_targets})
-      get_property(tgt_type TARGET ${tgt} PROPERTY TYPE)
-      set(REAL_TGT_LIST "STATIC_LIBRARY;MODULE_LIBRARY;SHARED_LIBRARY;OBJECT_LIBRARY;EXECUTABLE")
-      if(tgt_type IN_LIST REAL_TGT_LIST)
-        list(APPEND targets ${tgt})
-      endif()
-    endforeach()
-    foreach(subdir ${subdirs})
-      _get_all_real_cmake_targets(subdir_targets ${subdir})
-      list(APPEND targets ${subdir_targets})
-    endforeach()
-
-    set(${out_var} ${targets} PARENT_SCOPE)
-endfunction()
-
-# Run at end of top-level CMakeLists
-_get_all_real_cmake_targets(check_targets ${CMAKE_CURRENT_LIST_DIR})
-message(STATUS "Check targets: ${check_targets}")
 if(ENABLE_COVERAGE)
-  add_dependencies(check-code-coverage ${check_targets})
+  blt_add_code_coverage_target(NAME check-code-coverage
+    DEPENDS check
+    RUNNER ${CMAKE_CTEST_COMMAND}
+    REMOVE "*/include/boost/*" "/nix/store/*" "*/include/boost/*" "*/src/common/libutil/*" "*/src/common/libtap/*" "*/src/common/yggdrasil/*")
 endif()
+set(CTEST_COMMON_FLAGS --output-on-failure --output-junit
+  ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
 add_custom_target(check
   DEPENDS ${check_targets}
-  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml
+  COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS}
   )
 add_custom_target(installcheck
-  DEPENDS ${check_targets}
-  COMMAND ${CMAKE_COMMAND} --build .
-  COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} --output-on-failure --output-junit ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
+  COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS})
+add_custom_target(recheck
+  COMMAND ${CMAKE_CTEST_COMMAND} --rerun-failed --output-on-failure)
 # run installcheck, if it passes then write out version information and pack up
 # a tarball with the result
 add_custom_target(distcheck
   DEPENDS installcheck
-  COMMAND sh -c "echo ${FLUX_SCHED_VER} > '${VER_FILE}'"
-  COMMAND git archive --format=tar.gz --add-file=flux-sched.ver --prefix=flux-sched-${FLUX_SCHED_VER} -o flux-sched-${FLUX_SCHED_VER}.tar.gz
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND git archive --format=tar.gz
+  --add-virtual-file=flux-sched.ver:${FLUX_SCHED_VER}
+  --prefix=flux-sched-${FLUX_SCHED_VER}/
+  --output=${CMAKE_BINARY_DIR}/flux-sched-${FLUX_SCHED_VER}.tar.gz
+  HEAD .
   )

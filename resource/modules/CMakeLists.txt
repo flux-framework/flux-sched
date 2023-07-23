@@ -1,4 +1,4 @@
-flux_add_module ( sched-fluxion-resource
+flux_add_plugin ( sched-fluxion-resource MODULE
     ${CMAKE_CURRENT_SOURCE_DIR}/resource_match.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resource_match_opts.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resource_match_opts.hpp

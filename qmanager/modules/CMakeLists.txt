@@ -1,4 +1,4 @@
-flux_add_module ( sched-fluxion-qmanager
+flux_add_plugin ( sched-fluxion-qmanager MODULE
     qmanager.cpp
     qmanager_callbacks.cpp
     qmanager_callbacks.hpp
