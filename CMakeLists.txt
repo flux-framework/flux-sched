@@ -200,8 +200,9 @@ add_custom_target(recheck
 # run installcheck, if it passes then write out version information and pack up
 # a tarball with the result
 add_custom_target(distcheck
-  DEPENDS installcheck
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target check
   COMMAND git archive --format=tar.gz
   --add-virtual-file=flux-sched.ver:${FLUX_SCHED_VER}
   --prefix=flux-sched-${FLUX_SCHED_VER}/
