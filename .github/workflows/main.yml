@@ -125,7 +125,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: ${{matrix.name}}
+        name: ${{matrix.name}}-results.xml
         path: test-results.xml
 
     - name: coverage report

@@ -198,9 +198,10 @@ RC=$?
 if test "$RECHECK" = "t" -a $RC -ne 0; then
   #
   # `make recheck` is not recursive, only perform it if at least some tests
-  #   under ./t were run (and presumably failed)
+  #   under ./t were run (and presumably failed), in ctest it is recursive, so
+	#   just run it
   #
-  if test -s t/t0000-sharness.trs; then
+  if test -s t/t0000-sharness.trs -o -e ./CTestTestfile.cmake; then
     cd t
     printf "::warning::make check failed, trying recheck in ./t\n"
     checks_group "make recheck" ${MAKE} -j ${JOBS} recheck

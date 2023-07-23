@@ -19,6 +19,7 @@ RUN sudo yum -y update \
 	libedit-devel \
 	cmake \
 	clang \
+	lcov \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:
