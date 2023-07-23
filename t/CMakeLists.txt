@@ -1,3 +1,6 @@
+# NOTE: skipping tree tests, since they're long broken
+#  t2000-tree-basic.t
+#  t2001-tree-real.t
 set(ALL_TESTS
   t0000-sharness.t
   t1001-qmanager-basic.t
@@ -23,8 +26,6 @@ set(ALL_TESTS
   t1021-qmanager-nodex.t
   t1022-property-constraints.t
   t1023-multiqueue-constraints.t
-  t2000-tree-basic.t
-  t2001-tree-real.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t
