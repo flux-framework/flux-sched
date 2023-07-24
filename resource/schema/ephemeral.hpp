@@ -31,7 +31,7 @@ public:
 
 private:
     std::map<std::string, std::string> m_store;
-    uint64_t m_epoch;
+    uint64_t m_epoch = 0;
 };
 
 } // resource_model
