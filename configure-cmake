@@ -261,11 +261,11 @@ while [ $# != 0 ]; do
         "-h")
             print_help;;
 
-        "--compiler-launcher=")
+        "--compiler-launcher="*)
             CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CXX_COMPILER_LAUNCHER=$(quote "${1#*=}")"
             CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_C_COMPILER_LAUNCHER=$(quote "${1#*=}")";;
 
-        "--build-type=")
+        "--build-type="*)
             BUILD_TYPE="${1#*=}";;
 
         "--enable-"*)
