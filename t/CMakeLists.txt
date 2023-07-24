@@ -14,7 +14,6 @@ set(ALL_TESTS
   t1010-sync-modules.t
   t1011-dynstate-change.t
   t1012-find-status.t
-  t1013-exclusion.t
   t1013-qmanager-priority.t
   t1014-annotation.t
   t1015-find-format.t
@@ -26,6 +25,7 @@ set(ALL_TESTS
   t1021-qmanager-nodex.t
   t1022-property-constraints.t
   t1023-multiqueue-constraints.t
+  t1024-alloc-check.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t
