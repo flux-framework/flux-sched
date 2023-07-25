@@ -14,11 +14,6 @@ message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 if(POLICY CMP0140)
   cmake_policy(SET CMP0140 NEW)
 endif()
-# Option to Enable SPHINX
-option( SPHINX "Enable SPHINX" OFF )
-
-# Option to AS_HELP_STRING([--disable-docs
-option( DOCS "Enable docs generation" OFF )
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -180,7 +175,7 @@ add_subdirectory( etc )
 add_subdirectory( src )
 add_subdirectory( resource )
 add_subdirectory( qmanager )
-# add_subdirectory( doc )
+add_subdirectory( doc )
 add_subdirectory( t )
 
 if(ENABLE_COVERAGE)
