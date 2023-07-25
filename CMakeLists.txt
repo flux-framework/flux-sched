@@ -197,8 +197,6 @@ add_custom_target(check
   )
 add_custom_target(installcheck
   COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS})
-add_custom_target(recheck
-  COMMAND ${CMAKE_CTEST_COMMAND} --rerun-failed --output-on-failure)
 # run installcheck, if it passes then write out version information and pack up
 # a tarball with the result
 add_custom_target(distcheck

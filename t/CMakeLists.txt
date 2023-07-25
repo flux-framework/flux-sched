@@ -87,3 +87,7 @@ foreach(test ${ALL_TESTS})
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/${test} -v
     )
 endforeach()
+
+add_custom_target(recheck
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_CTEST_COMMAND} --rerun-failed --output-on-failure)
