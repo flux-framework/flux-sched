@@ -11,7 +11,9 @@ string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT ${FLUX_SCHED_VER})
 project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
 message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 
-cmake_policy(SET CMP0140 NEW)
+if(POLICY CMP0140)
+  cmake_policy(SET CMP0140 NEW)
+endif()
 # Option to Enable SPHINX
 option( SPHINX "Enable SPHINX" OFF )
 
