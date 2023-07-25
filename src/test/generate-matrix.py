@@ -112,7 +112,7 @@ matrix.add_build(
 )
 
 # Ubuntu: coverage
-matrix.add_build(name="coverage", coverage=True, jobs=2)
+matrix.add_build(name="coverage", image="bionic", coverage=True, jobs=2)
 
 # Ubuntu: py3.7,clang-6.0
 matrix.add_build(
