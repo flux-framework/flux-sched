@@ -66,7 +66,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(STATUS "flux core found and no specific prefix specified, using ${FLUX_CORE_PREFIX}")
   set(CMAKE_INSTALL_PREFIX ${FLUX_CORE_PREFIX} CACHE PATH "..." FORCE)
 endif()
-find_package(yaml-cpp REQUIRED)
 if(DEFINED ENV{PYTHON})
   set(Python_EXECUTABLE $ENV{PYTHON} CACHE FILEPATH "")
 endif()
@@ -79,6 +78,7 @@ execute_process(
   COMMAND "${Python_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase':'${CMAKE_INSTALL_PREFIX}'}))"
   OUTPUT_VARIABLE PYTHON_INSTALL_SITEARCH
   OUTPUT_STRIP_TRAILING_WHITESPACE)
+pkg_check_modules(yaml-cpp REQUIRED IMPORTED_TARGET yaml-cpp)
 pkg_check_modules(LIBEDIT REQUIRED IMPORTED_TARGET libedit)
 pkg_check_modules(CZMQ REQUIRED IMPORTED_TARGET libczmq>=3.0.0)
 pkg_check_modules(HWLOC REQUIRED IMPORTED_TARGET hwloc>=1.11.1)
@@ -182,10 +182,12 @@ add_subdirectory( qmanager )
 add_subdirectory( t )
 
 if(ENABLE_COVERAGE)
-  blt_add_code_coverage_target(NAME check-code-coverage
+  blt_add_code_coverage_target(NAME flux-sched-coverage
     DEPENDS check
     RUNNER ${CMAKE_CTEST_COMMAND}
     REMOVE "*/include/boost/*" "/nix/store/*" "*/include/boost/*" "*/src/common/libutil/*" "*/src/common/libtap/*" "*/src/common/yggdrasil/*")
+  add_custom_target(check-code-coverage
+    DEPENDS flux-sched-coverage)
 endif()
 set(CTEST_COMMON_FLAGS --output-on-failure --output-junit
   ${CMAKE_CURRENT_BINARY_DIR}/test-results.xml)
