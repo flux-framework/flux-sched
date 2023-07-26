@@ -20,6 +20,7 @@ RUN sudo yum -y update \
 	cmake \
 	clang \
 	lcov \
+	iwyu \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:

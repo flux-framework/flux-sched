@@ -123,6 +123,9 @@ matrix.add_build(
         chain_lint="t",
         TEST_CHECK_PREREQS="t",
     ),
+    command_args="""
+-- "-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='include-what-you-use;-Xiwyu;--verbose=7'"
+    """.strip(),
 )
 
 # Ubuntu: TEST_INSTALL
