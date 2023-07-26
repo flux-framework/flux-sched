@@ -165,24 +165,3 @@ jobs:
         asset_path: ${{ steps.prep_release.outputs.tarball }}
         asset_name: ${{ steps.prep_release.outputs.tarball }}
         asset_content_type: "application/gzip"
-
-  publish-test-results:
-    name: "Publish Tests Results"
-    needs: ci-checks
-    runs-on: ubuntu-latest
-    permissions:
-      checks: write
-
-    if: always()
-
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
-
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: "artifacts/**/*.xml"
-          comment_mode: off
