@@ -24,7 +24,7 @@
 
 using namespace Flux::resource_model;
 
-static int test_constuctors_and_overload ()
+static int test_constructors_and_overload ()
 {
     bool bo = false;
     schedule_t *sched1, *sched2, *sched3, *sched4, *sched5 = nullptr;
@@ -70,7 +70,7 @@ static int test_constuctors_and_overload ()
 
     *sched5 = *sched1;
     bo = (bo || !(*sched5 == *sched1));
-    ok (!bo, "schedule_t assingment overload works with state");
+    ok (!bo, "schedule_t assignment overload works with state");
 
     delete sched1;
     delete sched2;
@@ -86,7 +86,7 @@ int main (int argc, char *argv[])
 {
     plan (7);
 
-    test_constuctors_and_overload ();
+    test_constructors_and_overload ();
 
     done_testing ();
 

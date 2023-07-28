@@ -24,7 +24,7 @@
 
 using namespace Flux::resource_model;
 
-static int test_constuctors_and_overload ()
+static int test_constructors_and_overload ()
 {
     bool bo = false;
     size_t len = 5;
@@ -148,7 +148,7 @@ static int test_constuctors_and_overload ()
 
     *infra9 = *infra1;
     bo = (bo || !(*infra9 == *infra1));
-    ok (!bo, "pool_infra_t assingment overload works with state");
+    ok (!bo, "pool_infra_t assignment overload works with state");
 
     infra10 = new pool_infra_t (*infra9);
     bo = (bo || !(*infra10 == *infra1));
@@ -173,7 +173,7 @@ int main (int argc, char *argv[])
 {
     plan (12);
 
-    test_constuctors_and_overload ();
+    test_constructors_and_overload ();
 
     done_testing ();
 
