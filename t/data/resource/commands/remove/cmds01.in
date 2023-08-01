@@ -1,0 +1,3 @@
+remove /tiny0/rack0/node1/socket1
+find status=up
+quit
