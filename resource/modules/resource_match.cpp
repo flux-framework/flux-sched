@@ -8,14 +8,6 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include <cstdint>
-#include <limits>
-#include <sstream>
-#include <cerrno>
-#include <map>
-#include <cinttypes>
-#include <chrono>
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
@@ -24,6 +16,14 @@ extern "C" {
 #include <flux/idset.h>
 #include <jansson.h>
 }
+
+#include <cstdint>
+#include <limits>
+#include <sstream>
+#include <cerrno>
+#include <map>
+#include <cinttypes>
+#include <chrono>
 
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_factory.hpp"

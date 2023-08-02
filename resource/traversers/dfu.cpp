@@ -8,16 +8,16 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include <iostream>
-#include <cstdlib>
-#include <cerrno>
-#include "resource/traversers/dfu.hpp"
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include <iostream>
+#include <cstdlib>
+#include <cerrno>
+#include "resource/traversers/dfu.hpp"
 
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;

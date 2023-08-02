@@ -8,6 +8,12 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+}
+
 #include <cstdint>
 #include <cstdlib>
 #include <getopt.h>
@@ -23,12 +29,6 @@
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
-
-extern "C" {
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-}
 
 namespace fs = boost::filesystem;
 using namespace Flux::resource_model;

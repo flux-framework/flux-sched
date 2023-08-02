@@ -8,15 +8,15 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include <iostream>
-#include <getopt.h>
-#include "resource/readers/resource_spec_grug.hpp"
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include <iostream>
+#include <getopt.h>
+#include "resource/readers/resource_spec_grug.hpp"
 
 using namespace Flux::resource_model;
 

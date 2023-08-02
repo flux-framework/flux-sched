@@ -8,15 +8,15 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include <limits>
-#include "resource/readers/resource_reader_hwloc.hpp"
-#include "resource/store/resource_graph_store.hpp"
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include <limits>
+#include "resource/readers/resource_reader_hwloc.hpp"
+#include "resource/store/resource_graph_store.hpp"
 
 using namespace Flux;
 using namespace resource_model;
