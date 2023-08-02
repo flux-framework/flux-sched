@@ -8,14 +8,14 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include <sys/time.h>
-#include "command.hpp"
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include <sys/time.h>
+#include "command.hpp"
 
 namespace Flux {
 namespace resource_model {

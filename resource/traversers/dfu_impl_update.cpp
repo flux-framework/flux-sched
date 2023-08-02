@@ -8,13 +8,13 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include "resource/traversers/dfu_impl.hpp"
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include "resource/traversers/dfu_impl.hpp"
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;

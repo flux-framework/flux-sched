@@ -8,6 +8,12 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+}
+
 #include "resource_match_opts.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/readers/resource_reader_factory.hpp"

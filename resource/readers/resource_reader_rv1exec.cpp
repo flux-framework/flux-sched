@@ -8,16 +8,19 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <flux/idset.h>
+}
+
 #include <map>
 #include <string>
 #include <jansson.h>
 
 #include "resource/readers/resource_reader_rv1exec.hpp"
 #include "resource/planner/planner.h"
-
-extern "C" {
-#include <flux/idset.h>
-}
 
 using namespace Flux;
 using namespace Flux::resource_model;

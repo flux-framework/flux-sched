@@ -8,18 +8,18 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+}
+
 #include <iostream>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/filesystem.hpp>
 #include "resource/readers/resource_spec_grug.hpp"
-
-extern "C" {
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-}
 
 using namespace Flux::resource_model;
 

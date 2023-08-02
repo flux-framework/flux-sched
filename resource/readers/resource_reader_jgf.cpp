@@ -8,6 +8,12 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+}
+
 #include <map>
 #include <unordered_set>
 #include <unistd.h>
@@ -15,12 +21,6 @@
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/planner/planner.h"
-
-extern "C" {
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-}
 
 using namespace Flux;
 using namespace Flux::resource_model;

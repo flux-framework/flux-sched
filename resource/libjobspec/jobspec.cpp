@@ -8,17 +8,17 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
-#include "jobspec.hpp"
-
-#include <iostream>
-#include <string>
-#include <unordered_map>
-
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 }
+
+#include "jobspec.hpp"
+
+#include <iostream>
+#include <string>
+#include <unordered_map>
 
 using namespace Flux::Jobspec;
 
