@@ -10,6 +10,9 @@
 #define FLUX_SHELL_PLUGIN_NAME "data-staging"
 
 extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <flux/core.h>
 #include <flux/shell.h>
 #include <jansson.h>

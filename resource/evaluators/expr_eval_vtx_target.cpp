@@ -8,6 +8,12 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+}
+
 #include <algorithm>
 #include <cctype>
 #include "resource/evaluators/expr_eval_vtx_target.hpp"

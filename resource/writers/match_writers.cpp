@@ -8,13 +8,18 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+extern "C" {
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <flux/hostlist.h>
+}
+
 #include <new>
 #include <cerrno>
 #include <algorithm>
 #include <iterator>
-extern "C" {
-#include <flux/hostlist.h>
-}
+
 #include "resource/schema/resource_data.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/writers/match_writers.hpp"
