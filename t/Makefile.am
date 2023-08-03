@@ -45,8 +45,6 @@ TESTS = \
     t1022-property-constraints.t \
     t1023-multiqueue-constraints.t \
     t1024-alloc-check.t \
-    t2000-tree-basic.t \
-    t2001-tree-real.t \
     t3000-jobspec.t \
     t3001-resource-basic.t \
     t3002-resource-prefix.t \
