@@ -10,7 +10,7 @@
 PROJECT=flux-sched
 BASE_DOCKER_REPO=fluxrm/flux-core
 
-IMAGE=bionic
+IMAGE=jammy
 JOBS=2
 MOUNT_HOME_ARGS="--volume=$HOME:/home/$USER -e HOME"
 

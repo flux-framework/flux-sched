@@ -45,7 +45,7 @@ class BuildMatrix:
     def add_build(
         self,
         name=None,
-        image="bionic",
+        image="jammy",
         args=default_args,
         jobs=4,
         env=None,
@@ -104,7 +104,7 @@ matrix = BuildMatrix()
 
 # Ubuntu: gcc-8, distcheck
 matrix.add_build(
-    name="bionic - gcc-8,distcheck",
+    name="jammy - gcc-8,distcheck",
     env=dict(
         CC="gcc-8",
         CXX="g++-8",
@@ -118,7 +118,7 @@ matrix.add_build(name="coverage", coverage=True, jobs=2)
 
 # Ubuntu: py3.7,clang-6.0
 matrix.add_build(
-    name="bionic - clang-6.0",
+    name="jammy - clang-6.0",
     env=dict(
         CC="clang-6.0",
         CXX="clang++-6.0",
@@ -129,7 +129,7 @@ matrix.add_build(
 
 # Ubuntu: TEST_INSTALL
 matrix.add_build(
-    name="bionic - test-install",
+    name="jammy - test-install",
     env=dict(TEST_INSTALL="t"),
     docker_tag=True,
 )
