@@ -1,3 +1,0 @@
-#!/bin/bash
-
-exec @SRC_PATH@/resource-bench.sh -j 10 -n 8 -c 32 -p @SRC_PATH@

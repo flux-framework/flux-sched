@@ -4,4 +4,3 @@ planner/test/planner_test01
 planner/test/planner_test02
 utilities/grug2dot
 utilities/resource-query
-utilities/test/run_sanity_check.sh
