@@ -45,7 +45,7 @@ class BuildMatrix:
     def add_build(
         self,
         name=None,
-        image="jammy",
+        image="bookworm",
         args=default_args,
         jobs=4,
         env=None,
@@ -107,44 +107,9 @@ class BuildMatrix:
 
 matrix = BuildMatrix()
 
-# Ubuntu: gcc-12, distcheck
-matrix.add_build(
-    name="jammy - gcc-12,distcheck",
-    env=dict(
-        CC="gcc-12",
-        CXX="g++-12",
-        DISTCHECK="t",
-    ),
-    args="--prefix=/usr",
-)
-
-# Ubuntu: coverage
-matrix.add_build(name="coverage", coverage=True, jobs=2)
-
-# Ubuntu: py3.7,clang-6.0
-matrix.add_build(
-    name="jammy - clang-15",
-    env=dict(
-        CC="clang-15",
-        CXX="clang++-15",
-        CFLAGS="-O2 -gdwarf-4",
-        chain_lint="t",
-        TEST_CHECK_PREREQS="t",
-    ),
-    args='CXXFLAGS="-gdwarf-4"',
-)
-
-# Ubuntu: TEST_INSTALL
-matrix.add_build(
-    name="jammy - test-install",
-    env=dict(TEST_INSTALL="t"),
-    docker_tag=True,
-)
-
 # Debian: gcc-12, distcheck
 matrix.add_build(
     name="bookworm - gcc-12,distcheck",
-    image="bookworm",
     env=dict(
         CC="gcc-12",
         CXX="g++-12",
@@ -152,11 +117,13 @@ matrix.add_build(
     ),
     args="--prefix=/usr",
 )
+
+# Debian: coverage
+matrix.add_build(name="coverage", coverage=True, jobs=2)
 
 # Debian: py3.7,clang-6.0
 matrix.add_build(
     name="bookworm - clang-15",
-    image="bookworm",
     env=dict(
         CC="clang-15",
         CXX="clang++-15",
@@ -170,7 +137,14 @@ matrix.add_build(
 # Debian: TEST_INSTALL
 matrix.add_build(
     name="bookworm - test-install",
-    image="bookworm",
+    env=dict(TEST_INSTALL="t"),
+    docker_tag=True,
+)
+
+# Ubuntu: TEST_INSTALL
+matrix.add_build(
+    name="jammy - test-install",
+    image="jammy",
     env=dict(TEST_INSTALL="t"),
     docker_tag=True,
 )
