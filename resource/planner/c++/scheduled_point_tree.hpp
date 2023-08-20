@@ -12,7 +12,15 @@
 #define SCHEDULED_POINT_TREE_HPP
 
 #include <cstdint>
+
+#if defined (__clang__) || (__GNUC__ <= 11)
 #include "src/common/yggdrasil/rbtree.hpp"
+#elif (__GNUC__ > 11)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-template-keyword"
+#include "src/common/yggdrasil/rbtree.hpp"
+#pragma GCC diagnostic pop
+#endif
 
 struct scheduled_point_t;
 
