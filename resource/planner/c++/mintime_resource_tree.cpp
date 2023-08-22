@@ -207,6 +207,17 @@ bool mt_resource_rb_node_t::operator< (const mt_resource_rb_node_t &other) const
     return this->remaining < other.remaining;
 }
 
+bool mt_resource_rb_node_t::operator== (const mt_resource_rb_node_t &other) const
+{
+    return this->remaining == other.remaining;
+}
+
+bool mt_resource_rb_node_t::operator!= (const mt_resource_rb_node_t &other) const
+{
+    return !operator == (other);
+}
+
+
 
 /*******************************************************************************
  *                                                                             *
