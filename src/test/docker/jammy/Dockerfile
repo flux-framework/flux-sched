@@ -12,7 +12,8 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
 	libboost-regex-dev \
 	python3-yaml \
 	libyaml-cpp-dev \
-	libedit-dev
+	libedit-dev \
+	ninja-build
 
 # Add configured user to image with sudo access:
 #

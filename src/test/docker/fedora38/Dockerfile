@@ -1,11 +1,11 @@
-FROM fluxrm/flux-core:fedora33
+FROM fluxrm/flux-core:fedora38
 
-LABEL maintainer="Stephen Herbein <herbein1@llnl.gov>"
+LABEL maintainer="Mark A. Grondona <mark.grondona@gmail.com>"
 
 ARG USER=flux
 ARG UID=1000
 
-#  Enable PowerTools for development packages
+#  Install flux-sched dependencies
 RUN sudo yum -y update \
  && sudo yum -y install \
 	boost-devel \
@@ -17,6 +17,9 @@ RUN sudo yum -y update \
 	python3-pyyaml \
 	yaml-cpp-devel \
 	libedit-devel \
+	ninja-build \
+	cmake \
+	clang \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:
