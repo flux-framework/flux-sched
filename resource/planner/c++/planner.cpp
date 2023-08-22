@@ -118,7 +118,7 @@ bool planner::operator== (const planner &o) const
         return false;
     // m_p0 or o.m_p0 could be uninitialized
     if (m_p0 && o.m_p0) {
-        if (!scheduled_points_equal (*m_p0, *(o.m_p0)))
+        if (*m_p0 != *(o.m_p0))
             return false;
     } else if (m_p0 || o.m_p0) {
         return false;
@@ -428,25 +428,6 @@ int planner::copy_maps (const planner &o)
     return rc;
 }
 
-bool planner::scheduled_points_equal (const scheduled_point_t &lhs,
-                                      const scheduled_point_t &rhs) const
-{
-    if (lhs.at != rhs.at)
-        return false;
-    if (lhs.in_mt_resource_tree != rhs.in_mt_resource_tree)
-        return false;
-    if (lhs.new_point != rhs.new_point)
-        return false;
-    if (lhs.ref_count != rhs.ref_count)
-        return false;
-    if (lhs.remaining != rhs.remaining)
-        return false;
-    if (lhs.scheduled != rhs.scheduled)
-        return false;
-
-    return true;
-}
-
 bool planner::span_lookups_equal (const planner &o) const
 {
     if (m_span_lookup.size () != o.m_span_lookup.size ())
@@ -472,11 +453,9 @@ bool planner::span_lookups_equal (const planner &o) const
                 return false;
             if (this_it.second->in_system != other->second->in_system)
                 return false;
-            if (!scheduled_points_equal (*(this_it.second->start_p),
-                                         *(other->second->start_p)))
+            if (*(this_it.second->start_p) != *(other->second->start_p))
                 return false;
-            if (!scheduled_points_equal (*(this_it.second->last_p),
-                                         *(other->second->last_p)))
+            if (*(this_it.second->last_p) != *(other->second->last_p))
                 return false;
         }
     }
@@ -497,8 +476,7 @@ bool planner::avail_time_iters_equal (const planner &o) const
             if (this_it.first != other->first)
                 return false;
             if (this_it.second && other->second) {
-                if (!scheduled_points_equal (*(this_it.second),
-                                             *(other->second)))
+                if (*(this_it.second) != *(other->second))
                     return false;
             } else if (this_it.second || other->second) {
                 return false;
@@ -518,7 +496,7 @@ bool planner::trees_equal (const planner &o) const
         scheduled_point_t *o_pt =
                         o.m_sched_point_tree.get_state (o.m_plan_start);
         while (this_pt) {
-            if (!scheduled_points_equal (*this_pt, *o_pt))
+            if (*this_pt != *o_pt)
                 return false;
             this_pt = m_sched_point_tree.next (this_pt);
             o_pt = o.m_sched_point_tree.next (o_pt);
