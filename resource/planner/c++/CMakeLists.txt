@@ -3,6 +3,7 @@ add_library(planner_cxx STATIC
 	./scheduled_point_tree.cpp
 	./mintime_resource_tree.cpp
 	./planner_multi.cpp
+	./planner_internal_tree.cpp
 	./mintime_resource_tree.hpp
 	./planner_internal_tree.hpp
 	./scheduled_point_tree.hpp

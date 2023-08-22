@@ -19,6 +19,9 @@
  *  tree.
  */
 struct scheduled_point_t {
+    bool operator== (const scheduled_point_t &o) const;
+    bool operator!= (const scheduled_point_t &o) const;
+
     scheduled_point_rb_node_t point_rb; /* BST node for scheduled point tree */
     mt_resource_rb_node_t resource_rb;  /* BST node for min-time resource tree */
     int64_t at;                  /* Resource-state changing time */
