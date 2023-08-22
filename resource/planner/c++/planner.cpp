@@ -23,6 +23,37 @@ extern "C" {
 
 /****************************************************************************
  *                                                                          *
+ *                     Public Span_t Methods                                *
+ *                                                                          *
+ ****************************************************************************/
+
+bool span_t::operator== (const span_t &o) const
+{
+    if (start != o.start)
+        return false;
+    if (last != o.last)
+        return false;
+    if (span_id != o.span_id)
+        return false;
+    if (planned != o.planned)
+        return false;
+    if (in_system != o.in_system)
+        return false;
+    if ((*(start_p) != *(o.start_p)))
+        return false;
+    if ((*(last_p) != *(o.last_p)))
+        return false;
+
+    return true;
+}
+
+bool span_t::operator!= (const span_t &o) const
+{
+    return !operator == (o);
+}
+
+/****************************************************************************
+ *                                                                          *
  *                     Public Planner Methods                               *
  *                                                                          *
  ****************************************************************************/
@@ -441,21 +472,8 @@ bool planner::span_lookups_equal (const planner &o) const
                 return false;
             if (this_it.first != other->first)
                 return false;
-            if (this_it.second->start != other->second->start)
-                return false;
-            if (this_it.second->last != other->second->last)
-                return false;
-            if (this_it.second->span_id != other->second->span_id)
-                return false;
-            if (this_it.second->planned != other->second->planned)
-                return false;
-            if (this_it.second->in_system != other->second->in_system)
-                return false;
-            if (this_it.second->in_system != other->second->in_system)
-                return false;
-            if (*(this_it.second->start_p) != *(other->second->start_p))
-                return false;
-            if (*(this_it.second->last_p) != *(other->second->last_p))
+            // Compare span_t
+            if (*(this_it.second) != *(other->second))
                 return false;
         }
     }

@@ -23,6 +23,9 @@ struct request_t {
 /*! Node in a span interval tree to enable fast retrieval of intercepting spans.
  */
 struct span_t {
+    bool operator== (const span_t &o) const;
+    bool operator!= (const span_t &o) const;
+
     int64_t start;               /* start time of the span */
     int64_t last;                /* end time of the span */
     int64_t span_id;             /* unique span id */
