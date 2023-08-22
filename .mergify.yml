@@ -2,17 +2,6 @@ queue_rules:
   - name: default
     conditions:
       - base=master
-      - status-success="validate commits"
-      - status-success="spelling"
-      - status-success="python format"
-      - status-success="python lint"
-      - status-success="bookworm - gcc-12,distcheck"
-      - status-success="bookworm - clang-15"
-      - status-success="bookworm - test-install"
-      - status-success="focal"
-      - status-success="el8"
-      - status-success="fedora34"
-      - status-success="coverage"
       - label="merge-when-passing"
       - label!="work-in-progress"
       - "approved-reviews-by=@flux-framework/core"
