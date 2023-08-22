@@ -18,7 +18,7 @@
 #include <map>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/schema/data_std.hpp"
-#include "resource/planner/planner.h"
+#include "resource/planner/c/planner.h"
 
 namespace Flux {
 namespace resource_model {

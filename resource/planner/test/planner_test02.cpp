@@ -21,7 +21,7 @@ extern "C" {
 #include <cerrno>
 #include <vector>
 #include <map>
-#include "planner_multi.h"
+#include "resource/planner/c/planner_multi.h"
 #include "src/common/libtap/tap.h"
 
 static void to_stream (int64_t base_time, uint64_t duration, const uint64_t *cnts,
@@ -539,10 +539,86 @@ static int test_multi_add_remove ()
 
 }
 
+static int test_constructors_and_overload ()
+{
+    bool bo = false;
+    size_t len = 5;
+    size_t size = 0;
+    int rc = -1;
+    int64_t span = -1;
+    const uint64_t resource_totals[] = {10, 20, 30, 40, 50};
+    const char *resource_types[] = {"A", "B", "C", "D", "E"};
+    const uint64_t request1[] = {1, 0, 0, 0, 0};
+    const uint64_t request2[] = {0, 2, 0, 0, 0};
+    const uint64_t request3[] = {0, 0, 3, 0, 0};
+    planner_multi_t *ctx, *ctx2, *ctx3, *ctx4 = NULL;
+
+    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+
+    planner_multi_add_span (ctx, 0, 1000, request1, len);
+    span = planner_multi_add_span (ctx, 1000, 1000, request2, len);
+    planner_multi_add_span (ctx, 2000, 1000, request3, len);
+
+    bo = (bo || !(planner_multis_equal (ctx, ctx)));
+    ok (!bo, "populated planner should equal itself");
+
+    ctx2 = planner_multi_empty ();
+    bo = (bo || !(planner_multis_equal (ctx2, ctx2)));
+    ok (!bo, "empty planner should equal itself");
+
+    bo = (bo || planner_multis_equal (ctx, ctx2));
+    ok (!bo, "empty planner should not equal populated planner");
+
+    ctx3 = planner_multi_empty ();
+    bo = (bo || !planner_multis_equal (ctx2, ctx3));
+
+    planner_multi_assign (ctx2, ctx);
+    bo = (bo || !(planner_multis_equal (ctx, ctx2)));
+    ok (!bo, "test assignment overload");
+
+    ctx4 = planner_multi_copy (ctx2);
+    bo = (bo || !(planner_multis_equal (ctx2, ctx4)));
+    ok (!bo, "test copy constructor");
+
+    bo = (bo || !(planner_multis_equal (ctx, ctx2)));
+    ok (!bo, "test copy constructor doesn't mutate planner");
+    // Compare planners after mutation
+    rc = planner_multi_rem_span (ctx2, span);
+    size = planner_multi_span_size (ctx2);
+    ok ((size == 2), "planner_multi_span_size works after copy");
+
+    bo = (bo || (planner_multis_equal (ctx2, ctx4)) || rc == -1);
+    size = planner_multi_span_size (ctx4);
+    ok ((size == 3), "removing span doesn't change deep copy's size");
+    // Assignment overload works on planners with state
+    planner_multi_assign (ctx4, ctx2);
+    size = planner_multi_span_size (ctx4);
+    ok ((size == 2), "planner_multi 3 now has the size of planner_multi 2");
+    bo = (bo || !(planner_multis_equal (ctx2, ctx4)));
+    ok (!bo, "assignment overload works on planners with state");
+
+    planner_multi_destroy (&ctx);
+    ctx = planner_multi_copy (ctx4);
+    bo = (bo || !(planner_multis_equal (ctx, ctx4)));
+    ok (!bo, "copy constructor works on planners with updated state");
+
+    bo = (bo || !(planner_multi_avail_resources_at (ctx, 500, 1) ==
+                        planner_multi_avail_resources_at (ctx4, 500, 1)));
+    ok (!bo, "test for avail time equality");
+
+    planner_multi_destroy (&ctx);
+    planner_multi_destroy (&ctx2);
+    planner_multi_destroy (&ctx3);
+    planner_multi_destroy (&ctx4);
+
+    return 0;
+
+}
+
 
 int main (int argc, char *argv[])
 {
-    plan (79);
+    plan (91);
 
     test_multi_basics ();
 
@@ -555,6 +631,8 @@ int main (int argc, char *argv[])
     test_multi_many_spans ();
 
     test_multi_add_remove ();
+
+    test_constructors_and_overload ();
 
     done_testing ();
 

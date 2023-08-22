@@ -16,7 +16,7 @@
 #include <limits>
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/ephemeral.hpp"
-#include "resource/planner/planner_multi.h"
+#include "resource/planner/c/planner_multi.h"
 
 namespace Flux {
 namespace resource_model {
@@ -38,6 +38,7 @@ struct pool_infra_t : public infra_base_t {
     pool_infra_t ();
     pool_infra_t (const pool_infra_t &o);
     pool_infra_t &operator= (const pool_infra_t &o);
+    bool operator== (const pool_infra_t &o) const;
     virtual ~pool_infra_t ();
     virtual void scrub ();
 

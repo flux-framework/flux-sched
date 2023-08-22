@@ -22,7 +22,7 @@
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/sched_data.hpp"
 #include "resource/schema/infra_data.hpp"
-#include "resource/planner/planner.h"
+#include "resource/planner/c/planner.h"
 
 namespace Flux {
 namespace resource_model {

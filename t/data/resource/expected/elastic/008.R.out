@@ -2,3 +2,6 @@
 INFO: =============================
 INFO: EXPRESSION="status=up"
 INFO: =============================
+INFO: =============================
+INFO: EXPRESSION="sched-now=allocated"
+INFO: =============================

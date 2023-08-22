@@ -7,7 +7,8 @@ AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir) $(CZMQ_CFLAGS) $(FLUX_CORE_CFLAGS) \
 	      $(BOOST_CPPFLAGS)
 
-SUBDIRS = libjobspec planner . utilities modules reapi evaluators policies
+SUBDIRS = libjobspec planner . utilities modules reapi evaluators \
+          policies schema
 
 noinst_LTLIBRARIES = libresource.la
 
@@ -81,7 +82,7 @@ libresource_la_SOURCES = \
     config/system_defaults.hpp \
     writers/match_writers.hpp \
     store/resource_graph_store.hpp \
-    planner/planner.h
+    planner/c/planner.h
 
 libresource_la_CXXFLAGS = \
     $(WARNING_CXXFLAGS) \
@@ -91,7 +92,7 @@ libresource_la_CXXFLAGS = \
     $(FLUX_IDSET_CFLAGS)
 
 libresource_la_LIBADD = \
-    $(top_builddir)/resource/planner/libplanner.la \
+    $(top_builddir)/resource/planner/c/libplanner.la \
     $(top_builddir)/resource/libjobspec/libjobspec_conv.la \
     $(FLUX_HOSTLIST_LIBS) \
     $(FLUX_IDSET_LIBS) \

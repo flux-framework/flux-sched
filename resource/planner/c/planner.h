@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-typedef struct planner planner_t;
+typedef struct planner_t planner_t;
 
 /*! Construct a planner.
  *
@@ -40,6 +40,35 @@ typedef struct planner planner_t;
  */
 planner_t *planner_new (int64_t base_time, uint64_t duration,
                         uint64_t resource_total, const char *resource_type);
+
+/*! Initialize empty planner.
+ *
+ *  \return             new planner context; NULL on an error with errno set
+ *                      as follows:
+ *                      pointer to a planner_t object on success; -1 on
+ *                      an error with errno set.
+ */
+planner_t *planner_new_empty ();
+
+/*! Copy a planner.
+ *
+ *  \param p            the base planner which will be copied and returned as
+ *                      a new planner context.
+ *  \return             new planner context; NULL on an error with errno set
+ *                      as follows:
+ *                      pointer to a planner_t object on success; -1 on
+ *                      an error with errno set.
+ */
+planner_t *planner_copy (planner_t *p);
+
+/*! Assign a planner.
+ *
+ *  \param lhs          the base planner which will be assigned to rhs.
+ *  \param rhs          the base planner which will be copied and returned as
+ *                      a new planner context.
+ * 
+ */
+void planner_assign (planner_t *lhs, planner_t *rhs);
 
 /*! Reset the planner with a new time bound. Destroy all existing planned spans.
  *
@@ -193,6 +222,12 @@ bool planner_is_active_span (planner_t *ctx, int64_t span_id);
 int64_t planner_span_start_time (planner_t *ctx, int64_t span_id);
 int64_t planner_span_duration (planner_t *ctx, int64_t span_id);
 int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id);
+
+/*
+ *  Returns true if all the member variables and objects are equal.
+ *  Used by testsuite.
+*/
+bool planners_equal (planner_t *lhs, planner_t *rhs);
 
 #ifdef __cplusplus
 }

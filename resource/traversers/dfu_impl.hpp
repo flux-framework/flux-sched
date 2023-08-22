@@ -27,7 +27,7 @@
 #include "resource/writers/match_writers.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_reader_base.hpp"
-#include "resource/planner/planner.h"
+#include "resource/planner/c/planner.h"
 
 namespace Flux {
 namespace resource_model {

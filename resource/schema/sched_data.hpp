@@ -13,7 +13,8 @@
 
 #include <map>
 #include <cstdint>
-#include "resource/planner/planner.h"
+#include <stdexcept>
+#include "resource/planner/c/planner.h"
 
 namespace Flux {
 namespace resource_model {
@@ -23,6 +24,7 @@ struct schedule_t {
     schedule_t ();
     schedule_t (const schedule_t &o);
     schedule_t &operator= (const schedule_t &o);
+    bool operator== (const schedule_t &o) const;
     ~schedule_t ();
 
     std::map<int64_t, int64_t> allocations;

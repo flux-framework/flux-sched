@@ -13,7 +13,7 @@ cmds001="${cmd_dir}/cmds01.in"
 test001_desc="fully allocate node and grow job with new resources"
 test_expect_success "${test001_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds001} > cmds001 &&
-    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 001.R.out -r 2000 \
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 001.R.out \
     < cmds001 &&
     test_cmp 001.R.out ${exp_dir}/001.R.out
 '
@@ -22,60 +22,68 @@ cmds002="${cmd_dir}/cmds02.in"
 test002_desc="fully allocate node and grow job from randomized JGF"
 test_expect_success "${test002_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds002} > cmds002 &&
-    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 002.R.out -r 2000 \
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 002.R.out \
     < cmds002 &&
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
 
 cmds003="${cmd_dir}/cmds03.in"
-test003_desc="ensure attach with allocated vertices can't change allocations"
+test003_desc="attach with allocated vertices doesn't affect planner"
 test_expect_success "${test003_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds003} > cmds003 &&
-    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 003.R.out -r 2000 \
-    < cmds003 2> 003.R.err &&
-    test_cmp 003.R.out ${exp_dir}/003.R.out &&
-    test_cmp 003.R.err ${exp_dir}/003.R.err
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 003.R.out \
+    < cmds003 &&
+    test_cmp 003.R.out ${exp_dir}/003.R.out
 '
 
 cmds004="${cmd_dir}/cmds04.in"
-test004_desc="can't grow with a different root in the subgraph"
+test004_desc="attach with allocated, reserved vertices doesn't affect planner"
 test_expect_success "${test004_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
-    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 004.R.out -r 2000 \
-    < cmds004 2> 004.R.err &&
-    test_cmp 004.R.out ${exp_dir}/004.R.out &&
-    test_cmp 004.R.err ${exp_dir}/004.R.err
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 004.R.out \
+    < cmds004 &&
+    test_cmp 004.R.out ${exp_dir}/004.R.out
 '
 
 cmds005="${cmd_dir}/cmds05.in"
-test005_desc="grow with subset of resource graph doesn't change resource graph"
+test005_desc="can't grow with a different root in the subgraph"
 test_expect_success "${test005_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
-    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 005.R.out -r 2000 \
-    < cmds005 &&
-    test_cmp 005.R.out ${exp_dir}/005.R.out
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 005.R.out \
+    < cmds005 2> 005.R.err &&
+    test_cmp 005.R.out ${exp_dir}/005.R.out &&
+    test_cmp 005.R.err ${exp_dir}/005.R.err
 '
 
 cmds006="${cmd_dir}/cmds06.in"
-test006_desc="error on invalid argument"
+test006_desc="grow with subset of resource graph doesn't change resource graph"
 test_expect_success "${test006_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
     ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 006.R.out \
-    < cmds006 2> 006.R.err &&
-    test_cmp 006.R.out ${exp_dir}/006.R.out &&
-    test_cmp 006.R.err ${exp_dir}/006.R.err
+    < cmds006 &&
+    test_cmp 006.R.out ${exp_dir}/006.R.out
 '
 
 cmds007="${cmd_dir}/cmds07.in"
-err007="${exp_dir}/007.R.err"
-test007_desc="error on nonexistent JGF"
+test007_desc="error on invalid argument"
 test_expect_success "${test007_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds007} > cmds007 &&
-    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${err007} > 007.R.err &&
     ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 007.R.out \
-    < cmds007 2> 007.R.new_err &&
+    < cmds007 2> 007.R.err &&
     test_cmp 007.R.out ${exp_dir}/007.R.out &&
-    test_cmp 007.R.new_err 007.R.err
+    test_cmp 007.R.err ${exp_dir}/007.R.err
+'
+
+cmds008="${cmd_dir}/cmds08.in"
+err008="${exp_dir}/008.R.err"
+test008_desc="error on nonexistent JGF"
+test_expect_success "${test008_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds008} > cmds008 &&
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${err008} > 008.R.err &&
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 008.R.out \
+    < cmds008 2> 008.R.new_err &&
+    test_cmp 008.R.out ${exp_dir}/008.R.out &&
+    test_cmp 008.R.new_err 008.R.err
 '
 
 test_done
