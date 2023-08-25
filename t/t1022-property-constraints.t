@@ -27,7 +27,7 @@ test_expect_success 'load fluxion' '
 test_expect_success 'reload ingest without validator' '
 	flux module reload -f job-ingest disable-validator
 '
-test_expect_success 'simple property reqirement works' '
+test_expect_success 'simple property requirement works' '
 	JOBID1=$(flux submit --requires="baz" hostname) &&
 	flux job wait-event -t 10 ${JOBID1} clean &&
 	flux job info ${JOBID1} R > JOBID1.R &&
@@ -37,7 +37,7 @@ test_expect_success 'simple property reqirement works' '
 	test "${RANK1}" = "3" -a "${LENGTH1}" = "1" -a "${PROP_RANK1}" = "3"
 '
 
-test_expect_success 'multiple properties reqirement works' '
+test_expect_success 'multiple properties requirement works' '
 	JOBID2=$(flux submit --requires="foo" --requires="bar" hostname) &&
 	flux job wait-event -t 10 ${JOBID2} clean &&
 	flux job info ${JOBID2} R > JOBID2.R &&
@@ -49,7 +49,7 @@ test_expect_success 'multiple properties reqirement works' '
 	test "${PROP_RANK2}" = "1" -a "${PROP_RANK2B}" = "1"
 '
 
-test_expect_success '^property reqirement works' '
+test_expect_success '^property requirement works' '
 	JOBID3=$(flux submit --requires="^foo" --requires="^bar" hostname) &&
 	flux job wait-event -t 10 ${JOBID3} clean &&
 	flux job info ${JOBID3} R > JOBID3.R &&
