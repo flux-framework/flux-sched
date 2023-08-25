@@ -8,7 +8,7 @@ T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 #
 #  If $FLUX_SCHED_TEST_INSTALLED is set in the current environment,
 #  export the $(prefix) PREPEND variables so that they can
-#  be picked up from the sched install directiories which
+#  be picked up from the sched install directories which
 #  may or may not be the same as $(FLUX_PREFIX).
 #
 # FLUX_SCHED_CO_INST is exported so that runlevel-install
