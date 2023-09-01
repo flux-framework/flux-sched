@@ -54,132 +54,131 @@ static const struct option longopts[] = {
 
 static void usage (int code)
 {
-    std::cerr <<
-"usage: resource-query [OPTIONS...]\n"
-"\n"
-"Command-line utility that takes in an HPC resource request written in\n"
-"Flux's Canonical Job Specification (or simply a jobspec) (RFC 14) and\n"
-"selects the best-matching compute and other resources in accordance\n"
-"with a selection policy.\n"
-"\n"
-"Read in a resource-graph generation recipe written in the GRUG format\n"
-"and populate the resource-graph data store representing the compute and\n"
-"other HPC resources and their relationships (RFC 4).\n"
-"\n"
-"Provide a simple command-line interface (cli) to allow users to allocate\n"
-"or reserve the resource set in this resource-graph data store \n"
-"using a jobspec as an input.\n"
-"Traverse the resource graph in a predefined order for resource selection.\n"
-"Currently only support one traversal type: depth-first traversal on the\n"
-"dominant subsystem and up-walk traversal on one or more auxiliary \n"
-"subsystems.\n"
-"\n"
-"OPTIONS allow for using a predefined matcher that is configured\n"
-"to use a different set of subsystems as its dominant and/or auxiliary\n"
-"ones to perform the matches on.\n"
-"\n"
-"OPTIONS also allow for instantiating a different resource-matching\n"
-"selection policy--e.g., select resources with high or low IDs first.\n"
-"\n"
-"OPTIONS allow for exporting the filtered graph of the used matcher\n"
-"in a selected graph format at the end of the cli session.\n"
-"\n"
-"To see cli commands, type in \"help\" in the cli: i.e.,\n"
-"  % resource-query> help\n"
-"\n"
-"\n"
-"\n"
-"OPTIONS:\n"
-"    -h, --help\n"
-"            Display this usage information\n"
-"\n"
-"    -L, --load-file=filepath\n"
-"            Input file from which to load the resource graph data store\n"
-"            (default=conf/default)\n"
-"\n"
-"    -f, --load-format=<grug|hwloc|jgf|rv1exec>\n"
-"            Format of the load file (default=grug)\n"
-"\n"
-"    -W, --load-allowlist=<resource1[,resource2[,resource3...]]>\n"
-"            Allowlist of resource types to be loaded\n"
-"            Resources that are not included in this list will be filtered out\n"
-"\n"
-"    -S, --match-subsystems="
+    std::cerr << R"(
+usage: resource-query [OPTIONS...]
+
+Command-line utility that takes in an HPC resource request written in
+Flux's Canonical Job Specification (or simply a jobspec) (RFC 14) and
+selects the best-matching compute and other resources in accordance
+with a selection policy.
+
+Read in a resource-graph generation recipe written in the GRUG format
+and populate the resource-graph data store representing the compute and
+other HPC resources and their relationships (RFC 4).
+
+Provide a simple command-line interface (cli) to allow users to allocate
+or reserve the resource set in this resource-graph data store 
+using a jobspec as an input.
+Traverse the resource graph in a predefined order for resource selection.
+Currently only support one traversal type: depth-first traversal on the
+dominant subsystem and up-walk traversal on one or more auxiliary 
+subsystems.
+
+OPTIONS allow for using a predefined matcher that is configured
+to use a different set of subsystems as its dominant and/or auxiliary
+ones to perform the matches on.
+
+OPTIONS also allow for instantiating a different resource-matching
+selection policy--e.g., select resources with high or low IDs first.
+
+OPTIONS allow for exporting the filtered graph of the used matcher
+in a selected graph format at the end of the cli session.
+
+To see cli commands, type in "help" in the cli: i.e.,
+  % resource-query> help
+
+OPTIONS:
+    -h, --help
+            Display this usage information
+
+    -L, --load-file=filepath
+            Input file from which to load the resource graph data store
+            (default=conf/default)
+
+    -f, --load-format=<grug|hwloc|jgf|rv1exec>
+            Format of the load file (default=grug)
+
+    -W, --load-allowlist=<resource1[,resource2[,resource3...]]>
+            Allowlist of resource types to be loaded
+            Resources that are not included in this list will be filtered out
+
+    -S, --match-subsystems="
          "<CA|IBA|IBBA|PFS1BA|PA|C+IBA|C+PFS1BA|C+PA|IB+IBBA|"
-              "C+P+IBA|VA|V+PFS1BA|ALL>\n"
-"            Set the predefined matcher to use. Available matchers are:\n"
-"                CA: Containment Aware\n"
-"                IBA: InfiniBand connection-Aware\n"
-"                IBBA: InfiniBand Bandwidth-Aware\n"
-"                PFS1BA: Parallel File System 1 Bandwidth-aware\n"
-"                PA: Power-Aware\n"
-"                C+IBA: Containment- and InfiniBand connection-Aware\n"
-"                C+PFS1BA: Containment- and PFS1 Bandwidth-Aware\n"
-"                C+PA: Containment- and Power-Aware\n"
-"                IB+IBBA: InfiniBand connection and Bandwidth-Aware\n"
-"                C+P+IBA: Containment-, Power- and InfiniBand connection-Aware\n"
-"                VA: Virtual Hierarchy-Aware\n"
-"                V+PFS1BA: Virtual Hierarchy and PFS1 Bandwidth-Aware \n"
-"                ALL: Aware of everything.\n"
-"            (default=CA).\n"
-"\n"
-"    -P, --match-policy=<low|high|lonode|hinode|lonodex|hinodex|first|locality|variation>\n"
-"            Set the resource match selection policy. Available policies are:\n"
-"                low: Select resources with low ID first\n"
-"                high: Select resources with high ID first\n"
-"                lonode: Select resources with lowest node ID first, \n"
-"                        low ID first otherwise (e.g., node-local resource types) \n"
-"                hinode: Select resources with highest node ID first, \n"
-"                        high ID first otherwise (e.g., node-local resource types) \n"
-"                lonodex: Same as lonode except each node is exclusively allocated \n"
-"                hinodex: Same as hinode except each node is exclusively allocated \n"
-"                first: Select the first matching resources and stop the search\n"
-"                locality: Select contiguous resources first in their ID space\n"
-"                variation: Allocate resources based on performance classes.\n"
-"                                (perf_class must be set using set-property).\n"
-"                (default=first).\n"
-"\n"
-"    -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>\n"
-"            Specify the emit format of the matched resource set.\n"
-"            (default=simple).\n"
-"\n"
-"    -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>\n"
-"            Install a planner-based filter at each High-Level (HL) resource\n"
-"                vertex which tracks the state of the Low-Level (LL) resources\n"
-"                in aggregate, residing under its subtree. If a jobspec requests\n"
-"                1 node with 4 cores, and the visiting compute-node vertex has\n"
-"                only a total of 2 available cores in aggregate at its\n"
-"                subtree, this filter allows the traverser to prune a further descent\n"
-"                to accelerate the search.\n"
-"                Use the ALL keyword for HL-resource if you want LL-resource to be\n"
-"                tracked at all of the HL-resource vertices. Examples:\n"
-"                    rack:node,node:core\n"
-"                    ALL:core,cluster:node,rack:node\n"
-"                (default=ALL:core).\n"
-"\n"
-"    -g, --graph-format=<dot|graphml>\n"
-"            Specify the graph format of the output file\n"
-"            (default=dot).\n"
-"\n"
-"    -r, --reserve-vtx-vec=<size>\n"
-"            Reserve the graph vertex size to optimize resource graph loading.\n"
-"            The size value must be a non-zero integer up to 2000000.\n"
-"\n"
-"    -e, --elapse-time\n"
-"            Print the elapse time per scheduling operation.\n"
-"\n"
-"    -d, --disable-prompt\n"
-"            Don't print the prompt.\n"
-"\n"
-"    -o, --graph-output=<basename>\n"
-"            Set the basename of the graph output file\n"
-"            For AT&T Graphviz dot, <basename>.dot\n"
-"            For GraphML, <basename>.graphml.\n"
-"\n"
-"    -t, --test-output=<filename>\n"
-"            Set the output filename where allocated or reserved resource\n"
-"            information is stored into.\n"
-"\n";
+              "C+P+IBA|VA|V+PFS1BA|ALL>
+            Set the predefined matcher to use. Available matchers are:
+                CA: Containment Aware
+                IBA: InfiniBand connection-Aware
+                IBBA: InfiniBand Bandwidth-Aware
+                PFS1BA: Parallel File System 1 Bandwidth-aware
+                PA: Power-Aware
+                C+IBA: Containment- and InfiniBand connection-Aware
+                C+PFS1BA: Containment- and PFS1 Bandwidth-Aware
+                C+PA: Containment- and Power-Aware
+                IB+IBBA: InfiniBand connection and Bandwidth-Aware
+                C+P+IBA: Containment-, Power- and InfiniBand connection-Aware
+                VA: Virtual Hierarchy-Aware
+                V+PFS1BA: Virtual Hierarchy and PFS1 Bandwidth-Aware 
+                ALL: Aware of everything.
+            (default=CA).
+
+    -P, --match-policy=<low|high|lonode|hinode|lonodex|hinodex|first|locality|variation>
+            Set the resource match selection policy. Available policies are:
+                low: Select resources with low ID first
+                high: Select resources with high ID first
+                lonode: Select resources with lowest node ID first, 
+                        low ID first otherwise (e.g., node-local resource types) 
+                hinode: Select resources with highest node ID first, 
+                        high ID first otherwise (e.g., node-local resource types) 
+                lonodex: Same as lonode except each node is exclusively allocated 
+                hinodex: Same as hinode except each node is exclusively allocated 
+                first: Select the first matching resources and stop the search
+                locality: Select contiguous resources first in their ID space
+                variation: Allocate resources based on performance classes.
+                                (perf_class must be set using set-property).
+                (default=first).
+
+    -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>
+            Specify the emit format of the matched resource set.
+            (default=simple).
+
+    -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>
+            Install a planner-based filter at each High-Level (HL) resource
+                vertex which tracks the state of the Low-Level (LL) resources
+                in aggregate, residing under its subtree. If a jobspec requests
+                1 node with 4 cores, and the visiting compute-node vertex has
+                only a total of 2 available cores in aggregate at its
+                subtree, this filter allows the traverser to prune a further descent
+                to accelerate the search.
+                Use the ALL keyword for HL-resource if you want LL-resource to be
+                tracked at all of the HL-resource vertices. Examples:
+                    rack:node,node:core
+                    ALL:core,cluster:node,rack:node
+                (default=ALL:core).
+
+    -g, --graph-format=<dot|graphml>
+            Specify the graph format of the output file
+            (default=dot).
+
+    -r, --reserve-vtx-vec=<size>
+            Reserve the graph vertex size to optimize resource graph loading.
+            The size value must be a non-zero integer up to 2000000.
+
+    -e, --elapse-time
+            Print the elapse time per scheduling operation.
+
+    -d, --disable-prompt
+            Don't print the prompt.
+
+    -o, --graph-output=<basename>
+            Set the basename of the graph output file
+            For AT&T Graphviz dot, <basename>.dot
+            For GraphML, <basename>.graphml.
+
+    -t, --test-output=<filename>
+            Set the output filename where allocated or reserved resource
+            information is stored into.
+
+)";
     exit (code);
 }
 
@@ -713,7 +712,7 @@ static std::shared_ptr<resource_context_t> init_resource_query (int c,
 
     try {
         ctx = std::make_shared<resource_context_t> ();
-	ctx->db = std::make_shared<resource_graph_db_t> ();
+    ctx->db = std::make_shared<resource_graph_db_t> ();
     } catch (std::bad_alloc &e) {
         std::cerr << "ERROR: out of memory allocating resource context"
                   << std::endl;
