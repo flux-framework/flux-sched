@@ -25,6 +25,7 @@ namespace Flux {
 namespace resource_model {
 
 const std::string FIRST_MATCH = "first";
+const std::string FIRST_NODEX_MATCH = "firstnodex";
 const std::string HIGH_ID_FIRST = "high";
 const std::string LOW_ID_FIRST = "low";
 const std::string LOW_NODE_FIRST = "lonode";
