@@ -121,7 +121,7 @@ OPTIONS:
                 ALL: Aware of everything.
             (default=CA).
 
-    -P, --match-policy=<low|high|lonode|hinode|lonodex|hinodex|first|locality|variation>
+    -P, --match-policy=<low|high|lonode|hinode|lonodex|hinodex|first|firstnodex|locality|variation>
             Set the resource match selection policy. Available policies are:
                 low: Select resources with low ID first
                 high: Select resources with high ID first
@@ -132,6 +132,8 @@ OPTIONS:
                 lonodex: Same as lonode except each node is exclusively allocated 
                 hinodex: Same as hinode except each node is exclusively allocated 
                 first: Select the first matching resources and stop the search
+                firstnodex: Select the first matching resources, node exclusive, 
+                        and stop the search
                 locality: Select contiguous resources first in their ID space
                 variation: Allocate resources based on performance classes.
                                 (perf_class must be set using set-property).
