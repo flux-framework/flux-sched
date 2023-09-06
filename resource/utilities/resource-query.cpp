@@ -714,7 +714,7 @@ static std::shared_ptr<resource_context_t> init_resource_query (int c,
 
     try {
         ctx = std::make_shared<resource_context_t> ();
-    ctx->db = std::make_shared<resource_graph_db_t> ();
+	ctx->db = std::make_shared<resource_graph_db_t> ();
     } catch (std::bad_alloc &e) {
         std::cerr << "ERROR: out of memory allocating resource context"
                   << std::endl;
