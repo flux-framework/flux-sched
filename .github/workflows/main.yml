@@ -131,10 +131,12 @@ jobs:
       env: ${{matrix.env}}
       run: ${{matrix.command}}
 
-    - name: annotate errors
-      if: failure() || cancelled()
-      env: ${{matrix.env}}
-      run: src/test/checks-annotate.sh
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.name}}-results.xml
+        path: test-results.xml
 
     - name: coverage report
       if: success() && matrix.coverage

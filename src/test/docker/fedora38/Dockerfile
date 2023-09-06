@@ -20,6 +20,7 @@ RUN sudo yum -y update \
 	ninja-build \
 	cmake \
 	clang \
+	lcov \
  && sudo yum clean all
 
 # Add configured user to image with sudo access:
