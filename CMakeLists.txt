@@ -11,7 +11,7 @@ else()
   execute_process(COMMAND sh -c [=[git describe --always | awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']=] OUTPUT_VARIABLE FLUX_SCHED_VER)
 endif()
 message(STATUS "VER ${FLUX_SCHED_VER}")
-string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT ${FLUX_SCHED_VER})
+string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT "${FLUX_SCHED_VER}")
 project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
 message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 
