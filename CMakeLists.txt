@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 set(VER_FILE ${CMAKE_BINARY_DIR}/flux-sched.ver)
-if(EXISTS ${VER_FILE})
+if(DEFINED FLUX_SCHED_VER)
+  # do nothing, user said so
+elseif(DEFINED ENV{FLUX_SCHED_VERSION})
+  set(FLUX_SCHED_VER "$ENV{FLUX_SCHED_VERSION}")
+elseif(EXISTS ${VER_FILE})
   file(READ ${VER_FILE} FLUX_SCHED_VER)
   string(STRIP ${FLUX_SCHED_VER} FLUX_SCHED_VER)
 else()
