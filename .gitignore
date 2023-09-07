@@ -23,6 +23,33 @@ libtool
 .libs/
 libltdl/
 
+# cmake and ninja
+*.counts
+.ninja_deps
+.ninja_log
+.cmake/
+/*build*
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# directory management
+.direnv
+
+# MacOS
+.DS_Store
+
+# vim local
+.vim
+
 # generated library version header
 /src/common/libflux/version.h
 

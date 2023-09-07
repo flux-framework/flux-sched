@@ -13,7 +13,13 @@ RUN sudo yum -y install \
 	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \
-	libedit-devel
+	libedit-devel \
+	ninja-build \
+	curl
+
+RUN curl -s -L https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-$(uname -m).sh > cmake.sh ;\
+  sudo bash cmake.sh --prefix=/usr/local --skip-license ;\
+  rm cmake.sh
 
 # Add configured user to image with sudo access:
 #

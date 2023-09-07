@@ -11,7 +11,7 @@ PROJECT=flux-sched
 BASE_DOCKER_REPO=fluxrm/flux-core
 
 WORKDIR=/usr/src
-IMAGE=jammy
+IMAGE=bookworm
 JOBS=2
 MOUNT_HOME_ARGS="--volume=$HOME:/home/$USER -e HOME"
 
@@ -116,6 +116,17 @@ if test "$DISTCHECK" = "t"; then
             die "distcheck incompatible with configure arg $arg"
         esac
     done
+fi
+
+if test "$SYSTEM" = "t"; then
+    if test "$IMAGE" != "el8"; then
+        echo >&2 "Setting image to el8 for system checks build"
+    fi
+    IMAGE=el8
+    TAG="checks-builder:el8"
+    INSTALL_ONLY=t
+    NO_CACHE="--no-cache"
+    POISON=0
 fi
 
 CONFIGURE_ARGS="$@"
@@ -251,4 +262,12 @@ if test -n "$TAG"; then
 	|| die "docker commit failed"
     docker rm tmp.$$
     echo "Tagged image $TAG"
+fi
+
+if test -n "$SYSTEM"; then
+    ${TOP}/src/test/docker/docker-run-systest.sh \
+	--image=${TAG} \
+        --jobs=${JOBS} \
+        -- src/test/checks_run.sh ${CONFIGURE_ARGS} \
+    || die "docker-run-systest.sh failed"
 fi
