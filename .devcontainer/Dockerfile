@@ -1,4 +1,4 @@
-FROM fluxrm/flux-core:focal
+FROM fluxrm/flux-core:bookworm
 
 LABEL maintainer="Vanessasaurus <@vsoch>"
 
@@ -10,7 +10,6 @@ ENV USERNAME=${USERNAME}
 ENV USER_UID=${USER_UID}
 ENV USER_GID=${USER_GID}
 USER root
-RUN apt-get update
 
 # Install extra buildrequires for flux-sched:
 RUN sudo apt-get update
@@ -19,12 +18,18 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
         libboost-system-dev \
         libboost-filesystem-dev \
         libboost-regex-dev \
-        python-yaml \
+        python3-yaml \
         libyaml-cpp-dev \
-        libedit-dev
+        libedit-dev \
+        ninja-build \
+        curl
 
 # Assuming installing to /usr/local
 ENV LD_LIBRARY_PATH=/usr/local/lib
+
+RUN curl -s -L https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-$(uname -m).sh > cmake.sh ;\
+    sudo bash cmake.sh --prefix=/usr/local --skip-license ;\
+    rm cmake.sh
 
 # Install Go 19 for TBA bindings (if Go bindings desired)
 RUN wget https://go.dev/dl/go1.19.10.linux-amd64.tar.gz  && tar -xvf go1.19.10.linux-amd64.tar.gz && \
