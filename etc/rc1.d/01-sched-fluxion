@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 
 test $(flux getattr rank) -eq 0 || exit 0
 
