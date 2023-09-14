@@ -63,9 +63,7 @@ test_expect_success 'qmanager: exception during initialization is supported' '
     test_debug "flux job eventlog ${jobid}" &&
     grep "type=\"exec\"" exception.1.out &&
     grep "mock initialization exception generated" exception.1.out &&
-    flux job wait-event -qt 10 ${jobid} clean &&
-    flux job eventlog ${jobid} > eventlog.${jobid}.out &&
-    test_must_fail grep "finish" eventlog.${jobid}.out
+    test_must_fail flux job wait-event -qt 10 ${jobid} finish
 '
 
 test_expect_success 'qmanager: exception during run is supported' '
