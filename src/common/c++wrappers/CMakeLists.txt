@@ -1,2 +1,3 @@
-add_library(cppwrappers INTERFACE eh_wrapper.hpp)
+add_library(cppwrappers INTERFACE)
+target_include_directories(cppwrappers INTERFACE .)
 add_subdirectory( test )

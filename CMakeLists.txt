@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.18)
 set(VER_FILE ${CMAKE_BINARY_DIR}/flux-sched.ver)
 if(DEFINED FLUX_SCHED_VER)
   # do nothing, user said so
@@ -70,7 +70,7 @@ endif()
 if(DEFINED ENV{PYTHON})
   set(Python_EXECUTABLE $ENV{PYTHON} CACHE FILEPATH "")
 endif()
-find_package(Python 3.6...<4.0 COMPONENTS Interpreter Development REQUIRED) # 3.6 or higher
+find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED) # 3.6 or higher
 execute_process(
   COMMAND "${Python_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('purelib', vars={'base':'${CMAKE_INSTALL_PREFIX}'}))"
   OUTPUT_VARIABLE PYTHON_INSTALL_SITELIB
