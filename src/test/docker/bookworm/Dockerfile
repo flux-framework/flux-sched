@@ -2,10 +2,11 @@ FROM fluxrm/flux-core:bookworm
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # Install extra buildrequires for flux-sched:
-RUN sudo apt-get update
-RUN sudo apt-get -qq install -y --no-install-recommends \
+RUN apt-get update
+RUN apt-get -qq install -y --no-install-recommends \
 	libboost-graph-dev \
 	libboost-system-dev \
 	libboost-filesystem-dev \
@@ -19,10 +20,10 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
 #
 RUN \
  if test "$USER" != "flux"; then  \
-      sudo groupadd -g $UID $USER \
-   && sudo useradd -g $USER -u $UID -d /home/$USER -m $USER \
-   && sudo sh -c "printf \"$USER ALL= NOPASSWD: ALL\\n\" >> /etc/sudoers" \
-   && sudo adduser $USER sudo ; \
+      groupadd -g $UID $USER \
+   && useradd -g $USER -u $UID -d /home/$USER -m $USER \
+   && sh -c "printf \"$USER ALL= NOPASSWD: ALL\\n\" >> /etc/sudoers" \
+   && adduser $USER sudo ; \
  fi
 
 USER $USER
