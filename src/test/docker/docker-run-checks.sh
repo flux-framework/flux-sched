@@ -185,9 +185,7 @@ if [[ "$INSTALL_ONLY" == "t" ]]; then
         sh -c "./autogen.sh &&
                ./configure --prefix=/usr --sysconfdir=/etc \
                 --with-systemdsystemunitdir=/etc/systemd/system \
-                --localstatedir=/var \
-                --with-flux-security \
-                --enable-caliper &&
+                --localstatedir=/var &&
                make clean &&
                make -j${JOBS}"
     RC=$?
