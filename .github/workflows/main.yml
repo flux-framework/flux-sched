@@ -29,13 +29,13 @@ jobs:
     steps:
     - uses: actions/setup-python@v1
       with:
-        python-version: 3.6
+        python-version: 3.8
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
     - name: install black
-      run: python3 -m pip install 'black==20.08.b1' --force-reinstall
+      run: python3 -m pip install 'black==22.3.0' --force-reinstall
     - name: check format
       run: ./scripts/check-format
 
@@ -45,7 +45,7 @@ jobs:
     steps:
     - uses: actions/setup-python@v1
       with:
-        python-version: 3.6
+        python-version: 3.8
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.sha }}
