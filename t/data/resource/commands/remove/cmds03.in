@@ -1,0 +1,3 @@
+remove /does/not/exist
+find status=up
+quit

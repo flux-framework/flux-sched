@@ -43,6 +43,8 @@ command_t commands[] = {
 "resource-query> update allocate jgf_file jobid starttime duration" },
     { "attach", "j", cmd_attach, "Attach a JGF subgraph to the "
 "resource graph: resource-query> attach jgf_file" },
+    { "remove", "j", cmd_remove, "Experimental: remove a subgraph to the "
+    "resource graph: resource-query> remove path/to/node/" },
     { "find", "f", cmd_find, "Find resources matched with criteria "
 "(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free}): "
 "resource-query> find status=down and sched-now=allocated" },
@@ -430,17 +432,39 @@ static int attach (std::shared_ptr<resource_context_t> &ctx,
     // Unpack_at currently does not use the vertex attachment point.
     // This functionality is currently experimental.
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
-    if ( (rd->unpack_at (ctx->db->resource_graph, ctx->db->metadata, 
+    if ( (rd->unpack_at (ctx->db->resource_graph, ctx->db->metadata,
                          v, buffer.str (), -1)) != 0) {
         std::cerr << "ERROR: can't attach JGF subgraph " << std::endl;
         std::cerr << "ERROR: " << rd->err_message ();
         return -1;
     }
     if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) != 0) {
-        std::cerr << "ERROR: can't reinitialize traverser after attach" 
+        std::cerr << "ERROR: can't reinitialize traverser after attach"
                   << std::endl;
         return -1;
     }
+
+    return 0;
+}
+
+static int remove (std::shared_ptr<resource_context_t> &ctx,
+                   std::vector<std::string> &args)
+{
+    const std::string node_path = args[1];
+    std::shared_ptr<resource_reader_base_t> rd;
+
+    if ( (rd = create_resource_reader ("jgf")) == nullptr) {
+        std::cerr << "ERROR: can't create JGF reader " << std::endl;
+        return -1;
+    }
+
+    if ( (rd->remove_subgraph (ctx->db->resource_graph, ctx->db->metadata,
+                               node_path)) != 0) {
+        std::cerr << "ERROR: can't remove subgraph " << std::endl;
+        std::cerr << "ERROR: " << rd->err_message ();
+        return -1;
+    }
+    // TODO: reinitialize the traverser, see issue #1075
 
     return 0;
 }
@@ -454,6 +478,24 @@ int cmd_attach (std::shared_ptr<resource_context_t> &ctx,
             return 0;
         }
         attach (ctx, args);
+
+    } catch (std::ifstream::failure &e) {
+        std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
+    } catch (std::out_of_range &e) {
+        std::cerr << "ERROR: " << e.what () << std::endl;
+    }
+    return 0;
+}
+
+int cmd_remove (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args)
+{
+    try {
+        if (args.size () != 2) {
+            std::cerr << "ERROR: malformed command" << std::endl;
+            return 0;
+        }
+        remove (ctx, args);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
