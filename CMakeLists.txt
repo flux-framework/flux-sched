@@ -96,7 +96,7 @@ find_package(Boost 1.50 REQUIRED COMPONENTS
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths
-set(FLUX_CMD_DIR "${CMAKE_INSTALL_PREFIX}/libexec/cmd")
+set(FLUX_CMD_DIR "${CMAKE_INSTALL_LIBEXECDIR}/flux/cmd")
 set(FLUX_LIB_DIR "${CMAKE_INSTALL_LIBDIR}/flux")
 set(FLUX_MOD_DIR "${FLUX_LIB_DIR}/modules")
 set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
