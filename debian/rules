@@ -13,7 +13,7 @@
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 %:
-	dh $@
+	dh $@ --buildsystem=cmake
 
 override_dh_autoreconf:
 	@echo not running autogen.sh on dist product
