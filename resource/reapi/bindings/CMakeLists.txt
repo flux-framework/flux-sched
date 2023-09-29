@@ -18,3 +18,8 @@ add_library ( reapi_module STATIC
 target_link_libraries(reapi_module PRIVATE
     flux::core
     )
+
+if(DEFINED ENV{WITH_GO})
+    message(STATUS "WITH_GO is set to build go bindings")
+    add_subdirectory( go )
+endif()
