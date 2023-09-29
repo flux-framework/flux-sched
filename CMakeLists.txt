@@ -96,7 +96,7 @@ find_package(Boost 1.50 REQUIRED COMPONENTS
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths
-set(FLUX_CMD_DIR "${CMAKE_INSTALL_PREFIX}/libexec/cmd")
+set(FLUX_CMD_DIR "${CMAKE_INSTALL_LIBEXECDIR}/flux/cmd")
 set(FLUX_LIB_DIR "${CMAKE_INSTALL_LIBDIR}/flux")
 set(FLUX_MOD_DIR "${FLUX_LIB_DIR}/modules")
 set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
@@ -197,15 +197,25 @@ add_custom_target(check
   )
 add_custom_target(installcheck
   COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS})
+add_custom_target(dist
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND echo ${FLUX_SCHED_VER} > flux-sched.ver
+  COMMAND git archive --format=tar.gz
+  --prefix=flux-sched-${FLUX_SCHED_VER}/
+  --add-file=flux-sched.ver
+  --output=${CMAKE_BINARY_DIR}/flux-sched-${FLUX_SCHED_VER}.tar.gz
+  HEAD .
+  COMMAND rm flux-sched.ver
+  COMMENT "Generated flux-sched-${FLUX_SCHED_VER}.tar.gz"
+  )
 # run installcheck, if it passes then write out version information and pack up
 # a tarball with the result
 add_custom_target(distcheck
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target check
-  COMMAND git archive --format=tar.gz
-  --add-virtual-file=flux-sched.ver:${FLUX_SCHED_VER}
-  --prefix=flux-sched-${FLUX_SCHED_VER}/
-  --output=${CMAKE_BINARY_DIR}/flux-sched-${FLUX_SCHED_VER}.tar.gz
-  HEAD .
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target dist
+  )
+add_custom_target(deb
+  COMMAND ${CMAKE_SOURCE_DIR}/scripts/debbuild.sh ${CMAKE_SOURCE_DIR}
   )
