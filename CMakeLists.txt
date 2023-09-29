@@ -173,6 +173,11 @@ if(ENABLE_COVERAGE)
   SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${COVERAGE_FLAGS}" )
 endif()
 
+if(DEFINED ENV{WITH_GO})
+  message(STATUS "WITH_GO detected in main CMakeLists.txt to build go bindings")
+  include(GolangSimple)
+endif()
+
 include_directories(.)
 add_subdirectory( etc )
 add_subdirectory( src )

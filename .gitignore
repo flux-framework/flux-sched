@@ -131,3 +131,6 @@ compile_flags.txt
 # Rules to ignore auto-generated test harness scripts
 test_*.t
 !/src/bindings/python/test_commands/test_runner.t
+
+# Go
+resource/reapi/bindings/go/src/test/main
