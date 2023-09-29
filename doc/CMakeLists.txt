@@ -1,7 +1,7 @@
 set(3VALUE_OPTS On Off Try)
 set(ENABLE_DOCS "Try" CACHE STRING "Enables documentation")
 
-if(ENABLE_DOCS) # only matches On
+if(ENABLE_DOCS AND NOT ENABLE_DOCS STREQUAL "Try") # only matches On
     set(REQ_DOCS REQUIRED)
 endif()
 find_program(SPHINX NAMES sphinx-build sphinx-build2 ${REQ_DOCS})
