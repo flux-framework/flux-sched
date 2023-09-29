@@ -20,11 +20,5 @@ target_link_libraries(resource-query
   Boost::headers
   )
 
-install(
-  TARGETS
-  grug2dot
-  resource-query
-  )
-
 add_subdirectory(test)
 
