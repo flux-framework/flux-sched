@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Mark A. Grondona <mark.grondona@gmail.com>
 Standards-Version: 4.1.2
 Build-Depends:
+  cmake (>= 3.18),
   debhelper (>= 10),
   flux-core (>= 0.49.0),
   libhwloc-dev,
