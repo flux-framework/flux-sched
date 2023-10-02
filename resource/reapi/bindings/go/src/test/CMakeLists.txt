@@ -3,7 +3,7 @@ set(SRCS main.go)
 set(CGO_CFLAGS "-I${CMAKE_BINARY_DIR}/resource/reapi/bindings/c")
 
 # This is currently passed but not used because when passed into add_custom_command the spaces are escaped
-set(CGO_LIBRARY_FLAGS "-Wl,-R ${CMAKE_BINARY_DIR}/resource -L${CMAKE_BINARY_DIR}/resource/reapi/bindings -L${CMAKE_BINARY_DIR}/resource/libjobspec -ljobspec_conv -lreapi_cli -L${CMAKE_BINARY_DIR}/resource -lresource -lflux-idset -lstdc++ -lczmq -ljansson -lhwloc -lboost_system -lflux-hostlist -lboost_graph -lyaml-cpp")
+set(CGO_LIBRARY_FLAGS "-Wl,-R ${CMAKE_BINARY_DIR}/resource -L${CMAKE_BINARY_DIR}/resource/reapi/bindings -L${CMAKE_BINARY_DIR}/resource/libjobspec -ljobspec_conv -lreapi_cli -L${CMAKE_BINARY_DIR}/resource -lresource -L${CMAKE_BINARY_DIR}/resource/planner/c -lplanner -L${CMAKE_BINARY_DIR}/resource/planner/c++ -lplanner_cxx -lflux-idset -lstdc++ -lczmq -ljansson -lhwloc -lboost_system -lflux-hostlist -lboost_graph -lyaml-cpp")
 
 # This ensures the main binary is cleaned up
 set_directory_properties(
