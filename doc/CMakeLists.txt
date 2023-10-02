@@ -48,5 +48,5 @@ if(SPHINX AND ENABLE_DOCS)
         )
     add_custom_target(html DEPENDS ${man5_html_outputs})
     add_custom_target(docs ALL
-        DEPENDS html manpages)
+        DEPENDS manpages)
 endif()
