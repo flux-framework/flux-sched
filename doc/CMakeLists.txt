@@ -47,6 +47,6 @@ if(SPHINX AND ENABLE_DOCS)
         ${Python_EXECUTABLE} -m sphinx -b html ${CMAKE_CURRENT_SOURCE_DIR} ./html
         )
     add_custom_target(html DEPENDS ${man5_html_outputs})
-    add_custom_target(docs
+    add_custom_target(docs ALL
         DEPENDS html manpages)
 endif()
