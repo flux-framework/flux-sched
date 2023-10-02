@@ -40,7 +40,7 @@ set(RESOURCE_HEADERS
     store/resource_graph_store.hpp
     )
 
-add_library(resource SHARED
+add_library(resource STATIC
     policies/dfu_match_locality.cpp
     policies/dfu_match_var_aware.cpp
     policies/dfu_match_policy_factory.cpp
@@ -87,8 +87,6 @@ target_link_libraries(resource PUBLIC
     jobspec_conv
     Boost::filesystem
     )
-install(TARGETS resource
-        LIBRARY)
 
 add_subdirectory(modules)
 add_subdirectory(reapi)
