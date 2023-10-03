@@ -1,3 +1,35 @@
+flux-sched version 0.29.0 - 2023-10-03
+--------------------------------------
+
+### New Features
+
+ * Add first nodex policy (#1055)
+ * Enable Fluxion resource graph elasticity (#989)
+ * add delete subgraph functionality (#1053)
+ * Update branch of golang release (#1062)
+
+### Fixes
+
+ * rc: use posix shell (#1070)
+ * Remove flux-tree (#1056)
+ * Add missing config.h globally (#1054)
+
+### Build/Testsuite
+
+ * Add cmake build system (#1049, #1071, #1082, #1086, #1090, #1094)
+ * Add development environment (#1045)
+ * ci: style checks change python version from 3.6 to 3.8 (#1080)
+ * Change binfmt flags to ensure setuid is enabled in qemu-user-static
+   supported CI runs (#1077)
+ * docker: avoid sudo in Dockerfile for arm runner (#1076)
+ * testsuite: improve test event check (#1074)
+ * fix: devcontainer to use jammy and install cmake (#1067)
+ * actions: update typo checker version (#1063)
+ * mergify: remove rule listing, use branch protection (#1060)
+ * transition bionic containers to jammy (#1057)
+ * testsuite: drop resource exclusion test (#1051)
+
+
 flux-sched version 0.28.0 - 2023-07-11
 --------------------------------------
 
