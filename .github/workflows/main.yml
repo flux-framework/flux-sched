@@ -147,24 +147,22 @@ jobs:
       env: ${{matrix.env}}
       run: src/test/docker-deploy.sh
 
-    #   Prepare, create and deploy release on tag:
-    - name: prep release
-      id: prep_release
-      if: success() && matrix.create_release
-      env: ${{matrix.env}}
-      run: echo "::set-output name=tarball::$(echo flux-sched*.tar.gz)"
-
     - name: create release
       id: create_release
-      if: success() && matrix.create_release
+      if: |
+        success()
+        && matrix.create_release
+        && github.repository == 'flux-framework/flux-sched'
       env: ${{matrix.env}}
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ matrix.tag }}
-        release_name: flux-sched ${{ matrix.tag }}
+        name: flux-sched ${{ matrix.tag }}
         prerelease: true
+        files: flux-sched*.tar.gz
         body: |
           View [Release Notes](https://github.com/${{ github.repository }}/blob/${{ matrix.tag }}/NEWS.md) for flux-sched ${{ matrix.tag }}
+
   generate-manifest:
     name: Generate docker manifest
     runs-on: ubuntu-latest
@@ -183,13 +181,3 @@ jobs:
         # maybe bring back later: fluxrm/flux-core:bookworm-386
         docker manifest create fluxrm/flux-core:bookworm fluxrm/flux-core:bookworm-amd64 fluxrm/flux-core:bookworm-arm64
         docker manifest push fluxrm/flux-core:bookworm
-
-    - name: upload tarball
-      id: upload-tarball
-      if: success() && matrix.create_release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.prep_release.outputs.tarball }}
-        asset_name: ${{ steps.prep_release.outputs.tarball }}
-        asset_content_type: "application/gzip"
