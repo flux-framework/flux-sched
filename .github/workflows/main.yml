@@ -27,10 +27,10 @@ jobs:
     name: python format
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: 3.8
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -43,10 +43,10 @@ jobs:
     name: python lint
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: 3.8
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -62,16 +62,16 @@ jobs:
     outputs:
         matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
     - id: set-matrix
-      run: echo "::set-output name=matrix::$(src/test/generate-matrix.py)"
+      run: echo "matrix=$(src/test/generate-matrix.py)" >> $GITHUB_OUTPUT
     - run: src/test/generate-matrix.py | jq -S .
-    - run: echo "::set-output name=GITHUB_BRANCH::${GITHUB_REF#refs/heads}"
-    - run: echo "::set-output name=GITHUB_TAG::${GITHUB_REF#refs/tags}"
-    - run: echo "::set-output name=EVENT_NAME::${{github.event_name}}"
+    - run: echo "GITHUB_BRANCH=${GITHUB_REF#refs/heads}" >> $GITHUB_OUTPUT
+    - run: echo "GITHUB_TAG=${GITHUB_REF#refs/tags}" >> $GITHUB_OUTPUT
+    - run: echo "EVENT_NAME=${{github.event_name}}" >> $GITHUB_OUTPUT
 
   ci-checks:
     needs: [ generate-matrix ]
@@ -147,24 +147,22 @@ jobs:
       env: ${{matrix.env}}
       run: src/test/docker-deploy.sh
 
-    #   Prepare, create and deploy release on tag:
-    - name: prep release
-      id: prep_release
-      if: success() && matrix.create_release
-      env: ${{matrix.env}}
-      run: echo "::set-output name=tarball::$(echo flux-sched*.tar.gz)"
-
     - name: create release
       id: create_release
-      if: success() && matrix.create_release
+      if: |
+        success()
+        && matrix.create_release
+        && github.repository == 'flux-framework/flux-sched'
       env: ${{matrix.env}}
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ matrix.tag }}
-        release_name: flux-sched ${{ matrix.tag }}
+        name: flux-sched ${{ matrix.tag }}
         prerelease: true
+        files: flux-sched*.tar.gz
         body: |
           View [Release Notes](https://github.com/${{ github.repository }}/blob/${{ matrix.tag }}/NEWS.md) for flux-sched ${{ matrix.tag }}
+
   generate-manifest:
     name: Generate docker manifest
     runs-on: ubuntu-latest
@@ -183,13 +181,3 @@ jobs:
         # maybe bring back later: fluxrm/flux-core:bookworm-386
         docker manifest create fluxrm/flux-core:bookworm fluxrm/flux-core:bookworm-amd64 fluxrm/flux-core:bookworm-arm64
         docker manifest push fluxrm/flux-core:bookworm
-
-    - name: upload tarball
-      id: upload-tarball
-      if: success() && matrix.create_release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.prep_release.outputs.tarball }}
-        asset_name: ${{ steps.prep_release.outputs.tarball }}
-        asset_content_type: "application/gzip"
