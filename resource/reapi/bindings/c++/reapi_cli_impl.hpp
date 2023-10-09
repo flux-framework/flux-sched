@@ -250,6 +250,22 @@ int reapi_cli_t::info (void *h, const uint64_t jobid, std::string &mode,
     return 0;
 }
 
+int reapi_cli_t::info (void *h, const uint64_t jobid,
+                       std::shared_ptr<job_info_t> &job)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if ( !(rq->job_exists (jobid))) {
+       m_err_msg += __FUNCTION__;
+       m_err_msg += ": ERROR: nonexistent job "
+                     + std::to_string (jobid) + "\n";
+       return -1;
+    }
+
+    job = rq->get_job (jobid);
+    return 0;
+}
+
 int reapi_cli_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
                        double &load, double &min, double &max, double &avg)
 {
