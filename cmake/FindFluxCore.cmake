@@ -6,7 +6,7 @@ else()
         get_filename_component(EXTRA_FLUX_CORE_PREFIX_BIN ${FLUX} DIRECTORY)
         get_filename_component(EXTRA_FLUX_CORE_PREFIX ${EXTRA_FLUX_CORE_PREFIX_BIN} DIRECTORY)
         set(ENV{PKG_CONFIG_PATH} "${EXTRA_FLUX_CORE_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-        message(STATUS "flux found in PATH and no specific FLUX_CORE_PREFIX specified, using ${EXTRA_FLUX_CORE_PREFIX}")
+	message(STATUS "found ${FLUX} in PATH with prefix=${EXTRA_FLUX_CORE_PREFIX}")
     endif()
 endif()
 
