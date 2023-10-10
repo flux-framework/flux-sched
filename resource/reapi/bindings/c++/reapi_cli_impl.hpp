@@ -266,6 +266,20 @@ int reapi_cli_t::info (void *h, const uint64_t jobid,
     return 0;
 }
 
+unsigned int reapi_cli_t::preorder_count (void *h)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    return rq->preorder_count ();
+}
+
+unsigned int reapi_cli_t::postorder_count (void *h)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    return rq->postorder_count ();
+}
+
 int reapi_cli_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
                        double &load, double &min, double &max, double &avg)
 {
@@ -635,6 +649,16 @@ const bool resource_query_t::allocation_exists (const uint64_t jobid)
 const bool resource_query_t::reservation_exists (const uint64_t jobid)
 {
     return reservations.find (jobid) != reservations.end ();
+}
+
+const unsigned int resource_query_t::preorder_count ()
+{
+    return traverser->get_total_preorder_count ();
+}
+
+const unsigned int resource_query_t::postorder_count ()
+{
+    return traverser->get_total_postorder_count ();
 }
 
 void resource_query_t::clear_resource_query_err_msg ()
