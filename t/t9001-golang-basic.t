@@ -23,12 +23,14 @@ main="../../resource/reapi/bindings/go/src/test/main"
 test001_desc="match allocate 1 slot: 1 socket: 1 core (pol=default)"
 test_expect_success "${test001_desc}" '
     ${main} --jgf=${jgf} --jobspec=${jobspec1} > 001.R.out &&
+    sed -i -E "s/, 0\.[0-9]+//g" 001.R.out &&
     test_cmp 001.R.out ${exp_dir}/001.R.out
 '
 
 test002_desc="match allocate 2 slots: 2 sockets: 5 cores 1 gpu 6 memory"
 test_expect_success "${test002_desc}" '
     ${main} --jgf=${jgf} --jobspec=${jobspec2} > 002.R.out &&
+    sed -i -E "s/, 0\.[0-9]+//g" 002.R.out &&
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
 
