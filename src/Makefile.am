@@ -1,5 +1,5 @@
 .NOTPARALLEL:
 
-SUBDIRS = common cmd shell python
+SUBDIRS = common cmd python
 
 check-local: all
