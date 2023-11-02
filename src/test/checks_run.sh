@@ -118,14 +118,14 @@ if test "$COVERAGE" = "t"; then
 
 	ARGS="$ARGS --enable-code-coverage"
 	CHECKCMDS="\
-	ENABLE_USER_SITE=1 \
-	COVERAGE_PROCESS_START=$(pwd)/coverage.rc \
+	export ENABLE_USER_SITE=1 && \
+	export COVERAGE_PROCESS_START=$(pwd)/coverage.rc && \
 	${MAKE} -j $JOBS check-code-coverage && \
 	lcov -l flux*-coverage.info && \
 	coverage combine .coverage* && \
-	coverage html && coverage xml &&
-	chmod 444 coverage.xml &&
-	coverage report"
+	(coverage xml || :) &&
+	(chmod 444 coverage.xml || :) &&
+	(coverage report || :)"
 
 # Use make install for T_INSTALL:
 elif test "$TEST_INSTALL" = "t"; then
