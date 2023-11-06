@@ -290,7 +290,9 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     }
 
     int rc = -1;
-    int64_t graph_end = graph_duration.graph_end.time_since_epoch ().count ();
+    int64_t graph_end = std::chrono::duration_cast<std::chrono::seconds>
+                            (graph_duration.graph_end
+                                .time_since_epoch ()).count ();
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
