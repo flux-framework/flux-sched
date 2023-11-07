@@ -1,3 +1,25 @@
+flux-sched version 0.30.0 - 2023-11-07
+--------------------------------------
+
+### New Features
+
+ * resource: support resource expiration updates (#1105)
+
+### Fixes
+
+ * traverser: fix default job duration when no duration specified (#1104)
+
+### Cleanup
+
+ * shell: remove data-staging shell plugin (#1102)
+
+### Build/Testsuite
+
+ * ci: fix coverage build (#1106)
+ * ci: do not force configure --prefix to /usr (#1100)
+ * ci: remove deprecated syntax and update release action (#1097)
+
+
 flux-sched version 0.29.0 - 2023-10-03
 --------------------------------------
 
