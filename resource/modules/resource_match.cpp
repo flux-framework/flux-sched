@@ -1236,13 +1236,15 @@ static void update_resource (flux_future_t *f, void *arg)
     int rc = -1;
     const char *up = NULL;
     const char *down = NULL;
+    double expiration = -1.;
     json_t *resources = NULL;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if ( (rc = flux_rpc_get_unpack (f, "{s?:o s?:s s?:s}",
+    if ( (rc = flux_rpc_get_unpack (f, "{s?:o s?:s s?:s s?:F}",
                                            "resources", &resources,
                                            "up", &up,
-                                           "down", &down)) < 0) {
+                                           "down", &down,
+                                           "expiration", &expiration)) < 0) {
         flux_log_error (ctx->h, "%s: exiting due to resource.acquire failure",
                         __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h));
@@ -1251,6 +1253,12 @@ static void update_resource (flux_future_t *f, void *arg)
     if ( (rc = update_resource_db (ctx, resources, up, down)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
+    }
+    if (expiration >= 0.) {
+        /*  Update graph duration:
+         */
+        ctx->db->metadata.graph_duration.graph_end =
+            std::chrono::system_clock::from_time_t ((time_t) expiration);
     }
     for (auto &kv : ctx->notify_msgs) {
         if ( (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
