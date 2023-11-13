@@ -1259,6 +1259,10 @@ static void update_resource (flux_future_t *f, void *arg)
          */
         ctx->db->metadata.graph_duration.graph_end =
             std::chrono::system_clock::from_time_t ((time_t) expiration);
+        flux_log (ctx->h,
+                  LOG_INFO,
+                  "resource expiration updated to %.2f",
+                  expiration);
     }
     for (auto &kv : ctx->notify_msgs) {
         if ( (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
