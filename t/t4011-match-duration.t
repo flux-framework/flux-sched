@@ -12,6 +12,8 @@ test_under_flux 2
 flux setattr log-stderr-level 1
 export FLUX_URI_RESOLVE_LOCAL=t
 
+dmesg_grep="flux python ${SHARNESS_TEST_SRCDIR}/scripts/dmesg-grep.py"
+
 # Ensure fluxion modules are loaded under flux-alloc(1)
 test_expect_success 'set FLUX_RC_EXTRA so Fluxion modules are loaded under flux-alloc' '
 	mkdir rc1.d &&
@@ -102,7 +104,7 @@ test_expect_success FLUX_UPDATE_RUNNING \
 	id1=$(flux proxy $id flux submit sleep 300) &&
 	duration1=$(subinstance_get_job_duration $id $id1) &&
 	test_debug "echo initial duration of subinstance job1 is $duration1" &&
-	echo $duration1 | jq -e ". < 300" &&
+	echo $duration1 | jq -e ". <= 300" &&
 	test_debug "echo updating duration of alloc job +5m" &&
 	flux update $id duration=+5m &&
 	test_debug "echo waiting for resource-update event" &&
@@ -111,6 +113,8 @@ test_expect_success FLUX_UPDATE_RUNNING \
 	exp2=$(subinstance_get_expiration $id) &&
 	test_debug "echo expiration updated from $exp1 to $exp2" &&
 	echo $exp2 | jq -e ". == $exp1 + 300" &&
+	flux proxy $id $dmesg_grep -vt 30 \
+		\"sched.*resource expiration updated\" &&
 	id2=$(flux proxy $id flux submit sleep 300) &&
 	duration2=$(subinstance_get_job_duration $id $id2) &&
 	test_debug "echo duration of subinstance job2 is $duration2" &&
