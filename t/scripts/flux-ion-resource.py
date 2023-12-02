@@ -94,6 +94,10 @@ class ResourceModuleInterface:
     def rpc_status(self):
         return self.f.rpc("sched-fluxion-resource.status").get()
 
+    def rpc_set_status(self, resource_path, status):
+        payload = {"resource_path": resource_path, "status": status}
+        return self.f.rpc("sched-fluxion-resource.set_status", payload).get()
+
     def rpc_namespace_info(self, rank, type_name, identity):
         payload = {"rank": rank, "type-name": type_name, "id": identity}
         return self.f.rpc("sched-fluxion-resource.ns-info", payload).get()
@@ -289,6 +293,16 @@ def status_action(args):
 
 
 """
+    Action for set-status sub-command
+"""
+
+
+def set_status_action(args):
+    r = ResourceModuleInterface()
+    r.rpc_set_status(args.resource_path, args.status)
+
+
+"""
     Action for ns-info sub-command
 """
 
@@ -341,6 +355,7 @@ def main():
     cstr = "Cancel an allocated or reserved job."
     fstr = "Find resources matching with a crieria."
     ststr = "Display resource status."
+    ssstr = "Set up/down status of a resource vertex."
     pstr = "Set property-key=value for specified resource."
     gstr = "Get value for specified resource and property-key."
     nstr = "Get remapped ID given raw ID seen by the reader."
@@ -352,6 +367,7 @@ def main():
     parser_c = subpar.add_parser("cancel", help=cstr, description=cstr)
     parser_f = subpar.add_parser("find", help=fstr, description=fstr)
     parser_st = subpar.add_parser("status", help=ststr, description=ststr)
+    parser_ss = subpar.add_parser("set-status", help=ssstr, description=ssstr)
     parser_sp = subpar.add_parser("set-property", help=pstr, description=pstr)
     parser_gp = subpar.add_parser("get-property", help=gstr, description=gstr)
     parser_n = subpar.add_parser("ns-info", help=nstr, description=nstr)
@@ -418,6 +434,18 @@ def main():
     #
     st_help = "Resource status"
     parser_st.set_defaults(func=status_action)
+
+    # Positional argument for set-status sub-command
+    #
+    parser_ss.add_argument(
+        "resource_path",
+        help="path to vertex",
+    )
+    parser_ss.add_argument(
+        "status",
+        help="status of vertex",
+    )
+    parser_ss.set_defaults(func=set_status_action)
 
     #
     # Positional argument for match allocate sub-command
