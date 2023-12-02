@@ -4,7 +4,6 @@
 #   FLUX_EXEC_PATH or `flux python flux-ion-resource` if not to
 #   avoid python version mismatch
 #
-from __future__ import print_function
 import argparse
 import errno
 import yaml
@@ -353,7 +352,7 @@ def main():
     istr = "Print info on a single job."
     sstr = "Print overall performance statistics."
     cstr = "Cancel an allocated or reserved job."
-    fstr = "Find resources matching with a crieria."
+    fstr = "Find resources matching with a criteria."
     ststr = "Display resource status."
     ssstr = "Set up/down status of a resource vertex."
     pstr = "Set property-key=value for specified resource."

@@ -4,7 +4,6 @@
 #   FLUX_EXEC_PATH or `flux python flux-jsonschemalint` if not to
 #   avoid python version mismatch
 #
-from __future__ import print_function
 
 import argparse
 import errno
