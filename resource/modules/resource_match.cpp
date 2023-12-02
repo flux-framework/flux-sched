@@ -255,6 +255,9 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
 
+static void set_status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -288,6 +291,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.params", params_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.set_status", set_status_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -2633,6 +2638,57 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
+/*
+ * Mark a vertex as up or down
+ */
+static void set_status_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    const char *rp = NULL, *st = NULL;
+    std::string resource_path = "", status = "", errmsg = "";
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it {};
+    resource_pool_t::string_to_status::iterator status_it {};
+
+    if (flux_request_unpack (msg, NULL, "{s:s, s:s}",
+                                        "resource_path", &rp,
+                                        "status", &st) < 0){
+        errmsg = "malformed RPC";
+        goto error;
+    }
+    resource_path = rp;
+    status = st;
+    // check that the path/vertex exists
+    it = ctx->db->metadata.by_path.find (resource_path);
+    if (it == ctx->db->metadata.by_path.end ()) {
+        errmsg = "could not find path '" + resource_path + "' in resource graph";
+        goto error;
+    }
+    // check that the status given is valid ('up' or 'down')
+    status_it = sts.find (status);
+    if (status_it == sts.end ()) {
+        errmsg = "unrecognized status '" + status + "'";
+        goto error;
+    }
+    // mark the vertex
+    if (ctx->traverser->mark (resource_path, status_it->second) < 0) {
+        flux_log_error (h, "%s: traverser::mark: %s", __FUNCTION__,
+                                ctx->traverser->err_message ().c_str ());
+        ctx->traverser->clear_err_message ();
+        errmsg = "Failed to set status of resource vertex";
+        goto error;
+    }
+    if (flux_respond (h, msg, NULL) < 0) {
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
+    }
+    return;
+
+error:
+    if (flux_respond_error (h, msg, EINVAL, errmsg.c_str ()) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+    return;
+}
 
 /******************************************************************************
  *                                                                            *
