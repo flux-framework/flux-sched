@@ -95,6 +95,7 @@ TESTS = \
     t4009-match-update.t \
     t4010-match-conf.t \
     t4011-match-duration.t \
+    t4012-set-status.t \
     t5000-valgrind.t \
     t5100-issues-test-driver.t \
     t6000-graph-size.t \
