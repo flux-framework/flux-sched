@@ -1,3 +1,15 @@
+flux-sched version 0.31.0 - 2023-12-12
+--------------------------------------
+
+### New Features
+
+ * resource: add a set-status RPC for marking vertices up/down (#1110)
+
+### Testsuite
+
+ * fix race conditions in t4011-match-duration.t (#1109)
+
+
 flux-sched version 0.30.0 - 2023-11-07
 --------------------------------------
 
