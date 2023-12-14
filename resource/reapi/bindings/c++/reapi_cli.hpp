@@ -72,6 +72,8 @@ public:
     const std::shared_ptr<job_info_t> &get_job (const uint64_t jobid);
     const bool reservation_exists (const uint64_t jobid);
     const bool allocation_exists (const uint64_t jobid);
+    const unsigned int preorder_count ();
+    const unsigned int postorder_count ();
 
     /* Mutators */
     void clear_resource_query_err_msg ();
@@ -141,6 +143,10 @@ public:
     static int find (void *h, std::string criteria, json_t *&o );
     static int info (void *h, const uint64_t jobid, std::string &mode,
                      bool &reserved, int64_t &at, double &ov);
+    static int info (void *h, const uint64_t jobid,
+                     std::shared_ptr<job_info_t> &job);
+    static unsigned int preorder_count (void *h);
+    static unsigned int postorder_count (void *h);
     static int stat (void *h, int64_t &V, int64_t &E,int64_t &J,
                      double &load, double &min, double &max, double &avg);
     static const std::string &get_err_message ();

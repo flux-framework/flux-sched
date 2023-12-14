@@ -64,6 +64,7 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     std::shared_ptr<job_info_t> job_info = nullptr;
     struct timeval start_time, end_time;
     std::stringstream o;
+    bool matched = false;
 
     try {
         Flux::Jobspec::Jobspec job {jobspec};
@@ -99,6 +100,19 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
         rc = -1;
         goto out;
     }
+
+    if ( (rc != 0) && (errno == ENOMEM)) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: Memory error for "
+                      + std::to_string (rq->get_job_counter ());
+        rc = -1;
+        goto out;
+    }
+
+    // Check for an unsuccessful match 
+    if (rc == 0) {
+        matched = true;
+    }
     
     if ( (rc = rq->writers->emit (o)) < 0) {
         m_err_msg += __FUNCTION__;
@@ -109,28 +123,6 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
 
     R = o.str ();
 
-
-    reserved = (at != 0)? true : false; 
-    st = (reserved)? 
-                job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED; 
-    if (reserved) 
-        rq->set_reservation (jobid); 
-    else
-        rq->set_allocation (jobid);
- 
-    job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov); 
-    if (job_info == nullptr) {
-        errno = ENOMEM; 
-        m_err_msg += __FUNCTION__; 
-        m_err_msg += ": ERROR: can't allocate memory: " 
-                     + std::string (strerror (errno))+ "\n"; 
-        rc = -1; 
-        goto out; 
-    } 
- 
-    rq->set_job (jobid, job_info); 
-    rq->incr_job_counter ();
-                         
     if ( (rc = gettimeofday (&end_time, NULL)) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: gettimeofday: "
@@ -139,6 +131,30 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     }
 
     ov = get_elapsed_time (start_time, end_time);
+
+    if (matched) {
+        reserved = (at != 0)? true : false; 
+        st = (reserved)? 
+                    job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED; 
+        if (reserved) 
+            rq->set_reservation (jobid); 
+        else
+            rq->set_allocation (jobid);
+        
+        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov); 
+        if (job_info == nullptr) {
+            errno = ENOMEM; 
+            m_err_msg += __FUNCTION__; 
+            m_err_msg += ": ERROR: can't allocate memory: " 
+                        + std::string (strerror (errno))+ "\n"; 
+            rc = -1; 
+            goto out; 
+        }
+        rq->set_job (jobid, job_info);
+
+    }
+    
+    rq->incr_job_counter ();
 
 out:
     return rc;
@@ -232,6 +248,36 @@ int reapi_cli_t::info (void *h, const uint64_t jobid, std::string &mode,
     ov = info->overhead;
 
     return 0;
+}
+
+int reapi_cli_t::info (void *h, const uint64_t jobid,
+                       std::shared_ptr<job_info_t> &job)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if ( !(rq->job_exists (jobid))) {
+       m_err_msg += __FUNCTION__;
+       m_err_msg += ": ERROR: nonexistent job "
+                     + std::to_string (jobid) + "\n";
+       return -1;
+    }
+
+    job = rq->get_job (jobid);
+    return 0;
+}
+
+unsigned int reapi_cli_t::preorder_count (void *h)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    return rq->preorder_count ();
+}
+
+unsigned int reapi_cli_t::postorder_count (void *h)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    return rq->postorder_count ();
 }
 
 int reapi_cli_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
@@ -603,6 +649,16 @@ const bool resource_query_t::allocation_exists (const uint64_t jobid)
 const bool resource_query_t::reservation_exists (const uint64_t jobid)
 {
     return reservations.find (jobid) != reservations.end ();
+}
+
+const unsigned int resource_query_t::preorder_count ()
+{
+    return traverser->get_total_preorder_count ();
+}
+
+const unsigned int resource_query_t::postorder_count ()
+{
+    return traverser->get_total_postorder_count ();
 }
 
 void resource_query_t::clear_resource_query_err_msg ()

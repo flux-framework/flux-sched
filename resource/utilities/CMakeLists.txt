@@ -19,6 +19,14 @@ target_link_libraries(resource-query
   Boost::filesystem
   Boost::headers
   )
+add_executable(rq2
+  rq2.cpp
+  rq2.hpp
+  )
+target_link_libraries(rq2
+  resource
+  PkgConfig::LIBEDIT
+  )
 
 add_subdirectory(test)
 

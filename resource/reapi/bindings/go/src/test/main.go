@@ -21,7 +21,7 @@ import (
 func main() {
 	jgfPtr := flag.String("jgf", "", "path to jgf")
 	jobspecPtr := flag.String("jobspec", "", "path to jobspec")
-	reserve := flag.Bool("reserve", false, "or else reserve?")
+	reserve := false
 	flag.Parse()
 
 	jgf, err := os.ReadFile(*jgfPtr)
@@ -44,13 +44,15 @@ func main() {
 	}
 	fmt.Printf("Jobspec:\n %s\n", jobspec)
 
-	reserved, allocated, at, overhead, jobid, err := cli.MatchAllocate(*reserve, string(jobspec))
+	reserved, allocated, at, overhead, jobid, err := cli.MatchAllocate(reserve, string(jobspec))
 	if err != nil {
 		fmt.Printf("Error in ReapiClient MatchAllocate: %v\n", err)
 		return
 	}
 	printOutput(reserved, allocated, at, jobid, err)
-	reserved, allocated, at, overhead, jobid, err = cli.MatchAllocate(*reserve, string(jobspec))
+
+	reserve = true
+	reserved, allocated, at, overhead, jobid, err = cli.MatchAllocate(reserve, string(jobspec))
 	fmt.Println("Errors so far: \n", cli.GetErrMsg())
 
 	if err != nil {
@@ -58,6 +60,16 @@ func main() {
 		return
 	}
 	printOutput(reserved, allocated, at, jobid, err)
+
+	reserved, allocated, at, overhead, jobid, err = cli.MatchAllocate(reserve, string(jobspec))
+	fmt.Println("Errors so far: \n", cli.GetErrMsg())
+
+	if err != nil {
+		fmt.Printf("Error in ReapiClient MatchAllocate: %v\n", err)
+		return
+	}
+	printOutput(reserved, allocated, at, jobid, err)
+
 	err = cli.Cancel(1, false)
 	if err != nil {
 		fmt.Printf("Error in ReapiClient Cancel: %v\n", err)
