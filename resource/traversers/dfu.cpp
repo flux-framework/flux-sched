@@ -97,6 +97,9 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
         break;
     }
+    // Fall through for deferred since it is equivalent to
+    // MATCH_ALLOCATE_ORELSE_RESERVE with a different "at" time.
+    case match_op_t::DEFERRED_ORELSE_RESERVE:
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
         /* Or else reserve */
         errno = 0;

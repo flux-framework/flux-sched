@@ -65,6 +65,14 @@ class ResourceModuleInterface:
         }
         return self.f.rpc("sched-fluxion-resource.match", payload).get()
 
+    def rpc_defer(self, jobid, jobspec_str):
+        payload = {
+            "cmd": "defer_orelse_reserve",
+            "jobid": jobid,
+            "jobspec": jobspec_str,
+        }
+        return self.f.rpc("sched-fluxion-resource.match", payload).get()
+
     def rpc_info(self, jobid):
         payload = {"jobid": jobid}
         return self.f.rpc("sched-fluxion-resource.info", payload).get()
@@ -153,6 +161,23 @@ def match_reserve_action(args):
         jobspec_str = yaml.dump(yaml.safe_load(stream))
         r = ResourceModuleInterface()
         resp = r.rpc_reserve(r.rpc_next_jobid(), jobspec_str)
+        print(heading())
+        print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
+        print("=" * width())
+        print("MATCHED RESOURCES:")
+        print(resp["R"])
+
+
+"""
+    Action for match defer_orelse_reserve sub-command
+"""
+
+
+def match_defer_action(args):
+    with open(args.jobspec, "r") as stream:
+        jobspec_str = yaml.dump(yaml.safe_load(stream))
+        r = ResourceModuleInterface()
+        resp = r.rpc_defer(r.rpc_next_jobid(), jobspec_str)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -393,6 +418,7 @@ def main():
     parser_ma = subparsers_m.add_parser("allocate", help=mastr)
     parser_ms = subparsers_m.add_parser("allocate_with_satisfiability", help=msstr)
     parser_mr = subparsers_m.add_parser("allocate_orelse_reserve", help=mrstr)
+    parser_md = subparsers_m.add_parser("defer_orelse_reserve", help=mrstr)
     parser_fe = subparsers_m.add_parser("satisfiability", help=festr)
 
     #
@@ -469,6 +495,14 @@ def main():
         "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
     )
     parser_mr.set_defaults(func=match_reserve_action)
+
+    #
+    # Positional argument for match defer_orelse_reserve sub-command
+    #
+    parser_md.add_argument(
+        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
+    )
+    parser_md.set_defaults(func=match_defer_action)
 
     # Positional arguments for set-property sub-command
     #

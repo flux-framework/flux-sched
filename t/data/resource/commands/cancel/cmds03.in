@@ -1,0 +1,52 @@
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test018.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test019.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test020.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test021.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test022.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test023.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test024.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test025.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test026.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test027.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test028.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test029.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test030.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test031.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test032.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test033.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test034.yaml
+cancel 1
+cancel 2
+cancel 3
+cancel 4
+cancel 5
+cancel 6
+cancel 7
+cancel 8
+cancel 9
+cancel 10
+cancel 11
+cancel 12
+cancel 13
+cancel 14
+cancel 15
+cancel 16
+cancel 17
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test018.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test019.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test020.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test021.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test022.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test023.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test024.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test025.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test026.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test027.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test028.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test029.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test030.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test031.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test032.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test033.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test034.yaml
+quit

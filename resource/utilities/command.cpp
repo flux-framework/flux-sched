@@ -31,9 +31,9 @@ struct command_t {
 
 command_t commands[] = {
     { "match",  "m", cmd_match, "Allocate or reserve matching resources (subcmd: "
-"allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-"satisfiability: "
-"resource-query> match allocate jobspec"},
+"allocate | allocate_with_satisfiability | allocate_orelse_reserve | "
+"deferred_orelse_reserve) | satisfiability: "
+"resource-query> match allocate jobspec" },
     { "multi-match",  "M", cmd_match_multi, "Allocate or reserve for "
 "multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
 "allocate_orelse_reserve): "
@@ -200,6 +200,10 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx, int64_t jobid,
         rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
                                    MATCH_ALLOCATE_ORELSE_RESERVE,
                                    (int64_t)jobid, &at);
+    else if (cmd == "deferred_orelse_reserve")
+        rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
+                                   DEFERRED_ORELSE_RESERVE,
+                                   (int64_t)jobid, &at);
     else if (cmd == "satisfiability")
         rc2 = ctx->traverser->run (job, ctx->writers, match_op_t::
                                    MATCH_SATISFIABILITY,
@@ -252,6 +256,7 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx,
     }
     std::string subcmd = args[1];
     if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
+          || subcmd == "deferred_orelse_reserve"
           || subcmd == "allocate_with_satisfiability"
           || subcmd == "satisfiability")) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
@@ -289,6 +294,7 @@ int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx,
     }
     std::string subcmd = args[1];
     if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
+          || subcmd == "deferred_orelse_reserve"
           || subcmd == "allocate_with_satisfiability")) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;

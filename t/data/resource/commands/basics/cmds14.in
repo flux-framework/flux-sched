@@ -1,0 +1,11 @@
+# 4x cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[1]
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+quit
