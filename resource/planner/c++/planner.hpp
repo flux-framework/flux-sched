@@ -45,6 +45,7 @@ public:
     planner (const planner &o);
     planner &operator= (const planner &o);
     bool operator== (const planner &o) const;
+    bool operator!= (const planner &o) const;
     ~planner ();
     // Public class utilities
     int erase ();

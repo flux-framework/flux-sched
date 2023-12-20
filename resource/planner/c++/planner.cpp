@@ -163,6 +163,11 @@ bool planner::operator== (const planner &o) const
     return true;
 }
 
+bool planner::operator!= (const planner &o) const
+{
+    return !operator == (o);
+}
+
 planner::~planner ()
 {
     // Destructor is nothrow
