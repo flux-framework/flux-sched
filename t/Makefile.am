@@ -102,7 +102,8 @@ TESTS = \
     t6001-match-formats.t \
     t6002-graph-hwloc.t \
     t8001-util-ion-R.t \
-    t9001-golang-basic.t
+    t9001-golang-basic.t \
+    python/t10001-resourcegraph.py
 
 check_SCRIPTS = $(TESTS)
 
