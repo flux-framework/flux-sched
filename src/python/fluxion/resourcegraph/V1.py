@@ -71,7 +71,7 @@ class FluxionResourcePoolV1(Node):
         }
         if status != 0:  # reduce the footprint by only adding status if nonzero
             metadata["status"] = status
-        super(FluxionResourcePoolV1, self).__init__(vtxId, metadata=metadata)
+        super().__init__(vtxId, metadata=metadata)
 
     @staticmethod
     def constraints(resType):
@@ -88,7 +88,7 @@ class FluxionResourceRelationshipV1(Edge):
         parentId -- Parent vertex Id
         vtxId -- Child vertex Id
         """
-        super(FluxionResourceRelationshipV1, self).__init__(
+        super().__init__(
             parentId,
             vtxId,
             directed=True,
@@ -106,7 +106,7 @@ class FluxionResourceGraphV1(Graph):
         rv1 -- RV1 Dictorary that conforms to Flux RFC 20:
                    Resource Set Specification Version 1
         """
-        super(FluxionResourceGraphV1, self).__init__()
+        super().__init__()
         self._uniqId = 0
         self._rv1NoSched = rv1
         self._encode()
