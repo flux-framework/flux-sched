@@ -41,6 +41,7 @@ resource_pool_t::resource_pool_t (const resource_pool_t &o)
     id = o.id;
     uniq_id = o.uniq_id;
     rank = o.rank;
+    status = o.status;
     size = o.size;
     unit = o.unit;
     schedule = o.schedule;
@@ -57,6 +58,7 @@ resource_pool_t &resource_pool_t::operator= (const resource_pool_t &o)
     id = o.id;
     uniq_id = o.uniq_id;
     rank = o.rank;
+    status = o.status;
     size = o.size;
     unit = o.unit;
     schedule = o.schedule;
