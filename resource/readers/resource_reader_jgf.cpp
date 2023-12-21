@@ -139,6 +139,7 @@ void fetch_helper_t::scrub ()
     size = -1;
     uniq_id = -1;
     exclusive = -1;
+    status = resource_pool_t::status_t::UP;
     type = NULL;
     name = NULL;
     unit = NULL;
