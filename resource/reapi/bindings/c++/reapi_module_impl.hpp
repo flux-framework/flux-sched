@@ -25,7 +25,7 @@ namespace Flux {
 namespace resource_model {
 namespace detail {
 
-int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
+int reapi_module_t::match_allocate (void *h, const char *cmd,
                                     const std::string &jobspec,
                                     const uint64_t jobid, bool &reserved,
                                     std::string &R, int64_t &at, double &ov)
@@ -36,8 +36,6 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
     flux_future_t *f = NULL;
     const char *rset = NULL;
     const char *status = NULL;
-    const char *cmd = (orelse_reserve)? "allocate_orelse_reserve"
-                                      : "allocate_with_satisfiability";
 
     if (!fh || jobspec == "" || jobid > INT64_MAX) {
         errno = EINVAL;
@@ -68,6 +66,18 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
 out:
     flux_future_destroy (f);
     return rc;
+}
+
+int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
+                                    const std::string &jobspec,
+                                    const uint64_t jobid, bool &reserved,
+                                    std::string &R, int64_t &at, double &ov)
+{
+    const char *cmd = (orelse_reserve)? "allocate_orelse_reserve"
+                                      : "allocate_with_satisfiability";
+    
+    return match_allocate (h, cmd, jobspec, jobid, reserved, R, at, ov); 
+
 }
 
 void match_allocate_multi_cont (flux_future_t *f, void *arg)
@@ -101,7 +111,7 @@ void match_allocate_multi_cont (flux_future_t *f, void *arg)
 }
 
 int reapi_module_t::match_allocate_multi (void *h,
-                                          bool orelse_reserve,
+                                          const char *cmd,
                                           const char *jobs,
                                           queue_adapter_base_t *adapter)
 {
@@ -109,8 +119,6 @@ int reapi_module_t::match_allocate_multi (void *h,
     flux_t *fh = static_cast<flux_t *> (h);
     flux_future_t *f = nullptr;
 
-    const char *cmd = orelse_reserve ? "allocate_orelse_reserve"
-                                     : "allocate_with_satisfiability";
     if (!fh) {
         errno = EINVAL;
         goto error;
@@ -132,6 +140,16 @@ int reapi_module_t::match_allocate_multi (void *h,
 error:
     flux_future_destroy (f);
     return rc;
+}
+
+int reapi_module_t::match_allocate_multi (void *h,
+                                          bool orelse_reserve,
+                                          const char *jobs,
+                                          queue_adapter_base_t *adapter)
+{
+    const char *cmd = orelse_reserve ? "allocate_orelse_reserve"
+                                     : "allocate_with_satisfiability";
+    return match_allocate_multi (h, cmd, jobs, adapter);
 }
 
 int reapi_module_t::update_allocate (void *h, const uint64_t jobid,

@@ -133,6 +133,10 @@ public:
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,
                                std::string &R, int64_t &at, double &ov);
+    static int match_allocate (void *h, match_op_t match_op,
+                               const std::string &jobspec,
+                               const uint64_t jobid, bool &reserved,
+                               std::string &R, int64_t &at, double &ov);
     static int match_allocate_multi (void *h, bool orelse_reserve,
                                      const char *jobs,
                                      queue_adapter_base_t *adapter);
