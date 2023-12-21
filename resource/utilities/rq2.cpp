@@ -311,7 +311,7 @@ int match (resource_query_t &ctx, std::vector<std::string> &args,
 {
     int rc = 0;
     int64_t at = 0;
-    bool orelse_reserve = false;
+    match_op_t match_op;
     bool reserved = false;
     bool sat = true;
     bool matched = true;
@@ -330,17 +330,19 @@ int match (resource_query_t &ctx, std::vector<std::string> &args,
         return 0;
     }
     std::string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability"
-          || subcmd == "satisfiability")) {
+    if (subcmd == "allocate") {
+        match_op = match_op_t::MATCH_ALLOCATE;
+    } else if (subcmd == "allocate_orelse_reserve") {
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "allocate_with_satisfiability") {
+        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
+    } else if (subcmd == "satisfiability") {
+        match_op = match_op_t::MATCH_SATISFIABILITY;
+    } else {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
-
-    if (subcmd == "allocate_orelse_reserve") {
-        orelse_reserve = true;
-    }
-
+    
     uint64_t jobid = ctx.get_job_counter ();
     std::string &jobspec_fn = args[2];
     std::ifstream jobspec_in (jobspec_fn);
@@ -351,7 +353,7 @@ int match (resource_query_t &ctx, std::vector<std::string> &args,
     std::string jobspec ( (std::istreambuf_iterator<char> (jobspec_in) ),
                         (std::istreambuf_iterator<char> () ) );
 
-    rc = reapi_cli_t::match_allocate (&ctx, orelse_reserve, jobspec, jobid, reserved, R, at, ov);
+    rc = reapi_cli_t::match_allocate (&ctx, match_op, jobspec, jobid, reserved, R, at, ov);
 
     // check for match success 
     if ( (errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL))
