@@ -11,6 +11,7 @@ full_job="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/find/full.yaml"
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/find"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/find"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
+jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 query="../../resource/utilities/resource-query"
 
 skip_all_unless_have jq
@@ -307,6 +308,22 @@ EOF
     grep -v INFO down20.out > down20.filt.out &&
     core=$(cat down20.filt.out | jq " .[].children.core ") &&
     test ${core} = "\"0\""
+'
+
+test_expect_success 'setting vertex down in JGF same as set-status' '
+    cat > cmds021 <<-EOF &&
+	set-status /tiny0/rack0/node0/socket0/core0 down
+	find status=down
+	quit
+EOF
+    cat > cmds022 <<-EOF &&
+	find status=down
+	quit
+EOF
+    ${query} -L ${jgf} -f jgf -S CA -P high -t down21.out < cmds021 &&
+    sed "/\"uniq_id\": 8,/a \ \ \ \ \ \ \ \ \ \ \"status\": 1," ${jgf} > down21.json &&
+    ${query} -L ./down21.json -f jgf -S CA -P high -t down22.out < cmds022 &&
+    test_cmp down21.out down22.out
 '
 
 test_done
