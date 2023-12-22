@@ -37,11 +37,12 @@ func NewReapiClient() *ReapiClient {
 
 // Given an integer return code, convert to go error
 // Also provide a meaningful string to the developer user
-func retvalToError(code int, message string) error {
+func (cli *ReapiClient) retvalToError(code int, message string) error {
 	if code == 0 {
 		return nil
 	}
-	return fmt.Errorf(message+" %d", code)
+	msg := cli.GetErrMsg()
+	return fmt.Errorf(message+":%s %d", msg, code)
 }
 
 // HasContext exposes the private ctx, telling the caller if it is set
@@ -69,7 +70,7 @@ func (cli *ReapiClient) InitContext(jgf string, options string) (err error) {
 		),
 	)
 
-	return retvalToError(fluxerr, "issue initializing resource api client")
+	return cli.retvalToError(fluxerr, "issue initializing resource api client")
 }
 
 // MatchAllocate matches a jobspec to the "best" resources and either allocate
@@ -110,7 +111,7 @@ func (cli *ReapiClient) MatchAllocate(
 
 	allocated = C.GoString(r)
 
-	err = retvalToError(fluxerr, "issue resource api client matching allocate")
+	err = cli.retvalToError(fluxerr, "issue resource api client matching allocate")
 	return reserved, allocated, at, overhead, jobid, err
 
 }
@@ -143,7 +144,7 @@ func (cli *ReapiClient) UpdateAllocate(jobid int, r string) (at int64, overhead 
 
 	r_out = C.GoString(tmp_rout)
 
-	err = retvalToError(fluxerr, "issue resource api client updating allocate")
+	err = cli.retvalToError(fluxerr, "issue resource api client updating allocate")
 	return at, overhead, r_out, err
 }
 
@@ -160,7 +161,7 @@ func (cli *ReapiClient) Cancel(jobid int64, noent_ok bool) (err error) {
 	fluxerr := (int)(C.reapi_cli_cancel((*C.struct_reapi_cli_ctx)(cli.ctx),
 		(C.ulong)(jobid),
 		(C.bool)(noent_ok)))
-	return retvalToError(fluxerr, "issue resource api client cancel")
+	return cli.retvalToError(fluxerr, "issue resource api client cancel")
 }
 
 // Info gets the information on the allocation or reservation corresponding to jobid
@@ -188,7 +189,7 @@ func (cli *ReapiClient) Info(jobid int64) (reserved bool, at int64, overhead flo
 		(*C.long)(&at),
 		(*C.double)(&overhead)))
 
-	err = retvalToError(fluxerr, "issue resource api client info")
+	err = cli.retvalToError(fluxerr, "issue resource api client info")
 	return reserved, at, overhead, C.GoString(tmp_mode), err
 }
 
@@ -218,7 +219,7 @@ func (cli *ReapiClient) Stat() (v int64, e int64,
 		(*C.double)(&max),
 		(*C.double)(&avg)))
 
-	err = retvalToError(fluxerr, "issue resource api client stat")
+	err = cli.retvalToError(fluxerr, "issue resource api client stat")
 	return v, e, jobs, load, min, max, avg, err
 }
 

@@ -49,4 +49,5 @@ RUN apt-get update \
 RUN groupadd -g ${USER_GID} ${USERNAME} && \
     adduser --disabled-password --uid ${USER_UID} --gid ${USER_GID} --gecos "" ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
-USER $USERNAME
+
+# TODO clone flux-sched here / just remove from build when we can?
