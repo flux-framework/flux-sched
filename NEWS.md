@@ -1,3 +1,16 @@
+flux-sched version 0.32.0 - 2024-01-04
+--------------------------------------
+
+### New Features
+
+ * python: add a 'status' parameter to FluxionResourcePool (#1123)
+ * flux-ion-resource: move to src/cmd and install (#1127)
+
+### Fixes
+
+* Fix 'resource_pool_t' constructor and JGF reader (#1125)
+
+
 flux-sched version 0.31.0 - 2023-12-12
 --------------------------------------
 
