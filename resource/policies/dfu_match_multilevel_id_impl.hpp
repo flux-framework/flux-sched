@@ -55,7 +55,7 @@ int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
         return -1;
     }
     mul = add * m_multiply_by;
-    tie =  break_tie % m_multiply_by - 1;
+    tie = abs (break_tie % static_cast<int64_t> (m_multiply_by) - 1);
 
     if (mul > (std::numeric_limits<int64_t>::max () - tie)) {
         errno = EOVERFLOW;
