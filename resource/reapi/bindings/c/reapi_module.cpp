@@ -47,10 +47,10 @@ extern "C" void reapi_module_destroy (reapi_module_ctx_t *ctx)
     free (ctx);
 }
 
-extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
-                   bool orelse_reserve, const char *jobspec,
-                   const uint64_t jobid, bool *reserved,
-                   char **R, int64_t *at, double *ov)
+extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
+                                   const char *match_op, const char *jobspec,
+                                   const uint64_t jobid, bool *reserved,
+                                   char **R, int64_t *at, double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -60,7 +60,7 @@ extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
         errno = EINVAL;
         goto out;
     }
-    if ((rc = reapi_module_t::match_allocate (ctx->h, orelse_reserve, jobspec,
+    if ((rc = reapi_module_t::match_allocate (ctx->h, match_op, jobspec,
                                               jobid, *reserved,
                                               R_buf, *at, *ov)) < 0) {
         goto out;
@@ -73,6 +73,31 @@ extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
 
 out:
     return rc;
+}
+
+extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
+                                            bool orelse_reserve, const char *jobspec,
+                                            const uint64_t jobid, bool *reserved,
+                                            char **R, int64_t *at, double *ov)
+{
+    const char  *match_op = orelse_reserve ? "allocate_orelse_reserve" : 
+                                             "allocate";
+
+    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, 
+                                     R, at, ov);
+}
+
+extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,
+                                           const char *jobspec, double *ov)
+{
+    const char  *match_op = "satisfiability";
+    const uint64_t jobid =0;
+    bool *reserved;
+    char **R; 
+    int64_t *at; 
+
+    return reapi_module_match (ctx, match_op, jobspec, jobid,
+                               reserved, R, at, ov);
 }
 
 extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
