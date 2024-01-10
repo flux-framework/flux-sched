@@ -178,6 +178,11 @@ bool planner_multi::operator== (const planner_multi &o) const
     return true;
 }
 
+bool planner_multi::operator!= (const planner_multi &o) const
+{
+    return !operator == (o);
+}
+
 void planner_multi::erase ()
 {
     if (!m_planners.empty ()) {
