@@ -51,6 +51,7 @@ public:
     int erase ();
     int reinitialize (int64_t base_time, uint64_t duration);
     int restore_track_points ();
+    int update_total (uint64_t resource_total);
     
     // Resources and duration
     int64_t get_total_resources () const;

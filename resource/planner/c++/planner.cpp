@@ -229,6 +229,30 @@ int planner::restore_track_points ()
     return rc;
 }
 
+int planner::update_total (uint64_t resource_total)
+{
+    int64_t delta = resource_total - m_total_resources;
+    int64_t tmp = 0;
+    scheduled_point_t *point = nullptr;
+    if (delta == 0)
+        return 0;
+    m_total_resources = static_cast<int64_t> (resource_total);
+    point = m_sched_point_tree.get_state (m_plan_start);
+    while (point) {
+        // Prevent remaining from taking negative values. This should 
+        // reduce likelihood of errors when adding and removing spans.
+        // If the performance penalty is non-negligible we can 
+        // investigate letting remaining take negative values.
+        tmp = point->remaining + delta;
+        if (tmp >= 0)
+            point->remaining = tmp;
+        else
+            point->remaining = 0;
+        point = m_sched_point_tree.next (point);
+    }
+    return 0;
+}
+
 int64_t planner::get_total_resources () const
 {
     return m_total_resources;
