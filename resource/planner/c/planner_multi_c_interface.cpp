@@ -32,7 +32,8 @@ static void fill_iter_request (planner_multi_t *ctx, struct request_multi *iter,
     iter->on_or_after = at;
     iter->duration = duration;
     for (i = 0; i < len; ++i)
-        iter->counts[i] = resources[i];
+        iter->counts[ctx->plan_multi->get_resource_type_at (i)] =
+                resources[i];
 }
 
 extern "C" planner_multi_t *planner_multi_new (
@@ -261,6 +262,7 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
     size_t i = 0;
     int unmet = 0;
     int64_t t = -1;
+    std::string type;
 
     if (!ctx) {
         errno = EINVAL;
@@ -272,9 +274,10 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
                         ctx->plan_multi->get_planner_at (static_cast<size_t> (0)))) == -1)
             break;
         for (i = 1; i < ctx->plan_multi->get_planners_size (); ++i) {
+            type = ctx->plan_multi->get_resource_type_at (i);
             if ((unmet = planner_avail_during (ctx->plan_multi->get_planner_at (i), t,
                                                ctx->plan_multi->get_iter ().duration,
-                                               ctx->plan_multi->get_iter ().counts[i])) == -1)
+                                               ctx->plan_multi->get_iter ().counts.at (type))) == -1)
                 break;
         }
     } while (unmet);

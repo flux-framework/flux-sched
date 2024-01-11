@@ -50,7 +50,7 @@ planner_multi::planner_multi (int64_t base_time, uint64_t duration,
            errno = ENOMEM;
            throw std::bad_alloc ();
         }
-        m_iter.counts.push_back (0);
+        m_iter.counts[type] = 0;
         m_types_totals_planners.push_back ({type, resource_totals[i], p});
     }
     m_span_counter = 0;
@@ -82,8 +82,8 @@ planner_multi::planner_multi (const planner_multi &o)
         m_types_totals_planners.push_back ({iter.resource_type,
                                             iter.resource_total, np});
     }
-    m_span_lookup = o.m_span_lookup;
     m_iter = o.m_iter;
+    m_span_lookup = o.m_span_lookup;
     m_span_lookup_iter = o.m_span_lookup_iter;
     m_span_counter = o.m_span_counter;
 }
@@ -119,8 +119,8 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
         m_types_totals_planners.push_back ({iter.resource_type,
                                             iter.resource_total, np});
     }
-    m_span_lookup = o.m_span_lookup;
     m_iter = o.m_iter;
+    m_span_lookup = o.m_span_lookup;
     m_span_lookup_iter = o.m_span_lookup_iter;
     m_span_counter = o.m_span_counter;
 

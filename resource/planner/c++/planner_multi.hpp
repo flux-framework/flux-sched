@@ -12,6 +12,7 @@
 #define PLANNER_MULTI_HPP
 
 #include "planner.hpp"
+#include <unordered_map>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>
@@ -20,7 +21,7 @@
 struct request_multi {
     int64_t on_or_after = 0;
     uint64_t duration = 0;
-    std::vector<int64_t> counts;
+    std::unordered_map<std::string, int64_t> counts;
 };
 
 struct planner_multi_meta {
