@@ -292,6 +292,28 @@ size_t planner_multi_span_size (planner_multi_t *ctx);
 */
 bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs);
 
+/*! Update the counts and resource types to support elasticity.
+ *
+ *  \param ctx          opaque multi-planner context returned
+ *                      from planner_multi_new.
+ *  \param resource_totals
+ *                      64-bit unsigned integer array of size len where each
+ *                      element contains the total count of available resources
+ *                      of a single resource type.
+ *  \param resource_types
+ *                      string array of size len where each element contains
+ *                      the resource type corresponding to each corresponding
+ *                      element in the resource_totals array.
+ *  \param len          length of resource_counts and resource_types arrays.
+ *  \return             0 on success; -1 on an error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ */
+int planner_multi_update (planner_multi_t *ctx,
+                          const uint64_t *resource_totals,
+                          const char **resource_types,
+                          size_t len);
+
+
 #ifdef __cplusplus
 }
 #endif

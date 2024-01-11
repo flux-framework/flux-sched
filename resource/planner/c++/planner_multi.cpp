@@ -182,6 +182,48 @@ planner_multi::~planner_multi ()
     erase ();
 }
 
+void planner_multi::add_planner (int64_t base_time, uint64_t duration,
+                                 const uint64_t resource_total,
+                                 const char *resource_type, size_t i)
+{
+    std::string type;
+    planner_t *p = nullptr;
+
+    try {
+        type = std::string (resource_type);
+        p = new planner_t (base_time, duration,
+                           resource_total,
+                           resource_type);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw std::bad_alloc ();
+    }
+    m_iter.counts[type] = 0;
+    if (i > m_types_totals_planners.size ())
+        m_types_totals_planners.push_back ({type, resource_total, p});
+    else {
+        auto it = m_types_totals_planners.begin () + i;
+        m_types_totals_planners.insert (
+                        it, planner_multi_meta{type, resource_total, p});
+    }
+    
+}
+
+void planner_multi::delete_planners (const std::unordered_set<std::string> &rtypes)
+{
+    auto &by_res = m_types_totals_planners.get<res_type> ();
+    for (auto iter = by_res.begin (); iter != by_res.end ();) {
+        if (rtypes.find (iter->resource_type) == rtypes.end ()) {
+            // need to remove from request_multi
+            m_iter.counts.erase (iter->resource_type);
+            // Trigger planner destructor
+            delete iter->planner;
+            iter = by_res.erase (iter);
+        } else
+            ++iter;
+    }
+}
+
 planner_t *planner_multi::get_planner_at (size_t i) const
 {
     return m_types_totals_planners.at (i).planner;
@@ -191,6 +233,32 @@ planner_t *planner_multi::get_planner_at (const char *type) const
 {
     auto &by_res = m_types_totals_planners.get<res_type> ();
     return by_res.find (std::string (type))->planner;
+}
+
+void planner_multi::update_planner_index (const char *type, size_t i)
+{
+    std::string rtype = std::string (type);
+    auto by_res = m_types_totals_planners.get<res_type> ().find (rtype);
+    auto new_idx = m_types_totals_planners.begin () + i;
+    auto curr_idx = m_types_totals_planners.get<idx> ().iterator_to (*by_res);
+    // noop if new_idx == curr_idx
+    m_types_totals_planners.relocate (new_idx, curr_idx);
+}
+
+int planner_multi::update_planner_total (uint64_t total, size_t i)
+{
+    m_types_totals_planners.at (i).resource_total = total;
+    return m_types_totals_planners.at (i).planner->plan->update_total (total);
+}
+
+bool planner_multi::planner_at (const char *type) const
+{
+    auto &by_res = m_types_totals_planners.get<res_type> ();
+    auto result = by_res.find (std::string (type));
+    if (result == by_res.end ())
+        return false;
+    else
+        return true;
 }
 
 size_t planner_multi::get_planners_size () const

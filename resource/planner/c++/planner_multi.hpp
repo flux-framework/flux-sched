@@ -13,6 +13,7 @@
 
 #include "planner.hpp"
 #include <unordered_map>
+#include <unordered_set>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>
@@ -65,6 +66,9 @@ public:
     // Public getters and setters
     planner_t *get_planner_at (size_t i) const;
     planner_t *get_planner_at (const char *type) const;
+    void update_planner_index (const char *type, size_t i);
+    int update_planner_total (uint64_t total, size_t i);
+    bool planner_at (const char *type) const;
     size_t get_planners_size () const;
     int64_t get_resource_total_at (size_t i) const;
     int64_t get_resource_total_at (const char *type) const;
@@ -81,6 +85,12 @@ public:
     uint64_t get_span_counter ();
     void set_span_counter (uint64_t sc);
     void incr_span_counter ();
+    void add_planner (int64_t base_time, uint64_t duration,
+                      const uint64_t resource_total,
+                      const char *resource_type, size_t i);
+    // Assuming small number of resources,
+    // could try set, too
+    void delete_planners (const std::unordered_set<std::string> &rtypes);
 
 private:
     multi_container m_types_totals_planners;
