@@ -16,8 +16,7 @@ fi
 test $(flux resource list -no {nnodes}) -eq 4 || die "test requires 4 nodes"
 
 log "Unloading modules..."
-flux module remove sched-fluxion-qmanager
-flux module remove sched-fluxion-resource
+flux module remove sched-simple
 flux module remove resource
 
 log "Amending instance resource set with properties: batch, debug..."
