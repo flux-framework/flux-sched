@@ -35,66 +35,53 @@ planner_multi::planner_multi (int64_t base_time, uint64_t duration,
                               const char **resource_types, size_t len)
 {
     size_t i = 0;
-    char *type = nullptr;
+    std::string type;
     planner_t *p = nullptr;
 
     m_iter.on_or_after = 0;
     m_iter.duration = 0;
     for (i = 0; i < len; ++i) {
-        m_resource_totals.push_back (resource_totals[i]);
-        if ( (type = strdup (resource_types[i])) == nullptr) {
-            errno = ENOMEM;
-            throw std::runtime_error ("ERROR in strdup\n");
-        }
-        m_resource_types.push_back (type);
-        m_iter.counts.push_back (0);
         try {
-           p = new planner_t (base_time, duration,
-                              resource_totals[i],
-                              resource_types[i]);
+            type = std::string (resource_types[i]);
+            p = new planner_t (base_time, duration,
+                               resource_totals[i],
+                               resource_types[i]);
         } catch (std::bad_alloc &e) {
            errno = ENOMEM;
+           throw std::bad_alloc ();
         }
-        if (p == nullptr)
-           throw std::runtime_error ("ERROR in planner_multi ctor\n");
-        m_planners.push_back (p);
+        m_iter.counts.push_back (0);
+        m_types_totals_planners.push_back ({type, resource_totals[i], p});
     }
     m_span_counter = 0;
-
 }
 
 planner_multi::planner_multi (const planner_multi &o)
 {
-    for (size_t i = 0; i < o.m_planners.size (); ++i) {
+    for (auto iter : o.m_types_totals_planners) {
         planner_t *np = nullptr;
-        if (o.m_planners[i]) {
+        if (iter.planner) {
             try {
-                np = new planner_t (*(o.m_planners[i]->plan));
+                np = new planner_t (*(iter.planner->plan));
             } catch (std::bad_alloc &e) {
                 errno = ENOMEM;
             }
+            // planner copy ctor can throw runtime_error, resulting in nullptr
             if (np == nullptr)
-                throw std::runtime_error ("ERROR in planner_copy\n");
+                throw std::runtime_error ("ERROR in planner copy ctor"
+                                          " in planner_multi copy"
+                                          " constructor\n");
         } else {
             try {
                 np = new planner_t ();
             } catch (std::bad_alloc &e) {
                 errno = ENOMEM;
+                throw std::bad_alloc ();
             }
-            if (np == nullptr)
-                throw std::runtime_error ("ERROR in planner_new_empty\n");
         }
-        m_planners.push_back (np);
+        m_types_totals_planners.push_back ({iter.resource_type,
+                                            iter.resource_total, np});
     }
-    char *type = nullptr;
-    for (size_t i = 0; i < o.m_resource_types.size (); ++i) {
-        if ( (type = strdup (o.m_resource_types[i])) == nullptr) {
-            errno = ENOMEM;
-            throw std::runtime_error ("ERROR in strdup; ctor\n");
-        }
-        m_resource_types.push_back (type);
-    }
-    m_resource_totals = o.m_resource_totals;
     m_span_lookup = o.m_span_lookup;
     m_iter = o.m_iter;
     m_span_lookup_iter = o.m_span_lookup_iter;
@@ -106,38 +93,32 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
     // Erase *this so the vectors are empty
     erase ();
 
-    for (size_t i = 0; i < o.m_planners.size (); ++i) {
+    for (auto iter : o.m_types_totals_planners) {
         planner_t *np = nullptr;
-        if (o.m_planners[i]) {
+        if (iter.planner) {
             try {
                 // Invoke copy constructor to avoid the assignment
-                // overload erase () penalty.
-                np = new planner_t (*(o.m_planners[i]->plan));
+                // operator erase () penalty.
+                np = new planner_t (*(iter.planner->plan));
             } catch (std::bad_alloc &e) {
                 errno = ENOMEM;
             }
+            // planner copy ctor can throw runtime_error, resulting in nullptr
             if (np == nullptr)
-                throw std::runtime_error ("ERROR in planner_copy\n");
+                throw std::runtime_error ("ERROR in planner copy ctor"
+                                          " in planner_multi assn"
+                                          " operator\n");
         } else {
             try {
                 np = new planner_t ();
             } catch (std::bad_alloc &e) {
                 errno = ENOMEM;
+                throw std::bad_alloc ();
             }
-            if (np == nullptr)
-                throw std::runtime_error ("ERROR in planner_new_empty\n");
         }
-        m_planners.push_back (np);
+        m_types_totals_planners.push_back ({iter.resource_type,
+                                            iter.resource_total, np});
     }
-    char *type = nullptr;
-    for (size_t i = 0; i < o.m_resource_types.size (); ++i) {
-        if ( (type = strdup (o.m_resource_types[i])) == nullptr) {
-            errno = ENOMEM;
-            throw std::runtime_error ("ERROR in strdup; assn overload\n");
-        }
-        m_resource_types.push_back (type);
-    }
-    m_resource_totals = o.m_resource_totals;
     m_span_lookup = o.m_span_lookup;
     m_iter = o.m_iter;
     m_span_lookup_iter = o.m_span_lookup_iter;
@@ -150,8 +131,6 @@ bool planner_multi::operator== (const planner_multi &o) const
 {
     if (m_span_counter != o.m_span_counter)
         return false;
-    if (m_resource_totals != o.m_resource_totals)
-        return false;
     if (m_span_lookup != o.m_span_lookup)
         return false;
     if (m_iter.on_or_after != o.m_iter.on_or_after)
@@ -161,17 +140,19 @@ bool planner_multi::operator== (const planner_multi &o) const
     if (m_iter.counts != o.m_iter.counts)
         return false;
 
-    if (m_resource_types.size () != o.m_resource_types.size ())
+    if (m_types_totals_planners.size () != o.m_types_totals_planners.size ())
         return false;
-    for (size_t i = 0; i < m_resource_types.size (); ++i) {
-        if (strcmp (m_resource_types[i], o.m_resource_types[i]) != 0)
+    auto &o_by_type = o.m_types_totals_planners.get<res_type> ();
+    auto &by_type = m_types_totals_planners.get<res_type> ();
+    for (auto data : by_type) {
+        auto o_data = o_by_type.find (data.resource_type);
+        if (o_data == o_by_type.end ())
             return false;
-    }
-
-    if (m_planners.size () != o.m_planners.size ())
-        return false;
-    for (size_t i = 0; i < m_planners.size (); ++i) {
-        if (!(*(m_planners[i]->plan) == *(o.m_planners[i]->plan)))
+        if (data.resource_type != o_data->resource_type)
+            return false;
+        if (data.resource_total != o_data->resource_total)
+            return false;
+        if (*(data.planner->plan) != *(o_data->planner->plan))
             return false;
     }
 
@@ -185,28 +166,15 @@ bool planner_multi::operator!= (const planner_multi &o) const
 
 void planner_multi::erase ()
 {
-    if (!m_planners.empty ()) {
-        size_t i = 0;
-        for (i = 0; i < m_planners.size (); ++i) {
-            if (m_planners[i]) {
-                delete m_planners[i];
-                m_planners[i] = nullptr;
+    if (!m_types_totals_planners.empty ()) {
+        for (auto iter : m_types_totals_planners) {
+            if (iter.planner) {
+                delete iter.planner;
+                iter.planner = nullptr;
             }
         }
     }
-    if (!m_resource_types.empty ()) {
-        size_t i = 0;
-        for (i = 0; i < m_resource_types.size (); ++i) {
-            if (m_resource_types[i]) {
-                free ((void *)m_resource_types[i]);
-                m_resource_types[i] = nullptr;
-            }
-        }
-    }
-    m_planners.clear ();
-    m_resource_types.clear ();
-    m_resource_totals.clear ();
-    m_span_lookup.clear ();
+    m_types_totals_planners.clear ();
 }
 
 planner_multi::~planner_multi ()
@@ -214,49 +182,40 @@ planner_multi::~planner_multi ()
     erase ();
 }
 
-planner_t *planner_multi::get_planners_at (size_t i)
+planner_t *planner_multi::get_planner_at (size_t i) const
 {
-    return m_planners.at (i);
+    return m_types_totals_planners.at (i).planner;
 }
 
-std::vector<planner_t *> &planner_multi::get_planners ()
+planner_t *planner_multi::get_planner_at (const char *type) const
 {
-    return m_planners;
+    auto &by_res = m_types_totals_planners.get<res_type> ();
+    return by_res.find (std::string (type))->planner;
 }
 
-size_t planner_multi::get_planners_size ()
+size_t planner_multi::get_planners_size () const
 {
-    return m_planners.size ();
+    return m_types_totals_planners.size ();
 }
 
-void planner_multi::resource_totals_push_back (const uint64_t resource_total)
+int64_t planner_multi::get_resource_total_at (size_t i) const
 {
-    m_resource_totals.push_back (resource_total);
+    return m_types_totals_planners.at (i).resource_total;
 }
 
-uint64_t planner_multi::get_resource_totals_at (size_t i)
+int64_t planner_multi::get_resource_total_at (const char *type) const
 {
-    return m_resource_totals.at (i);
+    auto &by_res = m_types_totals_planners.get<res_type> ();
+    auto result = by_res.find (std::string (type));
+    if (result == by_res.end ())
+        return -1;
+    else
+        return result->resource_total;
 }
 
-void planner_multi::resource_types_push_back (const char * resource_type)
+const char *planner_multi::get_resource_type_at (size_t i) const
 {
-    m_resource_types.push_back (resource_type);
-}
-
-const std::vector<const char *> planner_multi::get_resource_types ()
-{
-    return m_resource_types;
-}
-
-const char *planner_multi::get_resource_types_at (size_t i)
-{
-    return m_resource_types.at (i);
-}
-
-size_t planner_multi::get_resource_types_size ()
-{
-    return m_resource_types.size ();
+    return m_types_totals_planners.at (i).resource_type.c_str ();
 }
 
 struct request_multi &planner_multi::get_iter ()

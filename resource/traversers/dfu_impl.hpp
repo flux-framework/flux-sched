@@ -510,10 +510,11 @@ int dfu_impl_t::count_relevant_types (planner_multi_t *plan,
 {
     int rc = 0;
     size_t len = planner_multi_resources_len (plan);
-    const char **resource_types = planner_multi_resource_types (plan);
+    const char *type = nullptr;
     for (unsigned int i = 0; i < len; ++i) {
-        if (lookup.find (resource_types[i]) != lookup.end ()) {
-            uint64_t n = (uint64_t)lookup.at (resource_types[i]);
+        type = planner_multi_resource_type_at (plan, i);
+        if (lookup.find (type) != lookup.end ()) {
+            uint64_t n = (uint64_t)lookup.at (type);
             resource_counts.push_back (n);
         } else {
             resource_counts.push_back (0);
