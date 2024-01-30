@@ -82,23 +82,28 @@ func (cli *ReapiClient) InitContext(jgf string, options string) (err error) {
 
 // Match matches a jobspec to the "best" resources based on match option.
 
-//	The best resources are determined by the selected match policy.
+// The best resources are determined by the selected match policy.
 //
-//	\param match_op  String to indicate the match type. Options include:
-//					 allocate, allocate_orelse_reserve, satisfiability,
-// 				     allocate_with_satsfiability
+//	\param match_op	 String to indicate the match type. Options include:
+//	                 allocate, allocate_orelse_reserve, satisfiability,
+//					 allocate_with_satsfiability
+//
 //	\param jobspec   jobspec string.
 //	\param jobid     jobid of the uint64_t type.
 //	\param reserved  Boolean into which to return true if this job has been
 //	                 reserved instead of allocated.
+//
 //	\param R         String into which to return the resource set either
-//	                 allocated or reserved.
+//					 allocated or reserved.
+//
 //	\param at        If allocated, 0 is returned; if reserved, actual time
-//	                 at which the job is reserved.
-//	\param ov        Double into which to return performance overhead
-//	                 in terms of elapse time needed to complete
-//	                 the match operation.
-//	\return          0 on success; -1 on error.
+//					 at which the job is reserved.
+//
+//	\param ov		 Double into which to return performance overhead
+//	 				 in terms of elapse time needed to complete
+//					 the match operation.
+//
+// \return          0 on success; -1 on error.
 func (cli *ReapiClient) Match(
 	match_op string,
 	jobspec string,

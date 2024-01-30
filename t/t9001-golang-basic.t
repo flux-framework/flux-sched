@@ -21,6 +21,7 @@ jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 jobspec1="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 jobspec2="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test003.yaml"
 main="../../resource/reapi/bindings/go/src/test/main"
+root="../../resource/reapi/bindings/go/src"
 
 test001_desc="match allocate 1 slot: 1 socket: 1 core (pol=default)"
 test_expect_success "${test001_desc}" '
@@ -35,5 +36,13 @@ test_expect_success "${test002_desc}" '
     sed -i -E "s/, 0\.[0-9]+//g" 002.R.out &&
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
+
+# Assume running in subshell, don't need to chdir back
+test003_desc="test pkg/types/types_test.go"
+test_expect_success "${test003_desc}" '
+    cd ${root}/pkg/types
+    go test -v
+'
+
 
 test_done
