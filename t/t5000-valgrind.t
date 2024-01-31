@@ -7,7 +7,7 @@ test -n "$FLUX_TESTS_LOGFILE" && set -- "$@" --logfile
 . `dirname $0`/sharness.sh
 
 #  Do not run valgrind test by default unless FLUX_ENABLE_VALGRIND_TEST
-#   is set in environment (e.g. by CI), or the test run run with -d, --debug
+#  is set in environment (e.g. by CI), or the test run run with -d, --debug
 #
 if test -z "$FLUX_ENABLE_VALGRIND_TEST" && test "$debug" = ""; then
     skip_all='skipping valgrind tests since FLUX_ENABLE_VALGRIND_TEST not set'
@@ -23,7 +23,7 @@ if ! test_have_prereq NO_ASAN; then
     test_done
 fi
 
-# Do not run test by default unless valgrind/valgrind.h was found, since
+#  Do not run test by default unless valgrind/valgrind.h was found, since
 #  this has been known to introduce false positives (#1097). However, allow
 #  run to be forced on the cmdline with -d, --debug.
 #
@@ -48,7 +48,7 @@ test_expect_success \
 	run_timeout 900 \
 	flux start -s ${VALGRIND_NBROKERS} \
 		--killer-timeout=120 \
-		--wrap=libtool,e,${VALGRIND} \
+		--wrap=${VALGRIND} \
 		--wrap=--tool=memcheck \
 		--wrap=--leak-check=full \
 		--wrap=--gen-suppressions=all \
@@ -60,4 +60,42 @@ test_expect_success \
 		--wrap=--suppressions=$VALGRIND_SUPPRESSIONS \
 		 ${VALGRIND_WORKLOAD}
 '
+
+# The Valgrind test above doesn't detect memory leaks in planner or schema
+test_expect_success \
+  "valgrind reports no new errors on planner test 01" '
+		${VALGRIND} \
+		--tool=memcheck \
+		--leak-check=full \
+		--error-exitcode=1 \
+		${SHARNESS_BUILD_DIRECTORY}/resource/planner/test/planner_test01
+'
+
+test_expect_success \
+  "valgrind reports no new errors on planner test 02" '
+		${VALGRIND} \
+		--tool=memcheck \
+		--leak-check=full \
+		--error-exitcode=1 \
+		${SHARNESS_BUILD_DIRECTORY}/resource/planner/test/planner_test02
+'
+
+test_expect_success \
+  "valgrind reports no new errors on schema test 01" '
+		${VALGRIND} \
+		--tool=memcheck \
+		--leak-check=full \
+		--error-exitcode=1 \
+		${SHARNESS_BUILD_DIRECTORY}/resource/schema/test/schema_test01
+'
+
+test_expect_success \
+  "valgrind reports no new errors on schema test 02" '
+		${VALGRIND} \
+		--tool=memcheck \
+		--leak-check=full \
+		--error-exitcode=1 \
+		${SHARNESS_BUILD_DIRECTORY}/resource/schema/test/schema_test02
+'
+
 test_done
