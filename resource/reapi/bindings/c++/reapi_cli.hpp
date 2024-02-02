@@ -130,10 +130,6 @@ private:
 
 class reapi_cli_t : public reapi_t {
 public:  
-    static int match_allocate (void *h, bool orelse_reserve,
-                               const std::string &jobspec,
-                               const uint64_t jobid, bool &reserved,
-                               std::string &R, int64_t &at, double &ov);
     static int match_allocate (void *h, match_op_t match_op,
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,

@@ -163,19 +163,6 @@ out:
     return rc;
 }
 
-int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
-                                 const std::string &jobspec,
-                                 const uint64_t jobid, bool &reserved,
-                                 std::string &R, int64_t &at, double &ov)
-{
-    match_op_t match_op = orelse_reserve ? 
-                          match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE : 
-                          match_op_t::MATCH_ALLOCATE;
-    
-    return match_allocate (h, match_op, jobspec, jobid, reserved,
-                           R, at, ov);
-}
-
 int reapi_cli_t::update_allocate (void *h, const uint64_t jobid,
                                   const std::string &R, int64_t &at, double &ov,
                                   std::string &R_out)
