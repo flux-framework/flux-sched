@@ -193,7 +193,6 @@ AC_CONFIG_FILES([Makefile
   src/cmd/Makefile
   src/python/Makefile
   src/python/fluxion/Makefile
-  src/shell/Makefile
   resource/Makefile
   resource/planner/Makefile
   resource/planner/c/Makefile
