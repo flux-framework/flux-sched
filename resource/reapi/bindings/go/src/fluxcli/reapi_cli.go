@@ -11,19 +11,14 @@
 package fluxcli
 
 /*
-#include "reapi_cli.h"
+#include "resource/reapi/bindings/c/reapi_cli.h"
 */
 import "C"
 import (
 	"fmt"
 	"unsafe"
-)
 
-const (
-	matchAllocate                = "allocate"
-	matchAllocateOrelseReserve   = "allocate_orelse_reserve"
-	matchAllocateWSatisfiability = "allocate_with_satisfiability"
-	matchSatisfiability          = "satisfiability"
+	"github.com/flux-framework/flux-sched/resource/reapi/bindings/go/src/pkg/types"
 )
 
 type (
@@ -105,14 +100,14 @@ func (cli *ReapiClient) InitContext(jgf string, options string) (err error) {
 //
 // \return          0 on success; -1 on error.
 func (cli *ReapiClient) Match(
-	match_op string,
+	match_op types.MatchType,
 	jobspec string,
 ) (reserved bool, allocated string, at int64, overhead float64, jobid uint64, err error) {
 	var r = C.CString("")
 	spec := C.CString(jobspec)
 
 	fluxerr := (int)(C.reapi_cli_match((*C.struct_reapi_cli_ctx)(cli.ctx),
-		(C.CString)(match_op),
+		C.match_op_t(match_op),
 		spec,
 		(*C.ulong)(&jobid),
 		(*C.bool)(&reserved),
@@ -154,12 +149,12 @@ func (cli *ReapiClient) MatchAllocate(
 	orelse_reserve bool,
 	jobspec string,
 ) (reserved bool, allocated string, at int64, overhead float64, jobid uint64, err error) {
-	var match_op string
+	var match_op types.MatchType
 
 	if orelse_reserve {
-		match_op = matchAllocateOrelseReserve
+		match_op = types.MatchAllocateOrElseReserve
 	} else {
-		match_op = matchAllocate
+		match_op = types.MatchAllocate
 	}
 
 	return cli.Match(match_op, jobspec)

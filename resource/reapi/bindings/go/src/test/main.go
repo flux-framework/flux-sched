@@ -16,6 +16,7 @@ import (
 	"os"
 
 	"github.com/flux-framework/flux-sched/resource/reapi/bindings/go/src/fluxcli"
+	"github.com/flux-framework/flux-sched/resource/reapi/bindings/go/src/pkg/types"
 )
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 	}
 	printOutput(reserved, allocated, at, jobid, err)
 
-	reserved, allocated, at, overhead, jobid, err = cli.Match("allocate", string(jobspec))
+	reserved, allocated, at, overhead, jobid, err = cli.Match(types.MatchAllocate, string(jobspec))
 	fmt.Println("Errors so far: \n", cli.GetErrMsg())
 
 	if err != nil {
@@ -70,7 +71,7 @@ func main() {
 	}
 	printOutput(reserved, allocated, at, jobid, err)
 
-	reserved, allocated, at, overhead, jobid, err = cli.Match("allocate_orelse_reserve", string(jobspec))
+	reserved, allocated, at, overhead, jobid, err = cli.Match(types.MatchAllocateOrElseReserve, string(jobspec))
 	fmt.Println("Errors so far: \n", cli.GetErrMsg())
 
 	if err != nil {
@@ -79,7 +80,7 @@ func main() {
 	}
 	printOutput(reserved, allocated, at, jobid, err)
 
-	reserved, allocated, at, overhead, jobid, err = cli.Match("allocate_with_satisfiability", string(jobspec))
+	reserved, allocated, at, overhead, jobid, err = cli.Match(types.MatchAllocateWithSatisfiability, string(jobspec))
 	fmt.Println("Errors so far: \n", cli.GetErrMsg())
 
 	if err != nil {

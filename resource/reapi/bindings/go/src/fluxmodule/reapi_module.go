@@ -10,18 +10,13 @@
 
 package fluxcli
 
-// #include "reapi_module.h"
+// #include "resource/reapi/bindings/c/reapi_module.h"
 import "C"
 import (
 	"fmt"
 	"unsafe"
-)
 
-const (
-	matchAllocate                = "allocate"
-	matchAllocateOrelseReserve   = "allocate_orelse_reserve"
-	matchAllocateWSatisfiability = "allocate_with_satisfiability"
-	matchSatisfiability          = "satisfiability"
+	"github.com/flux-framework/flux-sched/resource/reapi/bindings/go/src/pkg/types"
 )
 
 type (
@@ -62,7 +57,7 @@ func (m *ReapiModule) Destroy() {
 // int reapi_module_match_allocate (reapi_module_ctx_t *ctx, char *match_op,
 // at: is the scheduled time "at"
 func (m *ReapiModule) Match(
-	match_op string,
+	match_op types.MatchType,
 	jobspec string,
 	jobid int,
 ) (reserved bool, allocated string, at int64, overhead float64, err error) {
@@ -73,7 +68,7 @@ func (m *ReapiModule) Match(
 	spec := C.CString(jobspec)
 
 	fluxerr := (int)(C.reapi_module_match((*C.struct_reapi_module_ctx)(m.ctx),
-		(C.CString)(match_op),
+		C.match_op_t(match_op),
 		spec,
 		(C.ulong)(jobid),
 		(*C.bool)(&reserved),
@@ -99,9 +94,9 @@ func (m *ReapiModule) MatchAllocate(
 	var match_op string
 
 	if orelse_reserve {
-		match_op = matchAllocateOrelseReserve
+		match_op =types.MatchAllocateOrElseReserve
 	} else {
-		match_op = matchAllocate
+		match_op = types.MatchAllocate
 	}
 
 	return m.Match(match_op, jobspec, jobid)
@@ -112,7 +107,7 @@ func (m *ReapiModule) MatchSatisfy(
 	jobspec string,
 	jobid int,
 ) (reserved bool, allocated string, at int64, overhead float64, err error) {
-	match_op := matchSatisfiability
+	match_op := types.MatchSatisfiability
 	return m.Match(match_op, jobspec, jobid)
 }
 

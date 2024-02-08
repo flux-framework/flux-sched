@@ -59,8 +59,8 @@ func TestAsInt(t *testing.T) {
 		{description: "unknown", input: MatchUnknown, expected: 0},
 		{description: "allocate", input: MatchAllocate, expected: 1},
 		{description: "satisfiability", input: MatchSatisfiability, expected: 4},
-		{description: "allocate or else reserve", input: MatchAllocateOrElseReserve, expected: 2},
-		{description: "allocate with satisfiability", input: MatchAllocateWithSatisfiability, expected: 3},
+		{description: "allocate or else reserve", input: MatchAllocateOrElseReserve, expected: 3},
+		{description: "allocate with satisfiability", input: MatchAllocateWithSatisfiability, expected: 2},
 	}
 	for _, item := range tests {
 		t.Run(item.description, func(t *testing.T) {

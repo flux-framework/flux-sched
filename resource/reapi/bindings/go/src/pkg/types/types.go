@@ -11,31 +11,23 @@ package types
 \*****************************************************************************/
 
 /*
-#include "reapi_cli.h"
-
-typedef enum {
-	MATCH_UNKNOWN = 0
-	MATCH_ALLOCATE = 1
-	MATCH_ALLOCATE_ORELSE_RESERVE = 2
-	MATCH_ALLOCATE_W_SATISFIABILITY = 3
-	MATCH_SATISFIABILITY = 4
-} match_op_enum;
+#include "resource/reapi/bindings/c/reapi_cli.h"
 
 /* usage:
 mt := MatchType
-C.match_op_enum(mt)
+C.match_op_t(mt)
 */
 
 import "C"
 
 type MatchType int
 
-// MatchUnknown serves as a sentinal value that it's undefined
+// MatchUnknown serves as a sentinel value that it's undefined
 const (
 	MatchUnknown                    MatchType = iota // unknown
 	MatchAllocate                                    // allocate
-	MatchAllocateOrElseReserve                       // allocate or else reserve
 	MatchAllocateWithSatisfiability                  // allocate with satisfiability
+	MatchAllocateOrElseReserve                       // allocate or else reserve
 	MatchSatisfiability                              // satisfiability
 )
 
