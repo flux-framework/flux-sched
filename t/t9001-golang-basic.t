@@ -14,6 +14,8 @@ if ! which go >/dev/null; then
     test_done
 fi
 
+export LD_LIBRARY_PATH=../../resource/reapi/bindings
+
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/golang"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 jobspec1="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"

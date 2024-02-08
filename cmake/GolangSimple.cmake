@@ -11,11 +11,8 @@ function(BUILD_GO_PROGRAM NAME MAIN_SRC CGO_CFLAGS CGO_LIBRARY_FLAGS)
   get_filename_component(MAIN_SRC_ABS ${MAIN_SRC} ABSOLUTE)
   add_custom_target(${NAME})
 
-  # IMPORTANT: the trick to getting *spaces* to render in COMMAND is to convert them to ";"
-  # string(REPLACE <match-string> <replace-string> <out-var> <input>...)
-  STRING(REPLACE " " ";" CGO_LIBRARY_FLAGS ${CGO_LIBRARY_FLAGS})  
   add_custom_command(TARGET ${NAME}
-                    COMMAND GOPATH=${GOPATH}:${CUSTOM_GO_PATH} GOOS=linux G0111MODULE=off CGO_CFLAGS="${CGO_CFLAGS}" CGO_LDFLAGS='${CGO_LIBRARY_FLAGS}' go build -ldflags '-w'
+                    COMMAND GOPATH=${GOPATH}:${CUSTOM_GO_PATH} GOOS=linux G0111MODULE=off CGO_CFLAGS="${CGO_CFLAGS}" CGO_LDFLAGS="${CGO_LIBRARY_FLAGS}" go build -ldflags '-w'
                     -o "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}"
                     ${CMAKE_GO_FLAGS} ${MAIN_SRC}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
