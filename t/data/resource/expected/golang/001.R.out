@@ -59,6 +59,31 @@ allocated: {"graph": {"nodes": [{"id": "61", "metadata": {"type": "core", "basen
 
 at: 0
 error: <nil>
+Errors so far: 
+ 
+
+	----Match Allocate output---
+jobid: 4
+reserved: false
+allocated: {"graph": {"nodes": [{"id": "25", "metadata": {"type": "core", "basename": "core", "name": "core17", "id": 17, "uniq_id": 25, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0/socket0/core17"}}}, {"id": "4", "metadata": {"type": "socket", "basename": "socket", "name": "socket0", "id": 0, "uniq_id": 4, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0/socket0"}}}, {"id": "2", "metadata": {"type": "node", "basename": "node", "name": "node0", "id": 0, "uniq_id": 2, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0/node0"}}}, {"id": "1", "metadata": {"type": "rack", "basename": "rack", "name": "rack0", "id": 0, "uniq_id": 1, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0/rack0"}}}, {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "id": 0, "uniq_id": 0, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/tiny0"}}}], "edges": [{"source": "4", "target": "25", "metadata": {"name": {"containment": "contains"}}}, {"source": "2", "target": "4", "metadata": {"name": {"containment": "contains"}}}, {"source": "1", "target": "2", "metadata": {"name": {"containment": "contains"}}}, {"source": "0", "target": "1", "metadata": {"name": {"containment": "contains"}}}]}}
+
+at: 0
+error: <nil>
+Errors so far: 
+ 
+
+	----Match Allocate output---
+jobid: 5
+reserved: false
+allocated: 
+at: 0
+error: <nil>
+Errors so far: 
+ 
+
+	----Match Satisfy output---
+satisfied: true
+error: <nil>
 Cancel output: <nil>
 Info output jobid 1: false, 0, CANCELED, <nil>
 Info output jobid 2: false, 0, <nil>

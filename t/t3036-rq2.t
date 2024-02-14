@@ -27,6 +27,14 @@ test_expect_success "${test002_desc}" '
     test_cmp 002.R.out ${exp_dir}/002.R.out
 '
 
+cmds003="${cmd_dir}/cmds03.in"
+test003_desc="match allocate match options test"
+test_expect_success "${test003_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds003} > cmds003 &&
+    ${query} -L ${jgf} -f jgf -t 003.R.out \
+    < cmds003 &&
+    test_cmp 003.R.out ${exp_dir}/003.R.out
+'
 
 
 test_done
