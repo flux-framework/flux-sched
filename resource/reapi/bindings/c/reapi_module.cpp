@@ -48,7 +48,7 @@ extern "C" void reapi_module_destroy (reapi_module_ctx_t *ctx)
 }
 
 extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
-                                   const char *match_op, const char *jobspec,
+                                   match_op_t match_op, const char *jobspec,
                                    const uint64_t jobid, bool *reserved,
                                    char **R, int64_t *at, double *ov)
 {
@@ -80,8 +80,8 @@ extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
                                             const uint64_t jobid, bool *reserved,
                                             char **R, int64_t *at, double *ov)
 {
-    const char  *match_op = orelse_reserve ? "allocate_orelse_reserve" : 
-                                             "allocate";
+    match_op_t match_op = orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE 
+                                         : match_op_t::MATCH_ALLOCATE;
 
     return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, 
                                      R, at, ov);
@@ -90,7 +90,7 @@ extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
 extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,
                                            const char *jobspec, double *ov)
 {
-    const char  *match_op = "satisfiability";
+    match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     const uint64_t jobid =0;
     bool *reserved;
     char **R; 

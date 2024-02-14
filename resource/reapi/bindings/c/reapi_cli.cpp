@@ -91,33 +91,21 @@ out:
 }
 
 extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
-                                const char *match_op, const char *jobspec,
+                                match_op_t match_op, const char *jobspec,
                                 uint64_t *jobid, bool *reserved,
                                 char **R, int64_t *at, double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
     char *R_buf_c = nullptr;
-    match_op_t op;
 
     if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         goto out;
     }
 
-    if (!strcmp (match_op,"allocate"))
-        op = match_op_t::MATCH_ALLOCATE;
-    else if (!strcmp (match_op, "allocate_with_satisfiability"))
-        op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
-    else if (!strcmp (match_op, "allocate_orelse_reserve"))
-        op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
-    else if (!strcmp (match_op, "satisfiability"))
-        op = match_op_t::MATCH_SATISFIABILITY;
-    else
-        goto out;
-
     *jobid = ctx->rqt->get_job_counter ();
-    if ((rc = reapi_cli_t::match_allocate (ctx->rqt, op,
+    if ((rc = reapi_cli_t::match_allocate (ctx->rqt, match_op,
                                            jobspec, *jobid, *reserved,
                                            R_buf, *at, *ov)) < 0) {
         goto out;
@@ -141,8 +129,8 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                                          uint64_t *jobid, bool *reserved,
                                          char **R, int64_t *at, double *ov)
 {
-    const char  *match_op = orelse_reserve ? "allocate_orelse_reserve" : 
-                                             "allocate";
+    match_op_t match_op = orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE : 
+                                             match_op_t::MATCH_ALLOCATE;
 
     return reapi_cli_match (ctx, match_op, jobspec, jobid, reserved, 
                                      R, at, ov);
@@ -152,7 +140,7 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
                                         const char *jobspec, 
                                         bool *sat, double *ov)
 {
-    const char  *match_op = "satisfiability";
+    match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
     bool reserved;
     char *R; 

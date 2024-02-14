@@ -26,6 +26,7 @@ extern "C" {
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/traversers/dfu.hpp"
+#include "resource/policies/base/match_op.h"
 
 namespace Flux {
 namespace resource_model {

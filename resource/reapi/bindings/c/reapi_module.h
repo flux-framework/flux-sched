@@ -19,6 +19,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include "resource/policies/base/match_op.h"
 
 typedef struct reapi_module_ctx reapi_module_ctx_t;
 
@@ -37,15 +38,15 @@ void reapi_module_destroy (reapi_module_ctx_t *ctx);
  *  the selected match policy.
  *
  *  \param ctx       reapi_module_ctx_t context object
- *  \param match_op  const char *: set to specify the specific match option
+ *  \param match_op  match_op_t: set to specify the specific match option
  *                   from 1 of 4 choices:
- *                   allocate: try to allocate now and fail if resources 
+ *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
  *                   aren't available. 
- *                   allocate_orelse_reserve: Try to allocate and resever if 
- *                   resources aren't available now.
- *                   satisfiability: Do a satisfiablity check and do not 
+ *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
+ *                   if resources aren't available now.
+ *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
  *                   allocate.
- *                   allocate_with_satisfiability: try to allocate and run 
+ *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
  *                   satisfiability check if resources are not available.
  *  \param jobspec   jobspec string.
  *  \param jobid     jobid of the uint64_t type.
@@ -60,7 +61,7 @@ void reapi_module_destroy (reapi_module_ctx_t *ctx);
  *                   the match operation.
  *  \return          0 on success; -1 on error.
  */
-int reapi_module_match (reapi_module_ctx_t *ctx, const char *match_op,
+int reapi_module_match (reapi_module_ctx_t *ctx, match_op_t match_op,
                         const char *jobspec, const uint64_t jobid,
                         bool *reserved, char **R, int64_t *at, double *ov);
 

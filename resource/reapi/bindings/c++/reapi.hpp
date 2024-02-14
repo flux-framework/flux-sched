@@ -99,9 +99,16 @@ public:
      *                   detail. However, when it is used within a Flux's
      *                   service module, it is expected to be a pointer
      *                   to a flux_t object.
-     *  \param orelse_reserve
-     *                   Boolean: if false, only allocate; otherwise, first try
-     *                   to allocate and if that fails, reserve.
+     *  \param match_op  match_op_t: set to specify the specific match option
+     *                   from 1 of 4 choices:
+     *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
+     *                   aren't available. 
+     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
+     *                   if resources aren't available now.
+     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+     *                   allocate.
+     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
+     *                   satisfiability check if resources are not available.
      *  \param jobspec   jobspec string.
      *  \param jobid     jobid of the uint64_t type.
      *  \param reserved  Boolean into which to return true if this job has been
@@ -131,9 +138,15 @@ public:
      *                   detail. However, when it is used within a Flux's
      *                   service module, it is expected to be a pointer
      *                   to a flux_t object.
-     *  \param orelse_reserve
-     *                   Boolean: if false, only allocate; otherwise, first try
-     *                   to allocate and if that fails, reserve.
+     *  \param match_op  match_op_t: set to specify the specific match option
+     *                   from 1 of 4 choices:
+     *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
+     *                   aren't available. 
+     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
+     *                   if resources aren't available now.
+     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+     *                   allocate.
+     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
      *  \param jobs      JSON array of jobspecs.
      *  \param adapter   queue_adapter_base_t object that provides
      *                   a set of callback methods to be called each time

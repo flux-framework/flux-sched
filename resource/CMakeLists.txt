@@ -22,6 +22,7 @@ set(RESOURCE_HEADERS
     traversers/dfu_impl.hpp
     policies/base/dfu_match_cb.hpp
     policies/base/matcher.hpp
+    policies/base/match_op.h
     readers/resource_namespace_remapper.hpp
     readers/resource_reader_base.hpp
     readers/resource_spec_grug.hpp

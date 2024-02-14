@@ -66,6 +66,14 @@ int reapi_cli_t::match_allocate (void *h, match_op_t match_op,
     std::stringstream o;
     bool matched = false;
 
+    if (!match_op_valid (match_op) ) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: Invalid Match Option: "
+                          + std::string (match_op_to_string (match_op)) + "\n";
+            rc = -1;
+            goto out;
+        }
+
     try {
         Flux::Jobspec::Jobspec job {jobspec};
 
