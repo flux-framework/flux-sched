@@ -51,7 +51,7 @@ std::string reapi_cli_t::m_err_msg = "";
  *                                                                          *
  ****************************************************************************/
 
-int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
+int reapi_cli_t::match_allocate (void *h, match_op_t match_op,
                                  const std::string &jobspec,
                                  const uint64_t jobid, bool &reserved,
                                  std::string &R, int64_t &at, double &ov)
@@ -66,6 +66,14 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     std::stringstream o;
     bool matched = false;
 
+    if (!match_op_valid (match_op) ) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: Invalid Match Option: "
+                          + std::string (match_op_to_string (match_op)) + "\n";
+            rc = -1;
+            goto out;
+        }
+
     try {
         Flux::Jobspec::Jobspec job {jobspec};
 
@@ -76,13 +84,7 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
             goto out;
         }
 
-        if (orelse_reserve)
-            rc = rq->traverser_run (job,
-                                match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                (int64_t)jobid, at);
-        else
-            rc = rq->traverser_run (job, match_op_t::MATCH_ALLOCATE, 
-                                    (int64_t)jobid, at);
+        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at);
 
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -110,7 +112,7 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
     }
 
     // Check for an unsuccessful match 
-    if (rc == 0) {
+    if ( (rc == 0) && (match_op != match_op_t::MATCH_SATISFIABILITY)) {
         matched = true;
     }
     
@@ -154,7 +156,8 @@ int reapi_cli_t::match_allocate (void *h, bool orelse_reserve,
 
     }
     
-    rq->incr_job_counter ();
+    if (match_op != match_op_t::MATCH_SATISFIABILITY)
+        rq->incr_job_counter ();
 
 out:
     return rc;

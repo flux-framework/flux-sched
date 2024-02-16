@@ -10,11 +10,13 @@
 
 package fluxcli
 
-// #include "reapi_module.h"
+// #include "resource/reapi/bindings/c/reapi_module.h"
 import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/flux-framework/flux-sched/resource/reapi/bindings/go/src/pkg/types"
 )
 
 type (
@@ -51,11 +53,11 @@ func (m *ReapiModule) Destroy() {
 	C.reapi_module_destroy((*C.struct_reapi_module_ctx)(m.ctx))
 }
 
-// MatchAllocate matches and allocates resources
-// int reapi_module_match_allocate (reapi_module_ctx_t *ctx, bool orelse_reserve,
+// Match matches and allocates resources
+// int reapi_module_match_allocate (reapi_module_ctx_t *ctx, char *match_op,
 // at: is the scheduled time "at"
-func (m *ReapiModule) MatchAllocate(
-	orelse_reserve bool,
+func (m *ReapiModule) Match(
+	match_op types.MatchType,
 	jobspec string,
 	jobid int,
 ) (reserved bool, allocated string, at int64, overhead float64, err error) {
@@ -65,8 +67,8 @@ func (m *ReapiModule) MatchAllocate(
 	// Jobspec as a CString
 	spec := C.CString(jobspec)
 
-	fluxerr := (int)(C.reapi_module_match_allocate((*C.struct_reapi_module_ctx)(m.ctx),
-		(C.bool)(orelse_reserve),
+	fluxerr := (int)(C.reapi_module_match((*C.struct_reapi_module_ctx)(m.ctx),
+		C.match_op_t(match_op),
 		spec,
 		(C.ulong)(jobid),
 		(*C.bool)(&reserved),
@@ -76,8 +78,37 @@ func (m *ReapiModule) MatchAllocate(
 
 	allocated = C.GoString(r)
 
+	defer C.free(unsafe.Pointer(r))
+	defer C.free(unsafe.Pointer(spec))
+
 	err = retvalToError(fluxerr, "issue matching allocation for resource api")
 	return reserved, allocated, at, overhead, err
+}
+
+// MatchAllocate matches and allocates resources
+func (m *ReapiModule) MatchAllocate(
+	orelse_reserve bool,
+	jobspec string,
+	jobid int,
+) (reserved bool, allocated string, at int64, overhead float64, err error) {
+	var match_op string
+
+	if orelse_reserve {
+		match_op =types.MatchAllocateOrElseReserve
+	} else {
+		match_op = types.MatchAllocate
+	}
+
+	return m.Match(match_op, jobspec, jobid)
+}
+
+// MatchSatisfy runs satisfiability check on jobspec
+func (m *ReapiModule) MatchSatisfy(
+	jobspec string,
+	jobid int,
+) (reserved bool, allocated string, at int64, overhead float64, err error) {
+	match_op := types.MatchSatisfiability
+	return m.Match(match_op, jobspec, jobid)
 }
 
 // Info gets the information on the allocation or reservation corresponding

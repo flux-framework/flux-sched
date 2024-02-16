@@ -19,6 +19,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include "resource/policies/base/match_op.h"
 
 typedef struct reapi_cli_ctx reapi_cli_ctx_t;
 
@@ -46,6 +47,39 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
  *  the selected match policy.
  *
  *  \param ctx       reapi_cli_ctx_t context object
+ *  \param match_op  match_op_t: set to specify the specific match option
+ *                   from 1 of 4 choices:
+ *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
+ *                   aren't available. 
+ *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
+ *                   if resources aren't available now.
+ *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+ *                   allocate.
+ *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
+ *                   satisfiability check if resources are not available.
+ *  \param jobspec   jobspec string.
+ *  \param jobid     jobid of the uint64_t type.
+ *  \param reserved  Boolean into which to return true if this job has been
+ *                   reserved instead of allocated.
+ *  \param R         String into which to return the resource set either
+ *                   allocated or reserved.
+ *  \param at        If allocated, 0 is returned; if reserved, actual time
+ *                   at which the job is reserved.
+ *  \param ov        Double into which to return performance overhead
+ *                   in terms of elapse time needed to complete
+ *                   the match operation.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_match (reapi_cli_ctx_t *ctx, match_op_t match_op,
+                     const char *jobspec, uint64_t *jobid,
+                     bool *reserved,
+                     char **R, int64_t *at, double *ov);
+
+/*! Match a jobspec to the "best" resources and either allocate
+ *  orelse reserve them. The best resources are determined by
+ *  the selected match policy.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
  *  \param orelse_reserve
  *                   Boolean: if false, only allocate; otherwise, first try
  *                   to allocate and if that fails, reserve.
@@ -66,6 +100,20 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx, bool orelse_reserve,
                               const char *jobspec, uint64_t *jobid,
                               bool *reserved,
                               char **R, int64_t *at, double *ov);
+
+/*! Run Satisfiability check for jobspec.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param jobspec   jobspec string.
+ *  \param sat       bool sat into which to return if jobspec is 
+ *                   satisfiable. 
+ *  \param ov        Double into which to return performance overhead
+ *                   in terms of elapse time needed to complete
+ *                   the match operation.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
+                             const char *jobspec, bool *sat, double *ov);
 
 /*! Update the resource state with R.
  *

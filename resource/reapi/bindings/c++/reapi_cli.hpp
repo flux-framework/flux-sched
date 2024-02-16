@@ -26,6 +26,7 @@ extern "C" {
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/traversers/dfu.hpp"
+#include "resource/policies/base/match_op.h"
 
 namespace Flux {
 namespace resource_model {
@@ -129,7 +130,7 @@ private:
 
 class reapi_cli_t : public reapi_t {
 public:  
-    static int match_allocate (void *h, bool orelse_reserve,
+    static int match_allocate (void *h, match_op_t match_op,
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,
                                std::string &R, int64_t &at, double &ov);

@@ -1,6 +1,6 @@
 set(TARGET main)
 set(SRCS main.go)
-set(CGO_CFLAGS "-I${CMAKE_BINARY_DIR}/resource/reapi/bindings/c")
+set(CGO_CFLAGS "-I${CMAKE_BINARY_DIR}")
 
 # This is currently passed but not used because when passed into add_custom_command the spaces are escaped
 set(CGO_LIBRARY_FLAGS -Wl,-R
