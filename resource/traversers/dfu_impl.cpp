@@ -43,7 +43,12 @@ void dfu_impl_t::tick ()
 
 bool dfu_impl_t::in_subsystem (edg_t e, const subsystem_t &subsystem) const
 {
-    return ((*m_graph)[e].idata.member_of.find (subsystem)
+    // Short circuit for single subsystem. This will be a common case.
+    // TODO: make systems ints or enums for faster comparison and search.
+    if (m_graph_db->metadata.roots.size () == 1)
+        return true;
+    else
+        return ((*m_graph)[e].idata.member_of.find (subsystem)
                 != (*m_graph)[e].idata.member_of.end ());
 }
 
@@ -376,7 +381,7 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem, vtx_t u,
     int rc = 0;
     f_out_edg_iterator_t ei, ei_end;
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-        if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
+        if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
             continue;
         if ((rc = prime_pruning_filter (subsystem,
                                         target (*ei, *m_graph), dfv)) != 0)
@@ -396,7 +401,7 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta, vtx_t u,
     int rc2 = -1;
     f_out_edg_iterator_t ei, ei_end;
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-        if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
+        if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
             continue;
 
         bool x_inout = *excl;
@@ -479,7 +484,7 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta, vtx_t u,
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
         edg_t e = kv.second;
-        if (!in_subsystem (e, subsystem) || stop_explore (e, subsystem))
+        if (stop_explore (e, subsystem) || !in_subsystem (e, subsystem))
             continue;
         vtx_t tgt = target (e, *m_graph);
         if (sat_types.find ((*m_graph)[tgt].type) != sat_types.end ())
@@ -770,7 +775,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     m_trav_level++;
     for (auto &s : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-            if (!in_subsystem (*ei, s) || stop_explore (*ei, s))
+            if (stop_explore (*ei, s) || !in_subsystem (*ei, s))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
             rc = (s == dom)? dom_find_dfv (w, criteria, tgt, p_overridden)
@@ -826,7 +831,7 @@ int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
 
     for (auto &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-            if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
+            if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
             bool tgt_constrained = true;
