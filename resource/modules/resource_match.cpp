@@ -105,6 +105,15 @@ struct resource_ctx_t : public resource_interface_t {
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
     std::map<std::string, std::shared_ptr<msg_wrap_t>> notify_msgs;
+    bool m_resources_updated = true; /* resources have been updated */
+    bool m_resources_down_updated = true; /* down resources have been updated */
+    /* last time allocated resources search updated */
+    std::chrono::time_point<
+                    std::chrono::system_clock> m_resources_alloc_updated;
+    /* R caches */
+    json_t *m_r_all;
+    json_t *m_r_down;
+    json_t *m_r_alloc;
 };
 
 msg_wrap_t::msg_wrap_t (const msg_wrap_t &o)
@@ -317,6 +326,7 @@ static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
     ct_opts.set_match_policy ("first");
     ct_opts.set_prune_filters ("ALL:core");
     ct_opts.set_match_format ("rv1_nosched");
+    ct_opts.set_update_interval (0);
     ctx->opts += ct_opts;
 }
 
@@ -348,6 +358,13 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
         ctx->reader = nullptr;  /* Cannot be allocated at this point */
+        ctx->m_r_all = nullptr;
+        ctx->m_r_down = nullptr;
+        ctx->m_r_alloc = nullptr;
+        ctx->m_resources_updated = true;
+        ctx->m_resources_down_updated = true;
+        //gettimeofday (&(ctx->m_resources_alloc_updated), NULL);
+        ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
     }
 
 done:
@@ -1110,6 +1127,7 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         }
     }
     ctx->db->metadata.set_graph_duration (duration);
+    ctx->m_resources_updated = true;
 
 done:
     idset_destroy (grow_set);
@@ -1202,6 +1220,10 @@ static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
     flux_log (ctx->h, LOG_DEBUG,
               "resource status changed (rankset=[%s] status=%s)",
               ids, resource_pool_t::status_to_str (status).c_str ());
+
+    // Updated the ranks
+    ctx->m_resources_down_updated = true;
+
 done:
     return rc;
 }
@@ -2485,14 +2507,41 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
     json_t *R_all = nullptr;
     json_t *R_down = nullptr;
     json_t *R_alloc = nullptr;
+    std::chrono::time_point<std::chrono::system_clock> now;
+    std::chrono::duration<double> elapsed;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if (run_find (ctx, "status=up or status=down", "rv1_nosched", &R_all) < 0)
-        goto error;
-    if (run_find (ctx, "status=down", "rv1_nosched", &R_down) < 0)
-        goto error;
-    if (run_find (ctx, "sched-now=allocated", "rv1_nosched", &R_alloc) < 0)
-        goto error;
+    now = std::chrono::system_clock::now ();
+    elapsed = now - ctx->m_resources_alloc_updated;
+    // Get R alloc whenever m_resources_alloc_updated or
+    // the elapsed time is greater than configured limit 
+    if ( (elapsed.count () >
+          static_cast<double> (ctx->opts.get_opt ().get_update_interval ())) ||
+                ctx->m_resources_updated) {
+        if (run_find (ctx, "sched-now=allocated", "rv1_nosched", &R_alloc) < 0)
+            goto error;
+        ctx->m_r_alloc = json_deep_copy (R_alloc);
+        ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
+    } else
+        R_alloc = json_deep_copy (ctx->m_r_alloc);
+
+    if (ctx->m_resources_updated) {
+        if (run_find (ctx, "status=up or status=down", "rv1_nosched",
+                      &R_all) < 0)
+            goto error;
+        ctx->m_r_all = json_deep_copy (R_all);
+        ctx->m_resources_updated = false;
+    } else
+        R_all = json_deep_copy (ctx->m_r_all);
+
+    if (ctx->m_resources_down_updated) {
+        if (run_find (ctx, "status=down", "rv1_nosched", &R_down) < 0)
+            goto error;
+        ctx->m_r_down = json_deep_copy (R_down);
+        ctx->m_resources_down_updated = false;
+    } else
+        R_down = json_deep_copy (ctx->m_r_down);
+
     if (flux_respond_pack (h, msg, "{s:o? s:o? s:o?}",
                                        "all", R_all,
                                        "down", R_down,
@@ -2500,7 +2549,6 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
         goto error;
     }
-
     flux_log (h, LOG_DEBUG, "%s: status succeeded", __FUNCTION__);
     return;
 
@@ -2679,6 +2727,7 @@ static void set_status_request_cb (flux_t *h, flux_msg_handler_t *w,
         errmsg = "Failed to set status of resource vertex";
         goto error;
     }
+    ctx->m_resources_down_updated = true;
     if (flux_respond (h, msg, NULL) < 0) {
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);
     }
