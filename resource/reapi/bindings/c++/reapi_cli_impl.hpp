@@ -310,12 +310,15 @@ std::shared_ptr<f_resource_graph_t> resource_query_t::create_filtered_graph ()
     std::shared_ptr<f_resource_graph_t> fg = nullptr;
 
     resource_graph_t &g = db->resource_graph;
+    int subsys_size = db->metadata.roots.size ();
     vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
     edg_infra_map_t emap = get (&resource_relation_t::idata, g);
     const multi_subsystemsS &filter = 
                         matcher->subsystemsS ();
-    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
-    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
+    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
+                                                           subsys_size);
+    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
+                                                           subsys_size);
 
     try {
         fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);

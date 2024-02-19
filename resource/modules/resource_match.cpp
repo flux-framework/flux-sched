@@ -1421,9 +1421,12 @@ static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
         edg_infra_map_t emap = get (&resource_relation_t::idata, g);
 
         // Set vertex and edge filters based on subsystems to use
+        int subsys_size = ctx->db->metadata.roots.size ();
         const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-        subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter);
-        subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter);
+        subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
+                                                               subsys_size);
+        subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
+                                                               subsys_size);
         fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
