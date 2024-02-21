@@ -615,10 +615,87 @@ static int test_constructors_and_overload ()
 
 }
 
+static int test_multi_update ()
+{
+    bool bo = false, found = true;
+    size_t len = 5;
+    size_t size = 0;
+    int rc = -1;
+    int64_t span = -1, avail = -1, avail1 = -1, total = -1;
+    const uint64_t resource_totals[] = {10, 20, 30, 40, 50};
+    const uint64_t resource_totals1[] = {5, 10, 20};
+    const uint64_t resource_totals2[] = {10, 20, 30, 40, 50, 60, 70};
+    const char *resource_types[] = {"A", "B", "C", "D", "E"};
+    const char *resource_types1[] = {"B", "C", "D"};
+    const char *resource_types2[] = {"B", "A", "C", "D", "G", "X", "Y"};
+    const uint64_t request1[] = {1, 0, 0, 0, 0};
+    const uint64_t request2[] = {0, 2, 0, 0, 0};
+    const uint64_t request3[] = {0, 0, 3, 0, 0};
+    const uint64_t request4[] = {0, 0, 20};
+    const uint64_t request5[] = {0, 0, 21};
+    const uint64_t request6[] = {10, 20, 30, 40, 50, 60, 70};
+    planner_multi_t *ctx = NULL, *ctx2 = NULL;
+
+    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+
+    planner_multi_add_span (ctx, 0, 1000, request1, len);
+    span = planner_multi_add_span (ctx, 1000, 1000, request2, len);
+    planner_multi_add_span (ctx, 2000, 1000, request3, len);
+    avail = planner_multi_avail_resources_at (ctx, 0, 0);
+
+    ctx2 = planner_multi_copy (ctx);
+
+    rc = planner_multi_update (ctx, resource_totals, resource_types, len);
+    avail1 = planner_multi_avail_resources_at (ctx, 0, 0);
+    bo = (bo || !(planner_multis_equal (ctx, ctx2)) || avail != avail1 || rc != 0);
+    ok (!bo, "update with same resource count shouldn't change planner_multi");
+
+    rc = planner_multi_update (ctx, resource_totals1, resource_types1, 3);
+    avail1 = planner_multi_avail_resources_at (ctx, 1000, 0);
+    bo = (bo || (planner_multis_equal (ctx, ctx2)) || avail1 != 3 || rc != 0);
+    ok (!bo, "resource reduction results in expected resources and availability");
+
+    rc = planner_multi_update (ctx, resource_totals, resource_types, len);
+    bo = (bo || (planner_multis_equal (ctx, ctx2)) || rc != 0);
+    ok (!bo, "re-adding resources can't restore planner_multi state after removal");
+
+    rc = planner_multi_update (ctx, resource_totals1, resource_types1, 3);
+    span = planner_multi_add_span (ctx, 2000, 1000, request4, 3);
+    avail1 = planner_multi_avail_resources_at (ctx, 2000, 2);
+    bo = (bo || avail1 != 0 || span == -1 || rc != 0);
+    ok (!bo, "can allocate full updated resources");
+
+    span = planner_multi_add_span (ctx, 3000, 1000, request5, 3);
+    avail1 = planner_multi_avail_resources_at (ctx, 3000, 2);
+    bo = (bo || avail1 != 20 || span != -1 || rc != 0);
+    ok (!bo, "can't overallocate updated resources");
+
+    rc = planner_multi_update (ctx, resource_totals2, resource_types2, 7);
+    span = planner_multi_add_span (ctx, 4000, 1000, request6, 7);
+    avail1 = planner_multi_avail_resources_at (ctx, 4000, 6);
+    bo = (bo || avail1 != 0 || span == -1 || rc != 0);
+    ok (!bo, "can allocate full added resources");
+
+    for (int i = 0; i < planner_multi_resources_len (ctx); ++i) {
+        if (planner_multi_resource_total_by_type (ctx, resource_types2[i])
+                    != resource_totals2[i]) {
+            found = false;
+            break;
+        }
+    }
+    bo = (bo || !found);
+    ok (!bo, "can look up resources by string");
+
+    planner_multi_destroy (&ctx);
+    planner_multi_destroy (&ctx2);
+
+    return 0;
+
+}
 
 int main (int argc, char *argv[])
 {
-    plan (91);
+    plan (98);
 
     test_multi_basics ();
 
@@ -633,6 +710,8 @@ int main (int argc, char *argv[])
     test_multi_add_remove ();
 
     test_constructors_and_overload ();
+
+    test_multi_update ();
 
     done_testing ();
 
