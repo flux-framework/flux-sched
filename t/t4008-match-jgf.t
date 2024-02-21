@@ -22,7 +22,7 @@ test_under_flux 1
 # print only with --debug
 #
 test_debug '
-    echo ${jgf_4core} &&
+    echo ${jgf_4core}
 '
 
 # Test using the full resource matching service

@@ -21,7 +21,7 @@ test_under_flux 1
 test_debug '
     echo ${grug} &&
     echo ${jobspec1} &&
-    echo ${jobspec2} &&
+    echo ${jobspec2}
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
