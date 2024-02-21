@@ -569,6 +569,9 @@ static int test_resource_service_flow ()
     }
     ok (!bo, "reserve %d jobs for global/local planners", depth);
 
+    for (auto &type : global_types)
+        free ((void *)type);
+
     planner_destroy (&global1);
     planner_destroy (&global2);
     planner_destroy (&global3);
@@ -639,6 +642,8 @@ static int test_more_add_remove ()
     bo = (bo || span6 == -1);
 
     ok (!bo, "more add-remove-add test works");
+
+    planner_destroy (&ctx);
     return 0;
 }
 

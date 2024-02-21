@@ -295,6 +295,7 @@ static int test_multi_strictly_larger ()
     ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
          ss.str ().c_str ());
 
+    planner_multi_destroy (&ctx);
     return 0;
 }
 
@@ -405,6 +406,7 @@ static int test_multi_partially_larger ()
     ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
          ss.str ().c_str ());
 
+    planner_multi_destroy (&ctx);
     return 0;
 }
 
@@ -483,6 +485,8 @@ static int test_multi_many_spans ()
     t = planner_multi_avail_time_next (ctx);
     bo = (bo || !(t == -1 && errno == ENOENT));
     ok (!bo, "avail_time_next for (%s)", ss.str ().c_str ());
+
+    planner_multi_destroy (&ctx);
     return 0;
 }
 
@@ -535,6 +539,7 @@ static int test_multi_add_remove ()
     size = planner_multi_span_size (ctx);
     ok ((size == 2), "planner_multi_span_size works");
 
+    planner_multi_destroy (&ctx);
     return 0;
 
 }
