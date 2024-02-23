@@ -95,6 +95,9 @@ test_expect_success 'a job with multiple constraints works in both queues' '
 test_expect_success 'stop queues' '
 	flux queue stop --all
 '
+test_expect_success 'consume wait status so far' '
+	test_might_fail flux job wait --all
+'
 test_expect_success 'submit a held job to the first queue' '
 	flux submit --flags=waitable \
 	    --queue=debug --urgency=hold /bin/true >job3.out
