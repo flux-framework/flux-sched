@@ -556,9 +556,10 @@ static int test_constructors_and_overload ()
     const uint64_t request1[] = {1, 0, 0, 0, 0};
     const uint64_t request2[] = {0, 2, 0, 0, 0};
     const uint64_t request3[] = {0, 0, 3, 0, 0};
-    planner_multi_t *ctx, *ctx2, *ctx3, *ctx4 = NULL;
+    planner_multi_t *ctx = NULL, *ctx2 = NULL, *ctx3 = NULL, *ctx4 = NULL;
 
-    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types,
+                             len);
 
     planner_multi_add_span (ctx, 0, 1000, request1, len);
     span = planner_multi_add_span (ctx, 1000, 1000, request2, len);
