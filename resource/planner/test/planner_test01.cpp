@@ -584,7 +584,8 @@ static int test_resource_service_flow ()
 static int test_more_add_remove ()
 {
     int rc;
-    int64_t span1, span2, span3, span4, span5, span6;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, span5 = -1,
+            span6 = -1;
     bool bo = false;
     uint64_t resource_total = 100000;
     uint64_t resource1 = 36;
@@ -660,7 +661,7 @@ static int test_constructors_and_overload ()
     uint64_t resource5 = 2304;
     uint64_t resource6 = 468;
     const char resource_type[] = "core";
-    planner_t *ctx, *ctx2, *ctx3, *ctx4 = NULL;
+    planner_t *ctx = NULL, *ctx2 = NULL, *ctx3 = NULL, *ctx4 = NULL;
 
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
 
@@ -742,7 +743,7 @@ static int test_update ()
     uint64_t resource6 = 50000;
     int64_t avail, avail1 = 0;
     const char resource_type[] = "core";
-    planner_t *ctx, *ctx2 = NULL;
+    planner_t *ctx = NULL, *ctx2 = NULL;
 
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
     // Add some spans
