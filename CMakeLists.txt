@@ -172,6 +172,8 @@ if(DEFINED ENV{WITH_GO})
   include(GolangSimple)
 endif()
 
+include(FindValgrind) # Search for Valgrind
+
 include_directories(.)
 add_subdirectory( etc )
 add_subdirectory( src )

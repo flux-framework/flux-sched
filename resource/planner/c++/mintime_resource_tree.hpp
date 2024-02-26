@@ -24,6 +24,8 @@ struct mt_resource_rb_node_t
     int64_t subtree_min;
     int64_t remaining;
     bool operator< (const mt_resource_rb_node_t &other) const;
+    bool operator== (const mt_resource_rb_node_t &other) const;
+    bool operator!= (const mt_resource_rb_node_t &other) const;
 };
 
 template <class mt_resource_rb_node_t, class NodeTraits>

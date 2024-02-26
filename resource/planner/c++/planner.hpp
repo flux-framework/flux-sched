@@ -23,6 +23,9 @@ struct request_t {
 /*! Node in a span interval tree to enable fast retrieval of intercepting spans.
  */
 struct span_t {
+    bool operator== (const span_t &o) const;
+    bool operator!= (const span_t &o) const;
+
     int64_t start;               /* start time of the span */
     int64_t last;                /* end time of the span */
     int64_t span_id;             /* unique span id */
@@ -42,11 +45,13 @@ public:
     planner (const planner &o);
     planner &operator= (const planner &o);
     bool operator== (const planner &o) const;
+    bool operator!= (const planner &o) const;
     ~planner ();
     // Public class utilities
     int erase ();
     int reinitialize (int64_t base_time, uint64_t duration);
     int restore_track_points ();
+    int update_total (uint64_t resource_total);
     
     // Resources and duration
     int64_t get_total_resources () const;
@@ -108,8 +113,6 @@ private:
     // Private class utilities
     int copy_trees (const planner &o);
     int copy_maps (const planner &o);
-    bool scheduled_points_equal (const scheduled_point_t &lhs,
-                                 const scheduled_point_t &rhs) const;
     bool span_lookups_equal (const planner &o) const;
     bool avail_time_iters_equal (const planner &o) const;
     bool trees_equal (const planner &o) const;

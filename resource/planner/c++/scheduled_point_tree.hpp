@@ -43,6 +43,8 @@ struct scheduled_point_rb_node_t
            : public rb_node_base_t,
              public ygg::RBTreeNodeBase<scheduled_point_rb_node_t> {
     bool operator< (const scheduled_point_rb_node_t &other) const;
+    bool operator== (const scheduled_point_rb_node_t &other) const;
+    bool operator!= (const scheduled_point_rb_node_t &other) const;
 };
 
 using scheduled_point_rb_tree_t = ygg::RBTree<scheduled_point_rb_node_t,

@@ -64,6 +64,18 @@ bool operator<(const int64_t lhs, const scheduled_point_rb_node_t &rhs) {
     return lhs < rhs.get_point ()->at;
 }
 
+bool scheduled_point_rb_node_t::operator== (
+         const scheduled_point_rb_node_t &other) const
+{
+    return this->get_point ()->at == other.get_point ()->at;
+}
+
+bool scheduled_point_rb_node_t::operator!= (
+         const scheduled_point_rb_node_t &other) const
+{
+    return !operator == (other);
+}
+
 
 /*******************************************************************************
  *                                                                             *

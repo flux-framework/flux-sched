@@ -33,7 +33,8 @@ libplanner_cxx_la_SOURCES = \
         planner.cpp \
         planner_multi.cpp \
         scheduled_point_tree.cpp \
-        mintime_resource_tree.cpp
+        mintime_resource_tree.cpp \
+        planner_internal_tree.cpp
 
 libplanner_cxx_la_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/resource/planner/c++
 

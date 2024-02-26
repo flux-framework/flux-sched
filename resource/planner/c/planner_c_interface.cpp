@@ -698,6 +698,12 @@ extern "C" bool planners_equal (planner_t *lhs, planner_t *rhs)
     return (*(lhs->plan) == *(rhs->plan));
 }
 
+extern "C" int planner_update_total (planner_t *ctx,
+                                     uint64_t resource_total)
+{
+    return ctx->plan->update_total (resource_total);
+}
+
 /*
  * vi: ts=4 sw=4 expandtab
  */

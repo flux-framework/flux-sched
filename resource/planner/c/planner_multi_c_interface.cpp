@@ -14,6 +14,7 @@
 #include <limits>
 #include <vector>
 #include <map>
+#include <unordered_set>
 
 #include "planner_multi.h"
 #include "resource/planner/c++/planner_multi.hpp"
@@ -32,7 +33,8 @@ static void fill_iter_request (planner_multi_t *ctx, struct request_multi *iter,
     iter->on_or_after = at;
     iter->duration = duration;
     for (i = 0; i < len; ++i)
-        iter->counts[i] = resources[i];
+        iter->counts[ctx->plan_multi->get_resource_type_at (i)] =
+                resources[i];
 }
 
 extern "C" planner_multi_t *planner_multi_new (
@@ -118,7 +120,7 @@ extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
         errno = EINVAL;
         return -1;
     }
-    return planner_base_time (ctx->plan_multi->get_planners_at (0));
+    return planner_base_time (ctx->plan_multi->get_planner_at (static_cast<size_t> (0)));
 }
 
 extern "C" int64_t planner_multi_duration (planner_multi_t *ctx)
@@ -127,7 +129,7 @@ extern "C" int64_t planner_multi_duration (planner_multi_t *ctx)
         errno = EINVAL;
         return -1;
     }
-    return planner_duration (ctx->plan_multi->get_planners_at (0));
+    return planner_duration (ctx->plan_multi->get_planner_at (static_cast<size_t> (0)));
 }
 
 extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
@@ -139,22 +141,14 @@ extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
     return ctx->plan_multi->get_planners_size ();
 }
 
-extern "C" const char **planner_multi_resource_types (planner_multi_t *ctx)
+extern "C" const char *planner_multi_resource_type_at (planner_multi_t *ctx,
+                                                       unsigned int i)
 {
     if (!ctx) {
         errno = EINVAL;
         return nullptr;
     }
-    return &(ctx->plan_multi->m_resource_types[0]);
-}
-
-extern "C" const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx)
-{
-    if (!ctx) {
-        errno = EINVAL;
-        return nullptr;
-    }
-    return &(ctx->plan_multi->m_resource_totals[0]);
+    return ctx->plan_multi->get_resource_type_at (i);
 }
 
 extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx,
@@ -166,7 +160,7 @@ extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx,
             errno = EINVAL;
             goto done;
         }
-        rc = planner_resource_total (ctx->plan_multi->get_planners_at (i));
+        rc = ctx->plan_multi->get_resource_total_at (i);
     }
 done:
     return rc;
@@ -175,17 +169,12 @@ done:
 extern "C" int64_t planner_multi_resource_total_by_type (
                        planner_multi_t *ctx, const char *resource_type)
 {
-    size_t i = 0;
     int64_t rc = -1;
     if (!ctx || !resource_type)
         goto done;
-    for (i = 0; i < ctx->plan_multi->get_planners_size (); i++) {
-        if ( !(strcmp (ctx->plan_multi->get_resource_types_at (i), resource_type))) {
-            rc = planner_resource_total (ctx->plan_multi->get_planners_at (i));
-            break;
-        }
-    }
-    if (i == ctx->plan_multi->get_planners_size ())
+
+    rc = ctx->plan_multi->get_resource_total_at (resource_type);
+    if (rc == -1)
         errno = EINVAL;
 done:
     return rc;
@@ -202,7 +191,7 @@ extern "C" int planner_multi_reset (planner_multi_t *ctx,
     }
 
     for (i = 0; i < ctx->plan_multi->get_planners_size (); ++i)
-        if (planner_reset (ctx->plan_multi->get_planners_at (i), base_time, duration) == -1)
+        if (planner_reset (ctx->plan_multi->get_planner_at (i), base_time, duration) == -1)
             goto done;
 
     rc = 0;
@@ -226,7 +215,7 @@ extern "C" planner_t *planner_multi_planner_at (planner_multi_t *ctx,
         errno = EINVAL;
         goto done;
     }
-    planner = ctx->plan_multi->get_planners_at (i);
+    planner = ctx->plan_multi->get_planner_at (i);
 done:
     return planner;
 }
@@ -249,19 +238,21 @@ extern "C" int64_t planner_multi_avail_time_first (
     fill_iter_request (ctx, &(ctx->plan_multi->get_iter ()),
                        on_or_after, duration, resource_requests, len);
 
-    if ((t = planner_avail_time_first (ctx->plan_multi->get_planners_at (0), on_or_after,
-                                       duration, resource_requests[0])) == -1)
+    if ((t = planner_avail_time_first (ctx->plan_multi->get_planner_at (
+                                            static_cast<size_t> (0)), on_or_after,
+                                            duration, resource_requests[0])) == -1)
         goto done;
 
     do {
         unmet = 0;
         for (i = 1; i < ctx->plan_multi->get_planners_size (); ++i) {
-            if ((unmet = planner_avail_during (ctx->plan_multi->get_planners_at (i),
+            if ((unmet = planner_avail_during (ctx->plan_multi->get_planner_at (i),
                                                t, duration,
                                                resource_requests[i])) == -1)
                 break;
         }
-    } while (unmet && (t = planner_avail_time_next (ctx->plan_multi->get_planners_at (0))) != -1);
+    } while (unmet && (t = planner_avail_time_next (
+                            ctx->plan_multi->get_planner_at (static_cast<size_t> (0)))) != -1);
 
 done:
     return t;
@@ -272,20 +263,22 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
     size_t i = 0;
     int unmet = 0;
     int64_t t = -1;
+    std::string type;
 
     if (!ctx) {
         errno = EINVAL;
         goto done;
     }
-
     do {
         unmet = 0;
-        if ((t = planner_avail_time_next (ctx->plan_multi->get_planners_at (0))) == -1)
+        if ((t = planner_avail_time_next (
+                        ctx->plan_multi->get_planner_at (static_cast<size_t> (0)))) == -1)
             break;
         for (i = 1; i < ctx->plan_multi->get_planners_size (); ++i) {
-            if ((unmet = planner_avail_during (ctx->plan_multi->get_planners_at (i), t,
+            type = ctx->plan_multi->get_resource_type_at (i);
+            if ((unmet = planner_avail_during (ctx->plan_multi->get_planner_at (i), t,
                                                ctx->plan_multi->get_iter ().duration,
-                                               ctx->plan_multi->get_iter ().counts[i])) == -1)
+                                               ctx->plan_multi->get_iter ().counts.at (type))) == -1)
                 break;
         }
     } while (unmet);
@@ -301,7 +294,7 @@ extern "C" int64_t planner_multi_avail_resources_at (
         errno = EINVAL;
         return -1;
     }
-    return planner_avail_resources_at (ctx->plan_multi->get_planners_at (i), at);
+    return planner_avail_resources_at (ctx->plan_multi->get_planner_at (i), at);
 }
 
 extern "C" int planner_multi_avail_resources_array_at (
@@ -315,7 +308,7 @@ extern "C" int planner_multi_avail_resources_array_at (
         return -1;
     }
     for (i = 0; i < ctx->plan_multi->get_planners_size (); ++i) {
-        rc = planner_avail_resources_at (ctx->plan_multi->get_planners_at (i), at);
+        rc = planner_avail_resources_at (ctx->plan_multi->get_planner_at (i), at);
         if (rc == -1)
             break;
         resource_counts[i] = rc;
@@ -334,7 +327,7 @@ extern "C" int planner_multi_avail_during (
         return -1;
     }
     for (i = 0; i < ctx->plan_multi->get_planners_size (); ++i) {
-        rc = planner_avail_during (ctx->plan_multi->get_planners_at (i), at, duration,
+        rc = planner_avail_during (ctx->plan_multi->get_planner_at (i), at, duration,
                                    resource_requests[i]);
         if (rc == -1)
             break;
@@ -349,12 +342,13 @@ extern "C" int planner_multi_avail_resources_array_during (
     size_t i = 0;
     int64_t rc = 0;
     if (!ctx || !resource_counts
-        || ctx->plan_multi->get_planners_size () < 1 || ctx->plan_multi->get_planners_size () != len) {
+        || ctx->plan_multi->get_planners_size () < 1
+        || ctx->plan_multi->get_planners_size () != len) {
         errno = EINVAL;
         return -1;
     }
     for (i = 0; i < ctx->plan_multi->get_planners_size (); ++i) {
-        rc = planner_avail_resources_during (ctx->plan_multi->get_planners_at (i), at, duration);
+        rc = planner_avail_resources_during (ctx->plan_multi->get_planner_at (i), at, duration);
         if (rc == -1)
             break;
         resource_counts[i] = rc;
@@ -386,7 +380,7 @@ extern "C" int64_t planner_multi_add_span (
     ctx->plan_multi->incr_span_counter ();
 
     for (i = 0; i < len; ++i) {
-        if ( (span = planner_add_span (ctx->plan_multi->get_planners_at (i),
+        if ( (span = planner_add_span (ctx->plan_multi->get_planner_at (i),
                                        start_time, duration,
                                        resource_requests[i])) == -1) {
             ctx->plan_multi->get_span_lookup ().erase (mspan);
@@ -412,7 +406,7 @@ extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
         goto done;
     }
     for (i = 0; i < it->second.size (); ++i) {
-        if (planner_rem_span (ctx->plan_multi->get_planners_at (i), it->second[i]) == -1)
+        if (planner_rem_span (ctx->plan_multi->get_planner_at (i), it->second[i]) == -1)
             goto done;
     }
     ctx->plan_multi->get_span_lookup ().erase (it);
@@ -471,6 +465,63 @@ extern "C" bool planner_multis_equal (planner_multi_t *lhs,
                                       planner_multi_t *rhs)
 {
     return (*(lhs->plan_multi) == *(rhs->plan_multi));
+}
+
+extern "C" int planner_multi_update (planner_multi_t *ctx,
+                                     const uint64_t *resource_totals,
+                                     const char **resource_types,
+                                     size_t len)
+{
+    int rc = -1;
+    size_t i = 0;
+    // Assuming small number of resource types,
+    // could try set, too
+    std::unordered_set<std::string> rtypes;
+    int64_t base_time = 0;
+    int64_t duration = 0;
+
+    if (!ctx || !resource_totals || !resource_types) {
+        errno = EINVAL;
+        goto done;
+    }
+    base_time = planner_base_time (
+                    ctx->plan_multi->get_planner_at (static_cast<size_t> (0)));
+    duration = planner_duration (
+                    ctx->plan_multi->get_planner_at (static_cast<size_t> (0)));
+    if (duration < 0) {
+        errno = EINVAL;
+        goto done;
+    }
+
+    for (i = 0; i < len; ++i) {
+        if (resource_totals[i] >
+              static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
+                errno = ERANGE;
+                goto done;
+        }
+        rtypes.insert (resource_types[i]);
+        if (!ctx->plan_multi->planner_at (resource_types[i])) {
+            // Assume base_time same as parent
+            ctx->plan_multi->add_planner (base_time, static_cast<uint64_t> (duration),
+                                          resource_totals[i], resource_types[i], i);
+        } else {
+            // Index could have changed
+            ctx->plan_multi->update_planner_index (resource_types[i], i);
+            if ( (rc = ctx->plan_multi->update_planner_total (resource_totals[i],
+                                                              i)) != 0) {
+                errno = EINVAL;
+                goto done;
+            }
+        }
+    }
+    // remove values not in new types
+    if (rtypes.size () > 0)
+        ctx->plan_multi->delete_planners (rtypes);
+
+    rc = 0;
+
+done:
+    return rc;
 }
 
 /*

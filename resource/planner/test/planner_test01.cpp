@@ -569,6 +569,9 @@ static int test_resource_service_flow ()
     }
     ok (!bo, "reserve %d jobs for global/local planners", depth);
 
+    for (auto &type : global_types)
+        free ((void *)type);
+
     planner_destroy (&global1);
     planner_destroy (&global2);
     planner_destroy (&global3);
@@ -581,7 +584,8 @@ static int test_resource_service_flow ()
 static int test_more_add_remove ()
 {
     int rc;
-    int64_t span1, span2, span3, span4, span5, span6;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, span5 = -1,
+            span6 = -1;
     bool bo = false;
     uint64_t resource_total = 100000;
     uint64_t resource1 = 36;
@@ -639,6 +643,8 @@ static int test_more_add_remove ()
     bo = (bo || span6 == -1);
 
     ok (!bo, "more add-remove-add test works");
+
+    planner_destroy (&ctx);
     return 0;
 }
 
@@ -655,7 +661,7 @@ static int test_constructors_and_overload ()
     uint64_t resource5 = 2304;
     uint64_t resource6 = 468;
     const char resource_type[] = "core";
-    planner_t *ctx, *ctx2, *ctx3, *ctx4 = NULL;
+    planner_t *ctx = NULL, *ctx2 = NULL, *ctx3 = NULL, *ctx4 = NULL;
 
     ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
 
@@ -723,9 +729,62 @@ static int test_constructors_and_overload ()
     return 0;
 }
 
+static int test_update ()
+{
+    int rc;
+    int64_t span;
+    bool bo = false;
+    uint64_t resource_total = 100000;
+    uint64_t resource1 = 36;
+    uint64_t resource2 = 3600;
+    uint64_t resource3 = 1800;
+    uint64_t resource4 = 2304;
+    uint64_t resource5 = 468;
+    uint64_t resource6 = 50000;
+    int64_t avail, avail1 = 0;
+    const char resource_type[] = "core";
+    planner_t *ctx = NULL, *ctx2 = NULL;
+
+    ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
+    // Add some spans
+    planner_add_span (ctx, 0, 600, resource1);
+    planner_add_span (ctx, 0, 57600, resource2);
+    planner_add_span (ctx, 57600, 57600, resource3);
+    planner_add_span (ctx, 172800, 57600, resource4);
+    planner_add_span (ctx, 115200, 900, resource5);
+
+    avail = planner_avail_resources_at (ctx, 0);
+
+    ctx2 = planner_copy (ctx);
+
+    rc = planner_update_total (ctx, 100000);
+
+    bo = (bo || !(planners_equal (ctx, ctx)));
+    ok (!bo, "update with same resource count shouldn't change planner");
+
+    rc = planner_update_total (ctx, 50000);
+    avail1 = planner_avail_resources_at (ctx, 0);
+    bo = (bo || !(planners_equal (ctx, ctx)));
+    ok (!bo, "avail difference for valid reduction is correct");
+
+    rc = planner_update_total (ctx, 100000);
+    bo = (bo || !(planners_equal (ctx, ctx2)));
+    ok (!bo, "re-adding resources shouldn't change planner");
+
+    rc = planner_update_total (ctx, 40000);
+    span = planner_add_span (ctx, 1152000, 57600, resource6);
+    bo = (bo || (planners_equal (ctx, ctx2)) || span != -1);
+    ok (!bo, "reducing resources below request should prevent scheduling");
+
+    planner_destroy (&ctx);
+    planner_destroy (&ctx2);
+
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
-    plan (63);
+    plan (67);
 
     test_planner_getters ();
 
@@ -748,6 +807,8 @@ int main (int argc, char *argv[])
     test_more_add_remove ();
 
     test_constructors_and_overload ();
+
+    test_update ();
 
     done_testing ();
 

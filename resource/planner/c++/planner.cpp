@@ -23,6 +23,37 @@ extern "C" {
 
 /****************************************************************************
  *                                                                          *
+ *                     Public Span_t Methods                                *
+ *                                                                          *
+ ****************************************************************************/
+
+bool span_t::operator== (const span_t &o) const
+{
+    if (start != o.start)
+        return false;
+    if (last != o.last)
+        return false;
+    if (span_id != o.span_id)
+        return false;
+    if (planned != o.planned)
+        return false;
+    if (in_system != o.in_system)
+        return false;
+    if ((*(start_p) != *(o.start_p)))
+        return false;
+    if ((*(last_p) != *(o.last_p)))
+        return false;
+
+    return true;
+}
+
+bool span_t::operator!= (const span_t &o) const
+{
+    return !operator == (o);
+}
+
+/****************************************************************************
+ *                                                                          *
  *                     Public Planner Methods                               *
  *                                                                          *
  ****************************************************************************/
@@ -118,7 +149,7 @@ bool planner::operator== (const planner &o) const
         return false;
     // m_p0 or o.m_p0 could be uninitialized
     if (m_p0 && o.m_p0) {
-        if (!scheduled_points_equal (*m_p0, *(o.m_p0)))
+        if (*m_p0 != *(o.m_p0))
             return false;
     } else if (m_p0 || o.m_p0) {
         return false;
@@ -130,6 +161,11 @@ bool planner::operator== (const planner &o) const
     if (!trees_equal (o))
         return false;
     return true;
+}
+
+bool planner::operator!= (const planner &o) const
+{
+    return !operator == (o);
 }
 
 planner::~planner ()
@@ -191,6 +227,30 @@ int planner::restore_track_points ()
     m_avail_time_iter.clear ();
 
     return rc;
+}
+
+int planner::update_total (uint64_t resource_total)
+{
+    int64_t delta = resource_total - m_total_resources;
+    int64_t tmp = 0;
+    scheduled_point_t *point = nullptr;
+    if (delta == 0)
+        return 0;
+    m_total_resources = static_cast<int64_t> (resource_total);
+    point = m_sched_point_tree.get_state (m_plan_start);
+    while (point) {
+        // Prevent remaining from taking negative values. This should 
+        // reduce likelihood of errors when adding and removing spans.
+        // If the performance penalty is non-negligible we can 
+        // investigate letting remaining take negative values.
+        tmp = point->remaining + delta;
+        if (tmp >= 0)
+            point->remaining = tmp;
+        else
+            point->remaining = 0;
+        point = m_sched_point_tree.next (point);
+    }
+    return 0;
 }
 
 int64_t planner::get_total_resources () const
@@ -428,25 +488,6 @@ int planner::copy_maps (const planner &o)
     return rc;
 }
 
-bool planner::scheduled_points_equal (const scheduled_point_t &lhs,
-                                      const scheduled_point_t &rhs) const
-{
-    if (lhs.at != rhs.at)
-        return false;
-    if (lhs.in_mt_resource_tree != rhs.in_mt_resource_tree)
-        return false;
-    if (lhs.new_point != rhs.new_point)
-        return false;
-    if (lhs.ref_count != rhs.ref_count)
-        return false;
-    if (lhs.remaining != rhs.remaining)
-        return false;
-    if (lhs.scheduled != rhs.scheduled)
-        return false;
-
-    return true;
-}
-
 bool planner::span_lookups_equal (const planner &o) const
 {
     if (m_span_lookup.size () != o.m_span_lookup.size ())
@@ -460,23 +501,8 @@ bool planner::span_lookups_equal (const planner &o) const
                 return false;
             if (this_it.first != other->first)
                 return false;
-            if (this_it.second->start != other->second->start)
-                return false;
-            if (this_it.second->last != other->second->last)
-                return false;
-            if (this_it.second->span_id != other->second->span_id)
-                return false;
-            if (this_it.second->planned != other->second->planned)
-                return false;
-            if (this_it.second->in_system != other->second->in_system)
-                return false;
-            if (this_it.second->in_system != other->second->in_system)
-                return false;
-            if (!scheduled_points_equal (*(this_it.second->start_p),
-                                         *(other->second->start_p)))
-                return false;
-            if (!scheduled_points_equal (*(this_it.second->last_p),
-                                         *(other->second->last_p)))
+            // Compare span_t
+            if (*(this_it.second) != *(other->second))
                 return false;
         }
     }
@@ -497,8 +523,7 @@ bool planner::avail_time_iters_equal (const planner &o) const
             if (this_it.first != other->first)
                 return false;
             if (this_it.second && other->second) {
-                if (!scheduled_points_equal (*(this_it.second),
-                                             *(other->second)))
+                if (*(this_it.second) != *(other->second))
                     return false;
             } else if (this_it.second || other->second) {
                 return false;
@@ -518,7 +543,7 @@ bool planner::trees_equal (const planner &o) const
         scheduled_point_t *o_pt =
                         o.m_sched_point_tree.get_state (o.m_plan_start);
         while (this_pt) {
-            if (!scheduled_points_equal (*this_pt, *o_pt))
+            if (*this_pt != *o_pt)
                 return false;
             this_pt = m_sched_point_tree.next (this_pt);
             o_pt = o.m_sched_point_tree.next (o_pt);

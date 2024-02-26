@@ -229,6 +229,19 @@ int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id);
 */
 bool planners_equal (planner_t *lhs, planner_t *rhs);
 
+/*! Update the resource count to support elasticity.
+ *
+ *  \param ctx          opaque planner context returned from planner_new.
+ *  \param resource_total
+ *                      64-bit unsigned integer of
+ *                      the total count of available resources
+ *                      of the resource type.
+ *  \return             0 on success; -1 on an error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ */
+int planner_update_total (planner_t *ctx,
+                          uint64_t resource_total);
+
 #ifdef __cplusplus
 }
 #endif
