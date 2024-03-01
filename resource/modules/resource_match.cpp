@@ -305,13 +305,6 @@ static const struct flux_msg_handler_spec htab[] = {
     FLUX_MSGHANDLER_TABLE_END
 };
 
-static double get_elapse_time (timeval &st, timeval &et)
-{
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec/1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec/1000000.0f;
-    return ts2 - ts1;
-}
-
 /******************************************************************************
  *                                                                            *
  *                   Module Initialization Routines                           *
@@ -1330,16 +1323,14 @@ done:
 static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
-    double elapse;
-    struct timeval st, et;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::duration<double> elapsed;
 
     if (ctx->opts.get_opt ().is_reserve_vtx_vec_set ())
         ctx->db->resource_graph.m_vertices.reserve (
             ctx->opts.get_opt ().get_reserve_vtx_vec ());
-    if ( (rc = gettimeofday (&st, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
+
+    start = std::chrono::system_clock::now ();
     if (ctx->opts.get_opt ().is_load_file_set ()) {
         if (populate_resource_db_file (ctx) < 0)
             goto done;
@@ -1357,11 +1348,9 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
                   "%s: loaded resources from core's resource.acquire",
                   __FUNCTION__);
     }
-    if ( (rc = gettimeofday (&et, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
-    ctx->perf.load = get_elapse_time (st, et);
+
+    elapsed = std::chrono::system_clock::now () - start;
+    ctx->perf.load = elapsed.count ();
     rc = 0;
 
 done:
@@ -1731,15 +1720,12 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       flux_error_t *errp)
 {
     int rc = 0;
-    double elapse = 0.0f;
-    struct timeval start;
-    struct timeval end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::duration<double> elapsed;
+    std::chrono::duration<int64_t> epoch;
     bool rsv = false;
 
-    if ( (rc = gettimeofday (&start, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
+    start = std::chrono::system_clock::now ();
     if (strcmp ("allocate", cmd) != 0
         && strcmp ("allocate_orelse_reserve", cmd) != 0
         && strcmp ("allocate_with_satisfiability", cmd) != 0
@@ -1750,7 +1736,9 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         goto done;
     }
 
-    *at = *now = (int64_t)start.tv_sec;
+    epoch = std::chrono::duration_cast<std::chrono::seconds>
+                                        (start.time_since_epoch ());
+    *at = *now = epoch.count ();
     if ( (rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
         goto done;
     }
@@ -1760,11 +1748,8 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     }
 
     rsv = (*now != *at)? true : false;
-    if ( (rc = gettimeofday (&end, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
-    *ov = get_elapse_time (start, end);
+    elapsed = std::chrono::system_clock::now () - start;
+    *ov = elapsed.count ();
     update_match_perf (ctx, *ov);
 
     if (cmd != std::string ("satisfiability")) {
@@ -1786,16 +1771,12 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 {
     int rc = 0;
     uint64_t duration = 0;
-    double elapse = 0.0f;
-    struct timeval start;
-    struct timeval end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::duration<double> elapsed;
     std::string jgf;
     std::string R2;
 
-    if ( (rc = gettimeofday (&start, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
+    start = std::chrono::system_clock::now ();
     if ( (rc = parse_R (ctx, R, jgf, at, duration)) < 0) {
         flux_log_error (ctx->h, "%s: parsing R", __FUNCTION__);
         goto done;
@@ -1808,11 +1789,8 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         flux_log_error (ctx->h, "%s: writers->emit", __FUNCTION__);
         goto done;
     }
-    if ( (rc = gettimeofday (&end, NULL)) < 0) {
-        flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-        goto done;
-    }
-    ov = get_elapse_time (start, end);
+    elapsed = std::chrono::system_clock::now () - start;
+    ov = elapsed.count ();
     update_match_perf (ctx, ov);
     if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, ov)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
@@ -1834,6 +1812,8 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
     uint64_t duration = 0;
     std::string status = "";
     std::stringstream o;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::duration<double> elapsed;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg, NULL, "{s:I s:s}",
@@ -1844,11 +1824,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
     }
     if (is_existent_jobid (ctx, jobid)) {
         int rc = 0;
-        struct timeval st, et;
-        if ( (rc = gettimeofday (&st, NULL)) < 0) {
-            flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-            goto error;
-        }
+        start = std::chrono::system_clock::now ();
         if ( (rc = Rlite_equal (ctx, R, ctx->jobs[jobid]->R.c_str ())) < 0) {
             flux_log_error (ctx->h, "%s: Rlite_equal", __FUNCTION__);
             goto error;
@@ -1859,12 +1835,9 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
                       __FUNCTION__, static_cast<intmax_t> (jobid));
             goto error;
         }
-        if ( (rc = gettimeofday (&et, NULL)) < 0) {
-            flux_log_error (ctx->h, "%s: gettimeofday", __FUNCTION__);
-            goto error;
-        }
+        elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
-        ov = get_elapse_time (st, et);
+        ov = elapsed.count ();
         get_jobstate_str (ctx->jobs[jobid]->state, status);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
