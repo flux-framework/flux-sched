@@ -45,13 +45,19 @@ class subsystem_selector_t {
 public:
     subsystem_selector_t () {}
     ~subsystem_selector_t () {}
-    subsystem_selector_t (inframap &im, const multi_subsystemsS &sel)
+    subsystem_selector_t (inframap &im, const multi_subsystemsS &sel,
+                          int subsys_size)
     {
         // must be lightweight -- e.g., bundled property map.
         m_imap = im;
         m_selector = sel;
+        m_single_subsystem = (subsys_size == 1) ? true : false;
     }
     bool operator () (const graph_entity &ent) const {
+        // Short circuit for single subsystem. This will be a common case.
+        // TODO: make systems ints or enums for faster comparison and search.
+        if (m_single_subsystem)
+           return true;
         typedef typename boost::property_traits<inframap>::value_type infra_type;
         const infra_type &inf = get (m_imap, ent);
         const multi_subsystems_t &subsystems = inf.member_of;
@@ -72,6 +78,7 @@ public:
 private:
     multi_subsystemsS m_selector;
     inframap m_imap;
+    bool m_single_subsystem;
 };
 
 using vtx_infra_map_t = boost::property_map<resource_graph_t, pinfra_t>::type;

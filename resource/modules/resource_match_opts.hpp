@@ -35,6 +35,7 @@ public:
     const int get_reserve_vtx_vec () const;
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
+    const int get_update_interval () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -45,6 +46,7 @@ public:
     void set_reserve_vtx_vec (const int i);
     void set_prune_filters (const std::string &o);
     void add_to_prune_filters (const std::string &o);
+    void set_update_interval (const int i);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -54,6 +56,7 @@ public:
     bool is_match_subsystems_set () const;
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
+    bool is_update_interval_set () const;
 
     json_t *jsonify () const;
 
@@ -66,6 +69,7 @@ private:
     std::string m_match_subsystems = RESOURCE_OPTS_UNSET_STR;
     int m_reserve_vtx_vec = 0;
     std::string m_prune_filters = RESOURCE_OPTS_UNSET_STR;
+    int m_update_interval = 0;
 };
 
 
@@ -82,6 +86,7 @@ public:
         MATCH_SUBSYSTEMS          = 50, // subsystem
         RESERVE_VTX_VEC           = 60, // reserve-vtx-vec
         PRUNE_FILTERS             = 70, // prune-filter
+        UPDATE_INTERVAL           = 80, // update-interval
         UNKNOWN                   = 5000
     };
 
@@ -102,6 +107,7 @@ public:
     const int get_reserve_vtx_vec () const;
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
+    const int get_update_interval () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -111,6 +117,7 @@ public:
     void set_match_subsystems (const std::string &o);
     void set_reserve_vtx_vec (const int i);
     void set_prune_filters (const std::string &o);
+    void set_update_interval (const int i);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -120,6 +127,7 @@ public:
     bool is_match_subsystems_set () const;
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
+    bool is_update_interval_set () const;
 
     /*! Canonicalize the option set -- apply the general resource properties
      */

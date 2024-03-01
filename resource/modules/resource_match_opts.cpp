@@ -70,6 +70,11 @@ const std::string &resource_prop_t::get_prune_filters () const
     return m_prune_filters;
 }
 
+const int resource_prop_t::get_update_interval () const
+{
+    return m_update_interval;
+}
+
 void resource_prop_t::set_load_file (const std::string &p)
 {
     m_load_file = p;
@@ -125,6 +130,11 @@ void resource_prop_t::add_to_prune_filters (const std::string &p)
     m_prune_filters += p;
 }
 
+void resource_prop_t::set_update_interval (const int i)
+{
+    m_update_interval = i;
+}
+
 bool resource_prop_t::is_load_file_set () const
 {
     return m_load_file != RESOURCE_OPTS_UNSET_STR;
@@ -165,9 +175,14 @@ bool resource_prop_t::is_prune_filters_set () const
     return m_prune_filters != RESOURCE_OPTS_UNSET_STR;
 }
 
+bool resource_prop_t::is_update_interval_set () const
+{
+    return m_update_interval != 0;
+}
+
 json_t *resource_prop_t::jsonify () const
 {
-    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? }",
+    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i }",
                           "load-file", is_load_file_set ()
                               ? get_load_file ().c_str ()
                               : nullptr,
@@ -191,7 +206,10 @@ json_t *resource_prop_t::jsonify () const
                               : 0,
                           "prune-filters", is_prune_filters_set ()
                               ? get_prune_filters ().c_str ()
-                              : nullptr);
+                              : nullptr,
+                          "update-interval", is_update_interval_set ()
+                              ? get_update_interval ()
+                              : 0);
 }
 
 
@@ -280,6 +298,12 @@ resource_opts_t::resource_opts_t ()
                                     ::resource_opts_key_t
                                         ::PRUNE_FILTERS)));
     inserted &= ret.second;
+    ret= m_tab.insert (std::pair<std::string, int> (
+              "update-interval",
+              static_cast<int> (resource_opts_t
+                                    ::resource_opts_key_t
+                                        ::UPDATE_INTERVAL)));
+    inserted &= ret.second;
 
     if (!inserted)
         throw std::bad_alloc ();
@@ -323,6 +347,11 @@ const int resource_opts_t::get_reserve_vtx_vec () const
 const std::string &resource_opts_t::get_prune_filters () const
 {
     return m_resource_prop.get_prune_filters ();
+}
+
+const int resource_opts_t::get_update_interval () const
+{
+    return m_resource_prop.get_update_interval ();
 }
 
 const resource_prop_t &resource_opts_t::get_resource_prop () const
@@ -370,6 +399,11 @@ void resource_opts_t::set_prune_filters (const std::string &o)
     m_resource_prop.set_prune_filters (o);
 }
 
+void resource_opts_t::set_update_interval (const int i)
+{
+    m_resource_prop.set_update_interval (i);
+}
+
 bool resource_opts_t::is_load_file_set () const
 {
     return m_resource_prop.is_load_file_set ();
@@ -410,6 +444,11 @@ bool resource_opts_t::is_prune_filters_set () const
     return m_resource_prop.is_prune_filters_set ();
 }
 
+bool resource_opts_t::is_update_interval_set () const
+{
+    return m_resource_prop.is_update_interval_set ();
+}
+
 resource_opts_t &resource_opts_t::canonicalize ()
 {
     return *this;
@@ -441,6 +480,9 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
     if (src.m_resource_prop.is_prune_filters_set ())
         m_resource_prop.set_prune_filters (
             src.m_resource_prop.get_prune_filters ());
+    if (src.m_resource_prop.is_update_interval_set ())
+        m_resource_prop.set_update_interval (
+            src.m_resource_prop.get_update_interval ());
     return *this;
 }
 
@@ -540,6 +582,15 @@ int resource_opts_t::parse (const std::string &k,
                 m_resource_prop.add_to_prune_filters (v);
             else
                 m_resource_prop.set_prune_filters (v);
+        }
+        break;
+
+    case static_cast<int> (resource_opts_key_t::UPDATE_INTERVAL):
+        if (is_number (v)) {
+            int s = std::stoi (v);
+            if ( !(s <= 0 || s > 2000000)) {
+                m_resource_prop.set_update_interval (s);
+            }
         }
         break;
 
