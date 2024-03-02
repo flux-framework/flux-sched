@@ -1,3 +1,22 @@
+flux-sched version 0.33.0 - 2024-03-04
+--------------------------------------
+
+### New Features
+ * Add match options and match satisfy to reapi (#1133)
+ * Build reapi_cli as a shared library (#1120)
+ * configure: drop src/shell requirements (#1141)
+
+### Fixes
+ * Improve sched.resource-status RPC and search performance (#1144)
+ * Planner comparison and update (#1061)
+ * debbuild: fix Python purelib paths on Debian systems (#1139)
+ * Fix overflow in `calc_factor` (#1132)
+
+### Testsuite
+ * testsuite: prepare for flux_job_wait(3) change (#1147)
+ * testsuite: remove trailing ampersands in tests (#1145)
+ * Reactivate planner_multi and schema unit tests (#1131)
+
 flux-sched version 0.32.0 - 2024-01-04
 --------------------------------------
 
