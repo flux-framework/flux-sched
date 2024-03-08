@@ -40,7 +40,7 @@ set(RESOURCE_HEADERS
     store/resource_graph_store.hpp
     )
 
-add_library(resource STATIC
+set(RESOURCE_SRCFILES 
     policies/dfu_match_locality.cpp
     policies/dfu_match_var_aware.cpp
     policies/dfu_match_policy_factory.cpp
@@ -69,8 +69,21 @@ add_library(resource STATIC
     evaluators/expr_eval_api.cpp
     evaluators/expr_eval_vtx_target.cpp
     store/resource_graph_store.cpp
+    )
+
+add_library(resource STATIC
+    ${RESOURCE_SRCFILES}	
     ${RESOURCE_HEADERS}
     )
+
+find_package(perfflowaspect REQUIRED PATHS /home/patki1/PerfFlowAspect/src/c/install-pfa/share)
+
+set(perfflow_deps -L${PERFFLOWASPECT_LIB_DIR} -lperfflow_runtime OpenSSL::Crypto)
+
+foreach(SRCFILE ${RESOURCE_SRCFILES})
+   set_source_files_properties(SRCFILE COMPILE_FLAGS "-Xclang -load -Xclang ${PERFFLOWASPECT_LIB_DIR}/libWeavePass.so")
+endforeach()
+
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
@@ -86,6 +99,8 @@ target_link_libraries(resource PUBLIC
     Boost::regex
     jobspec_conv
     Boost::filesystem
+    # This needs to be conditional eventually
+    ${perfflow_deps}
     )
 
 add_subdirectory(modules)
