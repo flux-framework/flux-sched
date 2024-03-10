@@ -273,6 +273,8 @@ static std::shared_ptr<span_t> span_new (planner_t *ctx, int64_t start_time,
 
         // errno = EEXIST condition already checked above
         ctx->plan->span_lookup_insert (span->span_id, span);
+        // insert into tracking multimap for start time to span_ids
+        ctx->plan->start_to_span_insert (span->start, span->span_id);
     }
     catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -280,6 +282,24 @@ static std::shared_ptr<span_t> span_new (planner_t *ctx, int64_t start_time,
 
 done:
     return span;
+}
+
+static int span_move (planner_t *ctx, span_t &span, int64_t duration)
+{
+    span.start += duration;
+    span.start_p->at += duration;
+    span.last += duration;
+    span.last_p += duration;
+    if (span.start_p->in_mt_resource_tree)
+        ctx->plan->mt_tree_remove (span.start_p);
+    if (span.start_p->ref_count && !(span.start_p->in_mt_resource_tree))
+        ctx->plan->mt_tree_insert (span.start_p);
+    if (span.last_p->in_mt_resource_tree)
+        ctx->plan->mt_tree_remove (span.last_p);
+    if (span.last_p->ref_count && !(span.last_p->in_mt_resource_tree))
+        ctx->plan->mt_tree_insert (span.last_p);
+
+    return 0;
 }
 
 
@@ -562,6 +582,8 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     fetch_overlap_points (ctx, span->start, duration, list);
     update_points_subtract_span (ctx, list, span);
     update_mintime_resource_tree (ctx, list);
+    // remove from m_start_to_span map
+    ctx->plan->start_to_span_remove (span->start, span->span_id);
     span->in_system = 0;
 
     if (span->start_p->ref_count == 0) {
@@ -584,6 +606,61 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     rc = 0;
 
     return rc;
+}
+
+extern "C" int planner_update_span (planner_t *ctx, int64_t span_id,
+                                    int64_t expiration)
+{
+    int rc = -1;
+    std::map<int64_t, std::shared_ptr<span_t>>::iterator it;
+
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
+    it = ctx->plan->get_span_lookup ().find (span_id);
+    if (it == ctx->plan->get_span_lookup ().end ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    std::shared_ptr<span_t> &span = it->second;
+    // duration or extension here?
+    int64_t delta = expiration - span->last;
+    if (delta == 0) {
+        return 1;
+    }
+    // update the span end time
+    span->last = expiration;
+    // update the point
+    span->last_p->at = expiration;
+    // reset MT tree
+    if (span->last_p->in_mt_resource_tree)
+        ctx->plan->mt_tree_remove (span->last_p);
+    if (span->last_p->ref_count && !(span->last_p->in_mt_resource_tree))
+        ctx->plan->mt_tree_insert (span->last_p);
+
+    std::list<scheduled_point_t *> list;
+    fetch_overlap_points (ctx, span->last, expiration, list);
+    if (list.size () > 1) {
+        errno = EINVAL;
+        return -1;
+    }
+    // const std::multimap<int64_t, int64_t> &start_to_span = ctx->plan->get_start_to_span ();
+    // for (auto pt : list) {
+    //     auto equal_range = start_to_span.equal_range (pt->at);
+    //     // May want to return -1 if overlapping points
+    //     for (auto it = equal_range.first; it != equal_range.second; ++it) {
+    //         // it->first is start time, it->second is span_id
+    //         std::map<int64_t, std::shared_ptr<span_t>>::iterator span_it = ctx->plan->get_span_lookup ().find (it->second);
+    //         if (span_it == ctx->plan->get_span_lookup ().end ()) {
+    //             errno = EINVAL;
+    //             return -1;
+    //         }
+    //         span_move (ctx, *(span_it)->second, delta);
+    //     }
+    // }
+
+    return 0;
 }
 
 extern "C" int64_t planner_span_first (planner_t *ctx)
