@@ -52,6 +52,7 @@ public:
     int reinitialize (int64_t base_time, uint64_t duration);
     int restore_track_points ();
     int update_total (uint64_t resource_total);
+    int update_span (int64_t span_id, int64_t duration);
     
     // Resources and duration
     int64_t get_total_resources () const;
@@ -89,6 +90,11 @@ public:
     void clear_avail_time_iter ();
     void set_avail_time_iter_set (int atime_iter_set);
     const int get_avail_time_iter_set () const;
+
+    void start_to_span_insert (int64_t start, int64_t span_id);
+    void start_to_span_remove (int64_t start, int64_t span_id);
+    const std::multimap<int64_t, int64_t> &get_start_to_span () const;
+
     // Request functions
     request_t &get_current_request ();
     const request_t &get_current_request_const () const;
@@ -107,6 +113,7 @@ private:
     std::map<int64_t, std::shared_ptr<span_t> > m_span_lookup; /* span lookup */
     std::map<int64_t, std::shared_ptr<span_t> >::iterator m_span_lookup_iter;
     std::map<int64_t, scheduled_point_t *> m_avail_time_iter; /* MT node track */
+    std::multimap<int64_t, int64_t> m_start_to_span;
     int m_avail_time_iter_set = 0;  /* iterator set flag */
     request_t m_current_request;   /* the req copy for avail time iteration */
     uint64_t m_span_counter = 0;   /* current span counter */
