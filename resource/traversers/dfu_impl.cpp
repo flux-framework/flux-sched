@@ -1132,7 +1132,12 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
         }
     }
 
-    if (!avail.empty () && !types.empty ()) {
+    if (avail.empty () || types.empty ()) {
+        rc = 0;
+        goto done;
+    }
+
+    if ( (*m_graph)[u].idata.subplans[s] == NULL) {
         errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types)) ) {
@@ -1141,6 +1146,9 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
+    } else {
+        planner_multi_update ((*m_graph)[u].idata.subplans[s], &avail[0], 
+                               &types[0], types.size ());
     }
     rc = 0;
 done:
