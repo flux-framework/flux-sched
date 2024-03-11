@@ -107,7 +107,7 @@ public:
      *                                match callback uses.
      *                       EBUSY: cannot match because resources/devices
      *                              are currently in use.
-     *                       ENODEV: unsatifiable jobspec becuase no
+     *                       ENODEV: unsatifiable jobspec because no
      *                               resources/devices can satisfy the request.
      */
     int run (Jobspec::Jobspec &jobspec,
