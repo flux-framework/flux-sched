@@ -167,6 +167,16 @@ public:
      */
     int remove (int64_t jobid);
 
+    /*! Modify the allocation/reservation referred to by jobid and update
+     *  the resource state.
+     *
+     *  \param jobid      job id.
+     *  \param expiration new expiration time.
+     *  \return           0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int modify (int64_t jobid, int64_t expiration);
+
     /*! Mark the resource status up|down|etc starting at subtree_root.
      *
      *  \param root_path     path to the root of the subtree to update.
