@@ -415,6 +415,32 @@ done:
     return rc;
 }
 
+extern "C" int planner_multi_update_span (planner_multi_t *ctx,
+                                          int64_t span_id,
+                                          int64_t expiration)
+{
+    size_t i;
+    int rc = -1;
+
+    if (!ctx || span_id < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    auto it = ctx->plan_multi->get_span_lookup ().find (span_id);
+    if (it == ctx->plan_multi->get_span_lookup ().end ()) {
+        errno = ENOENT;
+        goto done;
+    }
+    for (i = 0; i < it->second.size (); ++i) {
+        if (planner_update_span (ctx->plan_multi->get_planner_at (i),
+                                 it->second[i], expiration) == -1)
+            goto done;
+    }
+    rc  = 0;
+done:
+    return rc;
+}
+
 int64_t planner_multi_span_first (planner_multi_t *ctx)
 {
     int64_t rc = -1;
