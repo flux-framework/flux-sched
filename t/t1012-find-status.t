@@ -124,8 +124,8 @@ test_expect_success 'find/status: flux resource list works' '
 '
 
 test_expect_success 'find/status: cancel jobs' '
-    flux job cancel ${jobid1} &&
-    flux job cancel ${jobid2} &&
+    flux cancel ${jobid1} &&
+    flux cancel ${jobid2} &&
     flux job wait-event -t 10 ${jobid2} clean
 '
 

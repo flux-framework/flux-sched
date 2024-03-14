@@ -58,7 +58,7 @@ test_expect_success 'occupy resources in second queue' '
 	flux submit --queue=batch -N3 sleep 300 >job2.out
 '
 test_expect_success 'cancel job occupying first queue' '
-	flux job cancel $(cat job1.out)
+	flux cancel $(cat job1.out)
 '
 test_expect_success 'run a job in first queue' '
 	flux run --queue=debug /bin/true
@@ -70,7 +70,7 @@ test_expect_success 'run a job in first queue' '
 	flux run --queue=debug /bin/true
 '
 test_expect_success 'cancel job occupying second queue' '
-	flux job cancel $(cat job2.out)
+	flux cancel $(cat job2.out)
 '
 test_expect_success 'run a job in each queue' '
 	flux run --queue=debug /bin/true &&
