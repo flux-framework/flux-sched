@@ -401,6 +401,13 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element, fetch_helper_t &f,
     }
     *properties = json_object_get (metadata, "properties");
     *paths = p;
+    if (*properties && !json_is_object (*properties)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": key (properties) must be an object or null for ";
+        m_err_msg += std::string (f.vertex_id) + ".\n";
+        goto done;
+    }
     rc = 0;
 done:
     return rc;
