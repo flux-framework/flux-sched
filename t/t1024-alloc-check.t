@@ -45,7 +45,7 @@ test_expect_success 'no jobs received alloc-check exception' '
 	test_must_fail grep "job.exception type=alloc-check" joberr
 '
 test_expect_success 'clean up' '
-	flux job cancelall -f &&
+	flux cancel --all &&
 	flux queue idle &&
 	(flux resource undrain 0 || true)
 '
