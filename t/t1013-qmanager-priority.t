@@ -37,7 +37,7 @@ test_expect_success 'priority: 2 jobs with higher urgency will not run' '
 '
 
 test_expect_success 'priority: canceling the first job starts the last job' '
-    flux job cancel ${jobid1} &&
+    flux cancel ${jobid1} &&
     flux job wait-event -t 10 ${jobid3} start
 '
 
@@ -53,13 +53,13 @@ test_expect_success 'priority: change older job to higher urgency' '
 '
 
 test_expect_success 'priority: canceling the running job starts the earlier job' '
-    flux job cancel ${jobid3} &&
+    flux cancel ${jobid3} &&
     flux job wait-event -t 10 ${jobid2} start
 '
 
 test_expect_success 'priority: cancel all jobs' '
-    flux job cancel ${jobid4} &&
-    flux job cancel ${jobid2} &&
+    flux cancel ${jobid4} &&
+    flux cancel ${jobid2} &&
     flux job wait-event -t 10 ${jobid4} clean &&
     flux job wait-event -t 10 ${jobid2} release
 '

@@ -53,7 +53,7 @@ test_expect_success 'rv1-bootstrap: resource idempotency preserved' '
 
 # Cancel jobs
 test_expect_success 'rv1-bootstrap: killing a nested job works' '
-    flux job cancel ${JOBID} &&
+    flux cancel ${JOBID} &&
     flux job wait-event ${JOBID} release
 '
 
@@ -88,8 +88,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (high)' '
 
 # Cancel jobs
 test_expect_success 'rv1-bootstrap: killing nested jobs works' '
-    flux job cancel ${JOBID1} &&
-    flux job cancel ${JOBID2} &&
+    flux cancel ${JOBID1} &&
+    flux cancel ${JOBID2} &&
     flux job wait-event -t600 ${JOBID1} release &&
     flux job wait-event -t600 ${JOBID2} release
 '
@@ -134,8 +134,8 @@ test_expect_success 'rv1-bootstrap: 2 partial node nesting works (low)' '
 
 # Cancel jobs
 test_expect_success 'rv1-bootstrap: killing nested jobs works' '
-    flux job cancel ${JOBID3} &&
-    flux job cancel ${JOBID4} &&
+    flux cancel ${JOBID3} &&
+    flux cancel ${JOBID4} &&
     flux job wait-event -t 600 ${JOBID3} release &&
     flux job wait-event -t 600 ${JOBID4} release
 '
@@ -177,7 +177,7 @@ test_expect_success 'rv1-bootstrap: double nesting works' '
 
 # Cancel jobs
 test_expect_success 'rv1-bootstrap: killing doubly nested jobs works' '
-    flux job cancel ${JOBID5} &&
+    flux cancel ${JOBID5} &&
     flux job wait-event -t 600 ${JOBID5} release
 '
 

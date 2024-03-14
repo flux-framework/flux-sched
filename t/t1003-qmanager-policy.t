@@ -54,13 +54,13 @@ test_expect_success 'qmanager: EASY policy correctly schedules jobs' '
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid6} start &&
     flux job wait-event -t 10 ${jobid11} start &&
-    flux job cancel ${jobid6} &&
+    flux cancel ${jobid6} &&
     flux job wait-event -t 10 ${jobid7} start &&
     flux job wait-event -t 10 ${jobid9} start &&
     test $(flux job list --states=active | wc -l) -eq 10 &&
     test $(flux job list --states=running| wc -l) -eq 4 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -86,12 +86,12 @@ test_expect_success 'qmanager: HYBRID policy correctly schedules jobs' '
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid7} start &&
     flux job wait-event -t 10 ${jobid11} start &&
-    flux job cancel ${jobid7} &&
+    flux cancel ${jobid7} &&
     flux job wait-event -t 10 ${jobid9} start &&
     test $(flux job list --states=active | wc -l) -eq 10 &&
     test $(flux job list --states=running| wc -l) -eq 3 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -118,12 +118,12 @@ test_expect_success 'qmanager: CONSERVATIVE correctly schedules jobs' '
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid7} start &&
     flux job wait-event -t 10 ${jobid11} start &&
-    flux job cancel ${jobid7} &&
+    flux cancel ${jobid7} &&
     flux job wait-event -t 10 ${jobid7} clean &&
     test $(flux job list --states=active | wc -l) -eq 10 &&
     test $(flux job list --states=running| wc -l) -eq 2 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 

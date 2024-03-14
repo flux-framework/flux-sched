@@ -53,14 +53,14 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
 
     flux job wait-event -t 10 ${jobid1} start &&
     flux job wait-event -t 10 ${jobid6} start &&
-    flux job cancel ${jobid6} &&
+    flux cancel ${jobid6} &&
     flux job wait-event -t 10 ${jobid7} start &&
-    flux job cancel ${jobid7} &&
+    flux cancel ${jobid7} &&
     flux job wait-event -t 10 ${jobid8} start &&
     test $(flux job list --states=active | wc -l) -eq 9 &&
     test $(flux job list --states=running | wc -l) -eq 2 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -88,7 +88,7 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
     test $(flux job list --states=active | wc -l) -eq 11 &&
     test $(flux job list --states=running| wc -l) -eq 1 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -115,7 +115,7 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
     test $(flux job list --states=active | wc -l) -eq 11 &&
     test $(flux job list --states=running | wc -l) -eq 1 &&
     active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 

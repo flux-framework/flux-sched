@@ -57,13 +57,13 @@ test_expect_success 'qmanager: handle the alloc resubmitted by job-manager' '
     jobid1=$(cat jobid1.out) &&
     jobid2=$(cat jobid2.out) &&
     jobid3=$(cat jobid3.out) &&
-    flux job cancel ${jobid1} &&
+    flux cancel ${jobid1} &&
     flux job wait-event -t 10 ${jobid2} start
 '
 
 test_expect_success 'qmanager: canceling a pending job works' '
     jobid3=$(cat jobid3.out) &&
-    flux job cancel ${jobid3} &&
+    flux cancel ${jobid3} &&
     flux job wait-event -t 10 ${jobid3} exception
 '
 

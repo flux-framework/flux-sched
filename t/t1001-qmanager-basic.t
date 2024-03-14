@@ -47,7 +47,7 @@ test_expect_success 'qmanager: canceling job during execution works' '
     jobid=$(flux run --dry-run -t 100m hostname | \
         exec_test | flux job submit) &&
     flux job wait-event -vt 10 ${jobid} start &&
-    flux job cancel ${jobid} &&
+    flux cancel ${jobid} &&
     flux job wait-event -t 10 ${jobid} exception &&
     flux job wait-event -t 10 ${jobid} finish | grep status=15 &&
     flux job wait-event -t 10 ${jobid} release &&

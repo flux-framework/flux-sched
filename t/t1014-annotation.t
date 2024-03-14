@@ -68,7 +68,7 @@ test_expect_success 'annotation: works with EASY policy' '
 
 test_expect_success 'annotation: cancel all active jobs 1' '
     active_jobs=$(flux job list --state=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -96,7 +96,7 @@ test_expect_success 'annotation: works with HYBRID policy' '
 
 test_expect_success 'annotation: cancel all active jobs 2' '
     active_jobs=$(flux job list --state=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -124,7 +124,7 @@ test_expect_success 'annotation: works with CONSERVATIVE policy' '
 
 test_expect_success 'annotation: cancel all active jobs 3' '
     active_jobs=$(flux job list --state=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
@@ -150,7 +150,7 @@ test_expect_success 'annotation: works with FCFS policy' '
     hasnt_annotation ${jobid4} &&
     hasnt_annotation ${jobid5} &&
     active_jobs=$(flux job list --state=active | jq .id) &&
-    for job in ${active_jobs}; do flux job cancel ${job}; done &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
