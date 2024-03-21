@@ -93,7 +93,7 @@ public:
 
     void start_to_span_insert (int64_t start, int64_t span_id);
     void start_to_span_remove (int64_t start, int64_t span_id);
-    const std::multimap<int64_t, int64_t> &get_start_to_span () const;
+    std::multimap<int64_t, int64_t> &get_start_to_span ();
 
     // Request functions
     request_t &get_current_request ();

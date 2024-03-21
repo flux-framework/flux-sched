@@ -426,7 +426,7 @@ void planner::start_to_span_remove (int64_t start, int64_t span_id)
     }
 }
 
-const std::multimap<int64_t, int64_t> &planner::get_start_to_span () const
+std::multimap<int64_t, int64_t> &planner::get_start_to_span ()
 {
     return m_start_to_span;
 }
