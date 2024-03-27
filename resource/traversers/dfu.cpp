@@ -380,6 +380,21 @@ int dfu_traverser_t::remove (int64_t jobid)
     return detail::dfu_impl_t::remove (root, jobid);
 }
 
+int dfu_traverser_t::modify (int64_t jobid, int64_t expiration)
+{
+    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    if (!get_graph () || !get_graph_db ()
+        || get_graph_db ()->metadata.roots.find (dom)
+           == get_graph_db ()->metadata.roots.end ()
+        || !get_match_cb ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    vtx_t root = get_graph_db ()->metadata.roots.at (dom);
+    return detail::dfu_impl_t::modify (root, jobid, expiration);
+}
+
 int dfu_traverser_t::mark (const std::string &root_path, 
                            resource_pool_t::status_t status)
 {

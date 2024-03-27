@@ -351,7 +351,8 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
                       excl, n_plans, jobmeta, full, dfu, to_parent);
 }
 
-int dfu_impl_t::rem_txfilter (vtx_t u, int64_t jobid, bool &stop)
+int dfu_impl_t::mod_txfilter (vtx_t u, int64_t jobid, int64_t expiration,
+                              bool &stop, bool remove)
 {
     int rc = -1;
     int64_t span = -1;
@@ -371,23 +372,38 @@ int dfu_impl_t::rem_txfilter (vtx_t u, int64_t jobid, bool &stop)
     }
 
     x_checker = (*m_graph)[u].idata.x_checker;
-    (*m_graph)[u].idata.tags.erase (jobid);
     span = (*m_graph)[u].idata.x_spans[jobid];
-    (*m_graph)[u].idata.x_spans.erase (jobid);
-    if ( (rc = planner_rem_span (x_checker, span)) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += "planner_rem_span returned -1.\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
+    if (remove) {
+        (*m_graph)[u].idata.tags.erase (jobid);
+        (*m_graph)[u].idata.x_spans.erase (jobid);
+        if ( (rc = planner_rem_span (x_checker, span)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += "planner_rem_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        }
+    } else {
+        if ( (rc = planner_update_span (x_checker, span,
+                                        expiration)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += "planner_update_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        } else if (rc == 1) {
+            stop = true;
+            rc = 0;
+        }
     }
 
 done:
     return rc;
 }
 
-int dfu_impl_t::rem_agfilter (vtx_t u, int64_t jobid,
-                              const std::string &subsystem)
+int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid, int64_t expiration,
+                              const std::string &subsystem,
+                              bool remove)
 {
     int rc = 0;
     int span = -1;
@@ -402,79 +418,108 @@ int dfu_impl_t::rem_agfilter (vtx_t u, int64_t jobid,
         rc = -1;
         goto done;
     }
-    if ((rc = planner_multi_rem_span (subtree_plan, span)) != 0) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": planner_multi_rem_span returned -1.\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += "\n";
+    if (remove) {
+        if ((rc = planner_multi_rem_span (subtree_plan, span)) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_multi_rem_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
+        }
+    } else {
+        if ((rc = planner_multi_update_span (subtree_plan, span,
+                                             expiration)) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_multi_update_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
+        }
     }
 
 done:
     return rc;
 }
 
-int dfu_impl_t::rem_idata (vtx_t u, int64_t jobid,
-                           const std::string &subsystem, bool &stop)
+int dfu_impl_t::mod_idata (vtx_t u, int64_t jobid, int64_t expiration,
+                           const std::string &subsystem,
+                           bool &stop, bool remove)
 {
     int rc = -1;
 
-    if ( (rc = rem_txfilter (u, jobid, stop)) != 0 || stop)
+    if ( (rc = mod_txfilter (u, jobid, expiration, stop, remove)) != 0 || stop)
         goto done;
-    if ( (rc = rem_agfilter (u, jobid, subsystem)) != 0)
+    if ( (rc = mod_agfilter (u, jobid, expiration, subsystem, remove)) != 0)
         goto done;
 
 done:
     return rc;
 }
 
-int dfu_impl_t::rem_plan (vtx_t u, int64_t jobid)
+int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, int64_t expiration,
+                          bool remove)
 {
     int rc = 0;
     int64_t span = -1;
     planner_t *plans = NULL;
 
-    if ((*m_graph)[u].schedule.allocations.find (jobid)
-        != (*m_graph)[u].schedule.allocations.end ()) {
-        span = (*m_graph)[u].schedule.allocations[jobid];
-        (*m_graph)[u].schedule.allocations.erase (jobid);
-    } else if ((*m_graph)[u].schedule.reservations.find (jobid)
-               != (*m_graph)[u].schedule.reservations.end ()) {
-        span = (*m_graph)[u].schedule.reservations[jobid];
-        (*m_graph)[u].schedule.reservations.erase (jobid);
-    } else {
-        goto done;
-    }
-
     plans = (*m_graph)[u].schedule.plans;
-    if ( (rc = planner_rem_span (plans, span)) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": planner_rem_span returned -1.\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
+    if (remove) {
+        if ((*m_graph)[u].schedule.allocations.find (jobid)
+            != (*m_graph)[u].schedule.allocations.end ()) {
+            span = (*m_graph)[u].schedule.allocations[jobid];
+            (*m_graph)[u].schedule.allocations.erase (jobid);
+        } else if ((*m_graph)[u].schedule.reservations.find (jobid)
+                != (*m_graph)[u].schedule.reservations.end ()) {
+            span = (*m_graph)[u].schedule.reservations[jobid];
+            (*m_graph)[u].schedule.reservations.erase (jobid);
+        } else {
+            goto done;
+        }
+        if ( (rc = planner_rem_span (plans, span)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_rem_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        }
+    } else {
+        if ((*m_graph)[u].schedule.allocations.find (jobid)
+            == (*m_graph)[u].schedule.allocations.end ())
+            goto done;
+        span = (*m_graph)[u].schedule.allocations[jobid];
+        if ( (rc = planner_update_span (plans, span, expiration)) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_update_span returned -1.\n";
+            m_err_msg += (*m_graph)[u].name + ".\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+        }
     }
 
 done:
     return rc;
 }
 
-int dfu_impl_t::rem_upv (vtx_t u, int64_t jobid)
+int dfu_impl_t::mod_upv (vtx_t u, int64_t jobid, int64_t expiration,
+                         bool remove)
 {
     // NYI: remove schedule data for upwalk
     return 0;
 }
 
-int dfu_impl_t::rem_dfv (vtx_t u, int64_t jobid)
+int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, int64_t expiration,
+                         bool remove)
 {
     int rc = 0;
     bool stop = false;
     const std::string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
-    if ( (rc = rem_idata (u, jobid, dom, stop)) != 0 || stop)
+    if ( (rc = mod_idata (u, jobid, expiration, dom, stop,
+                          remove)) != 0 || stop)
         goto done;
-    if ( (rc = rem_plan (u, jobid)) != 0)
+    if ( (rc = mod_plan (u, jobid, expiration, remove)) != 0)
         goto done;
     for (auto &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
@@ -482,16 +527,16 @@ int dfu_impl_t::rem_dfv (vtx_t u, int64_t jobid)
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
             if (subsystem == dom)
-                rc += rem_dfv (tgt, jobid);
+                rc += mod_dfv (tgt, jobid, expiration, remove);
             else
-                rc += rem_upv (tgt, jobid);
+                rc += mod_upv (tgt, jobid, expiration, remove);
         }
     }
 done:
     return rc;
 }
 
-int dfu_impl_t::rem_exv (int64_t jobid)
+int dfu_impl_t::mod_exv (int64_t jobid, int64_t expiration, bool remove)
 {
     int rc = -1;
     int64_t span = -1;
@@ -508,25 +553,45 @@ int dfu_impl_t::rem_exv (int64_t jobid)
     // In this case, you can't find allocated resources from an accelerated
     // depth first visit (dfv). There won't be no idata for that allocation.
     for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
-        if (g[*vi].schedule.allocations.find (jobid)
-            != g[*vi].schedule.allocations.end ()) {
-            span = g[*vi].schedule.allocations[jobid];
-            g[*vi].schedule.allocations.erase (jobid);
-        } else if (g[*vi].schedule.reservations.find (jobid)
-                   != g[*vi].schedule.reservations.end ()) {
-            span = g[*vi].schedule.reservations[jobid];
-            g[*vi].schedule.reservations.erase (jobid);
-        } else {
-            continue;
-        }
+        if (remove) {
+            if (g[*vi].schedule.allocations.find (jobid)
+                != g[*vi].schedule.allocations.end ()) {
+                span = g[*vi].schedule.allocations[jobid];
+                g[*vi].schedule.allocations.erase (jobid);
+            } else if (g[*vi].schedule.reservations.find (jobid)
+                    != g[*vi].schedule.reservations.end ()) {
+                span = g[*vi].schedule.reservations[jobid];
+                g[*vi].schedule.reservations.erase (jobid);
+            } else {
+                continue;
+            }
 
-        if ( (rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_rem_span returned -1.\n";
-            m_err_msg += "name=" + g[*vi].name + "uniq_id=";
-            m_err_msg += std::to_string (g[*vi].uniq_id) + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
+            if ( (rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_rem_span returned -1.\n";
+                m_err_msg += "name=" + g[*vi].name + "uniq_id=";
+                m_err_msg += std::to_string (g[*vi].uniq_id) + ".\n";
+                m_err_msg += strerror (errno);
+                m_err_msg += ".\n";
+            }
+        }
+        else {
+            if (g[*vi].schedule.allocations.find (jobid)
+                != g[*vi].schedule.allocations.end ()) {
+                span = g[*vi].schedule.allocations[jobid];
+            } else {
+                continue;
+            }
+
+            if ( (rc += planner_update_span (g[*vi].schedule.plans, span,
+                                             expiration)) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_update_span returned -1.\n";
+                m_err_msg += "name=" + g[*vi].name + "uniq_id=";
+                m_err_msg += std::to_string (g[*vi].uniq_id) + ".\n";
+                m_err_msg += strerror (errno);
+                m_err_msg += ".\n";
+            }
         }
     }
 
@@ -648,7 +713,17 @@ int dfu_impl_t::remove (vtx_t root, int64_t jobid)
     bool root_has_jtag = ((*m_graph)[root].idata.tags.find (jobid)
                           != (*m_graph)[root].idata.tags.end ());
     m_color.reset ();
-    return (root_has_jtag)? rem_dfv (root, jobid) : rem_exv (jobid);
+    return (root_has_jtag)? mod_dfv (root, jobid, 0, true)
+                            : mod_exv (jobid, 0, true);
+}
+
+int dfu_impl_t::modify (vtx_t root, int64_t jobid, int64_t expiration)
+{
+    bool root_has_jtag = ((*m_graph)[root].idata.tags.find (jobid)
+                          != (*m_graph)[root].idata.tags.end ());
+    m_color.reset ();
+    return (root_has_jtag)? mod_dfv (root, jobid, expiration, false)
+                            : mod_exv (jobid, expiration, false);
 }
 
 int dfu_impl_t::mark (const std::string &root_path, 

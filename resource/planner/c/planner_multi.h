@@ -278,6 +278,9 @@ int64_t planner_multi_add_span (planner_multi_t *ctx, int64_t start_time,
  */
 int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id);
 
+int planner_multi_update_span (planner_multi_t *ctx, int64_t span_id,
+                               int64_t expiration);
+
 //! Span iterators -- there is no specific iteration order
 //  return -1 when you no longer can iterate: EINVAL when ctx is NULL.
 //  ENOENT when you reached the end of the spans

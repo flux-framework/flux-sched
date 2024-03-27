@@ -12,6 +12,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <queue>
 
 #include "resource/planner/c++/planner.hpp"
 
@@ -584,6 +585,41 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     rc = 0;
 
     return rc;
+}
+
+extern "C" int planner_update_span (planner_t *ctx, int64_t span_id,
+                                    int64_t expiration)
+{
+    int rc = -1;
+    std::map<int64_t, std::shared_ptr<span_t>>::iterator it;
+
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
+    it = ctx->plan->get_span_lookup ().find (span_id);
+    if (it == ctx->plan->get_span_lookup ().end ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    std::shared_ptr<span_t> &span = it->second;
+    // duration or extension here?
+    int64_t delta = expiration - span->last;
+    if (delta == 0) {
+        return 1;
+    }
+    // update the span end time
+    int64_t prev_last = span->last;
+    span->last = expiration;
+    // update the point
+    span->last_p->at = expiration;
+    // reset MT tree
+    if (span->last_p->in_mt_resource_tree)
+        ctx->plan->mt_tree_remove (span->last_p);
+    if (span->last_p->ref_count && !(span->last_p->in_mt_resource_tree))
+        ctx->plan->mt_tree_insert (span->last_p);
+
+    return 0;
 }
 
 extern "C" int64_t planner_span_first (planner_t *ctx)

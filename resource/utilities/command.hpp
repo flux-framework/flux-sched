@@ -81,6 +81,8 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
 int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args);
+int cmd_expiration (std::shared_ptr<resource_context_t> &ctx,
+                std::vector<std::string> &args);
 int cmd_set_property (std::shared_ptr<resource_context_t> &ctx,
                       std::vector<std::string> &args);
 int cmd_get_property (std::shared_ptr<resource_context_t> &ctx,
