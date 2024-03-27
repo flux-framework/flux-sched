@@ -99,7 +99,6 @@ planner::planner (const planner &o)
     m_current_request = o.m_current_request;
     m_avail_time_iter_set = o.m_avail_time_iter_set;
     m_span_counter = o.m_span_counter;
-    m_start_to_span = o.m_start_to_span;
     // After above copy the SP tree now has the full state of the base point.
     m_p0 = m_sched_point_tree.get_state (m_plan_start);
 }
@@ -128,7 +127,6 @@ planner &planner::operator= (const planner &o)
     m_current_request = o.m_current_request;
     m_avail_time_iter_set = o.m_avail_time_iter_set;
     m_span_counter = o.m_span_counter;
-    m_start_to_span = o.m_start_to_span;
     // After above copy the SP tree now has the full state of the base point.
     m_p0 = m_sched_point_tree.get_state (m_plan_start);
 
@@ -148,8 +146,6 @@ bool planner::operator== (const planner &o) const
     if (m_avail_time_iter_set != o.m_avail_time_iter_set)
         return false;
     if (m_span_counter != o.m_span_counter)
-        return false;
-    if (m_start_to_span != o.m_start_to_span)
         return false;
     // m_p0 or o.m_p0 could be uninitialized
     if (m_p0 && o.m_p0) {
@@ -407,28 +403,6 @@ void planner::set_avail_time_iter_set (int atime_iter_set)
 const int planner::get_avail_time_iter_set () const
 {
     return m_avail_time_iter_set;
-}
-
-void planner::start_to_span_insert (int64_t start, int64_t span_id)
-{
-    m_start_to_span.insert ({start, span_id});
-}
-
-void planner::start_to_span_remove (int64_t start, int64_t span_id)
-{
-    auto iter_range = m_start_to_span.equal_range (start);
-    auto it = iter_range.first;
-    for (; it != iter_range.second; ++it) {
-        if (it->second == span_id) {
-            m_start_to_span.erase (it);
-            break;
-        }
-    }
-}
-
-std::multimap<int64_t, int64_t> &planner::get_start_to_span ()
-{
-    return m_start_to_span;
 }
 
 request_t &planner::get_current_request ()

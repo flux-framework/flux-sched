@@ -92,20 +92,6 @@ static void fetch_overlap_points (planner_t *ctx, int64_t at, uint64_t duration,
     }
 }
 
-static void fetch_overlap_points (planner_t *ctx, int64_t at, uint64_t duration,
-                                  std::queue<int64_t> &queue)
-{
-    scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
-    while (point) {
-        if (point->at >= static_cast<int64_t> (at + duration))
-            break;
-        // Use greater than to avoid adding same point
-        else if (point->at >= at)
-            queue.push (point->at);
-        point = ctx->plan->sp_tree_next (point);
-    }
-}
-
 static int update_points_add_span (planner_t *ctx,
                                    std::list<scheduled_point_t *> &list,
                                    std::shared_ptr<span_t> &span)
@@ -288,8 +274,6 @@ static std::shared_ptr<span_t> span_new (planner_t *ctx, int64_t start_time,
 
         // errno = EEXIST condition already checked above
         ctx->plan->span_lookup_insert (span->span_id, span);
-        // insert into tracking multimap for start time to span_ids
-        ctx->plan->start_to_span_insert (span->start, span->span_id);
     }
     catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -297,31 +281,6 @@ static std::shared_ptr<span_t> span_new (planner_t *ctx, int64_t start_time,
 
 done:
     return span;
-}
-
-static int span_move (planner_t *ctx, std::shared_ptr<span_t> &span, int64_t delta)
-{
-    std::multimap<int64_t, int64_t> &start_to_span = ctx->plan->get_start_to_span ();
-    std::cout << "INOUT TREE\n";
-    if (span->start_p->in_mt_resource_tree) {
-        ctx->plan->mt_tree_remove (span->start_p);
-        span->start += delta;
-        span->start_p->at += delta;
-    }
-    std::cout << "INOUT TREE 1\n";
-    if (span->start_p->ref_count && !(span->start_p->in_mt_resource_tree))
-        ctx->plan->mt_tree_insert (span->start_p);
-    if (span->last_p->in_mt_resource_tree) {
-        ctx->plan->mt_tree_remove (span->last_p);
-        span->last += delta;
-        span->last_p->at += delta;
-    }
-    std::cout << "INOUT TREE 2\n";
-    if (span->last_p->ref_count && !(span->last_p->in_mt_resource_tree))
-        ctx->plan->mt_tree_insert (span->last_p);
-    std::cout << "INOUT TREE END\n";
-    start_to_span.insert ({span->start, span->span_id});
-    return 0;
 }
 
 
@@ -604,8 +563,6 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     fetch_overlap_points (ctx, span->start, duration, list);
     update_points_subtract_span (ctx, list, span);
     update_mintime_resource_tree (ctx, list);
-    // remove from m_start_to_span map
-    ctx->plan->start_to_span_remove (span->start, span->span_id);
     span->in_system = 0;
 
     if (span->start_p->ref_count == 0) {
@@ -653,9 +610,6 @@ extern "C" int planner_update_span (planner_t *ctx, int64_t span_id,
     }
     // update the span end time
     int64_t prev_last = span->last;
-    std::queue<int64_t> pt_queue;
-    fetch_overlap_points (ctx, prev_last, expiration, pt_queue);
-    std::cout << "Pre last: " << prev_last << "\n";
     span->last = expiration;
     // update the point
     span->last_p->at = expiration;
@@ -664,54 +618,6 @@ extern "C" int planner_update_span (planner_t *ctx, int64_t span_id,
         ctx->plan->mt_tree_remove (span->last_p);
     if (span->last_p->ref_count && !(span->last_p->in_mt_resource_tree))
         ctx->plan->mt_tree_insert (span->last_p);
-
-    // Exit function if reducing span
-    if (delta < 0)
-        return 0;
-    // If not, could cause interference with requests
-    // if (pt_queue.size () > 1) {
-    //     errno = EINVAL;
-    //     return -1;
-    // }
-    std::cout << "Queue length: " << pt_queue.size () << "\n";
-    int64_t tmp_pt = 0;
-    int64_t pt_duration = 0;
-    std::multimap<int64_t, int64_t> &start_to_span = ctx->plan->get_start_to_span ();
-    //std::cout << "Start_to_span size: " << start_to_span.size () << "\n";
-    for (auto i : start_to_span)
-        std::cout << "Start to span: " << i.first << " " << i.second << "\n";
-    while (!pt_queue.empty ()) {
-        tmp_pt = pt_queue.front ();
-        std::cout << "Front point at: " << tmp_pt << "\n";
-        auto equal_range = start_to_span.equal_range (tmp_pt);
-        // May want to return -1 if overlapping points
-        //std::cout << "Equal range: " << (equal_range.first == equal_range.second) << " " << equal_range.first->second << "\n";
-        //auto it = equal_range.first;
-        for (auto it2 = equal_range.first; it2 != equal_range.second; ) {
-            // it->first is span_id
-            std::cout << "IT data: " << it2->first << " ID: " << it2->second << "\n";
-            std::map<int64_t, std::shared_ptr<span_t>>::iterator span_it = ctx->plan->get_span_lookup ().find (it2->second);
-            std::cout << "span data: " << span_it->first << " ID: " << span_it->second->span_id << "\n";
-            if (span_it == ctx->plan->get_span_lookup ().end ()) {
-                errno = EINVAL;
-                return -1;
-            }
-            pt_duration = span_it->second->last - span_it->second->start;
-            if (!span_ok (ctx, span_it->second->start_p, pt_duration, span_it->second->planned)) {
-                std::cout << "Span not ok; span data: " << span_it->first << " ID: " << span_it->second->span_id << "\n";
-                prev_last = span_it->second->last;
-                it2 = start_to_span.erase (it2);
-                span_move (ctx, span_it->second, delta);
-                std::cout << "SPAN MOVE\n";
-                fetch_overlap_points (ctx, prev_last, span_it->second->last, pt_queue);
-                std::cout << "FETCH OVERLAP\n";
-            } else {
-                ++it2;
-            }
-        }
-        pt_queue.pop ();
-        std::cout << "Queue length after pop: " << pt_queue.size () << "\n";
-    }
 
     return 0;
 }
