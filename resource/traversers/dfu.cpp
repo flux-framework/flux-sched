@@ -227,6 +227,16 @@ void dfu_traverser_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
     detail::dfu_impl_t::set_match_cb (m);
 }
 
+void dfu_traverser_t::swap_match_cb (const std::string &m)
+{
+    detail::dfu_impl_t::swap_match_cb (m);
+}
+
+void dfu_traverser_t::restore_match_cb ()
+{
+    detail::dfu_impl_t::restore_match_cb ();
+}
+
 void dfu_traverser_t::clear_err_message ()
 {
     detail::dfu_impl_t::clear_err_message ();
