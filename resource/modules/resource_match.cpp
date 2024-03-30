@@ -1905,9 +1905,44 @@ static int run_expiration (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 {
     int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
+    json_t *R = nullptr;
+    int version;
+    double start = 0.0, end = 0.0;
+    json_t *r_lite = nullptr;
+    json_t *jgf = nullptr;
+    std::string R_str = "";
 
     if ((rc = tr.modify (jobid, expiration)) < 0)
         goto out;
+    // We know the jobid exists and is valid
+    if ( !(R = json_string (ctx->jobs[jobid]->R.c_str ()))) {
+        errno = EINVAL;
+        goto out;
+    }
+    if (json_unpack (R,
+                    "{s:i s:{s:o s?F s?F} s?:o}",
+                    "version", &version,
+                    "execution",
+                    "R_lite", &r_lite,
+                    "starttime", &start,
+                    "expiration", &end,
+                    "scheduling", &jgf) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    end = expiration;
+    if ( (R = json_pack ("{s:i s:{s:o s?F s?F} s?:o}",
+                    "version", &version,
+                    "execution",
+                    "R_lite", &r_lite,
+                    "starttime", &start,
+                    "expiration", &end,
+                    "scheduling", &jgf)) == NULL ) {
+        errno = EINVAL;
+        goto out;
+    }
+    R_str =  std::string (json_dumps (R, JSON_INDENT (0)));
+    ctx->jobs[jobid]->R = R_str;
 
     rc = 0;
 out:
