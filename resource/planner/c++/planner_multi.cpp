@@ -285,6 +285,13 @@ const char *planner_multi::get_resource_type_at (size_t i) const
     return m_types_totals_planners.at (i).resource_type.c_str ();
 }
 
+size_t planner_multi::get_resource_type_idx (const char *type) const
+{
+    auto by_res = m_types_totals_planners.get<res_type> ().find (type);
+    auto curr_idx = m_types_totals_planners.get<idx> ().iterator_to (*by_res);
+    return curr_idx - m_types_totals_planners.begin ();
+}
+
 struct request_multi &planner_multi::get_iter ()
 {
     return m_iter;

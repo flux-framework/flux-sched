@@ -87,6 +87,7 @@ public:
     int64_t get_resource_total_at (size_t i) const;
     int64_t get_resource_total_at (const char *type) const;
     const char *get_resource_type_at (size_t i) const;
+    size_t get_resource_type_idx (const char *type) const;
     struct request_multi &get_iter ();
     // Span lookup functions
     std::map<uint64_t, std::vector<int64_t>> &get_span_lookup ();
