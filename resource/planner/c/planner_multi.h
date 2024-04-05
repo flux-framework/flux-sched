@@ -278,6 +278,35 @@ int64_t planner_multi_add_span (planner_multi_t *ctx, int64_t start_time,
  */
 int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id);
 
+/*! Reduce the existing span's resources from the planner.
+ *  This function will be called for a partial release/cancel.
+ *  If the number of resources to be removed is equal to those 
+ *  allocated to the span, completely remove the span.
+ *
+ *  \param ctx          opaque multi-planner context returned
+ *                      from planner_multi_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param reduced_totals
+ *                      64-bit unsigned integer array of size len where each
+ *                      element contains the total count of available resources
+ *                      of a single resource type.
+ *  \param resource_types
+ *                      string array of size len where each element contains
+ *                      the resource type corresponding to each corresponding
+ *                      element in the resource_totals array.
+ *  \param len          length of the resource_totals and resource_types arrays.
+ *  \param removed      bool indicating if the entire span was removed.
+ *  \return             0 on success; -1 on error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ *                          EKEYREJECTED: span could not be removed from
+ *                                        the planner's internal data structures.
+ *                          ERANGE: a resource state became out of a valid range.
+ */
+int planner_multi_reduce_span (planner_multi_t *ctx, int64_t span_id,
+                               const uint64_t *reduced_totals,
+                               const char **resource_types, size_t len,
+                               bool &removed);
+
 //! Span iterators -- there is no specific iteration order
 //  return -1 when you no longer can iterate: EINVAL when ctx is NULL.
 //  ENOENT when you reached the end of the spans
