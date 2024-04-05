@@ -941,6 +941,55 @@ ret:
     return rc;
 }
 
+int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    json_t *rv1)
+{
+    int rc = -1;
+    int version;
+    int64_t rank;
+    size_t index;
+    json_t *rlite = nullptr;
+    json_t *entry = nullptr;
+    const char *ranks = nullptr;
+    struct idset *r_ids = nullptr;
+
+    // Implementing cancellation of rank subgraph
+    // will require further parsing of nodelist,
+    // children, and rank
+    if (json_unpack (rv1, "{s:i s:{s:o}}",
+                              "version", &version,
+                              "execution",
+                                  "R_lite", &rlite) < 0) {
+        errno = EINVAL;
+        goto error;
+    }
+    if (version != 1) {
+        errno = EINVAL;
+        goto error;
+    }
+    json_array_foreach (rlite, index, entry) {
+        if (json_unpack (entry, "{s:s}",
+                                    "rank", &ranks) < 0) {
+            errno = EINVAL;
+            goto error;
+        }
+    }
+    if ( !(r_ids = idset_decode (ranks)))
+        goto error;
+    rank = idset_first (r_ids);
+    while (rank != IDSET_INVALID_ID) {
+        mod_data.ranks_removed.insert (rank);
+        rank = idset_next (r_ids, rank);
+    }
+    idset_destroy (r_ids);
+    rc = 0;
+
+error:
+    return rc;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1045,6 +1094,35 @@ ret:
 bool resource_reader_rv1exec_t::is_allowlist_supported ()
 {
     return false;
+}
+
+int resource_reader_rv1exec_t::partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid)
+{
+    int rc = -1;
+    json_error_t error;
+    json_t *rv1 = nullptr;
+    int saved_errno;
+
+    if (R == "") {
+        errno = EINVAL;
+        goto ret;
+    }
+
+    if ( !(rv1 = json_loads (R.c_str (), 0, &error))) {
+        errno = ENOMEM;
+        goto ret;
+    }
+
+    rc = partial_cancel_internal (g, m, mod_data, rv1);
+
+ret:
+    saved_errno = errno;
+    json_decref (rv1);
+    errno = saved_errno;
+    return rc;
 }
 
 /*
