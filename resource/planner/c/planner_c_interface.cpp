@@ -124,6 +124,22 @@ static int update_points_subtract_span (planner_t *ctx,
     return rc;
 }
 
+static int update_points_partial_subtract_span (planner_t *ctx,
+                                        std::list<scheduled_point_t *> &list,
+                                        int64_t to_remove)
+{
+    for (auto &point : list) {
+        point->scheduled -= to_remove;
+        point->remaining += to_remove;
+        if ( (point->scheduled < 0)
+              || (point->remaining > ctx->plan->get_total_resources ())) {
+            errno = ERANGE;
+            return -1;
+        }
+    }
+    return 0;
+}
+
 static bool span_ok (planner_t *ctx, scheduled_point_t *start_point,
                      uint64_t duration, int64_t request)
 {
@@ -579,6 +595,52 @@ extern "C" int planner_rem_span (planner_t *ctx, int64_t span_id)
     list.clear ();
     ctx->plan->set_avail_time_iter_set (0);
     rc = 0;
+
+    return rc;
+}
+
+extern "C" int planner_reduce_span (planner_t *ctx, int64_t span_id,
+                                    int64_t to_remove, bool &removed)
+{
+    int rc = -1;
+    uint64_t duration = 0;
+    std::map<int64_t, std::shared_ptr<span_t>>::iterator it;
+
+    removed = false;
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
+    it = ctx->plan->get_span_lookup ().find (span_id);
+    if (it == ctx->plan->get_span_lookup ().end ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    std::shared_ptr<span_t> &span = it->second;
+    // Planned values can be 0 (especially when part of planner_multi),
+    // and to_remove may be zero as well. We want to remove spans where
+    // Planned values and to_remove are identically zero.
+    if (to_remove == span->planned) {
+        // Removing the whole span
+        rc = planner_rem_span (ctx, span_id);
+        removed = true;
+    } else if (to_remove == 0) {
+        rc = 0;
+    } else if (to_remove < span->planned) {
+        // Removing partial span resources
+        restore_track_points (ctx);
+        span->planned -= to_remove;
+        std::list<scheduled_point_t *> list;
+        duration = span->last - span->start;
+        fetch_overlap_points (ctx, span->start, duration, list);
+        update_points_partial_subtract_span (ctx, list, to_remove);
+        update_mintime_resource_tree (ctx, list);
+        rc = 0;
+    } else {
+        // Error
+        errno = EINVAL;
+        rc -1;
+    }
 
     return rc;
 }
