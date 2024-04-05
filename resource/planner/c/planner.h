@@ -210,6 +210,24 @@ int64_t planner_add_span (planner_t *ctx, int64_t start_time, uint64_t duration,
  */
 int planner_rem_span (planner_t *ctx, int64_t span_id);
 
+/*! Reduce the existing span's resources from the planner.
+ *  This function will be called for a partial release/cancel.
+ *  If the number of resources to be removed is equal to those
+ *  allocated to the span, completely remove the span.
+ *
+ *  \param ctx          opaque planner context returned from planner_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param to_remove    number of resources to free from the span
+ *  \param removed      bool indicating if the entire span was removed.
+ *  \return             0 on success; -1 on an error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ *                          EKEYREJECTED: span could not be removed from
+ *                                        the planner's internal data structures.
+ *                          ERANGE: a resource state became out of a valid range.
+ */
+int planner_reduce_span (planner_t *ctx, int64_t span_id,
+                         int64_t to_remove, bool &removed);
+
 //! Span iterators -- there is no specific iteration order
 int64_t planner_span_first (planner_t *ctx);
 int64_t planner_span_next (planner_t *ctx);
