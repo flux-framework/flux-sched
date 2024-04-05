@@ -523,6 +523,15 @@ int resource_reader_hwloc_t::update (resource_graph_t &g,
     return -1;
 }
 
+int resource_reader_hwloc_t::partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid)
+{
+   errno = ENOTSUP; // hwloc reader does not support partial cancel
+   return -1;
+}
+
 bool resource_reader_hwloc_t::is_allowlist_supported ()
 {
     return true;

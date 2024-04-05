@@ -1297,6 +1297,15 @@ int resource_reader_jgf_t::remove_subgraph (resource_graph_t &g,
 
 }
 
+int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid)
+{
+   errno = ENOTSUP; // JGF reader does not support partial cancel
+   return -1;
+}
+
 bool resource_reader_jgf_t::is_allowlist_supported ()
 {
     return false;

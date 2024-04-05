@@ -77,6 +77,21 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token);
 
+    /*! Partial cancellation of jobid based on R.
+     *
+     * \param g      resource graph
+     * \param m      resource graph meta data
+     * \param mod_data struct containing resource types to counts, mod type,
+     *                 and set of ranks removed
+     * \param R    resource set string
+     * \param jobid  jobid of str
+     * \return       0 on success; non-zero integer on an error
+     */
+    virtual int partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid);
+
     /*! Is the hwloc reader format support allowlist
      *
      * \return       true
