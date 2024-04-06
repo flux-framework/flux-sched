@@ -209,6 +209,14 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
         rc = -1;
         goto done;
     }
+    //  RFC 31 constraints only match against type == "node"
+    //  unspecified constraint matches everything
+    if (meta.constraint != nullptr
+        && (*m_graph)[u].type == "node"
+        && !meta.constraint->match ((*m_graph)[u])) {
+        rc = -1;
+        goto done;
+    }
     // if rack has been allocated exclusively, no reason to descend further.
     if ( (rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
@@ -704,13 +712,6 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
-
-    //  RFC 31 constraints only match against type == "node"
-    //  unspecified constraint matches everything
-    if (meta.constraint != nullptr
-        && (*m_graph)[u].type == "node"
-        && !meta.constraint->match ((*m_graph)[u]))
-        goto done;
 
     p = (*m_graph)[u].schedule.plans;
     if ( (avail = planner_avail_resources_during (p, at, duration)) == 0) {
