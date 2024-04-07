@@ -741,7 +741,7 @@ static int test_update ()
     uint64_t resource4 = 2304;
     uint64_t resource5 = 468;
     uint64_t resource6 = 50000;
-    int64_t avail, avail1 = 0;
+    int64_t avail = 0, avail1 = 0;
     const char resource_type[] = "core";
     planner_t *ctx = NULL, *ctx2 = NULL;
 
@@ -775,6 +775,10 @@ static int test_update ()
     span = planner_add_span (ctx, 1152000, 57600, resource6);
     bo = (bo || (planners_equal (ctx, ctx2)) || span != -1);
     ok (!bo, "reducing resources below request should prevent scheduling");
+    span = planner_add_span (ctx, 1152000, 57600, 40000);
+    //rc = planner_reduce_span (ctx, span, 40000, removed);
+    //std::cout << "Reduce span rc: " << rc << " removed: " << removed << " errno: " << errno << "\n";
+    rc = planner_rem_span (ctx, span);
 
     planner_destroy (&ctx);
     planner_destroy (&ctx2);
@@ -782,9 +786,58 @@ static int test_update ()
     return 0;
 }
 
+static int test_partial_cancel ()
+{
+    int rc;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1;
+    bool bo = false, removed = false;
+    uint64_t resource_total = 100;
+    uint64_t resource1 = 25;
+    uint64_t resource2 = 75;
+    int64_t avail1 = 0, avail2 = 0, avail3 = 0;
+    const char resource_type[] = "core";
+    planner_t *ctx = NULL;
+
+    ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
+    // Add some spans
+    span1 = planner_add_span (ctx, 0, 600, resource1);
+    span2 = planner_add_span (ctx, 0, 1200, resource2);
+
+    rc = planner_reduce_span (ctx, span1, 15, removed);
+    avail1 = planner_avail_resources_at (ctx, 0);
+    bo = (bo || removed || avail1 != 15);
+    ok (!bo, "reducing span resources results in expected availability");
+
+    removed = false;
+    rc = planner_reduce_span (ctx, span1, 10, removed);
+    avail1 = planner_avail_resources_at (ctx, 0);
+    bo = (bo || avail1 != 25 || !removed);
+    ok (!bo, "reducing all span resources results in expected availability and full removal");
+
+    removed = false;
+    rc = planner_reduce_span (ctx, span2, 25, removed);
+    avail1 = planner_avail_resources_at (ctx, 300);
+    span3 = planner_add_span (ctx, 300, 300, 50);
+    avail2 = planner_avail_resources_at (ctx, 300);
+    bo = (bo || avail1 != 50 || avail2 != 0 || removed);
+    ok (!bo, "reducing overlapping span enables new span with expected allocation");
+
+    removed = false;
+    planner_rem_span (ctx, span2);
+    rc = planner_reduce_span (ctx, span3, 50, removed);
+    span3 = planner_add_span (ctx, 300, 300, 100);
+    avail3 = planner_avail_resources_at (ctx, 300);
+    bo = (bo || avail3 != 0 || span3 == -1 || rc != 0 || !removed);
+    ok (!bo, "reducing span to zero removes allocation and allows subsequent full allocation");
+
+    planner_destroy (&ctx);
+
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
-    plan (67);
+    plan (71);
 
     test_planner_getters ();
 
@@ -809,6 +862,8 @@ int main (int argc, char *argv[])
     test_constructors_and_overload ();
 
     test_update ();
+
+    test_partial_cancel ();
 
     done_testing ();
 
