@@ -38,7 +38,7 @@ enum class visit_t { DFV, UPV };
 enum class match_kind_t { RESOURCE_MATCH,
                           SLOT_MATCH,
                           NONE_MATCH,
-                          PRESTINE_NONE_MATCH };
+                          PRISTINE_NONE_MATCH };
 
 struct jobmeta_t {
 
