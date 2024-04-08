@@ -468,6 +468,24 @@ int dfu_traverser_t::remove (int64_t jobid)
     return detail::dfu_impl_t::remove (root, jobid);
 }
 
+int dfu_traverser_t::remove (const std::string &R_to_cancel,
+                    std::shared_ptr<resource_reader_base_t> &reader,
+                    int64_t jobid, bool &full_cancel)
+{
+    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    if (!get_graph () || !get_graph_db ()
+        || get_graph_db ()->metadata.roots.find (dom)
+           == get_graph_db ()->metadata.roots.end ()
+        || !get_match_cb ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    vtx_t root = get_graph_db ()->metadata.roots.at (dom);
+    return detail::dfu_impl_t::remove (root, R_to_cancel, reader, jobid,
+                                       full_cancel);
+}
+
 int dfu_traverser_t::mark (const std::string &root_path, 
                            resource_pool_t::status_t status)
 {

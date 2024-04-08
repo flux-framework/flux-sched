@@ -164,6 +164,22 @@ public:
      */
     int remove (int64_t jobid);
 
+    /*! Remove the allocation/reservation referred to by jobid and update
+     *  the resource state.
+     *
+     *  \param R_to_cancel   deallocation string such as written in JGF.
+     *  \param reader        reader object that deserialize str to update the
+     *                       graph
+     *  \param jobid         job id.
+     *  \param full_cancel   bool indicating if the partial cancel cancelled all
+     *                       job resources
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove (const std::string &to_cancel,
+                std::shared_ptr<resource_reader_base_t> &reader,
+                int64_t jobid, bool &full_cancel);
+
     /*! Mark the resource status up|down|etc starting at subtree_root.
      *
      *  \param root_path     path to the root of the subtree to update.
