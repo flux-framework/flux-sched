@@ -19,7 +19,7 @@ if(POLICY CMP0140)
   cmake_policy(SET CMP0140 NEW)
 endif()
 
-set(CMAKE_CXX_STANDARD 14 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
