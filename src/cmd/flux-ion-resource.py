@@ -69,7 +69,10 @@ class ResourceModuleInterface:
         return self.handle.rpc("sched-fluxion-resource.info", payload).get()
 
     def rpc_stat(self):
-        return self.handle.rpc("sched-fluxion-resource.stat").get()
+        return self.handle.rpc("sched-fluxion-resource.stats-get").get()
+
+    def rpc_stats_clear(self):
+        return self.handle.rpc("sched-fluxion-resource.stats-clear").get()
 
     def rpc_cancel(self, jobid):
         payload = {"jobid": jobid}
@@ -219,10 +222,23 @@ def stat_action(_):
     print("Num. of Edges: ", resp["E"])
     print("Num. of Vertices by Rank: ", json.dumps(resp["by_rank"]))
     print("Graph Load Time: ", resp["load-time"], "Secs")
-    print("Num. of Jobs Matched: ", resp["njobs"])
+    print("Graph Upime: ", resp["graph-uptime"], "Secs")
+    print("Time Since Stats Reset: ", resp["time-since-reset"], "Secs")
+    print("Num. of Total Jobs Matched: ", resp["njobs"])
+    print("Num. of Jobs Matched Since Reset: ", resp["njobs-reset"])
     print("Min. Match Time: ", resp["min-match"], "Secs")
     print("Max. Match Time: ", resp["max-match"], "Secs")
     print("Avg. Match Time: ", resp["avg-match"], "Secs")
+    print("Match Variance: ", resp["match-variance"], "Secs^2")
+
+
+def stats_clear_action(_):
+    """
+    Action for stats clear sub-command
+    """
+
+    rmod = ResourceModuleInterface()
+    rmod.rpc_stats_clear()
 
 
 def set_property_action(args):
@@ -447,7 +463,8 @@ def main():
     parse_match(mkparser("match", "Find the best matching resources for a jobspec."))
     parse_update(mkparser("update", "Update the resource database."))
     parse_info(mkparser("info", "Print info on a single job."))
-    parser_s = mkparser("stat", "Print overall performance statistics.")
+    parser_s = mkparser("stats", "Print overall performance statistics.")
+    parser_sc = mkparser("stats-cancel", "Clear overall performance statistics.")
     parser_c = mkparser("cancel", "Cancel an allocated or reserved job.")
     parse_find(mkparser("find", "Find resources matching with a criteria."))
     parser_st = mkparser("status", "Display resource status.")
@@ -465,6 +482,11 @@ def main():
     # Action for stat sub-command
     #
     parser_s.set_defaults(func=stat_action)
+
+    #
+    # Action for stats-clear sub-command
+    #
+    parser_sc.set_defaults(func=stats_clear_action)
 
     #
     # Positional argument for cancel sub-command
