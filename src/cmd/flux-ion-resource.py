@@ -433,6 +433,7 @@ def parse_set_status(parser_ss: argparse.ArgumentParser):
     parser_ss.set_defaults(func=set_status_action)
 
 
+# pylint: disable=too-many-statements
 def main():
     """
     Main entry point
