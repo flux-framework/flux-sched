@@ -280,7 +280,7 @@ int reapi_module_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
         goto out;
     }
 
-    if (!(f = flux_rpc (fh, "sched-fluxion-resource.stat",
+    if (!(f = flux_rpc (fh, "sched-fluxion-resource.stats-get",
                         NULL, FLUX_NODEID_ANY, 0))) {
         goto out;
     }
