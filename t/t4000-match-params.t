@@ -100,6 +100,14 @@ test_expect_success 'loading resource module with unknown policies is tolerated'
     load_resource policy=bar
 '
 
+test_expect_success 'resource module stats and clear work' '
+    unload_resource &&
+    load_resource &&
+    load_qmanager_sync &&
+    flux module stats sched-fluxion-resource &&
+    flux module stats --clear sched-fluxion-resource
+'
+
 test_expect_success 'removing resource works' '
     remove_resource
 '
