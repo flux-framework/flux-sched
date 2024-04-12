@@ -16,6 +16,7 @@ extern "C" {
 
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_reader_base.hpp"
+#include "boost/flyweight.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -37,7 +38,8 @@ void resource_graph_metadata_t::set_graph_duration (
 
 bool resource_graph_db_t::known_subsystem (const std::string &s)
 {
-    return (metadata.roots.find (s) != metadata.roots.end ())? true : false;
+    boost::flyweight<std::string> fly_s(s);
+    return (metadata.roots.find (fly_s) != metadata.roots.end ())? true : false;
 }
 
 int resource_graph_db_t::load (const std::string &str,

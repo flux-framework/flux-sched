@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include "boost/flyweight.hpp"
 #include "resource/traversers/dfu_impl.hpp"
 
 using namespace Flux::Jobspec;
@@ -303,7 +304,8 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
 {
     int n_plans = 0;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     f_out_edg_iterator_t ei, ei_end;
     bool mod = modify_traversal (u, emit_shadow);
     excl = excl || mod;
@@ -389,12 +391,14 @@ done:
 int dfu_impl_t::rem_agfilter (vtx_t u, int64_t jobid,
                               const std::string &subsystem)
 {
+
+    boost::flyweight<std::string> fly_subsystem(subsystem);
     int rc = 0;
     int span = -1;
     planner_multi_t *subtree_plan = NULL;
     auto &job2span = (*m_graph)[u].idata.job2span;
 
-    if ((subtree_plan = (*m_graph)[u].idata.subplans[subsystem]) == NULL)
+    if ((subtree_plan = (*m_graph)[u].idata.subplans[fly_subsystem]) == NULL)
         goto done;
     if (job2span.find (jobid) == job2span.end ())
         goto done;
@@ -545,8 +549,8 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
 {
     int rc = -1;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
 
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
     if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token ()
         != m_best_k_cnt) {
         m_err_msg += __FUNCTION__;
@@ -595,7 +599,8 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int excl = 0;
     unsigned int needs = 0;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     bool rsv = (jobmeta.alloc_type
                  == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
 

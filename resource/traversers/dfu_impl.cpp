@@ -173,7 +173,10 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     uint64_t d = meta.duration;
     std::vector<uint64_t> aggs;
     int saved_errno = errno;
-    planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
+
+    // One off flyweight here - we might want to move this up to some top level
+    boost::flyweight<std::string> fly_s(s);
+    planner_multi_t *p = (*m_graph)[u].idata.subplans[fly_s];
 
     if (resource.user_data.empty ()) {
         // If user_data is empty, no data is available to prune with.
@@ -212,7 +215,9 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     //  RFC 31 constraints only match against type == "node"
     //  unspecified constraint matches everything
     if (meta.constraint != nullptr
-        && (*m_graph)[u].type == "node"
+
+        // flux_node is the flyweight for "node"
+        && (*m_graph)[u].type == flux_node
         && !meta.constraint->match ((*m_graph)[u])) {
         rc = -1;
         goto done;
@@ -221,10 +226,12 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     if ( (rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
     for (auto &resource : resources) {
-        if ((*m_graph)[u].type != resource.type && resource.type != "slot")
+
+        // flux_slot is the flyweight for "slot"
+        if ((*m_graph)[u].type != resource.type && resource.type != flux_slot)
             continue;
         // Prune by exclusivity checker
-        if (resource.type != "slot"
+        if (resource.type != flux_slot
             && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
             break;
         // Prune by the subtree planner quantities
@@ -695,7 +702,8 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     unsigned int nslots = 0;
     scoring_api_t dfu;
     planner_t *p = NULL;
-    const std::string &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     const std::vector<Resource> &next = test (u, resources,
                                               check_pres, nslots, sm);
 
@@ -760,11 +768,13 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
                               const std::string &criteria, vtx_t u,
                               const vtx_predicates_override_t &p)
 {
+
     int rc = -1;
     int nchildren = 0;
     f_out_edg_iterator_t ei, ei_end;
     expr_eval_vtx_target_t vtx_target;
-    std::string dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     bool result = false;
     bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
     bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
@@ -826,7 +836,8 @@ done:
 int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
 {
     int rc = 0;
-    const std::string &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     f_out_edg_iterator_t ei, ei_end;
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
 
@@ -863,6 +874,8 @@ int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
             }
         }
     }
+
+    // One-off flyweight definition for dom, possibly we want to move this up
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
 
     return rc;
@@ -1178,7 +1191,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta,
     int rc = -1;
     scoring_api_t dfu;
     bool x_in = excl;
-    const std::string &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
 
     tick ();
     m_preorder = 0;
@@ -1209,7 +1222,8 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers,
         errno = EINVAL;
         return rc;
     }
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    const boost::flyweight<std::string> &dom = m_match->dom_subsystem ();
+
     if (m_graph_db->metadata.roots.find (dom)
         == m_graph_db->metadata.roots.end ()) {
         errno = EINVAL;

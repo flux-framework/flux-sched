@@ -65,10 +65,13 @@ public:
             multi_subsystemsS::const_iterator i;
             i = m_selector.find (kv.first);
             if (i != m_selector.end ()) {
-                if (kv.second == "*")
+
+                // flux_match_any is the flyweight equivalent of "*" which we need because
+                // the subsystem is also a flyweight (efficient string lookup) type
+                if (kv.second == flux_match_any)
                     return true;
                 else if (i->second.find (kv.second) != i->second.end ()
-                         || i->second.find ("*") != i->second.end ())
+                         || i->second.find (flux_match_any) != i->second.end ())
                     return true;
             }
         }

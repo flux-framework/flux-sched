@@ -16,6 +16,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <boost/flyweight.hpp>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/schema/data_std.hpp"
 #include "resource/planner/c/planner.h"
@@ -24,7 +25,7 @@
 namespace Flux {
 namespace resource_model {
 
-const std::string ANY_RESOURCE_TYPE = "*";
+extern const boost::flyweight<std::string> &ANY_RESOURCE_TYPE;
 
 enum match_score_t { MATCH_UNMET = 0, MATCH_MET = 1 };
 
@@ -77,7 +78,7 @@ public:
 
 private:
     std::string m_name;
-    subsystem_t m_err_subsystem = "error";
+    subsystem_t m_err_subsystem = flux_error;
     std::vector<subsystem_t> m_subsystems;
     multi_subsystemsS m_subsystems_map;
 };
@@ -170,8 +171,8 @@ private:
     //     in the containment subsystem at any level, please
     //     maintain an aggregate on the available cores under it.
     std::map<subsystem_t,
-             std::map<std::string, std::set<std::string>>> m_pruning_types;
-    std::map<subsystem_t, std::set<std::string>> m_total_set;
+             std::map<boost::flyweight<std::string>, std::set<boost::flyweight<std::string>>>> m_pruning_types;
+    std::map<subsystem_t, std::set<boost::flyweight<std::string>>> m_total_set;
 };
 
 } // namespace resource_model

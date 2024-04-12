@@ -39,12 +39,12 @@ static int test_constructors_and_overload ()
     infra1->tags[0] = 0;
     infra1->x_spans[0] = 0;
     infra1->job2span[0] = 0;
-    infra1->colors["containment"] = 0;
-    infra1->colors["network"] = 1;
+    infra1->colors[flux_subsystem_containment] = 0;
+    infra1->colors[flux_subsystem_network] = 1;
     infra1->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra1->subplans["containment"] =
+    infra1->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra1->subplans["network"] =
+    infra1->subplans[flux_subsystem_network] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
 
     infra2 = new pool_infra_t ();
@@ -55,12 +55,12 @@ static int test_constructors_and_overload ()
     infra2->tags[0] = 0;
     infra2->x_spans[0] = 0;
     infra2->job2span[0] = 0;
-    infra2->colors["containment"] = 0;
-    infra2->colors["network"] = 1;
+    infra2->colors[flux_subsystem_containment] = 0;
+    infra2->colors[flux_subsystem_network] = 1;
     infra2->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra2->subplans["containment"] =
+    infra2->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra2->subplans["network"] =
+    infra2->subplans[flux_subsystem_network] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || !(*infra1 == *infra2));
     ok (!bo, "initialized pool_infra_t equal to identically initialized pool_infra_t");
@@ -82,12 +82,12 @@ static int test_constructors_and_overload ()
     infra5->tags[0] = 0;
     infra5->x_spans[0] = 0;
     infra5->job2span[0] = 0;
-    infra5->colors["containment"] = 0;
-    infra5->colors["network"] = 1;
+    infra5->colors[flux_subsystem_containment] = 0;
+    infra5->colors[flux_subsystem_network] = 1;
     infra5->x_checker = planner_new (1, INT64_MAX, resource_total, resource_type);
-    infra5->subplans["containment"] =
+    infra5->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra5->subplans["network"] =
+    infra5->subplans[flux_subsystem_network] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra5 == *infra1));
     ok (!bo, "pool_infra_t initialized with different x_checker not equal to original pool_infra_t");
@@ -96,12 +96,12 @@ static int test_constructors_and_overload ()
     infra6->tags[0] = 0;
     infra6->x_spans[0] = 0;
     infra6->job2span[0] = 0;
-    infra6->colors["containment"] = 0;
-    infra6->colors["storage"] = 1;
+    infra6->colors[flux_subsystem_containment] = 0;
+    infra6->colors[flux_subsystem_storage] = 1;
     infra6->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra6->subplans["containment"] =
+    infra6->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra6->subplans["network"] =
+    infra6->subplans[flux_subsystem_network] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra6 == *infra1));
     ok (!bo, "pool_infra_t initialized with different colors not equal to original pool_infra_t");
@@ -110,12 +110,12 @@ static int test_constructors_and_overload ()
     infra7->tags[0] = 0;
     infra7->x_spans[0] = 0;
     infra7->job2span[0] = 0;
-    infra7->colors["containment"] = 0;
-    infra7->colors["network"] = 1;
+    infra7->colors[flux_subsystem_containment] = 0;
+    infra7->colors[flux_subsystem_network] = 1;
     infra7->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra7->subplans["containment"] =
+    infra7->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra7->subplans["storage"] =
+    infra7->subplans[flux_subsystem_storage] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra7 == *infra1));
     ok (!bo, "pool_infra_t initialized with different subplan systems not equal to original pool_infra_t");
@@ -124,12 +124,12 @@ static int test_constructors_and_overload ()
     infra8->tags[0] = 0;
     infra8->x_spans[0] = 0;
     infra8->job2span[0] = 0;
-    infra8->colors["containment"] = 0;
-    infra8->colors["network"] = 1;
+    infra8->colors[flux_subsystem_containment] = 0;
+    infra8->colors[flux_subsystem_network] = 1;
     infra8->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra8->subplans["containment"] =
+    infra8->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
-    infra8->subplans["network"] =
+    infra8->subplans[flux_subsystem_network] =
             planner_multi_new (1, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra8 == *infra1));
     ok (!bo, "pool_infra_t initialized with different subplan planner_multis not equal to original pool_infra_t");
@@ -138,10 +138,10 @@ static int test_constructors_and_overload ()
     infra9->tags[0] = 0;
     infra9->x_spans[0] = 0;
     infra9->job2span[0] = 0;
-    infra9->colors["containment"] = 0;
-    infra9->colors["network"] = 1;
+    infra9->colors[flux_subsystem_containment] = 0;
+    infra9->colors[flux_subsystem_network] = 1;
     infra9->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
-    infra9->subplans["containment"] =
+    infra9->subplans[flux_subsystem_containment] =
             planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra9 == *infra1));
     ok (!bo, "pool_infra_t initialized with different subplan planner_multis len not equal to original pool_infra_t");

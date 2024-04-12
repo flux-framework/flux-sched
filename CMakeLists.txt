@@ -79,6 +79,11 @@ pkg_check_modules(HWLOC REQUIRED IMPORTED_TARGET hwloc>=1.11.1)
 pkg_check_modules(JANSSON REQUIRED IMPORTED_TARGET jansson>=2.10)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 
+# threads needed for boost flyweight
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
@@ -209,6 +214,10 @@ add_custom_target(dist
   COMMAND rm flux-sched.ver
   COMMENT "Generated flux-sched-${FLUX_SCHED_VER}.tar.gz"
   )
+
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
+
 # run installcheck, if it passes then write out version information and pack up
 # a tarball with the result
 add_custom_target(distcheck

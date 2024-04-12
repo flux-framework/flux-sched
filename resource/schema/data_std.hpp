@@ -13,6 +13,9 @@
 
 #include <set>
 #include <string>
+#include <boost/flyweight.hpp>
+
+#include "resource/schema/data_std.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -25,9 +28,37 @@ namespace resource_model {
 const char * const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
-using subsystem_t = std::string;
-using multi_subsystems_t = std::map<subsystem_t, std::string>;
-using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
+extern boost::flyweight<std::string> flux_error;
+
+// init_flyweight sets the string values for each flyweight defined below
+// if you don't call this in the resource mod_main, you will get segfaults
+// because it tries to atomically increment an atomic var that hasn't been
+// allocated yet.
+extern void init_flyweight();
+
+// Resource types (node, slot, etc)
+extern boost::flyweight<std::string> flux_node;
+extern boost::flyweight<std::string> flux_slot;
+
+// Subsystems
+extern boost::flyweight<std::string> flux_match_any;
+extern boost::flyweight<std::string> flux_subsystem_containment;
+extern boost::flyweight<std::string> flux_subsystem_power;
+extern boost::flyweight<std::string> flux_subsystem_infiniband_network;
+extern boost::flyweight<std::string> flux_subsystem_infiniband_bandwidth;
+extern boost::flyweight<std::string> flux_subsystem_parallel_filesystem_bandwidth;
+extern boost::flyweight<std::string> flux_subsystem_virtual;
+extern boost::flyweight<std::string> flux_subsystem_network;
+extern boost::flyweight<std::string> flux_subsystem_storage;
+
+
+// Relations
+extern boost::flyweight<std::string> flux_relation_contains;
+extern boost::flyweight<std::string> flux_relation_in;
+
+using subsystem_t = boost::flyweight<std::string>;
+using multi_subsystems_t = std::map<subsystem_t, boost::flyweight<std::string>>;
+using multi_subsystemsS = std::map<subsystem_t, std::set<boost::flyweight<std::string>>>;
 
 } // Flux
 } // Flux::resource_model
