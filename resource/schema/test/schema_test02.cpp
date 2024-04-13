@@ -172,7 +172,7 @@ static int test_constructors_and_overload ()
 int main (int argc, char *argv[])
 {
     plan (12);
-
+    init_flyweight();
     test_constructors_and_overload ();
 
     done_testing ();

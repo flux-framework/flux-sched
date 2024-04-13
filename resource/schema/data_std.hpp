@@ -17,6 +17,8 @@
 
 #include "resource/schema/data_std.hpp"
 
+static boost::flyweight<std::string>::initializer  fwinit;
+
 namespace Flux {
 namespace resource_model {
 
@@ -39,6 +41,7 @@ extern void init_flyweight();
 // Resource types (node, slot, etc)
 extern boost::flyweight<std::string> flux_node;
 extern boost::flyweight<std::string> flux_slot;
+extern boost::flyweight<std::string> flux_core;
 
 // Subsystems
 extern boost::flyweight<std::string> flux_match_any;

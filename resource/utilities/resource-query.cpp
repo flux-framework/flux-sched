@@ -757,6 +757,7 @@ static void fini_resource_query (std::shared_ptr<resource_context_t> &ctx)
 
 int main (int argc, char *argv[])
 {
+    init_flyweight();
     std::shared_ptr<resource_context_t> ctx = nullptr;
     if ( !(ctx = init_resource_query (argc, argv))) {
         std::cerr << "ERROR: resource query initialization" << std::endl;

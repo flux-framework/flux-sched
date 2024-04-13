@@ -20,6 +20,7 @@ boost::flyweight<std::string> flux_error;
 boost::flyweight<std::string> flux_match_any;
 boost::flyweight<std::string> flux_node;
 boost::flyweight<std::string> flux_slot;
+boost::flyweight<std::string> flux_core;
 boost::flyweight<std::string> flux_subsystem_containment;
 boost::flyweight<std::string> flux_subsystem_power;
 boost::flyweight<std::string> flux_subsystem_infiniband_network;
@@ -33,13 +34,12 @@ boost::flyweight<std::string> flux_relation_in;;
 
 
 void init_flyweight ()
-{
-    // This should have a cpp file associated, but it didn't originally
-    // so I'm not adding it
+{    
     flux_error = "error";
     flux_match_any = "*";
     flux_node = "node";
     flux_slot = "slot";
+    flux_core = "core";
     flux_subsystem_containment = "containment";
     flux_subsystem_power = "power";
     flux_subsystem_infiniband_network = "ibnet";

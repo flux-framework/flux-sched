@@ -14,6 +14,7 @@
 #include <map>
 #include <cstdint>
 #include <limits>
+#include <boost/flyweight.hpp>
 #include "resource/schema/data_std.hpp"
 #include "resource/schema/ephemeral.hpp"
 #include "resource/planner/c/planner_multi.h"
