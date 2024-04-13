@@ -316,7 +316,7 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
     if ((job = queue->lookup (id)) == nullptr
         || !job->is_pending ())
         return;
-    if (queue->remove (id) < 0) {
+    if (queue->remove_pending (job.get ()) < 0) {
         flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__,
                        static_cast<intmax_t> (id));
         return;
