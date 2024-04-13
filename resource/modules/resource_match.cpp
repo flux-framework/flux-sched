@@ -44,9 +44,15 @@ using namespace Flux::opts_manager;
 struct match_perf_t {
     double load;                   /* Graph load time */
     uint64_t njobs;                /* Total match count */
+    uint64_t njobs_reset;          /* Jobs since reset match count */
+    /* Graph uptime in seconds */
+    std::chrono::time_point<std::chrono::system_clock> graph_uptime;
+    /* Time since stats were last cleared */
+    std::chrono::time_point<std::chrono::system_clock> time_since_reset;
     double min;                    /* Min match time */
     double max;                    /* Max match time */
-    double accum;                  /* Total match time accumulated */
+    double mean;                   /* Mean match time */
+    double M2;                     /* Welford's algorithm */
 };
 
 class msg_wrap_t {
@@ -234,6 +240,9 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
+static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg);
+
 static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
@@ -279,7 +288,9 @@ static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.info", info_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
-      "sched-fluxion-resource.stat", stat_request_cb, 0 },
+      "sched-fluxion-resource.stats-get", stat_request_cb, FLUX_ROLE_USER },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.stats-clear", stat_clear_cb, FLUX_ROLE_USER },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.next_jobid", next_jobid_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
@@ -344,9 +355,13 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         set_default_args (ctx);
         ctx->perf.load = 0.0f;
         ctx->perf.njobs = 0;
-        ctx->perf.min = std::numeric_limits<double>::max();
+        ctx->perf.njobs_reset = 0;
+        ctx->perf.min = std::numeric_limits<double>::max ();
         ctx->perf.max = 0.0f;
-        ctx->perf.accum = 0.0f;
+        ctx->perf.mean = 0.0f;
+        ctx->perf.M2 = 0.0f;
+        ctx->perf.graph_uptime = std::chrono::system_clock::now ();
+        ctx->perf.time_since_reset = std::chrono::system_clock::now ();
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
         ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
@@ -356,7 +371,6 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->m_r_alloc = nullptr;
         ctx->m_resources_updated = true;
         ctx->m_resources_down_updated = true;
-        //gettimeofday (&(ctx->m_resources_alloc_updated), NULL);
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
     }
 
@@ -1351,6 +1365,7 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 
     elapsed = std::chrono::system_clock::now () - start;
     ctx->perf.load = elapsed.count ();
+    ctx->perf.graph_uptime = std::chrono::system_clock::now ();
     rc = 0;
 
 done:
@@ -1505,10 +1520,17 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 static void update_match_perf (std::shared_ptr<resource_ctx_t> &ctx,
                                double elapse)
 {
+    double delta = 0.0f;
+    double delta2 = 0.2f;
     ctx->perf.njobs++;
+    ctx->perf.njobs_reset++;
     ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
     ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
-    ctx->perf.accum += elapse;
+    // Welford's online algorithm for variance
+    delta = elapse - ctx->perf.mean;
+    ctx->perf.mean += delta / (double)ctx->perf.njobs;
+    delta2 = elapse - ctx->perf.mean;
+    ctx->perf.M2 += delta * delta2;
 }
 
 static inline std::string get_status_string (int64_t now, int64_t at)
@@ -2141,12 +2163,18 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int saved_errno;
     json_t *o = nullptr;
-    double avg = 0.0f;
+    double mean = 0.0f;
     double min = 0.0f;
+    double variance = 0.0f;
+    int64_t graph_uptime_s = 0;
+    int64_t time_since_reset_s = 0;
+    std::chrono::time_point<std::chrono::system_clock> now;
 
-    if (ctx->perf.njobs) {
-        avg = ctx->perf.accum / (double)ctx->perf.njobs;
+    if (ctx->perf.njobs_reset > 1) {
+        mean = ctx->perf.mean;
         min = ctx->perf.min;
+        // Welford's online algorithm
+        variance = ctx->perf.M2 / (double)ctx->perf.njobs_reset;
     }
     if ( !(o = json_object ())) {
         errno = ENOMEM;
@@ -2156,15 +2184,24 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: get_stat_by_rank", __FUNCTION__);
         goto error_free;
     }
-    if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:f s:f s:f}",
+    now = std::chrono::system_clock::now ();
+    graph_uptime_s = std::chrono::duration_cast<std::chrono::seconds> (
+                        now - ctx->perf.graph_uptime).count ();
+    time_since_reset_s = std::chrono::duration_cast<std::chrono::seconds> (
+                        now - ctx->perf.time_since_reset).count ();
+    if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:I s:I s:I s:f s:f s:f s:f}",
                                    "V", num_vertices (ctx->db->resource_graph),
                                    "E", num_edges (ctx->db->resource_graph),
                                    "by_rank", o,
                                    "load-time", ctx->perf.load,
+                                   "graph-uptime", graph_uptime_s,
+                                   "time-since-reset", time_since_reset_s,
                                    "njobs", ctx->perf.njobs,
+                                   "njobs-reset", ctx->perf.njobs_reset,
                                    "min-match", min,
                                    "max-match", ctx->perf.max,
-                                   "avg-match", avg) < 0) {
+                                   "avg-match", mean,
+                                   "match-variance", variance) < 0) {
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
     }
 
@@ -2177,6 +2214,23 @@ error_free:
 error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
+                           const flux_msg_t *msg, void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    // Clear the jobs-related stats and reset time
+    ctx->perf.njobs_reset = 0;
+    ctx->perf.min = std::numeric_limits<double>::max ();
+    ctx->perf.max = 0.0f;
+    ctx->perf.mean = 0.0f;
+    ctx->perf.M2 = 0.0f;
+    ctx->perf.time_since_reset = std::chrono::system_clock::now ();
+
+    if (flux_respond (h, msg, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
 }
 
 static inline int64_t next_jobid (const std::map<uint64_t,
