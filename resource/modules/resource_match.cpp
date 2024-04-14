@@ -1568,7 +1568,8 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
 }
 
 static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
-                    std::string &jgf, int64_t &starttime, uint64_t &duration)
+                    std::string &R_graph_fmt, int64_t &starttime, uint64_t &duration,
+                    std::string &format)
 {
     int rc = 0;
     int version = 0;
@@ -1605,20 +1606,22 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
                   static_cast<intmax_t> (st), static_cast<intmax_t> (et));
         goto freemem_out;
     }
-    if (graph == NULL) {
-        rc = -1;
-        errno = ENOENT;
-        flux_log (ctx->h, LOG_ERR, "%s: no scheduling key in R", __FUNCTION__);
-        goto freemem_out;
+    if (graph != NULL) {
+        if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
+            rc = -1;
+            errno = ENOMEM;
+            flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+            goto freemem_out;
+        }
+        R_graph_fmt = jgf_str;
+        free (jgf_str);
+        format = "jgf";
+    } else {
+        // Use the rv1exec reader
+        R_graph_fmt = R;
+        format = "rv1exec";
     }
-    if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
-        rc = -1;
-        errno = ENOMEM;
-        flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
-        goto freemem_out;
-    }
-    jgf = jgf_str;
-    free (jgf_str);
+
     starttime = static_cast<int64_t> (st);
     duration = et - st;
 
@@ -1710,18 +1713,33 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 }
 
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
-                const std::string &jgf, int64_t at, uint64_t duration)
+                const std::string &R, int64_t at, uint64_t duration,
+                std::string &format)
 {
     int rc = 0;
     dfu_traverser_t &tr = *(ctx->traverser);
     std::shared_ptr<resource_reader_base_t> rd;
-    if ((rd = create_resource_reader ("jgf")) == nullptr) {
+    if (format == "jgf") {
+        if ((rd = create_resource_reader ("jgf")) == nullptr) {
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "%s: create JGF reader (id=%jd)",
+                    __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto out;
+        }
+    } else if (format == "rv1exec") {
+        if ((rd = create_resource_reader ("rv1exec")) == nullptr) {
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "%s: create rv1exec reader (id=%jd)",
+                    __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto out;
+        }
+    } else {
         rc = -1;
-        flux_log (ctx->h, LOG_ERR, "%s: create_resource_reader (id=%jd)",
-                  __FUNCTION__, static_cast<intmax_t> (jobid));
+        flux_log (ctx->h, LOG_ERR, "%s: create rv1exec reader (id=%jd)",
+                __FUNCTION__, static_cast<intmax_t> (jobid));
         goto out;
     }
-    if ((rc = tr.run (jgf, ctx->writers, rd, jobid, at, duration)) < 0) {
+    if ((rc = tr.run (R, ctx->writers, rd, jobid, at, duration)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: dfu_traverser_t::run (id=%jd): %s",
                   __FUNCTION__, static_cast<intmax_t> (jobid),
                   ctx->traverser->err_message ().c_str ());
@@ -1791,15 +1809,15 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     uint64_t duration = 0;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
-    std::string jgf;
-    std::string R2;
+    std::string R_graph_fmt;
+    std::string format;
 
     start = std::chrono::system_clock::now ();
-    if ( (rc = parse_R (ctx, R, jgf, at, duration)) < 0) {
+    if ( (rc = parse_R (ctx, R, R_graph_fmt, at, duration, format)) < 0) {
         flux_log_error (ctx->h, "%s: parsing R", __FUNCTION__);
         goto done;
     }
-    if ( (rc = run (ctx, jobid, jgf, at, duration)) < 0) {
+    if ( (rc = run (ctx, jobid, R_graph_fmt, at, duration, format)) < 0) {
         flux_log_error (ctx->h, "%s: run", __FUNCTION__);
         goto done;
     }
