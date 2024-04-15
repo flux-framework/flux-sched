@@ -146,7 +146,7 @@ test_expect_success 'recovery: a cancel leads to a job schedule (rv1_nosched)' '
 '
 
 # flux-framework/flux-sched#991
-test_expect_failure 'recovery: both modules restart (rv1_nosched->rv1_nosched)' '
+test_expect_success 'recovery: both modules restart (rv1_nosched->rv1_nosched)' '
     reload_resource match-format=rv1_nosched policy=high &&
     reload_qmanager &&
     flux module stats sched-fluxion-qmanager &&
