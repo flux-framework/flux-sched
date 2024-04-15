@@ -113,13 +113,30 @@ out:
     return rc;
 }
 
+/* The RFC 27 hello handshake occurs during scheduler initialization.  Its
+ * purpose is to inform the scheduler of jobs that already have resources
+ * allocated.  This callback is made once per job.  The callback should return
+ * 0 on success or -1 on failure.  On failure, the job manager raises a fatal
+ * exception on the job.
+ *
+ * Jobs that already have resources at hello need to be assigned to the correct
+ * qmanager queue, but the queue is not provided in the hello metadata.
+ * Therefore, jobspec is fetched from the KVS so that attributes.system.queue
+ * can be extracted from it.
+ *
+ * Note that fluxion instantiates the "default" queue when no named queues
+ * are configured.  Therefore, when the queue attribute is not defined, we
+ * put the job in the default queue.
+ *
+ * Fail the job if its queue attribute (or lack thereof) no longer matches a
+ * valid queue.  This can occur if queues have been reconfigured since job
+ * submission.
+ */
 int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                         const char *R, void *arg)
 
 {
     int rc = 0;
-    json_t *o = NULL;
-    json_error_t err;
     std::string R_out;
     char *qn_attr = NULL;
     std::string queue_name;
@@ -130,38 +147,44 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
     unsigned int prio;
     uint32_t uid;
     double ts;
+    json_t *jobspec = NULL;
+    flux_future_t *f = NULL;
 
+    /* Don't expect jobspec to be set here as it is not currently defined
+     * in RFC 27.  However, add it anyway in case the hello protocol
+     * evolves to include it.  If it is not set, it must be looked up.
+     */
     if (flux_msg_unpack (msg,
-                         "{s:I s:i s:i s:f}",
+                         "{s:I s:i s:i s:f s?o}",
                          "id", &id,
                          "priority", &prio,
                          "userid", &uid,
-                         "t_submit", &ts) < 0) {
+                         "t_submit", &ts,
+                         "jobspec", &jobspec) < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         goto out;
     }
-
-    if ( (o = json_loads (R, 0, &err)) == NULL) {
-        rc = -1;
-        errno = EPROTO;
-        flux_log (h, LOG_ERR, "%s: parsing R for job (id=%jd): %s %s@%d:%d",
-                  __FUNCTION__, static_cast<intmax_t> (id),
-                  err.text, err.source, err.line, err.column);
+    if (!jobspec) {
+        char key[64] = { 0 };
+        if (flux_job_kvs_key (key, sizeof (key), id, "jobspec") < 0
+            || !(f = flux_kvs_lookup (h, NULL, 0, key))
+            || flux_kvs_lookup_get_unpack (f, "o", &jobspec) < 0) {
+            flux_log_error (h, "%s", key);
+            goto out;
+        }
+    }
+    if (json_unpack (jobspec,
+                     "{s?{s?{s?s}}}",
+                     "attributes",
+                       "system",
+                         "queue", &qn_attr) < 0) {
+        flux_log_error (h, "error parsing jobspec");
         goto out;
     }
-    if ( (rc = json_unpack (o, "{ s?:{s?:{s?:{s?:s}}} }",
-                                   "attributes",
-                                       "system",
-                                           "scheduler",
-                                                "queue", &qn_attr)) < 0) {
-        json_decref (o);
-        errno = EPROTO;
-        flux_log (h, LOG_ERR, "%s: json_unpack for attributes", __FUNCTION__);
-        goto out;
-    }
-
-    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue_name ();
-    json_decref (o);
+    if (qn_attr)
+        queue_name = qn_attr;
+    else
+        queue_name = ctx->opts.get_opt ().get_default_queue_name ();
     queue = ctx->queues.at (queue_name);
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
                                                    id, uid, calc_priority (prio),
@@ -177,6 +200,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
               queue_name.c_str (), static_cast<intmax_t> (id));
 
 out:
+    flux_future_destroy (f);
     return rc;
 }
 
