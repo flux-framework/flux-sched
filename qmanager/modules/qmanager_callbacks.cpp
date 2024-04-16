@@ -136,7 +136,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                         const char *R, void *arg)
 
 {
-    int rc = 0;
+    int rc = -1;
     std::string R_out;
     char *qn_attr = NULL;
     std::string queue_name;
@@ -190,15 +190,14 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                                    id, uid, calc_priority (prio),
                                                    ts, R);
 
-    if ( (rc = queue->reconstruct (static_cast<void *> (h),
-                                   running_job, R_out)) < 0) {
+    if (queue->reconstruct (static_cast<void *> (h), running_job, R_out) < 0) {
         flux_log_error (h, "%s: reconstruct (id=%jd queue=%s)", __FUNCTION__,
                        static_cast<intmax_t> (id), queue_name.c_str ());
         goto out;
     }
     flux_log (h, LOG_DEBUG, "requeue success (queue=%s id=%jd)",
               queue_name.c_str (), static_cast<intmax_t> (id));
-
+    rc = 0;
 out:
     flux_future_destroy (f);
     return rc;
