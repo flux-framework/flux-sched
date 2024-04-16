@@ -15,7 +15,6 @@
 #include "resource/reapi/bindings/c++/reapi_module.hpp"
 #include "resource/reapi/bindings/c++/reapi_module_impl.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
-#include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_fcfs.hpp"
 #include "qmanager/policies/queue_policy_fcfs_impl.hpp"
 #include "qmanager/policies/queue_policy_easy.hpp"

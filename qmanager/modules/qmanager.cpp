@@ -20,7 +20,6 @@ extern "C" {
 #include <sstream>
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
-#include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
 #include "qmanager/modules/qmanager_opts.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
