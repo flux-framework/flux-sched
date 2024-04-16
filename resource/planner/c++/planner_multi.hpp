@@ -35,6 +35,19 @@ struct planner_multi_meta {
 struct idx {};
 struct res_type {};
 
+template<typename T>
+struct polyfill_allocator : std::allocator<T> {
+        using std::allocator<T>::allocator;
+        template<typename U>
+        struct rebind {
+            using other = polyfill_allocator<U>;
+        };
+        using pointer = T*;
+        using const_pointer = T const*;
+        using reference = T&;
+        using const_reference = T const&;
+};
+
 using boost::multi_index_container;
 using namespace boost::multi_index;
 typedef multi_index_container<
@@ -47,7 +60,8 @@ typedef multi_index_container<
             tag<res_type>, // index nametag
             member<planner_multi_meta, std::string, &planner_multi_meta::resource_type> // index's key
         >
-    >
+    >,
+    polyfill_allocator<planner_multi_meta>
 > multi_container;
 
 class planner_multi {
