@@ -185,6 +185,15 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
         queue_name = qn_attr;
     else
         queue_name = ctx->opts.get_opt ().get_default_queue_name ();
+    if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
+        flux_log (h,
+                  LOG_ERR,
+                  "%s: unknown queue name (id=%jd queue=%s)",
+                  __FUNCTION__,
+                  static_cast<intmax_t> (id),
+                  queue_name.c_str ());
+        goto out;
+    }
     queue = ctx->queues.at (queue_name);
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
                                                    id, uid, calc_priority (prio),
