@@ -111,4 +111,8 @@ class TestResourceGraph(unittest.TestCase):
                     self.assertEqual(metadata["properties"]["pbatch"], "")
 
 
-unittest.main(testRunner=TAPTestRunner())
+if __name__ == "__main__":
+    from subflux import rerun_under_flux
+
+    if rerun_under_flux(size=1):
+        unittest.main(testRunner=TAPTestRunner())
