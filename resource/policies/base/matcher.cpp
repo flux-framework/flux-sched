@@ -21,6 +21,8 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
+const boost::flyweight<std::string> &ANY_RESOURCE_TYPE = flux_match_any;
+
 /****************************************************************************
  *                                                                          *
  *                    Matcher Data Method Definitions                       *
@@ -61,8 +63,9 @@ matcher_data_t::~matcher_data_t ()
 int matcher_data_t::add_subsystem (const subsystem_t s, const std::string tf)
 {
     if (m_subsystems_map.find (s) == m_subsystems_map.end ()) {
+        boost::flyweight<std::string> fly_tf(tf);
         m_subsystems.push_back (s);
-        m_subsystems_map[s].insert (tf);
+        m_subsystems_map[s].insert (fly_tf);
         return 0;
     }
     return -1;
@@ -222,43 +225,51 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
                                            const std::string &anchor_type,
                                            const std::string &prune_type)
 {
+    static boost::flyweight<std::string> fly_subsystem(subsystem);
+    static boost::flyweight<std::string> fly_anchor_type(anchor_type);
+    static boost::flyweight<std::string> fly_prune_type(prune_type);
+
     // Use operator[] to create an entry if subsystem key doesn't exist
-    auto &s = m_pruning_types[subsystem];
+    auto &s = m_pruning_types[fly_subsystem];
     if (anchor_type == ANY_RESOURCE_TYPE) {
         // Check whether you have already installed prune_type.
         // If so, remove it as you want to install it against ANY_RESOURCE_TYPE.
         for (auto &kv : s)
-            kv.second.erase (prune_type);
+            kv.second.erase (fly_prune_type);
         // final container is "set" so it will only allow unique prune_types
-        s[anchor_type].insert (prune_type);
+        s[fly_anchor_type].insert (fly_prune_type);
     } else {
         if ((s.find (ANY_RESOURCE_TYPE) != s.end ())) {
             auto &prune_set = s[ANY_RESOURCE_TYPE];
-            if (prune_set.find (prune_type) == prune_set.end ()) {
+            if (prune_set.find (fly_prune_type) == prune_set.end ()) {
                 // If prune_type does not exist against ANY_RESOURCE_TYPE
                 // Install it against anchor_type, an individual resource type
-                s[anchor_type].insert (prune_type);
+                s[fly_anchor_type].insert (fly_prune_type);
             } // orelse NOOP
         } else {
-            s[anchor_type].insert (prune_type);
+            s[fly_anchor_type].insert (fly_prune_type);
         }
     }
-    m_total_set[subsystem].insert (prune_type);
+    m_total_set[fly_subsystem].insert (fly_prune_type);
 }
 
 bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
                                              const std::string &anchor_type,
                                              const std::string &prune_type)
 {
+    static boost::flyweight<std::string> fly_subsystem(subsystem);
+    static boost::flyweight<std::string> fly_anchor_type(anchor_type);
+    static boost::flyweight<std::string> fly_prune_type(prune_type);
+
     bool rc = false;
     try {
-        auto &s = m_pruning_types.at (subsystem);
-        if (s.find (anchor_type) != s.end ()) {
-            auto &m = s.at (anchor_type);
-            rc = (m.find (prune_type) != m.end ());
+        auto &s = m_pruning_types.at (fly_subsystem);
+        if (s.find (fly_anchor_type) != s.end ()) {
+            auto &m = s.at (fly_anchor_type);
+            rc = (m.find (fly_prune_type) != m.end ());
         } else if (s.find (ANY_RESOURCE_TYPE) != s.end ()) {
             auto &m = s.at (ANY_RESOURCE_TYPE);
-            rc = (m.find (prune_type) != m.end ());
+            rc = (m.find (fly_prune_type) != m.end ());
         }
     } catch (std::out_of_range &e) {
         rc = false;
@@ -269,10 +280,13 @@ bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
 bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
                                           const std::string &prune_type)
 {
+    static boost::flyweight<std::string> fly_subsystem(subsystem);
+    static boost::flyweight<std::string> fly_prune_type(prune_type);
+
     bool rc = true;
     try {
-        auto &s = m_total_set.at (subsystem);
-        rc = (s.find (prune_type) != s.end ());
+        auto &s = m_total_set.at (fly_subsystem);
+        rc = (s.find (fly_prune_type) != s.end ());
     } catch (std::out_of_range &e) {
         rc = false;
     }
@@ -283,14 +297,17 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
                                                const std::string &anchor_type,
                                                std::vector<std::string> &out)
 {
+    static boost::flyweight<std::string> fly_subsystem(subsystem);
+    static boost::flyweight<std::string> fly_anchor_type(anchor_type);
+
     bool rc = true;
     try {
         // Get the value of the subsystem, which is a map
         // of <string, set> type.
-        auto &s = m_pruning_types.at (subsystem);
-        if (s.find (anchor_type) != s.end ()) {
+        auto &s = m_pruning_types.at (fly_subsystem);
+        if (s.find (fly_anchor_type) != s.end ()) {
             // Get the value of the anchor map, which is a set
-            auto &m = s.at (anchor_type);
+            auto &m = s.at (fly_anchor_type);
             for (auto &k : m)
                 out.push_back (k);
         }

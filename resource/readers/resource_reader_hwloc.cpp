@@ -17,6 +17,7 @@ extern "C" {
 #include <limits>
 #include "resource/readers/resource_reader_hwloc.hpp"
 #include "resource/store/resource_graph_store.hpp"
+#include <boost/flyweight.hpp>
 
 using namespace Flux;
 using namespace resource_model;
@@ -73,6 +74,8 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
 {
     vtx_t v = boost::add_vertex (g);
 
+    boost::flyweight<std::string> fly_subsystem(subsys);
+
     // Set properties of the new vertex
     bool is_root = false;
     if (parent == boost::graph_traits<resource_graph_t>::null_vertex ())
@@ -91,7 +94,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     g[v].id = id;
     g[v].name = (name != "")? name : basename + istr;
     g[v].paths[subsys] = prefix + "/" + g[v].name;
-    g[v].idata.member_of[subsys] = "*";
+    g[v].idata.member_of[fly_subsystem] = flux_match_any;
     g[v].status = resource_pool_t::status_t::UP;
     g[v].properties = properties;
 
@@ -357,13 +360,10 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     if (!supported_resource) {
         valid_ancestor = parent;
     } else {
-        const std::string subsys = "containment";
         vtx_t v = add_new_vertex (g, m, parent,
-                                  id, subsys, type, basename,
+                                  id, flux_subsystem_containment, type, basename,
                                   name, properties, size, rank);
         valid_ancestor = v;
-        std::string relation = "contains";
-        std::string rev_relation = "in";
         edg_t e;
         bool inserted; // set to false when we try and insert a parallel edge
 
@@ -374,8 +374,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                             + g[parent].name + " -> " + g[v].name + "; ";
             return -1;
         }
-        g[e].idata.member_of[subsys] = relation;
-        g[e].name[subsys] = relation;
+        g[e].idata.member_of[flux_subsystem_containment] = flux_relation_contains;
+        g[e].name[flux_subsystem_containment] = flux_relation_contains;
         if (add_metadata (m, e, parent, v, g) < 0)
             return -1;
 
@@ -386,8 +386,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                             + g[v].name + " -> " + g[parent].name + "; ";
             return -1;
         }
-        g[e].idata.member_of[subsys] = rev_relation;
-        g[e].name[subsys] = rev_relation;
+        g[e].idata.member_of[flux_subsystem_containment] = flux_relation_in;
+        g[e].name[flux_subsystem_containment] = flux_relation_in;
         if (add_metadata (m, e, v, parent, g) < 0)
             return -1;
     }

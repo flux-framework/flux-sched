@@ -23,6 +23,7 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
+#include "boost/flyweight.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -336,7 +337,8 @@ std::shared_ptr<f_resource_graph_t> resource_query_t::create_filtered_graph ()
 int resource_query_t::subsystem_exist (const std::string &n)
 {
     int rc = 0;
-    if (db->metadata.roots.find (n) == db->metadata.roots.end ())
+    boost::flyweight<std::string> fly_n(n);
+    if (db->metadata.roots.find (fly_n) == db->metadata.roots.end ())
         rc = -1;
     return rc;
 }
@@ -348,66 +350,66 @@ int resource_query_t::set_subsystems_use (const std::string &n)
     const std::string &matcher_type = matcher->matcher_name ();
 
     if (boost::iequals (matcher_type, std::string ("CA"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("IBA"))) {
-        if ( (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_infiniband_network)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_network, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("IBBA"))) {
-        if ( (rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_infiniband_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_bandwidth, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("PFS1BA"))) {
-        if ( (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_parallel_filesystem_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_parallel_filesystem_bandwidth, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("PA"))) {
-        if ( (rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_power)) == 0)
+            matcher->add_subsystem (flux_subsystem_power, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("C+PFS1BA"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if ( !rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_relation_contains);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_parallel_filesystem_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_parallel_filesystem_bandwidth, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("C+IBA"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if ( !rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_up");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_relation_contains);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_infiniband_network)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_network, "connected_up");
     } else if (boost::iequals (matcher_type, std::string ("C+PA"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
-        if ( !rc && (rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "draws_from");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_match_any);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_power)) == 0)
+            matcher->add_subsystem (flux_subsystem_power, "draws_from");
     } else if (boost::iequals (matcher_type, std::string ("IB+IBBA"))) {
-        if ( (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_down");
-        if ( !rc && (rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_infiniband_network)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_network, "connected_down");
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_infiniband_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_bandwidth, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("C+P+IBA"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if ( (rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "draws_from");
-        if ( !rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_up");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_relation_contains);
+        if ( (rc = subsystem_exist (flux_subsystem_power)) == 0)
+            matcher->add_subsystem (flux_subsystem_power, "draws_from");
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_infiniband_network)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_network, "connected_up");
     } else if (boost::iequals (matcher_type, std::string ("V+PFS1BA"))) {
-        if ( (rc = subsystem_exist ("virtual1")) == 0)
-            matcher->add_subsystem ("virtual1", "*");
-        if ( !rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_virtual)) == 0)
+            matcher->add_subsystem (flux_subsystem_virtual, flux_match_any);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_parallel_filesystem_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_parallel_filesystem_bandwidth, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("VA"))) {
-        if ( (rc = subsystem_exist ("virtual1")) == 0)
-            matcher->add_subsystem ("virtual1", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_virtual)) == 0)
+            matcher->add_subsystem (flux_subsystem_virtual, flux_match_any);
     } else if (boost::iequals (matcher_type, std::string ("ALL"))) {
-        if ( (rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
-        if ( !rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "*");
-        if ( !rc && (rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
-        if ( !rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
-        if ( (rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "*");
+        if ( (rc = subsystem_exist (flux_subsystem_containment)) == 0)
+            matcher->add_subsystem (flux_subsystem_containment, flux_match_any);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_infiniband_network)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_network, flux_match_any);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_infiniband_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_infiniband_bandwidth, flux_match_any);
+        if ( !rc && (rc = subsystem_exist (flux_subsystem_parallel_filesystem_bandwidth)) == 0)
+            matcher->add_subsystem (flux_subsystem_parallel_filesystem_bandwidth, flux_match_any);
+        if ( (rc = subsystem_exist (flux_subsystem_power)) == 0)
+            matcher->add_subsystem (flux_subsystem_power, flux_match_any);
     } else {
         rc = -1;
     }

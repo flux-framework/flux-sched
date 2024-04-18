@@ -21,6 +21,7 @@ extern "C" {
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/planner/c/planner.h"
+#include "boost/flyweight.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -456,8 +457,10 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g,
     g[v].paths = fetcher.paths;
     g[v].schedule.plans = plans;
     g[v].idata.x_checker = x_checker;
-    for (auto kv : g[v].paths)
-        g[v].idata.member_of[kv.first] = "*";
+    for (auto kv : g[v].paths) {
+        boost::flyweight<std::string> fly_first(kv.first);
+        g[v].idata.member_of[fly_first] = flux_match_any;
+    }
 
 done:
     return v;
@@ -511,11 +514,13 @@ int resource_reader_jgf_t::add_graph_metadata (vtx_t v,
                                                resource_graph_metadata_t &m)
 {
     int rc = -1;
-    std::pair<std::map<std::string, vtx_t>::iterator, bool> ptr;
+    std::pair<std::map<boost::flyweight<std::string>, vtx_t>::iterator, bool> ptr;
 
     for (auto kv : g[v].paths) {
+        boost::flyweight<std::string> fly_second(kv.second);
+        boost::flyweight<std::string> fly_first(kv.first);
         if (is_root (kv.second)) {
-            ptr = m.roots.emplace (kv.first, v);
+            ptr = m.roots.emplace (fly_first, v);
             if (!ptr.second) {
                 errno = EINVAL;
                 m_err_msg += __FUNCTION__;
@@ -993,7 +998,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
             json_object_foreach (name, key, value) {
                 g[e].name[std::string (key)]
                     = std::string (json_string_value (value));
-                g[e].idata.member_of[std::string (key)]
+                g[e].idata.member_of[boost::flyweight<std::string> (key)]
                     = std::string (json_string_value (value));
             }
             // add this edge to by_outedges metadata
@@ -1044,11 +1049,12 @@ int resource_reader_jgf_t::update_src_edge (resource_graph_t &g,
     if (vmap[source].is_roots.empty ())
         return 0;
 
-    for (auto &kv : vmap[source].is_roots)
-        m.v_rt_edges[kv.first].set_for_trav_update (vmap[source].needs,
+    for (auto &kv : vmap[source].is_roots) {
+        boost::flyweight<std::string> fly_first(kv.first);
+        m.v_rt_edges[fly_first].set_for_trav_update (vmap[source].needs,
                                                     vmap[source].exclusive,
                                                     token);
-
+    }
     // This way, when a root vertex appears in multiple JGF edges
     // we only update the virtual in-edge into the root only once.
     vmap[source].is_roots.clear ();

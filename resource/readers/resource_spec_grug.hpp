@@ -16,6 +16,7 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/flyweight.hpp>
 
 namespace Flux {
 namespace resource_model {
@@ -34,11 +35,11 @@ struct resource_pool_gen_t {
     int rank;
     long size;
     std::string unit;
-    std::string subsystem;
+    boost::flyweight<std::string> subsystem;
 };
 
 struct relation_gen_t {
-    std::string e_subsystem;
+    boost::flyweight<std::string> e_subsystem;
     std::string relation;
     std::string rrelation;
     int id_scope;
@@ -65,7 +66,9 @@ using vtx_type_map_t = boost::property_map<gg_t, pgen_t>::type;
 using vtx_basename_map_t = boost::property_map<gg_t, pgen_t>::type;
 using vtx_size_map_t = boost::property_map<gg_t, long resource_pool_gen_t::* >::type;
 using vtx_unit_map_t = boost::property_map<gg_t, pgen_t>::type;
-using vtx_subsystem_map_t = boost::property_map<gg_t, pgen_t>::type;
+//using vtx_subsystem_map_t = boost::property_map<gg_t, pgen_t>::type;
+using vtx_subsystem_map_t = boost::property_map<gg_t, decltype(&resource_pool_gen_t::subsystem)>::type;
+
 using edg_e_subsystem_map_t = boost::property_map<gg_t, rgen_t>::type;
 using edg_relation_map_t = boost::property_map<gg_t, rgen_t>::type;
 using edg_rrelation_map_t = boost::property_map<gg_t, rgen_t>::type;

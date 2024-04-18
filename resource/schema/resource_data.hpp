@@ -23,6 +23,7 @@
 #include "resource/schema/sched_data.hpp"
 #include "resource/schema/infra_data.hpp"
 #include "resource/planner/c/planner.h"
+#include "boost/flyweight.hpp"
 
 namespace Flux {
 namespace resource_model {

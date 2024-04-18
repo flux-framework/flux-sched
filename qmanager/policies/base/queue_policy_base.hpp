@@ -24,9 +24,12 @@ extern "C" {
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <boost/flyweight.hpp>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
+
+static boost::flyweight<std::string>::initializer  fwinit;
 
 namespace Flux {
 namespace queue_manager {

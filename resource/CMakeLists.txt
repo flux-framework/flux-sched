@@ -46,6 +46,7 @@ add_library(resource STATIC
     policies/dfu_match_policy_factory.cpp
     jobinfo/jobinfo.cpp
     schema/resource_data.cpp
+    schema/data_std.cpp
     schema/infra_data.cpp
     schema/sched_data.cpp
     schema/color.cpp
@@ -86,8 +87,9 @@ target_link_libraries(resource PUBLIC
     Boost::regex
     jobspec_conv
     Boost::filesystem
+    Threads::Threads
     )
-
+    
 add_subdirectory(modules)
 add_subdirectory(reapi)
 add_subdirectory(evaluators)

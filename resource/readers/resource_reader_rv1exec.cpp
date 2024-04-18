@@ -21,6 +21,7 @@ extern "C" {
 
 #include "resource/readers/resource_reader_rv1exec.hpp"
 #include "resource/planner/c/planner.h"
+#include <boost/flyweight.hpp>
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -92,6 +93,7 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
 {
     planner_t *plan = nullptr;
     planner_t *x_checker = nullptr;
+    boost::flyweight<std::string> fly_subsystem(subsys);
 
     if ( !(plan = planner_new (0, INT64_MAX, size, type.c_str ())))
         return boost::graph_traits<resource_graph_t>::null_vertex ();
@@ -120,7 +122,7 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
     g[v].id = id;
     g[v].name = (name != "")? name : basename + istr;
     g[v].paths[subsys] = prefix + "/" + g[v].name;
-    g[v].idata.member_of[subsys] = "*";
+    g[v].idata.member_of[fly_subsystem] = "*";
     g[v].status = resource_pool_t::status_t::UP;
     g[v].properties = props;
 
@@ -179,13 +181,14 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
 {
     edg_t e;
     bool inserted;
+    boost::flyweight<std::string> fly_subsystem(subsys);
 
     tie (e, inserted) = add_edge (src, dst, g);
     if (!inserted) {
         errno = ENOMEM;
         goto error;
     }
-    g[e].idata.member_of[subsys] = relation;
+    g[e].idata.member_of[fly_subsystem] = relation;
     g[e].name[subsys] = relation;
     if (add_metadata (g, m, e, src, dst) < 0)
        goto error;
@@ -195,7 +198,7 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
         errno = ENOMEM;
         goto error;
     }
-    g[e].idata.member_of[subsys] = rev_relation;
+    g[e].idata.member_of[fly_subsystem] = rev_relation;
     g[e].name[subsys] = rev_relation;
     if (add_metadata (g, m, e, dst, src) < 0)
        goto error;
@@ -545,12 +548,12 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
         goto error;
     }
 
-    if (m.roots.find ("containment") == m.roots.end ()) {
+    if (m.roots.find (flux_subsystem_containment) == m.roots.end ()) {
         errno = ENOENT;
         goto error;
     }
 
-    cluster_vtx = m.roots["containment"];
+    cluster_vtx = m.roots[flux_subsystem_containment];
     json_array_foreach (rlite, index, entry) {
         if (unpack_rlite_entry (g, m, cluster_vtx,
                                 entry, hlist, rmap, pmap) < 0)

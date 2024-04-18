@@ -207,7 +207,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
 
     vtx_t v = add_vertex (g);;
     std::string pref = "";
-    std::string ssys = recipe[u].subsystem;
+    auto ssys = recipe[u].subsystem;
     int id = 0;
 
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
@@ -232,7 +232,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,
     g[v].id = id;
     g[v].name = recipe[u].basename + istr;
     g[v].paths[ssys] = pref + "/" + g[v].name;
-    g[v].idata.member_of[ssys] = "*";
+    g[v].idata.member_of[ssys] = flux_match_any;
     g[v].uniq_id = v;
     g[v].rank = m_rank;
 
