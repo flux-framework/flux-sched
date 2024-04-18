@@ -87,6 +87,7 @@ target_link_libraries(resource PUBLIC
     jobspec_conv
     Boost::filesystem
     )
+add_sanitizers(resource)
 
 add_subdirectory(modules)
 add_subdirectory(reapi)

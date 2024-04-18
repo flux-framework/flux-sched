@@ -1,9 +1,11 @@
 add_executable(planner_test01 planner_test01.cpp)
+add_sanitizers(planner_test01)
 target_link_libraries(planner_test01 planner libtap)
 flux_add_test(NAME planner_test01 COMMAND planner_test01)
 set_property(TEST planner_test01 PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")
 
 add_executable(planner_test02 planner_test02.cpp)
+add_sanitizers(planner_test02)
 target_link_libraries(planner_test02 planner libtap)
 flux_add_test(NAME planner_test02 COMMAND planner_test02)
 set_property(TEST planner_test02 PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")

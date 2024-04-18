@@ -9,6 +9,7 @@ add_library ( jobspec_conv STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/rank_constraint.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rank_constraint.hpp
     )
+add_sanitizers(jobspec_conv)
 target_link_libraries(jobspec_conv PUBLIC flux::hostlist flux::idset
     flux::core yaml-cpp PkgConfig::JANSSON 
     PkgConfig::UUID
