@@ -448,7 +448,7 @@ public:
         job = m_jobs[id];
         switch (job->state) {
         case job_state_kind_t::PENDING:
-            this->remove_pending(job.get());
+            this->remove_pending(job.get ());
             break;
         case job_state_kind_t::ALLOC_RUNNING:
             m_alloced.erase (job->t_stamps.running_ts);
@@ -737,7 +737,7 @@ public:
             }
         } else {
             bool found_in_prov = false;
-            if (erase_pending_job (job, found_in_prov) < 0)
+            if (erase_pending_job (job.get (), found_in_prov) < 0)
                 return -1;
             job->priority = priority;
             if (insert_pending_job (job, found_in_prov) < 0)
@@ -806,7 +806,7 @@ protected:
             auto job = m_jobs[id];
             if (job->state == job_state_kind_t::PENDING) {
                 bool found_in_provisional = false;
-                if (erase_pending_job (job, found_in_provisional) < 0)
+                if (erase_pending_job (job.get (), found_in_provisional) < 0)
                     return -1;
                 job->state = job_state_kind_t::CANCELED;
                 auto res = m_canceled.insert (
@@ -836,7 +836,7 @@ protected:
             auto job = m_jobs[id];
             if (job->state == job_state_kind_t::PENDING) {
                 bool found_in_provisional = false;
-                if (erase_pending_job (job, found_in_provisional) < 0)
+                if (erase_pending_job (job.get (), found_in_provisional) < 0)
                     return -1;
                 job->priority = priority;
                 if (insert_pending_job (job, found_in_provisional) < 0)
