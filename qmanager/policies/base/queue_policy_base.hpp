@@ -101,7 +101,8 @@ class queue_policy_base_impl_t
 {
 public:
     int insert (std::shared_ptr<job_t> job);
-    int remove (flux_jobid_t id);
+    int remove_pending(job_t *job);
+    int remove(flux_jobid_t id);
     const std::shared_ptr<job_t> lookup (flux_jobid_t id);
     bool is_schedulable ();
     void set_schedulability (bool scheduable);
@@ -116,7 +117,7 @@ protected:
     int process_provisional_cancel ();
     int process_provisional_reprio ();
     int insert_pending_job (std::shared_ptr<job_t> &job, bool into_provisional);
-    int erase_pending_job (std::shared_ptr<job_t> &job, bool &found_in_prov);
+    int erase_pending_job (job_t *job, bool &found_in_prov);
     std::shared_ptr<job_t> pending_pop ();
     std::shared_ptr<job_t> alloced_pop ();
     std::shared_ptr<job_t> rejected_pop ();
@@ -269,6 +270,17 @@ public:
      *                       EINVAL: invalid argument.
      */
     int insert (std::shared_ptr<job_t> pending_job);
+
+    /*! Remove a job whose jobid is id from the pending or maybe_pending queues.
+     * If succeeds, it changes the pending queue or resource state. This queue
+     * becomes "schedulable" if pending job queue is not empty: i.e.,
+     * is_schedulable() returns true;
+     *
+     *  \param id        jobid of flux_jobid_t type.
+     *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
+     */
+    int remove_pending (job_t *job);
 
     /*! Remove a job whose jobid is id from any internal queues
      *  (e.g., pending queue, running queue, and alloced queue.)

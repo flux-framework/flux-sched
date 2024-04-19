@@ -186,6 +186,11 @@ int queue_policy_base_t::insert (std::shared_ptr<job_t> job)
     return detail::queue_policy_base_impl_t::insert (job);
 }
 
+int queue_policy_base_t::remove_pending (job_t *job)
+{
+    return detail::queue_policy_base_impl_t::remove_pending (job);
+}
+
 int queue_policy_base_t::remove (flux_jobid_t id)
 {
     return detail::queue_policy_base_impl_t::remove (id);
@@ -336,6 +341,45 @@ out:
     return rc;
 }
 
+int queue_policy_base_impl_t::remove_pending (job_t *job) {
+    int rc = -1;
+
+    if (!job || job->state != job_state_kind_t::PENDING) {
+        errno = EINVAL;
+        return rc;
+    }
+
+    job->t_stamps.canceled_ts = m_cancel_cnt++;
+    if (is_sched_loop_active ()) {
+        // if sched-loop is active, the job's pending state
+        // cannot be determined. There is "MAYBE pending state" where
+        // a request has been sent out to the match service.
+        auto res = m_pending_cancel_provisional.insert (
+                        std::pair<uint64_t, flux_jobid_t> (
+                            job->t_stamps.canceled_ts, job->id));
+        if (!res.second) {
+            errno = EEXIST;
+            goto out;
+        }
+    } else {
+        bool found_in_provisional = false;
+        if (erase_pending_job (job, found_in_provisional) < 0)
+            goto out;
+        job->state = job_state_kind_t::CANCELED;
+        auto res = m_canceled.insert (
+                        std::pair<uint64_t, flux_jobid_t> (
+                            job->t_stamps.canceled_ts, job->id));
+        if (!res.second) {
+            errno = EEXIST;
+            goto out;
+        }
+        m_schedulable = true;
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
 int queue_policy_base_impl_t::remove (flux_jobid_t id)
 {
     int rc = -1;
@@ -349,32 +393,7 @@ int queue_policy_base_impl_t::remove (flux_jobid_t id)
     job = m_jobs[id];
     switch (job->state) {
     case job_state_kind_t::PENDING:
-        job->t_stamps.canceled_ts = m_cancel_cnt++;
-        if (is_sched_loop_active ()) {
-            // if sched-loop is active, the job's pending state
-            // cannot be determined. There is "MAYBE pending state" where
-            // a request has been sent out to the match service.
-            auto res = m_pending_cancel_provisional.insert (
-                           std::pair<uint64_t, flux_jobid_t> (
-                               job->t_stamps.canceled_ts, job->id));
-            if (!res.second) {
-                errno = EEXIST;
-                goto out;
-            }
-        } else {
-            bool found_in_provisional = false;
-            if (erase_pending_job (job, found_in_provisional) < 0)
-                goto out;
-            job->state = job_state_kind_t::CANCELED;
-            auto res = m_canceled.insert (
-                           std::pair<uint64_t, flux_jobid_t> (
-                                job->t_stamps.canceled_ts, job->id));
-            if (!res.second) {
-                errno = EEXIST;
-                goto out;
-            }
-            m_schedulable = true;
-        }
+        this->remove_pending(job.get());
         break;
     case job_state_kind_t::ALLOC_RUNNING:
         m_alloced.erase (job->t_stamps.running_ts);
@@ -593,7 +612,7 @@ int queue_policy_base_impl_t::pending_reprioritize (flux_jobid_t id,
         }
     } else {
         bool found_in_prov = false;
-        if (erase_pending_job (job, found_in_prov) < 0)
+        if (erase_pending_job (job.get (), found_in_prov) < 0)
             return -1;
         job->priority = priority;
         if (insert_pending_job (job, found_in_prov) < 0)
@@ -614,7 +633,7 @@ int queue_policy_base_impl_t::process_provisional_cancel ()
         auto job = m_jobs[id];
         if (job->state == job_state_kind_t::PENDING) {
             bool found_in_provisional = false;
-            if (erase_pending_job (job, found_in_provisional) < 0)
+            if (erase_pending_job (job.get (), found_in_provisional) < 0)
                 return -1;
             job->state = job_state_kind_t::CANCELED;
             auto res = m_canceled.insert (
@@ -644,7 +663,7 @@ int queue_policy_base_impl_t::process_provisional_reprio ()
         auto job = m_jobs[id];
         if (job->state == job_state_kind_t::PENDING) {
             bool found_in_provisional = false;
-            if (erase_pending_job (job, found_in_provisional) < 0)
+            if (erase_pending_job (job.get (), found_in_provisional) < 0)
                 return -1;
             job->priority = priority;
             if (insert_pending_job (job, found_in_provisional) < 0)
@@ -685,7 +704,7 @@ int queue_policy_base_impl_t::insert_pending_job (std::shared_ptr<job_t> &job,
     return 0;
 }
 
-int queue_policy_base_impl_t::erase_pending_job (std::shared_ptr<job_t> &job,
+int queue_policy_base_impl_t::erase_pending_job (job_t *job,
                                                  bool &found_in_prov)
 {
     size_t s;
