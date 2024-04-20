@@ -12,7 +12,7 @@
 #define QUEUE_POLICY_FCFS_IMPL_HPP
 
 #include "qmanager/policies/queue_policy_fcfs.hpp"
-#include "qmanager/policies/base/queue_policy_base_impl.hpp"
+#include "qmanager/policies/base/queue_policy_base.hpp"
 
 namespace Flux {
 namespace queue_manager {

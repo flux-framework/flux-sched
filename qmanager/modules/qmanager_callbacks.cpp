@@ -22,7 +22,6 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::Jobspec;
 using namespace Flux::queue_manager;
-using namespace Flux::queue_manager::detail;
 using namespace Flux::opts_manager;
 using namespace Flux::cplusplus_wrappers;
 

@@ -36,9 +36,9 @@ int queue_policy_conservative_t<reapi_type>::apply_params ()
     try {
         std::unordered_map<std::string, std::string>::const_iterator i;
 
-        if ((i = queue_policy_base_impl_t
+        if ((i = queue_policy_base_t
                      ::m_pparams.find ("max-reservation-depth"))
-             != queue_policy_base_impl_t::m_pparams.end ()) {
+             != queue_policy_base_t::m_pparams.end ()) {
             int depth = 0;
             if ( (depth = std::stoi (i->second)) < 1) {
                 errno = ERANGE;
