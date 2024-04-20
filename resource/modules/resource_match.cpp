@@ -1144,14 +1144,10 @@ done:
 static int decode_all (std::shared_ptr<resource_ctx_t> &ctx,
                        std::set<int64_t> &ranks)
 {
-    int64_t size = ctx->db->metadata.by_rank.size();
-    
-    for (int64_t rank = 0; rank < size; ++rank) {
-        auto ret = ranks.insert (rank);
-        if (!ret.second) {
-            errno = EEXIST;
-            return -1;
-        }
+    ranks.clear ();
+    for (auto const& kv: ctx->db->metadata.by_rank) {
+        if (kv.first >= 0)
+            ranks.insert (kv.first);
     }
     return 0;
 }
