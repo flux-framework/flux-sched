@@ -8,6 +8,7 @@ add_library(planner_cxx STATIC
 	./planner_internal_tree.hpp
 	./scheduled_point_tree.hpp
  )
+add_sanitizers(planner_cxx) 
 target_link_libraries(planner_cxx yggdrasil)
 
 

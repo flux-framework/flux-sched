@@ -36,7 +36,6 @@ if("${isSystemDir}" STREQUAL "-1")
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
-
 # Setting the include directory for the application to find config.h
 include_directories( ${CMAKE_BINARY_DIR} )
 # Since we have created a config.h add a global define for it
@@ -46,10 +45,11 @@ add_definitions( "-DPACKAGE_VERSION=\"${FLUX_SCHED_VER}\"" )
 # We build a lot of shared libs, build them all with PIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# variable to store paths to add to module path for tests
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/sanitizers-cmake/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
+
+include(FindSanitizers)
 
 # external dependencies
 find_package(PkgConfig REQUIRED)
@@ -147,6 +147,7 @@ function(flux_add_plugin TargetName PluginType)
     )
   target_link_options(${TargetName} PRIVATE
     "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" ${LinkerOpts})
+  add_sanitizers(${TargetName})
   target_link_libraries(${TargetName} PRIVATE flux::core)
   if (NOT ARG_NOINSTALL)
     install(TARGETS ${TargetName}

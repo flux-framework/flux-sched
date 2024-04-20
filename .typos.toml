@@ -2,6 +2,7 @@
 # do not check testing data
 [files]
 extend-exclude = [
+  "cmake/sanitizers-cmake/*",
   "config/*",
   "m4/*",
   "src/common/libutil/json.hpp",
