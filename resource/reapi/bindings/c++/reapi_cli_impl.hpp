@@ -163,6 +163,34 @@ out:
     return rc;
 }
 
+int reapi_cli_t::satisfy (void *h, const std::string &jobspec,
+                          int64_t &satisfied, double &ov)
+{
+    // Assume by default we cannot satisfy
+    satisfied = -1;
+
+    int return_code;
+    match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;    
+    uint64_t jobid;
+    int64_t at = 0;    
+    std::string R (NULL);
+    bool reserved = false;
+
+    // This return code says that something wrong happened with 
+    // this function call - it doesn't reflect satisfy status
+    return_code = match_allocate (h, match_op, jobspec, jobid, reserved,
+                                  R, at, ov);
+
+    // The "at" variable reflects satisfy status.
+    // A value of at >= 0 is supposed to mean match_allocate success
+    // (0 is allocated, >0 is timestamp of reservation). Assuming
+    // satisfy could be either of these cases, we check for that here
+    if ((return_code == 0) && (at >= 0)) {
+        satisfied = 0;
+    }
+    return return_code;
+}
+
 int reapi_cli_t::update_allocate (void *h, const uint64_t jobid,
                                   const std::string &R, int64_t &at, double &ov,
                                   std::string &R_out)

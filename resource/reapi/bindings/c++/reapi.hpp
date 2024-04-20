@@ -130,6 +130,25 @@ public:
         return -1;
     }
 
+    /*! Determine if a jobspec can be satisfied without allocation
+     *  of any resources or creation of reservations.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param jobspec   jobspec string.
+     *  \param satisfied If the job can be satisfied, 0 is returned.
+     *                   Otherwise, -1.
+     *                   at which the job is reserved.
+     *  \return          0 on success; -1 on error.
+     */
+    static int satisfy (void *h, const std::string &jobspec,
+                        int64_t &satisfied)
+    {
+        return -1;
+    }
+
     /*! Multi-Match jobspecs to the "best" resources and either allocate
      *  orelse reserve them. The best resources are determined by
      *  the selected match policy.
