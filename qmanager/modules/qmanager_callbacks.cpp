@@ -70,8 +70,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "alloc success (queue=%s id=%jd)",
-                     queue_name.c_str (), static_cast<intmax_t> (job->id));
         }
         while ( (job = queue->rejected_pop ()) != nullptr) {
             std::string note = "alloc denied due to type=\"" + job->note + "\"";
@@ -83,8 +81,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", note.c_str (),
-                     static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
         while ( (job = queue->canceled_pop ()) != nullptr) {
             if (schedutil_alloc_respond_cancel (schedutil, job->msg) < 0) {
@@ -92,8 +88,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__);
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", "alloc canceled",
-                      static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
         for (job = queue->pending_begin (), qd = 0;
              job != nullptr && qd < queue->get_queue_depth ();
@@ -289,8 +283,6 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "free succeeded (queue=%s id=%jd)",
-             queue_name.c_str (), static_cast<intmax_t> (id));
 }
 
 void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,

@@ -2575,7 +2575,6 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
         goto error;
     }
-    flux_log (h, LOG_DEBUG, "%s: status succeeded", __FUNCTION__);
     return;
 
 error:
