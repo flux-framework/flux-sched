@@ -296,7 +296,6 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
         goto out;
     }
-    flux_log (h, LOG_DEBUG, "%s: resource-status succeeded", __FUNCTION__);
     flux_future_destroy (f);
     return;
 
