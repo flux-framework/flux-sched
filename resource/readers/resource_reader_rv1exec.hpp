@@ -21,6 +21,17 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
+// Struct to track data for update
+struct updater_data {
+    int64_t jobid = 0;
+    int64_t at = 0;
+    uint64_t duration = 0;
+    bool reserved = false;
+    uint64_t token = 0;
+    // track updated vertices to undo upon error
+    std::map<int64_t, std::vector<vtx_t>> updated_vertices;
+    bool update = true; // Updating or adding vertex
+};
 
 /*! RV1EXEC resource reader class.
  */
@@ -120,6 +131,44 @@ private:
 
     int add_cluster_vertex (resource_graph_t &g, resource_graph_metadata_t &m);
 
+    // Update functions
+    vtx_t find_vertex (resource_graph_t &g, resource_graph_metadata_t &m,
+                       vtx_t parent, int64_t id,
+                       const std::string &subsys,
+                       const std::string &type,
+                       const std::string &basename,
+                       const std::string &name,
+                       int size, int rank);
+
+    int update_vertex (resource_graph_t &g,
+                       vtx_t vtx,
+                       updater_data &update_data);
+
+    int undo_vertices (resource_graph_t &g, updater_data &update_data);
+
+    int update_edges (resource_graph_t &g,
+                      resource_graph_metadata_t &m,
+                      vtx_t src, vtx_t dst,
+                      updater_data &update_data);
+
+    int update_exclusivity (resource_graph_t &g,
+                            resource_graph_metadata_t &m,
+                            vtx_t vtx,
+                            updater_data &update_data);
+
+    // Returns the added or updated vertex; null_vertex on error.
+    vtx_t add_or_update (resource_graph_t &g,
+                         resource_graph_metadata_t &m,
+                         vtx_t parent, int64_t id,
+                         const std::string &subsys,
+                         const std::string &type,
+                         const std::string &basename,
+                         const std::string &name,
+                         int size, int rank,
+                         std::map<std::string,
+                             std::string> &properties,
+                         updater_data &update_data);
+
     int build_rmap (json_t *rlite, std::map<unsigned, unsigned> &rmap);
 
     int build_pmap (json_t *properties,
@@ -129,35 +178,41 @@ private:
                       resource_graph_metadata_t &m, vtx_t parent,
                       const char *resource_type,
                       const char *resource_ids, unsigned rank,
-                      std::map<unsigned, properties_t> &pmap);
+                      std::map<unsigned, properties_t> &pmap,
+                      updater_data &update_data);
 
     int unpack_children (resource_graph_t &g,
                          resource_graph_metadata_t &m,
                          vtx_t parent, json_t *children, unsigned rank,
-                         std::map<unsigned, properties_t> &pmap);
+                         std::map<unsigned, properties_t> &pmap,
+                         updater_data &update_data);
 
     int unpack_rank (resource_graph_t &g,
                      resource_graph_metadata_t &m,
                      vtx_t parent, unsigned rank, json_t *children,
                      struct hostlist *hlist,
                      std::map<unsigned, unsigned> &rmap,
-                     std::map<unsigned, properties_t> &pmap);
+                     std::map<unsigned, properties_t> &pmap,
+                     updater_data &update_data);
 
     int unpack_rlite_entry (resource_graph_t &g,
                             resource_graph_metadata_t &m,
                             vtx_t parent, json_t *entry,
                             struct hostlist *hlist,
                             std::map<unsigned, unsigned> &rmap,
-                            std::map<unsigned, properties_t> &pmap);
+                            std::map<unsigned, properties_t> &pmap,
+                            updater_data &update_data);
 
     int unpack_rlite (resource_graph_t &g,
                       resource_graph_metadata_t &m, json_t *rlite,
                       struct hostlist *hlist,
                       std::map<unsigned, unsigned> &rmap,
-                      std::map<unsigned, properties_t> &pmap);
+                      std::map<unsigned, properties_t> &pmap,
+                      updater_data &update_data);
 
     int unpack_internal (resource_graph_t &g,
-                         resource_graph_metadata_t &m, json_t *rv1);
+                         resource_graph_metadata_t &m, json_t *rv1,
+                         updater_data &update_data);
 };
 
 } // namespace resource_model

@@ -22,8 +22,8 @@ EOF
     cat 001.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds001_ &&
     cat >upd_cmds001 <<-EOF &&
-	update allocate cmds001_aa.json 1 0 3600
-	update allocate cmds001_ab.json 2 0 3600
+	update allocate jgf cmds001_aa.json 1 0 3600
+	update allocate jgf cmds001_ab.json 2 0 3600
 	quit
 EOF
     ${query} -L ${grugs} -S CA -P high -F jgf -t 001.R.out2 < upd_cmds001 &&
@@ -41,8 +41,8 @@ EOF
     cat 002.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds002_ &&
     cat >upd_cmds002 <<-EOF &&
-	update allocate cmds002_aa.json 1 0 3600
-	update allocate cmds002_ab.json 2 0 3600
+	update allocate jgf cmds002_aa.json 1 0 3600
+	update allocate jgf cmds002_ab.json 2 0 3600
 	quit
 EOF
     ${query} -L ${grugs} -S PA -P high -F jgf -t 002.R.out2 < upd_cmds002 &&
@@ -60,7 +60,7 @@ EOF
     cat 003.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds003_ &&
     cat >upd_cmds003 <<-EOF &&
-	update allocate cmds003_aa.json 1 0 3600
+	update allocate jgf cmds003_aa.json 1 0 3600
 	match allocate ${job5}
 	match allocate ${job5}
 	quit
@@ -80,7 +80,7 @@ EOF
     cat 004.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds004_ &&
     cat >upd_cmds004 <<-EOF &&
-	update allocate cmds004_aa.json 1 0 3600
+	update allocate jgf cmds004_aa.json 1 0 3600
 	match allocate ${job5}
 	match allocate ${job5}
 	cancel 1
