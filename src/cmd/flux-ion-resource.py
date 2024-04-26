@@ -224,12 +224,62 @@ def stat_action(_):
     print("Graph Load Time: ", resp["load-time"], "Secs")
     print("Graph Upime: ", resp["graph-uptime"], "Secs")
     print("Time Since Stats Reset: ", resp["time-since-reset"], "Secs")
-    print("Num. of Total Jobs Matched: ", resp["njobs"])
-    print("Num. of Jobs Matched Since Reset: ", resp["njobs-reset"])
-    print("Min. Match Time: ", resp["min-match"], "Secs")
-    print("Max. Match Time: ", resp["max-match"], "Secs")
-    print("Avg. Match Time: ", resp["avg-match"], "Secs")
-    print("Match Variance: ", resp["match-variance"], "Secs^2")
+    print(
+        "Num. of Total Jobs Successfully Matched: ",
+        resp["match"]["succeeded"]["njobs"],
+    )
+    print(
+        "Num. of Jobs Successfully Matched Since Reset: ",
+        resp["match"]["succeeded"]["njobs-reset"],
+    )
+    print(
+        "Min. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["min"],
+        "Secs",
+    )
+    print(
+        "Max. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["max"],
+        "Secs",
+    )
+    print(
+        "Avg. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["avg"],
+        "Secs",
+    )
+    print(
+        "Successful Match Variance: ",
+        resp["match"]["succeeded"]["stats"]["variance"],
+        "Secs^2",
+    )
+    print(
+        "Num. of Jobs with Failed Matches: ",
+        resp["match"]["failed"]["njobs"],
+    )
+    print(
+        "Num. of Jobs with Failed Matches Since Reset: ",
+        resp["match"]["failed"]["njobs-reset"],
+    )
+    print(
+        "Min. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["min"],
+        "Secs",
+    )
+    print(
+        "Max. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["max"],
+        "Secs",
+    )
+    print(
+        "Avg. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["avg"],
+        "Secs",
+    )
+    print(
+        "Match Variance of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["variance"],
+        "Secs^2",
+    )
 
 
 def stats_clear_action(_):
