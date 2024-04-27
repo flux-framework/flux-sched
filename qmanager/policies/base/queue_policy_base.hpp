@@ -18,6 +18,7 @@ extern "C" {
 #include <flux/core.h>
 }
 
+#include <cassert>
 #include <map>
 #include <algorithm>
 #include <vector>
@@ -153,6 +154,12 @@ public:
      */
     virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
                                       std::string &ret_R) = 0;
+
+    /// @brief move any jobs in blocked state to pending
+    void reconsider_blocked_jobs () {
+        m_pending.merge (m_blocked);
+        assert (m_blocked.size () == 0);
+    }
 
     /*! Set queue parameters. Can be called multiple times.
      *
@@ -465,7 +472,10 @@ public:
         default:
             break;
         }
-
+        // blocked jobs must be reconsidered after a job completes
+        // this covers cases where jobs that couldn't run because of an
+        // existing job's reservation can when it completes early
+        reconsider_blocked_jobs ();
         rc = 0;
     out:
         return rc;
@@ -960,6 +970,8 @@ protected:
     uint64_t m_reprio_cnt = 0;
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
+    /// jobs that need to wait for resource state updates
+    std::map<std::vector<double>, flux_jobid_t> m_blocked;
     std::map<std::vector<double>, flux_jobid_t> m_pending;
     std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
     std::map<uint64_t, flux_jobid_t> m_pending_cancel_provisional;

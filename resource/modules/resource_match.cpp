@@ -1968,6 +1968,11 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
                             __FUNCTION__, (intmax_t)jobid);
+        // The resources couldn't be allocated *or reserved*
+        // Kicking back to qmanager, remove from tracking
+        if (errno == EBUSY) {
+            ctx->jobs.erase (jobid);
+        }
         goto error;
     }
 

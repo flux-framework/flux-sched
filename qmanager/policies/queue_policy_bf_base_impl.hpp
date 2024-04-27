@@ -85,8 +85,15 @@ queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve (void *h,
                                                        : "match error");
         } else {
             // This can happen if there are "down" resources.
-            // The semantics of our backfill policies is to skip this job
-            iter++;
+            // The semantics of our backfill policies is to skip this job,
+            // add it to the blocked list, and re-consider when resource
+            // status changes
+
+            // copy and advance iterator before extract invalidates it
+            auto next = iter;
+            ++next;
+            m_blocked.insert (m_pending.extract (iter));
+            iter = next;
         }
     }
     return iter;
@@ -129,11 +136,8 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     std::shared_ptr<job_t> job;
 
     // move jobs in m_pending_provisional queue into
-    // m_pending. Note that c++11 doesn't have a clean way
-    // to "move" elements between two std::map objects so
-    // we use copy for the time being.
-    m_pending.insert (m_pending_provisional.begin (),
-                      m_pending_provisional.end ());
+    // m_pending.
+    m_pending.merge (m_pending_provisional);
     m_pending_provisional.clear ();
 
     set_sched_loop_active (true);
