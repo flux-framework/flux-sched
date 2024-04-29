@@ -21,7 +21,6 @@ if(SPHINX AND ENABLE_DOCS)
 
     add_custom_command(
         OUTPUT ${man5_outputs}
-        ALL
         DEPENDS
         man5/index.rst
         ${man5_inputs}
