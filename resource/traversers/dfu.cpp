@@ -310,7 +310,14 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         detail::dfu_impl_t::update ();
     } else if ( (rc = schedule (jobspec, meta, x, op, root, dfv)) ==  0) {
         *at = meta.at;
-        if (*at < 0 or *at >= graph_end) {
+        if (*at == graph_end) {
+            detail::dfu_impl_t::reset_exclusive_resource_types
+                                                        (exclusive_types);
+            // no schedulable point found even at the end of the time, return EBUSY
+            errno = EBUSY;
+            return -1;
+        }
+        if (*at < 0 or *at > graph_end) {
             detail::dfu_impl_t::reset_exclusive_resource_types
                                                         (exclusive_types);
             errno = EINVAL;
