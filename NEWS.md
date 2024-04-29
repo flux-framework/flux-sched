@@ -8,7 +8,7 @@ flux-sched version 0.33.1 - 2024-04-09
  * policies: add firstnodex to the known policies (#1161)
  * reader: fix jgf properties (#1149)
  * Replace deprecated 'flux job cancel[all]' usage (#1157)
- * Corrects typo 'becuase' into 'because'.  (#1155)
+ * Correct typo into 'because'.  (#1155)
 
 flux-sched version 0.33.0 - 2024-03-04
 --------------------------------------
