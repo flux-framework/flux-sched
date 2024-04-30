@@ -50,6 +50,8 @@ command_t commands[] = {
 "resource-query> find status=down and sched-now=allocated" },
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
+    { "expiration", "z", cmd_expiration, "Modify the expiration of a job: "
+"resource-query> expiration jobid new-expiration-time" },
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
 "resource-query> set-property resource PROPERTY=VALUE" },
 { "get-property", "g", cmd_get_property, "Get all properties of a resource: "
@@ -78,6 +80,18 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
            info->state = job_lifecycle_t::CANCELED;
         }
     } else {
+        std::cout << ctx->traverser->err_message ();
+        ctx->traverser->clear_err_message ();
+    }
+    return rc;
+}
+
+static int do_expiration (std::shared_ptr<resource_context_t> &ctx,
+                          int64_t jobid, int64_t expiration)
+{
+    int rc = -1;
+    if ( (rc = ctx->traverser->modify ((int64_t)jobid,
+                                       (int64_t)expiration)) != 0) {
         std::cout << ctx->traverser->err_message ();
         ctx->traverser->clear_err_message ();
     }
@@ -595,6 +609,36 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
         std::cerr << "ERROR: error encountered while removing job "
                   << jobid << std::endl;
     }
+
+done:
+    return 0;
+}
+
+int cmd_expiration (std::shared_ptr<resource_context_t> &ctx,
+                    std::vector<std::string> &args)
+{
+    if (args.size () != 3) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+
+    int rc = -1;
+    std::string jobid_str = args[1];
+    std::string expiration_str = args[2];
+    uint64_t jobid = (uint64_t)std::strtoll (jobid_str.c_str (), NULL, 10);
+    uint64_t expiration = (uint64_t)std::strtoll (expiration_str.c_str (),
+                                                  NULL, 10);
+
+    if (ctx->allocations.find (jobid) == ctx->allocations.end ()) {
+        std::cerr << "ERROR: allocation jobid not found " << jobid << "\n";
+        goto done;
+    }
+
+    rc = do_expiration (ctx, jobid, expiration);
+
+    if (rc != 0)
+        std::cerr << "ERROR: error encountered while changing job expiration "
+                  << jobid << "\n";
 
 done:
     return 0;

@@ -253,6 +253,16 @@ int planner::update_total (uint64_t resource_total)
     return 0;
 }
 
+int planner::update_span (int64_t span_id, int64_t duration)
+{
+    auto span_it = m_span_lookup.find (span_id);
+    if (span_it == m_span_lookup.end ())
+        return -1;
+    span_it->second->last += duration;
+
+    return 0;
+}
+
 int64_t planner::get_total_resources () const
 {
     return m_total_resources;

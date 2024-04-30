@@ -293,6 +293,15 @@ public:
      */
     int remove (vtx_t root, int64_t jobid);
 
+    /*! Modify the allocation/reservation referred to by jobid and update
+     *  the resource state.
+     *
+     *  \param root      root resource vertex.
+     *  \param jobid     job id.
+     *  \return          0 on success; -1 on error.
+     */
+    int modify (vtx_t root, int64_t jobid, int64_t expiration);
+
     /*! Update the resource status to up|down|etc starting at subtree_root.
      *
      *  \param root_path     path to the root of the subtree to update.
@@ -476,13 +485,16 @@ private:
                  bool full, std::map<std::string, int64_t> &to_parent,
                  bool emit_shadow);
 
-    int rem_txfilter (vtx_t u, int64_t jobid, bool &stop);
-    int rem_agfilter (vtx_t u, int64_t jobid, const std::string &s);
-    int rem_idata (vtx_t u, int64_t jobid, const std::string &s, bool &stop);
-    int rem_plan (vtx_t u, int64_t jobid);
-    int rem_upv (vtx_t u, int64_t jobid);
-    int rem_dfv (vtx_t u, int64_t jobid);
-    int rem_exv (int64_t jobid);
+    int mod_txfilter (vtx_t u, int64_t jobid, int64_t expiration,
+                      bool &stop, bool remove);
+    int mod_agfilter (vtx_t u, int64_t jobid, int64_t expiration,
+                      const std::string &s, bool remove);
+    int mod_idata (vtx_t u, int64_t jobid, int64_t expiration,
+                   const std::string &s, bool &stop, bool remove);
+    int mod_plan (vtx_t u, int64_t jobid, int64_t expiration, bool remove);
+    int mod_upv (vtx_t u, int64_t jobid, int64_t expiration, bool remove);
+    int mod_dfv (vtx_t u, int64_t jobid, int64_t expiration, bool remove);
+    int mod_exv (int64_t jobid, int64_t expiration, bool remove);
 
 
     /************************************************************************

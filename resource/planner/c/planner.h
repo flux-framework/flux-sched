@@ -242,6 +242,9 @@ bool planners_equal (planner_t *lhs, planner_t *rhs);
 int planner_update_total (planner_t *ctx,
                           uint64_t resource_total);
 
+int planner_update_span (planner_t *ctx, int64_t span_id,
+                         int64_t expiration);
+
 #ifdef __cplusplus
 }
 #endif

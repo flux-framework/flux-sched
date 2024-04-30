@@ -276,6 +276,9 @@ static void params_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void set_status_request_cb (flux_t *h, flux_msg_handler_t *w,
                                    const flux_msg_t *msg, void *arg);
 
+static void expiration_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg);
+
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.match", match_request_cb, 0 },
@@ -313,6 +316,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.params", params_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.set_status", set_status_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.expiration", expiration_request_cb, 0 },
     FLUX_MSGHANDLER_TABLE_END
 };
 
@@ -1931,6 +1936,55 @@ out:
     return rc;
 }
 
+static int run_expiration (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                           int64_t expiration)
+{
+    int rc = -1;
+    dfu_traverser_t &tr = *(ctx->traverser);
+    json_t *R = nullptr;
+    int version;
+    double start = 0.0, end = 0.0;
+    json_t *r_lite = nullptr;
+    json_t *jgf = nullptr;
+    std::string R_str = "";
+
+    if ((rc = tr.modify (jobid, expiration)) < 0)
+        goto out;
+    // We know the jobid exists and is valid
+    if ( !(R = json_string (ctx->jobs[jobid]->R.c_str ()))) {
+        errno = EINVAL;
+        goto out;
+    }
+    if (json_unpack (R,
+                    "{s:i s:{s:o s?F s?F} s?:o}",
+                    "version", &version,
+                    "execution",
+                    "R_lite", &r_lite,
+                    "starttime", &start,
+                    "expiration", &end,
+                    "scheduling", &jgf) < 0) {
+        errno = EINVAL;
+        goto out;
+    }
+    end = expiration;
+    if ( (R = json_pack ("{s:i s:{s:o s?F s?F} s?:o}",
+                    "version", &version,
+                    "execution",
+                    "R_lite", &r_lite,
+                    "starttime", &start,
+                    "expiration", &end,
+                    "scheduling", &jgf)) == NULL ) {
+        errno = EINVAL;
+        goto out;
+    }
+    R_str =  std::string (json_dumps (R, JSON_INDENT (0)));
+    ctx->jobs[jobid]->R = R_str;
+
+    rc = 0;
+out:
+    return rc;
+}
+
 static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg)
 {
@@ -2780,6 +2834,41 @@ error:
     if (flux_respond_error (h, msg, EINVAL, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
     return;
+}
+
+static void expiration_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    int64_t jobid = -1;
+    int64_t expiration = -1;
+
+    if (flux_request_unpack (msg, NULL, "{s:I, s:I}",
+                                        "jobid", &jobid,
+                                        "expiration", &expiration) < 0)
+        goto error;
+    if (ctx->allocations.find (jobid) == ctx->allocations.end ()) {
+        errno = ENOENT;
+        flux_log (h, LOG_DEBUG, "%s: nonexistent job (id=%jd)",
+                  __FUNCTION__, (intmax_t)jobid);
+        goto error;
+    }
+
+    if (run_expiration (ctx, jobid, expiration) < 0) {
+        flux_log_error (h, "%s: expiration fails due to match error (id=%jd)",
+                        __FUNCTION__, (intmax_t)jobid);
+        goto error;
+    }
+    if (flux_respond (h, msg, NULL) < 0) {
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
+        goto error;
+    }
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 /******************************************************************************

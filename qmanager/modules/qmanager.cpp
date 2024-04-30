@@ -44,9 +44,12 @@ public:
     int fetch_and_reset_notify_rc ();
     int get_notify_rc () const;
     void set_notify_rc (int rc);
+    int fetch_and_reset_expiration_rc ();
+    void set_expiration_rc (int rc);
     flux_future_t *notify_f{nullptr};
 private:
     int m_notify_rc = 0;
+    int m_expiration_rc = 0;
 };
 
 struct qmanager_ctx_t : public qmanager_cb_ctx_t,
@@ -75,6 +78,18 @@ int fluxion_resource_interface_t::get_notify_rc () const
 void fluxion_resource_interface_t::set_notify_rc (int rc)
 {
     m_notify_rc = rc;
+}
+
+int fluxion_resource_interface_t::fetch_and_reset_expiration_rc ()
+{
+    int rc = m_expiration_rc;
+    m_expiration_rc = 0;
+    return rc;
+}
+
+void fluxion_resource_interface_t::set_expiration_rc (int rc)
+{
+    m_expiration_rc = rc;
 }
 
 static int process_args (std::shared_ptr<qmanager_ctx_t> &ctx,
@@ -228,6 +243,22 @@ out:
     return;
 }
 
+static void resource_expiration_cont (flux_future_t *f, void *arg)
+{
+    int rc = -1;
+    qmanager_ctx_t *ctx = static_cast<qmanager_ctx_t *> (arg);
+
+    if ( (rc = flux_rpc_get (f, NULL)) < 0) {
+        flux_log_error (ctx->h,
+            "%s: sched-fluxion-resource.expiration failure",
+            __FUNCTION__);
+    }
+
+    flux_future_reset (f);
+    ctx->set_expiration_rc (rc);
+    return;
+}
+
 static int handshake_resource (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
@@ -296,6 +327,53 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
         goto out;
     }
+    flux_future_destroy (f);
+    return;
+
+out:
+    flux_future_destroy (f);
+    if (flux_respond_error (h, msg, errno, nullptr) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void expiration_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                   const flux_msg_t *msg, void *arg)
+{
+    int size = 0;
+    const char *data = nullptr;
+    void *d{nullptr};
+    std::shared_ptr<qmanager_ctx_t> ctx;
+    flux_future_t *f = NULL;
+
+    if (!(d = flux_aux_get (h, "sched-fluxion-qmanager")))
+        goto out;
+    ctx = *(static_cast<std::shared_ptr<qmanager_ctx_t> *>(d));
+
+    if (flux_request_decode_raw (msg, nullptr, (const void**)&data, &size) < 0)
+        goto out;
+    if ( !(f = flux_rpc_raw (h, "sched-fluxion-resource.expiration",
+                             data, size, FLUX_NODEID_ANY, 0))) {
+        flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.expiration)",
+                        __FUNCTION__);
+        goto out;
+    }
+
+    resource_expiration_cont (f, ctx.get ());
+    if ( (ctx->fetch_and_reset_expiration_rc ()) < 0) {
+        flux_log_error (h, "%s: resource_expiration_cont",
+                        __FUNCTION__);
+        goto out;
+    }
+    if ( (flux_future_then (f,
+                            -1.0,
+                            resource_expiration_cont,
+                            ctx.get ())) < 0) {
+        flux_log_error (h, "%s: flux_future_then", __FUNCTION__);
+        goto out;
+    }
+
+    flux_log (h, LOG_DEBUG, "%s: expiration update succeeded", __FUNCTION__);
+    flux_respond (h, msg, NULL);
     flux_future_destroy (f);
     return;
 
@@ -594,6 +672,8 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
 static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched.resource-status", status_request_cb, FLUX_ROLE_USER },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched.expiration", expiration_request_cb, FLUX_ROLE_USER },
     { FLUX_MSGTYPE_REQUEST,
       "*.feasibility", feasibility_request_cb, FLUX_ROLE_USER },
     { FLUX_MSGTYPE_REQUEST,
