@@ -46,6 +46,8 @@ public:
     void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
+    void swap_match_cb (const std::string &m);
+    void restore_match_cb ();
     void clear_err_message ();
 
     bool is_initialized () const;

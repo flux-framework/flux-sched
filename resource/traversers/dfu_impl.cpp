@@ -15,6 +15,7 @@ extern "C" {
 }
 
 #include "resource/traversers/dfu_impl.hpp"
+#include "resource/policies/dfu_match_policy_factory.hpp"
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
@@ -1016,6 +1017,7 @@ dfu_impl_t::dfu_impl_t (const dfu_impl_t &o)
     m_graph = o.m_graph;
     m_graph_db = o.m_graph_db;
     m_match = o.m_match;
+    m_match_bak = o.m_match_bak;
     m_err_msg = o.m_err_msg;
 }
 
@@ -1027,6 +1029,7 @@ dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o)
     m_graph = o.m_graph;
     m_graph_db = o.m_graph_db;
     m_match = o.m_match;
+    m_match_bak = o.m_match_bak;
     m_err_msg = o.m_err_msg;
     return *this;
 }
@@ -1085,6 +1088,23 @@ void dfu_impl_t::set_graph_db (std::shared_ptr<resource_graph_db_t> db)
 void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     m_match = m;
+    m_match_bak = m;
+}
+
+void dfu_impl_t::swap_match_cb (const std::string &m)
+{
+    if ( (m_match == nullptr) || (m_match_bak == nullptr))
+        return;
+
+    *m_match_bak = *m_match;
+    m_match = create_match_cb (m);
+    // Copies the state but not the match type
+    *m_match = *m_match_bak;
+}
+
+void dfu_impl_t::restore_match_cb ()
+{
+    m_match = m_match_bak;
 }
 
 void dfu_impl_t::clear_err_message ()

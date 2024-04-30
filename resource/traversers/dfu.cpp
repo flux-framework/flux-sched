@@ -40,6 +40,11 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
     int saved_errno = errno;
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
 
+    // Every satisfiability check should use first match
+    // for performance.
+    if (get_match_cb ()->matcher_name () != "first")
+        swap_match_cb ("first");
+
     meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
     meta.at = planner_multi_base_time (p)
@@ -53,6 +58,9 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
     }
     m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
     m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+
+    if (get_match_cb ()->matcher_name () != "first")
+        restore_match_cb ();
 
     if (!errno)
         errno = saved_errno;
@@ -84,17 +92,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     case match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY: {
         /* With satisfiability check */
         errno = EBUSY;
-        meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
-        p = (*get_graph ())[root].idata.subplans.at (dom);
-        meta.at = planner_multi_base_time (p)
-                  + planner_multi_duration (p) - meta.duration - 1;
-        detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
-        if (detail::dfu_impl_t::select (jobspec, root, meta, x) < 0) {
-            errno = (errno == EBUSY)? ENODEV : errno;
-            detail::dfu_impl_t::update ();
-        }
-        m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
-        m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+        is_satisfiable (jobspec, meta, x, root, dfv);
         break;
     }
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
@@ -225,6 +223,16 @@ void dfu_traverser_t::set_graph_db (std::shared_ptr<resource_graph_db_t> g)
 void dfu_traverser_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     detail::dfu_impl_t::set_match_cb (m);
+}
+
+void dfu_traverser_t::swap_match_cb (const std::string &m)
+{
+    detail::dfu_impl_t::swap_match_cb (m);
+}
+
+void dfu_traverser_t::restore_match_cb ()
+{
+    detail::dfu_impl_t::restore_match_cb ();
 }
 
 void dfu_traverser_t::clear_err_message ()
