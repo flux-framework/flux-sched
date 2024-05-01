@@ -104,6 +104,9 @@ test_expect_success 'resource module stats and clear work' '
     unload_resource &&
     load_resource &&
     load_qmanager_sync &&
+    # Submit unsatisfiable jobs to populate failed match stats
+    test_must_fail flux run -N 100 -n 400 -t 10s sleep 10 &&
+    test_must_fail flux run -N 100 -n 400 -t 10s sleep 10 &&
     flux module stats sched-fluxion-resource &&
     flux module stats --clear sched-fluxion-resource
 '
