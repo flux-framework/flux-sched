@@ -353,7 +353,7 @@ private:
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
              const std::vector<Jobspec::Resource> &resources,
-             bool &prestine, unsigned int &nslots, match_kind_t &ko);
+             bool &prestine, unsigned int &nslots, match_kind_t &ko, bool *excl);
     bool is_pconstraint_matched (vtx_t u, const std::string &property);
 
 
