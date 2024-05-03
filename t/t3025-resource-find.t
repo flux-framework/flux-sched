@@ -12,7 +12,7 @@ cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/find"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/find"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 skip_all_unless_have jq
 

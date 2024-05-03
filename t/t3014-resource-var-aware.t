@@ -8,7 +8,7 @@ test_description='Test Variation Aware Scheduler On Small System.'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/var_aware"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/var_aware"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/small.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="variation policy works on small graph"

@@ -35,7 +35,7 @@ hwloc_4rsmigpu="${hwloc_basepath}/001N/amd_gpu/rsmi_corona240.xml"
 hwloc_2mtypes="${hwloc_basepath}/001N/multi_gpu_types/chimera.xml"
 
 
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 

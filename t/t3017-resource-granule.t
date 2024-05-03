@@ -7,7 +7,7 @@ test_description='Test Scheduling Correctness on Vertex Granularity'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/granule"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/granule"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

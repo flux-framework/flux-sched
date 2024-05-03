@@ -7,7 +7,7 @@ test_description='Test more global (rack) constraints'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/global_constraints"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/global_constraints"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/medium.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

@@ -8,7 +8,7 @@ cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/status"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/status"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 grug_aux="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/coarse_iobw.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

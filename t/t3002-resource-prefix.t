@@ -7,7 +7,7 @@ test_description='Test various full and partial hierarchical specifications'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/omit_prefix"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/omit_prefix"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/medium.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

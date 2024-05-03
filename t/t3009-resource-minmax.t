@@ -7,7 +7,7 @@ test_description='Test min and max moldable matching'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/min_max"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/min_max"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

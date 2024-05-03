@@ -7,7 +7,7 @@ test_description='Test node-locality-aware scheduling'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/node_locality"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/node_locality"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/small.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High node first (-P hinode)

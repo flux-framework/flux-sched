@@ -7,7 +7,7 @@ test_description='Test resource graph growth'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/elastic"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/elastic"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/elastic/node-test.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="fully allocate node and grow job with new resources"

@@ -7,7 +7,7 @@ test_description='Test node-local storage cases with hwloc reader'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/node_local_storage"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/node_local_storage"
 xml_dir="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/node_local_storage/"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 extract_storage_ids() {
     grep -v "INFO" "$1" | \

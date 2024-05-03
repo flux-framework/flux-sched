@@ -7,7 +7,7 @@ test_description='Test the correctness of allocate with satisfiability check'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/satisfiability"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/satisfiability"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="detect unsatisfiables due to low-level constraints"

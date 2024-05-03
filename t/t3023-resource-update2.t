@@ -9,7 +9,7 @@ unit_job="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/update/test001.yaml"
 job5="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/update/test005.yaml"
 job6="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/update/test006.yaml"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/power.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 test001_desc="match-allocate/update-allocate works when CA is selected"
 test_expect_success "${test001_desc}" '

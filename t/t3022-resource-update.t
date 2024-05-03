@@ -21,7 +21,7 @@ grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 rv1exec_graph="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec.json"
 rv1exec_graph_2_1="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec_2-1.json"
 rv1exec_graph_2_1_split="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec_2-1_split.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 test001_desc="match-allocate/update-allocate result in same output"
 test_expect_success "${test001_desc}" '

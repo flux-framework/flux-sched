@@ -7,7 +7,7 @@ test_description='Test Scheduling On Tiny Machine Configuration'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/pruning"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 # tiny machine has a total of 100 resource vertices:
 #     cluster[1]->rack[1]->node[2]->socket[2]->core[18],memory[4],gpu[1]

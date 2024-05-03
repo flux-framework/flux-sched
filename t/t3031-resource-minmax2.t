@@ -7,7 +7,7 @@ test_description='Test min/max matching 2'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/min_max2"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/min_max2"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Match selection Policy -- High ID first (-P high)

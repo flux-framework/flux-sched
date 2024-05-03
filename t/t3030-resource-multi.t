@@ -7,7 +7,7 @@ test_description='Test Multi-match Commands On Tiny Machine Configuration'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/multi_match"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="multi=match allocate 4 jobspecs with 1 slot: 1 socket: 1 core"

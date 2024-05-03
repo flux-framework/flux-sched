@@ -7,7 +7,7 @@ test_description='Test reservations of jobs of varying geometries and durations'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/cancel"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/cancel"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

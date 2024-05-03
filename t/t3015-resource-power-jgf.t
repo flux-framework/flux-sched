@@ -7,7 +7,7 @@ test_description='Test simple power allocation cases'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/power"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/power"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/power.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

@@ -7,7 +7,7 @@ test_description='Test resource graph remove subgraph'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/remove"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/remove"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="remove a single socket"

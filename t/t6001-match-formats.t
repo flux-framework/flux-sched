@@ -9,7 +9,7 @@ large_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/sierra.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 jobspec2="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test011.yaml"
 schema="${SHARNESS_TEST_SRCDIR}/schemas/json-graph-schema.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 test_expect_success "R emitted with -F jgf validates against schema" '
     echo "match allocate ${jobspec}" > in1.txt &&

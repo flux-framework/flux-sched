@@ -13,7 +13,7 @@ jgf_dir="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs"
 jgf_orig="${jgf_dir}/4node.rank0123.nid0123.orig.json"
 jgf_mod1="${jgf_dir}/4node.rank0123.nid0123.mod.json"
 jgf_mod2="${jgf_dir}/4node.rank1230.nid0123.mod.json"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 # print_ranks_nodes <RV1 JSON filename>
 print_ranks_nodes() {

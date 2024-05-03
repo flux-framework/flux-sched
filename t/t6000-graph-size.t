@@ -9,7 +9,7 @@ tiny_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 exclusive_001N_hwloc="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/exclusive\
 /04-brokers/0.xml"
 large_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/sierra.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 test_expect_success "vertex/edge counts for a tiny machine are correct" '
     echo "quit" > input1.txt &&

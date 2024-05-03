@@ -175,11 +175,9 @@ endif()
 
 include(FindValgrind) # Search for Valgrind
 
-include_directories(.)
+include_directories(src)
 add_subdirectory( etc )
 add_subdirectory( src )
-add_subdirectory( resource )
-add_subdirectory( qmanager )
 add_subdirectory( doc )
 add_subdirectory( t )
 

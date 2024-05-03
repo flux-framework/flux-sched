@@ -7,7 +7,7 @@ test_description='Test for exclusivity at various levels'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/exclusive"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/exclusive"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/medium.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

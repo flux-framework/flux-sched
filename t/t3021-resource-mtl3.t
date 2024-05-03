@@ -7,7 +7,7 @@ test_description='Test multi-tiered storage level3: L1+L2 simultaneously'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/mt-storage/L3"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/mt-storage/L3"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/mt-storage/mtl3.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="match allocate 9 L1 jobs - last one fails (pol=hi)"

@@ -8,7 +8,7 @@ test_description='Test Set Property On Tiny Machine Configuration'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/resource_property"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/resource_property"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 filter_run_variations(){
    sed "s/ (vtx's uniq_id=[[:digit:]])//g" ${1}

@@ -20,8 +20,8 @@ extern "C" {
 #include <exception>
 #include <stdexcept>
 
-#include "src/common/libtap/tap.h"
-#include "src/common/c++wrappers/eh_wrapper.hpp"
+#include "common/libtap/tap.h"
+#include "common/c++wrappers/eh_wrapper.hpp"
 
 using namespace Flux::cplusplus_wrappers;
 

@@ -7,7 +7,7 @@ test_description='Test Scheduling Correctness on Vertex Granularity'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/sibling"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/sibling"
 xml="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/amd_gpu/corona11.xml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="sibling (under slot) each requesting 1 socket cannot be matched"

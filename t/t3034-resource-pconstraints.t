@@ -4,7 +4,7 @@ test_description='Test property constraints-based matching'
 
 . $(dirname $0)/sharness.sh
 
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 skip_all_unless_have jq
 

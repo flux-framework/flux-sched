@@ -7,7 +7,7 @@ test_description='Test Scheduling with various prune filter configurations'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

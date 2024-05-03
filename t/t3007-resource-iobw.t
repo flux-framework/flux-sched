@@ -7,7 +7,7 @@ test_description='Test coarse-grained IO BW scheduling'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/coarse_iobw"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/coarse_iobw"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/coarse_iobw.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 #
 # Selection Policy -- High ID first (-P high)

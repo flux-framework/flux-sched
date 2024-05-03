@@ -7,7 +7,7 @@ test_description='Test node-locality-aware scheduling'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/nodex"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/nodex"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/small.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 # Takes policy and cmd outfile prefix
 run_tests_with_policy() {

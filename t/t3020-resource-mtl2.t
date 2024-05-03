@@ -7,7 +7,7 @@ test_description='Test multi-tiered storage level2: mtl2unit built rack'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/mt-storage/L2"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/mt-storage/L2"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/mt-storage/mtl2.graphml"
-query="../../resource/utilities/resource-query"
+query="../../src/resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
 test001_desc="match allocate 9 jobs with 1TB L2 ssds - last one fails (pol=hi)"
