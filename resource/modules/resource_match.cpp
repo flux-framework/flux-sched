@@ -1756,7 +1756,7 @@ out:
 
 static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       const char *cmd, const std::string &jstr, int64_t *now,
-                      int64_t *at, double *ov, std::stringstream &o,
+                      int64_t *at, double *overhead, std::stringstream &o,
                       flux_error_t *errp)
 {
     int rc = 0;
@@ -1781,8 +1781,8 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     *at = *now = epoch.count ();
     if ( (rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
-        *ov = elapsed.count ();
-        update_match_perf (ctx, *ov, false);
+        *overhead = elapsed.count ();
+        update_match_perf (ctx, *overhead, false);
         goto done;
     }
     if ( (rc = ctx->writers->emit (o)) < 0) {
@@ -1792,12 +1792,12 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
     rsv = (*now != *at)? true : false;
     elapsed = std::chrono::system_clock::now () - start;
-    *ov = elapsed.count ();
-    update_match_perf (ctx, *ov, true);
+    *overhead = elapsed.count ();
+    update_match_perf (ctx, *overhead, true);
 
     if (cmd != std::string ("satisfiability")) {
         if ( (rc = track_schedule_info (ctx, jobid,
-                                        rsv, *at, jstr, o, *ov)) != 0) {
+                                        rsv, *at, jstr, o, *overhead)) != 0) {
             flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                             __FUNCTION__, (intmax_t)jobid);
             goto done;
@@ -1809,7 +1809,7 @@ done:
 }
 
 static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
-                       const char *R, int64_t &at, double &ov,
+                       const char *R, int64_t &at, double &overhead,
                        std::stringstream &o)
 {
     int rc = 0;
@@ -1826,8 +1826,8 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     }
     if ( (rc = run (ctx, jobid, R_graph_fmt, at, duration, format)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
-        ov = elapsed.count ();
-        update_match_perf (ctx, ov, false);
+        overhead = elapsed.count ();
+        update_match_perf (ctx, overhead, false);
         flux_log_error (ctx->h, "%s: run", __FUNCTION__);
         goto done;
     }
@@ -1836,9 +1836,9 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         goto done;
     }
     elapsed = std::chrono::system_clock::now () - start;
-    ov = elapsed.count ();
-    update_match_perf (ctx, ov, true);
-    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, ov)) != 0) {
+    overhead = elapsed.count ();
+    update_match_perf (ctx, overhead, true);
+    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto done;
@@ -1853,7 +1853,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     char *R = NULL;
     int64_t at = 0;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     int64_t jobid = 0;
     uint64_t duration = 0;
     std::string status = "";
@@ -1883,13 +1883,13 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
         }
         elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
-        ov = elapsed.count ();
+        overhead = elapsed.count ();
         get_jobstate_str (ctx->jobs[jobid]->state, status);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
         flux_log (ctx->h, LOG_DEBUG, "%s: jobid (%jd) with matching R exists",
                   __FUNCTION__, static_cast<intmax_t> (jobid));
-    } else if (run_update (ctx, jobid, R, at, ov, o) < 0) {
+    } else if (run_update (ctx, jobid, R, at, overhead, o) < 0) {
         flux_log_error (ctx->h,
                         "%s: update failed (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (jobid));
@@ -1902,7 +1902,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                        "jobid", jobid,
                                        "status", status.c_str (),
-                                       "overhead", ov,
+                                       "overhead", overhead,
                                        "R", o.str ().c_str (),
                                        "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
@@ -1947,7 +1947,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     int64_t at = 0;
     int64_t now = 0;
     int64_t jobid = -1;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
@@ -1963,7 +1963,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                         __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
@@ -1980,7 +1980,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                    "jobid", jobid,
                                    "status", status.c_str (),
-                                   "overhead", ov,
+                                   "overhead", overhead,
                                    "R", R.str ().c_str (),
                                    "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
@@ -2023,7 +2023,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
         const char *js_str;
         int64_t at = 0;
         int64_t now = 0;
-        double ov = 0.0f;
+        double overhead = 0.0f;
         std::string status = "";
         std::stringstream R;
 
@@ -2037,7 +2037,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
                             __FUNCTION__, static_cast<intmax_t> (jobid));
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
+        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                         "%s: match failed due to match error (id=%jd)",
@@ -2049,7 +2049,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
         if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                          "jobid", jobid,
                                          "status", status.c_str (),
-                                         "overhead", ov,
+                                         "overhead", overhead,
                                          "R", R.str ().c_str (),
                                          "at", at) < 0) {
             flux_log_error (h, "%s", __FUNCTION__);
@@ -2709,7 +2709,7 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     int64_t at = 0;
     int64_t now = 0;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     int saved_errno = 0;
     std::stringstream R;
     json_t *jobspec = nullptr;
@@ -2731,7 +2731,7 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
                    js_str,
                    &now,
                    &at,
-                   &ov,
+                   &overhead,
                    R,
                    &error) < 0) {
         if (errno == ENODEV)
