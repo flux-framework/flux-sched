@@ -75,37 +75,70 @@ jq                | jq                |
 </details>
 
 ##### Installing RedHat/CentOS Packages
-```
-sudo yum install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel python3-pyyaml yaml-cpp-devel
+```bash
+sudo dnf install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel python3-pyyaml yaml-cpp-devel
 ```
 
 ##### Installing Ubuntu Packages
 
-```
+```bash
 sudo apt-get update
 sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libyaml-cpp-dev python3-yaml
 ```
 
 Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:
-```
+```bash
 git clone <flux-sched repo of your choice>
 cd flux-sched
-./autogen.sh
 ```
 
-The Fluxion's `configure` will attempt to find a flux-core in the
-same `--prefix` as specified on the command line. If `--prefix` is
-not specified, then it will default to the same prefix as was used
-to install the first `flux` executable found in `PATH`. Therefore,
-if `which flux` returns the version of flux-core against which
-Fluxion should be compiled, then `./configure` may be run without
-any arguments. If flux-core is side-installed, then `--prefix` should
-be set to the same prefix as was used to install the target flux-core.
-
-For example, if flux-core was installed in `$FLUX_CORE_PREFIX`:
+Fluxion uses a CMake based build system, and can be configured and
+built as usual for cmake projects. If you wish you can use one of
+our presets, the default is a `RelWithDebInfo` build using ninja 
+that's good for most purposes:
 
 ```bash
-./configure --prefix=${FLUX_CORE_PREFIX}
+cmake -B build --preset default
+cmake --build build
+cmake --build build -t install
+ctest --test-dir build
+# OR
+cmake -B build
+make -C build
+make -C build check
+make -C build install
+# OR
+cmake -B build -G Ninja
+ninja -C build
+ninja -C build check
+ninja -C build install
+```
+
+
+If you prefer autotools style, we match the rest of the flux project
+by offering a `configure` script that will provide the familiar autotools
+script interface but use cmake underneath.
+
+The build system will attempt to find a flux-core in the same prefix
+as specified on the command line. If `-DCMAKE_INSTALL_PREFIX`, or for
+configure `--prefix`, is not specified, then it will default to the 
+same prefix as was used to install the first `flux` executable found 
+in `PATH`. Therefore, if `which flux` returns the version of flux-core
+against which Fluxion should be compiled, then the configuration may
+be run without any arguments. If flux-core is side-installed, then
+the prefix should be set to the same prefix as was used to install
+the target flux-core. For example, if flux-core was installed in
+`$FLUX_CORE_PREFIX`:
+
+```bash
+cmake -B build --preset default -DCMAKE_INSTALL_PREFIX="$FLUX_CORE_PREFIX"
+cmake --build build
+ctest --test-dir build
+cmake --build build -t install
+# OR
+mkdir build
+cd build
+../configure --prefix=${FLUX_CORE_PREFIX}
 make
 make check
 make install
@@ -115,24 +148,31 @@ To build go bindings, you will need go (tested with 1.19.10) available, and then
 
 ```bash
 export WITH_GO=yes
-./configure
-make
+cmake -B build
+cmake --build build
+ctest --test-dir build
+cmake --build build -t install
 ```
 
-To run just one test, you can cd into t
+To run just one test, you can cd into t in the build directory, then run the script
+from the source directory or use the usual ctest options to filter by regex:
 
 ```bash
-$ ./t9001-golang-basic.t 
+$ cd build/t
+$ ../../t/t9001-golang-basic.t 
 ok 1 - match allocate 1 slot: 1 socket: 1 core (pol=default)
 ok 2 - match allocate 2 slots: 2 sockets: 5 cores 1 gpu 6 memory
 # passed all 2 test(s)
 1..2
+# OR
+cd build
+ctest -R t9001 --output-on-failure
 ```
 
 To run full tests (more robust and mimics what happens in CI) you can do:
 
 ```bash
-make check
+ctest
 ```
 
 ##### Flux Instance
