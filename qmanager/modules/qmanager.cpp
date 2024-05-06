@@ -219,8 +219,11 @@ static void update_on_resource_response (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto out;
     }
-    for (auto &kv : ctx->queues)
-        kv.second->set_schedulability (true);
+    for (auto &[_, queue] : ctx->queues) {
+        queue->set_schedulability (true);
+        // constraints must be reconsidered if node status changes
+        queue->reconsider_blocked_jobs ();
+    }
 
 out:
     flux_future_reset (f);

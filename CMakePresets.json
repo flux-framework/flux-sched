@@ -6,8 +6,6 @@
     "patch": 0
   },
   "include": [
-    "otherThings.json",
-    "moreThings.json"
   ],
   "configurePresets": [
     {
@@ -16,7 +14,9 @@
       "description": "Default build using Ninja generator",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/default",
-      "cacheVariables": {},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
       "environment": {},
       "vendor": {}
     },

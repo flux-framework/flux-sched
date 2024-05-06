@@ -86,10 +86,11 @@ struct jobmeta_t {
             errno = EINVAL;
             return -1;
         }
-        if (jobspec.attributes.system.duration == 0.0f)
+        if (jobspec.attributes.system.duration == 0.0f) {
             duration = g_duration;
-        else
+        } else {
             duration = (int64_t)jobspec.attributes.system.duration;
+        }
         if (jobspec.attributes.system.queue != "") {
             m_queue = jobspec.attributes.system.queue;
             m_queue_set = true;
