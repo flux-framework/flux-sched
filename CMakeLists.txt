@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-set(VER_FILE ${CMAKE_BINARY_DIR}/flux-sched.ver)
+set(VER_FILE ${CMAKE_SOURCE_DIR}/flux-sched.ver)
 if(DEFINED FLUX_SCHED_VER)
   # do nothing, user said so
 elseif(DEFINED ENV{FLUX_SCHED_VERSION})
