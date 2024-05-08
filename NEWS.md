@@ -1,3 +1,40 @@
+flux-sched version 0.34.0 - 2024-05-08
+--------------------------------------
+
+### New Features
+
+ * qmanager: defer jobs with unmatchable constraints (#1188)
+ * Add planner reinitialization for elasticity (#1156)
+ * Update match stats and implement stats-clear (#1168)
+ * Add sanitizers (#1179)
+ * reduce unnecessary logging (#1186)
+ * Update stats output to include data for failed matches (#1187)
+ * Implement rv1exec reader update to facilitate Fluxion reload (#1176)
+
+### Cleanup
+
+ * refactor: optmgr to simpler design, one file (#1177)
+ * autoconf removal (#1196)
+ * queue_base_manager: refactor to remove impl (#1178)
+
+### Fixes
+
+ * cmake: look for ver file in source directory (#1199)
+ * docker-run-checks: ensure we match user's home (#1197)
+ * Add sanitizers (#1179)
+ * resource: ensure all resources start in DOWN state when some ranks
+   are excluded by configuration (#1183)
+ * docs/cmake:stop constantly rebuilding manpages (#1190)
+ * qmanager: split remove to separate pending (#1175)
+
+### Build/Testsuite
+
+ * up the required C++ standard to 20 (#1174)
+ * test: run t10001 under flux (#1181)
+ * testsuite: add valgrind suppressions for hwloc (#1173)
+ * ci: update deprecated github actions (#1191)
+
+
 flux-sched version 0.33.1 - 2024-04-09
 --------------------------------------
 
