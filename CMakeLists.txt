@@ -201,13 +201,13 @@ add_custom_target(installcheck
   COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS})
 add_custom_target(dist
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMAND echo ${FLUX_SCHED_VER} > flux-sched.ver
+  COMMAND echo ${FLUX_SCHED_VER} > ${CMAKE_BINARY_DIR}/flux-sched.ver
   COMMAND git archive --format=tar.gz
   --prefix=flux-sched-${FLUX_SCHED_VER}/
-  --add-file=flux-sched.ver
+  --add-file=${CMAKE_BINARY_DIR}/flux-sched.ver
   --output=${CMAKE_BINARY_DIR}/flux-sched-${FLUX_SCHED_VER}.tar.gz
   HEAD .
-  COMMAND rm flux-sched.ver
+  COMMAND rm ${CMAKE_BINARY_DIR}/flux-sched.ver
   COMMENT "Generated flux-sched-${FLUX_SCHED_VER}.tar.gz"
   )
 # run installcheck, if it passes then write out version information and pack up
