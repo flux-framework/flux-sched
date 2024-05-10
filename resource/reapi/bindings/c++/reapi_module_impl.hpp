@@ -81,6 +81,47 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
 
 }
 
+int reapi_module_t::satisfy (void *h, const std::string &jobspec,
+                             int64_t &satisfied)
+{
+    match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
+    
+    // Ensure we start with assuming not satisfied
+    satisfied = -1;
+
+    // Default return code is that we cannot satisfy, -1
+    // See resource/modules/resource_match.cpp and the
+    // satisfiability callback. Unsatisfiable will not return 0
+    // for the RPC call.
+    int return_code = -1;
+
+    int64_t errnum = -1;
+    flux_t *fh = (flux_t *)h;
+    flux_future_t *f = NULL;
+
+    if (!fh || jobspec == "") {
+        errno = EINVAL;
+        goto out;
+    }
+
+    if (!(f = flux_rpc_pack (fh, "sched-fluxion-resource.satisfiability",
+                             FLUX_NODEID_ANY, 0,
+                             "{s:o}", "jobspec", jobspec.c_str ()))) {
+        goto out;
+    }
+
+    if (flux_rpc_get_unpack (f, "{s:i}", "errnum", &errnum) < 0) {
+        goto out;
+    }
+    // We only set a successful return code and "yes satisfied" if we get here
+    satisfied = 0;
+    return_code = 0;
+
+out:
+    flux_future_destroy (f);
+    return return_code;
+}
+
 void match_allocate_multi_cont (flux_future_t *f, void *arg)
 {
     int64_t rj = -1;

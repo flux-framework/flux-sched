@@ -137,6 +137,8 @@ public:
     static int match_allocate_multi (void *h, bool orelse_reserve,
                                      const char *jobs,
                                      queue_adapter_base_t *adapter);
+    static int satisfy (void *h, const std::string &jobspec,
+                        int64_t &satisfied, double &ov);
     static int update_allocate (void *h, const uint64_t jobid,
                                 const std::string &R, int64_t &at, double &ov,
                                 std::string &R_out);
