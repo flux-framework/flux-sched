@@ -31,49 +31,19 @@ extern "C" {
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource_match_opts.hpp"
+#include "resource/schema/perf_data.hpp"
 
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
+
+// Global perf struct from schema
+extern struct Flux::resource_model::match_perf_t Flux::resource_model::perf;
 
 /******************************************************************************
  *                                                                            *
  *                Resource Matching Service Module Context                    *
  *                                                                            *
  ******************************************************************************/
-
-struct match_perf_t {
-    double load = 0.0;                     /* Graph load time */
-    /* Graph uptime in seconds */
-    std::chrono::time_point<std::chrono::system_clock> graph_uptime
-                                        = std::chrono::system_clock::now ();
-    /* Time since stats were last cleared */
-    std::chrono::time_point<std::chrono::system_clock> time_of_last_reset
-                                        = std::chrono::system_clock::now ();
-    struct time_stats {
-        void update_stats (double elapsed) {
-            /* Update using Welford's algorithm */
-            double delta = 0.0;
-            double delta2 = 0.0;
-            njobs++;
-            njobs_reset++;
-            min = (min > elapsed)? elapsed : min;
-            max = (max < elapsed)? elapsed : max;
-            // Welford's online algorithm for variance
-            delta = elapsed - avg;
-            avg += delta / (double)njobs;
-            delta2 = elapsed - avg;
-            M2 += delta * delta2;
-        }
-        uint64_t njobs = 0;                /* Total match count */
-        uint64_t njobs_reset = 0;          /* Jobs since match count reset */
-        double min = std::numeric_limits<double>::max (); /* Min match time */
-        double max = 0.0;                  /* Max match time */
-        double avg = 0.0;                  /* Average match time */
-        double M2 = 0.0;                   /* Welford's algorithm */
-    };
-    time_stats succeeded;
-    time_stats failed;
-};
 
 class msg_wrap_t {
 public:
@@ -126,7 +96,6 @@ struct resource_ctx_t : public resource_interface_t {
     std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
     std::shared_ptr<resource_reader_base_t> reader; /* resource reader */
-    match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
@@ -1371,8 +1340,8 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     elapsed = std::chrono::system_clock::now () - start;
-    ctx->perf.load = elapsed.count ();
-    ctx->perf.graph_uptime = std::chrono::system_clock::now ();
+    perf.load = elapsed.count ();
+    perf.graph_uptime = std::chrono::system_clock::now ();
     rc = 0;
 
 done:
@@ -1524,13 +1493,13 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
  *                                                                            *
  ******************************************************************************/
 
-static void update_match_perf (std::shared_ptr<resource_ctx_t> &ctx,
-                               double elapsed, bool match_success)
+static void update_match_perf (double elapsed, int64_t jobid,
+                               bool match_success)
 {
     if (match_success)
-        ctx->perf.succeeded.update_stats (elapsed);
+        perf.succeeded.update_stats (elapsed, jobid, perf.tmp_iter_count);
     else
-        ctx->perf.failed.update_stats (elapsed);
+        perf.failed.update_stats (elapsed, jobid, perf.tmp_iter_count);
 }
 
 static inline std::string get_status_string (int64_t now, int64_t at)
@@ -1782,7 +1751,7 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     if ( (rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
         *overhead = elapsed.count ();
-        update_match_perf (ctx, *overhead, false);
+        update_match_perf (*overhead, jobid, false);
         goto done;
     }
     if ( (rc = ctx->writers->emit (o)) < 0) {
@@ -1793,7 +1762,7 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     rsv = (*now != *at)? true : false;
     elapsed = std::chrono::system_clock::now () - start;
     *overhead = elapsed.count ();
-    update_match_perf (ctx, *overhead, true);
+    update_match_perf (*overhead, jobid, true);
 
     if (cmd != std::string ("satisfiability")) {
         if ( (rc = track_schedule_info (ctx, jobid,
@@ -1827,7 +1796,7 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     if ( (rc = run (ctx, jobid, R_graph_fmt, at, duration, format)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
         overhead = elapsed.count ();
-        update_match_perf (ctx, overhead, false);
+        update_match_perf (overhead, jobid, false);
         flux_log_error (ctx->h, "%s: run", __FUNCTION__);
         goto done;
     }
@@ -1837,7 +1806,7 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
     }
     elapsed = std::chrono::system_clock::now () - start;
     overhead = elapsed.count ();
-    update_match_perf (ctx, overhead, true);
+    update_match_perf (overhead, jobid, true);
     if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
@@ -2205,19 +2174,19 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     int64_t time_since_reset_s = 0;
     std::chrono::time_point<std::chrono::system_clock> now;
 
-    if (ctx->perf.succeeded.njobs_reset > 1) {
-        avg = ctx->perf.succeeded.avg;
-        min = ctx->perf.succeeded.min;
+    if (perf.succeeded.njobs_reset > 1) {
+        avg = perf.succeeded.avg;
+        min = perf.succeeded.min;
         // Welford's online algorithm
-        variance = ctx->perf.succeeded.M2
-                        / (double)ctx->perf.succeeded.njobs_reset;
+        variance = perf.succeeded.M2
+                        / (double)perf.succeeded.njobs_reset;
     }
-    if (ctx->perf.failed.njobs_reset > 1) {
-        avg_failed = ctx->perf.failed.avg;
-        min_failed = ctx->perf.failed.min;
+    if (perf.failed.njobs_reset > 1) {
+        avg_failed = perf.failed.avg;
+        min_failed = perf.failed.min;
         // Welford's online algorithm
-        variance_failed = ctx->perf.failed.M2
-                            / (double)ctx->perf.failed.njobs_reset;
+        variance_failed = perf.failed.M2
+                            / (double)perf.failed.njobs_reset;
     }
     if ( !(o = json_object ()) || !(match_succeeded = json_object ())
                                || !(match_failed = json_object ())) {
@@ -2229,39 +2198,43 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error_free;
     }
 
-    if (!(match_succeeded = json_pack ("{s:I s:I s:{s:f s:f s:f s:f}}",
-                                "njobs", ctx->perf.succeeded.njobs,
-                                "njobs-reset", ctx->perf.succeeded.njobs_reset,
-                                "stats",
-                                    "min", min,
-                                    "max", ctx->perf.succeeded.max,
-                                    "avg", avg,
-                                    "variance", variance))) {
+    if (!(match_succeeded = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
+                    "njobs", perf.succeeded.njobs,
+                    "njobs-reset", perf.succeeded.njobs_reset,
+                    "max-match-jobid", perf.succeeded.max_match_jobid,
+                    "max-match-iters", perf.succeeded.match_iter_count,
+                    "stats",
+                        "min", min,
+                        "max", perf.succeeded.max,
+                        "avg", avg,
+                        "variance", variance))) {
         errno = ENOMEM;
         goto error_free;
     }
-    if (!(match_failed = json_pack ("{s:I s:I s:{s:f s:f s:f s:f}}",
-                                "njobs", ctx->perf.failed.njobs,
-                                "njobs-reset", ctx->perf.failed.njobs_reset,
-                                "stats",
-                                    "min", min_failed,
-                                    "max", ctx->perf.failed.max,
-                                    "avg", avg_failed,
-                                    "variance", variance_failed))) {
+    if (!(match_failed = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
+                        "njobs", perf.failed.njobs,
+                        "njobs-reset", perf.failed.njobs_reset,
+                        "max-match-jobid", perf.failed.max_match_jobid,
+                        "max-match-iters", perf.failed.match_iter_count,
+                        "stats",
+                            "min", min_failed,
+                            "max", perf.failed.max,
+                            "avg", avg_failed,
+                            "variance", variance_failed))) {
         errno = ENOMEM;
         goto error_free;
     }
     now = std::chrono::system_clock::now ();
     graph_uptime_s = std::chrono::duration_cast<std::chrono::seconds> (
-                        now - ctx->perf.graph_uptime).count ();
+                        now - perf.graph_uptime).count ();
     time_since_reset_s = std::chrono::duration_cast<std::chrono::seconds> (
-                        now - ctx->perf.time_of_last_reset).count ();
+                        now - perf.time_of_last_reset).count ();
     
     if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:I s:{s:O s:O}}",
                         "V", num_vertices (ctx->db->resource_graph),
                         "E", num_edges (ctx->db->resource_graph),
                         "by_rank", o,
-                        "load-time", ctx->perf.load,
+                        "load-time", perf.load,
                         "graph-uptime", graph_uptime_s,
                         "time-since-reset", time_since_reset_s,
                         "match",
@@ -2290,19 +2263,23 @@ static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    ctx->perf.time_of_last_reset = std::chrono::system_clock::now ();
+    perf.time_of_last_reset = std::chrono::system_clock::now ();
     // Clear the jobs-related stats and reset time
-    ctx->perf.succeeded.njobs_reset = 0;
-    ctx->perf.succeeded.min = std::numeric_limits<double>::max ();
-    ctx->perf.succeeded.max = 0.0;
-    ctx->perf.succeeded.avg = 0.0;
-    ctx->perf.succeeded.M2 = 0.0;
+    perf.succeeded.njobs_reset = 0;
+    perf.succeeded.max_match_jobid = -1;
+    perf.succeeded.match_iter_count = -1;
+    perf.succeeded.min = std::numeric_limits<double>::max ();
+    perf.succeeded.max = 0.0;
+    perf.succeeded.avg = 0.0;
+    perf.succeeded.M2 = 0.0;
     // Failed match stats
-    ctx->perf.failed.njobs_reset = 0;
-    ctx->perf.failed.min = std::numeric_limits<double>::max ();
-    ctx->perf.failed.max = 0.0;
-    ctx->perf.failed.avg = 0.0;
-    ctx->perf.failed.M2 = 0.0;
+    perf.failed.njobs_reset = 0;
+    perf.failed.max_match_jobid = -1;
+    perf.failed.match_iter_count = -1;
+    perf.failed.min = std::numeric_limits<double>::max ();
+    perf.failed.max = 0.0;
+    perf.failed.avg = 0.0;
+    perf.failed.M2 = 0.0;
 
     if (flux_respond (h, msg, NULL) < 0)
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);
