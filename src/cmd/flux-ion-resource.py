@@ -233,6 +233,14 @@ def stat_action(_):
         resp["match"]["succeeded"]["njobs-reset"],
     )
     print(
+        "Jobid corresponding to max match time: ",
+        resp["match"]["succeeded"]["max-match-jobid"],
+    )
+    print(
+        "Match iterations corresponding to max match time: ",
+        resp["match"]["succeeded"]["max-match-iters"],
+    )
+    print(
         "Min. Successful Match Time: ",
         resp["match"]["succeeded"]["stats"]["min"],
         "Secs",
@@ -259,6 +267,14 @@ def stat_action(_):
     print(
         "Num. of Jobs with Failed Matches Since Reset: ",
         resp["match"]["failed"]["njobs-reset"],
+    )
+    print(
+        "Jobid corresponding to max match time: ",
+        resp["match"]["failed"]["max-match-jobid"],
+    )
+    print(
+        "Match iterations corresponding to max match time: ",
+        resp["match"]["failed"]["max-match-iters"],
     )
     print(
         "Min. Match Time of Failed Matches: ",
