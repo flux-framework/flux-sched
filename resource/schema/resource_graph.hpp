@@ -11,12 +11,15 @@
 #ifndef RESOURCE_GRAPH_HPP
 #define RESOURCE_GRAPH_HPP
 
+#include "resource/schema/resource_data.hpp"
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/filtered_graph.hpp>
-#include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
-#include "resource/schema/resource_data.hpp"
+#include <boost/graph/graphviz.hpp>
+
+#include <utility>
+#include <memory>
 
 namespace Flux {
 namespace resource_model {
@@ -43,32 +46,35 @@ using resource_graph_t = boost::adjacency_list<boost::vecS,
 template <typename graph_entity, typename inframap>
 class subsystem_selector_t {
 public:
-    subsystem_selector_t () {}
-    ~subsystem_selector_t () {}
+    subsystem_selector_t () = default;
+    ~subsystem_selector_t() = default;
+    subsystem_selector_t(const subsystem_selector_t &other) = default;
+    subsystem_selector_t(subsystem_selector_t &&other) = default;
+    subsystem_selector_t &operator=(const subsystem_selector_t &other) = default;
+    subsystem_selector_t &operator=(subsystem_selector_t &&other) = default;
     subsystem_selector_t (inframap &im, const multi_subsystemsS &sel,
                           int subsys_size)
     {
         // must be lightweight -- e.g., bundled property map.
         m_imap = im;
-        m_selector = sel;
+        m_selector = &sel;
         m_single_subsystem = (subsys_size == 1) ? true : false;
     }
     bool operator () (const graph_entity &ent) const {
         // Short circuit for single subsystem. This will be a common case.
         // TODO: make systems ints or enums for faster comparison and search.
         if (m_single_subsystem)
-           return true;
+            return true;
         typedef typename boost::property_traits<inframap>::value_type infra_type;
         const infra_type &inf = get (m_imap, ent);
         const multi_subsystems_t &subsystems = inf.member_of;
         for (auto &kv : subsystems) {
             multi_subsystemsS::const_iterator i;
-            i = m_selector.find (kv.first);
-            if (i != m_selector.end ()) {
+            i = m_selector->find (kv.first);
+            if (i != m_selector->end ()) {
                 if (kv.second == "*")
                     return true;
-                else if (i->second.find (kv.second) != i->second.end ()
-                         || i->second.find ("*") != i->second.end ())
+                if (i->second.contains (kv.second) || i->second.contains ("*"))
                     return true;
             }
         }
@@ -76,10 +82,12 @@ public:
     }
 
 private:
-    multi_subsystemsS m_selector;
+    const multi_subsystemsS *m_selector;
     inframap m_imap;
     bool m_single_subsystem;
 };
+
+
 
 using vtx_infra_map_t = boost::property_map<resource_graph_t, pinfra_t>::type;
 using edg_infra_map_t = boost::property_map<resource_graph_t, rinfra_t>::type;
