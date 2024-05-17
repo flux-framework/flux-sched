@@ -39,6 +39,10 @@ else
   fi
 fi
 
+if test -n "$CHECK_RUN_SOURCE_ENV" ; then
+	source "$CHECK_RUN_SOURCE_ENV"
+fi
+
 # source check_group and check_time functions:
 . src/test/checks-lib.sh
 
