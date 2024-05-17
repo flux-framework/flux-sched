@@ -4,7 +4,7 @@ ARG USER=flux
 ARG UID=1000
 
 # Install extra buildrequires for flux-sched:
-RUN sudo yum -y install \
+RUN sudo dnf -y install \
 	boost-devel \
 	boost-graph \
 	boost-system \
@@ -15,6 +15,7 @@ RUN sudo yum -y install \
 	yaml-cpp-devel \
 	libedit-devel \
 	ninja-build \
+	gcc-toolset-12-{gcc,gcc-c++,gdb} \
 	curl
 
 RUN curl -s -L https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-$(uname -m).sh > cmake.sh ;\
@@ -33,3 +34,4 @@ RUN \
 
 USER $USER
 WORKDIR /home/$USER
+ENV CHECK_RUN_SOURCE_ENV=/opt/rh/gcc-toolset-12/enable
