@@ -47,7 +47,7 @@ struct match_perf_t {
     std::chrono::time_point<std::chrono::system_clock> graph_uptime
                                         = std::chrono::system_clock::now ();
     /* Time since stats were last cleared */
-    std::chrono::time_point<std::chrono::system_clock> time_since_reset
+    std::chrono::time_point<std::chrono::system_clock> time_of_last_reset
                                         = std::chrono::system_clock::now ();
     struct time_stats {
         void update_stats (double elapsed) {
@@ -2255,7 +2255,7 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     graph_uptime_s = std::chrono::duration_cast<std::chrono::seconds> (
                         now - ctx->perf.graph_uptime).count ();
     time_since_reset_s = std::chrono::duration_cast<std::chrono::seconds> (
-                        now - ctx->perf.time_since_reset).count ();
+                        now - ctx->perf.time_of_last_reset).count ();
     
     if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:I s:{s:O s:O}}",
                         "V", num_vertices (ctx->db->resource_graph),
@@ -2290,6 +2290,7 @@ static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
+    ctx->perf.time_of_last_reset = std::chrono::system_clock::now ();
     // Clear the jobs-related stats and reset time
     ctx->perf.succeeded.njobs_reset = 0;
     ctx->perf.succeeded.min = std::numeric_limits<double>::max ();
