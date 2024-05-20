@@ -894,18 +894,25 @@ protected:
         s = m_pending.erase ({static_cast<double> (job->priority),
                               static_cast<double> (job->t_submit),
                               static_cast<double> (job->t_stamps.pending_ts)});
-        if (s == 0) {
-            // job must be in m_pending_provisional in this case
-            s = m_pending_provisional.erase (
-                              {static_cast<double> (job->priority),
-                               static_cast<double> (job->t_submit),
-                               static_cast<double> (job->t_stamps.pending_ts)});
-            if (s == 0) {
-                errno = ENOENT;
-                return -1;
-            }
-            found_in_prov = true;
+        if (s == 1) {
+            return 0;
         }
+        s = m_blocked.erase ({static_cast<double> (job->priority),
+                              static_cast<double> (job->t_submit),
+                              static_cast<double> (job->t_stamps.pending_ts)});
+        if (s == 1) {
+            return 0;
+        }
+        // job must be in m_pending_provisional in this case
+        s = m_pending_provisional.erase (
+                {static_cast<double> (job->priority),
+                static_cast<double> (job->t_submit),
+                static_cast<double> (job->t_stamps.pending_ts)});
+        if (s == 0) {
+            errno = ENOENT;
+            return -1;
+        }
+        found_in_prov = true;
         return 0;
     }
 
