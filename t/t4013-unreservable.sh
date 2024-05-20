@@ -67,6 +67,22 @@ test_expect_success 'ensure all three succeeded' '
 test_expect_success 'drain a few nodes' '
 	flux resource drain 1-5 test with drained nodes
 '
+test_expect_success 'create an inactive job' '
+	flux submit --quiet \
+	  -N 1 --exclusive \
+		--requires="host:fake[4]" \
+		--setattr=exec.test.run_duration=0.01s \
+		hostname
+'
+test_expect_success 'ensure we can cancel a blocked job' '
+	flux cancel $(flux job last) &&
+	flux queue idle --timeout 30s
+'
+
+test_expect_success 'clear resource module stats' '
+	rpc sched-fluxion-resource.stats-clear
+'
+
 test_expect_success 'create a set of 2 inactive jobs' '
 	flux submit --cc=1-2 --quiet \
 	  -N 1 --exclusive \
@@ -89,10 +105,10 @@ test_expect_success 'undrain nodes' '
 test_expect_success 'ensure all four succeeded' '
   flux job wait -av
 '
-test_expect_success 'failed match requests should be 10, but 14 is bad' '
-	NJOBS_FAILED="$(rpc sched-fluxion-resource.stats-get | jq ".match.failed.njobs")" &&
+test_expect_success 'failed match requests should be 7' '
+	NJOBS_FAILED="$(rpc sched-fluxion-resource.stats-get | jq '"'"'.match.failed."njobs-reset"'"'"')" &&
   echo njobs failed $NJOBS_FAILED &&
-  test $NJOBS_FAILED = 10
+  test $NJOBS_FAILED = 7
 '
 test_expect_success 'unload fluxion' '
 	flux module remove sched-fluxion-qmanager &&
