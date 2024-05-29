@@ -60,6 +60,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
     for (auto& kv: queues) {
         const std::string &queue_name = kv.first;
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
+        if (queue->is_sched_loop_active ())
+            continue;
         while ( (job = queue->alloced_pop ()) != nullptr) {
             if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
                                                       job->schedule.R.c_str (),
@@ -405,8 +407,7 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     ctx->pls_post_loop = false;
     for (auto &kv: ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
-        ctx->pls_sched_loop = ctx->pls_sched_loop
-            || queue->is_schedulable ();
+        ctx->pls_sched_loop = ctx->pls_sched_loop || queue->is_schedulable ();
         ctx->pls_post_loop = ctx->pls_post_loop
                               || queue->is_scheduled ();
     }

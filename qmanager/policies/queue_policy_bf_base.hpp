@@ -36,7 +36,9 @@ private:
     int cancel_reserved_jobs (void *h);
     int allocate_orelse_reserve_jobs (void *h, bool use_alloced_queue);
     std::map<uint64_t, flux_jobid_t> m_reserved;
-    unsigned int m_reservation_cnt;
+    int m_reservation_cnt;
+    int m_scheduled_cnt;
+    decltype (m_pending)::iterator m_in_progress_iter = m_pending.end();
 };
 
 } // namespace Flux::queue_manager::detail

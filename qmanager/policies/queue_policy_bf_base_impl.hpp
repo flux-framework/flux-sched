@@ -24,7 +24,7 @@ namespace detail {
  ******************************************************************************/
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void* h)
+int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void *h)
 {
     int rc = 0;
     std::shared_ptr<job_t> job;
@@ -38,7 +38,7 @@ int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void* h)
 }
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void* h)
+int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
 {
     int rc = 0;
     std::map<uint64_t, flux_jobid_t>::const_iterator citer;
@@ -49,79 +49,102 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void* h)
 }
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void* h,
+int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
                                                                       bool use_alloced_queue)
 {
-    unsigned int i = 0;
-    std::shared_ptr<job_t> job;
-
-    // move jobs in m_pending_provisional queue into
-    // m_pending.
-    m_pending.merge (m_pending_provisional);
-    m_pending_provisional.clear ();
-
-    set_sched_loop_active (true);
-
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't. When you can't allocate a job, you reserve it
     // and then try to backfill later jobs.
-    std::map<std::vector<double>, flux_jobid_t>::iterator iter = m_pending.begin ();
-    m_reservation_cnt = 0;
+    //
+    // In order to avoid long blocking, this is a resumable sched loop,
+    // which stores its iteration progress in m_in_progress_iter and
+    // returns after processing only _some_ of the work. In that case,
+    // it currently returns -1 and EAGAIN to indicate that it _is not
+    // done_ and the qmanager callbacks should re-enter the scheduling
+    // loop in the next check phase.
+    if (!this->is_sched_loop_active ()) {
+        // move jobs in m_pending_provisional queue into
+        // m_pending.
+        m_pending.merge (m_pending_provisional);
+        m_pending_provisional.clear ();
+
+        // reset our iterator to the start
+        m_in_progress_iter = m_pending.begin ();
+        m_reservation_cnt = 0;
+        m_scheduled_cnt = 0;
+
+        set_sched_loop_active (true);
+    }
+
     int saved_errno = errno;
-    for (; (iter != m_pending.end ()) && (i < m_queue_depth); ++i) {
+    for (int i = 0; (m_in_progress_iter != m_pending.end ()) && (m_scheduled_cnt < m_queue_depth);
+         ++m_scheduled_cnt, ++i) {
+        if (i > 5) {
+            // set schedulable so that the callback machinery gets us
+            // back in with prep and check
+            set_schedulability (true);
+            errno = EAGAIN;
+            return -1;
+        }
         errno = 0;
-        job = m_jobs[iter->second];
+        auto &job = m_jobs[m_in_progress_iter->second];
         bool try_reserve = m_reservation_cnt < m_reservation_depth;
         int64_t at = job->schedule.at;
-        if (reapi_type::match_allocate (h,
-                                        try_reserve,
-                                        job->jobspec,
-                                        job->id,
-                                        job->schedule.reserved,
-                                        job->schedule.R,
-                                        job->schedule.at,
-                                        job->schedule.ov)
-            == 0) {
+        if (!reapi_type::match_allocate (h,
+                                         try_reserve,
+                                         job->jobspec,
+                                         job->id,
+                                         job->schedule.reserved,
+                                         job->schedule.R,
+                                         job->schedule.at,
+                                         job->schedule.ov)) {
             if (job->schedule.reserved) {
                 // High-priority job has been reserved, continue
                 m_reserved.insert (std::pair<uint64_t, flux_jobid_t> (m_oq_cnt++, job->id));
                 job->schedule.old_at = at;
                 m_reservation_cnt++;
-                iter++;
+                m_in_progress_iter++;
             } else {
                 // move the job to the running queue and make sure the
                 // job is enqueued into allocated job queue as well.
                 // When this is used within a module, it allows the
                 // module to fetch those newly allocated jobs, which
                 // have flux_msg_t to respond to job-manager.
-                iter = to_running (iter, use_alloced_queue);
+                m_in_progress_iter = to_running (m_in_progress_iter, use_alloced_queue);
             }
         } else if (errno != EBUSY) {
             // The request must be rejected. The job is enqueued into
             // rejected job queue to the upper layer to react on this.
-            iter = to_rejected (iter, (errno == ENODEV) ? "unsatisfiable" : "match error");
+            m_in_progress_iter = to_rejected (m_in_progress_iter,
+                                              (errno == ENODEV) ? "unsatisfiable" : "match error");
         } else {
-            if (!try_reserve) {
-                iter++;
-                continue;
-            }
-            // This can happen if there are "down" resources.
-            // The semantics of our backfill policies is to skip this
+            // errno is EBUSY and match_allocate returned -1
+
+            // copy iterator before we advance to avoid invalidation
+            auto element_iter = m_in_progress_iter;
+            // if we are allocating and not trying to reserve, as in FCFS for
+            // example, EBUSY means the request failed because not enough
+            // resources are available right now.
+
+            // Regardless we want to move to the next item in the map
+            ++m_in_progress_iter;
+
+            // If we are trying to reserve, then EBUSY means not only can it not
+            // be allocated, but it cannot ever be reserved given current
+            // conditions. This can happen if there are "down" resources.
+            // The semantics of our backfill policies are to skip this
             // job, add it to the blocked list, and re-consider when
             // resource status changes
-
-            // copy and advance iterator before extract invalidates it
-            auto next = iter;
-            ++next;
-            m_blocked.insert (m_pending.extract (iter));
-            iter = next;
-            // avoid counting this toward queue_depth
-            --i;
+            if (try_reserve) {
+                m_blocked.insert (m_pending.extract (element_iter));
+                // avoid counting this toward queue_depth
+                --m_scheduled_cnt;
+            }
         }
     }
     set_sched_loop_active (false);
     errno = saved_errno;
-    return 0;
+    return 0; 
 }
 
 /******************************************************************************
@@ -142,20 +165,25 @@ int queue_policy_bf_base_t<reapi_type>::apply_params ()
 }
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void* h, bool use_alloced_queue)
+int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloced_queue)
 {
     int rc = 0;
     set_schedulability (false);
-    rc = cancel_completed_jobs (h);
-    rc += cancel_reserved_jobs (h);
-    rc += allocate_orelse_reserve_jobs (h, use_alloced_queue);
-    return rc;
+    if (!is_sched_loop_active ()) {
+        rc = cancel_completed_jobs (h);
+        if (rc != 0)
+            return rc;
+        rc = cancel_reserved_jobs (h);
+        if (rc != 0)
+            return rc;
+    }
+    return allocate_orelse_reserve_jobs (h, use_alloced_queue);
 }
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::reconstruct_resource (void* h,
+int queue_policy_bf_base_t<reapi_type>::reconstruct_resource (void *h,
                                                               std::shared_ptr<job_t> job,
-                                                              std::string& R_out)
+                                                              std::string &R_out)
 {
     return reapi_type::update_allocate (h,
                                         job->id,
