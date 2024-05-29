@@ -406,8 +406,7 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     for (auto &kv: ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         ctx->pls_sched_loop = ctx->pls_sched_loop
-                              || (queue->is_schedulable ()
-                                  && !queue->is_sched_loop_active ());
+            || queue->is_schedulable ();
         ctx->pls_post_loop = ctx->pls_post_loop
                               || queue->is_scheduled ();
     }
@@ -429,6 +428,8 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
         for (auto &kv: ctx->queues) {
             std::shared_ptr<queue_policy_base_t> &queue = kv.second;
             if (queue->run_sched_loop (static_cast<void *> (ctx->h), true) < 0) {
+                if (errno == EAGAIN)
+                    continue;
                 flux_log_error (ctx->h, "%s: run_sched_loop", __FUNCTION__);
                 return;
             }
