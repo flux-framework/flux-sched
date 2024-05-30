@@ -12,6 +12,7 @@
 #define QUEUE_POLICY_BF_BASE_HPP
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
+#include <flux/core/job.h>
 
 namespace Flux {
 namespace queue_manager {

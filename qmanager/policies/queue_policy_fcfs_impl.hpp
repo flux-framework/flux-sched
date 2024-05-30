@@ -13,6 +13,7 @@
 
 #include "qmanager/policies/queue_policy_fcfs.hpp"
 #include "qmanager/policies/base/queue_policy_base.hpp"
+#include <flux/core/job.h>
 
 namespace Flux {
 namespace queue_manager {
@@ -73,7 +74,7 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
 {
     json_t *jobs = nullptr;
     char *jobs_str = nullptr;
-    std::map<std::vector<double>, flux_jobid_t>::iterator iter;
+    job_map_iter iter;
 
     // move jobs in m_pending_provisional queue into
     // m_pending. Note that c++11 doesn't have a clean way
@@ -110,7 +111,7 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h,
 
 template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::handle_match_success (
-                                         int64_t jobid, const char *status,
+                                         flux_jobid_t jobid, const char *status,
                                          const char *R, int64_t at, double ov)
 {
     if (!is_sched_loop_active ()) {
@@ -131,7 +132,7 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_success (
 }
 
 template<class reapi_type>
-int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
+int queue_policy_fcfs_t<reapi_type>::handle_match_failure (flux_jobid_t jobid, int errcode)
 {
     if (!is_sched_loop_active ()) {
         errno = EINVAL;
