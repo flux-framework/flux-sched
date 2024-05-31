@@ -41,7 +41,7 @@ test_expect_success HAVE_JQ "--match-format=rv1_nosched and =rlite works" '
     ${query} -L ${tiny_grug} -F rv1_nosched -d -t o7 -P high < in7.txt &&
     ${query} -L ${tiny_grug} -F rlite -d -t o8 -P high < in7.txt &&
     cat o7 | grep -v "INFO:" | jq ".execution.R_lite" > o7.json &&
-    cat o8 | grep -v "INFO:" | jq "" > o8.json &&
+    cat o8 | grep -v "INFO:" | jq "." > o8.json &&
     diff o7.json o8.json
 '
 
