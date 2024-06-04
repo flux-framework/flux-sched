@@ -18,10 +18,14 @@ extern "C" {
 #include <cstdlib>
 #include <cerrno>
 #include "resource/traversers/dfu.hpp"
+#include "resource/schema/perf_data.hpp"
 
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 using namespace Flux::Jobspec;
+
+// Global perf struct from schema
+extern struct match_perf_t perf;
 
 /****************************************************************************
  *                                                                          *
@@ -65,6 +69,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                std::unordered_map<std::string, int64_t> &dfv)
 {
     int64_t t = 0;
+    int64_t sched_iters = 1; // Track the schedule iterations in perf stats
     int rc = -1;
     size_t len = 0;
     std::vector<uint64_t> agg;
@@ -95,6 +100,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         }
         m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
         m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+        // increment match traversal loop count
+        ++sched_iters;
         break;
     }
     case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
@@ -112,6 +119,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
             m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
             m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+            // increment match traversal loop count
+            ++sched_iters;
         }
         // The planner layer returns
         //     ENOENT when no scheduleable point exists
@@ -127,6 +136,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             }
             m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
             m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+            // increment match traversal loop count
+            ++sched_iters;
         }
         break;
     }
@@ -139,6 +150,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
 
 out:
     errno = (!errno)? saved_errno : errno;
+    // Update the perf temporary iteration count. If this schedule invocation
+    // corresponds to the max match time this value will be output in the
+    // stats RPC.
+    perf.tmp_iter_count = sched_iters;
     return rc;
 }
 
