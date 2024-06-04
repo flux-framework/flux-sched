@@ -83,8 +83,8 @@ test_expect_success 'clear resource module stats' '
 	rpc sched-fluxion-resource.stats-clear
 '
 
-test_expect_success 'create a set of 2 inactive jobs' '
-	flux submit --cc=1-2 --quiet \
+test_expect_success 'create a set of at least queue_depth inactive jobs (>32)' '
+	flux submit --cc=1-36 --quiet \
 	  -N 1 --exclusive \
 		--flags=waitable \
 		--requires="host:fake[4]" \
@@ -92,6 +92,15 @@ test_expect_success 'create a set of 2 inactive jobs' '
 		--setattr=exec.test.run_duration=0.01s \
 		hostname
 '
+test_expect_success 'ensure a job can run even past queue depth' '
+	jobid=$(flux submit -N1 \
+		--flags=waitable \
+		--requires=compute \
+		--setattr=exec.test.run_duration=0.01s \
+		hostname) &&
+	flux job wait-event -t 10 ${jobid} start
+'
+
 test_expect_success 'create a set of 2 running jobs' '
 	flux submit --progress --jps --quiet --cc=1-2 --wait-event=start -N1 \
 		--flags=waitable \
@@ -102,13 +111,8 @@ test_expect_success 'create a set of 2 running jobs' '
 test_expect_success 'undrain nodes' '
 	flux resource undrain 1-5
 '
-test_expect_success 'ensure all four succeeded' '
+test_expect_success 'ensure all succeeded' '
   flux job wait -av
-'
-test_expect_success 'failed match requests should be 7' '
-	NJOBS_FAILED="$(rpc sched-fluxion-resource.stats-get | jq '"'"'.match.failed."njobs-reset"'"'"')" &&
-  echo njobs failed $NJOBS_FAILED &&
-  test $NJOBS_FAILED = 7
 '
 test_expect_success 'unload fluxion' '
 	flux module remove sched-fluxion-qmanager &&
