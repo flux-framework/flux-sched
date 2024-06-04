@@ -150,6 +150,9 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
         set_schedulability (true);
         m_queue_depth_limit = false;
     }
+    // whatever happened here, a job transition has occurred, we need to run the
+    // post_sched_loop
+    m_scheduled = true;
     return 0;
 }
 
