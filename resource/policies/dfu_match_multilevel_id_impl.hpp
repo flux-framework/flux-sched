@@ -18,11 +18,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *     MultiLevel ID Match Policy Class's Private Method Definitions        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// MultiLevel ID Match Policy Class's Private Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename FOLD>
 multilevel_id_t<FOLD>::score_factor_t::score_factor_t (const std::string &type,
@@ -66,11 +65,10 @@ int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
 }
 
 
-/****************************************************************************
- *                                                                          *
- *      MultiLevel ID Match Policy Class's Public Method Definitions        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// MultiLevel ID Match Policy Class's Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename FOLD>
 multilevel_id_t<FOLD>::multilevel_id_t ()
