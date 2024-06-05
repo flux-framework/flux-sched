@@ -156,9 +156,20 @@ public:
                                       std::string &ret_R) = 0;
 
     /// @brief move any jobs in blocked state to pending
-    void reconsider_blocked_jobs () {
+    void process_provisional_reconsider () {
+        if (!m_pending_reconsider)
+            return;
+        m_pending_reconsider = false;
         m_pending.merge (m_blocked);
         assert (m_blocked.size () == 0);
+    }
+
+    /// @brief move any jobs in blocked state to pending
+    void reconsider_blocked_jobs () {
+        m_pending_reconsider = true;
+        if (!is_sched_loop_active ()) {
+            process_provisional_reconsider();
+        }
     }
 
     /*! Set queue parameters. Can be called multiple times.
@@ -547,6 +558,7 @@ public:
         if (prev && !m_sched_loop_active) {
             rc = process_provisional_reprio ();
             rc += process_provisional_cancel ();
+            process_provisional_reconsider ();
         }
         return rc;
     }
@@ -982,6 +994,7 @@ protected:
     std::map<std::vector<double>, flux_jobid_t> m_pending;
     std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
     std::map<uint64_t, flux_jobid_t> m_pending_cancel_provisional;
+    bool m_pending_reconsider = false;
     std::map<uint64_t, std::pair<flux_jobid_t,
 	                         unsigned int>> m_pending_reprio_provisional;
     std::map<uint64_t, flux_jobid_t> m_running;

@@ -11,6 +11,7 @@
 #ifndef QUEUE_POLICY_FCFS_HPP
 #define QUEUE_POLICY_FCFS_HPP
 
+#include <jansson.h>
 #include "qmanager/policies/base/queue_policy_base.hpp"
 
 namespace Flux {
