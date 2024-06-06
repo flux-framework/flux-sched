@@ -775,6 +775,9 @@ public:
             if (insert_pending_job (job, found_in_prov) < 0)
                 return -1;
             m_schedulable = true;
+            // in case this job is now lower priority than one it was blocking,
+            // reconsider blocked jobs
+            reconsider_blocked_jobs ();
         }
         return 0;
     }
@@ -877,6 +880,9 @@ protected:
                 m_schedulable = true;
             }
         }
+        // in case this job is now lower priority than one it was blocking,
+        // reconsider blocked jobs
+        reconsider_blocked_jobs ();
         m_pending_reprio_provisional.clear ();
         return 0;
     }
