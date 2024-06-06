@@ -26,6 +26,7 @@ extern "C" {
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <tuple>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
@@ -68,15 +69,10 @@ struct t_stamps_t {
     uint64_t canceled_ts = 0;
 };
 
-/*! Helper struct for use as a key in job state maps
+/*! Helper typedef for use as a key in job state maps
  */
-struct pending_key {
-    unsigned int priority = 0;
-    double t_submit = 0.0;
-    uint64_t pending_ts = 0;
-    auto operator<=>(const pending_key&) const = default;
-    bool operator==(const pending_key&) const = default;
-};
+
+using pending_key = std::tuple<unsigned int, double, uint64_t>;
 
 using job_map_t = std::map<pending_key, flux_jobid_t>;
 using job_map_iter = job_map_t::iterator;
@@ -99,9 +95,9 @@ public:
     bool is_pending () { return state == job_state_kind_t::PENDING; }
     pending_key get_key () {
         return {
-            .priority = priority,
-            .t_submit = t_submit,
-            .pending_ts = t_stamps.pending_ts
+            priority,
+            t_submit,
+            t_stamps.pending_ts
         };
     }
 
