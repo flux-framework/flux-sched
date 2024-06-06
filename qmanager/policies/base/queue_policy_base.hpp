@@ -11,6 +11,7 @@
 #ifndef QUEUE_POLICY_BASE_HPP
 #define QUEUE_POLICY_BASE_HPP
 
+#include <flux/core/job.h>
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
@@ -21,11 +22,11 @@ extern "C" {
 #include <cassert>
 #include <map>
 #include <algorithm>
-#include <vector>
 #include <unordered_map>
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <tuple>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
@@ -68,6 +69,14 @@ struct t_stamps_t {
     uint64_t canceled_ts = 0;
 };
 
+/*! Helper typedef for use as a key in job state maps
+ */
+
+using pending_key = std::tuple<unsigned int, double, uint64_t>;
+
+using job_map_t = std::map<pending_key, flux_jobid_t>;
+using job_map_iter = job_map_t::iterator;
+
 /*! Type to store a job's attributes.
  */
 class job_t {
@@ -84,13 +93,21 @@ public:
     job_t& operator= (const job_t &s) = default;
 
     bool is_pending () { return state == job_state_kind_t::PENDING; }
+    pending_key get_key () {
+        return {
+            priority,
+            t_submit,
+            t_stamps.pending_ts
+        };
+    }
+
 
     flux_msg_t *msg = NULL;
     job_state_kind_t state = job_state_kind_t::INIT;
     flux_jobid_t id = 0;
     uint32_t userid = 0;
     unsigned int priority = 0;
-    double t_submit = 0.0f;;
+    double t_submit = 0.0f;
     std::string jobspec = "";
     std::string note = "";
     t_stamps_t t_stamps;
@@ -168,7 +185,7 @@ public:
     void reconsider_blocked_jobs () {
         m_pending_reconsider = true;
         if (!is_sched_loop_active ()) {
-            process_provisional_reconsider();
+            process_provisional_reconsider ();
         }
     }
 
@@ -382,10 +399,7 @@ public:
         }
         job->state = job_state_kind_t::PENDING;
         job->t_stamps.pending_ts = m_pq_cnt++;
-        m_pending_provisional.insert (std::pair<std::vector<double>, flux_jobid_t> (
-            {static_cast<double> (job->priority),
-             static_cast<double> (job->t_submit),
-             static_cast<double> (job->t_stamps.pending_ts)}, job->id));
+        m_pending_provisional.emplace (job->get_key (), job->id);
         m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
                                                                         job));
         m_schedulable = true;
@@ -568,8 +582,8 @@ public:
      *  resource API. When a match succeeds, this method is called back
      *  by reapi_t.
      */
-    virtual int handle_match_success (int64_t jobid, const char *status,
-                                      const char *R, int64_t at, double ov) {
+    int handle_match_success (flux_jobid_t jobid, const char *status,
+                              const char *R, int64_t at, double ov) override {
         return 0;
     }
 
@@ -578,8 +592,8 @@ public:
      *  resource API. When a match fails, this method is called back
      *  by reapi_t.
      */
-    virtual int handle_match_failure (int errcode) {
-        return 0;        
+    int handle_match_failure (flux_jobid_t jobid, int errcode) override {
+        return 0;
     }
 
 
@@ -599,9 +613,7 @@ public:
         if (m_jobs.find (id) == m_jobs.end ())
             return nullptr;
         job = m_jobs[id];
-        m_pending.erase ({static_cast<double> (job->priority),
-                          static_cast<double> (job->t_submit),
-                          static_cast<double> (job->t_stamps.pending_ts)});
+        m_pending.erase (job->get_key ());
         m_jobs.erase (id);
         return job;
     }
@@ -685,9 +697,7 @@ public:
     /* This doesn't appear to be used anywhere */
     std::shared_ptr<job_t> reserved_pop ();
 
-    std::map<std::vector<double>, flux_jobid_t>::iterator
-        to_running (std::map<std::vector<double>,
-                             flux_jobid_t>::iterator pending_iter,
+    job_map_iter to_running (job_map_iter pending_iter,
                     bool use_alloced_queue)
     {
         flux_jobid_t id = pending_iter->second;
@@ -771,6 +781,7 @@ public:
 
 
 protected:
+
 
     /*! Reconstruct the queue.
      *
@@ -874,28 +885,11 @@ protected:
     int insert_pending_job (std::shared_ptr<job_t> &job,
                                                   bool into_provisional)
     {
-        if (into_provisional) {
-            auto res = m_pending_provisional.insert (
-                           std::pair<std::vector<double>, flux_jobid_t> (
-                               {static_cast<double> (job->priority),
-                                static_cast<double> (job->t_submit),
-                                static_cast<double> (job->t_stamps.pending_ts)},
-                               job->id));
-            if (!res.second) {
-                errno = EEXIST;
-                return -1;
-            }
-        } else {
-            auto res = m_pending.insert (
-                           std::pair<std::vector<double>, flux_jobid_t> (
-                               {static_cast<double> (job->priority),
-                                static_cast<double> (job->t_submit),
-                                static_cast<double> (job->t_stamps.pending_ts)},
-                               job->id));
-            if (!res.second) {
-                errno = EEXIST;
-                return -1;
-            }
+        auto &pending_map = into_provisional ? m_pending_provisional : m_pending;
+        auto res = pending_map.emplace (job->get_key (), job->id);
+        if (!res.second) {
+            errno = EEXIST;
+            return -1;
         }
         return 0;
     }
@@ -903,23 +897,16 @@ protected:
     int erase_pending_job (job_t *job, bool &found_in_prov)
     {
         size_t s;
-        s = m_pending.erase ({static_cast<double> (job->priority),
-                              static_cast<double> (job->t_submit),
-                              static_cast<double> (job->t_stamps.pending_ts)});
+        s = m_pending.erase (job->get_key ());
         if (s == 1) {
             return 0;
         }
-        s = m_blocked.erase ({static_cast<double> (job->priority),
-                              static_cast<double> (job->t_submit),
-                              static_cast<double> (job->t_stamps.pending_ts)});
+        s = m_blocked.erase (job->get_key ());
         if (s == 1) {
             return 0;
         }
         // job must be in m_pending_provisional in this case
-        s = m_pending_provisional.erase (
-                {static_cast<double> (job->priority),
-                static_cast<double> (job->t_submit),
-                static_cast<double> (job->t_stamps.pending_ts)});
+        s = m_pending_provisional.erase (job->get_key ());
         if (s == 0) {
             errno = ENOENT;
             return -1;
@@ -950,9 +937,7 @@ protected:
         return m_running.erase (running_iter);
     }
 
-    std::map<std::vector<double>, flux_jobid_t>::iterator
-        to_rejected (std::map<std::vector<double>,
-                              flux_jobid_t>::iterator pending_iter,
+    job_map_iter to_rejected (job_map_iter pending_iter,
                      const std::string &note)
     {
         flux_jobid_t id = pending_iter->second;
@@ -990,9 +975,9 @@ protected:
     unsigned int m_queue_depth = DEFAULT_QUEUE_DEPTH;
     unsigned int m_max_queue_depth = MAX_QUEUE_DEPTH;
     /// jobs that need to wait for resource state updates
-    std::map<std::vector<double>, flux_jobid_t> m_blocked;
-    std::map<std::vector<double>, flux_jobid_t> m_pending;
-    std::map<std::vector<double>, flux_jobid_t> m_pending_provisional;
+    std::map<pending_key, flux_jobid_t> m_blocked;
+    std::map<pending_key, flux_jobid_t> m_pending;
+    std::map<pending_key, flux_jobid_t> m_pending_provisional;
     std::map<uint64_t, flux_jobid_t> m_pending_cancel_provisional;
     bool m_pending_reconsider = false;
     std::map<uint64_t, std::pair<flux_jobid_t,
@@ -1005,7 +990,6 @@ protected:
     std::map<flux_jobid_t, std::shared_ptr<job_t>> m_jobs;
     std::unordered_map<std::string, std::string> m_qparams;
     std::unordered_map<std::string, std::string> m_pparams;
-
 
 private:
 
@@ -1074,7 +1058,7 @@ private:
         return i == num_str.end ();
     }
 
-    std::map<std::vector<double>, flux_jobid_t>::iterator m_pending_iter;
+    job_map_iter m_pending_iter;
     bool m_iter_valid = false;
 };
 

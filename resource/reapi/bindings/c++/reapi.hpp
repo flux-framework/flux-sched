@@ -11,6 +11,7 @@
 #ifndef REAPI_HPP
 #define REAPI_HPP
 
+#include <flux/core/job.h>
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
@@ -47,7 +48,7 @@ public:
      *                   of the elapse time to complete the match operation.
      *  \return          0 on success; -1 on error.
      */
-    virtual int handle_match_success (int64_t jobid, const char *status,
+    virtual int handle_match_success (flux_jobid_t jobid, const char *status,
                                       const char *R, int64_t at, double ov) = 0;
 
     /*! When a match failed (e.g., unsatisfiable jobspec, resource
@@ -66,7 +67,7 @@ public:
      *                       Others: one that can raised from match_multi RPC
      *  \return          0 when the loop must terminate; -1 on error.
      */
-    virtual int handle_match_failure (int errcode) = 0;
+    virtual int handle_match_failure (flux_jobid_t jobid, int errcode) = 0;
 
     /*! Return true if the scheduling loop is active under asynchronous
      *  execution; otherwise false.
