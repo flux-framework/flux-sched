@@ -10,3 +10,9 @@ if command -v black 2>&1 > /dev/null ; then
 else
   echo "black not found, python left unformatted"
 fi
+
+find resource qmanager src/ -name '*.h' -o -name '*.c' -o -name '*.cpp' -o -name '*.hpp' |
+  grep -v yggdrasil |
+  grep -v 'json.hpp' |
+  grep -v libtap |
+  xargs -P 8 -n 1 clang-format -i
