@@ -1,0 +1,30 @@
+files: '^(src|t|resource|qmanager)/.*(\.py|\.h|\.hpp|\.c|\.cpp)'
+exclude: "^(.*((pyco|lib)tap|yggdrasil|jsongraph).*)|src/common/libutil/.*$"
+repos:
+  - repo: meta
+    hooks:
+    - id: identity
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-shebang-scripts-are-executable
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        language: python
+        types: [python]
+        entry: black
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    # this is the release of 18.1.6
+    rev: 'eb7205de69febb10d8d455ed9cc0a9fa6ac3a17a'
+    hooks:
+    -   id: clang-format

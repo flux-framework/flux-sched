@@ -1,12 +1,7 @@
 #!/bin/bash
 
-if command -v black 2>&1 > /dev/null ; then
-  # awk cmd copied from:
-  # https://unix.stackexchange.com/questions/66097/find-all-files-with-a-python-shebang
-  find src t -path "src/python/fluxion/jsongraph" -prune -o \
-        -type f \( -name "*.py" -print -o \
-        -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \) \
-      | xargs black
+if command -v pre-commit 2>&1 > /dev/null ; then
+  pre-commit run --all-files
 else
-  echo "black not found, python left unformatted"
+  echo "pre-commit not found, please install it, if unsure how use pip install -r scripts/requirements-dev.txt"
 fi
