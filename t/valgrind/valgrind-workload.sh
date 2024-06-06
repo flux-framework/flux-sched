@@ -6,6 +6,7 @@ exitcode=0
 flux module remove -f sched-simple
 flux module load sched-fluxion-resource load-allowlist=node,core,gpu
 flux module load sched-fluxion-qmanager
+flux dmesg -H | grep sched-fluxion.*version
 
 for file in ${SHARNESS_TEST_SRCDIR:-..}/valgrind/workload.d/*; do
 	echo Running $(basename $file)

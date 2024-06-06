@@ -1,3 +1,23 @@
+flux-sched version 0.35.0 - 2024-06-06
+--------------------------------------
+
+### New Features
+ * Add jobid and schedule iteration count to match stats;
+   make perf a global variable (#1205)
+ * make backfill reactive during sched loop (#1211)
+### Fixes
+ * qmanager: always process unblocked jobs (#1211)
+ * qmanager: search blocked jobs during pending removal (#1209)
+ * qmanager: reconsider blocked jobs on reprioritize (#1217)
+ * avoid copying of std::map in `out_edges` (#1206)
+### Cleanup
+ * comment blocks: stop using full-star boxes (#1216)
+### Build/Testsuite
+ * test/match-formats: make jq command valid (#1213)
+ * cmake: ensure we install libraries to our prefix (#1203)
+ * Test repair (#1207)
+
+
 flux-sched version 0.34.0 - 2024-05-08
 --------------------------------------
 
