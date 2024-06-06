@@ -20,11 +20,10 @@ using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
-/****************************************************************************
- *                                                                          *
- *         DFU Traverser Implementation Private API Definitions             *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Private API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 const std::string dfu_impl_t::level () const
 {
@@ -989,11 +988,10 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
 }
 
 
-/****************************************************************************
- *                                                                          *
- *           DFU Traverser Implementation Public API Definitions            *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Public API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 dfu_impl_t::dfu_impl_t ()
 {

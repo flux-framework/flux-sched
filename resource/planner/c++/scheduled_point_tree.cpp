@@ -17,11 +17,10 @@ extern "C" {
 #include "planner_internal_tree.hpp"
 
 
-/*******************************************************************************
- *                                                                             *
- *               Private Scheduled Point Search Tree Methods                   *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Scheduled Point Search Tree Methods
+////////////////////////////////////////////////////////////////////////////////
 
 scheduled_point_t *scheduled_point_tree_t::get_recent_state (
                        scheduled_point_t *new_point,
@@ -44,11 +43,10 @@ void scheduled_point_tree_t::destroy (scheduled_point_rb_node_t *node)
 }
 
 
-/*******************************************************************************
- *                                                                             *
- *                Public Scheduled Point RBTree Node Methods                   *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Scheduled Point RBTree Node Methods
+////////////////////////////////////////////////////////////////////////////////
 
 bool scheduled_point_rb_node_t::operator< (
          const scheduled_point_rb_node_t &other) const
@@ -77,11 +75,10 @@ bool scheduled_point_rb_node_t::operator!= (
 }
 
 
-/*******************************************************************************
- *                                                                             *
- *                 Public Scheduled Point Search Tree Methods                  *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Scheduled Point Search Tree Methods
+////////////////////////////////////////////////////////////////////////////////
 
 scheduled_point_tree_t::~scheduled_point_tree_t ()
 {

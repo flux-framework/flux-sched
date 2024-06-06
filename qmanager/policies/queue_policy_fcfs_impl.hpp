@@ -19,11 +19,10 @@ namespace queue_manager {
 namespace detail {
 
 
-/******************************************************************************
- *                                                                            *
- *                    Private Methods of Queue Policy FCFS                    *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Methods of Queue Policy FCFS
+////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::cancel_completed_jobs (void *h)
@@ -157,11 +156,10 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_failure (int errcode)
 }
 
 
-/******************************************************************************
- *                                                                            *
- *                    Public API of Queue Policy FCFS                         *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public API of Queue Policy FCFS
+////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
 queue_policy_fcfs_t<reapi_type>::~queue_policy_fcfs_t ()

@@ -17,11 +17,10 @@ namespace Flux {
 namespace queue_manager {
 namespace detail {
 
-/******************************************************************************
- *                                                                            *
- *                 Private Methods of Queue Policy Backfill Base *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Methods of Queue Policy Backfill Base
+////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void *h)
@@ -147,11 +146,10 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     return 0; 
 }
 
-/******************************************************************************
- *                                                                            *
- *                 Public API of Queue Policy Backfill Base *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public API of Queue Policy Backfill Base
+////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
 queue_policy_bf_base_t<reapi_type>::~queue_policy_bf_base_t ()

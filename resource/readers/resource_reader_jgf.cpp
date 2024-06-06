@@ -216,11 +216,10 @@ std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
     return sstream.str ();
 }
 
-/********************************************************************************
- *                                                                              *
- *                        Private JGF Resource Reader                           *
- *                                                                              *
- ********************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private JGF Resource Reader
+////////////////////////////////////////////////////////////////////////////////
 
 int resource_reader_jgf_t::fetch_jgf (const std::string &str, json_t **jgf_p,
                                       json_t **nodes_p, json_t **edges_p)
@@ -1171,11 +1170,10 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
 }
 
 
-/********************************************************************************
- *                                                                              *
- *                   Public JGF Resource Reader Interface                       *
- *                                                                              *
- ********************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public JGF Resource Reader Interface
+////////////////////////////////////////////////////////////////////////////////
 
 resource_reader_jgf_t::~resource_reader_jgf_t ()
 {

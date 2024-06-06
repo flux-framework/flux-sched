@@ -21,11 +21,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *   Public Methods on the Data Belonging to the Scheduler Infrastructure   *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Methods on the Data Belonging to the Scheduler Infrastructure
+////////////////////////////////////////////////////////////////////////////////
 
 infra_base_t::infra_base_t () = default;
 
@@ -46,11 +45,10 @@ infra_base_t::~infra_base_t ()
 }
 
 
-/****************************************************************************
- *                                                                          *
- *        Public Methods on Infrastructure Data for Resource Pool           *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Methods on Infrastructure Data for Resource Pool
+////////////////////////////////////////////////////////////////////////////////
 
 pool_infra_t::pool_infra_t () = default;
 
@@ -159,11 +157,10 @@ void pool_infra_t::scrub ()
 }
 
 
-/****************************************************************************
- *                                                                          *
- *      Public Methods on Infrastructure Data for Resource Relation         *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Methods on Infrastructure Data for Resource Relation
+////////////////////////////////////////////////////////////////////////////////
 
 relation_infra_t::relation_infra_t () = default;
 

@@ -20,11 +20,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *                  Edge Evaluator Public Method Definitions                *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Edge Evaluator Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 eval_edg_t::eval_edg_t (unsigned int c, unsigned int n, unsigned int x, edg_t e)
                         : count (c), needs (n), exclusive (x), edge (e)
