@@ -36,7 +36,6 @@ struct vtx_predicates_override_t {
     void set (bool sd, bool sna, bool sfr);
 };
 
-
 /*! Expression evaluation resource vertex target class.
  *  Each resource vertex defines a set of predicates that
  *  return true or false based on its current state.
@@ -46,8 +45,7 @@ struct vtx_predicates_override_t {
  *  its validate and evaluate interfaces to do this work.
  */
 class expr_eval_vtx_target_t : public expr_eval_target_base_t {
-public:
-
+   public:
     /*! Validate if a predicate expression is valid w/ respect to
      *  a resource vertex.
      *  As a predicate is often denoted as p(x), the method parameters
@@ -71,8 +69,7 @@ public:
      *                   this vertex expression evaluation target.
      *  \return          0 on success; -1 on error
      */
-    virtual int evaluate (const std::string &p,
-                          const std::string &x, bool &result) const;
+    virtual int evaluate (const std::string &p, const std::string &x, bool &result) const;
 
     /*! Initialize the object of this class with a resource vertex.
      *  This must be called before the validate and evaluate interfaces
@@ -85,24 +82,24 @@ public:
      *  \return          0 on success; -1 on error
      */
     void initialize (const vtx_predicates_override_t &p,
-                     const std::shared_ptr<
-                         const f_resource_graph_t> g, vtx_t u);
+                     const std::shared_ptr<const f_resource_graph_t> g,
+                     vtx_t u);
 
     /*! Is this object initialized?
      */
     bool is_initialized () const;
 
-private:
+   private:
     bool m_initialized{false};
     vtx_predicates_override_t m_overridden;
     std::shared_ptr<const f_resource_graph_t> m_g;
     vtx_t m_u;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // EXPR_EVAL_VTX_TARGET_HPP
+#endif  // EXPR_EVAL_VTX_TARGET_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

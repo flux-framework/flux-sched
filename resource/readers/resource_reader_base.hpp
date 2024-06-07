@@ -21,12 +21,10 @@
 namespace Flux {
 namespace resource_model {
 
-
 /*!  Base resource reader class.
  */
 class resource_reader_base_t {
-public:
-
+   public:
     virtual ~resource_reader_base_t ();
 
     /*! Unpack str into a resource graph.
@@ -37,8 +35,10 @@ public:
      * \param rank   assign rank to all of the newly created resource vertices
      * \return       0 on success; non-zero integer on an error
      */
-    virtual int unpack (resource_graph_t &g, resource_graph_metadata_t &m,
-                        const std::string &str, int rank = -1) = 0;
+    virtual int unpack (resource_graph_t &g,
+                        resource_graph_metadata_t &m,
+                        const std::string &str,
+                        int rank = -1) = 0;
 
     /*! Unpack str into a resource graph and graft
      *  the top-level vertices to vtx.
@@ -50,8 +50,11 @@ public:
      * \param rank   assign rank to all of the newly created resource vertices
      * \return       0 on success; non-zero integer on an error
      */
-    virtual int unpack_at (resource_graph_t &g, resource_graph_metadata_t &m,
-                           vtx_t &vtx, const std::string &str, int rank = -1) = 0;
+    virtual int unpack_at (resource_graph_t &g,
+                           resource_graph_metadata_t &m,
+                           vtx_t &vtx,
+                           const std::string &str,
+                           int rank = -1) = 0;
 
     virtual int remove_subgraph (resource_graph_t &g,
                                  resource_graph_metadata_t &m,
@@ -70,9 +73,14 @@ public:
      *               token to be used by traverser
      * \return       0 on success; non-zero integer on an error
      */
-    virtual int update (resource_graph_t &g, resource_graph_metadata_t &m,
-                        const std::string &str, int64_t jobid, int64_t at,
-                        uint64_t dur, bool rsv, uint64_t trav_token) = 0;
+    virtual int update (resource_graph_t &g,
+                        resource_graph_metadata_t &m,
+                        const std::string &str,
+                        int64_t jobid,
+                        int64_t at,
+                        uint64_t dur,
+                        bool rsv,
+                        uint64_t trav_token) = 0;
 
     /*! Set the allowlist: only resources that are part of this allowlist
      *  will be unpacked into the graph.
@@ -125,19 +133,17 @@ public:
      */
     resource_namespace_remapper_t namespace_remapper;
 
-protected:
+   protected:
     bool in_allowlist (const std::string &resource);
-    int split_hostname (const std::string &hn,
-                        std::string &basename, int64_t &id) const;
+    int split_hostname (const std::string &hn, std::string &basename, int64_t &id) const;
     std::set<std::string> allowlist;
     std::string m_err_msg = "";
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-
-#endif // RESOURCE_READER_BASE_HPP
+#endif  // RESOURCE_READER_BASE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -17,7 +17,7 @@ namespace Flux {
 namespace resource_model {
 
 class color_t {
-public:
+   public:
     enum class color_offset_t : uint64_t {
         WHITE_OFFSET = 0,
         GRAY_OFFSET = 1,
@@ -37,14 +37,14 @@ public:
     uint64_t gray () const;
     uint64_t black () const;
 
-private:
+   private:
     uint64_t m_color_base = 0;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // COLOR_H
+#endif  // COLOR_H
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

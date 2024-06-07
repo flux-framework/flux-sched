@@ -32,8 +32,7 @@ struct schedule_t {
     planner_t *plans = nullptr;
 };
 
-} // Flux::resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // SCHED_DATA_H
-
+#endif  // SCHED_DATA_H

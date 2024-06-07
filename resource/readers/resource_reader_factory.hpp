@@ -19,13 +19,12 @@ namespace Flux {
 namespace resource_model {
 
 bool known_resource_reader (const std::string &name);
-std::shared_ptr<resource_reader_base_t> create_resource_reader (
-                                            const std::string &name);
+std::shared_ptr<resource_reader_base_t> create_resource_reader (const std::string &name);
 
-} // namespace Flux::resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_READER_FACTORY_HPP
+#endif  // RESOURCE_READER_FACTORY_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

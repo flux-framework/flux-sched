@@ -34,12 +34,12 @@ RankConstraint::RankConstraint (const YAML::Node &values)
 {
     if (!(ranks = idset_create (0, IDSET_FLAG_AUTOGROW)))
         throw parse_error (values, "Out of memory");
-    for (auto&& val: values) {
-        std::string ids = val.as<std::string>();
-        if (add_idset_string (ranks, ids.c_str()) < 0) {
+    for (auto &&val : values) {
+        std::string ids = val.as<std::string> ();
+        if (add_idset_string (ranks, ids.c_str ()) < 0) {
             idset_destroy (ranks);
             std::string msg = "Invalid idset `" + ids + "'";
-            throw parse_error (val, msg.c_str());
+            throw parse_error (val, msg.c_str ());
         }
     }
 }

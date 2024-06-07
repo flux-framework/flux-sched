@@ -52,15 +52,14 @@ struct pool_infra_t : public infra_base_t {
 };
 
 class relation_infra_t : public infra_base_t {
-public:
+   public:
     relation_infra_t ();
     relation_infra_t (const relation_infra_t &o);
     relation_infra_t &operator= (const relation_infra_t &o);
     virtual ~relation_infra_t ();
     virtual void scrub ();
 
-    void set_for_trav_update (uint64_t needs, int exclusive,
-                              uint64_t trav_token);
+    void set_for_trav_update (uint64_t needs, int exclusive, uint64_t trav_token);
 
     uint64_t get_needs () const;
     int get_exclusive () const;
@@ -68,17 +67,17 @@ public:
     uint64_t get_weight () const;
     void set_weight (uint64_t);
 
-private:
+   private:
     uint64_t m_needs = 0;
     uint64_t m_trav_token = 0;
     uint64_t m_weight = std::numeric_limits<uint64_t>::max ();
     int m_exclusive = 0;
 };
 
-} // Flux::resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // INFRA_DATA_HPP
+#endif  // INFRA_DATA_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
