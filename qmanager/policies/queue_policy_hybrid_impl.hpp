@@ -20,14 +20,12 @@ namespace detail {
 template<class reapi_type>
 queue_policy_hybrid_t<reapi_type>::~queue_policy_hybrid_t ()
 {
-
 }
 
 template<class reapi_type>
 queue_policy_hybrid_t<reapi_type>::queue_policy_hybrid_t ()
 {
-    queue_policy_bf_base_t<reapi_type>::m_reservation_depth =
-        HYBRID_RESERVATION_DEPTH;
+    queue_policy_bf_base_t<reapi_type>::m_reservation_depth = HYBRID_RESERVATION_DEPTH;
 }
 
 template<class reapi_type>
@@ -37,28 +35,26 @@ int queue_policy_hybrid_t<reapi_type>::apply_params ()
     int depth = 0;
     try {
         std::unordered_map<std::string, std::string>::const_iterator i;
-        if ((i = queue_policy_base_t
-                     ::m_pparams.find ("max-reservation-depth"))
-             != queue_policy_base_t::m_pparams.end ()) {
-            if ( (depth = std::stoi (i->second)) < 1) {
+        if ((i = queue_policy_base_t ::m_pparams.find ("max-reservation-depth"))
+            != queue_policy_base_t::m_pparams.end ()) {
+            if ((depth = std::stoi (i->second)) < 1) {
                 errno = ERANGE;
                 rc += -1;
             }
             queue_policy_bf_base_t<reapi_type>::m_max_reservation_depth = depth;
         }
-        if ((i = queue_policy_base_t
-                     ::m_pparams.find ("reservation-depth"))
-             != queue_policy_base_t::m_pparams.end ()) {
-            if ( (depth = std::stoi (i->second)) < 1) {
+        if ((i = queue_policy_base_t ::m_pparams.find ("reservation-depth"))
+            != queue_policy_base_t::m_pparams.end ()) {
+            if ((depth = std::stoi (i->second)) < 1) {
                 errno = ERANGE;
                 rc += -1;
             }
-            if (static_cast<unsigned> (depth) < queue_policy_bf_base_t<reapi_type>
-                            ::m_max_reservation_depth) {
+            if (static_cast<unsigned> (depth)
+                < queue_policy_bf_base_t<reapi_type>::m_max_reservation_depth) {
                 queue_policy_bf_base_t<reapi_type>::m_reservation_depth = depth;
             } else {
-                queue_policy_bf_base_t<reapi_type>::m_reservation_depth
-                    = queue_policy_bf_base_t<reapi_type>::m_reservation_depth;
+                queue_policy_bf_base_t<reapi_type>::m_reservation_depth =
+                    queue_policy_bf_base_t<reapi_type>::m_reservation_depth;
             }
         }
         rc += 0;
@@ -70,11 +66,11 @@ int queue_policy_hybrid_t<reapi_type>::apply_params ()
     return rc;
 }
 
-} // namespace Flux::queue_manager::detail
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace detail
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_HYBRID_IMPL_HPP
+#endif  // QUEUE_POLICY_HYBRID_IMPL_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

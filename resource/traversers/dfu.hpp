@@ -23,9 +23,8 @@ namespace resource_model {
  *  by the matcher callback object (dfu_match_cb_t). Corresponding match
  *  callback methods are invoked at various well-defined graph visit events.
  */
-class dfu_traverser_t : protected detail::dfu_impl_t
-{
-public:
+class dfu_traverser_t : protected detail::dfu_impl_t {
+   public:
     dfu_traverser_t ();
     dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
                      std::shared_ptr<resource_graph_db_t> db,
@@ -112,7 +111,9 @@ public:
      */
     int run (Jobspec::Jobspec &jobspec,
              std::shared_ptr<match_writers_t> &writers,
-             match_op_t op, int64_t id, int64_t *at);
+             match_op_t op,
+             int64_t id,
+             int64_t *at);
 
     /*! Read str which is a serialized allocation data (e.g., written in JGF)
      *  with rd, and traverse the resource graph to update it with this data.
@@ -129,7 +130,9 @@ public:
     int run (const std::string &str,
              std::shared_ptr<match_writers_t> &writers,
              std::shared_ptr<resource_reader_base_t> &reader,
-             int64_t id, int64_t at, uint64_t duration);
+             int64_t id,
+             int64_t at,
+             uint64_t duration);
 
     /*! Traverse the resource graph and emit those resources whose
      *  status is matched with the matching criteria.
@@ -155,8 +158,7 @@ public:
      *                   ignored.
      *  \return          0 on success; -1 on error.
      */
-    int find (std::shared_ptr<match_writers_t> &writers,
-              const std::string &criteria);
+    int find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
@@ -185,22 +187,27 @@ public:
      */
     int mark (std::set<int64_t> &ranks, resource_pool_t::status_t status);
 
-private:
-    int is_satisfiable (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
-                        bool x, vtx_t root,
+   private:
+    int is_satisfiable (Jobspec::Jobspec &jobspec,
+                        detail::jobmeta_t &meta,
+                        bool x,
+                        vtx_t root,
                         std::unordered_map<std::string, int64_t> &dfv);
-    int schedule (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
-                  bool x, match_op_t op, vtx_t root,
+    int schedule (Jobspec::Jobspec &jobspec,
+                  detail::jobmeta_t &meta,
+                  bool x,
+                  match_op_t op,
+                  vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);
     bool m_initialized = false;
     unsigned int m_total_preorder = 0;
     unsigned int m_total_postorder = 0;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_TRAVERSE_HPP
+#endif  // DFU_TRAVERSE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

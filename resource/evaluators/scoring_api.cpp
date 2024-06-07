@@ -19,14 +19,11 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Scoring API Private Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-void scoring_api_t::handle_new_keys (const subsystem_t &s,
-                                     const std::string &r)
+void scoring_api_t::handle_new_keys (const subsystem_t &s, const std::string &r)
 {
     handle_new_subsystem (s);
     handle_new_resrc_type (s, r);
@@ -35,13 +32,12 @@ void scoring_api_t::handle_new_keys (const subsystem_t &s,
 void scoring_api_t::handle_new_subsystem (const subsystem_t &s)
 {
     if (m_ssys_map.find (s) == m_ssys_map.end ()) {
-        auto o = new std::map<const std::string, detail::evals_t *>();
+        auto o = new std::map<const std::string, detail::evals_t *> ();
         m_ssys_map.insert (std::make_pair (s, o));
     }
 }
 
-void scoring_api_t::handle_new_resrc_type (const subsystem_t &s,
-                                           const std::string &r)
+void scoring_api_t::handle_new_resrc_type (const subsystem_t &s, const std::string &r)
 {
     if (m_ssys_map[s]->find (r) == m_ssys_map[s]->end ()) {
         auto e = new detail::evals_t (r);
@@ -49,22 +45,19 @@ void scoring_api_t::handle_new_resrc_type (const subsystem_t &s,
     }
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Scoring API Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
 scoring_api_t::scoring_api_t ()
 {
-
 }
 
 scoring_api_t::scoring_api_t (const scoring_api_t &o)
 {
     for (auto &p : o.m_ssys_map) {
         const subsystem_t &s = p.first;
-        auto obj = new std::map<const std::string, detail::evals_t *>();
+        auto obj = new std::map<const std::string, detail::evals_t *> ();
         m_ssys_map.insert (std::make_pair (s, obj));
         auto &tmap = *(p.second);
         for (auto &p2 : tmap) {
@@ -80,7 +73,7 @@ const scoring_api_t &scoring_api_t::operator= (const scoring_api_t &o)
 {
     for (auto &p : o.m_ssys_map) {
         const subsystem_t &s = p.first;
-        auto obj = new std::map<const std::string, detail::evals_t *>();
+        auto obj = new std::map<const std::string, detail::evals_t *> ();
         m_ssys_map.insert (std::make_pair (s, obj));
         auto &tmap = *(p.second);
         for (auto &p2 : tmap) {
@@ -115,43 +108,37 @@ int64_t scoring_api_t::cutline (const subsystem_t &s, const std::string &r)
     return res_evals->cutline ();
 }
 
-int64_t scoring_api_t::set_cutline (const subsystem_t &s, const std::string &r,
-                                    int64_t c)
+int64_t scoring_api_t::set_cutline (const subsystem_t &s, const std::string &r, int64_t c)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     return res_evals->set_cutline (c);
 }
 
-
-void scoring_api_t::eval_egroups_iter_reset (const subsystem_t &s,
-                                             const std::string &r)
+void scoring_api_t::eval_egroups_iter_reset (const subsystem_t &s, const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     res_evals->eval_egroups_iter_reset ();
 }
 
-std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_iter_next (
-                                                        const subsystem_t &s,
-                                                        const std::string &r)
+std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_iter_next (const subsystem_t &s,
+                                                                            const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     return res_evals->eval_egroups_iter_next ();
 }
 
-std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_end (
-                                                        const subsystem_t &s,
-                                                        const std::string &r)
+std::vector<eval_egroup_t>::iterator scoring_api_t::eval_egroups_end (const subsystem_t &s,
+                                                                      const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     return res_evals->eval_egroups_end ();
 }
 
-int scoring_api_t::add (const subsystem_t &s, const std::string &r,
-                        const eval_egroup_t &eg)
+int scoring_api_t::add (const subsystem_t &s, const std::string &r, const eval_egroup_t &eg)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
@@ -159,32 +146,28 @@ int scoring_api_t::add (const subsystem_t &s, const std::string &r,
 }
 
 //! Can throw an out_of_range exception
-const eval_egroup_t &scoring_api_t::at (const subsystem_t &s,
-                                        const std::string &r, unsigned int i)
+const eval_egroup_t &scoring_api_t::at (const subsystem_t &s, const std::string &r, unsigned int i)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
-    return res_evals->at(i);
+    return res_evals->at (i);
 }
 
-unsigned int scoring_api_t::qualified_count (const subsystem_t &s,
-                                             const std::string &r)
+unsigned int scoring_api_t::qualified_count (const subsystem_t &s, const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     return res_evals->qualified_count ();
 }
 
-unsigned int scoring_api_t::qualified_granules (const subsystem_t &s,
-                                                const std::string &r)
+unsigned int scoring_api_t::qualified_granules (const subsystem_t &s, const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
     return res_evals->qualified_granules ();
 }
 
-unsigned int scoring_api_t::total_count (const subsystem_t &s,
-                                         const std::string &r)
+unsigned int scoring_api_t::total_count (const subsystem_t &s, const std::string &r)
 {
     handle_new_keys (s, r);
     auto res_evals = (*m_ssys_map[s])[r];
@@ -225,8 +208,7 @@ void scoring_api_t::merge (const scoring_api_t &o)
     }
 }
 
-void scoring_api_t::resrc_types (const subsystem_t &s,
-                                 std::vector<std::string> &v)
+void scoring_api_t::resrc_types (const subsystem_t &s, std::vector<std::string> &v)
 {
     handle_new_subsystem (s);
     for (auto &kv : *(m_ssys_map[s]))
@@ -255,8 +237,7 @@ void scoring_api_t::set_avail (unsigned int avail)
     m_avail = avail;
 }
 
-bool scoring_api_t::is_contained (const subsystem_t &s,
-                                  const std::string &r)
+bool scoring_api_t::is_contained (const subsystem_t &s, const std::string &r)
 {
     bool rc = false;
     if (m_ssys_map.find (s) != m_ssys_map.end ()) {
@@ -267,9 +248,8 @@ bool scoring_api_t::is_contained (const subsystem_t &s,
     return rc;
 }
 
-
-} // Flux::resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

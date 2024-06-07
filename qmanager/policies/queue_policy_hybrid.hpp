@@ -18,9 +18,8 @@ namespace queue_manager {
 namespace detail {
 
 template<class reapi_type>
-class queue_policy_hybrid_t : public queue_policy_bf_base_t<reapi_type>
-{
-public:
+class queue_policy_hybrid_t : public queue_policy_bf_base_t<reapi_type> {
+   public:
     virtual ~queue_policy_hybrid_t ();
     queue_policy_hybrid_t ();
     queue_policy_hybrid_t (const queue_policy_hybrid_t &p) = default;
@@ -31,11 +30,11 @@ public:
     virtual int apply_params ();
 };
 
-} // namespace Flux::queue_manager::detail
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace detail
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_HYBRID_HPP
+#endif  // QUEUE_POLICY_HYBRID_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

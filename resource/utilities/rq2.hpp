@@ -19,10 +19,9 @@ using namespace Flux;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
-int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params,
+int match (resource_query_t &ctx,
+           std::vector<std::string> &args,
+           json_t *params,
            std::ostream &out);
-int help (resource_query_t &ctx, std::vector<std::string> &args, json_t *params,
-          std::ostream &out);
-int quit (resource_query_t &ctx, std::vector<std::string> &args, json_t *params,
-          std::ostream &out);
-          
+int help (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out);
+int quit (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out);

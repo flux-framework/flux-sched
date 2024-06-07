@@ -19,8 +19,6 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::opts_manager;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private API for Queue Manager Option Class
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,29 +28,25 @@ int qmanager_opts_t::parse_queues (const std::string &queues)
     int rc = 0;
     try {
         std::vector<std::string> entries;
-        if ( (rc = parse_multi (queues.c_str (), ' ', entries)) < 0)
+        if ((rc = parse_multi (queues.c_str (), ' ', entries)) < 0)
             goto done;
-        m_per_queue_prop.clear (); // clear the default queue entry
-        for (const auto &entry: entries) {
+        m_per_queue_prop.clear ();  // clear the default queue entry
+        for (const auto &entry : entries) {
             auto ret = m_per_queue_prop.insert (
-                           std::pair<std::string, queue_prop_t> (
-                               entry, queue_prop_t ()));
+                std::pair<std::string, queue_prop_t> (entry, queue_prop_t ()));
             if (!ret.second) {
                 errno = EEXIST;
                 rc = -1;
                 goto done;
             }
         }
-    }
-    catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         rc = -1;
     }
 done:
     return rc;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private API for Queue Property Class
@@ -61,13 +55,10 @@ done:
 bool queue_prop_t::known_queue_policy (const std::string &policy)
 {
     bool rc = false;
-    if (policy == "fcfs" || policy == "easy"
-        || policy == "hybrid" || policy == "conservative")
+    if (policy == "fcfs" || policy == "easy" || policy == "hybrid" || policy == "conservative")
         rc = true;
     return rc;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API for Queue Manager Option Class
@@ -124,17 +115,13 @@ bool queue_prop_t::is_policy_params_set () const
 json_t *queue_prop_t::jsonify () const
 {
     return json_pack ("{ s:s? s:s? s:s? }",
-                          "queue-policy", is_queue_policy_set ()
-                                              ? queue_policy.c_str ()
-                                              : nullptr,
-                          "queue-params", is_queue_params_set ()
-                                              ? queue_params.c_str ()
-                                              : nullptr,
-                          "policy-params", is_policy_params_set ()
-                                              ? policy_params.c_str ()
-                                              : nullptr);
+                      "queue-policy",
+                      is_queue_policy_set () ? queue_policy.c_str () : nullptr,
+                      "queue-params",
+                      is_queue_params_set () ? queue_params.c_str () : nullptr,
+                      "policy-params",
+                      is_policy_params_set () ? policy_params.c_str () : nullptr);
 }
-
 
 qmanager_opts_t::qmanager_opts_t ()
 {
@@ -145,33 +132,35 @@ qmanager_opts_t::qmanager_opts_t ()
 
     bool inserted = true;
 
-    auto ret = m_tab.insert (std::pair<std::string, int> (
-              "queues",
-              static_cast<int> (qmanager_opts_key_t::QUEUES)));
+    auto ret = m_tab.insert (
+        std::pair<std::string, int> ("queues", static_cast<int> (qmanager_opts_key_t::QUEUES)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "queue-policy",
-              static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("queue-policy",
+                                     static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "queue-params",
-              static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("queue-params",
+                                     static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "policy-params",
-              static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("policy-params",
+                                     static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "queue-policy-per-queue",
-              static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("queue-policy-per-queue",
+                                     static_cast<int> (
+                                         qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "queue-params-per-queue",
-              static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("queue-params-per-queue",
+                                     static_cast<int> (
+                                         qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "policy-params-per-queue",
-              static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("policy-params-per-queue",
+                                     static_cast<int> (
+                                         qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE)));
     inserted &= ret.second;
 
     if (!inserted)
@@ -218,8 +207,7 @@ const std::string &qmanager_opts_t::get_policy_params () const
     return m_queue_prop.get_policy_params ();
 }
 
-const std::map<std::string, queue_prop_t> &
-    qmanager_opts_t::get_per_queue_prop () const
+const std::map<std::string, queue_prop_t> &qmanager_opts_t::get_per_queue_prop () const
 {
     return m_per_queue_prop;
 }
@@ -243,9 +231,8 @@ qmanager_opts_t &qmanager_opts_t::canonicalize ()
 {
     if (m_per_queue_prop.empty ()) {
         std::string qn = m_default_queue_name;
-        auto ret = m_per_queue_prop.insert (
-                       std::pair<std::string, queue_prop_t> (qn,
-                                                             queue_prop_t ()));
+        auto ret =
+            m_per_queue_prop.insert (std::pair<std::string, queue_prop_t> (qn, queue_prop_t ()));
         if (!ret.second)
             throw std::bad_alloc ();
     }
@@ -273,11 +260,9 @@ qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
     return *this;
 }
 
-bool qmanager_opts_t::operator ()(const std::string &k1,
-                                  const std::string &k2) const
+bool qmanager_opts_t::operator() (const std::string &k1, const std::string &k2) const
 {
-    if (m_tab.find (k1) == m_tab.end ()
-        || m_tab.find (k2) == m_tab.end ())
+    if (m_tab.find (k1) == m_tab.end () || m_tab.find (k2) == m_tab.end ())
         return k1 < k2;
     return m_tab.at (k1) < m_tab.at (k2);
 }
@@ -320,8 +305,7 @@ ret:
     return rc;
 }
 
-int qmanager_opts_t::parse (const std::string &k, const std::string &v,
-                            std::string &info)
+int qmanager_opts_t::parse (const std::string &k, const std::string &v, std::string &info)
 {
     int rc = 0;
     std::string dflt;
@@ -332,79 +316,78 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v,
         key = m_tab[k];
 
     switch (key) {
-    case static_cast<int> (qmanager_opts_key_t::QUEUES):
-        rc = parse_queues (v);
-        break;
-
-    case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):
-        if (!m_queue_prop.set_queue_policy (v)) {
-            info += "Unknown queuing policy (" + v + ")! ";
-            info += "Using default.";
-        }
-        break;
-
-    case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS):
-        m_queue_prop.set_queue_params (v);
-        break;
-
-    case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS):
-        m_queue_prop.set_policy_params (v);
-        break;
-
-    case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE):
-        tmp_mp.clear ();
-        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+        case static_cast<int> (qmanager_opts_key_t::QUEUES):
+            rc = parse_queues (v);
             break;
-        for (const auto &kv : tmp_mp) {
-            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
-                info += "Unknown queue (" + kv.first + ").";
-                errno = ENOENT;
-                rc = -1;
-                break;
-            }
-            if (!m_per_queue_prop[kv.first].set_queue_policy (kv.second)) {
-                info += "Unknown queuing policy (" + v + ") for queue ("
-                        + kv.second + ")! ";
-                info += "Using default. ";
-            }
-        }
-        break;
 
-    case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE):
-        tmp_mp.clear ();
-        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+        case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY):
+            if (!m_queue_prop.set_queue_policy (v)) {
+                info += "Unknown queuing policy (" + v + ")! ";
+                info += "Using default.";
+            }
             break;
-        for (const auto &kv : tmp_mp) {
-            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
-                info += "Unknown queue (" + kv.first + ").";
-                errno = ENOENT;
-                rc = -1;
-                break;
-            }
-            m_per_queue_prop[kv.first].set_queue_params (kv.second);
-        }
-        break;
 
-    case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE):
-        tmp_mp.clear ();
-        if ( (rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+        case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS):
+            m_queue_prop.set_queue_params (v);
             break;
-        for (const auto &kv : tmp_mp) {
-            if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
-                info += "Unknown queue (" + kv.first + ").";
-                errno = ENOENT;
-                rc = -1;
-                break;
-            }
-            m_per_queue_prop[kv.first].set_policy_params (kv.second);
-        }
-        break;
 
-    default:
-        info += "Unknown option (" + k + ").";
-        errno = EINVAL;
-        rc = -1;
-        break;
+        case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS):
+            m_queue_prop.set_policy_params (v);
+            break;
+
+        case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE):
+            tmp_mp.clear ();
+            if ((rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+                break;
+            for (const auto &kv : tmp_mp) {
+                if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                    info += "Unknown queue (" + kv.first + ").";
+                    errno = ENOENT;
+                    rc = -1;
+                    break;
+                }
+                if (!m_per_queue_prop[kv.first].set_queue_policy (kv.second)) {
+                    info += "Unknown queuing policy (" + v + ") for queue (" + kv.second + ")! ";
+                    info += "Using default. ";
+                }
+            }
+            break;
+
+        case static_cast<int> (qmanager_opts_key_t::QUEUE_PARAMS_PER_QUEUE):
+            tmp_mp.clear ();
+            if ((rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+                break;
+            for (const auto &kv : tmp_mp) {
+                if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                    info += "Unknown queue (" + kv.first + ").";
+                    errno = ENOENT;
+                    rc = -1;
+                    break;
+                }
+                m_per_queue_prop[kv.first].set_queue_params (kv.second);
+            }
+            break;
+
+        case static_cast<int> (qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE):
+            tmp_mp.clear ();
+            if ((rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
+                break;
+            for (const auto &kv : tmp_mp) {
+                if (m_per_queue_prop.find (kv.first) == m_per_queue_prop.end ()) {
+                    info += "Unknown queue (" + kv.first + ").";
+                    errno = ENOENT;
+                    rc = -1;
+                    break;
+                }
+                m_per_queue_prop[kv.first].set_policy_params (kv.second);
+            }
+            break;
+
+        default:
+            info += "Unknown option (" + k + ").";
+            errno = EINVAL;
+            rc = -1;
+            break;
     }
 
     return rc;

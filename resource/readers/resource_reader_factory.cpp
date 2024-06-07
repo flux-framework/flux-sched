@@ -31,8 +31,7 @@ bool known_resource_reader (const std::string &name)
     return rc;
 }
 
-std::shared_ptr<resource_reader_base_t> create_resource_reader (
-                                            const std::string &name)
+std::shared_ptr<resource_reader_base_t> create_resource_reader (const std::string &name)
 {
     std::shared_ptr<resource_reader_base_t> reader = nullptr;
     try {
@@ -55,8 +54,8 @@ std::shared_ptr<resource_reader_base_t> create_resource_reader (
     return reader;
 }
 
-}
-}
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

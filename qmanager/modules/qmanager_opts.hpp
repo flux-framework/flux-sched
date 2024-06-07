@@ -26,7 +26,7 @@ namespace opts_manager {
 const std::string QMANAGER_OPTS_UNSET_STR = "0xdeadbeef";
 
 class queue_prop_t {
-public:
+   public:
     const std::string &get_queue_policy () const;
     const std::string &get_queue_params () const;
     const std::string &get_policy_params () const;
@@ -41,7 +41,7 @@ public:
 
     json_t *jsonify () const;
 
-private:
+   private:
     bool known_queue_policy (const std::string &policy);
 
     std::string queue_policy = QMANAGER_OPTS_UNSET_STR;
@@ -53,17 +53,17 @@ private:
  *
  */
 class qmanager_opts_t : public optmgr_parse_t {
-public:
+   public:
     enum class qmanager_opts_key_t : int {
-        QUEUES                    = 0,  // queues
-        DEFAULT_QUEUE             = 1,  // default-queue
-        QUEUE_POLICY              = 10, // queue-policy
-        QUEUE_PARAMS              = 20, // queue-params
-        POLICY_PARAMS             = 30, // policy-params
-        QUEUE_POLICY_PER_QUEUE    = 40, // queue-policy-per_queue
-        QUEUE_PARAMS_PER_QUEUE    = 50, // queue-params-per_queue
-        POLICY_PARAMS_PER_QUEUE   = 60, // policy-params-per_queue
-        UNKNOWN                   = 5000
+        QUEUES = 0,                    // queues
+        DEFAULT_QUEUE = 1,             // default-queue
+        QUEUE_POLICY = 10,             // queue-policy
+        QUEUE_PARAMS = 20,             // queue-params
+        POLICY_PARAMS = 30,            // policy-params
+        QUEUE_POLICY_PER_QUEUE = 40,   // queue-policy-per_queue
+        QUEUE_PARAMS_PER_QUEUE = 50,   // queue-params-per_queue
+        POLICY_PARAMS_PER_QUEUE = 60,  // policy-params-per_queue
+        UNKNOWN = 5000
     };
 
     // These constructors can throw std::bad_alloc exception
@@ -112,7 +112,7 @@ public:
      *  \param k2        comparing key
      *  \return          true if k1 should precede k2 during iteration.
      */
-    bool operator ()(const std::string &k1, const std::string &k2) const;
+    bool operator() (const std::string &k1, const std::string &k2) const;
 
     /*! Parse the value string (v) according to the key string (k).
      *  The parsed results are stored in "this" object.
@@ -131,7 +131,7 @@ public:
      */
     int jsonify (std::string &json_out) const;
 
-private:
+   private:
     int parse_queues (const std::string &queues);
 
     std::string m_default_queue_name = "default";
@@ -146,10 +146,10 @@ private:
     std::map<std::string, int> m_tab;
 };
 
-} // namespace Flux
-} // namespace opts_manager
+}  // namespace opts_manager
+}  // namespace Flux
 
-#endif // QMANAGER_OPTS_HPP
+#endif  // QMANAGER_OPTS_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

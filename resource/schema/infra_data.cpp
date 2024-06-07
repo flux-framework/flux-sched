@@ -20,8 +20,6 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Methods on the Data Belonging to the Scheduler Infrastructure
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,10 +39,7 @@ infra_base_t &infra_base_t::operator= (const infra_base_t &o)
 
 infra_base_t::~infra_base_t ()
 {
-
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Methods on Infrastructure Data for Resource Pool
@@ -52,7 +47,7 @@ infra_base_t::~infra_base_t ()
 
 pool_infra_t::pool_infra_t () = default;
 
-pool_infra_t::pool_infra_t (const pool_infra_t &o): infra_base_t (o)
+pool_infra_t::pool_infra_t (const pool_infra_t &o) : infra_base_t (o)
 {
     ephemeral = o.ephemeral;
     colors = o.colors;
@@ -156,15 +151,13 @@ void pool_infra_t::scrub ()
     ephemeral.clear ();
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Methods on Infrastructure Data for Resource Relation
 ////////////////////////////////////////////////////////////////////////////////
 
 relation_infra_t::relation_infra_t () = default;
 
-relation_infra_t::relation_infra_t (const relation_infra_t &o): infra_base_t (o)
+relation_infra_t::relation_infra_t (const relation_infra_t &o) : infra_base_t (o)
 {
     m_needs = o.m_needs;
     m_trav_token = o.m_trav_token;
@@ -182,7 +175,6 @@ relation_infra_t &relation_infra_t::operator= (const relation_infra_t &o)
 
 relation_infra_t::~relation_infra_t ()
 {
-
 }
 
 void relation_infra_t::scrub ()
@@ -192,8 +184,7 @@ void relation_infra_t::scrub ()
     m_exclusive = 0;
 }
 
-void relation_infra_t::set_for_trav_update (uint64_t needs, int exclusive,
-                                            uint64_t trav_token)
+void relation_infra_t::set_for_trav_update (uint64_t needs, int exclusive, uint64_t trav_token)
 {
     m_needs = needs;
     m_trav_token = trav_token;
@@ -225,8 +216,8 @@ void relation_infra_t::set_weight (uint64_t weight)
     m_weight = weight;
 }
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

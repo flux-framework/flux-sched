@@ -24,31 +24,29 @@ using namespace Flux;
 using namespace Flux::resource_model;
 
 class expr_eval_test_target_t : public expr_eval_target_base_t {
-public:
-
+   public:
     virtual int validate (const std::string &p, const std::string &x) const;
 
-    virtual int evaluate (const std::string &p,
-                          const std::string &x, bool &result) const;
+    virtual int evaluate (const std::string &p, const std::string &x, bool &result) const;
 };
 
-int expr_eval_test_target_t::validate (const std::string &p,
-                                       const std::string &x) const
+int expr_eval_test_target_t::validate (const std::string &p, const std::string &x) const
 {
     if (p != "status" && p != "sched-now")
         return -1;
     if (p == "status" && (x != "up" && x != "down"))
         return -1;
     if (p == "sched-now" && (x != "allocated" && x != "free"))
-       return -1;
+        return -1;
     return 0;
 }
 
 int expr_eval_test_target_t::evaluate (const std::string &p,
-                                       const std::string &x, bool &result) const
+                                       const std::string &x,
+                                       bool &result) const
 {
     int rc = -1;
-    if ( (rc = validate (p, x)) < 0)
+    if ((rc = validate (p, x)) < 0)
         return rc;
     result = true;
     return rc;
@@ -85,7 +83,8 @@ void build_simple_expr (std::vector<std::string> &expr_vector)
 
 void build_paren_expr (std::vector<std::string> &expr_vector)
 {
-    expr_vector.push_back ("(status=up and sched-now=allocated) "
+    expr_vector.push_back (
+        "(status=up and sched-now=allocated) "
         "and (sched-now=free and status=down)");
     expr_vector.push_back (
         "status=up and sched-now=allocated "
@@ -93,35 +92,40 @@ void build_paren_expr (std::vector<std::string> &expr_vector)
     expr_vector.push_back (
         "status=up and sched-now=allocated "
         "and sched-now=free and status=down  ");
+    expr_vector.push_back ("status=up sched-now=allocated (( sched-now=free status=down))");
     expr_vector.push_back (
-        "status=up sched-now=allocated (( sched-now=free status=down))");
-    expr_vector.push_back ("status=up sched-now=allocated "
+        "status=up sched-now=allocated "
         "(( sched-now=free and (status=down or sched-now=allocated)))");
-    expr_vector.push_back ("status=up sched-now=allocated "
+    expr_vector.push_back (
+        "status=up sched-now=allocated "
         "(sched-now=free (status=down or sched-now=allocated))");
-    expr_vector.push_back ("sched-now=free and "
+    expr_vector.push_back (
+        "sched-now=free and "
         "(status=down or sched-now=allocated) and status=up");
 }
 
 void build_invalid_expr (std::vector<std::string> &expr_vector)
 {
-    expr_vector.push_back (
-        "status=up sched-now=allocated (( sched=free status=down)");
+    expr_vector.push_back ("status=up sched-now=allocated (( sched=free status=down)");
     expr_vector.push_back ("status=up and sched-now=foo");
     expr_vector.push_back ("sched-now=free status=down and");
     expr_vector.push_back ("sched-now=free status=d own");
-    expr_vector.push_back ("(status=up (sched-now=allocated) "
+    expr_vector.push_back (
+        "(status=up (sched-now=allocated) "
         "and (sched-now=free and) status=down)");
-    expr_vector.push_back ("(status=up (sched-now=allocated) "
+    expr_vector.push_back (
+        "(status=up (sched-now=allocated) "
         "and (sched-now=free)status=down)");
-    expr_vector.push_back ("(status=up)(sched-now=allocated)"
+    expr_vector.push_back (
+        "(status=up)(sched-now=allocated)"
         "(sched-now=free)(status=down)");
     expr_vector.push_back ("(status=up and sched-now=allocated))");
     expr_vector.push_back ("(status=up and sched-now=allocated)))");
 }
 
 void test_validation (std::vector<std::string> &expr_vector,
-                      const std::string &label, bool must_success)
+                      const std::string &label,
+                      bool must_success)
 {
     int rc = 0;
     bool expected = false;
@@ -130,13 +134,14 @@ void test_validation (std::vector<std::string> &expr_vector,
 
     for (const auto &expr : expr_vector) {
         rc = evaluator.validate (expr, expr_eval_test_target);
-        expected = must_success? rc == 0 : rc < 0;
+        expected = must_success ? rc == 0 : rc < 0;
         ok (expected, "%s: ^%s$", label.c_str (), expr.c_str ());
     }
 }
 
 void test_evaluation (std::vector<std::string> &expr_vector,
-                     const std::string &label, bool must_success)
+                      const std::string &label,
+                      bool must_success)
 {
     int rc = 0;
     bool expected = false;
@@ -148,10 +153,9 @@ void test_evaluation (std::vector<std::string> &expr_vector,
     for (const auto &expr : expr_vector) {
         result = false;
         rc = evaluator.evaluate (expr, expr_eval_test_target, result);
-        expected = must_success? rc == 0 : rc < 0;
-        expected_result = must_success? result : !result;
-        ok (expected && expected_result,
-            "%s: ^%s$", label.c_str (), expr.c_str ());
+        expected = must_success ? rc == 0 : rc < 0;
+        expected_result = must_success ? result : !result;
+        ok (expected && expected_result, "%s: ^%s$", label.c_str (), expr.c_str ());
     }
 }
 
@@ -168,8 +172,8 @@ int main (int argc, char *argv[])
 
     build_invalid_expr (expr_vector3);
 
-    ntests = expr_vector1.size ()
-             + expr_vector2.size () + expr_vector3.size ();;
+    ntests = expr_vector1.size () + expr_vector2.size () + expr_vector3.size ();
+    ;
 
     plan (2 * ntests);
 

@@ -17,7 +17,6 @@ namespace Flux {
 namespace queue_manager {
 namespace detail {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private Methods of Queue Policy Backfill Base
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,9 +142,8 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     }
     set_sched_loop_active (false);
     errno = saved_errno;
-    return 0; 
+    return 0;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API of Queue Policy Backfill Base

@@ -47,7 +47,7 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
     reservations.clear ();
     allocations = o.allocations;
     reservations = o.reservations;
-    
+
     if (plans) {
         if (o.plans) {
             planner_assign (plans, o.plans);
@@ -82,8 +82,8 @@ schedule_t::~schedule_t ()
         planner_destroy (&plans);
 }
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
