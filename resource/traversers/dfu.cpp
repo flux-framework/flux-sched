@@ -167,10 +167,9 @@ dfu_traverser_t::dfu_traverser_t ()
 
 }
 
-dfu_traverser_t::dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
-                                  std::shared_ptr<resource_graph_db_t> db,
+dfu_traverser_t::dfu_traverser_t ( std::shared_ptr<resource_graph_db_t> db,
                                   std::shared_ptr<dfu_match_cb_t> m)
-    : detail::dfu_impl_t (g, db, m)
+    : detail::dfu_impl_t (db, m)
 {
 
 }
@@ -192,8 +191,7 @@ dfu_traverser_t::~dfu_traverser_t ()
 
 }
 
-const std::shared_ptr<const f_resource_graph_t> dfu_traverser_t::
-                                                    get_graph () const
+const resource_graph_t *dfu_traverser_t::get_graph () const
 {
    return detail::dfu_impl_t::get_graph ();
 }
@@ -223,11 +221,6 @@ const unsigned int dfu_traverser_t::get_total_preorder_count () const
 const unsigned int dfu_traverser_t::get_total_postorder_count () const
 {
     return m_total_postorder;
-}
-
-void dfu_traverser_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
-{
-    detail::dfu_impl_t::set_graph (g);
 }
 
 void dfu_traverser_t::set_graph_db (std::shared_ptr<resource_graph_db_t> g)
@@ -277,11 +270,9 @@ int dfu_traverser_t::initialize ()
     return rc;
 }
 
-int dfu_traverser_t::initialize (std::shared_ptr<f_resource_graph_t> g,
-                                 std::shared_ptr<resource_graph_db_t> db,
+int dfu_traverser_t::initialize (std::shared_ptr<resource_graph_db_t> db,
                                  std::shared_ptr<dfu_match_cb_t> m)
 {
-    set_graph (g);
     set_graph_db (db);
     set_match_cb (m);
     return initialize ();

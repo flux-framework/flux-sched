@@ -444,7 +444,7 @@ method argument `resources`).
 ```c++
  84     int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
  85                         const std::vector<Flux::Jobspec::Resource> &resources,
- 86                         const f_resource_graph_t &g, scoring_api_t &dfu)
+ 86                         const resource_graph_t &g, scoring_api_t &dfu)
  87     {
  88         int64_t score = MATCH_MET;
  89         int64_t overall;

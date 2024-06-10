@@ -92,7 +92,6 @@ struct resource_ctx_t : public resource_interface_t {
     std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
-    std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
     std::shared_ptr<resource_reader_base_t> reader; /* resource reader */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
@@ -340,7 +339,6 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->handlers = NULL;
         set_default_args (ctx);
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
-        ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
         ctx->reader = nullptr;  /* Cannot be allocated at this point */
         ctx->m_r_all = nullptr;
@@ -1384,34 +1382,6 @@ done:
     return rc;
 }
 
-static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
-                                               std::shared_ptr<
-                                                   resource_ctx_t> &ctx)
-{
-    std::shared_ptr<f_resource_graph_t> fg = nullptr;
-    resource_graph_t &g = ctx->db->resource_graph;
-
-    try {
-        // Set vertex and edge maps
-        vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-        edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-
-        // Set vertex and edge filters based on subsystems to use
-        int subsys_size = ctx->db->metadata.roots.size ();
-        const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-        subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
-                                                               subsys_size);
-        subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
-                                                               subsys_size);
-        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
-    } catch (std::bad_alloc &e) {
-        errno = ENOMEM;
-        fg = nullptr;
-    }
-
-    return fg;
-}
-
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
@@ -1436,8 +1406,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
                   ctx->opts.get_opt ().get_match_subsystems ().c_str ());
         return rc;
     }
-    if ( !(ctx->fgraph = create_filtered_graph (ctx)))
-        return -1;
 
     // Create a writers object for matched vertices and edges
     match_format_t format = match_writers_factory_t::get_writers_type (
@@ -1456,7 +1424,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     // Initialize the DFU traverser
-    if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) < 0) {
+    if (ctx->traverser->initialize (ctx->db, ctx->matcher) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: traverser initialization",
                   __FUNCTION__);
         return -1;

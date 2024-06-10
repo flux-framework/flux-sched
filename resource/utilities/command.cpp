@@ -451,7 +451,7 @@ static int attach (std::shared_ptr<resource_context_t> &ctx,
         std::cerr << "ERROR: " << rd->err_message ();
         return -1;
     }
-    if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) != 0) {
+    if (ctx->traverser->initialize (ctx->db, ctx->matcher) != 0) {
         std::cerr << "ERROR: can't reinitialize traverser after attach"
                   << std::endl;
         return -1;

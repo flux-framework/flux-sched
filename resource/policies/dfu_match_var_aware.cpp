@@ -52,7 +52,7 @@ var_aware_t::~var_aware_t ()
 int var_aware_t::dom_finish_graph (
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g, scoring_api_t &dfu)
+    const resource_graph_t &g, scoring_api_t &dfu)
 {
     int score = MATCH_MET;
     fold::less comp;
@@ -86,7 +86,7 @@ int var_aware_t::dom_finish_vtx (
     vtx_t u,
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g, scoring_api_t &dfu)
+    const resource_graph_t &g, scoring_api_t &dfu)
 {
     int64_t score = MATCH_MET;
     int64_t overall;

@@ -52,7 +52,7 @@ public:
     virtual int dom_finish_graph (const subsystem_t &subsystem,
                                   const std::vector<
                                             Flux::Jobspec::Resource> &resources,
-                                  const f_resource_graph_t &g,
+                                  const resource_graph_t &g,
                                   scoring_api_t &dfu);
 
     /*!
@@ -80,7 +80,7 @@ public:
                                   const subsystem_t &subsystem,
                                   const std::vector<
                                             Flux::Jobspec::Resource> &resources,
-                                  const f_resource_graph_t &g);
+                                  const resource_graph_t &g);
 
     /*!
      *  Called back on each postorder visit of the dominant subsystem.
@@ -102,7 +102,7 @@ public:
                                 const subsystem_t &subsystem,
                                 const std::vector<
                                           Flux::Jobspec::Resource> &resources,
-                                const f_resource_graph_t &g,
+                                const resource_graph_t &g,
                                 scoring_api_t &dfu);
 
     /*! Called back on each pre-up visit of an auxiliary subsystem.
@@ -120,7 +120,7 @@ public:
                                   const subsystem_t &subsystem,
                                   const std::vector<
                                             Flux::Jobspec::Resource> &resources,
-                                  const f_resource_graph_t &g);
+                                  const resource_graph_t &g);
 
     /*
      *  Called back on each post-up visit of the auxiliary subsystem.
@@ -141,7 +141,7 @@ public:
                                 const subsystem_t &subsystem,
                                 const std::vector<
                                           Flux::Jobspec::Resource> &resources,
-                                const f_resource_graph_t &g,
+                                const resource_graph_t &g,
                                 scoring_api_t &dfu);
 
     /*

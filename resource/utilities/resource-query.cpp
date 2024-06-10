@@ -32,6 +32,7 @@ extern "C" {
 
 namespace fs = boost::filesystem;
 using namespace Flux::resource_model;
+using boost::tie;
 
 #define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
 static const struct option longopts[] = {
@@ -314,7 +315,7 @@ static int set_subsystems_use (std::shared_ptr<resource_context_t> &ctx,
     return rc;
 }
 
-static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
+static void write_to_graphviz (resource_graph_t &fg, subsystem_t ss,
                                std::fstream &o)
 {
     f_res_name_map_t vmap = get (&resource_t::name, fg);
@@ -324,7 +325,7 @@ static void write_to_graphviz (f_resource_graph_t &fg, subsystem_t ss,
     write_graphviz (o, fg, vwr, ewr);
 }
 
-static void flatten (f_resource_graph_t &fg,
+static void flatten (resource_graph_t &fg,
                      std::map<vtx_t, std::string> &paths,
                      std::map<vtx_t, std::string> &subsystems,
                      std::map<edg_t, std::string> &esubsystems,
@@ -333,7 +334,7 @@ static void flatten (f_resource_graph_t &fg,
     f_vtx_iterator_t vi, v_end;
     f_edg_iterator_t ei, e_end;
 
-    for (tie (vi, v_end) = vertices (fg); vi != v_end; ++vi) {
+    for (boost::tie (vi, v_end) = vertices (fg); vi != v_end; ++vi) {
         paths[*vi] = "{";
         for (auto &kv : fg[*vi].paths) {
             if (paths[*vi].size () > 1)
@@ -367,7 +368,7 @@ static void flatten (f_resource_graph_t &fg,
     }
 }
 
-static void write_to_graphml (f_resource_graph_t &fg, std::fstream &o)
+static void write_to_graphml (resource_graph_t &fg, std::fstream &o)
 {
     boost::dynamic_properties dp;
     std::map<edg_t, std::string> esubsystems;
@@ -413,10 +414,10 @@ static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
 
     switch (ctx->params.o_format) {
     case emit_format_t::GRAPHVIZ_DOT:
-        write_to_graphviz (*(ctx->fgraph), ctx->matcher->dom_subsystem (), o);
+        write_to_graphviz (ctx->db->resource_graph, ctx->matcher->dom_subsystem (), o);
         break;
     case emit_format_t::GRAPH_ML:
-        write_to_graphml (*(ctx->fgraph), o);
+        write_to_graphml (ctx->db->resource_graph, o);
         break;
     default:
         std::cout << "ERROR: Unknown graph format" << std::endl;
@@ -519,33 +520,6 @@ done:
     return rc;
 }
 
-static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
-           std::shared_ptr<resource_context_t> &ctx)
-{
-    std::shared_ptr<f_resource_graph_t> fg = nullptr;
-
-    resource_graph_t &g = ctx->db->resource_graph;
-    int subsys_size = ctx->db->metadata.roots.size ();
-    vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-    edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-    const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
-                                                           subsys_size);
-    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
-                                                           subsys_size);
-
-    try {
-        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
-    } catch (std::bad_alloc &e) {
-        errno = ENOMEM;
-        std::cerr << "ERROR: out of memory allocating f_resource_graph_t"
-                  << std::endl;
-        fg = nullptr;
-    }
-
-    return fg;
-}
-
 static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
 {
     int rc = 0;
@@ -564,8 +538,6 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
         std::cerr << "ERROR: Not all subsystems found" << std::endl;
         return rc;
     }
-    if ( !(ctx->fgraph = create_filtered_graph (ctx)))
-        return -1;
 
     ctx->jobid_counter = 1;
     if (ctx->params.prune_filters != ""
@@ -592,8 +564,7 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
         return -1;
     }
 
-    if ( (rc = ctx->traverser->initialize (ctx->fgraph, ctx->db,
-                                           ctx->matcher)) != 0) {
+    if ( (rc = ctx->traverser->initialize (ctx->db, ctx->matcher)) != 0) {
         std::cerr << "ERROR: initializing traverser" << std::endl;
         return -1;
     }

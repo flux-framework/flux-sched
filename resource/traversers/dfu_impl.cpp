@@ -993,54 +993,25 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
 // DFU Traverser Implementation Public API Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-dfu_impl_t::dfu_impl_t ()
-{
-
-}
-
-dfu_impl_t::dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
-                        std::shared_ptr<resource_graph_db_t> db,
+dfu_impl_t::dfu_impl_t () = default;
+dfu_impl_t::dfu_impl_t (std::shared_ptr<resource_graph_db_t> db,
                         std::shared_ptr<dfu_match_cb_t> m)
-    : m_graph (g), m_graph_db (db), m_match (m)
+    : m_graph_db (db), m_match (m)
 {
 
 }
+dfu_impl_t::dfu_impl_t (const dfu_impl_t &o) = default;
+dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o) = default;
+dfu_impl_t::dfu_impl_t (dfu_impl_t &&o) = default;
+dfu_impl_t &dfu_impl_t::operator= (dfu_impl_t &&o) = default;
+dfu_impl_t::~dfu_impl_t () = default;
 
-dfu_impl_t::dfu_impl_t (const dfu_impl_t &o)
-{
-    m_color = o.m_color;
-    m_best_k_cnt = o.m_best_k_cnt;
-    m_trav_level = o.m_trav_level;
-    m_graph = o.m_graph;
-    m_graph_db = o.m_graph_db;
-    m_match = o.m_match;
-    m_err_msg = o.m_err_msg;
-}
-
-dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o)
-{
-    m_color = o.m_color;
-    m_best_k_cnt = o.m_best_k_cnt;
-    m_trav_level = o.m_trav_level;
-    m_graph = o.m_graph;
-    m_graph_db = o.m_graph_db;
-    m_match = o.m_match;
-    m_err_msg = o.m_err_msg;
-    return *this;
-}
-
-dfu_impl_t::~dfu_impl_t ()
-{
-
-}
-
-const std::shared_ptr<const f_resource_graph_t> dfu_impl_t::get_graph () const
+const resource_graph_t *dfu_impl_t::get_graph () const
 {
     return m_graph;
 }
 
-const std::shared_ptr<const
-                      resource_graph_db_t> dfu_impl_t::get_graph_db () const
+const std::shared_ptr<const resource_graph_db_t> dfu_impl_t::get_graph_db () const
 {
     return m_graph_db;
 }
@@ -1070,14 +1041,10 @@ const std::set<std::string> &dfu_impl_t::get_exclusive_resource_types () const
     return m_match->get_exclusive_resource_types ();
 }
 
-void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
-{
-    m_graph = g;
-}
-
 void dfu_impl_t::set_graph_db (std::shared_ptr<resource_graph_db_t> db)
 {
     m_graph_db = db;
+    m_graph = &db->resource_graph;
 }
 
 void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
