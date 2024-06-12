@@ -247,33 +247,47 @@ planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u, std::vector<uint64_t> &av,
 
 int dfu_impl_t::match (vtx_t u, const std::vector<Resource> &resources,
                        const Resource **slot_resource, unsigned int *nslots,
-                       const Resource **match_resource)
+                       const Resource **match_resource,
+                       const std::vector<Resource> **slot_resources)
 {
     int rc = -1;
-    bool matched = false;
+    bool matched = false, or_matched = false;
     for (auto &resource : resources) {
         if ((*m_graph)[u].type == resource.type) {
             // Limitations of DFU traverser: jobspec must not
             // have same type at same level Please read utilities/README.md
-            if (matched == true)
+            if (matched || or_matched)
                 goto ret;
             *match_resource = &resource;
             if (!resource.with.empty ()) {
-                for (auto &c_resource : resource.with)
+                for (auto &c_resource : resource.with){
+                    if (c_resource.type == "or_slot") {
+                        *slot_resources = &resource.with;
+                        *nslots = m_match->calc_effective_max (c_resource);
+                    }
                     if (c_resource.type == "slot") {
                         *slot_resource = &c_resource;
                         *nslots = m_match->calc_effective_max (c_resource);
                     }
+                }
             }
             matched = true;
         } else if (resource.type == "slot") {
             // Limitations of DFU traverser: jobspec must not
             // have same type at same level Please read utilities/README.md
-            if (matched == true)
+            if (matched || or_matched )
                 goto ret;
             *slot_resource = &resource;
             *nslots = m_match->calc_effective_max (resource);
             matched = true;
+        } else if (resource.type == "or_slot") {
+            // Limitations of DFU traverser: jobspec must not
+            // have same type at same level except for or_slot.
+            if (matched)
+                goto ret;
+            *slot_resources = &resources;
+            *nslots = m_match->calc_effective_max (resource);
+            or_matched = true;
         }
     }
     rc = 0;
@@ -307,7 +321,7 @@ bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
 const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
                                  const std::vector<Resource> &resources,
                                  bool &pristine, unsigned int &nslots,
-                                 match_kind_t &spec)
+                                 match_kind_t &spec, bool *excl)
 {
     /* Note on the purpose of pristine: we differentiate two similar but
      * distinct cases with this parameter.
@@ -327,17 +341,41 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
     const std::vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
-    if (match (u, resources, &slot_resources, &nslots, &match_resources) < 0) {
+    const std::vector<Resource> *slot_or_resources = NULL;
+    if (match (u, resources, &slot_resources, &nslots, &match_resources, &slot_or_resources) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": siblings in jobspec request same resource type ";
         m_err_msg += ": " + (*m_graph)[u].type + ".\n";
         spec = match_kind_t::NONE_MATCH;
         goto done;
     }
-    if ( (slot = slot_match (u, slot_resources))) {
+    if ( (slot_or_resources)) {
+        // set default spec in case no match is found
+        spec = pristine? match_kind_t::PRESTINE_NONE_MATCH
+                       : match_kind_t::NONE_MATCH;
+
+        // look for match 
+        for (Resource r : *slot_or_resources) {
+            if ( (slot_match (u, &r))) {
+                spec = match_kind_t::OR_SLOT_MATCH;
+                pristine = false;
+                ret = slot_or_resources;
+                // everything under slot is exclusive unless explicitly
+                // requested other with 'exclusive: false'
+                if (*excl || slot_resources->exclusive != Jobspec::tristate_t::FALSE) {
+                    *excl = true;
+        }
+            }
+        }
+    } else if ( (slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
         ret = &(slot_resources->with);
+        // everything under slot is exclusive unless explicitly
+        // requested other with 'exclusive: false'
+        if (*excl || slot_resources->exclusive != Jobspec::tristate_t::FALSE) {
+            *excl = true;
+        }
     } else if (match_resources) {
         spec = match_kind_t::RESOURCE_MATCH;
         pristine = false;
@@ -631,7 +669,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
                           bool pristine, bool *excl, scoring_api_t &dfu)
 {
     int rc;
-    bool x_inout = true;
+    bool x_inout = *excl;
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
@@ -662,7 +700,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
                     goto done;
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count, 1,
+                                   (*egroup_i).edges[0].count, x_inout,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
@@ -671,11 +709,95 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
         }
         edg_group.score = score;
         edg_group.count = 1;
-        edg_group.exclusive = 1;
+        edg_group.exclusive = x_inout;
         edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
         dfu.add (dom, std::string ("slot"), edg_group);
+
+done:
+    return (qual_num_slots)? 0 : -1;
+}
+
+int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
+                          const std::vector<Resource> &slots,
+                          unsigned int nslots,
+                          bool pristine, bool *excl, scoring_api_t &dfu)
+{
+    int rc;
+    bool x_inout = *excl;
+    unsigned int qual_num_slots = 0;
+    std::vector<eval_egroup_t> edg_group_vector;
+    const subsystem_t &dom = m_match->dom_subsystem ();
+    std::unordered_set<edg_t *> edges_used;
+    scoring_api_t dfu_slot;
+    
+    std::vector<Resource> slot_intersection;
+    std::set<std::string> resource_types;
+    for (auto &slot : slots){
+        for (auto r : slot.with) {
+            if (resource_types.find(r.type) == resource_types.end()){
+                resource_types.insert(r.type);
+                slot_intersection.push_back(r);
+            }
+        }
+    }
+
+    if ( (rc = explore (meta, u, dom, slot_intersection, pristine,
+                            &x_inout, visit_t::DFV, dfu_slot, nslots)) != 0)
+        goto done;
+    if ((rc = m_match->dom_finish_slot (dom, dfu_slot)) != 0)
+        goto done;
+
+    for (auto &slot : slots)
+    {
+        auto &slot_shape = slot.with;
+        qual_num_slots = cnt_slot (slot_shape, dfu_slot);
+        for (unsigned int i = 0; i < qual_num_slots; ++i) {
+            bool found = true;
+            std::unordered_set<edg_t *> test_edges;
+            eval_egroup_t edg_group;
+            int64_t score = MATCH_MET;
+            for (auto &slot_elem : slot_shape) {
+                unsigned int j = 0;
+                unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
+                unsigned int count = m_match->calc_count (slot_elem, qc);
+                dfu_slot.eval_egroups_iter_reset(dom, slot_elem.type);
+                while (j < count) { 
+                    auto egroup_i = dfu_slot.eval_egroups_iter_next (
+                                                dom, slot_elem.type);
+                    if (egroup_i == dfu_slot.eval_egroups_end (dom,
+                                                            slot_elem.type)) {
+                        found = false;
+                        break;
+                    }
+                    if (edges_used.find(& (*egroup_i).edges[0].edge) == edges_used.end())
+                        test_edges.insert(& (*egroup_i).edges[0].edge);
+                    else
+                        continue;
+                    eval_edg_t ev_edg ((*egroup_i).edges[0].count,
+                                    (*egroup_i).edges[0].count, x_inout,
+                                    (*egroup_i).edges[0].edge);
+                    score += (*egroup_i).score;
+                    edg_group.edges.push_back (ev_edg);
+                    j += (*egroup_i).edges[0].count;
+                }
+                
+
+            }
+            if (found) {
+                    edges_used.insert(test_edges.begin(), test_edges.end());
+                }
+            else
+                continue;
+            edg_group.score = score;
+            edg_group.count = 1;
+            edg_group.exclusive = x_inout;
+            edg_group_vector.push_back (edg_group);
+        }
+    }
+    for (auto &edg_group : edg_group_vector)
+            dfu.add (dom, std::string ("or_slot"), edg_group);
 
 done:
     return (qual_num_slots)? 0 : -1;
@@ -697,7 +819,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     planner_t *p = NULL;
     const std::string &dom = m_match->dom_subsystem ();
     const std::vector<Resource> &next = test (u, resources,
-                                              check_pres, nslots, sm);
+                                              check_pres, nslots, sm, &x_inout);
 
     m_preorder++;
     if (sm == match_kind_t::NONE_MATCH)
@@ -708,6 +830,8 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
         dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
+    else if (sm == match_kind_t::OR_SLOT_MATCH)
+        dom_or_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
     else
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;

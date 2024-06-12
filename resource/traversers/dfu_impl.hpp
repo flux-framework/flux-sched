@@ -37,6 +37,7 @@ enum class visit_t { DFV, UPV };
 
 enum class match_kind_t { RESOURCE_MATCH,
                           SLOT_MATCH,
+                          OR_SLOT_MATCH,
                           NONE_MATCH,
                           PRESTINE_NONE_MATCH };
 
@@ -350,11 +351,12 @@ private:
      */
     int match (vtx_t u, const std::vector<Jobspec::Resource> &resources,
                 const Jobspec::Resource **slot_resource, unsigned int *nslots,
-                const Jobspec::Resource **match_resource);
+                const Jobspec::Resource **match_resource,
+                const std::vector<Jobspec::Resource> **slot_resources);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
              const std::vector<Jobspec::Resource> &resources,
-             bool &prestine, unsigned int &nslots, match_kind_t &ko);
+             bool &prestine, unsigned int &nslots, match_kind_t &ko, bool *excl);
     bool is_pconstraint_matched (vtx_t u, const std::string &property);
 
 
@@ -402,6 +404,10 @@ private:
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape,
                   scoring_api_t &dfu_slot);
     int dom_slot (const jobmeta_t &meta, vtx_t u,
+                  const std::vector<Jobspec::Resource> &resources,
+                  unsigned int nslots,  bool prestine,
+                  bool *excl, scoring_api_t &dfu);
+    int dom_or_slot (const jobmeta_t &meta, vtx_t u,
                   const std::vector<Jobspec::Resource> &resources,
                   unsigned int nslots,  bool prestine,
                   bool *excl, scoring_api_t &dfu);
