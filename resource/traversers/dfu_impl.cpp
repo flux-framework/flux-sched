@@ -321,7 +321,7 @@ bool dfu_impl_t::slot_match (vtx_t u, const Resource *slot_resources)
 const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
                                  const std::vector<Resource> &resources,
                                  bool &pristine, unsigned int &nslots,
-                                 match_kind_t &spec, bool *excl)
+                                 match_kind_t &spec)
 {
     /* Note on the purpose of pristine: we differentiate two similar but
      * distinct cases with this parameter.
@@ -360,22 +360,12 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
                 spec = match_kind_t::OR_SLOT_MATCH;
                 pristine = false;
                 ret = slot_or_resources;
-                // everything under slot is exclusive unless explicitly
-                // requested other with 'exclusive: false'
-                if (*excl || slot_resources->exclusive != Jobspec::tristate_t::FALSE) {
-                    *excl = true;
-        }
             }
         }
     } else if ( (slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
         ret = &(slot_resources->with);
-        // everything under slot is exclusive unless explicitly
-        // requested other with 'exclusive: false'
-        if (*excl || slot_resources->exclusive != Jobspec::tristate_t::FALSE) {
-            *excl = true;
-        }
     } else if (match_resources) {
         spec = match_kind_t::RESOURCE_MATCH;
         pristine = false;
@@ -669,7 +659,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
                           bool pristine, bool *excl, scoring_api_t &dfu)
 {
     int rc;
-    bool x_inout = *excl;
+    bool x_inout = true;
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
@@ -700,7 +690,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
                     goto done;
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count, x_inout,
+                                   (*egroup_i).edges[0].count, 1,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
@@ -709,7 +699,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta, vtx_t u,
         }
         edg_group.score = score;
         edg_group.count = 1;
-        edg_group.exclusive = x_inout;
+        edg_group.exclusive = 1;
         edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
@@ -725,7 +715,7 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
                           bool pristine, bool *excl, scoring_api_t &dfu)
 {
     int rc;
-    bool x_inout = *excl;
+    bool x_inout = true;
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
     const subsystem_t &dom = m_match->dom_subsystem ();
@@ -776,7 +766,7 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
                     else
                         continue;
                     eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                    (*egroup_i).edges[0].count, x_inout,
+                                    (*egroup_i).edges[0].count, 1,
                                     (*egroup_i).edges[0].edge);
                     score += (*egroup_i).score;
                     edg_group.edges.push_back (ev_edg);
@@ -792,7 +782,7 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
                 continue;
             edg_group.score = score;
             edg_group.count = 1;
-            edg_group.exclusive = x_inout;
+            edg_group.exclusive = 1;
             edg_group_vector.push_back (edg_group);
         }
     }
@@ -819,7 +809,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     planner_t *p = NULL;
     const std::string &dom = m_match->dom_subsystem ();
     const std::vector<Resource> &next = test (u, resources,
-                                              check_pres, nslots, sm, &x_inout);
+                                              check_pres, nslots, sm);
 
     m_preorder++;
     if (sm == match_kind_t::NONE_MATCH)
