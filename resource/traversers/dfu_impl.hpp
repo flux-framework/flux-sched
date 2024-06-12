@@ -32,7 +32,13 @@ namespace detail {
 
 enum class visit_t { DFV, UPV };
 
-enum class match_kind_t { RESOURCE_MATCH, SLOT_MATCH, NONE_MATCH, PRISTINE_NONE_MATCH };
+enum class match_kind_t {
+    RESOURCE_MATCH,
+    SLOT_MATCH,
+    OR_SLOT_MATCH,
+    NONE_MATCH,
+    PRISTINE_NONE_MATCH
+};
 
 struct jobmeta_t {
     enum class alloc_type_t : int {
@@ -372,7 +378,8 @@ class dfu_impl_t {
                const std::vector<Jobspec::Resource> &resources,
                const Jobspec::Resource **slot_resource,
                unsigned int *nslots,
-               const Jobspec::Resource **match_resource);
+               const Jobspec::Resource **match_resource,
+               const std::vector<Jobspec::Resource> **slot_resources);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
                                                 const std::vector<Jobspec::Resource> &resources,
@@ -450,6 +457,13 @@ class dfu_impl_t {
                   bool prestine,
                   bool *excl,
                   scoring_api_t &dfu);
+    int dom_or_slot (const jobmeta_t &meta,
+                     vtx_t u,
+                     const std::vector<Jobspec::Resource> &resources,
+                     unsigned int nslots,
+                     bool prestine,
+                     bool *excl,
+                     scoring_api_t &dfu);
     int dom_exp (const jobmeta_t &meta,
                  vtx_t u,
                  const std::vector<Jobspec::Resource> &resources,
