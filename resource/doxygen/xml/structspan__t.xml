@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structspan__t" kind="struct" language="C++" prot="public">
+    <compoundname>span_t</compoundname>
+    <includes refid="planner_8hpp" local="no">planner.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structspan__t_1a424813b4d789e5be887f3ed06cf80ef3" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t span_t::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="29" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1ab7460375483f6185fb38454ad8114a2a" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t span_t::last</definition>
+        <argsstring></argsstring>
+        <name>last</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="30" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1a7400ec41e010e91146e60c34d5b88b00" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t span_t::span_id</definition>
+        <argsstring></argsstring>
+        <name>span_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="31" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1aa9d4dfb25f6d66d379c901c997c10c58" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t span_t::planned</definition>
+        <argsstring></argsstring>
+        <name>planned</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="32" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1a72ceddf6832e4cdacca7bbdcc1a3a6e1" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int span_t::in_system</definition>
+        <argsstring></argsstring>
+        <name>in_system</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="33" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1a0db49655ece09f7ba944c266b7afaf6c" prot="public" static="no" mutable="no">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t* span_t::start_p</definition>
+        <argsstring></argsstring>
+        <name>start_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="34" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspan__t_1a7c37ef951c186957e129e9cd1c39d9c9" prot="public" static="no" mutable="no">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t* span_t::last_p</definition>
+        <argsstring></argsstring>
+        <name>last_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="35" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structspan__t_1a9e750f004347fc064f1fb476e1526d11" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool span_t::operator==</definition>
+        <argsstring>(const span_t &amp;o) const</argsstring>
+        <name>operator==</name>
+        <param>
+          <type>const <ref refid="structspan__t" kindref="compound">span_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="26" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="30" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="structspan__t_1a4dba0a809940438a72d2999c3d772389" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool span_t::operator!=</definition>
+        <argsstring>(const span_t &amp;o) const</argsstring>
+        <name>operator!=</name>
+        <param>
+          <type>const <ref refid="structspan__t" kindref="compound">span_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="27" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="50" bodyend="53"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Node in a span interval tree to enable fast retrieval of intercepting spans. </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>span_t</label>
+        <link refid="structspan__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>last_p</edgelabel>
+          <edgelabel>start_p</edgelabel>
+        </childnode>
+      </node>
+      <node id="7">
+        <label>ygg::RBTreeNodeBase&lt; scheduled_point_rb_node_t &gt;</label>
+      </node>
+      <node id="3">
+        <label>mt_resource_rb_node_t</label>
+        <link refid="structmt__resource__rb__node__t"/>
+        <childnode refid="4" relation="public-inheritance">
+        </childnode>
+        <childnode refid="5" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>scheduled_point_t</label>
+        <link refid="structscheduled__point__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>resource_rb</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>point_rb</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>ygg::RBTreeNodeBase&lt; mt_resource_rb_node_t &gt;</label>
+      </node>
+      <node id="4">
+        <label>rb_node_base_t</label>
+        <link refid="classrb__node__base__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>m_point</edgelabel>
+        </childnode>
+      </node>
+      <node id="6">
+        <label>scheduled_point_rb_node_t</label>
+        <link refid="structscheduled__point__rb__node__t"/>
+        <childnode refid="4" relation="public-inheritance">
+        </childnode>
+        <childnode refid="7" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="25" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="25" bodyend="36"/>
+    <listofallmembers>
+      <member refid="structspan__t_1a72ceddf6832e4cdacca7bbdcc1a3a6e1" prot="public" virt="non-virtual"><scope>span_t</scope><name>in_system</name></member>
+      <member refid="structspan__t_1ab7460375483f6185fb38454ad8114a2a" prot="public" virt="non-virtual"><scope>span_t</scope><name>last</name></member>
+      <member refid="structspan__t_1a7c37ef951c186957e129e9cd1c39d9c9" prot="public" virt="non-virtual"><scope>span_t</scope><name>last_p</name></member>
+      <member refid="structspan__t_1a4dba0a809940438a72d2999c3d772389" prot="public" virt="non-virtual"><scope>span_t</scope><name>operator!=</name></member>
+      <member refid="structspan__t_1a9e750f004347fc064f1fb476e1526d11" prot="public" virt="non-virtual"><scope>span_t</scope><name>operator==</name></member>
+      <member refid="structspan__t_1aa9d4dfb25f6d66d379c901c997c10c58" prot="public" virt="non-virtual"><scope>span_t</scope><name>planned</name></member>
+      <member refid="structspan__t_1a7400ec41e010e91146e60c34d5b88b00" prot="public" virt="non-virtual"><scope>span_t</scope><name>span_id</name></member>
+      <member refid="structspan__t_1a424813b4d789e5be887f3ed06cf80ef3" prot="public" virt="non-virtual"><scope>span_t</scope><name>start</name></member>
+      <member refid="structspan__t_1a0db49655ece09f7ba944c266b7afaf6c" prot="public" virt="non-virtual"><scope>span_t</scope><name>start_p</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

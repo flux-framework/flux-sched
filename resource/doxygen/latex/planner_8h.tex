@@ -1,0 +1,433 @@
+\hypertarget{planner_8h}{}\doxysubsection{planner.\+h File Reference}
+\label{planner_8h}\index{planner.h@{planner.h}}
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include $<$stddef.\+h$>$}\newline
+Include dependency graph for planner.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=272pt]{planner_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{planner_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} \mbox{\hyperlink{planner_8h_a45f1c62c863d136a5cab69c5de52c555}{planner\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ \mbox{\hyperlink{planner_8h_a9f24df8322e8cddc9c0c3bbeb1a980b1}{planner\+\_\+new}} (int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration, uint64\+\_\+t resource\+\_\+total, const char $\ast$resource\+\_\+type)
+\item 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ \mbox{\hyperlink{planner_8h_a1c847da2982fbb0f38fe338ce3e7791b}{planner\+\_\+new\+\_\+empty}} ()
+\item 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ \mbox{\hyperlink{planner_8h_aa860fe284c562310648bac5855631a3c}{planner\+\_\+copy}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$p)
+\item 
+void \mbox{\hyperlink{planner_8h_a8b054779c91b895725df4b0c4b0e25ae}{planner\+\_\+assign}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$lhs, \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$rhs)
+\item 
+int \mbox{\hyperlink{planner_8h_aedba142ec44c70e481d63b93433e1fcf}{planner\+\_\+reset}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration)
+\item 
+void \mbox{\hyperlink{planner_8h_a30b2251fc7a0eacf03814a6c733824c3}{planner\+\_\+destroy}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$$\ast$ctx\+\_\+p)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_ac1ee4be96a1537798f507eaa972c9f3b}{planner\+\_\+base\+\_\+time}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a8cc8c7fd07cb0562cade186478aeb36a}{planner\+\_\+duration}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a887b46c83cb16d7782217d0f4ebb9f12}{planner\+\_\+resource\+\_\+total}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+const char $\ast$ \mbox{\hyperlink{planner_8h_a404468e51955b0eb936c02db9698c1f6}{planner\+\_\+resource\+\_\+type}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a7d0c1ce0a68b4a919e474bcb96240064}{planner\+\_\+avail\+\_\+time\+\_\+first}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t on\+\_\+or\+\_\+after, uint64\+\_\+t duration, uint64\+\_\+t request)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_aa4e88ee97dce134e6fd6363ae87636c3}{planner\+\_\+avail\+\_\+time\+\_\+next}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+int \mbox{\hyperlink{planner_8h_a2a3ec90fc4cf26ea50bfffdbf79b6c6b}{planner\+\_\+avail\+\_\+during}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t at, uint64\+\_\+t duration, uint64\+\_\+t request)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a604f5388985ebd3e643b08833ccfaa35}{planner\+\_\+avail\+\_\+resources\+\_\+during}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t at, uint64\+\_\+t duration)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_abadef1bc7ba816e3e6a697fc4d4b079a}{planner\+\_\+avail\+\_\+resources\+\_\+at}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t at)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a3fd34d6e1069d3bdf727459bb8886c18}{planner\+\_\+add\+\_\+span}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t start\+\_\+time, uint64\+\_\+t duration, uint64\+\_\+t request)
+\item 
+int \mbox{\hyperlink{planner_8h_aef3828ac62b46812f38f5658c3272747}{planner\+\_\+rem\+\_\+span}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t span\+\_\+id)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a8d0504f17295d73553446f7a8c37c831}{planner\+\_\+span\+\_\+first}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a3beba62e1bd806657adf9f23b844a566}{planner\+\_\+span\+\_\+next}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+size\+\_\+t \mbox{\hyperlink{planner_8h_a1b055f2222896a522b4118718f56c745}{planner\+\_\+span\+\_\+size}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx)
+\item 
+bool \mbox{\hyperlink{planner_8h_ab8d62e0fc9065a296ee7be1a06902959}{planner\+\_\+is\+\_\+active\+\_\+span}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t span\+\_\+id)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a6a97935950d889c1c1a58b51ce3b5d78}{planner\+\_\+span\+\_\+start\+\_\+time}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t span\+\_\+id)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a2e022bf88136a6de3d1ea9e35e3e95af}{planner\+\_\+span\+\_\+duration}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t span\+\_\+id)
+\item 
+int64\+\_\+t \mbox{\hyperlink{planner_8h_a23e68ce575b1abb46abbcc5edbd83f61}{planner\+\_\+span\+\_\+resource\+\_\+count}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, int64\+\_\+t span\+\_\+id)
+\item 
+bool \mbox{\hyperlink{planner_8h_a9cc3a0a64cf10392920fa656effe5be5}{planners\+\_\+equal}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$lhs, \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$rhs)
+\item 
+int \mbox{\hyperlink{planner_8h_a126bc0573d38b7b972ced254d23f4e87}{planner\+\_\+update\+\_\+total}} (\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ctx, uint64\+\_\+t resource\+\_\+total)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Typedef Documentation}
+\mbox{\Hypertarget{planner_8h_a45f1c62c863d136a5cab69c5de52c555}\label{planner_8h_a45f1c62c863d136a5cab69c5de52c555}} 
+\index{planner.h@{planner.h}!planner\_t@{planner\_t}}
+\index{planner\_t@{planner\_t}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_t}{planner\_t}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}}}
+
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{planner_8h_a3fd34d6e1069d3bdf727459bb8886c18}\label{planner_8h_a3fd34d6e1069d3bdf727459bb8886c18}} 
+\index{planner.h@{planner.h}!planner\_add\_span@{planner\_add\_span}}
+\index{planner\_add\_span@{planner\_add\_span}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_add\_span()}{planner\_add\_span()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+add\+\_\+span (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{start\+\_\+time,  }\item[{uint64\+\_\+t}]{duration,  }\item[{uint64\+\_\+t}]{request }\end{DoxyParamCaption})}
+
+Add a new span to the planner and update the planner\textquotesingle{}s resource/time state. Reset the planner\textquotesingle{}s iterator so that planner\+\_\+avail\+\_\+time\+\_\+next will be made to return the earliest schedulable point.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em start\+\_\+time} & start time from which the resource request must be available for duration. \\
+\hline
+{\em duration} & requested duration; must be greater than or equal to 1. \\
+\hline
+{\em request} & resource count request.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+span id on success; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. EKEYREJECTED\+: can\textquotesingle{}t update planner\textquotesingle{}s internal data. ERANGE\+: a resource state became out of a valid range, e.\+g., reserving more than available. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a8b054779c91b895725df4b0c4b0e25ae}\label{planner_8h_a8b054779c91b895725df4b0c4b0e25ae}} 
+\index{planner.h@{planner.h}!planner\_assign@{planner\_assign}}
+\index{planner\_assign@{planner\_assign}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_assign()}{planner\_assign()}}
+{\footnotesize\ttfamily void planner\+\_\+assign (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{lhs,  }\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{rhs }\end{DoxyParamCaption})}
+
+Assign a planner.
+
+
+\begin{DoxyParams}{Parameters}
+{\em lhs} & the base planner which will be assigned to rhs. \\
+\hline
+{\em rhs} & the base planner which will be copied and returned as a new planner context. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{planner_8h_a2a3ec90fc4cf26ea50bfffdbf79b6c6b}\label{planner_8h_a2a3ec90fc4cf26ea50bfffdbf79b6c6b}} 
+\index{planner.h@{planner.h}!planner\_avail\_during@{planner\_avail\_during}}
+\index{planner\_avail\_during@{planner\_avail\_during}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_avail\_during()}{planner\_avail\_during()}}
+{\footnotesize\ttfamily int planner\+\_\+avail\+\_\+during (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{at,  }\item[{uint64\+\_\+t}]{duration,  }\item[{uint64\+\_\+t}]{request }\end{DoxyParamCaption})}
+
+Test if the given request can be satisfied at the start time. Note on semantics\+: Unlike planner\+\_\+avail\+\_\+time$\ast$ functions, this function can be used to test an arbitrary time span.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em at} & start time from which the requested resources must be available for duration. \\
+\hline
+{\em duration} & requested duration; must be greater than or equal to 1. \\
+\hline
+{\em request} & resource count request. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if the request can be satisfied; -\/1 if it cannot be satisfied or an error encountered (errno as follows)\+: EINVAL\+: invalid argument. ERANGE\+: request is an out-\/of-\/range value. ENOTSUP\+: internal error encountered. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_abadef1bc7ba816e3e6a697fc4d4b079a}\label{planner_8h_abadef1bc7ba816e3e6a697fc4d4b079a}} 
+\index{planner.h@{planner.h}!planner\_avail\_resources\_at@{planner\_avail\_resources\_at}}
+\index{planner\_avail\_resources\_at@{planner\_avail\_resources\_at}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_avail\_resources\_at()}{planner\_avail\_resources\_at()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+avail\+\_\+resources\+\_\+at (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{at }\end{DoxyParamCaption})}
+
+Return how many resources are available at the given time.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em at} & instant time for which this query is made. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+available resource count; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a604f5388985ebd3e643b08833ccfaa35}\label{planner_8h_a604f5388985ebd3e643b08833ccfaa35}} 
+\index{planner.h@{planner.h}!planner\_avail\_resources\_during@{planner\_avail\_resources\_during}}
+\index{planner\_avail\_resources\_during@{planner\_avail\_resources\_during}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_avail\_resources\_during()}{planner\_avail\_resources\_during()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+avail\+\_\+resources\+\_\+during (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{at,  }\item[{uint64\+\_\+t}]{duration }\end{DoxyParamCaption})}
+
+Return how resources are available for the duration starting from at.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em at} & instant time for which this query is made. \\
+\hline
+{\em duration} & requested duration; must be greater than or equal to 1. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+available resource count; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a7d0c1ce0a68b4a919e474bcb96240064}\label{planner_8h_a7d0c1ce0a68b4a919e474bcb96240064}} 
+\index{planner.h@{planner.h}!planner\_avail\_time\_first@{planner\_avail\_time\_first}}
+\index{planner\_avail\_time\_first@{planner\_avail\_time\_first}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_avail\_time\_first()}{planner\_avail\_time\_first()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+avail\+\_\+time\+\_\+first (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{on\+\_\+or\+\_\+after,  }\item[{uint64\+\_\+t}]{duration,  }\item[{uint64\+\_\+t}]{request }\end{DoxyParamCaption})}
+
+Find and return the earliest point in integer time when the request can be satisfied.
+
+Note on semantics\+: this function returns a time point where the resource state changes. If the number of available resources change at time point t1 and t2 (assuming t2 is greater than t1+2), the possible schedule points that this function can return is either t1 or t2, but not t1+1 nor t1+2 even if these points also satisfy the request.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em on\+\_\+or\+\_\+after} & available on or after the specified time. \\
+\hline
+{\em duration} & requested duration; must be greater than or equal to 1. \\
+\hline
+{\em request} & resource count request. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+earliest time at which the request can be satisfied; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. ERANGE\+: request is an out-\/of-\/range value. ENOENT\+: no scheduleable point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_aa4e88ee97dce134e6fd6363ae87636c3}\label{planner_8h_aa4e88ee97dce134e6fd6363ae87636c3}} 
+\index{planner.h@{planner.h}!planner\_avail\_time\_next@{planner\_avail\_time\_next}}
+\index{planner\_avail\_time\_next@{planner\_avail\_time\_next}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_avail\_time\_next()}{planner\_avail\_time\_next()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+avail\+\_\+time\+\_\+next (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+Find and return the next earliest point in time at which the same request queried before via either planner\+\_\+avail\+\_\+time\+\_\+first or planner\+\_\+avail\+\_\+time\+\_\+next can be satisfied. Same semantics as planner\+\_\+avail\+\_\+time\+\_\+first.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+earliest time at which the request can be satisfied; -\/1 on error with errno set as follows\+: EINVAL\+: invalid argument. ERANGE\+: request is out of range ENOENT\+: no scheduleable point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_ac1ee4be96a1537798f507eaa972c9f3b}\label{planner_8h_ac1ee4be96a1537798f507eaa972c9f3b}} 
+\index{planner.h@{planner.h}!planner\_base\_time@{planner\_base\_time}}
+\index{planner\_base\_time@{planner\_base\_time}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_base\_time()}{planner\_base\_time()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+base\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+Getters\+: \begin{DoxyReturn}{Returns}
+-\/1 or NULL on an error with errno set as follows\+: EINVAL\+: invalid argument. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_aa860fe284c562310648bac5855631a3c}\label{planner_8h_aa860fe284c562310648bac5855631a3c}} 
+\index{planner.h@{planner.h}!planner\_copy@{planner\_copy}}
+\index{planner\_copy@{planner\_copy}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_copy()}{planner\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}}$\ast$ planner\+\_\+copy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+Copy a planner.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & the base planner which will be copied and returned as a new planner context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+new planner context; NULL on an error with errno set as follows\+: pointer to a \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} object on success; -\/1 on an error with errno set. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a30b2251fc7a0eacf03814a6c733824c3}\label{planner_8h_a30b2251fc7a0eacf03814a6c733824c3}} 
+\index{planner.h@{planner.h}!planner\_destroy@{planner\_destroy}}
+\index{planner\_destroy@{planner\_destroy}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_destroy()}{planner\_destroy()}}
+{\footnotesize\ttfamily void planner\+\_\+destroy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$$\ast$}]{ctx\+\_\+p }\end{DoxyParamCaption})}
+
+Destroy the planner.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx\+\_\+p} & pointer to a planner context pointer returned. from planner\+\_\+new \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{planner_8h_a8cc8c7fd07cb0562cade186478aeb36a}\label{planner_8h_a8cc8c7fd07cb0562cade186478aeb36a}} 
+\index{planner.h@{planner.h}!planner\_duration@{planner\_duration}}
+\index{planner\_duration@{planner\_duration}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_duration()}{planner\_duration()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+duration (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_ab8d62e0fc9065a296ee7be1a06902959}\label{planner_8h_ab8d62e0fc9065a296ee7be1a06902959}} 
+\index{planner.h@{planner.h}!planner\_is\_active\_span@{planner\_is\_active\_span}}
+\index{planner\_is\_active\_span@{planner\_is\_active\_span}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_is\_active\_span()}{planner\_is\_active\_span()}}
+{\footnotesize\ttfamily bool planner\+\_\+is\+\_\+active\+\_\+span (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{span\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Return 0 if the span has been inserted and active in the planner. 
+
+\mbox{\Hypertarget{planner_8h_a9f24df8322e8cddc9c0c3bbeb1a980b1}\label{planner_8h_a9f24df8322e8cddc9c0c3bbeb1a980b1}} 
+\index{planner.h@{planner.h}!planner\_new@{planner\_new}}
+\index{planner\_new@{planner\_new}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_new()}{planner\_new()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}}$\ast$ planner\+\_\+new (\begin{DoxyParamCaption}\item[{int64\+\_\+t}]{base\+\_\+time,  }\item[{uint64\+\_\+t}]{duration,  }\item[{uint64\+\_\+t}]{resource\+\_\+total,  }\item[{const char $\ast$}]{resource\+\_\+type }\end{DoxyParamCaption})}
+
+Construct a planner.
+
+
+\begin{DoxyParams}{Parameters}
+{\em base\+\_\+time} & earliest schedulable point expressed in integer time (i.\+e., the base time of the planner to be constructed). \\
+\hline
+{\em duration} & time span of this planner (i.\+e., all planned spans must end before base\+\_\+time + duration). \\
+\hline
+{\em resource\+\_\+total} & the total count of available resources. \\
+\hline
+{\em resource\+\_\+type} & the resource type string \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+new planner context; NULL on an error with errno set as follows\+: pointer to a \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} object on success; -\/1 on an error with errno set\+: EINVAL\+: invalid argument. ERANGE\+: resource\+\_\+total is an out-\/of-\/range value. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a1c847da2982fbb0f38fe338ce3e7791b}\label{planner_8h_a1c847da2982fbb0f38fe338ce3e7791b}} 
+\index{planner.h@{planner.h}!planner\_new\_empty@{planner\_new\_empty}}
+\index{planner\_new\_empty@{planner\_new\_empty}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_new\_empty()}{planner\_new\_empty()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}}$\ast$ planner\+\_\+new\+\_\+empty (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Initialize empty planner.
+
+\begin{DoxyReturn}{Returns}
+new planner context; NULL on an error with errno set as follows\+: pointer to a \mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} object on success; -\/1 on an error with errno set. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_aef3828ac62b46812f38f5658c3272747}\label{planner_8h_aef3828ac62b46812f38f5658c3272747}} 
+\index{planner.h@{planner.h}!planner\_rem\_span@{planner\_rem\_span}}
+\index{planner\_rem\_span@{planner\_rem\_span}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_rem\_span()}{planner\_rem\_span()}}
+{\footnotesize\ttfamily int planner\+\_\+rem\+\_\+span (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{span\+\_\+id }\end{DoxyParamCaption})}
+
+Remove the existing span from the planner and update its resource/time state. Reset the planner\textquotesingle{}s iterator such that planner\+\_\+avail\+\_\+time\+\_\+next will be made to return the earliest schedulable point.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em span\+\_\+id} & span\+\_\+id returned from planner\+\_\+add\+\_\+span. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. EKEYREJECTED\+: span could not be removed from the planner\textquotesingle{}s internal data structures. ERANGE\+: a resource state became out of a valid range. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_aedba142ec44c70e481d63b93433e1fcf}\label{planner_8h_aedba142ec44c70e481d63b93433e1fcf}} 
+\index{planner.h@{planner.h}!planner\_reset@{planner\_reset}}
+\index{planner\_reset@{planner\_reset}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_reset()}{planner\_reset()}}
+{\footnotesize\ttfamily int planner\+\_\+reset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{base\+\_\+time,  }\item[{uint64\+\_\+t}]{duration }\end{DoxyParamCaption})}
+
+Reset the planner with a new time bound. Destroy all existing planned spans.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em base\+\_\+time} & earliest schedulable point expressed in integer time (i.\+e., the base time of the planner to be constructed). \\
+\hline
+{\em duration} & time span of this planner (i.\+e., all planned spans must end before base\+\_\+time + duration). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a887b46c83cb16d7782217d0f4ebb9f12}\label{planner_8h_a887b46c83cb16d7782217d0f4ebb9f12}} 
+\index{planner.h@{planner.h}!planner\_resource\_total@{planner\_resource\_total}}
+\index{planner\_resource\_total@{planner\_resource\_total}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_resource\_total()}{planner\_resource\_total()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+resource\+\_\+total (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a404468e51955b0eb936c02db9698c1f6}\label{planner_8h_a404468e51955b0eb936c02db9698c1f6}} 
+\index{planner.h@{planner.h}!planner\_resource\_type@{planner\_resource\_type}}
+\index{planner\_resource\_type@{planner\_resource\_type}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_resource\_type()}{planner\_resource\_type()}}
+{\footnotesize\ttfamily const char$\ast$ planner\+\_\+resource\+\_\+type (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a2e022bf88136a6de3d1ea9e35e3e95af}\label{planner_8h_a2e022bf88136a6de3d1ea9e35e3e95af}} 
+\index{planner.h@{planner.h}!planner\_span\_duration@{planner\_span\_duration}}
+\index{planner\_span\_duration@{planner\_span\_duration}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_duration()}{planner\_span\_duration()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+span\+\_\+duration (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{span\+\_\+id }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a8d0504f17295d73553446f7a8c37c831}\label{planner_8h_a8d0504f17295d73553446f7a8c37c831}} 
+\index{planner.h@{planner.h}!planner\_span\_first@{planner\_span\_first}}
+\index{planner\_span\_first@{planner\_span\_first}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_first()}{planner\_span\_first()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+span\+\_\+first (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+
+
+Span iterators -- there is no specific iteration order. 
+
+\mbox{\Hypertarget{planner_8h_a3beba62e1bd806657adf9f23b844a566}\label{planner_8h_a3beba62e1bd806657adf9f23b844a566}} 
+\index{planner.h@{planner.h}!planner\_span\_next@{planner\_span\_next}}
+\index{planner\_span\_next@{planner\_span\_next}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_next()}{planner\_span\_next()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+span\+\_\+next (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a23e68ce575b1abb46abbcc5edbd83f61}\label{planner_8h_a23e68ce575b1abb46abbcc5edbd83f61}} 
+\index{planner.h@{planner.h}!planner\_span\_resource\_count@{planner\_span\_resource\_count}}
+\index{planner\_span\_resource\_count@{planner\_span\_resource\_count}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_resource\_count()}{planner\_span\_resource\_count()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+span\+\_\+resource\+\_\+count (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{span\+\_\+id }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a1b055f2222896a522b4118718f56c745}\label{planner_8h_a1b055f2222896a522b4118718f56c745}} 
+\index{planner.h@{planner.h}!planner\_span\_size@{planner\_span\_size}}
+\index{planner\_span\_size@{planner\_span\_size}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_size()}{planner\_span\_size()}}
+{\footnotesize\ttfamily size\+\_\+t planner\+\_\+span\+\_\+size (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner_8h_a6a97935950d889c1c1a58b51ce3b5d78}\label{planner_8h_a6a97935950d889c1c1a58b51ce3b5d78}} 
+\index{planner.h@{planner.h}!planner\_span\_start\_time@{planner\_span\_start\_time}}
+\index{planner\_span\_start\_time@{planner\_span\_start\_time}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_span\_start\_time()}{planner\_span\_start\_time()}}
+{\footnotesize\ttfamily int64\+\_\+t planner\+\_\+span\+\_\+start\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t}]{span\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Getters for span. Return -\/1 on an error. 
+
+\mbox{\Hypertarget{planner_8h_a126bc0573d38b7b972ced254d23f4e87}\label{planner_8h_a126bc0573d38b7b972ced254d23f4e87}} 
+\index{planner.h@{planner.h}!planner\_update\_total@{planner\_update\_total}}
+\index{planner\_update\_total@{planner\_update\_total}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planner\_update\_total()}{planner\_update\_total()}}
+{\footnotesize\ttfamily int planner\+\_\+update\+\_\+total (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{ctx,  }\item[{uint64\+\_\+t}]{resource\+\_\+total }\end{DoxyParamCaption})}
+
+Update the resource count to support elasticity.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & opaque planner context returned from planner\+\_\+new. \\
+\hline
+{\em resource\+\_\+total} & 64-\/bit unsigned integer of the total count of available resources of the resource type. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on an error with errno set as follows\+: EINVAL\+: invalid argument. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{planner_8h_a9cc3a0a64cf10392920fa656effe5be5}\label{planner_8h_a9cc3a0a64cf10392920fa656effe5be5}} 
+\index{planner.h@{planner.h}!planners\_equal@{planners\_equal}}
+\index{planners\_equal@{planners\_equal}!planner.h@{planner.h}}
+\doxyparagraph{\texorpdfstring{planners\_equal()}{planners\_equal()}}
+{\footnotesize\ttfamily bool planners\+\_\+equal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{lhs,  }\item[{\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$}]{rhs }\end{DoxyParamCaption})}
+

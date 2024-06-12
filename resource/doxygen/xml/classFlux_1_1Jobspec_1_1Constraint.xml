@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1Constraint" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::Constraint</compoundname>
+    <derivedcompoundref refid="classConditionalConstraint" prot="public" virt="non-virtual">ConditionalConstraint</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1Jobspec_1_1HostlistConstraint" prot="public" virt="non-virtual">Flux::Jobspec::HostlistConstraint</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1Jobspec_1_1RankConstraint" prot="public" virt="non-virtual">Flux::Jobspec::RankConstraint</derivedcompoundref>
+    <derivedcompoundref refid="classPropertyConstraint" prot="public" virt="non-virtual">PropertyConstraint</derivedcompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Constraint_1aff150c3f204e9c3ead2023fc31f7dc20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::Constraint::Constraint</definition>
+        <argsstring>()=default</argsstring>
+        <name>Constraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="30" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Constraint_1a79c854a5620d10d9aa286eacfb42cb49" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>virtual Flux::Jobspec::Constraint::~Constraint</definition>
+        <argsstring>()=default</argsstring>
+        <name>~Constraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="31" column="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Constraint_1ae444700152a356a49b9e24a3ca3493cb" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool Constraint::match</definition>
+        <argsstring>(const Flux::resource_model::resource_t &amp;resource) const</argsstring>
+        <name>match</name>
+        <reimplementedby refid="classPropertyConstraint_1a10dc4317b1c3176e557033b1522a01d4">match</reimplementedby>
+        <reimplementedby refid="classConditionalConstraint_1ab21f52d1850059f99927309d51e91650">match</reimplementedby>
+        <reimplementedby refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a8d78cdaf9eaf816f60ed0c21978329e5">match</reimplementedby>
+        <reimplementedby refid="classFlux_1_1Jobspec_1_1RankConstraint_1a24c3256742edd3db915d7e498de6d14d">match</reimplementedby>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1resource__t" kindref="compound">Flux::resource_model::resource_t</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="32" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="111" bodyend="114"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Constraint_1a55958a0879a6acbc5be43b903b69b5ff" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>YAML::Node</type>
+        <definition>YAML::Node Constraint::as_yaml</definition>
+        <argsstring>() const</argsstring>
+        <name>as_yaml</name>
+        <reimplementedby refid="classPropertyConstraint_1a606b9525a7f1e5002ce427c21217859b">as_yaml</reimplementedby>
+        <reimplementedby refid="classConditionalConstraint_1a3f2068ee657b1fb403a88b1d4356f283">as_yaml</reimplementedby>
+        <reimplementedby refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a7d0ada92b31337f014fa13cd84db0815">as_yaml</reimplementedby>
+        <reimplementedby refid="classFlux_1_1Jobspec_1_1RankConstraint_1a38da3da57c4d550931e4140014a2a66a">as_yaml</reimplementedby>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="33" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="105" bodyend="108"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="3">
+        <label>Flux::Jobspec::HostlistConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1HostlistConstraint"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>ConditionalConstraint</label>
+        <link refid="classConditionalConstraint"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>Flux::Jobspec::RankConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1RankConstraint"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>PropertyConstraint</label>
+        <link refid="classPropertyConstraint"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" bodystart="28" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1a55958a0879a6acbc5be43b903b69b5ff" prot="public" virt="virtual"><scope>Flux::Jobspec::Constraint</scope><name>as_yaml</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1aff150c3f204e9c3ead2023fc31f7dc20" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Constraint</scope><name>Constraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1ae444700152a356a49b9e24a3ca3493cb" prot="public" virt="virtual"><scope>Flux::Jobspec::Constraint</scope><name>match</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1a79c854a5620d10d9aa286eacfb42cb49" prot="public" virt="virtual"><scope>Flux::Jobspec::Constraint</scope><name>~Constraint</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

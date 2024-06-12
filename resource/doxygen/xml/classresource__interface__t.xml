@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classresource__interface__t" kind="class" language="C++" prot="public">
+    <compoundname>resource_interface_t</compoundname>
+    <derivedcompoundref refid="structresource__ctx__t" prot="public" virt="non-virtual">resource_ctx_t</derivedcompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classresource__interface__t_1aacbb04b1017e845b7ac44b2454020d47" prot="public" static="no" mutable="no">
+        <type>flux_future_t *</type>
+        <definition>flux_future_t* resource_interface_t::update_f</definition>
+        <argsstring></argsstring>
+        <name>update_f</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="110" column="19" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classresource__interface__t_1a8226a515303ef485865c8fa7d09222bf" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string resource_interface_t::m_ups</definition>
+        <argsstring></argsstring>
+        <name>m_ups</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="113" column="17" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classresource__interface__t_1a2485eca2c84c99563ebb2d97f3d24ff7" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int resource_interface_t::m_update_rc</definition>
+        <argsstring></argsstring>
+        <name>m_update_rc</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="114" column="9" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classresource__interface__t_1ae32963d23cdb594d9fe30bcebd6d0561" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>resource_interface_t::resource_interface_t</definition>
+        <argsstring>()=default</argsstring>
+        <name>resource_interface_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="98" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1ac6b1fef2b018cb641b31cd835d409290" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>resource_interface_t::resource_interface_t</definition>
+        <argsstring>(const resource_interface_t &amp;o)</argsstring>
+        <name>resource_interface_t</name>
+        <param>
+          <type>const <ref refid="classresource__interface__t" kindref="compound">resource_interface_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="99" column="5" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="178" bodyend="184"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a4508bacce54d2853b12df48a26252136" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classresource__interface__t" kindref="compound">resource_interface_t</ref> &amp;</type>
+        <definition>resource_interface_t &amp; resource_interface_t::operator=</definition>
+        <argsstring>(const resource_interface_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classresource__interface__t" kindref="compound">resource_interface_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="100" column="26" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="186" bodyend="194"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a952218eaeab966eb3d2734890a5c3c85" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>resource_interface_t::~resource_interface_t</definition>
+        <argsstring>()</argsstring>
+        <name>~resource_interface_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="102" column="5" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="173" bodyend="176"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a1f187fb64a2f9c49f6178c3aa48fedf9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_interface_t::fetch_and_reset_update_rc</definition>
+        <argsstring>()</argsstring>
+        <name>fetch_and_reset_update_rc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="103" column="9" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="196" bodyend="201"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a3b2223976103d1ba37b0c73079dcb405" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_interface_t::get_update_rc</definition>
+        <argsstring>() const</argsstring>
+        <name>get_update_rc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="104" column="9" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="203" bodyend="206"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a507a1a849ce7e5256552d5b58552dbc5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void resource_interface_t::set_update_rc</definition>
+        <argsstring>(int rc)</argsstring>
+        <name>set_update_rc</name>
+        <param>
+          <type>int</type>
+          <declname>rc</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="105" column="10" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="208" bodyend="211"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1aa0edbdf11061e987c91003e68500dad1" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; resource_interface_t::get_ups</definition>
+        <argsstring>() const</argsstring>
+        <name>get_ups</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="107" column="23" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="213" bodyend="216"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a01cfad0f9261c73e078644aa18af751f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void resource_interface_t::set_ups</definition>
+        <argsstring>(const char *ups)</argsstring>
+        <name>set_ups</name>
+        <param>
+          <type>const char *</type>
+          <declname>ups</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="108" column="10" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="223" bodyend="226"/>
+      </memberdef>
+      <memberdef kind="function" id="classresource__interface__t_1a21122d8dbed593d24f4b9ffa68cbd065" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool resource_interface_t::is_ups_set</definition>
+        <argsstring>() const</argsstring>
+        <name>is_ups_set</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="109" column="10" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="218" bodyend="221"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>resource_ctx_t</label>
+        <link refid="structresource__ctx__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>resource_interface_t</label>
+        <link refid="classresource__interface__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="96" column="1" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="96" bodyend="115"/>
+    <listofallmembers>
+      <member refid="classresource__interface__t_1a1f187fb64a2f9c49f6178c3aa48fedf9" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>fetch_and_reset_update_rc</name></member>
+      <member refid="classresource__interface__t_1a3b2223976103d1ba37b0c73079dcb405" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>get_update_rc</name></member>
+      <member refid="classresource__interface__t_1aa0edbdf11061e987c91003e68500dad1" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>get_ups</name></member>
+      <member refid="classresource__interface__t_1a21122d8dbed593d24f4b9ffa68cbd065" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>is_ups_set</name></member>
+      <member refid="classresource__interface__t_1a2485eca2c84c99563ebb2d97f3d24ff7" prot="private" virt="non-virtual"><scope>resource_interface_t</scope><name>m_update_rc</name></member>
+      <member refid="classresource__interface__t_1a8226a515303ef485865c8fa7d09222bf" prot="private" virt="non-virtual"><scope>resource_interface_t</scope><name>m_ups</name></member>
+      <member refid="classresource__interface__t_1a4508bacce54d2853b12df48a26252136" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>operator=</name></member>
+      <member refid="classresource__interface__t_1ae32963d23cdb594d9fe30bcebd6d0561" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>resource_interface_t</name></member>
+      <member refid="classresource__interface__t_1ac6b1fef2b018cb641b31cd835d409290" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>resource_interface_t</name></member>
+      <member refid="classresource__interface__t_1a507a1a849ce7e5256552d5b58552dbc5" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>set_update_rc</name></member>
+      <member refid="classresource__interface__t_1a01cfad0f9261c73e078644aa18af751f" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>set_ups</name></member>
+      <member refid="classresource__interface__t_1aacbb04b1017e845b7ac44b2454020d47" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>update_f</name></member>
+      <member refid="classresource__interface__t_1a952218eaeab966eb3d2734890a5c3c85" prot="public" virt="non-virtual"><scope>resource_interface_t</scope><name>~resource_interface_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

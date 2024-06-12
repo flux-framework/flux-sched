@@ -1,0 +1,65 @@
+\hypertarget{structFlux_1_1resource__model_1_1pool__infra__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::pool\+\_\+infra\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1pool__infra__t}\index{Flux::resource\_model::pool\_infra\_t@{Flux::resource\_model::pool\_infra\_t}}
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::pool\+\_\+infra\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{structFlux_1_1resource__model_1_1pool__infra__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::pool\+\_\+infra\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structFlux_1_1resource__model_1_1pool__infra__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_a7aec86fc4ed83bd633373d163aa12da7}\label{structFlux_1_1resource__model_1_1pool__infra__t_a7aec86fc4ed83bd633373d163aa12da7}} 
+{\bfseries pool\+\_\+infra\+\_\+t} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1pool__infra__t}{pool\+\_\+infra\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_aa02d6020da9d9e77edb674ce30756aaf}\label{structFlux_1_1resource__model_1_1pool__infra__t_aa02d6020da9d9e77edb674ce30756aaf}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1pool__infra__t}{pool\+\_\+infra\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1pool__infra__t}{pool\+\_\+infra\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_a3ff7dfec7afbc11c4d572c9bab1e5f56}\label{structFlux_1_1resource__model_1_1pool__infra__t_a3ff7dfec7afbc11c4d572c9bab1e5f56}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1pool__infra__t}{pool\+\_\+infra\+\_\+t}} \&o) const
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_a4757f3c80001f96ff7672895ee585a00}\label{structFlux_1_1resource__model_1_1pool__infra__t_a4757f3c80001f96ff7672895ee585a00}} 
+virtual void {\bfseries scrub} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_ab7fa59cd8a9645bedaf4e94e273b3079}\label{structFlux_1_1resource__model_1_1pool__infra__t_ab7fa59cd8a9645bedaf4e94e273b3079}} 
+std\+::map$<$ int64\+\_\+t, int64\+\_\+t $>$ {\bfseries tags}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_a054b876f348f694edfb6ea016b0c59be}\label{structFlux_1_1resource__model_1_1pool__infra__t_a054b876f348f694edfb6ea016b0c59be}} 
+std\+::map$<$ int64\+\_\+t, int64\+\_\+t $>$ {\bfseries x\+\_\+spans}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_aa3db725294e1755758058c0ce6c1f78b}\label{structFlux_1_1resource__model_1_1pool__infra__t_aa3db725294e1755758058c0ce6c1f78b}} 
+std\+::map$<$ int64\+\_\+t, int64\+\_\+t $>$ {\bfseries job2span}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_aea3a3b8a0af2f115e3c3d23d6f3d00ff}\label{structFlux_1_1resource__model_1_1pool__infra__t_aea3a3b8a0af2f115e3c3d23d6f3d00ff}} 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ {\bfseries x\+\_\+checker} = NULL
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_afb520d7cec528a2703f1d23726603f32}\label{structFlux_1_1resource__model_1_1pool__infra__t_afb520d7cec528a2703f1d23726603f32}} 
+std\+::map$<$ subsystem\+\_\+t, \mbox{\hyperlink{structplanner__multi__t}{planner\+\_\+multi\+\_\+t}} $\ast$ $>$ {\bfseries subplans}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_a7bfa2946c51df29af0118f3c4f41123c}\label{structFlux_1_1resource__model_1_1pool__infra__t_a7bfa2946c51df29af0118f3c4f41123c}} 
+std\+::map$<$ subsystem\+\_\+t, uint64\+\_\+t $>$ {\bfseries colors}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1pool__infra__t_afb05b1a24bc9fa03b6147f4baef498bc}\label{structFlux_1_1resource__model_1_1pool__infra__t_afb05b1a24bc9fa03b6147f4baef498bc}} 
+\mbox{\hyperlink{classFlux_1_1resource__model_1_1ephemeral__t}{ephemeral\+\_\+t}} {\bfseries ephemeral}
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+infra\+\_\+data.\+hpp\item 
+infra\+\_\+data.\+cpp\end{DoxyCompactItemize}

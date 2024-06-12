@@ -1,0 +1,671 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::resource_query_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a62ab759671aff90b4ad225de0ec391ba" prot="public" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;match_writers_t&gt; Flux::resource_model::detail::resource_query_t::writers</definition>
+        <argsstring></argsstring>
+        <name>writers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="98" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac1d0ce6c6cb5e3c8955d8f5cb475fb37" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_query_t::m_err_msg</definition>
+        <argsstring></argsstring>
+        <name>m_err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="107" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ad54f0e14b131a04833330d2762f040c9" prot="private" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t" kindref="compound">resource_params_t</ref></type>
+        <definition>resource_params_t Flux::resource_model::detail::resource_query_t::params</definition>
+        <argsstring></argsstring>
+        <name>params</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="108" column="23" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1abb200d8f40e65e14931608ad5b3d40b3" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::detail::resource_query_t::jobid_counter</definition>
+        <argsstring></argsstring>
+        <name>jobid_counter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="109" column="14" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a058e0c2ef35acfa4e75224499a40729e" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;dfu_match_cb_t&gt; Flux::resource_model::detail::resource_query_t::matcher</definition>
+        <argsstring></argsstring>
+        <name>matcher</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="110" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a4dfb58855311733fd2b4b2ca3cdbfebc" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;dfu_traverser_t&gt; Flux::resource_model::detail::resource_query_t::traverser</definition>
+        <argsstring></argsstring>
+        <name>traverser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="111" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a58b373146f158be674e8a1653403a7f1" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;resource_graph_db_t&gt; Flux::resource_model::detail::resource_query_t::db</definition>
+        <argsstring></argsstring>
+        <name>db</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="112" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a78d769d392452f0c73c072e9d682c291" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+        <definition>std::shared_ptr&lt;f_resource_graph_t&gt; Flux::resource_model::detail::resource_query_t::fgraph</definition>
+        <argsstring></argsstring>
+        <name>fgraph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="113" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a8cb9f2ded2d652731d501411b92c9d01" prot="private" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t" kindref="compound">match_perf_t</ref></type>
+        <definition>match_perf_t Flux::resource_model::detail::resource_query_t::perf</definition>
+        <argsstring></argsstring>
+        <name>perf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="114" column="18" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a3fc8ccc9faa1dba4dde145fc4f441f8e" prot="private" static="no" mutable="no">
+        <type>std::map&lt; uint64_t, std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1job__info__t" kindref="compound">job_info_t</ref> &gt; &gt;</type>
+        <definition>std::map&lt;uint64_t, std::shared_ptr&lt;job_info_t&gt; &gt; Flux::resource_model::detail::resource_query_t::jobs</definition>
+        <argsstring></argsstring>
+        <name>jobs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="115" column="14" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1acac74cdcc5a103d0db2c624b49dd4cfa" prot="private" static="no" mutable="no">
+        <type>std::map&lt; uint64_t, uint64_t &gt;</type>
+        <definition>std::map&lt;uint64_t, uint64_t&gt; Flux::resource_model::detail::resource_query_t::allocations</definition>
+        <argsstring></argsstring>
+        <name>allocations</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="116" column="14" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a43482fa6b89b9b08e853e0c76a473d83" prot="private" static="no" mutable="no">
+        <type>std::map&lt; uint64_t, uint64_t &gt;</type>
+        <definition>std::map&lt;uint64_t, uint64_t&gt; Flux::resource_model::detail::resource_query_t::reservations</definition>
+        <argsstring></argsstring>
+        <name>reservations</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="117" column="14" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aaa248036d5bbefdb37011a8d76cad326" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::detail::resource_query_t::resource_query_t</definition>
+        <argsstring>()</argsstring>
+        <name>resource_query_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="64" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="526" bodyend="529"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ab5458d1bfd6e147a1116b4927e49f923" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::detail::resource_query_t::resource_query_t</definition>
+        <argsstring>(const std::string &amp;rgraph, const std::string &amp;options)</argsstring>
+        <name>resource_query_t</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>rgraph</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>options</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="65" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="536" bodyend="623"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a093e974ff95fdfb653f3134c889a4fd2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::detail::resource_query_t::~resource_query_t</definition>
+        <argsstring>()</argsstring>
+        <name>~resource_query_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="66" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="531" bodyend="534"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1af3a41335641d2e621adc7be23a9f4111" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; Flux::resource_model::detail::resource_query_t::get_resource_query_err_msg</definition>
+        <argsstring>() const</argsstring>
+        <name>get_resource_query_err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="69" column="23" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="625" bodyend="628"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ad0275473b40039a5b26ba3bed6294039" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; Flux::resource_model::detail::resource_query_t::get_traverser_err_msg</definition>
+        <argsstring>() const</argsstring>
+        <name>get_traverser_err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="70" column="23" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="630" bodyend="633"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a47414ed3426c324f8aed618c0cce9940" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const bool</type>
+        <definition>const bool Flux::resource_model::detail::resource_query_t::job_exists</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>job_exists</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="71" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="635" bodyend="638"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a063f7335d5843f8b01bf0dcc4cf643d2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const uint64_t</type>
+        <definition>const uint64_t Flux::resource_model::detail::resource_query_t::get_job_counter</definition>
+        <argsstring>() const</argsstring>
+        <name>get_job_counter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="72" column="20" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="640" bodyend="643"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1abafbb1eec91d340cde7d8996625747dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1job__info__t" kindref="compound">job_info_t</ref> &gt; &amp;</type>
+        <definition>const std::shared_ptr&lt; job_info_t &gt; &amp; Flux::resource_model::detail::resource_query_t::get_job</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>get_job</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="73" column="27" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="645" bodyend="648"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aea5694457b7077114132dc5c33e27883" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const bool</type>
+        <definition>const bool Flux::resource_model::detail::resource_query_t::reservation_exists</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>reservation_exists</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="74" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="655" bodyend="658"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1addfd2fc3b869c614b72ce7a28d2ad799" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const bool</type>
+        <definition>const bool Flux::resource_model::detail::resource_query_t::allocation_exists</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>allocation_exists</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="75" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="650" bodyend="653"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a123e7fa5621f3c24bd3acda387182d6f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int Flux::resource_model::detail::resource_query_t::preorder_count</definition>
+        <argsstring>()</argsstring>
+        <name>preorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="76" column="24" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="660" bodyend="663"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac23d5894e9b521d6ebb949b04d085884" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int Flux::resource_model::detail::resource_query_t::postorder_count</definition>
+        <argsstring>()</argsstring>
+        <name>postorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="77" column="24" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="665" bodyend="668"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1acae6d2d4a36cc69c53782d6104dad7cd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::clear_resource_query_err_msg</definition>
+        <argsstring>()</argsstring>
+        <name>clear_resource_query_err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="80" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="670" bodyend="673"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a902291e6510fdb7ddc5bbc5fbd338f5b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::clear_traverser_err_msg</definition>
+        <argsstring>()</argsstring>
+        <name>clear_traverser_err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="81" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="675" bodyend="678"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a286f9a971b58307041df54df87095fa0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::set_reservation</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>set_reservation</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="82" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="680" bodyend="683"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a169e21a8515a3314afd2a5b0f5f9220c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::erase_reservation</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>erase_reservation</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="83" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="685" bodyend="688"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a742fae62eea80f0f83b54f1048ce8938" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::set_allocation</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>set_allocation</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="84" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="690" bodyend="693"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a194f97f6bc2c1b861f7a77ad6689b37a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::erase_allocation</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>erase_allocation</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="85" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="695" bodyend="698"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1add4f8e85ac908d076eaedd808b2b5629" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::set_job</definition>
+        <argsstring>(const uint64_t jobid, const std::shared_ptr&lt; job_info_t &gt; &amp;job)</argsstring>
+        <name>set_job</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1job__info__t" kindref="compound">job_info_t</ref> &gt; &amp;</type>
+          <declname>job</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="86" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="700" bodyend="704"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a41ece520d11fa5bc86565e32958e8fd0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::remove_job</definition>
+        <argsstring>(const uint64_t jobid)</argsstring>
+        <name>remove_job</name>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="88" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="706" bodyend="726"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a88fbc2485103e5b37181a1a3ad06331b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::resource_query_t::incr_job_counter</definition>
+        <argsstring>()</argsstring>
+        <name>incr_job_counter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="89" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="728" bodyend="731"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a404d05ea775381a6eb63f1086e95fb5c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::traverser_run</definition>
+        <argsstring>(Flux::Jobspec::Jobspec &amp;job, match_op_t op, int64_t jobid, int64_t &amp;at)</argsstring>
+        <name>traverser_run</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Flux::Jobspec::Jobspec</ref> &amp;</type>
+          <declname>job</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>op</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="92" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="733" bodyend="737"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a7ca75454c105af4bbcd8746f9f669f75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::traverser_find</definition>
+        <argsstring>(std::string criteria)</argsstring>
+        <name>traverser_find</name>
+        <param>
+          <type>std::string</type>
+          <declname>criteria</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="94" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="739" bodyend="742"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aabf35b4eaf4245a0ebe6f3abe0742c4b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+        <definition>std::shared_ptr&lt; f_resource_graph_t &gt; Flux::resource_model::detail::resource_query_t::create_filtered_graph</definition>
+        <argsstring>()</argsstring>
+        <name>create_filtered_graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="118" column="21" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="308" bodyend="334"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a87f85e104b3316182a3ba1befd12ae92" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::subsystem_exist</definition>
+        <argsstring>(const std::string &amp;n)</argsstring>
+        <name>subsystem_exist</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="126" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="336" bodyend="342"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac1c4111b03c7aac27e85de301b9faab4" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::set_subsystems_use</definition>
+        <argsstring>(const std::string &amp;n)</argsstring>
+        <name>set_subsystems_use</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="127" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="344" bodyend="416"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a7c728d829c77b3db9b3de611e5a68b1a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::resource_query_t::set_resource_ctx_params</definition>
+        <argsstring>(const std::string &amp;options)</argsstring>
+        <name>set_resource_ctx_params</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>options</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="128" column="9" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="418" bodyend="518"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::detail::resource_query_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>perf</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>params</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::detail::match_perf_t</label>
+        <link refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t"/>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::detail::resource_params_t</label>
+        <link refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="62" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="62" bodyend="129"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1addfd2fc3b869c614b72ce7a28d2ad799" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>allocation_exists</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1acac74cdcc5a103d0db2c624b49dd4cfa" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>allocations</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1acae6d2d4a36cc69c53782d6104dad7cd" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>clear_resource_query_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a902291e6510fdb7ddc5bbc5fbd338f5b" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>clear_traverser_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aabf35b4eaf4245a0ebe6f3abe0742c4b" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>create_filtered_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a58b373146f158be674e8a1653403a7f1" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a194f97f6bc2c1b861f7a77ad6689b37a" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>erase_allocation</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a169e21a8515a3314afd2a5b0f5f9220c" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>erase_reservation</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a78d769d392452f0c73c072e9d682c291" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>fgraph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1abafbb1eec91d340cde7d8996625747dc" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>get_job</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a063f7335d5843f8b01bf0dcc4cf643d2" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>get_job_counter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1af3a41335641d2e621adc7be23a9f4111" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>get_resource_query_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ad0275473b40039a5b26ba3bed6294039" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>get_traverser_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a88fbc2485103e5b37181a1a3ad06331b" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>incr_job_counter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a47414ed3426c324f8aed618c0cce9940" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>job_exists</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1abb200d8f40e65e14931608ad5b3d40b3" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>jobid_counter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a3fc8ccc9faa1dba4dde145fc4f441f8e" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>jobs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac1d0ce6c6cb5e3c8955d8f5cb475fb37" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>m_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a058e0c2ef35acfa4e75224499a40729e" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>matcher</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ad54f0e14b131a04833330d2762f040c9" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>params</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a8cb9f2ded2d652731d501411b92c9d01" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>perf</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac23d5894e9b521d6ebb949b04d085884" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>postorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a123e7fa5621f3c24bd3acda387182d6f" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>preorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a41ece520d11fa5bc86565e32958e8fd0" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>remove_job</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aea5694457b7077114132dc5c33e27883" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>reservation_exists</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a43482fa6b89b9b08e853e0c76a473d83" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>reservations</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1aaa248036d5bbefdb37011a8d76cad326" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>resource_query_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ab5458d1bfd6e147a1116b4927e49f923" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>resource_query_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a742fae62eea80f0f83b54f1048ce8938" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>set_allocation</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1add4f8e85ac908d076eaedd808b2b5629" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>set_job</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a286f9a971b58307041df54df87095fa0" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>set_reservation</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a7c728d829c77b3db9b3de611e5a68b1a" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>set_resource_ctx_params</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1ac1c4111b03c7aac27e85de301b9faab4" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>set_subsystems_use</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a87f85e104b3316182a3ba1befd12ae92" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>subsystem_exist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a4dfb58855311733fd2b4b2ca3cdbfebc" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>traverser</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a7ca75454c105af4bbcd8746f9f669f75" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>traverser_find</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a404d05ea775381a6eb63f1086e95fb5c" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>traverser_run</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a62ab759671aff90b4ad225de0ec391ba" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>writers</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t_1a093e974ff95fdfb653f3134c889a4fd2" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_query_t</scope><name>~resource_query_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,303 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="color_8hpp" kind="file" language="C++">
+    <compoundname>color.hpp</compoundname>
+    <includes local="no">cstdint</includes>
+    <includedby refid="color_8cpp" local="yes">color.cpp</includedby>
+    <includedby refid="resource__data_8hpp" local="yes">resource_data.hpp</includedby>
+    <incdepgraph>
+      <node id="2">
+        <label>cstdint</label>
+      </node>
+      <node id="1">
+        <label>color.hpp</label>
+        <link refid="color_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="13">
+        <label>dfu_match_locality.hpp</label>
+        <link refid="dfu__match__locality_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>dfu_match_low_id_first.hpp</label>
+        <link refid="dfu__match__low__id__first_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>resource_reader_base.hpp</label>
+        <link refid="resource__reader__base_8hpp_source"/>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>dfu_match_cb.hpp</label>
+        <link refid="dfu__match__cb_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>resource_reader_hwloc.hpp</label>
+        <link refid="resource__reader__hwloc_8hpp_source"/>
+      </node>
+      <node id="3">
+        <label>resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>dfu.hpp</label>
+        <link refid="dfu_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>command.hpp</label>
+        <link refid="command_8hpp_source"/>
+      </node>
+      <node id="23">
+        <label>resource_reader_factory.hpp</label>
+        <link refid="resource__reader__factory_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>resource_data.hpp</label>
+        <link refid="resource__data_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>scoring_api.hpp</label>
+        <link refid="scoring__api_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>dfu_match_high_id_first.hpp</label>
+        <link refid="dfu__match__high__id__first_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>fold.hpp</label>
+        <link refid="fold_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>rq2.hpp</label>
+        <link refid="rq2_8hpp_source"/>
+      </node>
+      <node id="21">
+        <label>expr_eval_vtx_target.hpp</label>
+        <link refid="expr__eval__vtx__target_8hpp_source"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>reapi_cli.hpp</label>
+        <link refid="reapi__cli_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>edge_eval_api.hpp</label>
+        <link refid="edge__eval__api_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>dfu_match_policy_factory.hpp</label>
+        <link refid="dfu__match__policy__factory_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>reapi_cli_impl.hpp</label>
+        <link refid="reapi__cli__impl_8hpp_source"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>color.hpp</label>
+        <link refid="color_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>resource_reader_jgf.hpp</label>
+        <link refid="resource__reader__jgf_8hpp_source"/>
+      </node>
+      <node id="18">
+        <label>dfu_impl.hpp</label>
+        <link refid="dfu__impl_8hpp_source"/>
+        <childnode refid="19" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>dfu_match_multilevel_id_impl.hpp</label>
+        <link refid="dfu__match__multilevel__id__impl_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>resource_reader_rv1exec.hpp</label>
+        <link refid="resource__reader__rv1exec_8hpp_source"/>
+      </node>
+      <node id="28">
+        <label>resource_graph_store.hpp</label>
+        <link refid="resource__graph__store_8hpp_source"/>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>dfu_match_var_aware.hpp</label>
+        <link refid="dfu__match__var__aware_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>dfu_match_multilevel_id.hpp</label>
+        <link refid="dfu__match__multilevel__id_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>resource_reader_grug.hpp</label>
+        <link refid="resource__reader__grug_8hpp_source"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classFlux_1_1resource__model_1_1color__t" prot="public">Flux::resource_model::color_t</innerclass>
+    <innernamespace refid="namespaceFlux">Flux</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model">Flux::resource_model</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2021<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>COLOR_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>COLOR_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdint&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">Flux<sp/>{</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">resource_model<sp/>{</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="classFlux_1_1resource__model_1_1color__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1color__t" kindref="compound">color_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/>color_offset_t<sp/>:<sp/>uint64_t<sp/>{</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>WHITE_OFFSET<sp/>=<sp/>0,</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>GRAY_OFFSET<sp/>=<sp/>1,</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>BLACK_OFFSET<sp/>=<sp/>2,</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>NEW_BASE<sp/>=<sp/>3</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>compiler<sp/>will<sp/>generate<sp/>correct<sp/>constructors<sp/>and<sp/>destructor</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>reset<sp/>();</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_white<sp/>(uint64_t<sp/>c)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_gray<sp/>(uint64_t<sp/>c)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_black<sp/>(uint64_t<sp/>c)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/>uint64_t<sp/>white<sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/>uint64_t<sp/>gray<sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/>uint64_t<sp/>black<sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/>uint64_t<sp/>m_color_base<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>resource_model</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>Flux</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>COLOR_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="50"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="51"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/schema/color.hpp"/>
+  </compounddef>
+</doxygen>

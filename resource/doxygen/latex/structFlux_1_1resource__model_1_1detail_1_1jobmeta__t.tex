@@ -1,0 +1,58 @@
+\hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::detail\+::jobmeta\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t}\index{Flux::resource\_model::detail::jobmeta\_t@{Flux::resource\_model::detail::jobmeta\_t}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a0044ef16077df08d2a3db78115727765}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a0044ef16077df08d2a3db78115727765}} 
+enum class {\bfseries alloc\+\_\+type\+\_\+t} \+: int \{ {\bfseries AT\+\_\+\+ALLOC} = 0
+, {\bfseries AT\+\_\+\+ALLOC\+\_\+\+ORELSE\+\_\+\+RESERVE} = 1
+, {\bfseries AT\+\_\+\+SATISFIABILITY} = 2
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_af3bad18553ae972f2982109820e5e707}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_af3bad18553ae972f2982109820e5e707}} 
+bool {\bfseries is\+\_\+queue\+\_\+set} () const
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2e800d5fec02c87ac80e16d5e34f6ac8}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2e800d5fec02c87ac80e16d5e34f6ac8}} 
+const std\+::string \& {\bfseries get\+\_\+queue} () const
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a4ac5de6db6a63a7de81430e4baa1c2b4}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a4ac5de6db6a63a7de81430e4baa1c2b4}} 
+int {\bfseries build} (\mbox{\hyperlink{classFlux_1_1Jobspec_1_1Jobspec}{Jobspec\+::\+Jobspec}} \&jobspec, alloc\+\_\+type\+\_\+t alloc, int64\+\_\+t id, int64\+\_\+t t, \mbox{\hyperlink{structFlux_1_1resource__model_1_1graph__duration__t}{graph\+\_\+duration\+\_\+t}} \&graph\+\_\+duration)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_aa4603cacf380fca54c996e4c9be97949}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_aa4603cacf380fca54c996e4c9be97949}} 
+alloc\+\_\+type\+\_\+t {\bfseries alloc\+\_\+type} = alloc\+\_\+type\+\_\+t\+::\+AT\+\_\+\+ALLOC
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2c3c23b08c2d5f5198bc0335991c9e92}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2c3c23b08c2d5f5198bc0335991c9e92}} 
+int64\+\_\+t {\bfseries jobid} = -\/1
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a11104ab98170fa3b2516b72fd5386148}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a11104ab98170fa3b2516b72fd5386148}} 
+int64\+\_\+t {\bfseries at} = -\/1
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a081af6ef6f3057af773ab8ef73d44435}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a081af6ef6f3057af773ab8ef73d44435}} 
+int64\+\_\+t {\bfseries now} = -\/1
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2039552302ef553d83d781dc7a751d97}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a2039552302ef553d83d781dc7a751d97}} 
+uint64\+\_\+t {\bfseries duration} = SYSTEM\+\_\+\+DEFAULT\+\_\+\+DURATION
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_aaff4bf6fcb911893a9d299481aa9e591}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_aaff4bf6fcb911893a9d299481aa9e591}} 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Constraint}{Jobspec\+::\+Constraint}} $>$ {\bfseries constraint}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a67fa4f38e19fc7bf067d3fabb016a6ab}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_a67fa4f38e19fc7bf067d3fabb016a6ab}} 
+bool {\bfseries m\+\_\+queue\+\_\+set} = false
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_abdca27b441a2d5be432f57fde1843311}\label{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_abdca27b441a2d5be432f57fde1843311}} 
+std\+::string {\bfseries m\+\_\+queue} = \char`\"{}\char`\"{}
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+dfu\+\_\+impl.\+hpp\end{DoxyCompactItemize}

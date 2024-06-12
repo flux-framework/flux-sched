@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_e5fb15a193a64daf287ea07d826f84f3" kind="dir">
+    <compoundname>traversers</compoundname>
+    <innerfile refid="dfu_8cpp">dfu.cpp</innerfile>
+    <innerfile refid="dfu_8hpp">dfu.hpp</innerfile>
+    <innerfile refid="dfu__impl_8cpp">dfu_impl.cpp</innerfile>
+    <innerfile refid="dfu__impl_8hpp">dfu_impl.hpp</innerfile>
+    <innerfile refid="dfu__impl__update_8cpp">dfu_impl_update.cpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/traversers/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,1299 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1resource__reader__jgf__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_reader_jgf_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" prot="public" virt="non-virtual">Flux::resource_model::resource_reader_base_t</basecompoundref>
+    <includes refid="resource__reader__jgf_8hpp" local="no">resource_reader_jgf.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a0b8a84e2acbe3ed25c50269f89171b54" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>resource_reader_jgf_t::~resource_reader_jgf_t</definition>
+        <argsstring>()</argsstring>
+        <name>~resource_reader_jgf_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="32" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1180" bodyend="1183"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a8ace770306297c1ee28ae9421d6f3884" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;str, int rank=-1)</argsstring>
+        <name>unpack</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a4d2969f7499f3c7a398e1c86949e5806">unpack</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Unpack str into a resource graph.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a JGF specification </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign rank to all of the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; non-zero integer on an error ENOMEM: out of memory EINVAL: invalid input or operation </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="44" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1185" bodyend="1213"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a56d97fe175001578f7812547508f3acb" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_at</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t &amp;vtx, const std::string &amp;str, int rank=-1)</argsstring>
+        <name>unpack_at</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accc428c1d3fd14f6caf854953c5a6f3b">unpack_at</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>vtx</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Unpack str into a resource graph and graft the top-level vertices to vtx.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>vtx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>parent vtx at which to graft the deserialized graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a JGF specification </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign this rank to all the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>-1 with errno=ENOTSUP (Not supported yet) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="57" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1215" bodyend="1228"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af296c9c39a64e79a48e96cc62184fb32" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;str, int64_t jobid, int64_t at, uint64_t dur, bool rsv, uint64_t trav_token)</argsstring>
+        <name>update</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a31c23c9d83eb6b66a129f9105c563390">update</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>trav_token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update resource graph g with str.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource set string </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of str </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>start time of this job </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>dur</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>duration of this job </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rsv</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>true if this update is for a reservation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>trav_token</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>token to be used by traverser </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; non-zero integer on an error </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="73" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1230" bodyend="1262"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a2458e2d185c5d62f4a322e2ff23cfaea" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::remove_subgraph</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;path)</argsstring>
+        <name>remove_subgraph</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1afd4d9e32c562453e94b31689d7cb3c82">remove_subgraph</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="77" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1264" bodyend="1300"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab0d8b1981514146d965d3b4906009fa2" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool resource_reader_jgf_t::is_allowlist_supported</definition>
+        <argsstring>()</argsstring>
+        <name>is_allowlist_supported</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a18d3bfd358094d5c6ae040ab1531c560">is_allowlist_supported</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Is the selected reader format support allowlist</para>
+<para><simplesect kind="return"><para>false </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="85" column="18" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1302" bodyend="1305"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af58465fa23a4df36233fa0649869a742" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::fetch_jgf</definition>
+        <argsstring>(const std::string &amp;str, json_t **jgf_p, json_t **nodes_p, json_t **edges_p)</argsstring>
+        <name>fetch_jgf</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>jgf_p</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>nodes_p</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>edges_p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="88" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="225" bodyend="264"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1adff64f004163622cca375326888e8a8d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_and_remap_vtx</definition>
+        <argsstring>(fetch_helper_t &amp;f, json_t *paths, json_t *properties)</argsstring>
+        <name>unpack_and_remap_vtx</name>
+        <param>
+          <type><ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>f</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>paths</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>properties</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="90" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="269" bodyend="339"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a1c181922fbeb8ab5e50fb36fa48bdc5d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::remap_aware_unpack_vtx</definition>
+        <argsstring>(fetch_helper_t &amp;f, json_t *paths, json_t *properties)</argsstring>
+        <name>remap_aware_unpack_vtx</name>
+        <param>
+          <type><ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>f</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>paths</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>properties</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="92" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="341" bodyend="361"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1acf3093ded4450638244ecf4b10ce9ae9" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::fill_fetcher</definition>
+        <argsstring>(json_t *element, fetch_helper_t &amp;f, json_t **path, json_t **properties)</argsstring>
+        <name>fill_fetcher</name>
+        <param>
+          <type>json_t *</type>
+          <declname>element</declname>
+        </param>
+        <param>
+          <type><ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>f</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>path</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>properties</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="94" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="363" bodyend="414"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a5f5a1e2e9c173f2dfc15b04a330629ec" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_vtx</definition>
+        <argsstring>(json_t *element, fetch_helper_t &amp;f)</argsstring>
+        <name>unpack_vtx</name>
+        <param>
+          <type>json_t *</type>
+          <declname>element</declname>
+        </param>
+        <param>
+          <type><ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="96" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="416" bodyend="425"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a44bb9f27dca1cf4e761f2a4f719e1b8a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t resource_reader_jgf_t::create_vtx</definition>
+        <argsstring>(resource_graph_t &amp;g, const fetch_helper_t &amp;fetcher)</argsstring>
+        <name>create_vtx</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="97" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="427" bodyend="464"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a856e620fca40757af16a272dd7ca9ed1" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t resource_reader_jgf_t::vtx_in_graph</definition>
+        <argsstring>(const resource_graph_t &amp;g, const resource_graph_metadata_t &amp;m, const std::map&lt; std::string, std::string &gt; &amp;paths, int rank)</argsstring>
+        <name>vtx_in_graph</name>
+        <param>
+          <type>const resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>paths</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="98" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="466" bodyend="484"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1aa42a53653a9385136d8192bf6199fb05" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool resource_reader_jgf_t::is_root</definition>
+        <argsstring>(const std::string &amp;path)</argsstring>
+        <name>is_root</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="102" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="486" bodyend="489"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a4aa54d77f86fc7b3f00b3582e6762f09" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::check_root</definition>
+        <argsstring>(vtx_t v, resource_graph_t &amp;g, std::map&lt; std::string, bool &gt; &amp;is_roots)</argsstring>
+        <name>check_root</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, bool &gt; &amp;</type>
+          <declname>is_roots</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="103" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="491" bodyend="507"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af221b3d386f536aa9473ab1063e0ad59" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::add_graph_metadata</definition>
+        <argsstring>(vtx_t v, resource_graph_t &amp;g, resource_graph_metadata_t &amp;m)</argsstring>
+        <name>add_graph_metadata</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="105" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="509" bodyend="537"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a68e2bd500389fe69992e9195b8f9f9b0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::remove_graph_metadata</definition>
+        <argsstring>(vtx_t v, resource_graph_t &amp;g, resource_graph_metadata_t &amp;m)</argsstring>
+        <name>remove_graph_metadata</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="107" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="539" bodyend="573"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a7907b673e6dbf4deb086acbafb225bab" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::remove_metadata_outedges</definition>
+        <argsstring>(vtx_t source_vertex, vtx_t dest_vertex, resource_graph_t &amp;g, resource_graph_metadata_t &amp;m)</argsstring>
+        <name>remove_metadata_outedges</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>source_vertex</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>dest_vertex</declname>
+        </param>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="109" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="575" bodyend="595"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a81c2dc70fe5971d93c6a4424defa4d75" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_vmap</definition>
+        <argsstring>(std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, vtx_t v, const std::map&lt; std::string, bool &gt; &amp;root_checks, const fetch_helper_t &amp;fetcher)</argsstring>
+        <name>update_vmap</name>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, bool &gt; &amp;</type>
+          <declname>root_checks</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="113" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="597" bodyend="620"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a7520e20200eeb5b16287c07b40b5f0ad" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::add_vtx</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, const fetch_helper_t &amp;fetcher)</argsstring>
+        <name>add_vtx</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="116" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="622" bodyend="652"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a783414b5f331cbf05a14d5d0dbe64ef3" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::exist</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;path, int rank, const std::string &amp;vid, vtx_t &amp;v)</argsstring>
+        <name>exist</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>path</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>vid</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="119" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="654" bodyend="677"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a6dae4cfee3e083c88db89ebd773cd94e" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::find_vtx</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, const fetch_helper_t &amp;fetcher, vtx_t &amp;ret_v)</argsstring>
+        <name>find_vtx</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>ret_v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="123" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="679" bodyend="725"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a6cba7be5aa3014a18426c36a849d9545" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_vtx_plan</definition>
+        <argsstring>(vtx_t v, resource_graph_t &amp;g, const fetch_helper_t &amp;fetcher, uint64_t jobid, int64_t at, uint64_t dur, bool rsv)</argsstring>
+        <name>update_vtx_plan</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="126" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="727" bodyend="775"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab347bf9cd6685e31a70b59e233f65e98" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_vtx</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, const fetch_helper_t &amp;fetcher, uint64_t jobid, int64_t at, uint64_t dur, bool rsv)</argsstring>
+        <name>update_vtx</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structfetch__helper__t" kindref="compound">fetch_helper_t</ref> &amp;</type>
+          <declname>fetcher</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="129" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="777" bodyend="800"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a0d81fa6d7505e9657f3d4843cf41d6f8" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, json_t *nodes, std::unordered_set&lt; std::string &gt; &amp;added_vtcs)</argsstring>
+        <name>unpack_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>nodes</declname>
+        </param>
+        <param>
+          <type>std::unordered_set&lt; std::string &gt; &amp;</type>
+          <declname>added_vtcs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="133" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="841" bodyend="884"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a98440c9fe7315f7d6899f6c6c6e206d5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::undo_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, uint64_t jobid, bool rsv)</argsstring>
+        <name>undo_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="137" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="802" bodyend="839"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1afd20a51c0bc621db593be25d8c9b31b5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, json_t *nodes, int64_t jobid, int64_t at, uint64_t dur, bool rsv)</argsstring>
+        <name>update_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>nodes</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="140" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="886" bodyend="909"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab66ec560e159bad7314a91231b53be2f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::resource_reader_jgf_t::update_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, json_t *nodes, int64_t jobid, int64_t at, uint64_t dur)</argsstring>
+        <name>update_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>nodes</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="144" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a882e64629217ab2f95f26e24a0a9f840" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_edge</definition>
+        <argsstring>(json_t *element, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, std::string &amp;source, std::string &amp;target, json_t **name)</argsstring>
+        <name>unpack_edge</name>
+        <param>
+          <type>json_t *</type>
+          <declname>element</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>target</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="148" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="911" bodyend="957"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a1980c77a215d06f78de53232d81cf028" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_src_edge</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, std::string &amp;source, uint64_t token)</argsstring>
+        <name>update_src_edge</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="150" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1037" bodyend="1056"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1aefbacad3c0b89b62150411473ffbb941" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_tgt_edge</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, std::string &amp;source, std::string &amp;target, uint64_t token)</argsstring>
+        <name>update_tgt_edge</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>target</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="153" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1058" bodyend="1091"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a12ff62a65db5ce79cd744742ea8ab4a2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::unpack_edges</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, json_t *edges, const std::unordered_set&lt; std::string &gt; &amp;added_vtcs)</argsstring>
+        <name>unpack_edges</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>edges</declname>
+        </param>
+        <param>
+          <type>const std::unordered_set&lt; std::string &gt; &amp;</type>
+          <declname>added_vtcs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="157" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="959" bodyend="1035"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a45251037cdd39efc85b3e2d4c0ffbe38" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::update_edges</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, std::map&lt; std::string, vmap_val_t &gt; &amp;vmap, json_t *edges, uint64_t token)</argsstring>
+        <name>update_edges</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, <ref refid="structvmap__val__t" kindref="compound">vmap_val_t</ref> &gt; &amp;</type>
+          <declname>vmap</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>edges</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="161" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1093" bodyend="1120"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a215ac0f3188eb42f9a84fa56f5171b1a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::get_subgraph_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, vtx_t node, std::vector&lt; vtx_t &gt; &amp;node_list)</argsstring>
+        <name>get_subgraph_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; vtx_t &gt; &amp;</type>
+          <declname>node_list</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="164" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1122" bodyend="1145"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a49d40647b53926b9cdb3ce3ed00bc182" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_jgf_t::get_parent_vtx</definition>
+        <argsstring>(resource_graph_t &amp;g, vtx_t node, vtx_t &amp;parent_node)</argsstring>
+        <name>get_parent_vtx</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>parent_node</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="167" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="1147" bodyend="1171"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>JGF resource reader class. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::resource_reader_jgf_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_reader_base_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__base__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::resource_reader_jgf_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::resource_namespace_remapper_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__namespace__remapper__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_reader_base_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__base__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>namespace_remapper</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.hpp" bodystart="29" bodyend="170"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af221b3d386f536aa9473ab1063e0ad59" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>add_graph_metadata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a7520e20200eeb5b16287c07b40b5f0ad" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>add_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a9c7c9c007c102a3406ff6af28e8979ae" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a4aa54d77f86fc7b3f00b3582e6762f09" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>check_root</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1aca55df612f689f5bb53d99a5e3388452" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>clear_err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a44bb9f27dca1cf4e761f2a4f719e1b8a" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>create_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1ac5c85f20440f7a4cb0d7e2e9f270b657" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a783414b5f331cbf05a14d5d0dbe64ef3" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>exist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af58465fa23a4df36233fa0649869a742" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>fetch_jgf</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1acf3093ded4450638244ecf4b10ce9ae9" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>fill_fetcher</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a6dae4cfee3e083c88db89ebd773cd94e" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>find_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accaa5f23111d5b5472206ac6756c4991" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>get_host_basename</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a451198379a7adcd65bcf09050ef8da8c" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>get_hostname_suffix</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a49d40647b53926b9cdb3ce3ed00bc182" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>get_parent_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a215ac0f3188eb42f9a84fa56f5171b1a" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>get_subgraph_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a761e2ccff8181b693c06bd5cd8785a78" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>in_allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a107d7b989d04b6b9d9a99ac2e4961941" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>is_allowlist_set</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab0d8b1981514146d965d3b4906009fa2" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>is_allowlist_supported</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1aa42a53653a9385136d8192bf6199fb05" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>is_root</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6c768c7f14076e9e0da32aa159cae18b" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>m_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6aefb0e4985349f0c2a9cb44c7475b2a" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>namespace_remapper</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a1c181922fbeb8ab5e50fb36fa48bdc5d" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>remap_aware_unpack_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a68e2bd500389fe69992e9195b8f9f9b0" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>remove_graph_metadata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a7907b673e6dbf4deb086acbafb225bab" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>remove_metadata_outedges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a2458e2d185c5d62f4a322e2ff23cfaea" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>remove_subgraph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a990fc01533f55f58d69f312059eef0e1" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>set_allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1abde9fb8638c59116bf19c6eadb51097e" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>split_hostname</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a98440c9fe7315f7d6899f6c6c6e206d5" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>undo_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a8ace770306297c1ee28ae9421d6f3884" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1adff64f004163622cca375326888e8a8d" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_and_remap_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a56d97fe175001578f7812547508f3acb" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_at</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a882e64629217ab2f95f26e24a0a9f840" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_edge</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a12ff62a65db5ce79cd744742ea8ab4a2" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_edges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a0d81fa6d7505e9657f3d4843cf41d6f8" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a5f5a1e2e9c173f2dfc15b04a330629ec" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>unpack_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1af296c9c39a64e79a48e96cc62184fb32" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a45251037cdd39efc85b3e2d4c0ffbe38" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_edges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a1980c77a215d06f78de53232d81cf028" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_src_edge</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1aefbacad3c0b89b62150411473ffbb941" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_tgt_edge</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1afd20a51c0bc621db593be25d8c9b31b5" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab66ec560e159bad7314a91231b53be2f" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a81c2dc70fe5971d93c6a4424defa4d75" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_vmap</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1ab347bf9cd6685e31a70b59e233f65e98" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a6cba7be5aa3014a18426c36a849d9545" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>update_vtx_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a856e620fca40757af16a272dd7ca9ed1" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>vtx_in_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a102373fe1e3a791007d1128ab9fecb26" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>~resource_reader_base_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t_1a0b8a84e2acbe3ed25c50269f89171b54" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_jgf_t</scope><name>~resource_reader_jgf_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

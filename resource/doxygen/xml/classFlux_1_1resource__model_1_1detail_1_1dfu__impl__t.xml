@@ -1,0 +1,2948 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::dfu_impl_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" prot="protected" virt="non-virtual">Flux::resource_model::dfu_traverser_t</derivedcompoundref>
+    <includes refid="dfu__impl_8hpp" local="no">dfu_impl.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aab9e0a38a37e5649291e93f0a36e17fd" prot="private" static="no" mutable="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1color__t" kindref="compound">color_t</ref></type>
+        <definition>color_t Flux::resource_model::detail::dfu_impl_t::m_color</definition>
+        <argsstring></argsstring>
+        <name>m_color</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="493" column="13" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="493" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a6fa326b3af48f8c866350423bd08479e" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::detail::dfu_impl_t::m_best_k_cnt</definition>
+        <argsstring></argsstring>
+        <name>m_best_k_cnt</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="494" column="14" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="494" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e063ec55d92dafbd7d535fdbcab2631" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::detail::dfu_impl_t::m_trav_level</definition>
+        <argsstring></argsstring>
+        <name>m_trav_level</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="495" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="495" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abebb2163338491db384a8ca2c0f9e301" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::detail::dfu_impl_t::m_preorder</definition>
+        <argsstring></argsstring>
+        <name>m_preorder</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="496" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="496" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec89754975e8c18eced6aa100d9a466e" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::detail::dfu_impl_t::m_postorder</definition>
+        <argsstring></argsstring>
+        <name>m_postorder</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="497" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="497" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b5b8127fb5884e87b0bed879bbd1f0d" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; std::map&lt; subsystem_t, vtx_t &gt; &gt;</type>
+        <definition>std::shared_ptr&lt;std::map&lt;subsystem_t, vtx_t&gt; &gt; Flux::resource_model::detail::dfu_impl_t::m_roots</definition>
+        <argsstring></argsstring>
+        <name>m_roots</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="498" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="498" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac11bfb84ddd9be80ee615eadec8882ad" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+        <definition>std::shared_ptr&lt;f_resource_graph_t&gt; Flux::resource_model::detail::dfu_impl_t::m_graph</definition>
+        <argsstring></argsstring>
+        <name>m_graph</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="499" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="499" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a010f089d5c09b901fcabe8695b1991b3" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;resource_graph_db_t&gt; Flux::resource_model::detail::dfu_impl_t::m_graph_db</definition>
+        <argsstring></argsstring>
+        <name>m_graph_db</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="500" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="500" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a25b83852ea75632e92ead7d3e4a467c4" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;dfu_match_cb_t&gt; Flux::resource_model::detail::dfu_impl_t::m_match</definition>
+        <argsstring></argsstring>
+        <name>m_match</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="501" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="501" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a21104a772cda8db25384decc6275b67f" prot="private" static="no" mutable="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t" kindref="compound">expr_eval_api_t</ref></type>
+        <definition>expr_eval_api_t Flux::resource_model::detail::dfu_impl_t::m_expr_eval</definition>
+        <argsstring></argsstring>
+        <name>m_expr_eval</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="502" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="502" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1adc4e8b60aa5c2e0e6a888aee4958fc35" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::dfu_impl_t::m_err_msg</definition>
+        <argsstring></argsstring>
+        <name>m_err_msg</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="503" column="17" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="503" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ad30b688ef27c95ca846a279ba174c36e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_impl_t::dfu_impl_t</definition>
+        <argsstring>()</argsstring>
+        <name>dfu_impl_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="111" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="998" bodyend="1001"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5fc6d04e0b22f3c34fa8ca7aa2220af1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_impl_t::dfu_impl_t</definition>
+        <argsstring>(std::shared_ptr&lt; f_resource_graph_t &gt; g, std::shared_ptr&lt; resource_graph_db_t &gt; db, std::shared_ptr&lt; dfu_match_cb_t &gt; m)</argsstring>
+        <name>dfu_impl_t</name>
+        <param>
+          <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+          <declname>db</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="112" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1003" bodyend="1009"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a05b5e76d118c9170f38fad36b31e5176" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_impl_t::dfu_impl_t</definition>
+        <argsstring>(const dfu_impl_t &amp;o)</argsstring>
+        <name>dfu_impl_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="115" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1011" bodyend="1020"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd31099b56c95735d3e671aa0c5b9df6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::detail::dfu_impl_t::dfu_impl_t</definition>
+        <argsstring>(dfu_impl_t &amp;&amp;o)=default</argsstring>
+        <name>dfu_impl_t</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;&amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="116" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af3d8386aa0726b044e1d000bb67d8ee1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;</type>
+        <definition>dfu_impl_t &amp; dfu_impl_t::operator=</definition>
+        <argsstring>(const dfu_impl_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="117" column="16" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1022" bodyend="1032"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aed81039c7fd95cdf2aa8dec5f47867b6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;</type>
+        <definition>dfu_impl_t&amp; Flux::resource_model::detail::dfu_impl_t::operator=</definition>
+        <argsstring>(dfu_impl_t &amp;&amp;o)=default</argsstring>
+        <name>operator=</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" kindref="compound">dfu_impl_t</ref> &amp;&amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="118" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa2fe6281623e6c5d6d4eaa4921a91684" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_impl_t::~dfu_impl_t</definition>
+        <argsstring>()</argsstring>
+        <name>~dfu_impl_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="119" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1034" bodyend="1037"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab1e87687981d2c8a8e3a2a947d1a0121" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const f_resource_graph_t &gt;</type>
+        <definition>const std::shared_ptr&lt; const f_resource_graph_t &gt; dfu_impl_t::get_graph</definition>
+        <argsstring>() const</argsstring>
+        <name>get_graph</name>
+        <briefdescription>
+<para>Accessors. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="122" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1039" bodyend="1042"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2d01388ca8d10af5d6b172b4de290d30" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+        <definition>const std::shared_ptr&lt; const resource_graph_db_t &gt; dfu_impl_t::get_graph_db</definition>
+        <argsstring>() const</argsstring>
+        <name>get_graph_db</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="123" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1045" bodyend="1048"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afb13db4893ce37e2c4f95d384de4d24e" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+        <definition>const std::shared_ptr&lt; const dfu_match_cb_t &gt; dfu_impl_t::get_match_cb</definition>
+        <argsstring>() const</argsstring>
+        <name>get_match_cb</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="124" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1050" bodyend="1053"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4660aea2adbf264e84bc55f967bfe166" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; dfu_impl_t::err_message</definition>
+        <argsstring>() const</argsstring>
+        <name>err_message</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="125" column="23" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1055" bodyend="1058"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a191e977e814eb17f65f77987d1a978a1" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t" kindref="compound">expr_eval_api_t</ref> &amp;</type>
+        <definition>const expr_eval_api_t&amp; Flux::resource_model::detail::dfu_impl_t::get_expr_eval</definition>
+        <argsstring>() const</argsstring>
+        <name>get_expr_eval</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="126" column="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab5020605f89b437c8c3715f99fcf3e3d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int dfu_impl_t::get_preorder_count</definition>
+        <argsstring>() const</argsstring>
+        <name>get_preorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="127" column="24" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1060" bodyend="1063"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3fc7228b09da82bd3c0b4cc78275f0b0" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int dfu_impl_t::get_postorder_count</definition>
+        <argsstring>() const</argsstring>
+        <name>get_postorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="128" column="24" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1065" bodyend="1068"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afb5c9707fa0138b4f44ee5ce14cec80f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::set&lt; std::string &gt; &amp;</type>
+        <definition>const std::set&lt; std::string &gt; &amp; dfu_impl_t::get_exclusive_resource_types</definition>
+        <argsstring>() const</argsstring>
+        <name>get_exclusive_resource_types</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="129" column="20" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1070" bodyend="1073"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aade0a6e9dc9bee33e5a054920abda8cc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::set_graph</definition>
+        <argsstring>(std::shared_ptr&lt; f_resource_graph_t &gt; g)</argsstring>
+        <name>set_graph</name>
+        <param>
+          <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+          <declname>g</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="131" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1075" bodyend="1078"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a955ee191dd4128d7c6ec2b2343999269" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::set_graph_db</definition>
+        <argsstring>(std::shared_ptr&lt; resource_graph_db_t &gt; db)</argsstring>
+        <name>set_graph_db</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+          <declname>db</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="132" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1080" bodyend="1083"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a10b8d35c40fec48c746148c597c688b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::set_match_cb</definition>
+        <argsstring>(std::shared_ptr&lt; dfu_match_cb_t &gt; m)</argsstring>
+        <name>set_match_cb</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="133" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1085" bodyend="1088"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a016ff9ec923d513a3aa6244e07456506" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::clear_err_message</definition>
+        <argsstring>()</argsstring>
+        <name>clear_err_message</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="134" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1090" bodyend="1093"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afad4bb80129442076d088e8a7fd0d899" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::reset_color</definition>
+        <argsstring>()</argsstring>
+        <name>reset_color</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="135" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1095" bodyend="1098"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a51305be07904b969159f3f5f500c6ca7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::reset_exclusive_resource_types</definition>
+        <argsstring>(const std::set&lt; std::string &gt; &amp;x_types)</argsstring>
+        <name>reset_exclusive_resource_types</name>
+        <param>
+          <type>const std::set&lt; std::string &gt; &amp;</type>
+          <declname>x_types</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="136" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1100" bodyend="1103"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7f58c65eb160d80a886d04d30a8abf4d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::exclusivity</definition>
+        <argsstring>(const std::vector&lt; Jobspec::Resource &gt; &amp;resources, vtx_t u)</argsstring>
+        <name>exclusivity</name>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Exclusive request? Return true if a resource in resources vector matches resource vertex u and its exclusivity field value is TRUE. (Note that when the system default configuration is added, it can return true even if the exclusive field value is UNSPECIFIED if the system default is configured that way.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>resources</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Resource request vector. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>u</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>visiting resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true or false. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="148" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="64" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3e82cc35ceab13cda17f76cc4f0c14b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::prime_pruning_filter</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, vtx_t u, std::map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>prime_pruning_filter</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Prime the resource graph with subtree plans. The subtree plans are instantiated on certain resource vertices and updated with the information on their subtree resources. For example, the subtree plan of a compute node resource vertex can be configured to track the number of available compute cores in aggregate at its subtree. <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> provides an interface to configure what subtree resources will be tracked by higher-level resource vertices.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>subsystem</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>depth-first walk on this subsystem graph for priming. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>u</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>visiting resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error <ndash/> call err_message () for detail. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="163" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1105" bodyend="1158"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a42292cfe93c9354444c97d84a51d972e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::prime_jobspec</definition>
+        <argsstring>(std::vector&lt; Jobspec::Resource &gt; &amp;resources, std::unordered_map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>prime_jobspec</name>
+        <param>
+          <type>std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>std::unordered_map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Prime the resource section of the jobspec. Aggregate configured subtree resources into jobspec&apos;s user_data. For example, cluster[1]-&gt;rack[2]-&gt;node[4]-&gt;socket[1]-&gt;core[2] with socket and core types configured to be tracked will be augmented at the end of priming as: cluster[1](core:16)-&gt;rack[2](core:8)-&gt;node[4](core:2)-&gt; socket[1](core:2)-&gt;core[2]</para>
+<para>The subtree aggregate information is used to prune unnecessary graph traversals</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>resources</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Resource request vector. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">to_parent</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>output aggregates on the subtree. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>none. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="182" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1160" bodyend="1181"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec032226b2fd63441d88f31be2ec02f9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class lookup_t</type>
+          </param>
+        </templateparamlist>
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::dfu_impl_t::count_relevant_types</definition>
+        <argsstring>(planner_multi_t *plan, const lookup_t &amp;lookup, std::vector&lt; uint64_t &gt; &amp;resource_counts)</argsstring>
+        <name>count_relevant_types</name>
+        <param>
+          <type><ref refid="structplanner__multi__t" kindref="compound">planner_multi_t</ref> *</type>
+          <declname>plan</declname>
+        </param>
+        <param>
+          <type>const lookup_t &amp;</type>
+          <declname>lookup</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; uint64_t &gt; &amp;</type>
+          <declname>resource_counts</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Extract the aggregate info in the lookup object as pertaining to the planner-tracking resource types into resource_counts array, a form that can be used with Planner API.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>plan</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>multi-planner object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>lookup</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a map type such as std::map or unordered_map. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">resource_counts</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>output array. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="196" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="507" bodyend="524"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a59829164153c0690c9f528f1c4d89ddc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::select</definition>
+        <argsstring>(Jobspec::Jobspec &amp;jobspec, vtx_t root, jobmeta_t &amp;meta, bool exclusive)</argsstring>
+        <name>select</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec::Jobspec</ref> &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Entry point for graph matching and scoring depth-first-and-up (DFU) walk. It finds best-matching resources and resolves hierarchical constraints. For example, rack[2]-&gt;node[2] will mark the resource graph to select best-matching two nodes that are spread across two distinct best-matching racks. What is best matching is defined by the resource selection logic (derived class of <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>).</para>
+<para>Note that how many resource vertices have been selected is encoded in the incoming edge of that vertex for the general case. However, the root vertex does not have an incoming edge and thus &quot;needs&quot; are passed as the output from this method to handle the root special case.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Jobspec object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>root</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>root resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>meta</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>metadata on this job. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>exclusive</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>true if exclusive access is requested for root. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">needs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>number of root resources requested. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error <ndash/> call err_message () for detail. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="220" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1183" bodyend="1206"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0fba230ebdbe2b603a8e430bf38645dd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::find</definition>
+        <argsstring>(std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const std::string &amp;criteria)</argsstring>
+        <name>find</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>criteria</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Traverse the resource graph and emit those resources whose status is matched with the matching criteria.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched labels </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>criteria</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>matching criteria expression string. Each individual criterion is expressed as a key-value pair, representing a predicate p(x) where key is is p and value is x. Currently supported expressions are &quot;status={up|down}&quot;, &quot;sched-now={allocated|free}&quot;, &quot;sched-future={reserved|free}, or any combination
+                 of them separated with &quot;and&quot;, &quot;or&quot;, or a whitespace
+                 which is also interpreted as &quot;and" logical operator of two expressions. Parentheses are supported to group expressions with a higher operator precedence. For example, in &quot;status=up and
+                 (sched-now=allocated or sched-future=reserved)&quot; The parenthesized expression is evaluated before taking the &quot;and&quot; operator with the the result of the first predicate. Other extra whitespaces around predicates are ignored. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="247" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="1208" bodyend="1246"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3b82a4ce4a4c43e92047e21cc8ed3995" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::update</definition>
+        <argsstring>(vtx_t root, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, jobmeta_t &amp;meta)</argsstring>
+        <name>update</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource state based on the previous select invocation and emit the allocation/reservation information.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>root</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>root resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched resources </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>meta</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>metadata on the job. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>needs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the number of root resources requested. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>excl</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>exclusive access requested. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error <ndash/> call err_message () for detail. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="261" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="543" bodyend="580"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4976d66fd9efe01951c965a136e7e4e7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::update</definition>
+        <argsstring>(vtx_t root, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const std::string &amp;str, std::shared_ptr&lt; resource_reader_base_t &gt; &amp;reader, jobmeta_t &amp;meta)</argsstring>
+        <name>update</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref> &gt; &amp;</type>
+          <declname>reader</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource state based on the allocation data (str) as deserialized by reader and meta.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>root</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>root resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched resources </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>allocation string such as written in JGF. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reader</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reader object that deserialize str to update the graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>meta</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>metadata on the job. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error <ndash/> call err_message () for detail. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="275" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="588" bodyend="644"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af0f80d2e84e3a6ea9b375d2c6a292a11" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::update</definition>
+        <argsstring>()</argsstring>
+        <name>update</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update to make the resource state ready for the next selection. Ignore the previous select invocation.</para>
+<para><simplesect kind="return"><para>0 on success. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="285" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="582" bodyend="586"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9a42dbc4e4417aa58a3403a27bd5ef6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::remove</definition>
+        <argsstring>(vtx_t root, int64_t jobid)</argsstring>
+        <name>remove</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Remove the allocation/reservation referred to by jobid and update the resource state.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>root</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>root resource vertex. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>job id. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="294" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="646" bodyend="652"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a280cc07cc430835d557130c81f456a0d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::mark</definition>
+        <argsstring>(const std::string &amp;root_path, resource_pool_t::status_t status)</argsstring>
+        <name>mark</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>root_path</declname>
+        </param>
+        <param>
+          <type>resource_pool_t::status_t</type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource status to up|down|etc starting at subtree_root.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>root_path</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path to the root of the subtree to update. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>status</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>new status value </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: graph, roots or match callback not set. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="303" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="654" bodyend="671"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7e3cc6f5c52b7759621a724ec34ecfcb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::mark</definition>
+        <argsstring>(std::set&lt; int64_t &gt; &amp;ranks, resource_pool_t::status_t status)</argsstring>
+        <name>mark</name>
+        <param>
+          <type>std::set&lt; int64_t &gt; &amp;</type>
+          <declname>ranks</declname>
+        </param>
+        <param>
+          <type>resource_pool_t::status_t</type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource status to up|down|etc for subgraph represented by ranks.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ranks</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>set of ranks representing the subgraphs to update. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>status</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>new status value </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: roots or by_path not found. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="313" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="673" bodyend="706"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a615d75fe296f34d00231e53f119d7def" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string</type>
+        <definition>const std::string dfu_impl_t::level</definition>
+        <argsstring>() const</argsstring>
+        <name>level</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="322" column="23" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="29" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ace6ef44bfe00e2db5606e1151895cb6d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_impl_t::tick</definition>
+        <argsstring>()</argsstring>
+        <name>tick</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="324" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="38" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9d023bfa5343355798a2bdaf636e2ad1" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::in_subsystem</definition>
+        <argsstring>(edg_t e, const subsystem_t &amp;subsystem) const</argsstring>
+        <name>in_subsystem</name>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="325" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="44" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aef91048f94bd84635634e2ce4250bd6c" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::stop_explore</definition>
+        <argsstring>(edg_t e, const subsystem_t &amp;subsystem) const</argsstring>
+        <name>stop_explore</name>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="326" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="55" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1156a2c5c9c5b187f2a9d9d67af17fa8" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::modify_traversal</definition>
+        <argsstring>(vtx_t u, bool emit_shadow_from_parent) const</argsstring>
+        <name>modify_traversal</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>emit_shadow_from_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="327" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="274" bodyend="280"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a91365dd6cb1b51833aba96e40fd95ed4" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::stop_explore_best</definition>
+        <argsstring>(edg_t e, bool mod) const</argsstring>
+        <name>stop_explore_best</name>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>mod</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="328" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="282" bodyend="285"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abe5dc30d4bbe14c9c974dcf509997576" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::get_eff_exclusive</definition>
+        <argsstring>(bool x, bool mod) const</argsstring>
+        <name>get_eff_exclusive</name>
+        <param>
+          <type>bool</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>mod</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="329" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="287" bodyend="290"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0a189079204d6be2a7d32a93fa484691" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned</type>
+        <definition>unsigned dfu_impl_t::get_eff_needs</definition>
+        <argsstring>(unsigned needs, unsigned size, bool mod) const</argsstring>
+        <name>get_eff_needs</name>
+        <param>
+          <type>unsigned</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>mod</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="330" column="14" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="292" bodyend="296"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af8f863121e47158d9f2162343e630bc4" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::by_avail</definition>
+        <argsstring>(const jobmeta_t &amp;meta, const std::string &amp;s, vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources)</argsstring>
+        <name>by_avail</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Various pruning methods </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="335" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="78" bodyend="107"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a72d3cf7e913f7b855ee9f58f09dd2c54" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::by_excl</definition>
+        <argsstring>(const jobmeta_t &amp;meta, const std::string &amp;s, vtx_t u, bool exclusive_in, const Jobspec::Resource &amp;resource)</argsstring>
+        <name>by_excl</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive_in</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="337" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="109" bodyend="165"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a63080a2f8c3e444d69e36f1abea3efa0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::by_subplan</definition>
+        <argsstring>(const jobmeta_t &amp;meta, const std::string &amp;s, vtx_t u, const Jobspec::Resource &amp;resource)</argsstring>
+        <name>by_subplan</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="339" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="167" bodyend="198"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acd16aeecd79744c2e0bda9524cb29fb5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::prune</definition>
+        <argsstring>(const jobmeta_t &amp;meta, bool excl, const std::string &amp;subsystem, vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources)</argsstring>
+        <name>prune</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="341" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="200" bodyend="237"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0d91543908ec607d347386402e416bde" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structplanner__multi__t" kindref="compound">planner_multi_t</ref> *</type>
+        <definition>planner_multi_t * dfu_impl_t::subtree_plan</definition>
+        <argsstring>(vtx_t u, std::vector&lt; uint64_t &gt; &amp;avail, std::vector&lt; const char * &gt; &amp;types)</argsstring>
+        <name>subtree_plan</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; uint64_t &gt; &amp;</type>
+          <declname>avail</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; const char * &gt; &amp;</type>
+          <declname>types</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="344" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="239" bodyend="246"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a344ea05948807c274f154e4c50a3e441" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::match</definition>
+        <argsstring>(vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, const Jobspec::Resource **slot_resource, unsigned int *nslots, const Jobspec::Resource **match_resource)</argsstring>
+        <name>match</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> **</type>
+          <declname>slot_resource</declname>
+        </param>
+        <param>
+          <type>unsigned int *</type>
+          <declname>nslots</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> **</type>
+          <declname>match_resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Test various matching conditions between jobspec and graph including slot match </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="350" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="248" bodyend="283"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd9741eeb38df82c1090d40b620a3109" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::slot_match</definition>
+        <argsstring>(vtx_t u, const Jobspec::Resource *slot_resource)</argsstring>
+        <name>slot_match</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> *</type>
+          <declname>slot_resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="353" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="285" bodyend="305"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a221e50eb23deb7b2a634302d541242ab" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+        <definition>const std::vector&lt; Resource &gt; &amp; dfu_impl_t::test</definition>
+        <argsstring>(vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool &amp;prestine, unsigned int &amp;nslots, match_kind_t &amp;ko)</argsstring>
+        <name>test</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>unsigned int &amp;</type>
+          <declname>nslots</declname>
+        </param>
+        <param>
+          <type>match_kind_t &amp;</type>
+          <declname>ko</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="354" column="23" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="307" bodyend="352"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa27039400fb9296e91876706e8e087e8" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::dfu_impl_t::is_pconstraint_matched</definition>
+        <argsstring>(vtx_t u, const std::string &amp;property)</argsstring>
+        <name>is_pconstraint_matched</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>property</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="357" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a000334449d013958e4f588204726b4f0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::accum_if</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const std::string &amp;type, unsigned int count, std::map&lt; std::string, int64_t &gt; &amp;accum)</argsstring>
+        <name>accum_if</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>accum</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Accumulate count into accum if type matches with one of the resource types used in the scheduler-driven aggregate update (SDAU) scheme. <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> provides an interface to configure what types are used for SDAU scheme. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="365" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="357" bodyend="368"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61342025772eace4cf836e5df61d1ef5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::accum_if</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const std::string &amp;type, unsigned int count, std::unordered_map&lt; std::string, int64_t &gt; &amp;accum)</argsstring>
+        <name>accum_if</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>std::unordered_map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>accum</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="367" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="371" bodyend="384"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1d13adbc5a04e5b89796a55c273a336b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::prime_exp</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, vtx_t u, std::map&lt; std::string, int64_t &gt; &amp;dfv)</argsstring>
+        <name>prime_exp</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="372" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="386" bodyend="399"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9c8c9891a0698b2674b882baf05980d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::explore</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, visit_t direction, scoring_api_t &amp;dfu, unsigned int multiplier=1)</argsstring>
+        <name>explore</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>visit_t</type>
+          <declname>direction</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>multiplier</declname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="376" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="530" bodyend="541"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5cb780b590a33765c7b35ed9c2a0163a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::explore_statically</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, visit_t direction, scoring_api_t &amp;dfu)</argsstring>
+        <name>explore_statically</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>visit_t</type>
+          <declname>direction</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="380" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="401" bodyend="437"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aac80456728295f0e6392f8030a7d8930" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::explore_dynamically</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, visit_t direction, scoring_api_t &amp;dfu, unsigned int multiplier=1)</argsstring>
+        <name>explore_dynamically</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>visit_t</type>
+          <declname>direction</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>multiplier</declname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="385" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="477" bodyend="528"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a76881923235407a96ad8a5bef4a9d7b3" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_impl_t::is_enough</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, scoring_api_t &amp;dfu, unsigned int multiplier)</argsstring>
+        <name>is_enough</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>multiplier</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="391" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="439" bodyend="454"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a087cab6dde0f929e51ef03abcf15703d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::new_sat_types</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, scoring_api_t &amp;dfu, unsigned int multiplier, std::set&lt; std::string &gt; &amp;sat_types)</argsstring>
+        <name>new_sat_types</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>multiplier</declname>
+        </param>
+        <param>
+          <type>std::set&lt; std::string &gt; &amp;</type>
+          <declname>sat_types</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="394" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="456" bodyend="475"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a090f6a859586bed9687c184e0776bbd2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::aux_upv</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, scoring_api_t &amp;to_parent)</argsstring>
+        <name>aux_upv</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="398" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="543" bodyend="576"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae35ad733acc6a8c5aa1a4073f88ad110" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::cnt_slot</definition>
+        <argsstring>(const std::vector&lt; Jobspec::Resource &gt; &amp;slot_shape, scoring_api_t &amp;dfu_slot)</argsstring>
+        <name>cnt_slot</name>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>slot_shape</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu_slot</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="401" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="595" bodyend="626"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a36a864d1ccee664d627e57d0fd282bd7" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::dom_slot</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, unsigned int nslots, bool prestine, bool *excl, scoring_api_t &amp;dfu)</argsstring>
+        <name>dom_slot</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>nslots</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="403" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="628" bodyend="682"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4e80500c26670286f04adc9c1be1e5ac" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::dom_exp</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, scoring_api_t &amp;to_parent)</argsstring>
+        <name>dom_exp</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="407" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="578" bodyend="593"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7fe4eedd884aae29a63289404cc3c56c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::dom_dfv</definition>
+        <argsstring>(const jobmeta_t &amp;meta, vtx_t u, const std::vector&lt; Jobspec::Resource &gt; &amp;resources, bool prestine, bool *excl, scoring_api_t &amp;to_parent)</argsstring>
+        <name>dom_dfv</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>prestine</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="410" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="684" bodyend="749"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3388b269da83323c87aa7c52d52541a0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::dom_find_dfv</definition>
+        <argsstring>(std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const std::string &amp;criteria, vtx_t u, const vtx_predicates_override_t &amp;p)</argsstring>
+        <name>dom_find_dfv</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>criteria</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t" kindref="compound">vtx_predicates_override_t</ref> &amp;</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="413" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="759" bodyend="824"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b505fd668f3868ab8676fc455f43397" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::aux_find_upv</definition>
+        <argsstring>(std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const std::string &amp;criteria, vtx_t u, const subsystem_t &amp;aux, const vtx_predicates_override_t &amp;p)</argsstring>
+        <name>aux_find_upv</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>criteria</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>aux</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t" kindref="compound">vtx_predicates_override_t</ref> &amp;</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="416" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="751" bodyend="757"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3037745eca08e28ec4cc97bdabaeae98" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::has_root</definition>
+        <argsstring>(vtx_t root, std::vector&lt; Jobspec::Resource &gt; &amp;resources, scoring_api_t &amp;dfu, unsigned int *needs)</argsstring>
+        <name>has_root</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>unsigned int *</type>
+          <declname>needs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="422" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="871" bodyend="890"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a77c1fa82aa2987d6fdbea8a59631de75" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::has_remaining</definition>
+        <argsstring>(vtx_t root, std::vector&lt; Jobspec::Resource &gt; &amp;resources, scoring_api_t &amp;dfu)</argsstring>
+        <name>has_remaining</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="424" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="892" bodyend="908"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd83c6400f410888fccc07474965c7a3" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::resolve_graph</definition>
+        <argsstring>(vtx_t root, std::vector&lt; Jobspec::Resource &gt; &amp;resources, scoring_api_t &amp;dfu, bool excl, unsigned int *needs)</argsstring>
+        <name>resolve_graph</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>unsigned int *</type>
+          <declname>needs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="428" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="927" bodyend="945"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a84657f1d147f0c6765f2fde3108304b7" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::resolve</definition>
+        <argsstring>(scoring_api_t &amp;dfu, scoring_api_t &amp;to_parent)</argsstring>
+        <name>resolve</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="430" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="947" bodyend="960"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a513c309914a9b212a3414b1c86c7104c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::enforce</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, scoring_api_t &amp;dfu)</argsstring>
+        <name>enforce</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="431" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="962" bodyend="989"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2f016e179d2d9b6006d623dc302858fc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::enforce_constrained</definition>
+        <argsstring>(scoring_api_t &amp;dfu)</argsstring>
+        <name>enforce_constrained</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="432" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="910" bodyend="916"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2ae48d2f09236329777ee76905c463ae" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::enforce_dfv</definition>
+        <argsstring>(vtx_t u, scoring_api_t &amp;dfu)</argsstring>
+        <name>enforce_dfv</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="433" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="826" bodyend="869"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b63d73c6b13cde58c1d44adfb144cbc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::enforce_remaining</definition>
+        <argsstring>(vtx_t u, scoring_api_t &amp;dfu)</argsstring>
+        <name>enforce_remaining</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="434" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.cpp" bodystart="918" bodyend="925"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acf8db5771ebded81ef52dddab2fc24ed" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::emit_vtx</definition>
+        <argsstring>(vtx_t u, std::shared_ptr&lt; match_writers_t &gt; &amp;w, unsigned int needs, bool exclusive)</argsstring>
+        <name>emit_vtx</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>w</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="443" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="30" bodyend="34"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9db3b7b9b1ba379e5cd083feec41e3e5" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::emit_edg</definition>
+        <argsstring>(edg_t e, std::shared_ptr&lt; match_writers_t &gt; &amp;w)</argsstring>
+        <name>emit_edg</name>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>w</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="445" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="36" bodyend="39"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac643b80a2251ee9ee9fbbc3a0c6579f8" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_txfilter</definition>
+        <argsstring>(vtx_t u, const jobmeta_t &amp;jobmeta, const std::map&lt; std::string, int64_t &gt; &amp;dfu)</argsstring>
+        <name>upd_txfilter</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="448" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="41" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a50b49774ae2bf42ddf6e7e8dc8e0c75c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_agfilter</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;s, const jobmeta_t &amp;jobmeta, const std::map&lt; std::string, int64_t &gt; &amp;dfu)</argsstring>
+        <name>upd_agfilter</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="450" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="68" bodyend="93"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4112be55870da099aa87b4d7f11ec390" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_idata</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;s, const jobmeta_t &amp;jobmeta, const std::map&lt; std::string, int64_t &gt; &amp;dfu)</argsstring>
+        <name>upd_idata</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="452" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="95" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae84f3521ee7f2441e539ddbad7e1fa1b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_by_outedges</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const jobmeta_t &amp;jobmeta, vtx_t u, edg_t e)</argsstring>
+        <name>upd_by_outedges</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="454" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="108" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4c63fd510f6a334a9eebec9eb8991908" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_plan</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;s, unsigned int needs, bool excl, const jobmeta_t &amp;jobmeta, bool full, int &amp;n)</argsstring>
+        <name>upd_plan</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>full</declname>
+        </param>
+        <param>
+          <type>int &amp;</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="456" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="149" bodyend="200"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae811ac79854006b4ba6f4d7e3148c5b2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::accum_to_parent</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;s, unsigned int needs, bool excl, const std::map&lt; std::string, int64_t &gt; &amp;dfu, std::map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>accum_to_parent</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="458" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="202" bodyend="222"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a064bd3e8a6d79e7cf5833785d23399f9" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_meta</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;s, unsigned int needs, bool excl, int n, const jobmeta_t &amp;jobmeta, const std::map&lt; std::string, int64_t &gt; &amp;dfu, std::map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>upd_meta</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="461" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="224" bodyend="238"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa62bad9e5ee41f36836fbe88d9c3cd35" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_sched</definition>
+        <argsstring>(vtx_t u, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const subsystem_t &amp;s, unsigned int needs, bool excl, int n, const jobmeta_t &amp;jobmeta, bool full, const std::map&lt; std::string, int64_t &gt; &amp;dfu, std::map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>upd_sched</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>full</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="465" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="240" bodyend="262"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a73d199c8efa25dd054c5a9ce2f81386c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_upv</definition>
+        <argsstring>(vtx_t u, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const subsystem_t &amp;subsystem, unsigned int needs, bool excl, const jobmeta_t &amp;jobmeta, bool full, std::map&lt; std::string, int64_t &gt; &amp;to_parent)</argsstring>
+        <name>upd_upv</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>full</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="470" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="264" bodyend="272"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab8d95eee46a328d4cff652bfa3c71e59" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::upd_dfv</definition>
+        <argsstring>(vtx_t u, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, unsigned int needs, bool excl, const jobmeta_t &amp;jobmeta, bool full, std::map&lt; std::string, int64_t &gt; &amp;to_parent, bool emit_shadow)</argsstring>
+        <name>upd_dfv</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>excl</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">jobmeta_t</ref> &amp;</type>
+          <declname>jobmeta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>full</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>to_parent</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>emit_shadow</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="474" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="298" bodyend="352"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9f14314850c1a02964aff13535f1010" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_txfilter</definition>
+        <argsstring>(vtx_t u, int64_t jobid, bool &amp;stop)</argsstring>
+        <name>rem_txfilter</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>stop</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="479" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="354" bodyend="387"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a49cdfb130226a54763be1fa728b33be4" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_agfilter</definition>
+        <argsstring>(vtx_t u, int64_t jobid, const std::string &amp;s)</argsstring>
+        <name>rem_agfilter</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="480" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="389" bodyend="415"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9013151fc2bd06057c99f53f44bc728d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_idata</definition>
+        <argsstring>(vtx_t u, int64_t jobid, const std::string &amp;s, bool &amp;stop)</argsstring>
+        <name>rem_idata</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>stop</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="481" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="417" bodyend="429"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a06851feaf2b7fa9f88518c9f788f3996" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_plan</definition>
+        <argsstring>(vtx_t u, int64_t jobid)</argsstring>
+        <name>rem_plan</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="482" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="431" bodyend="460"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2a43810ee2226f353d2681e4850ea223" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_upv</definition>
+        <argsstring>(vtx_t u, int64_t jobid)</argsstring>
+        <name>rem_upv</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="483" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="462" bodyend="466"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61730db9d2b3095ec59e10e3594a267d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_dfv</definition>
+        <argsstring>(vtx_t u, int64_t jobid)</argsstring>
+        <name>rem_dfv</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="484" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="468" bodyend="492"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e4d9b1d145ca494aba9894dd0b91d61" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_impl_t::rem_exv</definition>
+        <argsstring>(int64_t jobid)</argsstring>
+        <name>rem_exv</name>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="485" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl_update.cpp" bodystart="494" bodyend="534"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>implementation class of <ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::detail::dfu_impl_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::dfu_traverser_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__traverser__t"/>
+        <childnode refid="1" relation="protected-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::detail::dfu_impl_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>m_color</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_expr_eval</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::expr_eval_api_t</label>
+        <link refid="classFlux_1_1resource__model_1_1expr__eval__api__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::color_t</label>
+        <link refid="classFlux_1_1resource__model_1_1color__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="109" column="1" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="109" bodyend="504"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a000334449d013958e4f588204726b4f0" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>accum_if</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61342025772eace4cf836e5df61d1ef5" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>accum_if</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae811ac79854006b4ba6f4d7e3148c5b2" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>accum_to_parent</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b505fd668f3868ab8676fc455f43397" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>aux_find_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a090f6a859586bed9687c184e0776bbd2" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>aux_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af8f863121e47158d9f2162343e630bc4" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>by_avail</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a72d3cf7e913f7b855ee9f58f09dd2c54" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>by_excl</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a63080a2f8c3e444d69e36f1abea3efa0" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>by_subplan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a016ff9ec923d513a3aa6244e07456506" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>clear_err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae35ad733acc6a8c5aa1a4073f88ad110" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>cnt_slot</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec032226b2fd63441d88f31be2ec02f9" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>count_relevant_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ad30b688ef27c95ca846a279ba174c36e" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5fc6d04e0b22f3c34fa8ca7aa2220af1" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a05b5e76d118c9170f38fad36b31e5176" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd31099b56c95735d3e671aa0c5b9df6" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7fe4eedd884aae29a63289404cc3c56c" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dom_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4e80500c26670286f04adc9c1be1e5ac" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dom_exp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3388b269da83323c87aa7c52d52541a0" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dom_find_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a36a864d1ccee664d627e57d0fd282bd7" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>dom_slot</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9db3b7b9b1ba379e5cd083feec41e3e5" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>emit_edg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acf8db5771ebded81ef52dddab2fc24ed" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>emit_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a513c309914a9b212a3414b1c86c7104c" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>enforce</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2f016e179d2d9b6006d623dc302858fc" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>enforce_constrained</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2ae48d2f09236329777ee76905c463ae" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>enforce_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b63d73c6b13cde58c1d44adfb144cbc" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>enforce_remaining</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4660aea2adbf264e84bc55f967bfe166" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7f58c65eb160d80a886d04d30a8abf4d" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>exclusivity</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9c8c9891a0698b2674b882baf05980d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>explore</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aac80456728295f0e6392f8030a7d8930" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>explore_dynamically</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5cb780b590a33765c7b35ed9c2a0163a" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>explore_statically</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0fba230ebdbe2b603a8e430bf38645dd" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>find</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abe5dc30d4bbe14c9c974dcf509997576" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_eff_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0a189079204d6be2a7d32a93fa484691" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_eff_needs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afb5c9707fa0138b4f44ee5ce14cec80f" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a191e977e814eb17f65f77987d1a978a1" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_expr_eval</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab1e87687981d2c8a8e3a2a947d1a0121" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2d01388ca8d10af5d6b172b4de290d30" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afb13db4893ce37e2c4f95d384de4d24e" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_match_cb</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3fc7228b09da82bd3c0b4cc78275f0b0" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_postorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab5020605f89b437c8c3715f99fcf3e3d" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>get_preorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a77c1fa82aa2987d6fdbea8a59631de75" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>has_remaining</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3037745eca08e28ec4cc97bdabaeae98" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>has_root</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9d023bfa5343355798a2bdaf636e2ad1" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>in_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a76881923235407a96ad8a5bef4a9d7b3" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>is_enough</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa27039400fb9296e91876706e8e087e8" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>is_pconstraint_matched</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a615d75fe296f34d00231e53f119d7def" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a6fa326b3af48f8c866350423bd08479e" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_best_k_cnt</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aab9e0a38a37e5649291e93f0a36e17fd" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_color</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1adc4e8b60aa5c2e0e6a888aee4958fc35" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a21104a772cda8db25384decc6275b67f" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_expr_eval</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac11bfb84ddd9be80ee615eadec8882ad" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a010f089d5c09b901fcabe8695b1991b3" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a25b83852ea75632e92ead7d3e4a467c4" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec89754975e8c18eced6aa100d9a466e" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_postorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abebb2163338491db384a8ca2c0f9e301" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_preorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b5b8127fb5884e87b0bed879bbd1f0d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_roots</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e063ec55d92dafbd7d535fdbcab2631" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>m_trav_level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a280cc07cc430835d557130c81f456a0d" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>mark</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7e3cc6f5c52b7759621a724ec34ecfcb" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>mark</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a344ea05948807c274f154e4c50a3e441" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1156a2c5c9c5b187f2a9d9d67af17fa8" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>modify_traversal</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a087cab6dde0f929e51ef03abcf15703d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>new_sat_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af3d8386aa0726b044e1d000bb67d8ee1" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aed81039c7fd95cdf2aa8dec5f47867b6" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1d13adbc5a04e5b89796a55c273a336b" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>prime_exp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a42292cfe93c9354444c97d84a51d972e" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>prime_jobspec</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3e82cc35ceab13cda17f76cc4f0c14b3" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>prime_pruning_filter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acd16aeecd79744c2e0bda9524cb29fb5" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>prune</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a49cdfb130226a54763be1fa728b33be4" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_agfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61730db9d2b3095ec59e10e3594a267d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e4d9b1d145ca494aba9894dd0b91d61" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_exv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9013151fc2bd06057c99f53f44bc728d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_idata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a06851feaf2b7fa9f88518c9f788f3996" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9f14314850c1a02964aff13535f1010" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_txfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2a43810ee2226f353d2681e4850ea223" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>rem_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9a42dbc4e4417aa58a3403a27bd5ef6" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>remove</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afad4bb80129442076d088e8a7fd0d899" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>reset_color</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a51305be07904b969159f3f5f500c6ca7" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>reset_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a84657f1d147f0c6765f2fde3108304b7" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>resolve</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd83c6400f410888fccc07474965c7a3" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>resolve_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a59829164153c0690c9f528f1c4d89ddc" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>select</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aade0a6e9dc9bee33e5a054920abda8cc" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>set_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a955ee191dd4128d7c6ec2b2343999269" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>set_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a10b8d35c40fec48c746148c597c688b7" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>set_match_cb</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd9741eeb38df82c1090d40b620a3109" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>slot_match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aef91048f94bd84635634e2ce4250bd6c" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>stop_explore</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a91365dd6cb1b51833aba96e40fd95ed4" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>stop_explore_best</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0d91543908ec607d347386402e416bde" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>subtree_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a221e50eb23deb7b2a634302d541242ab" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>test</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ace6ef44bfe00e2db5606e1151895cb6d" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>tick</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a50b49774ae2bf42ddf6e7e8dc8e0c75c" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_agfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae84f3521ee7f2441e539ddbad7e1fa1b" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_by_outedges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab8d95eee46a328d4cff652bfa3c71e59" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4112be55870da099aa87b4d7f11ec390" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_idata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a064bd3e8a6d79e7cf5833785d23399f9" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_meta</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4c63fd510f6a334a9eebec9eb8991908" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa62bad9e5ee41f36836fbe88d9c3cd35" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_sched</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac643b80a2251ee9ee9fbbc3a0c6579f8" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_txfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a73d199c8efa25dd054c5a9ce2f81386c" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>upd_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3b82a4ce4a4c43e92047e21cc8ed3995" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4976d66fd9efe01951c965a136e7e4e7" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af0f80d2e84e3a6ea9b375d2c6a292a11" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa2fe6281623e6c5d6d4eaa4921a91684" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::dfu_impl_t</scope><name>~dfu_impl_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

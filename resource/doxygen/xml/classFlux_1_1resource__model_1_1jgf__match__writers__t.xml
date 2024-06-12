@@ -1,0 +1,443 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1jgf__match__writers__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::jgf_match_writers_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::match_writers_t</basecompoundref>
+    <includes refid="match__writers_8hpp" local="no">match_writers.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a984c10266e1c7b2573c65b041d8faab7" prot="private" static="no" mutable="no">
+        <type>json_t *</type>
+        <definition>json_t* Flux::resource_model::jgf_match_writers_t::m_vout</definition>
+        <argsstring></argsstring>
+        <name>m_vout</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="109" column="12" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a4f8aa9f37dcdbf69238a766ecadccd40" prot="private" static="no" mutable="no">
+        <type>json_t *</type>
+        <definition>json_t* Flux::resource_model::jgf_match_writers_t::m_eout</definition>
+        <argsstring></argsstring>
+        <name>m_eout</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="110" column="12" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1af6684289ab096fb04d1de37bd55929e2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::jgf_match_writers_t::jgf_match_writers_t</definition>
+        <argsstring>()</argsstring>
+        <name>jgf_match_writers_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="83" column="5" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="163" bodyend="172"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ace309b951fee889d3b20ed0becd56547" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::jgf_match_writers_t::jgf_match_writers_t</definition>
+        <argsstring>(const jgf_match_writers_t &amp;w)</argsstring>
+        <name>jgf_match_writers_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1jgf__match__writers__t" kindref="compound">jgf_match_writers_t</ref> &amp;</type>
+          <declname>w</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="84" column="5" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="174" bodyend="183"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a9dca2bea389ef4661692251ee14ca0d4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1jgf__match__writers__t" kindref="compound">jgf_match_writers_t</ref> &amp;</type>
+        <definition>jgf_match_writers_t &amp; Flux::resource_model::jgf_match_writers_t::operator=</definition>
+        <argsstring>(const jgf_match_writers_t &amp;w)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1jgf__match__writers__t" kindref="compound">jgf_match_writers_t</ref> &amp;</type>
+          <declname>w</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="85" column="25" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="185" bodyend="196"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aa84ef9cc13995614d6c43e69395e947e" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>Flux::resource_model::jgf_match_writers_t::~jgf_match_writers_t</definition>
+        <argsstring>()</argsstring>
+        <name>~jgf_match_writers_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="86" column="13" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="198" bodyend="202"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a1e01aa5c2dd4aa2d86be3b48007d7f90" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::jgf_match_writers_t::empty</definition>
+        <argsstring>()</argsstring>
+        <name>empty</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1match__writers__t_1a28d55a6b072962336ca080358e19e1ca">empty</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="88" column="18" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="204" bodyend="209"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a49f37bcfc9f73503a2d8e463c6c9fd76" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_json</definition>
+        <argsstring>(json_t **o, json_t **aux=nullptr)</argsstring>
+        <name>emit_json</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1match__writers__t_1a6310ac6ada710dfeb3ce40356d74f773">emit_json</reimplements>
+        <param>
+          <type>json_t **</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>aux</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="89" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="211" bodyend="240"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ae4c96bcbb1d0cc322e3ec3e00a2a1ebd" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit</definition>
+        <argsstring>(std::stringstream &amp;out)</argsstring>
+        <name>emit</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1match__writers__t_1a9b6ffb61977b58decfdc9dfc711b5efa">emit</reimplements>
+        <param>
+          <type>std::stringstream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="90" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="242" bodyend="261"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aa7aad4e7154ff693b0b5fc662d3e2879" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_vtx</definition>
+        <argsstring>(const std::string &amp;prefix, const f_resource_graph_t &amp;g, const vtx_t &amp;u, unsigned int needs, bool exclusive)</argsstring>
+        <name>emit_vtx</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1match__writers__t_1aecc460623175faffc119d89f9dd8dd52">emit_vtx</reimplements>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prefix</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const vtx_t &amp;</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="91" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="263" bodyend="309"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a300da64417c486259725924256319dd8" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_edg</definition>
+        <argsstring>(const std::string &amp;prefix, const f_resource_graph_t &amp;g, const edg_t &amp;e)</argsstring>
+        <name>emit_edg</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1match__writers__t_1af18cceb7e9ef55647c50ffd0bff5110c">emit_edg</reimplements>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prefix</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const edg_t &amp;</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="94" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="311" bodyend="348"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a16df6afd5c514bfb22107d154c62ce60" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>json_t *</type>
+        <definition>json_t * Flux::resource_model::jgf_match_writers_t::emit_vtx_base</definition>
+        <argsstring>(const f_resource_graph_t &amp;g, const vtx_t &amp;u, unsigned int needs, bool exclusive)</argsstring>
+        <name>emit_vtx_base</name>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const vtx_t &amp;</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="97" column="12" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="403" bodyend="459"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a23368ff3e317d13f2118596249a2e0bc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_vtx_prop</definition>
+        <argsstring>(json_t *o, const f_resource_graph_t &amp;g, const vtx_t &amp;u, unsigned int needs, bool exclusive)</argsstring>
+        <name>emit_vtx_prop</name>
+        <param>
+          <type>json_t *</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const vtx_t &amp;</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="99" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a4fa7bdac4d14872b205f3487f0646884" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_vtx_path</definition>
+        <argsstring>(json_t *o, const f_resource_graph_t &amp;g, const vtx_t &amp;u, unsigned int needs, bool exclusive)</argsstring>
+        <name>emit_vtx_path</name>
+        <param>
+          <type>json_t *</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const vtx_t &amp;</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="101" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aefbc925a83e9c31d2207ee9dd65dc363" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::map2json</definition>
+        <argsstring>(json_t *o, const std::map&lt; std::string, std::string &gt; &amp;mp, const char *key)</argsstring>
+        <name>map2json</name>
+        <param>
+          <type>json_t *</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>mp</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="103" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="461" bodyend="495"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ae3055534f435bcef0c16e56dc9d114d8" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::emit_edg_meta</definition>
+        <argsstring>(json_t *o, const f_resource_graph_t &amp;g, const edg_t &amp;e)</argsstring>
+        <name>emit_edg_meta</name>
+        <param>
+          <type>json_t *</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const edg_t &amp;</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="105" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="497" bodyend="535"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ab86f4279f5ee4542f6d07ca216959c36" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::alloc_json_arrays</definition>
+        <argsstring>()</argsstring>
+        <name>alloc_json_arrays</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="106" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="357" bodyend="375"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a41910fa727e7b3391be739b36c438e45" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::jgf_match_writers_t::check_array_sizes</definition>
+        <argsstring>()</argsstring>
+        <name>check_array_sizes</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="107" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="377" bodyend="401"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>JGF match writers class for a matched resource set </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::jgf_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1jgf__match__writers__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1match__writers__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::jgf_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1jgf__match__writers__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1match__writers__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="80" column="1" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="81" bodyend="111"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ab86f4279f5ee4542f6d07ca216959c36" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>alloc_json_arrays</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a41910fa727e7b3391be739b36c438e45" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>check_array_sizes</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a54996ecabb85352f17d3080380636257" prot="public" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>compress_hosts</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1aa9d22a554dc5c7ff8e0c67759290b5e2" prot="public" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>compress_ids</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ae4c96bcbb1d0cc322e3ec3e00a2a1ebd" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a113f3c9d423da81ed8de6e473c507fcc" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_attrs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a300da64417c486259725924256319dd8" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_edg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ae3055534f435bcef0c16e56dc9d114d8" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_edg_meta</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a49f37bcfc9f73503a2d8e463c6c9fd76" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_json</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1afad615322bd73cb95bf1b1d0556792b4" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_tm</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aa7aad4e7154ff693b0b5fc662d3e2879" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a16df6afd5c514bfb22107d154c62ce60" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_vtx_base</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a4fa7bdac4d14872b205f3487f0646884" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_vtx_path</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a23368ff3e317d13f2118596249a2e0bc" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>emit_vtx_prop</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a1e01aa5c2dd4aa2d86be3b48007d7f90" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>empty</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1af6684289ab096fb04d1de37bd55929e2" prot="public" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>jgf_match_writers_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ace309b951fee889d3b20ed0becd56547" prot="public" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>jgf_match_writers_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a4f8aa9f37dcdbf69238a766ecadccd40" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>m_eout</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a984c10266e1c7b2573c65b041d8faab7" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>m_vout</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aefbc925a83e9c31d2207ee9dd65dc363" prot="private" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>map2json</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a9dca2bea389ef4661692251ee14ca0d4" prot="public" virt="non-virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aa84ef9cc13995614d6c43e69395e947e" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>~jgf_match_writers_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a5c19e1d684c08bfd6aac0f4d5116f142" prot="public" virt="virtual"><scope>Flux::resource_model::jgf_match_writers_t</scope><name>~match_writers_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

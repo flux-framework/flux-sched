@@ -1,0 +1,72 @@
+\hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+graph\+\_\+metadata\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t}\index{Flux::resource\_model::resource\_graph\_metadata\_t@{Flux::resource\_model::resource\_graph\_metadata\_t}}
+
+
+{\ttfamily \#include $<$resource\+\_\+graph\+\_\+store.\+hpp$>$}
+
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+graph\+\_\+metadata\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=223pt]{structFlux_1_1resource__model_1_1resource__graph__metadata__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a624a23914f1a9ccd1ace1d13ddf333f5}{set\+\_\+graph\+\_\+duration}} (\mbox{\hyperlink{structFlux_1_1resource__model_1_1graph__duration__t}{graph\+\_\+duration\+\_\+t}} \&g\+\_\+duration)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a599b0d56496f595da68867647ede5408}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a599b0d56496f595da68867647ede5408}} 
+std\+::map$<$ subsystem\+\_\+t, vtx\+\_\+t $>$ {\bfseries roots}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a36b293bfe014101f7cf9e96786748186}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a36b293bfe014101f7cf9e96786748186}} 
+std\+::map$<$ subsystem\+\_\+t, \mbox{\hyperlink{classFlux_1_1resource__model_1_1relation__infra__t}{relation\+\_\+infra\+\_\+t}} $>$ {\bfseries v\+\_\+rt\+\_\+edges}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_ac58cc68c71ed227ac5b3cda08d9a3a0f}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_ac58cc68c71ed227ac5b3cda08d9a3a0f}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ vtx\+\_\+t $>$ $>$ {\bfseries by\+\_\+type}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a28e6b99d9193bfa2c8db64e3c873296e}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a28e6b99d9193bfa2c8db64e3c873296e}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ vtx\+\_\+t $>$ $>$ {\bfseries by\+\_\+name}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_aa74b5746088b5b69aa479626e0abdc2c}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_aa74b5746088b5b69aa479626e0abdc2c}} 
+std\+::map$<$ int64\+\_\+t, std\+::vector$<$ vtx\+\_\+t $>$ $>$ {\bfseries by\+\_\+rank}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a2406a2eb05cff2e83782d9a0e142dbd9}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a2406a2eb05cff2e83782d9a0e142dbd9}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ vtx\+\_\+t $>$ $>$ {\bfseries by\+\_\+path}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a9eb9b9cba14a4a6af30ae4dd201892b4}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a9eb9b9cba14a4a6af30ae4dd201892b4}} 
+std\+::map$<$ vtx\+\_\+t, std\+::map$<$ std\+::pair$<$ uint64\+\_\+t, int64\+\_\+t $>$, edg\+\_\+t, std\+::greater$<$ std\+::pair$<$ uint64\+\_\+t, int64\+\_\+t $>$ $>$ $>$ $>$ {\bfseries by\+\_\+outedges}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a16ae42c65d09cea5d5ce85c260dad930}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a16ae42c65d09cea5d5ce85c260dad930}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1graph__duration__t}{graph\+\_\+duration\+\_\+t}} {\bfseries graph\+\_\+duration}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Resource graph data metadata. Adjacency\+\_\+list graph, roots of this graph and various indexing. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a624a23914f1a9ccd1ace1d13ddf333f5}\label{structFlux_1_1resource__model_1_1resource__graph__metadata__t_a624a23914f1a9ccd1ace1d13ddf333f5}} 
+\index{Flux::resource\_model::resource\_graph\_metadata\_t@{Flux::resource\_model::resource\_graph\_metadata\_t}!set\_graph\_duration@{set\_graph\_duration}}
+\index{set\_graph\_duration@{set\_graph\_duration}!Flux::resource\_model::resource\_graph\_metadata\_t@{Flux::resource\_model::resource\_graph\_metadata\_t}}
+\doxyparagraph{\texorpdfstring{set\_graph\_duration()}{set\_graph\_duration()}}
+{\footnotesize\ttfamily void resource\+\_\+graph\+\_\+metadata\+\_\+t\+::set\+\_\+graph\+\_\+duration (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structFlux_1_1resource__model_1_1graph__duration__t}{graph\+\_\+duration\+\_\+t}} \&}]{g\+\_\+duration }\end{DoxyParamCaption})}
+
+Set the resource graph duration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em g\+\_\+duration} & \mbox{\hyperlink{structFlux_1_1resource__model_1_1graph__duration__t}{graph\+\_\+duration\+\_\+t}} of time\+\_\+points used to set the graph duration \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+graph\+\_\+store.\+hpp\item 
+resource\+\_\+graph\+\_\+store.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1updater__data" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::updater_data</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a8aad1b592133c7c1418781c5b14d26a0" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::updater_data::jobid</definition>
+        <argsstring></argsstring>
+        <name>jobid</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="26" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a59acf01dbbb3722675d84560d574bfd7" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::updater_data::at</definition>
+        <argsstring></argsstring>
+        <name>at</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="27" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a9bb1c94c9c90267b27f106a97ced0bca" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::updater_data::duration</definition>
+        <argsstring></argsstring>
+        <name>duration</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="28" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a3fed2c5d04f51d5a37aa191dc5018410" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::updater_data::reserved</definition>
+        <argsstring></argsstring>
+        <name>reserved</name>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="29" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1ab9c6f6e0d6bc104efcd4ee35525ce401" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::updater_data::token</definition>
+        <argsstring></argsstring>
+        <name>token</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="30" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a2c39d90608b72993a6e14f9ff0a955b5" prot="public" static="no" mutable="no">
+        <type>std::map&lt; int64_t, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;int64_t, std::vector&lt;vtx_t&gt; &gt; Flux::resource_model::updater_data::updated_vertices</definition>
+        <argsstring></argsstring>
+        <name>updated_vertices</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="32" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1updater__data_1a4c27ef3291396cab109edde977d5a7d9" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::updater_data::update</definition>
+        <argsstring></argsstring>
+        <name>update</name>
+        <initializer>= true</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="33" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="25" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="25" bodyend="34"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a59acf01dbbb3722675d84560d574bfd7" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>at</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a9bb1c94c9c90267b27f106a97ced0bca" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>duration</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a8aad1b592133c7c1418781c5b14d26a0" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>jobid</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a3fed2c5d04f51d5a37aa191dc5018410" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>reserved</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1ab9c6f6e0d6bc104efcd4ee35525ce401" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>token</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a4c27ef3291396cab109edde977d5a7d9" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>update</name></member>
+      <member refid="structFlux_1_1resource__model_1_1updater__data_1a2c39d90608b72993a6e14f9ff0a955b5" prot="public" virt="non-virtual"><scope>Flux::resource_model::updater_data</scope><name>updated_vertices</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

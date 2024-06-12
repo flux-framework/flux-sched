@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structmatch__perf__t" kind="struct" language="C++" prot="public">
+    <compoundname>match_perf_t</compoundname>
+    <innerclass refid="structmatch__perf__t_1_1time__stats" prot="public">match_perf_t::time_stats</innerclass>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmatch__perf__t_1a2339ee41516049adf3f0b90af7d79597" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double match_perf_t::load</definition>
+        <argsstring></argsstring>
+        <name>load</name>
+        <initializer>= 0.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="45" column="12" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1a35fc603dcece4642c2053ac5777ef21f" prot="public" static="no" mutable="no">
+        <type>std::chrono::time_point&lt; std::chrono::system_clock &gt;</type>
+        <definition>std::chrono::time_point&lt;std::chrono::system_clock&gt; match_perf_t::graph_uptime</definition>
+        <argsstring></argsstring>
+        <name>graph_uptime</name>
+        <initializer>= std::chrono::system_clock::now ()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="47" column="29" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1a9c462617632d86b8fe219bee76eda96b" prot="public" static="no" mutable="no">
+        <type>std::chrono::time_point&lt; std::chrono::system_clock &gt;</type>
+        <definition>std::chrono::time_point&lt;std::chrono::system_clock&gt; match_perf_t::time_since_reset</definition>
+        <argsstring></argsstring>
+        <name>time_since_reset</name>
+        <initializer>= std::chrono::system_clock::now ()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="50" column="29" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1a25ca147e10512ea6df65f74767bd57a0" prot="public" static="no" mutable="no">
+        <type><ref refid="structmatch__perf__t_1_1time__stats" kindref="compound">time_stats</ref></type>
+        <definition>time_stats match_perf_t::succeeded</definition>
+        <argsstring></argsstring>
+        <name>succeeded</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="74" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1a2a3e561b2191a4ca2690414ea292b0fc" prot="public" static="no" mutable="no">
+        <type><ref refid="structmatch__perf__t_1_1time__stats" kindref="compound">time_stats</ref></type>
+        <definition>time_stats match_perf_t::failed</definition>
+        <argsstring></argsstring>
+        <name>failed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="75" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>match_perf_t::time_stats</label>
+        <link refid="structmatch__perf__t_1_1time__stats"/>
+      </node>
+      <node id="1">
+        <label>match_perf_t</label>
+        <link refid="structmatch__perf__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>failed</edgelabel>
+          <edgelabel>succeeded</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="44" column="1" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="44" bodyend="76"/>
+    <listofallmembers>
+      <member refid="structmatch__perf__t_1a2a3e561b2191a4ca2690414ea292b0fc" prot="public" virt="non-virtual"><scope>match_perf_t</scope><name>failed</name></member>
+      <member refid="structmatch__perf__t_1a35fc603dcece4642c2053ac5777ef21f" prot="public" virt="non-virtual"><scope>match_perf_t</scope><name>graph_uptime</name></member>
+      <member refid="structmatch__perf__t_1a2339ee41516049adf3f0b90af7d79597" prot="public" virt="non-virtual"><scope>match_perf_t</scope><name>load</name></member>
+      <member refid="structmatch__perf__t_1a25ca147e10512ea6df65f74767bd57a0" prot="public" virt="non-virtual"><scope>match_perf_t</scope><name>succeeded</name></member>
+      <member refid="structmatch__perf__t_1a9c462617632d86b8fe219bee76eda96b" prot="public" virt="non-virtual"><scope>match_perf_t</scope><name>time_since_reset</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

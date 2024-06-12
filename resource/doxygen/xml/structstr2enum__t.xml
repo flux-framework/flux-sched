@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structstr2enum__t" kind="struct" language="C++" prot="public">
+    <compoundname>str2enum_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstr2enum__t_1a6e04adf4cace013a88d5d486bce4c93a" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string str2enum_t::str</definition>
+        <argsstring></argsstring>
+        <name>str</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="39" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstr2enum__t_1a8883ffc6e3b0781b6b419356edda053e" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int str2enum_t::e</definition>
+        <argsstring></argsstring>
+        <name>e</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="40" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="37" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="38" bodyend="41"/>
+    <listofallmembers>
+      <member refid="structstr2enum__t_1a8883ffc6e3b0781b6b419356edda053e" prot="public" virt="non-virtual"><scope>str2enum_t</scope><name>e</name></member>
+      <member refid="structstr2enum__t_1a6e04adf4cace013a88d5d486bce4c93a" prot="public" virt="non-virtual"><scope>str2enum_t</scope><name>str</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

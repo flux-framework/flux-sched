@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structidx" kind="struct" language="C++" prot="public">
+    <compoundname>idx</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="35" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="35" bodyend="35"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

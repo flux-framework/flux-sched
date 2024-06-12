@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1parse__error" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::parse_error</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">std::runtime_error</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1parse__error_1a3af7a35da08ec6e1a3fe4a7a0430317b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::Jobspec::parse_error::position</definition>
+        <argsstring></argsstring>
+        <name>position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="26" column="9" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1parse__error_1a91237343711ce765d9b8bb810ebdd46a" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::Jobspec::parse_error::line</definition>
+        <argsstring></argsstring>
+        <name>line</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="27" column="9" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1parse__error_1a6b8d8225fc7f52678385b580dbfd5d7c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::Jobspec::parse_error::column</definition>
+        <argsstring></argsstring>
+        <name>column</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="28" column="9" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1parse__error_1a3d22ff2293c1a6a9b173921d971bd5c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>parse_error::parse_error</definition>
+        <argsstring>(const char *msg)</argsstring>
+        <name>parse_error</name>
+        <param>
+          <type>const char *</type>
+          <declname>msg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="29" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="25" bodyend="30"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1parse__error_1a4767243d16c7976631c667784718f9e2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>parse_error::parse_error</definition>
+        <argsstring>(const YAML::Node &amp;node, const char *msg)</argsstring>
+        <name>parse_error</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>msg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="30" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="32" bodyend="43"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::parse_error</label>
+        <link refid="classFlux_1_1Jobspec_1_1parse__error"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::parse_error</label>
+        <link refid="classFlux_1_1Jobspec_1_1parse__error"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" line="24" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/parse_error.hpp" bodystart="24" bodyend="31"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1parse__error_1a6b8d8225fc7f52678385b580dbfd5d7c" prot="public" virt="non-virtual"><scope>Flux::Jobspec::parse_error</scope><name>column</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1parse__error_1a91237343711ce765d9b8bb810ebdd46a" prot="public" virt="non-virtual"><scope>Flux::Jobspec::parse_error</scope><name>line</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1parse__error_1a3d22ff2293c1a6a9b173921d971bd5c1" prot="public" virt="non-virtual"><scope>Flux::Jobspec::parse_error</scope><name>parse_error</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1parse__error_1a4767243d16c7976631c667784718f9e2" prot="public" virt="non-virtual"><scope>Flux::Jobspec::parse_error</scope><name>parse_error</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1parse__error_1a3af7a35da08ec6e1a3fe4a7a0430317b" prot="public" virt="non-virtual"><scope>Flux::Jobspec::parse_error</scope><name>position</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

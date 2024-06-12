@@ -1,0 +1,19 @@
+<map id="Flux::resource_model::resource_pool_t" name="Flux::resource_model::resource_pool_t">
+<area shape="rect" id="node1" title="Resource pool data type." alt="" coords="1127,77,1273,119"/>
+<area shape="rect" id="node2" href="$structFlux_1_1resource__model_1_1resource__t.html" title="Base resource type." alt="" coords="875,12,1021,53"/>
+<area shape="rect" id="node3" href="$structFlux_1_1resource__model_1_1schedule__t.html" title="Type to keep track of current schedule state." alt="" coords="875,149,1021,191"/>
+<area shape="rect" id="node4" href="$structplanner__t.html" title=" " alt="" coords="645,153,719,179"/>
+<area shape="rect" id="node15" href="$structFlux_1_1resource__model_1_1pool__infra__t.html" title=" " alt="" coords="875,77,1021,119"/>
+<area shape="rect" id="node5" href="$classplanner.html" title=" " alt="" coords="402,153,466,179"/>
+<area shape="rect" id="node6" href="$classmintime__resource__tree__t.html" title=" " alt="" coords="5,194,171,221"/>
+<area shape="rect" id="node7" href="$classscheduled__point__tree__t.html" title=" " alt="" coords="10,93,166,119"/>
+<area shape="rect" id="node8" href="$structrequest__t.html" title=" " alt="" coords="50,143,126,170"/>
+<area shape="rect" id="node9" href="$structscheduled__point__t.html" title=" " alt="" coords="25,311,151,338"/>
+<area shape="rect" id="node11" href="$classrb__node__base__t.html" title=" " alt="" coords="377,342,491,369"/>
+<area shape="rect" id="node10" href="$structmt__resource__rb__node__t.html" title=" " alt="" coords="603,281,761,307"/>
+<area shape="rect" id="node13" href="$structscheduled__point__rb__node__t.html" title=" " alt="" coords="615,400,749,441"/>
+<area shape="rect" id="node12" title=" " alt="" coords="343,213,525,255"/>
+<area shape="rect" id="node14" title=" " alt="" coords="357,393,511,449"/>
+<area shape="rect" id="node16" href="$structFlux_1_1resource__model_1_1infra__base__t.html" title=" " alt="" coords="609,5,755,47"/>
+<area shape="rect" id="node17" href="$classFlux_1_1resource__model_1_1ephemeral__t.html" title=" " alt="" coords="609,71,755,112"/>
+</map>

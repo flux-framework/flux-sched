@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1match__writers__factory__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::match_writers_factory_t</compoundname>
+    <includes refid="match__writers_8hpp" local="no">match_writers.hpp</includes>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__factory__t_1a567f34a7af1eb4c414c47ddaa604a855" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>match_format_t</type>
+        <definition>match_format_t Flux::resource_model::match_writers_factory_t::get_writers_type</definition>
+        <argsstring>(const std::string &amp;n)</argsstring>
+        <name>get_writers_type</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="216" column="27" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="1322" bodyend="1336"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__factory__t_1a68853eb32174ea8b870671876a9fdad4" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; match_writers_t &gt; Flux::resource_model::match_writers_factory_t::create</definition>
+        <argsstring>(match_format_t f)</argsstring>
+        <name>create</name>
+        <param>
+          <type>match_format_t</type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="217" column="28" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="1288" bodyend="1320"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Match writer factory-method class </para>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="214" column="1" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="214" bodyend="218"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__factory__t_1a68853eb32174ea8b870671876a9fdad4" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_writers_factory_t</scope><name>create</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__factory__t_1a567f34a7af1eb4c414c47ddaa604a855" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_writers_factory_t</scope><name>get_writers_type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

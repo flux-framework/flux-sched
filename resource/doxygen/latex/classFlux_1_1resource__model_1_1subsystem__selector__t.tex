@@ -1,0 +1,38 @@
+\hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::subsystem\+\_\+selector\+\_\+t$<$ graph\+\_\+entity, inframap $>$ Class Template Reference}
+\label{classFlux_1_1resource__model_1_1subsystem__selector__t}\index{Flux::resource\_model::subsystem\_selector\_t$<$ graph\_entity, inframap $>$@{Flux::resource\_model::subsystem\_selector\_t$<$ graph\_entity, inframap $>$}}
+
+
+{\ttfamily \#include $<$resource\+\_\+graph.\+hpp$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t_ac71670da5ed9299f5415c4114509282a}\label{classFlux_1_1resource__model_1_1subsystem__selector__t_ac71670da5ed9299f5415c4114509282a}} 
+{\bfseries subsystem\+\_\+selector\+\_\+t} (inframap \&im, const multi\+\_\+subsystemsS \&sel, int subsys\+\_\+size)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t_a8b7aa7d4d0094c2c717bfa80ef673480}\label{classFlux_1_1resource__model_1_1subsystem__selector__t_a8b7aa7d4d0094c2c717bfa80ef673480}} 
+bool {\bfseries operator()} (const graph\+\_\+entity \&ent) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t_a882bef56676ba53ed7b65843319b1f37}\label{classFlux_1_1resource__model_1_1subsystem__selector__t_a882bef56676ba53ed7b65843319b1f37}} 
+multi\+\_\+subsystemsS {\bfseries m\+\_\+selector}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t_a0d07b574a4012508a9bc3b08b547eb66}\label{classFlux_1_1resource__model_1_1subsystem__selector__t_a0d07b574a4012508a9bc3b08b547eb66}} 
+inframap {\bfseries m\+\_\+imap}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1subsystem__selector__t_af36be8aeb9c3754673a1d2dceb7cda57}\label{classFlux_1_1resource__model_1_1subsystem__selector__t_af36be8aeb9c3754673a1d2dceb7cda57}} 
+bool {\bfseries m\+\_\+single\+\_\+subsystem}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+\subsubsection*{template$<$typename graph\+\_\+entity, typename inframap$>$\newline
+class Flux\+::resource\+\_\+model\+::subsystem\+\_\+selector\+\_\+t$<$ graph\+\_\+entity, inframap $>$}
+
+For each chosen subsystem, a selector has std\+::set$<$string$>$. If edge/vertex\textquotesingle{}s member\+\_\+of\mbox{[}subsystem\mbox{]} matches with one of these strings, select that egde/vertex. Edge/vertex itself can also self-\/select. If its member\+\_\+of\mbox{[}subsystem\mbox{]} has been annotated with \textquotesingle{}$\ast$\textquotesingle{}, it is selected. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+graph.\+hpp\end{DoxyCompactItemize}

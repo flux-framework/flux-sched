@@ -1,0 +1,505 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="scoring__api_8hpp" kind="file" language="C++">
+    <compoundname>scoring_api.hpp</compoundname>
+    <includes local="no">map</includes>
+    <includes local="no">vector</includes>
+    <includes local="no">cstdint</includes>
+    <includes local="no">cerrno</includes>
+    <includes local="no">numeric</includes>
+    <includes local="no">functional</includes>
+    <includes local="no">algorithm</includes>
+    <includes refid="resource__graph_8hpp" local="yes">resource/schema/resource_graph.hpp</includes>
+    <includes refid="edge__eval__api_8hpp" local="yes">resource/evaluators/edge_eval_api.hpp</includes>
+    <includes refid="fold_8hpp" local="yes">resource/evaluators/fold.hpp</includes>
+    <includedby refid="scoring__api_8cpp" local="yes">scoring_api.cpp</includedby>
+    <includedby refid="dfu__match__cb_8hpp" local="yes">dfu_match_cb.hpp</includedby>
+    <includedby refid="dfu__impl_8hpp" local="yes">dfu_impl.hpp</includedby>
+    <incdepgraph>
+      <node id="28">
+        <label>stdbool.h</label>
+      </node>
+      <node id="37">
+        <label>boost/icl/interval.hpp</label>
+      </node>
+      <node id="7">
+        <label>functional</label>
+      </node>
+      <node id="31">
+        <label>limits</label>
+      </node>
+      <node id="34">
+        <label>resource/planner/c/planner_multi.h</label>
+        <link refid="planner__multi_8h_source"/>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>boost/graph/filtered_graph.hpp</label>
+      </node>
+      <node id="4">
+        <label>cstdint</label>
+      </node>
+      <node id="27">
+        <label>stdint.h</label>
+      </node>
+      <node id="13">
+        <label>boost/graph/graphviz.hpp</label>
+      </node>
+      <node id="25">
+        <label>stdexcept</label>
+      </node>
+      <node id="6">
+        <label>numeric</label>
+      </node>
+      <node id="9">
+        <label>resource/schema/resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>resource/schema/data_std.hpp</label>
+        <link refid="data__std_8hpp_source"/>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>string</label>
+      </node>
+      <node id="2">
+        <label>map</label>
+      </node>
+      <node id="16">
+        <label>uuid/uuid.h</label>
+      </node>
+      <node id="29">
+        <label>stddef.h</label>
+      </node>
+      <node id="15">
+        <label>resource/schema/resource_data.hpp</label>
+        <link refid="resource__data_8hpp_source"/>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>scoring_api.hpp</label>
+        <link refid="scoring__api_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+        <childnode refid="36" relation="include">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>resource/schema/ephemeral.hpp</label>
+        <link refid="ephemeral_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+      </node>
+      <node id="36">
+        <label>resource/evaluators/fold.hpp</label>
+        <link refid="fold_8hpp_source"/>
+        <childnode refid="37" relation="include">
+        </childnode>
+        <childnode refid="38" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+      </node>
+      <node id="35">
+        <label>resource/evaluators/edge_eval_api.hpp</label>
+        <link refid="edge__eval__api_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>vector</label>
+      </node>
+      <node id="38">
+        <label>boost/icl/interval_set.hpp</label>
+      </node>
+      <node id="5">
+        <label>cerrno</label>
+      </node>
+      <node id="21">
+        <label>resource/schema/color.hpp</label>
+        <link refid="color_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>resource/schema/resource_base.hpp</label>
+        <link refid="resource__base_8hpp_source"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>unordered_map</label>
+      </node>
+      <node id="26">
+        <label>resource/planner/c/planner.h</label>
+        <link refid="planner_8h_source"/>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>boost/config.hpp</label>
+      </node>
+      <node id="33">
+        <label>boost/optional.hpp</label>
+      </node>
+      <node id="30">
+        <label>resource/schema/infra_data.hpp</label>
+        <link refid="infra__data_8hpp_source"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>set</label>
+      </node>
+      <node id="11">
+        <label>boost/graph/adjacency_list.hpp</label>
+      </node>
+      <node id="14">
+        <label>boost/graph/graphml.hpp</label>
+      </node>
+      <node id="8">
+        <label>algorithm</label>
+      </node>
+      <node id="24">
+        <label>resource/schema/sched_data.hpp</label>
+        <link refid="sched__data_8hpp_source"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>cstring</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="8">
+        <label>dfu_match_locality.hpp</label>
+        <link refid="dfu__match__locality_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>dfu_match_low_id_first.hpp</label>
+        <link refid="dfu__match__low__id__first_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>dfu_match_cb.hpp</label>
+        <link refid="dfu__match__cb_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>dfu.hpp</label>
+        <link refid="dfu_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>command.hpp</label>
+        <link refid="command_8hpp_source"/>
+      </node>
+      <node id="1">
+        <label>scoring_api.hpp</label>
+        <link refid="scoring__api_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>dfu_match_high_id_first.hpp</label>
+        <link refid="dfu__match__high__id__first_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>rq2.hpp</label>
+        <link refid="rq2_8hpp_source"/>
+      </node>
+      <node id="5">
+        <label>reapi_cli.hpp</label>
+        <link refid="reapi__cli_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>dfu_match_policy_factory.hpp</label>
+        <link refid="dfu__match__policy__factory_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>reapi_cli_impl.hpp</label>
+        <link refid="reapi__cli__impl_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>dfu_impl.hpp</label>
+        <link refid="dfu__impl_8hpp_source"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>dfu_match_multilevel_id_impl.hpp</label>
+        <link refid="dfu__match__multilevel__id__impl_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>dfu_match_var_aware.hpp</label>
+        <link refid="dfu__match__var__aware_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>dfu_match_multilevel_id.hpp</label>
+        <link refid="dfu__match__multilevel__id_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classFlux_1_1resource__model_1_1scoring__api__t" prot="public">Flux::resource_model::scoring_api_t</innerclass>
+    <innernamespace refid="namespaceFlux">Flux</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model">Flux::resource_model</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2014<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>SCORING_API_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>SCORING_API_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdint&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cerrno&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;numeric&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;functional&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/schema/resource_graph.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/evaluators/edge_eval_api.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/evaluators/fold.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">Flux<sp/>{</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">resource_model<sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28" refid="classFlux_1_1resource__model_1_1scoring__api__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>();</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>&amp;o);</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>&amp;operator=<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>&amp;o);</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/>~<ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>();</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>cutline<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>set_cutline<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,<sp/>int64_t<sp/>c);</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>eval_egroups_iter_reset<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;eval_egroup_t&gt;::iterator<sp/>eval_egroups_iter_next<sp/>(</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;eval_egroup_t&gt;::iterator<sp/>eval_egroups_end<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>add<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref><sp/>&amp;eg);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref><sp/>&amp;<ref refid="classFlux_1_1resource__model_1_1scoring__api__t_1a5eb93212b717a2a469da4102579ea8ba" kindref="member">at</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i);</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>qualified_count<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>qualified_granules<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>total_count<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>best_k<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>best_i<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>hier_constrain_now<sp/>();</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>merge<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref><sp/>&amp;o);</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>resrc_types<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/>std::vector&lt;std::string&gt;<sp/>&amp;v);</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>overall_score<sp/>();</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_overall_score<sp/>(int64_t<sp/>overall);</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>avail<sp/>();</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_avail<sp/>(</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>avail);</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_contained<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>compare_op<sp/>=<sp/>fold::greater,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>binary_op<sp/>=<sp/>fold::plus&gt;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>choose_accum_best_k<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>k,</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>compare_op<sp/>comp<sp/>=<sp/><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref>(),</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>binary_op<sp/>accum<sp/>=<sp/><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref><sp/>())</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>rc;</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>handle_new_keys<sp/>(s,<sp/>r);</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>res_evals<sp/>=<sp/>(*m_ssys_map[s])[r];</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>(rc<sp/>=<sp/>res_evals-&gt;choose_best_k&lt;compare_op&gt;<sp/>(k,<sp/>comp))<sp/>!=<sp/>-1)<sp/>{</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_hier_constrain_now<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>res_evals-&gt;accum_best_k&lt;binary_op&gt;<sp/>(accum);</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>compare_op<sp/>=<sp/>fold::greater,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>binary_op<sp/>=<sp/>fold::plus&gt;</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>choose_accum_all<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>compare_op<sp/>comp<sp/>=<sp/><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref><sp/>(),</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>binary_op<sp/>accum<sp/>=<sp/><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref><sp/>())</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>rc;</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>handle_new_keys<sp/>(s,<sp/>r);</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>res_evals<sp/>=<sp/>(*m_ssys_map[s])[r];</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>k<sp/>=<sp/>res_evals-&gt;qualified_count<sp/>();</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>(rc<sp/>=<sp/>res_evals-&gt;choose_best_k&lt;compare_op&gt;<sp/>(k,<sp/>comp))<sp/>!=<sp/>-1)<sp/>{</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_hier_constrain_now<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>res_evals-&gt;accum_best_k&lt;binary_op&gt;<sp/>(accum);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>output_it,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>unary_op&gt;</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/>output_it<sp/>transform<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r,</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>output_it<sp/>o_it,<sp/>unary_op<sp/>uop)</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>handle_new_keys<sp/>(s,<sp/>r);</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>res_evals<sp/>=<sp/>(*m_ssys_map[s])[r];</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>res_evals-&gt;transform&lt;output_it,<sp/>unary_op&gt;<sp/>(o_it,<sp/>uop);</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>handle_new_keys<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>handle_new_subsystem<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s);</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>handle_new_resrc_type<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t<sp/>&amp;s,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;r);</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/>std::map&lt;</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>subsystem_t,</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::map&lt;const<sp/>std::string,<sp/>detail::evals_t<sp/>*&gt;<sp/>*&gt;<sp/>m_ssys_map;</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>m_hier_constrain_now<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>int64_t<sp/>m_overall_score<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>m_avail<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="115"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>resource_model</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Flux</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="119"><highlight class="normal"></highlight></codeline>
+<codeline lineno="120"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>SCORING_API_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="123"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="124"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp"/>
+  </compounddef>
+</doxygen>

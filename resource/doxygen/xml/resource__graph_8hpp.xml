@@ -1,0 +1,556 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="resource__graph_8hpp" kind="file" language="C++">
+    <compoundname>resource_graph.hpp</compoundname>
+    <includes local="no">boost/config.hpp</includes>
+    <includes local="no">boost/graph/adjacency_list.hpp</includes>
+    <includes local="no">boost/graph/filtered_graph.hpp</includes>
+    <includes local="no">boost/graph/graphviz.hpp</includes>
+    <includes local="no">boost/graph/graphml.hpp</includes>
+    <includes refid="resource__data_8hpp" local="yes">resource/schema/resource_data.hpp</includes>
+    <includedby refid="edge__eval__api_8hpp" local="yes">edge_eval_api.hpp</includedby>
+    <includedby refid="expr__eval__vtx__target_8hpp" local="yes">expr_eval_vtx_target.hpp</includedby>
+    <includedby refid="scoring__api_8hpp" local="yes">scoring_api.hpp</includedby>
+    <includedby refid="resource__match_8cpp" local="yes">resource_match.cpp</includedby>
+    <includedby refid="dfu__match__cb_8hpp" local="yes">dfu_match_cb.hpp</includedby>
+    <includedby refid="resource__reader__base_8hpp" local="yes">resource_reader_base.hpp</includedby>
+    <includedby refid="resource__reader__grug_8hpp" local="yes">resource_reader_grug.hpp</includedby>
+    <includedby refid="resource__reader__jgf_8hpp" local="yes">resource_reader_jgf.hpp</includedby>
+    <includedby refid="resource__reader__rv1exec_8hpp" local="yes">resource_reader_rv1exec.hpp</includedby>
+    <includedby refid="resource__graph__store_8hpp" local="yes">resource_graph_store.hpp</includedby>
+    <includedby refid="dfu__impl_8hpp" local="yes">dfu_impl.hpp</includedby>
+    <includedby refid="command_8hpp" local="yes">command.hpp</includedby>
+    <includedby refid="match__writers_8cpp" local="yes">match_writers.cpp</includedby>
+    <incdepgraph>
+      <node id="22">
+        <label>stdbool.h</label>
+      </node>
+      <node id="25">
+        <label>limits</label>
+      </node>
+      <node id="28">
+        <label>resource/planner/c/planner_multi.h</label>
+        <link refid="planner__multi_8h_source"/>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>boost/graph/filtered_graph.hpp</label>
+      </node>
+      <node id="15">
+        <label>cstdint</label>
+      </node>
+      <node id="21">
+        <label>stdint.h</label>
+      </node>
+      <node id="5">
+        <label>boost/graph/graphviz.hpp</label>
+      </node>
+      <node id="19">
+        <label>stdexcept</label>
+      </node>
+      <node id="1">
+        <label>resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>resource/schema/data_std.hpp</label>
+        <link refid="data__std_8hpp_source"/>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>string</label>
+      </node>
+      <node id="11">
+        <label>map</label>
+      </node>
+      <node id="8">
+        <label>uuid/uuid.h</label>
+      </node>
+      <node id="23">
+        <label>stddef.h</label>
+      </node>
+      <node id="7">
+        <label>resource/schema/resource_data.hpp</label>
+        <link refid="resource__data_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>resource/schema/ephemeral.hpp</label>
+        <link refid="ephemeral_8hpp_source"/>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>resource/schema/color.hpp</label>
+        <link refid="color_8hpp_source"/>
+        <childnode refid="15" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>resource/schema/resource_base.hpp</label>
+        <link refid="resource__base_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>unordered_map</label>
+      </node>
+      <node id="20">
+        <label>resource/planner/c/planner.h</label>
+        <link refid="planner_8h_source"/>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>boost/config.hpp</label>
+      </node>
+      <node id="27">
+        <label>boost/optional.hpp</label>
+      </node>
+      <node id="24">
+        <label>resource/schema/infra_data.hpp</label>
+        <link refid="infra__data_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>set</label>
+      </node>
+      <node id="3">
+        <label>boost/graph/adjacency_list.hpp</label>
+      </node>
+      <node id="6">
+        <label>boost/graph/graphml.hpp</label>
+      </node>
+      <node id="18">
+        <label>resource/schema/sched_data.hpp</label>
+        <link refid="sched__data_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>cstring</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="11">
+        <label>dfu_match_locality.hpp</label>
+        <link refid="dfu__match__locality_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>dfu_match_low_id_first.hpp</label>
+        <link refid="dfu__match__low__id__first_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>resource_reader_base.hpp</label>
+        <link refid="resource__reader__base_8hpp_source"/>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>dfu_match_cb.hpp</label>
+        <link refid="dfu__match__cb_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>resource_reader_hwloc.hpp</label>
+        <link refid="resource__reader__hwloc_8hpp_source"/>
+      </node>
+      <node id="1">
+        <label>resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>dfu.hpp</label>
+        <link refid="dfu_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>command.hpp</label>
+        <link refid="command_8hpp_source"/>
+      </node>
+      <node id="21">
+        <label>resource_reader_factory.hpp</label>
+        <link refid="resource__reader__factory_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>scoring_api.hpp</label>
+        <link refid="scoring__api_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>dfu_match_high_id_first.hpp</label>
+        <link refid="dfu__match__high__id__first_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>fold.hpp</label>
+        <link refid="fold_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>rq2.hpp</label>
+        <link refid="rq2_8hpp_source"/>
+      </node>
+      <node id="19">
+        <label>expr_eval_vtx_target.hpp</label>
+        <link refid="expr__eval__vtx__target_8hpp_source"/>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>reapi_cli.hpp</label>
+        <link refid="reapi__cli_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>edge_eval_api.hpp</label>
+        <link refid="edge__eval__api_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>dfu_match_policy_factory.hpp</label>
+        <link refid="dfu__match__policy__factory_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>reapi_cli_impl.hpp</label>
+        <link refid="reapi__cli__impl_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>resource_reader_jgf.hpp</label>
+        <link refid="resource__reader__jgf_8hpp_source"/>
+      </node>
+      <node id="16">
+        <label>dfu_impl.hpp</label>
+        <link refid="dfu__impl_8hpp_source"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>dfu_match_multilevel_id_impl.hpp</label>
+        <link refid="dfu__match__multilevel__id__impl_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>resource_reader_rv1exec.hpp</label>
+        <link refid="resource__reader__rv1exec_8hpp_source"/>
+      </node>
+      <node id="26">
+        <label>resource_graph_store.hpp</label>
+        <link refid="resource__graph__store_8hpp_source"/>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>dfu_match_var_aware.hpp</label>
+        <link refid="dfu__match__var__aware_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>dfu_match_multilevel_id.hpp</label>
+        <link refid="dfu__match__multilevel__id_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>resource_reader_grug.hpp</label>
+        <link refid="resource__reader__grug_8hpp_source"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classFlux_1_1resource__model_1_1subsystem__selector__t" prot="public">Flux::resource_model::subsystem_selector_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1label__writer__t" prot="public">Flux::resource_model::label_writer_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1edg__label__writer__t" prot="public">Flux::resource_model::edg_label_writer_t</innerclass>
+    <innernamespace refid="namespaceFlux">Flux</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model">Flux::resource_model</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2014<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>RESOURCE_GRAPH_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>RESOURCE_GRAPH_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/config.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/adjacency_list.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/filtered_graph.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/graphviz.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/graphml.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/schema/resource_data.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">Flux<sp/>{</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">resource_model<sp/>{</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/>emit_format_t<sp/>{<sp/>GRAPHVIZ_DOT,<sp/>GRAPH_ML,<sp/>};</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>pinfra_t<sp/>=<sp/>pool_infra_t<sp/>resource_pool_t::*;</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>pname_t<sp/><sp/>=<sp/>std::string<sp/>resource_t::*;</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>rname_t<sp/><sp/>=<sp/>std::string<sp/>resource_relation_t::*;</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>rinfra_t<sp/>=<sp/>relation_infra_t<sp/>resource_relation_t::*;</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>resource_graph_t<sp/>=<sp/>boost::adjacency_list&lt;boost::vecS,</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::vecS,</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::directedS,</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>resource_pool_t,</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>resource_relation_t,</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string&gt;;</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>graph_entity,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>inframap&gt;</highlight></codeline>
+<codeline lineno="44" refid="classFlux_1_1resource__model_1_1subsystem__selector__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref><sp/>()<sp/>{}</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>~<ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref><sp/>()<sp/>{}</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref><sp/>(inframap<sp/>&amp;im,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>multi_subsystemsS<sp/>&amp;sel,</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>subsys_size)</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>must<sp/>be<sp/>lightweight<sp/>--<sp/>e.g.,<sp/>bundled<sp/>property<sp/>map.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_imap<sp/>=<sp/>im;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_selector<sp/>=<sp/>sel;</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_single_subsystem<sp/>=<sp/>(subsys_size<sp/>==<sp/>1)<sp/>?<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator<sp/>()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>graph_entity<sp/>&amp;ent)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Short<sp/>circuit<sp/>for<sp/>single<sp/>subsystem.<sp/>This<sp/>will<sp/>be<sp/>a<sp/>common<sp/>case.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>TODO:<sp/>make<sp/>systems<sp/>ints<sp/>or<sp/>enums<sp/>for<sp/>faster<sp/>comparison<sp/>and<sp/>search.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m_single_subsystem)</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>boost::property_traits&lt;inframap&gt;::value_type<sp/>infra_type;</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>infra_type<sp/>&amp;inf<sp/>=<sp/>get<sp/>(m_imap,<sp/>ent);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>multi_subsystems_t<sp/>&amp;subsystems<sp/>=<sp/>inf.member_of;</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>&amp;kv<sp/>:<sp/>subsystems)<sp/>{</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>multi_subsystemsS::const_iterator<sp/>i;</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>i<sp/>=<sp/>m_selector.find<sp/>(kv.first);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(i<sp/>!=<sp/>m_selector.end<sp/>())<sp/>{</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(kv.second<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;*&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(i-&gt;second.find<sp/>(kv.second)<sp/>!=<sp/>i-&gt;second.end<sp/>()</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>||<sp/>i-&gt;second.find<sp/>(</highlight><highlight class="stringliteral">&quot;*&quot;</highlight><highlight class="normal">)<sp/>!=<sp/>i-&gt;second.end<sp/>())</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>multi_subsystemsS<sp/>m_selector;</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/>inframap<sp/>m_imap;</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>m_single_subsystem;</highlight></codeline>
+<codeline lineno="82"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>vtx_infra_map_t<sp/>=<sp/>boost::property_map&lt;resource_graph_t,<sp/>pinfra_t&gt;::type;</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>edg_infra_map_t<sp/>=<sp/>boost::property_map&lt;resource_graph_t,<sp/>rinfra_t&gt;::type;</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>vtx_t<sp/>=<sp/>boost::graph_traits&lt;resource_graph_t&gt;::vertex_descriptor;</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>edg_t<sp/>=<sp/>boost::graph_traits&lt;resource_graph_t&gt;::edge_descriptor;</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>vtx_iterator_t<sp/>=<sp/>boost::graph_traits&lt;resource_graph_t&gt;::vertex_iterator;</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>edg_iterator_t<sp/>=<sp/>boost::graph_traits&lt;resource_graph_t&gt;::edge_iterator;</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>out_edg_iterator_t<sp/>=<sp/>boost::graph_traits&lt;resource_graph_t&gt;::out_edge_iterator;</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_resource_graph_t<sp/>=<sp/>boost::filtered_graph&lt;resource_graph_t,</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref>&lt;edg_t,</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edg_infra_map_t&gt;,</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref>&lt;vtx_t,</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_infra_map_t&gt;&gt;;</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_edg_infra_map_t<sp/>=<sp/>boost::property_map&lt;f_resource_graph_t,<sp/>rinfra_t&gt;::type;</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_vtx_infra_map_t<sp/>=<sp/>boost::property_map&lt;f_resource_graph_t,<sp/>pinfra_t&gt;::type;</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_res_name_map_t<sp/>=<sp/>boost::property_map&lt;f_resource_graph_t,<sp/>pname_t&gt;::type;</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_rel_name_map_t<sp/>=<sp/>boost::property_map&lt;f_resource_graph_t,<sp/>rname_t&gt;::type;</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_vtx_infra_map_t<sp/>=<sp/>boost::property_map&lt;f_resource_graph_t,<sp/>pinfra_t&gt;::type;</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_vtx_iterator_t<sp/>=<sp/>boost::graph_traits&lt;f_resource_graph_t&gt;::vertex_iterator;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_edg_iterator_t<sp/>=<sp/>boost::graph_traits&lt;f_resource_graph_t&gt;::edge_iterator;</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/>f_out_edg_iterator_t<sp/>=<sp/>boost::graph_traits&lt;f_resource_graph_t&gt;::out_edge_iterator;</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>name_map,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>graph_entity&gt;</highlight></codeline>
+<codeline lineno="106" refid="classFlux_1_1resource__model_1_1label__writer__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1label__writer__t" kindref="compound">label_writer_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1label__writer__t" kindref="compound">label_writer_t</ref><sp/>(name_map<sp/>&amp;in_map):<sp/>m<sp/>(in_map)<sp/>{<sp/>}</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(std::ostream<sp/>&amp;out,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>graph_entity<sp/>ent)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[label=\&quot;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m[ent]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&quot;]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>name_map<sp/>m;</highlight></codeline>
+<codeline lineno="114"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight></codeline>
+<codeline lineno="116" refid="classFlux_1_1resource__model_1_1edg__label__writer__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1edg__label__writer__t" kindref="compound">edg_label_writer_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1edg__label__writer__t" kindref="compound">edg_label_writer_t</ref><sp/>(f_edg_infra_map_t<sp/>&amp;idata,<sp/>subsystem_t<sp/>&amp;s)</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>m_infra<sp/>(idata),<sp/>m_s<sp/>(s)<sp/>{}</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(std::ostream&amp;<sp/>out,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>edg_t<sp/>&amp;e)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>multi_subsystems_t::iterator<sp/>i<sp/>=<sp/>m_infra[e].member_of.find<sp/>(m_s);</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(i<sp/>!=<sp/>m_infra[e].member_of.end<sp/>())<sp/>{</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[label=\&quot;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>i-&gt;second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&quot;]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>i<sp/>=<sp/>m_infra[e].member_of.begin<sp/>();</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[label=\&quot;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>i-&gt;second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&quot;]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/>f_edg_infra_map_t<sp/>m_infra;</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/>subsystem_t<sp/>m_s;</highlight></codeline>
+<codeline lineno="132"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"></highlight></codeline>
+<codeline lineno="134"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>resource_model</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Flux</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"></highlight></codeline>
+<codeline lineno="137"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>RESOURCE_GRAPH_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="140"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="141"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp"/>
+  </compounddef>
+</doxygen>

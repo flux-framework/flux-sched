@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1command__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::command_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1command__t_1a981409be05f17002c818be36988b9f9b" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::command_t::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="26" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1command__t_1a1f92c964108ef9a009ed51a9080cdb80" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::command_t::abbr</definition>
+        <argsstring></argsstring>
+        <name>abbr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="27" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1command__t_1ac65577b09e90d92c07c6b2353faf3898" prot="public" static="no" mutable="no">
+        <type>cmd_func_f *</type>
+        <definition>cmd_func_f* Flux::resource_model::command_t::cmd</definition>
+        <argsstring></argsstring>
+        <name>cmd</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="28" column="16" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1command__t_1af9a174b50576ad3a3ee6017e2ac3e59a" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::command_t::note</definition>
+        <argsstring></argsstring>
+        <name>note</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="29" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="25" column="1" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="25" bodyend="30"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1command__t_1a1f92c964108ef9a009ed51a9080cdb80" prot="public" virt="non-virtual"><scope>Flux::resource_model::command_t</scope><name>abbr</name></member>
+      <member refid="structFlux_1_1resource__model_1_1command__t_1ac65577b09e90d92c07c6b2353faf3898" prot="public" virt="non-virtual"><scope>Flux::resource_model::command_t</scope><name>cmd</name></member>
+      <member refid="structFlux_1_1resource__model_1_1command__t_1a981409be05f17002c818be36988b9f9b" prot="public" virt="non-virtual"><scope>Flux::resource_model::command_t</scope><name>name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1command__t_1af9a174b50576ad3a3ee6017e2ac3e59a" prot="public" virt="non-virtual"><scope>Flux::resource_model::command_t</scope><name>note</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

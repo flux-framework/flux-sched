@@ -1,0 +1,118 @@
+\hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1greater__interval__first__t}\index{Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}}
+
+
+{\ttfamily \#include $<$dfu\+\_\+match\+\_\+locality.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=318pt]{structFlux_1_1resource__model_1_1greater__interval__first__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=318pt]{structFlux_1_1resource__model_1_1greater__interval__first__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_a1daf3d766f041a972ca5d1901299b8c0}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_a1daf3d766f041a972ca5d1901299b8c0}} 
+{\bfseries greater\+\_\+interval\+\_\+first\+\_\+t} (const std\+::string \&name)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_adebbff72258d84363e9415ecde47f4c1}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_adebbff72258d84363e9415ecde47f4c1}} 
+{\bfseries greater\+\_\+interval\+\_\+first\+\_\+t} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t}{greater\+\_\+interval\+\_\+first\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_ac11a0300288545353e4b5bb1e3ea3174}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_ac11a0300288545353e4b5bb1e3ea3174}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t}{greater\+\_\+interval\+\_\+first\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t}{greater\+\_\+interval\+\_\+first\+\_\+t}} \&o)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t_a4ee1289f5aea41cd8849bb6c92d8e112}{dom\+\_\+finish\+\_\+graph}} (const subsystem\+\_\+t \&subsystem, const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&resources, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t_a990c60a23ff670671b1a3c8a3b567001}{dom\+\_\+finish\+\_\+vtx}} (vtx\+\_\+t u, const subsystem\+\_\+t \&subsystem, const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&resources, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1greater__interval__first__t_a501d53dcd9dfab27b780e1daf34f4bb9}{dom\+\_\+finish\+\_\+slot}} (const subsystem\+\_\+t \&subsystem, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Locality-\/aware policy\+: select resources of each type where you have more qualified. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_a4ee1289f5aea41cd8849bb6c92d8e112}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_a4ee1289f5aea41cd8849bb6c92d8e112}} 
+\index{Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}!dom\_finish\_graph@{dom\_finish\_graph}}
+\index{dom\_finish\_graph@{dom\_finish\_graph}!Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_graph()}{dom\_finish\_graph()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t\+::dom\+\_\+finish\+\_\+graph (\begin{DoxyParamCaption}\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&}]{resources,  }\item[{const f\+\_\+resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back when all of the graph vertices and edges have been visited. Must be overridden by a derived class if this visit event should be programed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em subsystem} & subsystem\+\_\+t object of the dominant subsystem. \\
+\hline
+{\em resources} & vector of resources to be matched. \\
+\hline
+{\em g} & filtered resource graph. \\
+\hline
+{\em dfu} & score interface object -\/ See utilities/\+README.\+md \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+return 0 on success; otherwise -\/1. 
+\end{DoxyReturn}
+
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_abc5ab933d4523b8c56c51e11f4555b1d}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_a501d53dcd9dfab27b780e1daf34f4bb9}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_a501d53dcd9dfab27b780e1daf34f4bb9}} 
+\index{Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}!dom\_finish\_slot@{dom\_finish\_slot}}
+\index{dom\_finish\_slot@{dom\_finish\_slot}!Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_slot()}{dom\_finish\_slot()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t\+::dom\+\_\+finish\+\_\+slot (\begin{DoxyParamCaption}\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back on each postorder visit of a group of slot resources (resources that can be contained within one or more slots) of the dominant subsystem. 
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_a6d27b52a925bf4d9b00a2d0de41f3ec5}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1greater__interval__first__t_a990c60a23ff670671b1a3c8a3b567001}\label{structFlux_1_1resource__model_1_1greater__interval__first__t_a990c60a23ff670671b1a3c8a3b567001}} 
+\index{Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}!dom\_finish\_vtx@{dom\_finish\_vtx}}
+\index{dom\_finish\_vtx@{dom\_finish\_vtx}!Flux::resource\_model::greater\_interval\_first\_t@{Flux::resource\_model::greater\_interval\_first\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_vtx()}{dom\_finish\_vtx()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::greater\+\_\+interval\+\_\+first\+\_\+t\+::dom\+\_\+finish\+\_\+vtx (\begin{DoxyParamCaption}\item[{vtx\+\_\+t}]{u,  }\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&}]{resources,  }\item[{const f\+\_\+resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back on each postorder visit of the dominant subsystem. Must be overridden by a derived class if this visit event should be programed. Should return a score calculated based on the subtree and up walks using the score API object (dfu). Any score above MATCH\+\_\+\+MET is qualified to be a match.
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & descriptor of the visiting vertex \\
+\hline
+{\em subsystem} & subsystem\+\_\+t object of the dominant subsystem \\
+\hline
+{\em resources} & vector of resources to be matched \\
+\hline
+{\em g} & filtered resource graph \\
+\hline
+{\em dfu} & score interface object -- See utilities/\+README.\+md\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+return 0 on success; otherwise -\/1 
+\end{DoxyReturn}
+
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_ac8faa0951729c43d6fa75eac86918b5d}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+dfu\+\_\+match\+\_\+locality.\+hpp\item 
+dfu\+\_\+match\+\_\+locality.\+cpp\end{DoxyCompactItemize}

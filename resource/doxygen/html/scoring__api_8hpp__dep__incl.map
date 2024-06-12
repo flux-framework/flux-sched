@@ -1,0 +1,31 @@
+<map id="scoring_api.hpp" name="scoring_api.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="709,5,822,32"/>
+<area shape="rect" id="node2" href="$scoring__api_8cpp.html" title=" " alt="" coords="563,80,677,107"/>
+<area shape="rect" id="node3" href="$dfu__match__cb_8hpp.html" title=" " alt="" coords="701,80,830,107"/>
+<area shape="rect" id="node23" href="$dfu__impl_8hpp.html" title=" " alt="" coords="1155,162,1251,189"/>
+<area shape="rect" id="node4" href="$dfu__match__cb_8cpp.html" title=" " alt="" coords="1001,162,1130,189"/>
+<area shape="rect" id="node5" href="$dfu__match__high__id__first_8hpp.html" title=" " alt="" coords="255,251,441,278"/>
+<area shape="rect" id="node6" href="$dfu__match__policy__factory_8hpp.html" title=" " alt="" coords="549,333,745,360"/>
+<area shape="rect" id="node16" href="$dfu__match__locality_8hpp.html" title=" " alt="" coords="140,162,295,189"/>
+<area shape="rect" id="node18" href="$dfu__match__low__id__first_8hpp.html" title=" " alt="" coords="684,251,865,278"/>
+<area shape="rect" id="node19" href="$dfu__match__multilevel__id_8hpp.html" title=" " alt="" coords="575,155,719,196"/>
+<area shape="rect" id="node21" href="$dfu__match__var__aware_8hpp.html" title=" " alt="" coords="803,162,976,189"/>
+<area shape="rect" id="node7" href="$resource__match_8cpp.html" title=" " alt="" coords="887,408,1027,435"/>
+<area shape="rect" id="node8" href="$resource__match__opts_8cpp.html" title=" " alt="" coords="353,408,525,435"/>
+<area shape="rect" id="node9" href="$dfu__match__policy__factory_8cpp.html" title=" " alt="" coords="549,408,745,435"/>
+<area shape="rect" id="node10" href="$reapi__cli_8hpp.html" title=" " alt="" coords="769,408,863,435"/>
+<area shape="rect" id="node15" href="$resource-query_8cpp.html" title=" " alt="" coords="1051,408,1186,435"/>
+<area shape="rect" id="node11" href="$reapi__cli_8cpp.html" title=" " alt="" coords="627,557,722,584"/>
+<area shape="rect" id="node12" href="$reapi__cli__impl_8hpp.html" title=" " alt="" coords="702,483,829,509"/>
+<area shape="rect" id="node13" href="$rq2_8cpp.html" title=" " alt="" coords="811,632,877,659"/>
+<area shape="rect" id="node14" href="$rq2_8hpp.html" title=" " alt="" coords="811,557,877,584"/>
+<area shape="rect" id="node17" href="$dfu__match__locality_8cpp.html" title=" " alt="" coords="25,251,180,278"/>
+<area shape="rect" id="node20" href="$dfu__match__multilevel__id__impl_8hpp.html" title=" " alt="" coords="465,244,609,285"/>
+<area shape="rect" id="node22" href="$dfu__match__var__aware_8cpp.html" title=" " alt="" coords="940,251,1113,278"/>
+<area shape="rect" id="node24" href="$dfu_8hpp.html" title=" " alt="" coords="1138,251,1203,278"/>
+<area shape="rect" id="node28" href="$dfu__impl_8cpp.html" title=" " alt="" coords="1228,251,1324,278"/>
+<area shape="rect" id="node29" href="$dfu__impl__update_8cpp.html" title=" " alt="" coords="1349,251,1491,278"/>
+<area shape="rect" id="node25" href="$dfu_8cpp.html" title=" " alt="" coords="1022,333,1087,360"/>
+<area shape="rect" id="node26" href="$command_8hpp.html" title=" " alt="" coords="1163,333,1267,360"/>
+<area shape="rect" id="node27" href="$command_8cpp.html" title=" " alt="" coords="1211,408,1315,435"/>
+</map>

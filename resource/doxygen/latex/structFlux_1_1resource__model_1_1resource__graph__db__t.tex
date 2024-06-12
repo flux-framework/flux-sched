@@ -1,0 +1,91 @@
+\hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+graph\+\_\+db\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1resource__graph__db__t}\index{Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}}
+
+
+{\ttfamily \#include $<$resource\+\_\+graph\+\_\+store.\+hpp$>$}
+
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+graph\+\_\+db\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=223pt]{structFlux_1_1resource__model_1_1resource__graph__db__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__db__t_a86b8be7c131e3a47722b4c5e85ada31e}{known\+\_\+subsystem}} (const std\+::string \&s)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__db__t_a5dce6a53a90b1473e7c143b73cd61cb1}{load}} (const std\+::string \&str, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t}{resource\+\_\+reader\+\_\+base\+\_\+t}} $>$ \&reader, int rank=-\/1)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__db__t_acf2b2eabfa474aa28200bef2b767a62a}{load}} (const std\+::string \&str, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t}{resource\+\_\+reader\+\_\+base\+\_\+t}} $>$ \&reader, vtx\+\_\+t \&vtx\+\_\+at, int rank=-\/1)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t_a419b09eacc9966f6a996bb6931681d07}\label{structFlux_1_1resource__model_1_1resource__graph__db__t_a419b09eacc9966f6a996bb6931681d07}} 
+resource\+\_\+graph\+\_\+t {\bfseries resource\+\_\+graph}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t_af4a52d51dbc8299abed2a2bc6a8594bc}\label{structFlux_1_1resource__model_1_1resource__graph__db__t_af4a52d51dbc8299abed2a2bc6a8594bc}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} {\bfseries metadata}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Resource graph data store. Adjacency\+\_\+list graph, roots of this graph and various indexing. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t_a86b8be7c131e3a47722b4c5e85ada31e}\label{structFlux_1_1resource__model_1_1resource__graph__db__t_a86b8be7c131e3a47722b4c5e85ada31e}} 
+\index{Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}!known\_subsystem@{known\_subsystem}}
+\index{known\_subsystem@{known\_subsystem}!Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}}
+\doxyparagraph{\texorpdfstring{known\_subsystem()}{known\_subsystem()}}
+{\footnotesize\ttfamily bool resource\+\_\+graph\+\_\+db\+\_\+t\+::known\+\_\+subsystem (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{s }\end{DoxyParamCaption})}
+
+Return true if s is known subsystem \mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t_a5dce6a53a90b1473e7c143b73cd61cb1}\label{structFlux_1_1resource__model_1_1resource__graph__db__t_a5dce6a53a90b1473e7c143b73cd61cb1}} 
+\index{Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}!load@{load}}
+\index{load@{load}!Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}}
+\doxyparagraph{\texorpdfstring{load()}{load()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily int resource\+\_\+graph\+\_\+db\+\_\+t\+::load (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t}{resource\+\_\+reader\+\_\+base\+\_\+t}} $>$ \&}]{reader,  }\item[{int}]{rank = {\ttfamily -\/1} }\end{DoxyParamCaption})}
+
+Load str into the resource graph
+
+
+\begin{DoxyParams}{Parameters}
+{\em str} & string containing a GRUG specification \\
+\hline
+{\em reader} & resource reader base class object \\
+\hline
+{\em rank} & assign this rank to all the newly created resource vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; non-\/zero integer on an error ENOMEM\+: out of memory EINVAL\+: invalid input or operation (e.\+g. hwloc version or json string load error) EPROTO\+: str violates the schema 
+\end{DoxyReturn}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__graph__db__t_acf2b2eabfa474aa28200bef2b767a62a}\label{structFlux_1_1resource__model_1_1resource__graph__db__t_acf2b2eabfa474aa28200bef2b767a62a}} 
+\index{Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}!load@{load}}
+\index{load@{load}!Flux::resource\_model::resource\_graph\_db\_t@{Flux::resource\_model::resource\_graph\_db\_t}}
+\doxyparagraph{\texorpdfstring{load()}{load()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily int resource\+\_\+graph\+\_\+db\+\_\+t\+::load (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t}{resource\+\_\+reader\+\_\+base\+\_\+t}} $>$ \&}]{reader,  }\item[{vtx\+\_\+t \&}]{vtx\+\_\+at,  }\item[{int}]{rank = {\ttfamily -\/1} }\end{DoxyParamCaption})}
+
+Load str into the resource graph and graft the top-\/level vertices to vtx\+\_\+at. 
+\begin{DoxyParams}{Parameters}
+{\em str} & string containing a GRUG specification \\
+\hline
+{\em reader} & resource reader base class object \\
+\hline
+{\em vtx\+\_\+at} & parent vtx at which to graft the deserialized graph \\
+\hline
+{\em rank} & assign this rank to all the newly created resource vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; non-\/zero integer on an error ENOMEM\+: out of memory EINVAL\+: invalid input or operation (e.\+g. hwloc version or json string load error) EPROTO\+: str violates the schema 
+\end{DoxyReturn}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+graph\+\_\+store.\+hpp\item 
+resource\+\_\+graph\+\_\+store.\+cpp\end{DoxyCompactItemize}

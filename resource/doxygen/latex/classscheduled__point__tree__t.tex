@@ -1,0 +1,61 @@
+\hypertarget{classscheduled__point__tree__t}{}\doxysubsection{scheduled\+\_\+point\+\_\+tree\+\_\+t Class Reference}
+\label{classscheduled__point__tree__t}\index{scheduled\_point\_tree\_t@{scheduled\_point\_tree\_t}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_af4d266cbaf3889c573902083269bcccc}\label{classscheduled__point__tree__t_af4d266cbaf3889c573902083269bcccc}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries next} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point) const
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_aa01436ff45bfc1098080cb2dcf4a8c9c}\label{classscheduled__point__tree__t_aa01436ff45bfc1098080cb2dcf4a8c9c}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries next} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_a5f93791ec7602c51e2255d4340c9a3e7}\label{classscheduled__point__tree__t_a5f93791ec7602c51e2255d4340c9a3e7}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries search} (int64\+\_\+t tm)
+\item 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ \mbox{\hyperlink{classscheduled__point__tree__t_a951f6a71eb24b77f33d5ff7076533932}{get\+\_\+state}} (int64\+\_\+t at) const
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_ae70d38dc70b8635d40b7197ca0fc694a}\label{classscheduled__point__tree__t_ae70d38dc70b8635d40b7197ca0fc694a}} 
+int {\bfseries insert} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_aad04c0d973ed72e77b1ee6f97c1c2301}\label{classscheduled__point__tree__t_aad04c0d973ed72e77b1ee6f97c1c2301}} 
+int {\bfseries remove} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_aaf383b4841d736a5a0b6a410b9c352d8}\label{classscheduled__point__tree__t_aaf383b4841d736a5a0b6a410b9c352d8}} 
+void {\bfseries destroy} ()
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_abbb59ab629d9eef9663eaee72014e614}\label{classscheduled__point__tree__t_abbb59ab629d9eef9663eaee72014e614}} 
+bool {\bfseries empty} () const
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_a9cb958de69e1238a24d1fcbe0c51c09c}\label{classscheduled__point__tree__t_a9cb958de69e1238a24d1fcbe0c51c09c}} 
+size\+\_\+t {\bfseries get\+\_\+size} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_a20269158c99d3a88cf4af4863b965ff8}\label{classscheduled__point__tree__t_a20269158c99d3a88cf4af4863b965ff8}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries get\+\_\+recent\+\_\+state} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$new\+\_\+point, \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$old\+\_\+point) const
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_a78f5bea515028d39fae6effcb44fcd51}\label{classscheduled__point__tree__t_a78f5bea515028d39fae6effcb44fcd51}} 
+void {\bfseries destroy} (\mbox{\hyperlink{structscheduled__point__rb__node__t}{scheduled\+\_\+point\+\_\+rb\+\_\+node\+\_\+t}} $\ast$node)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classscheduled__point__tree__t_a5c569f3c96c2772e00fe72f40eff8cb0}\label{classscheduled__point__tree__t_a5c569f3c96c2772e00fe72f40eff8cb0}} 
+scheduled\+\_\+point\+\_\+rb\+\_\+tree\+\_\+t {\bfseries m\+\_\+tree}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classscheduled__point__tree__t_a951f6a71eb24b77f33d5ff7076533932}\label{classscheduled__point__tree__t_a951f6a71eb24b77f33d5ff7076533932}} 
+\index{scheduled\_point\_tree\_t@{scheduled\_point\_tree\_t}!get\_state@{get\_state}}
+\index{get\_state@{get\_state}!scheduled\_point\_tree\_t@{scheduled\_point\_tree\_t}}
+\doxyparagraph{\texorpdfstring{get\_state()}{get\_state()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ scheduled\+\_\+point\+\_\+tree\+\_\+t\+::get\+\_\+state (\begin{DoxyParamCaption}\item[{int64\+\_\+t}]{at }\end{DoxyParamCaption}) const}
+
+While scheduled\+\_\+point\+\_\+search returns the exact match scheduled\+\_\+point\+\_\+state returns the most recent scheduled point, representing the accurate resource state at the time t. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+scheduled\+\_\+point\+\_\+tree.\+hpp\item 
+scheduled\+\_\+point\+\_\+tree.\+cpp\end{DoxyCompactItemize}

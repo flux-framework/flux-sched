@@ -1,0 +1,216 @@
+\hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+rv1exec\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t}\index{Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}}
+
+
+{\ttfamily \#include $<$resource\+\_\+reader\+\_\+rv1exec.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=220pt]{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=250pt]{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a2ae97bf8b2aa4d94582e8c22f8351c7c}{unpack}} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, const std\+::string \&str, int rank=-\/1)
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a57b0a220771f9db04b8e90a7c76d3257}{unpack\+\_\+at}} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t \&vtx, const std\+::string \&str, int rank=-\/1)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af85c4d5c4ab1b179093c6c23f5e24b88}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af85c4d5c4ab1b179093c6c23f5e24b88}} 
+virtual int {\bfseries remove\+\_\+subgraph} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, const std\+::string \&path)
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ac67959bc2083e1f20597227556130233}{update}} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, const std\+::string \&str, int64\+\_\+t jobid, int64\+\_\+t at, uint64\+\_\+t dur, bool rsv, uint64\+\_\+t trav\+\_\+token)
+\item 
+virtual bool \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a4e69ff5c61bf4d93b53b5f537cdba73f}{is\+\_\+allowlist\+\_\+supported}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a837251b4f46c1a92ed186e9549d0d4fe}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a837251b4f46c1a92ed186e9549d0d4fe}} 
+vtx\+\_\+t {\bfseries add\+\_\+vertex} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, int64\+\_\+t id, const std\+::string \&subsys, const std\+::string \&type, const std\+::string \&basename, const std\+::string \&name, const std\+::map$<$ std\+::string, std\+::string $>$ \&props, int size, int rank)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a7229e3b3fc5fede0b6fbe78db05b4d75}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a7229e3b3fc5fede0b6fbe78db05b4d75}} 
+int {\bfseries add\+\_\+metadata} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, edg\+\_\+t e, vtx\+\_\+t src, vtx\+\_\+t dst)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a901391862ed1a002227a2139bd29c8e7}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a901391862ed1a002227a2139bd29c8e7}} 
+int {\bfseries add\+\_\+edges} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t src, vtx\+\_\+t dst, const std\+::string \&subsys, const std\+::string \&relation, const std\+::string \&rev\+\_\+relation)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a6cab8269ee9a8912bf9089addf761dc3}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a6cab8269ee9a8912bf9089addf761dc3}} 
+int {\bfseries add\+\_\+cluster\+\_\+vertex} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ab671710f683a80dea5c98df118c18147}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ab671710f683a80dea5c98df118c18147}} 
+vtx\+\_\+t {\bfseries find\+\_\+vertex} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, int64\+\_\+t id, const std\+::string \&subsys, const std\+::string \&type, const std\+::string \&basename, const std\+::string \&name, int size, int rank)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ad201ddbeb0523ee6bf09470c6ed55507}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ad201ddbeb0523ee6bf09470c6ed55507}} 
+int {\bfseries update\+\_\+vertex} (resource\+\_\+graph\+\_\+t \&g, vtx\+\_\+t vtx, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a515a9bc6267c927603f41327b64445a0}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a515a9bc6267c927603f41327b64445a0}} 
+int {\bfseries undo\+\_\+vertices} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_acb05c0629a69c20649ae1767927e1033}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_acb05c0629a69c20649ae1767927e1033}} 
+int {\bfseries update\+\_\+edges} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t src, vtx\+\_\+t dst, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a2886cdaad037311399c5fcc197d4135b}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a2886cdaad037311399c5fcc197d4135b}} 
+int {\bfseries update\+\_\+exclusivity} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t vtx, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a51d88622ea8bff47b12e1feeabdab9be}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a51d88622ea8bff47b12e1feeabdab9be}} 
+vtx\+\_\+t {\bfseries add\+\_\+or\+\_\+update} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, int64\+\_\+t id, const std\+::string \&subsys, const std\+::string \&type, const std\+::string \&basename, const std\+::string \&name, int size, int rank, std\+::map$<$ std\+::string, std\+::string $>$ \&properties, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af36feab40204fd752db89340dfb6e53d}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af36feab40204fd752db89340dfb6e53d}} 
+int {\bfseries build\+\_\+rmap} (json\+\_\+t $\ast$rlite, std\+::map$<$ unsigned, unsigned $>$ \&rmap)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a4e996a312e5381920adcf32f0662a97e}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a4e996a312e5381920adcf32f0662a97e}} 
+int {\bfseries build\+\_\+pmap} (json\+\_\+t $\ast$properties, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af96b3dba2ab30b95dacfde793bb5814d}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_af96b3dba2ab30b95dacfde793bb5814d}} 
+int {\bfseries unpack\+\_\+child} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, const char $\ast$resource\+\_\+type, const char $\ast$resource\+\_\+ids, unsigned rank, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_afc7be96bd7ed7690dd7dde61c9f86d9a}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_afc7be96bd7ed7690dd7dde61c9f86d9a}} 
+int {\bfseries unpack\+\_\+children} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, json\+\_\+t $\ast$children, unsigned rank, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a0657f643d46b3dd75d1c0d770a4d6b8c}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a0657f643d46b3dd75d1c0d770a4d6b8c}} 
+int {\bfseries unpack\+\_\+rank} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, unsigned rank, json\+\_\+t $\ast$children, struct hostlist $\ast$hlist, std\+::map$<$ unsigned, unsigned $>$ \&rmap, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a71142cc277c3bfd7c4bdc525858c078c}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a71142cc277c3bfd7c4bdc525858c078c}} 
+int {\bfseries unpack\+\_\+rlite\+\_\+entry} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, vtx\+\_\+t parent, json\+\_\+t $\ast$entry, struct hostlist $\ast$hlist, std\+::map$<$ unsigned, unsigned $>$ \&rmap, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a85bb51de8ee3540f1109f43e27bd1008}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a85bb51de8ee3540f1109f43e27bd1008}} 
+int {\bfseries unpack\+\_\+rlite} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, json\+\_\+t $\ast$rlite, struct hostlist $\ast$hlist, std\+::map$<$ unsigned, unsigned $>$ \&rmap, std\+::map$<$ unsigned, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t}{properties\+\_\+t}} $>$ \&pmap, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a7cfaf9ab552c4f507ba7b64eae1d6f86}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a7cfaf9ab552c4f507ba7b64eae1d6f86}} 
+int {\bfseries unpack\+\_\+internal} (resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&m, json\+\_\+t $\ast$rv1, \mbox{\hyperlink{structFlux_1_1resource__model_1_1updater__data}{updater\+\_\+data}} \&update\+\_\+data)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+
+
+\doxysubsubsection{Detailed Description}
+RV1\+EXEC resource reader class. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a4e69ff5c61bf4d93b53b5f537cdba73f}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a4e69ff5c61bf4d93b53b5f537cdba73f}} 
+\index{Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}!is\_allowlist\_supported@{is\_allowlist\_supported}}
+\index{is\_allowlist\_supported@{is\_allowlist\_supported}!Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}}
+\doxyparagraph{\texorpdfstring{is\_allowlist\_supported()}{is\_allowlist\_supported()}}
+{\footnotesize\ttfamily bool resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+::is\+\_\+allowlist\+\_\+supported (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Is the selected reader format support allowlist
+
+\begin{DoxyReturn}{Returns}
+false 
+\end{DoxyReturn}
+
+
+Implements \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t_a18d3bfd358094d5c6ae040ab1531c560}{Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+base\+\_\+t}}.
+
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a2ae97bf8b2aa4d94582e8c22f8351c7c}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a2ae97bf8b2aa4d94582e8c22f8351c7c}} 
+\index{Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}!unpack@{unpack}}
+\index{unpack@{unpack}!Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}}
+\doxyparagraph{\texorpdfstring{unpack()}{unpack()}}
+{\footnotesize\ttfamily int resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+::unpack (\begin{DoxyParamCaption}\item[{resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&}]{m,  }\item[{const std\+::string \&}]{str,  }\item[{int}]{rank = {\ttfamily -\/1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Unpack str into a resource graph.
+
+
+\begin{DoxyParams}{Parameters}
+{\em g} & resource graph \\
+\hline
+{\em m} & resource graph meta data \\
+\hline
+{\em str} & string containing a RV1\textquotesingle{}s .execution key value \\
+\hline
+{\em rank} & assign rank to all of the newly created resource vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; non-\/zero integer on an error EOVERFLOW\+: hostname suffix too large EEXIST\+: mal-\/formed ranks ENOMEM\+: out of memory EINVAL\+: invalid input or operation 
+\end{DoxyReturn}
+
+
+Implements \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t_a4d2969f7499f3c7a398e1c86949e5806}{Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+base\+\_\+t}}.
+
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a57b0a220771f9db04b8e90a7c76d3257}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_a57b0a220771f9db04b8e90a7c76d3257}} 
+\index{Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}!unpack\_at@{unpack\_at}}
+\index{unpack\_at@{unpack\_at}!Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}}
+\doxyparagraph{\texorpdfstring{unpack\_at()}{unpack\_at()}}
+{\footnotesize\ttfamily int resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+::unpack\+\_\+at (\begin{DoxyParamCaption}\item[{resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&}]{m,  }\item[{vtx\+\_\+t \&}]{vtx,  }\item[{const std\+::string \&}]{str,  }\item[{int}]{rank = {\ttfamily -\/1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Unpack str into a resource graph and graft the top-\/level vertices to vtx.
+
+
+\begin{DoxyParams}{Parameters}
+{\em g} & resource graph \\
+\hline
+{\em m} & resource graph meta data \\
+\hline
+{\em vtx} & parent vtx at which to graft the deserialized graph \\
+\hline
+{\em str} & string containing a RV1\textquotesingle{}s .execution key value \\
+\hline
+{\em rank} & assign this rank to all the newly created resource vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+-\/1 with ENOTSUP (Not supported yet) 
+\end{DoxyReturn}
+
+
+Implements \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t_accc428c1d3fd14f6caf854953c5a6f3b}{Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+base\+\_\+t}}.
+
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ac67959bc2083e1f20597227556130233}\label{classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_ac67959bc2083e1f20597227556130233}} 
+\index{Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}!update@{update}}
+\index{update@{update}!Flux::resource\_model::resource\_reader\_rv1exec\_t@{Flux::resource\_model::resource\_reader\_rv1exec\_t}}
+\doxyparagraph{\texorpdfstring{update()}{update()}}
+{\footnotesize\ttfamily int resource\+\_\+reader\+\_\+rv1exec\+\_\+t\+::update (\begin{DoxyParamCaption}\item[{resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} \&}]{m,  }\item[{const std\+::string \&}]{str,  }\item[{int64\+\_\+t}]{jobid,  }\item[{int64\+\_\+t}]{at,  }\item[{uint64\+\_\+t}]{dur,  }\item[{bool}]{rsv,  }\item[{uint64\+\_\+t}]{trav\+\_\+token }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Update resource graph g with str.
+
+
+\begin{DoxyParams}{Parameters}
+{\em g} & resource graph \\
+\hline
+{\em m} & resource graph meta data \\
+\hline
+{\em str} & resource set string \\
+\hline
+{\em jobid} & jobid of str \\
+\hline
+{\em at} & start time of this job \\
+\hline
+{\em dur} & duration of this job \\
+\hline
+{\em rsv} & true if this update is for a reservation. \\
+\hline
+{\em trav\+\_\+token} & token to be used by traverser \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+-\/1 with ENOTSUP (Not supported yet) 
+\end{DoxyReturn}
+
+
+Implements \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__reader__base__t_a31c23c9d83eb6b66a129f9105c563390}{Flux\+::resource\+\_\+model\+::resource\+\_\+reader\+\_\+base\+\_\+t}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+reader\+\_\+rv1exec.\+hpp\item 
+resource\+\_\+reader\+\_\+rv1exec.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,233 @@
+\hypertarget{rq2_8cpp}{}\doxysubsection{rq2.\+cpp File Reference}
+\label{rq2_8cpp}\index{rq2.cpp@{rq2.cpp}}
+{\ttfamily \#include \char`\"{}resource/reapi/bindings/c++/reapi\+\_\+cli.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/reapi/bindings/c++/reapi\+\_\+cli\+\_\+impl.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rq2.\+hpp\char`\"{}}\newline
+{\ttfamily \#include $<$cerrno$>$}\newline
+{\ttfamily \#include $<$getopt.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$jansson.\+h$>$}\newline
+{\ttfamily \#include $<$boost/filesystem.\+hpp$>$}\newline
+{\ttfamily \#include $<$editline/readline.\+h$>$}\newline
+Include dependency graph for rq2.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{rq2_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structcommand__t}{command\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{rq2_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}{OPTIONS}}~\char`\"{}L\+:f\+:\+W\+:\+S\+:\+P\+:\+F\+:g\+:o\+:p\+:t\+:r\+:edh\char`\"{}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef int \mbox{\hyperlink{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}{cmd\+\_\+func\+\_\+f}}(\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&, std\+::vector$<$ std\+::string $>$ \&, json\+\_\+t $\ast$, std\+::ostream \&)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{rq2_8cpp_af8af97627e2544a9509f99e1cb12d023}{usage}} (int code)
+\item 
+static int \mbox{\hyperlink{rq2_8cpp_a212e6222ae7d5bf72ae08c67f1664927}{string\+\_\+to\+\_\+graph\+\_\+format}} (std\+::string st, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{Flux\+::resource\+\_\+model\+::emit\+\_\+format\+\_\+t}} \&format)
+\item 
+static int \mbox{\hyperlink{rq2_8cpp_a47893f5109ff7515c7093c899bb5ef82}{graph\+\_\+format\+\_\+to\+\_\+ext}} (\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{Flux\+::resource\+\_\+model\+::emit\+\_\+format\+\_\+t}} format, std\+::string \&st)
+\item 
+static void \mbox{\hyperlink{rq2_8cpp_aaa7480164d1b13c0c19f70473e7131ff}{print\+\_\+sat\+\_\+info}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, std\+::ostream \&out, bool sat, double elapse, bool print\+\_\+elapse)
+\item 
+static void \mbox{\hyperlink{rq2_8cpp_a83eaedd3ce2421a4a06d243ab5042035}{print\+\_\+schedule\+\_\+info}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, std\+::ostream \&out, uint64\+\_\+t jobid, const std\+::string \&jobspec\+\_\+fn, bool matched, int64\+\_\+t at, bool sat, double elapse, bool print\+\_\+elapse)
+\item 
+bool \mbox{\hyperlink{rq2_8cpp_a39318773f2951636a744d798a7e1509e}{r\+\_\+fname\+\_\+set}} (json\+\_\+t $\ast$params)
+\item 
+std\+::ofstream \mbox{\hyperlink{rq2_8cpp_a5f14b1b9644344f16d630221eea1b9f7}{open\+\_\+fs}} (json\+\_\+t $\ast$params)
+\item 
+int \mbox{\hyperlink{rq2_8cpp_aa563fd451f3a56983140dec16f0ce6ff}{match}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, std\+::vector$<$ std\+::string $>$ \&args, json\+\_\+t $\ast$params, std\+::ostream \&out)
+\item 
+int \mbox{\hyperlink{rq2_8cpp_a697cbb8e6bb404f1a58f4b464c2ec826}{quit}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, std\+::vector$<$ std\+::string $>$ \&args, json\+\_\+t $\ast$params, std\+::ostream \&out)
+\item 
+int \mbox{\hyperlink{rq2_8cpp_ad86d203ed302bee01217e87d03dc7faa}{help}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, std\+::vector$<$ std\+::string $>$ \&args, json\+\_\+t $\ast$params, std\+::ostream \&out)
+\item 
+\mbox{\hyperlink{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}{cmd\+\_\+func\+\_\+f}} $\ast$ \mbox{\hyperlink{rq2_8cpp_a6082ea2b191cff6891698b6c04704961}{find\+\_\+cmd}} (const std\+::string \&cmd\+\_\+str)
+\item 
+static void \mbox{\hyperlink{rq2_8cpp_a43a2fd8e8734e64627080d61a69a6d3a}{process\+\_\+args}} (json\+\_\+t $\ast$options, int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\item 
+void \mbox{\hyperlink{rq2_8cpp_a50e88f05438e5983eb0c995e54c211ad}{get\+\_\+rgraph}} (std\+::string \&rgraph, json\+\_\+t $\ast$options)
+\item 
+static void \mbox{\hyperlink{rq2_8cpp_a07a76034f9b3b1aa1d45e9e439f5da48}{control\+\_\+loop}} (\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&ctx, json\+\_\+t $\ast$params, std\+::ostream \&out)
+\item 
+int \mbox{\hyperlink{rq2_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{main}} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static const struct option \mbox{\hyperlink{rq2_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}{longopts}} \mbox{[}$\,$\mbox{]}
+\item 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1command__t}{command\+\_\+t}} \mbox{\hyperlink{rq2_8cpp_a75717c98ba3a1b5c7b453830e68574c9}{commands}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{rq2_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}\label{rq2_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}} 
+\index{rq2.cpp@{rq2.cpp}!OPTIONS@{OPTIONS}}
+\index{OPTIONS@{OPTIONS}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{OPTIONS}{OPTIONS}}
+{\footnotesize\ttfamily \#define OPTIONS~\char`\"{}L\+:f\+:\+W\+:\+S\+:\+P\+:\+F\+:g\+:o\+:p\+:t\+:r\+:edh\char`\"{}}
+
+
+
+\doxysubsubsection{Typedef Documentation}
+\mbox{\Hypertarget{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}\label{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}} 
+\index{rq2.cpp@{rq2.cpp}!cmd\_func\_f@{cmd\_func\_f}}
+\index{cmd\_func\_f@{cmd\_func\_f}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{cmd\_func\_f}{cmd\_func\_f}}
+{\footnotesize\ttfamily typedef int cmd\+\_\+func\+\_\+f(\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&, std\+::vector$<$ std\+::string $>$ \&, json\+\_\+t $\ast$, std\+::ostream \&)}
+
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{rq2_8cpp_a07a76034f9b3b1aa1d45e9e439f5da48}\label{rq2_8cpp_a07a76034f9b3b1aa1d45e9e439f5da48}} 
+\index{rq2.cpp@{rq2.cpp}!control\_loop@{control\_loop}}
+\index{control\_loop@{control\_loop}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{control\_loop()}{control\_loop()}}
+{\footnotesize\ttfamily static void control\+\_\+loop (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{json\+\_\+t $\ast$}]{params,  }\item[{std\+::ostream \&}]{out }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_a6082ea2b191cff6891698b6c04704961}\label{rq2_8cpp_a6082ea2b191cff6891698b6c04704961}} 
+\index{rq2.cpp@{rq2.cpp}!find\_cmd@{find\_cmd}}
+\index{find\_cmd@{find\_cmd}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{find\_cmd()}{find\_cmd()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}{cmd\+\_\+func\+\_\+f}}$\ast$ find\+\_\+cmd (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{cmd\+\_\+str }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a50e88f05438e5983eb0c995e54c211ad}\label{rq2_8cpp_a50e88f05438e5983eb0c995e54c211ad}} 
+\index{rq2.cpp@{rq2.cpp}!get\_rgraph@{get\_rgraph}}
+\index{get\_rgraph@{get\_rgraph}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{get\_rgraph()}{get\_rgraph()}}
+{\footnotesize\ttfamily void get\+\_\+rgraph (\begin{DoxyParamCaption}\item[{std\+::string \&}]{rgraph,  }\item[{json\+\_\+t $\ast$}]{options }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a47893f5109ff7515c7093c899bb5ef82}\label{rq2_8cpp_a47893f5109ff7515c7093c899bb5ef82}} 
+\index{rq2.cpp@{rq2.cpp}!graph\_format\_to\_ext@{graph\_format\_to\_ext}}
+\index{graph\_format\_to\_ext@{graph\_format\_to\_ext}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{graph\_format\_to\_ext()}{graph\_format\_to\_ext()}}
+{\footnotesize\ttfamily static int graph\+\_\+format\+\_\+to\+\_\+ext (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{Flux\+::resource\+\_\+model\+::emit\+\_\+format\+\_\+t}}}]{format,  }\item[{std\+::string \&}]{st }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_ad86d203ed302bee01217e87d03dc7faa}\label{rq2_8cpp_ad86d203ed302bee01217e87d03dc7faa}} 
+\index{rq2.cpp@{rq2.cpp}!help@{help}}
+\index{help@{help}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{help()}{help()}}
+{\footnotesize\ttfamily int help (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{std\+::vector$<$ std\+::string $>$ \&}]{args,  }\item[{json\+\_\+t $\ast$}]{params,  }\item[{std\+::ostream \&}]{out }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a0ddf1224851353fc92bfbff6f499fa97}\label{rq2_8cpp_a0ddf1224851353fc92bfbff6f499fa97}} 
+\index{rq2.cpp@{rq2.cpp}!main@{main}}
+\index{main@{main}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_aa563fd451f3a56983140dec16f0ce6ff}\label{rq2_8cpp_aa563fd451f3a56983140dec16f0ce6ff}} 
+\index{rq2.cpp@{rq2.cpp}!match@{match}}
+\index{match@{match}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{match()}{match()}}
+{\footnotesize\ttfamily int match (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{std\+::vector$<$ std\+::string $>$ \&}]{args,  }\item[{json\+\_\+t $\ast$}]{params,  }\item[{std\+::ostream \&}]{out }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a5f14b1b9644344f16d630221eea1b9f7}\label{rq2_8cpp_a5f14b1b9644344f16d630221eea1b9f7}} 
+\index{rq2.cpp@{rq2.cpp}!open\_fs@{open\_fs}}
+\index{open\_fs@{open\_fs}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{open\_fs()}{open\_fs()}}
+{\footnotesize\ttfamily std\+::ofstream open\+\_\+fs (\begin{DoxyParamCaption}\item[{json\+\_\+t $\ast$}]{params }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_aaa7480164d1b13c0c19f70473e7131ff}\label{rq2_8cpp_aaa7480164d1b13c0c19f70473e7131ff}} 
+\index{rq2.cpp@{rq2.cpp}!print\_sat\_info@{print\_sat\_info}}
+\index{print\_sat\_info@{print\_sat\_info}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{print\_sat\_info()}{print\_sat\_info()}}
+{\footnotesize\ttfamily static void print\+\_\+sat\+\_\+info (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{std\+::ostream \&}]{out,  }\item[{bool}]{sat,  }\item[{double}]{elapse,  }\item[{bool}]{print\+\_\+elapse }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_a83eaedd3ce2421a4a06d243ab5042035}\label{rq2_8cpp_a83eaedd3ce2421a4a06d243ab5042035}} 
+\index{rq2.cpp@{rq2.cpp}!print\_schedule\_info@{print\_schedule\_info}}
+\index{print\_schedule\_info@{print\_schedule\_info}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{print\_schedule\_info()}{print\_schedule\_info()}}
+{\footnotesize\ttfamily static void print\+\_\+schedule\+\_\+info (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{std\+::ostream \&}]{out,  }\item[{uint64\+\_\+t}]{jobid,  }\item[{const std\+::string \&}]{jobspec\+\_\+fn,  }\item[{bool}]{matched,  }\item[{int64\+\_\+t}]{at,  }\item[{bool}]{sat,  }\item[{double}]{elapse,  }\item[{bool}]{print\+\_\+elapse }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_a43a2fd8e8734e64627080d61a69a6d3a}\label{rq2_8cpp_a43a2fd8e8734e64627080d61a69a6d3a}} 
+\index{rq2.cpp@{rq2.cpp}!process\_args@{process\_args}}
+\index{process\_args@{process\_args}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{process\_args()}{process\_args()}}
+{\footnotesize\ttfamily static void process\+\_\+args (\begin{DoxyParamCaption}\item[{json\+\_\+t $\ast$}]{options,  }\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_a697cbb8e6bb404f1a58f4b464c2ec826}\label{rq2_8cpp_a697cbb8e6bb404f1a58f4b464c2ec826}} 
+\index{rq2.cpp@{rq2.cpp}!quit@{quit}}
+\index{quit@{quit}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{quit()}{quit()}}
+{\footnotesize\ttfamily int quit (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1resource__query__t}{resource\+\_\+query\+\_\+t}} \&}]{ctx,  }\item[{std\+::vector$<$ std\+::string $>$ \&}]{args,  }\item[{json\+\_\+t $\ast$}]{params,  }\item[{std\+::ostream \&}]{out }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a39318773f2951636a744d798a7e1509e}\label{rq2_8cpp_a39318773f2951636a744d798a7e1509e}} 
+\index{rq2.cpp@{rq2.cpp}!r\_fname\_set@{r\_fname\_set}}
+\index{r\_fname\_set@{r\_fname\_set}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{r\_fname\_set()}{r\_fname\_set()}}
+{\footnotesize\ttfamily bool r\+\_\+fname\+\_\+set (\begin{DoxyParamCaption}\item[{json\+\_\+t $\ast$}]{params }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{rq2_8cpp_a212e6222ae7d5bf72ae08c67f1664927}\label{rq2_8cpp_a212e6222ae7d5bf72ae08c67f1664927}} 
+\index{rq2.cpp@{rq2.cpp}!string\_to\_graph\_format@{string\_to\_graph\_format}}
+\index{string\_to\_graph\_format@{string\_to\_graph\_format}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{string\_to\_graph\_format()}{string\_to\_graph\_format()}}
+{\footnotesize\ttfamily static int string\+\_\+to\+\_\+graph\+\_\+format (\begin{DoxyParamCaption}\item[{std\+::string}]{st,  }\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{Flux\+::resource\+\_\+model\+::emit\+\_\+format\+\_\+t}} \&}]{format }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{rq2_8cpp_af8af97627e2544a9509f99e1cb12d023}\label{rq2_8cpp_af8af97627e2544a9509f99e1cb12d023}} 
+\index{rq2.cpp@{rq2.cpp}!usage@{usage}}
+\index{usage@{usage}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{usage()}{usage()}}
+{\footnotesize\ttfamily static void usage (\begin{DoxyParamCaption}\item[{int}]{code }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+\doxysubsubsection{Variable Documentation}
+\mbox{\Hypertarget{rq2_8cpp_a75717c98ba3a1b5c7b453830e68574c9}\label{rq2_8cpp_a75717c98ba3a1b5c7b453830e68574c9}} 
+\index{rq2.cpp@{rq2.cpp}!commands@{commands}}
+\index{commands@{commands}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{commands}{commands}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structFlux_1_1resource__model_1_1command__t}{command\+\_\+t}} commands\mbox{[}$\,$\mbox{]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \{ \textcolor{stringliteral}{"{}match"{}},  \textcolor{stringliteral}{"{}m"{}}, \mbox{\hyperlink{rq2_8cpp_aa563fd451f3a56983140dec16f0ce6ff}{match}}, \textcolor{stringliteral}{"{}Allocate or reserve matching resources (subcmd: "{}}}
+\DoxyCodeLine{\textcolor{stringliteral}{"{}allocate | allocate\_with\_satisfiability | allocate\_orelse\_reserve) | "{}}}
+\DoxyCodeLine{\textcolor{stringliteral}{"{}satisfiability: "{}}}
+\DoxyCodeLine{\textcolor{stringliteral}{"{}resource-\/query> match allocate jobspec"{}}\},}
+\DoxyCodeLine{    \{ \textcolor{stringliteral}{"{}help"{}}, \textcolor{stringliteral}{"{}h"{}}, \mbox{\hyperlink{rq2_8cpp_ad86d203ed302bee01217e87d03dc7faa}{help}}, \textcolor{stringliteral}{"{}Print help message: resource-\/query> help"{}} \},}
+\DoxyCodeLine{    \{ \textcolor{stringliteral}{"{}quit"{}}, \textcolor{stringliteral}{"{}q"{}}, \mbox{\hyperlink{rq2_8cpp_a697cbb8e6bb404f1a58f4b464c2ec826}{quit}}, \textcolor{stringliteral}{"{}Quit the session: resource-\/query> quit"{}} \},}
+\DoxyCodeLine{    \{ \textcolor{stringliteral}{"{}NA"{}}, \textcolor{stringliteral}{"{}NA"{}}, (\mbox{\hyperlink{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}{cmd\_func\_f}} *)NULL, \textcolor{stringliteral}{"{}NA"{}} \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{rq2_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}\label{rq2_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}} 
+\index{rq2.cpp@{rq2.cpp}!longopts@{longopts}}
+\index{longopts@{longopts}!rq2.cpp@{rq2.cpp}}
+\doxyparagraph{\texorpdfstring{longopts}{longopts}}
+{\footnotesize\ttfamily const struct option longopts\mbox{[}$\,$\mbox{]}\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/file"{}},        required\_argument,  0, \textcolor{charliteral}{'L'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/format"{}},      required\_argument,  0, \textcolor{charliteral}{'f'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/allowlist"{}},   required\_argument,  0, \textcolor{charliteral}{'W'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/subsystems"{}}, required\_argument,  0, \textcolor{charliteral}{'S'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/policy"{}},     required\_argument,  0, \textcolor{charliteral}{'P'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/format"{}},     required\_argument,  0, \textcolor{charliteral}{'F'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}graph-\/format"{}},     required\_argument,  0, \textcolor{charliteral}{'g'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}graph-\/output"{}},     required\_argument,  0, \textcolor{charliteral}{'o'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}prune-\/filters"{}},    required\_argument,  0, \textcolor{charliteral}{'p'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}test-\/output"{}},      required\_argument,  0, \textcolor{charliteral}{'t'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}reserve-\/vtx-\/vec"{}},  required\_argument,  0, \textcolor{charliteral}{'r'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}elapse-\/time"{}},      no\_argument,        0, \textcolor{charliteral}{'e'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}disable-\/prompt"{}},   no\_argument,        0, \textcolor{charliteral}{'d'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}help"{}},             no\_argument,        0, \textcolor{charliteral}{'h'}\},}
+\DoxyCodeLine{    \{ 0, 0, 0, 0 \},}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}

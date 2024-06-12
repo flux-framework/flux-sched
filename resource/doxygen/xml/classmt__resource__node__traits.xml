@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classmt__resource__node__traits" kind="class" language="C++" prot="public">
+    <compoundname>mt_resource_node_traits</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">NodeTraits</basecompoundref>
+    <templateparamlist>
+      <param>
+        <type>class <ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref></type>
+      </param>
+      <param>
+        <type>class NodeTraits</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classmt__resource__node__traits_1a1f60df28a29d41e8bfe659fae62c1864" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class BaseTree</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::leaf_inserted</definition>
+        <argsstring>(mt_resource_rb_node_t &amp;node, BaseTree &amp;t)</argsstring>
+        <name>leaf_inserted</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>BaseTree &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="35" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="144" bodyend="152"/>
+      </memberdef>
+      <memberdef kind="function" id="classmt__resource__node__traits_1ab4e50f993025e6976d56967d17eed212" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class BaseTree</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::rotated_left</definition>
+        <argsstring>(mt_resource_rb_node_t &amp;node, BaseTree &amp;t)</argsstring>
+        <name>rotated_left</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>BaseTree &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="38" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="156" bodyend="162"/>
+      </memberdef>
+      <memberdef kind="function" id="classmt__resource__node__traits_1a27a5e7df07571b15c30ec4c920a016e7" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class BaseTree</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::rotated_right</definition>
+        <argsstring>(mt_resource_rb_node_t &amp;node, BaseTree &amp;t)</argsstring>
+        <name>rotated_right</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>BaseTree &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="41" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="166" bodyend="172"/>
+      </memberdef>
+      <memberdef kind="function" id="classmt__resource__node__traits_1a2d2b6e93990e8287429686ea1638762d" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class BaseTree</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::deleted_below</definition>
+        <argsstring>(mt_resource_rb_node_t &amp;node, BaseTree &amp;t)</argsstring>
+        <name>deleted_below</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>node</declname>
+        </param>
+        <param>
+          <type>BaseTree &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="44" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="176" bodyend="180"/>
+      </memberdef>
+      <memberdef kind="function" id="classmt__resource__node__traits_1a0348e10438eb33b16d8f2d024d29a5a5" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class BaseTree</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::swapped</definition>
+        <argsstring>(mt_resource_rb_node_t &amp;n1, mt_resource_rb_node_t &amp;n2, BaseTree &amp;t)</argsstring>
+        <name>swapped</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>n1</declname>
+        </param>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> &amp;</type>
+          <declname>n2</declname>
+        </param>
+        <param>
+          <type>BaseTree &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="47" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="184" bodyend="193"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classmt__resource__node__traits_1abcccb138d5f8b60d7e61017398b14480" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;::fix</definition>
+        <argsstring>(mt_resource_rb_node_t *node)</argsstring>
+        <name>fix</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> *</type>
+          <declname>node</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="51" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="101" bodyend="133"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;</label>
+        <link refid="classmt__resource__node__traits"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>NodeTraits</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>mt_resource_node_traits&lt; mt_resource_rb_node_t, NodeTraits &gt;</label>
+        <link refid="classmt__resource__node__traits"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>NodeTraits</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="32" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" bodystart="32" bodyend="52"/>
+    <listofallmembers>
+      <member refid="classmt__resource__node__traits_1a2d2b6e93990e8287429686ea1638762d" prot="public" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>deleted_below</name></member>
+      <member refid="classmt__resource__node__traits_1abcccb138d5f8b60d7e61017398b14480" prot="private" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>fix</name></member>
+      <member refid="classmt__resource__node__traits_1a1f60df28a29d41e8bfe659fae62c1864" prot="public" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>leaf_inserted</name></member>
+      <member refid="classmt__resource__node__traits_1ab4e50f993025e6976d56967d17eed212" prot="public" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>rotated_left</name></member>
+      <member refid="classmt__resource__node__traits_1a27a5e7df07571b15c30ec4c920a016e7" prot="public" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>rotated_right</name></member>
+      <member refid="classmt__resource__node__traits_1a0348e10438eb33b16d8f2d024d29a5a5" prot="public" virt="non-virtual"><scope>mt_resource_node_traits</scope><name>swapped</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

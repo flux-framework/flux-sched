@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_59a93ece2cc6226db70c1f599ae8b1c2" kind="dir">
+    <compoundname>bindings</compoundname>
+    <innerdir refid="dir_92eb4a92e58ebc41499d80e09039a5ca">c</innerdir>
+    <innerdir refid="dir_a0dcaad23ee98f6ef2cf61127ae2a1aa">c++</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/"/>
+  </compounddef>
+</doxygen>

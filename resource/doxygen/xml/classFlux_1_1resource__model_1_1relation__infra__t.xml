@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1relation__infra__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::relation_infra_t</compoundname>
+    <basecompoundref refid="structFlux_1_1resource__model_1_1infra__base__t" prot="public" virt="non-virtual">Flux::resource_model::infra_base_t</basecompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1relation__infra__t_1a5f770ea227db25b09021a3ced1347a84" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::m_needs</definition>
+        <argsstring></argsstring>
+        <name>m_needs</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="72" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1relation__infra__t_1a5a107de710f78acfb61ed8ce8cdd301d" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::m_trav_token</definition>
+        <argsstring></argsstring>
+        <name>m_trav_token</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="73" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1relation__infra__t_1af3b65ec237558a994785b100ae915e92" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::m_weight</definition>
+        <argsstring></argsstring>
+        <name>m_weight</name>
+        <initializer>= std::numeric_limits&lt;uint64_t&gt;::max ()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="74" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1relation__infra__t_1a1f1de8e3f9809c01f9b975da950917e9" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_infra_t::m_exclusive</definition>
+        <argsstring></argsstring>
+        <name>m_exclusive</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="75" column="9" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a22d1b2cdcd788d209e90fa71bfd13c64" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::relation_infra_t::relation_infra_t</definition>
+        <argsstring>()</argsstring>
+        <name>relation_infra_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="56" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a1834b68019059b60277d3e20302c5fa1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::relation_infra_t::relation_infra_t</definition>
+        <argsstring>(const relation_infra_t &amp;o)</argsstring>
+        <name>relation_infra_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1relation__infra__t" kindref="compound">relation_infra_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="57" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="170" bodyend="175"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1add16d1a6735a5e5018142e203c4e2eea" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1relation__infra__t" kindref="compound">relation_infra_t</ref> &amp;</type>
+        <definition>relation_infra_t &amp; Flux::resource_model::relation_infra_t::operator=</definition>
+        <argsstring>(const relation_infra_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1relation__infra__t" kindref="compound">relation_infra_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="58" column="22" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="177" bodyend="184"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a33cba4cb56d97c5069bcd1198e8f30b0" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>Flux::resource_model::relation_infra_t::~relation_infra_t</definition>
+        <argsstring>()</argsstring>
+        <name>~relation_infra_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="59" column="13" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="186" bodyend="189"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a38d2e99844b84ffcbe343c706aa2f691" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::relation_infra_t::scrub</definition>
+        <argsstring>()</argsstring>
+        <name>scrub</name>
+        <reimplements refid="structFlux_1_1resource__model_1_1infra__base__t_1af5354c43c45facc643e5c7c6f4c63ebd">scrub</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="60" column="18" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="191" bodyend="196"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1ac8eaba9db703af161850f63897474075" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::relation_infra_t::set_for_trav_update</definition>
+        <argsstring>(uint64_t needs, int exclusive, uint64_t trav_token)</argsstring>
+        <name>set_for_trav_update</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>exclusive</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>trav_token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="62" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="198" bodyend="204"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a19c88e2b09adbe16271e8caebd01604a" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::get_needs</definition>
+        <argsstring>() const</argsstring>
+        <name>get_needs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="65" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="206" bodyend="209"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a75184ff6631d647a94ae7dff8da056c0" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_infra_t::get_exclusive</definition>
+        <argsstring>() const</argsstring>
+        <name>get_exclusive</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="66" column="9" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="211" bodyend="214"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a5171ca3f61242781f1490c3d189962fb" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::get_trav_token</definition>
+        <argsstring>() const</argsstring>
+        <name>get_trav_token</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="67" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="216" bodyend="219"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a706b67fd6dc93d95417b4b68bb93cac1" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::relation_infra_t::get_weight</definition>
+        <argsstring>() const</argsstring>
+        <name>get_weight</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="68" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="221" bodyend="224"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1relation__infra__t_1a4debe7e86f149084ad2a0062f9abd94d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::relation_infra_t::set_weight</definition>
+        <argsstring>(uint64_t)</argsstring>
+        <name>set_weight</name>
+        <param>
+          <type>uint64_t</type>
+          <defname>weight</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="69" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="226" bodyend="229"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::relation_infra_t</label>
+        <link refid="classFlux_1_1resource__model_1_1relation__infra__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::infra_base_t</label>
+        <link refid="structFlux_1_1resource__model_1_1infra__base__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::relation_infra_t</label>
+        <link refid="classFlux_1_1resource__model_1_1relation__infra__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::infra_base_t</label>
+        <link refid="structFlux_1_1resource__model_1_1infra__base__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="54" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="54" bodyend="76"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a75184ff6631d647a94ae7dff8da056c0" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>get_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a19c88e2b09adbe16271e8caebd01604a" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>get_needs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a5171ca3f61242781f1490c3d189962fb" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>get_trav_token</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a706b67fd6dc93d95417b4b68bb93cac1" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>get_weight</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a567c57be37f4b3486e9b6e8e69c43ec2" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>infra_base_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1ad96a038bba3b1be06a639f747c194c1f" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>infra_base_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a1f1de8e3f9809c01f9b975da950917e9" prot="private" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>m_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a5f770ea227db25b09021a3ced1347a84" prot="private" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>m_needs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a5a107de710f78acfb61ed8ce8cdd301d" prot="private" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>m_trav_token</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1af3b65ec237558a994785b100ae915e92" prot="private" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>m_weight</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a40c57012a57383df6b8eb675a24b4f1b" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>member_of</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1add16d1a6735a5e5018142e203c4e2eea" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a91749fcff420d48f6d66aaa362c871a9" prot="public" virt="non-virtual" ambiguityscope="Flux::resource_model::infra_base_t::"><scope>Flux::resource_model::relation_infra_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a22d1b2cdcd788d209e90fa71bfd13c64" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>relation_infra_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a1834b68019059b60277d3e20302c5fa1" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>relation_infra_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a38d2e99844b84ffcbe343c706aa2f691" prot="public" virt="virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>scrub</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1ac8eaba9db703af161850f63897474075" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>set_for_trav_update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a4debe7e86f149084ad2a0062f9abd94d" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>set_weight</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a31709c25655c47a3e1107ff81a182f0a" prot="public" virt="virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>~infra_base_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1relation__infra__t_1a33cba4cb56d97c5069bcd1198e8f30b0" prot="public" virt="virtual"><scope>Flux::resource_model::relation_infra_t</scope><name>~relation_infra_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

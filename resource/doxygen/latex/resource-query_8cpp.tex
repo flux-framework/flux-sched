@@ -1,0 +1,223 @@
+\hypertarget{resource-query_8cpp}{}\doxysubsection{resource-\/query.cpp File Reference}
+\label{resource-query_8cpp}\index{resource-\/query.cpp@{resource-\/query.cpp}}
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstdlib$>$}\newline
+{\ttfamily \#include $<$getopt.\+h$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$iterator$>$}\newline
+{\ttfamily \#include $<$limits$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$editline/readline.\+h$>$}\newline
+{\ttfamily \#include $<$boost/algorithm/string.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/filesystem.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}resource/utilities/command.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/store/resource\+\_\+graph\+\_\+store.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+policy\+\_\+factory.\+hpp\char`\"{}}\newline
+Include dependency graph for resource-\/query.cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource-query_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{resource-query_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}{OPTIONS}}~\char`\"{}L\+:f\+:\+W\+:\+S\+:\+P\+:\+F\+:g\+:o\+:p\+:t\+:r\+:edh\char`\"{}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_af8af97627e2544a9509f99e1cb12d023}{usage}} (int code)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_af72b38b50132da4cbb3ccf34565a9dad}{set\+\_\+default\+\_\+params}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_a4f3ccb5847078222ad49cf289f025e61}{string\+\_\+to\+\_\+graph\+\_\+format}} (std\+::string st, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{emit\+\_\+format\+\_\+t}} \&format)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_a408ee37c99a5524c26bcdde7e2980d0b}{graph\+\_\+format\+\_\+to\+\_\+ext}} (\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{emit\+\_\+format\+\_\+t}} format, std\+::string \&st)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_a400f6977cd9ee084662d570cfc594d5c}{subsystem\+\_\+exist}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx, std\+::string n)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_afcbb6f62e2fd66190be8258d49cf6a49}{set\+\_\+subsystems\+\_\+use}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx, std\+::string n)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_a29a2b8bf1a58b2134d46696880a9cd14}{write\+\_\+to\+\_\+graphviz}} (\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&fg, \mbox{\hyperlink{namespaceFlux_1_1resource__model_af303ab8851cdb51ebe9afa4bfd1cd29d}{subsystem\+\_\+t}} ss, std\+::fstream \&o)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_a612354d64d16ea4b180977167830a1d1}{flatten}} (\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&fg, std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&paths, std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&subsystems, std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a98f18dd9b1efd76310e4b021becbe32e}{edg\+\_\+t}}, std\+::string $>$ \&esubsystems, std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&properties)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_a60baa67738cac139be6ea08a5864696b}{write\+\_\+to\+\_\+graphml}} (\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&fg, std\+::fstream \&o)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_ad02ae4e1c4acc4f97fcb3bb6443d5d93}{write\+\_\+to\+\_\+graph}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_a0e1f55446a19387e74fc168a66061b89}{control\+\_\+loop}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_ab8e2bf7ccaaefb5985fdd840235f93c5}{populate\+\_\+resource\+\_\+db}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} $>$ \mbox{\hyperlink{resource-query_8cpp_a01516cefc084c6a608d89d3734496dbb}{create\+\_\+filtered\+\_\+graph}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static int \mbox{\hyperlink{resource-query_8cpp_a6ee64b63004f1ae5ccca20b634d1926a}{init\+\_\+resource\+\_\+graph}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_a80f61efe96c9ee96ab299931ed5c0613}{process\+\_\+args}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx, int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\item 
+static std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \mbox{\hyperlink{resource-query_8cpp_a61074576e827d47f0e64d52dbedddc03}{init\+\_\+resource\+\_\+query}} (int c, char $\ast$v\mbox{[}$\,$\mbox{]})
+\item 
+static void \mbox{\hyperlink{resource-query_8cpp_ad3588d315b77be99d62ebb91459de3e6}{fini\+\_\+resource\+\_\+query}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&ctx)
+\item 
+int \mbox{\hyperlink{resource-query_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{main}} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static const struct option \mbox{\hyperlink{resource-query_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}{longopts}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{resource-query_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}\label{resource-query_8cpp_aec95ee3aec6673f51ed3c6a833a2dc71}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!OPTIONS@{OPTIONS}}
+\index{OPTIONS@{OPTIONS}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{OPTIONS}{OPTIONS}}
+{\footnotesize\ttfamily \#define OPTIONS~\char`\"{}L\+:f\+:\+W\+:\+S\+:\+P\+:\+F\+:g\+:o\+:p\+:t\+:r\+:edh\char`\"{}}
+
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{resource-query_8cpp_a0e1f55446a19387e74fc168a66061b89}\label{resource-query_8cpp_a0e1f55446a19387e74fc168a66061b89}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!control\_loop@{control\_loop}}
+\index{control\_loop@{control\_loop}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{control\_loop()}{control\_loop()}}
+{\footnotesize\ttfamily static void control\+\_\+loop (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a01516cefc084c6a608d89d3734496dbb}\label{resource-query_8cpp_a01516cefc084c6a608d89d3734496dbb}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!create\_filtered\_graph@{create\_filtered\_graph}}
+\index{create\_filtered\_graph@{create\_filtered\_graph}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{create\_filtered\_graph()}{create\_filtered\_graph()}}
+{\footnotesize\ttfamily static std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}}$>$ create\+\_\+filtered\+\_\+graph (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_ad3588d315b77be99d62ebb91459de3e6}\label{resource-query_8cpp_ad3588d315b77be99d62ebb91459de3e6}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!fini\_resource\_query@{fini\_resource\_query}}
+\index{fini\_resource\_query@{fini\_resource\_query}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{fini\_resource\_query()}{fini\_resource\_query()}}
+{\footnotesize\ttfamily static void fini\+\_\+resource\+\_\+query (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a612354d64d16ea4b180977167830a1d1}\label{resource-query_8cpp_a612354d64d16ea4b180977167830a1d1}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!flatten@{flatten}}
+\index{flatten@{flatten}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{flatten()}{flatten()}}
+{\footnotesize\ttfamily static void flatten (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&}]{fg,  }\item[{std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&}]{paths,  }\item[{std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&}]{subsystems,  }\item[{std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a98f18dd9b1efd76310e4b021becbe32e}{edg\+\_\+t}}, std\+::string $>$ \&}]{esubsystems,  }\item[{std\+::map$<$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{vtx\+\_\+t}}, std\+::string $>$ \&}]{properties }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a408ee37c99a5524c26bcdde7e2980d0b}\label{resource-query_8cpp_a408ee37c99a5524c26bcdde7e2980d0b}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!graph\_format\_to\_ext@{graph\_format\_to\_ext}}
+\index{graph\_format\_to\_ext@{graph\_format\_to\_ext}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{graph\_format\_to\_ext()}{graph\_format\_to\_ext()}}
+{\footnotesize\ttfamily static int graph\+\_\+format\+\_\+to\+\_\+ext (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{emit\+\_\+format\+\_\+t}}}]{format,  }\item[{std\+::string \&}]{st }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a6ee64b63004f1ae5ccca20b634d1926a}\label{resource-query_8cpp_a6ee64b63004f1ae5ccca20b634d1926a}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!init\_resource\_graph@{init\_resource\_graph}}
+\index{init\_resource\_graph@{init\_resource\_graph}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{init\_resource\_graph()}{init\_resource\_graph()}}
+{\footnotesize\ttfamily static int init\+\_\+resource\+\_\+graph (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a61074576e827d47f0e64d52dbedddc03}\label{resource-query_8cpp_a61074576e827d47f0e64d52dbedddc03}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!init\_resource\_query@{init\_resource\_query}}
+\index{init\_resource\_query@{init\_resource\_query}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{init\_resource\_query()}{init\_resource\_query()}}
+{\footnotesize\ttfamily static std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}}$>$ init\+\_\+resource\+\_\+query (\begin{DoxyParamCaption}\item[{int}]{c,  }\item[{char $\ast$}]{v\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a0ddf1224851353fc92bfbff6f499fa97}\label{resource-query_8cpp_a0ddf1224851353fc92bfbff6f499fa97}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!main@{main}}
+\index{main@{main}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{resource-query_8cpp_ab8e2bf7ccaaefb5985fdd840235f93c5}\label{resource-query_8cpp_ab8e2bf7ccaaefb5985fdd840235f93c5}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!populate\_resource\_db@{populate\_resource\_db}}
+\index{populate\_resource\_db@{populate\_resource\_db}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{populate\_resource\_db()}{populate\_resource\_db()}}
+{\footnotesize\ttfamily static int populate\+\_\+resource\+\_\+db (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a80f61efe96c9ee96ab299931ed5c0613}\label{resource-query_8cpp_a80f61efe96c9ee96ab299931ed5c0613}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!process\_args@{process\_args}}
+\index{process\_args@{process\_args}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{process\_args()}{process\_args()}}
+{\footnotesize\ttfamily static void process\+\_\+args (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx,  }\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_af72b38b50132da4cbb3ccf34565a9dad}\label{resource-query_8cpp_af72b38b50132da4cbb3ccf34565a9dad}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!set\_default\_params@{set\_default\_params}}
+\index{set\_default\_params@{set\_default\_params}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{set\_default\_params()}{set\_default\_params()}}
+{\footnotesize\ttfamily static void set\+\_\+default\+\_\+params (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_afcbb6f62e2fd66190be8258d49cf6a49}\label{resource-query_8cpp_afcbb6f62e2fd66190be8258d49cf6a49}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!set\_subsystems\_use@{set\_subsystems\_use}}
+\index{set\_subsystems\_use@{set\_subsystems\_use}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{set\_subsystems\_use()}{set\_subsystems\_use()}}
+{\footnotesize\ttfamily static int set\+\_\+subsystems\+\_\+use (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx,  }\item[{std\+::string}]{n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a4f3ccb5847078222ad49cf289f025e61}\label{resource-query_8cpp_a4f3ccb5847078222ad49cf289f025e61}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!string\_to\_graph\_format@{string\_to\_graph\_format}}
+\index{string\_to\_graph\_format@{string\_to\_graph\_format}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{string\_to\_graph\_format()}{string\_to\_graph\_format()}}
+{\footnotesize\ttfamily static int string\+\_\+to\+\_\+graph\+\_\+format (\begin{DoxyParamCaption}\item[{std\+::string}]{st,  }\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{emit\+\_\+format\+\_\+t}} \&}]{format }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a400f6977cd9ee084662d570cfc594d5c}\label{resource-query_8cpp_a400f6977cd9ee084662d570cfc594d5c}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!subsystem\_exist@{subsystem\_exist}}
+\index{subsystem\_exist@{subsystem\_exist}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{subsystem\_exist()}{subsystem\_exist()}}
+{\footnotesize\ttfamily static int subsystem\+\_\+exist (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx,  }\item[{std\+::string}]{n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_af8af97627e2544a9509f99e1cb12d023}\label{resource-query_8cpp_af8af97627e2544a9509f99e1cb12d023}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!usage@{usage}}
+\index{usage@{usage}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{usage()}{usage()}}
+{\footnotesize\ttfamily static void usage (\begin{DoxyParamCaption}\item[{int}]{code }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_ad02ae4e1c4acc4f97fcb3bb6443d5d93}\label{resource-query_8cpp_ad02ae4e1c4acc4f97fcb3bb6443d5d93}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!write\_to\_graph@{write\_to\_graph}}
+\index{write\_to\_graph@{write\_to\_graph}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{write\_to\_graph()}{write\_to\_graph()}}
+{\footnotesize\ttfamily static void write\+\_\+to\+\_\+graph (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__context__t}{resource\+\_\+context\+\_\+t}} $>$ \&}]{ctx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a60baa67738cac139be6ea08a5864696b}\label{resource-query_8cpp_a60baa67738cac139be6ea08a5864696b}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!write\_to\_graphml@{write\_to\_graphml}}
+\index{write\_to\_graphml@{write\_to\_graphml}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{write\_to\_graphml()}{write\_to\_graphml()}}
+{\footnotesize\ttfamily static void write\+\_\+to\+\_\+graphml (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&}]{fg,  }\item[{std\+::fstream \&}]{o }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{resource-query_8cpp_a29a2b8bf1a58b2134d46696880a9cd14}\label{resource-query_8cpp_a29a2b8bf1a58b2134d46696880a9cd14}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!write\_to\_graphviz@{write\_to\_graphviz}}
+\index{write\_to\_graphviz@{write\_to\_graphviz}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{write\_to\_graphviz()}{write\_to\_graphviz()}}
+{\footnotesize\ttfamily static void write\+\_\+to\+\_\+graphviz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{f\+\_\+resource\+\_\+graph\+\_\+t}} \&}]{fg,  }\item[{\mbox{\hyperlink{namespaceFlux_1_1resource__model_af303ab8851cdb51ebe9afa4bfd1cd29d}{subsystem\+\_\+t}}}]{ss,  }\item[{std\+::fstream \&}]{o }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+\doxysubsubsection{Variable Documentation}
+\mbox{\Hypertarget{resource-query_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}\label{resource-query_8cpp_a7f2c8becae59a68faf6fc1540e88ab11}} 
+\index{resource-\/query.cpp@{resource-\/query.cpp}!longopts@{longopts}}
+\index{longopts@{longopts}!resource-\/query.cpp@{resource-\/query.cpp}}
+\doxyparagraph{\texorpdfstring{longopts}{longopts}}
+{\footnotesize\ttfamily const struct option longopts\mbox{[}$\,$\mbox{]}\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/file"{}},        required\_argument,  0, \textcolor{charliteral}{'L'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/format"{}},      required\_argument,  0, \textcolor{charliteral}{'f'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}load-\/allowlist"{}},   required\_argument,  0, \textcolor{charliteral}{'W'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/subsystems"{}}, required\_argument,  0, \textcolor{charliteral}{'S'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/policy"{}},     required\_argument,  0, \textcolor{charliteral}{'P'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}match-\/format"{}},     required\_argument,  0, \textcolor{charliteral}{'F'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}graph-\/format"{}},     required\_argument,  0, \textcolor{charliteral}{'g'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}graph-\/output"{}},     required\_argument,  0, \textcolor{charliteral}{'o'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}prune-\/filters"{}},    required\_argument,  0, \textcolor{charliteral}{'p'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}test-\/output"{}},      required\_argument,  0, \textcolor{charliteral}{'t'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}reserve-\/vtx-\/vec"{}},  required\_argument,  0, \textcolor{charliteral}{'r'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}elapse-\/time"{}},      no\_argument,        0, \textcolor{charliteral}{'e'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}disable-\/prompt"{}},   no\_argument,        0, \textcolor{charliteral}{'d'}\},}
+\DoxyCodeLine{    \{\textcolor{stringliteral}{"{}help"{}},             no\_argument,        0, \textcolor{charliteral}{'h'}\},}
+\DoxyCodeLine{    \{ 0, 0, 0, 0 \},}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}

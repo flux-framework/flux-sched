@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::reapi_module_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1reapi__t" prot="public" virt="non-virtual">Flux::resource_model::reapi_t</basecompoundref>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a04f72bb80a6fa0880b39cc2d6b2d4d29" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::match_allocate</definition>
+        <argsstring>(void *h, match_op_t match_op, const std::string &amp;jobspec, const uint64_t jobid, bool &amp;reserved, std::string &amp;R, int64_t &amp;at, double &amp;ov)</argsstring>
+        <name>match_allocate</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>match_op</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="32" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="28" bodyend="70"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1aa850e1e20e03802743bcb4dbb21b2c8d" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::match_allocate</definition>
+        <argsstring>(void *h, bool orelse_reserve, const std::string &amp;jobspec, const uint64_t jobid, bool &amp;reserved, std::string &amp;R, int64_t &amp;at, double &amp;ov)</argsstring>
+        <name>match_allocate</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>orelse_reserve</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="36" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="72" bodyend="82"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a1f3e54c4f86c7b60c531de46a961b344" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::match_allocate_multi</definition>
+        <argsstring>(void *h, bool orelse_reserve, const char *jobs, queue_adapter_base_t *adapter)</argsstring>
+        <name>match_allocate_multi</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>orelse_reserve</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobs</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1queue__adapter__base__t" kindref="compound">queue_adapter_base_t</ref> *</type>
+          <declname>adapter</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="40" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="147" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a9ea0d182f6b7bd9d3f08b399c3dc5b55" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::match_allocate_multi</definition>
+        <argsstring>(void *h, match_op_t match_op, const char *jobs, queue_adapter_base_t *adapter)</argsstring>
+        <name>match_allocate_multi</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>match_op</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobs</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1queue__adapter__base__t" kindref="compound">queue_adapter_base_t</ref> *</type>
+          <declname>adapter</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="43" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="114" bodyend="145"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a3e008d6a2b356c5eb3c8936a7d94b81b" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::update_allocate</definition>
+        <argsstring>(void *h, const uint64_t jobid, const std::string &amp;R, int64_t &amp;at, double &amp;ov, std::string &amp;R_out)</argsstring>
+        <name>update_allocate</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>R_out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="46" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="158" bodyend="203"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a30de23a60a4db1ce149a647f257d9096" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::cancel</definition>
+        <argsstring>(void *h, const uint64_t jobid, bool noent_ok)</argsstring>
+        <name>cancel</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>noent_ok</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="49" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="205" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1add0988ddb2f74728e10fee4832441523" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::info</definition>
+        <argsstring>(void *h, const uint64_t jobid, bool &amp;reserved, int64_t &amp;at, double &amp;ov)</argsstring>
+        <name>info</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="50" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="236" bodyend="269"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1aaebbcb22b52c1e649c4716eb6973aa44" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::reapi_module_t::stat</definition>
+        <argsstring>(void *h, int64_t &amp;V, int64_t &amp;E, int64_t &amp;J, double &amp;load, double &amp;min, double &amp;max, double &amp;avg)</argsstring>
+        <name>stat</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>V</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>E</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>J</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>load</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>min</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>max</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>avg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="52" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="271" bodyend="297"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::detail::reapi_module_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::reapi_t</label>
+        <link refid="classFlux_1_1resource__model_1_1reapi__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::detail::reapi_module_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::reapi_t</label>
+        <link refid="classFlux_1_1resource__model_1_1reapi__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" line="30" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module.hpp" bodystart="30" bodyend="54"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a30de23a60a4db1ce149a647f257d9096" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>cancel</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1add0988ddb2f74728e10fee4832441523" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>info</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a15bb686e9d0d17b9fcfd4bc332d65236" prot="public" virt="non-virtual" ambiguityscope="Flux::resource_model::reapi_t::"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>info</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a04f72bb80a6fa0880b39cc2d6b2d4d29" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>match_allocate</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1aa850e1e20e03802743bcb4dbb21b2c8d" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>match_allocate</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a1f3e54c4f86c7b60c531de46a961b344" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>match_allocate_multi</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a9ea0d182f6b7bd9d3f08b399c3dc5b55" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>match_allocate_multi</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1aaebbcb22b52c1e649c4716eb6973aa44" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>stat</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t_1a3e008d6a2b356c5eb3c8936a7d94b81b" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::reapi_module_t</scope><name>update_allocate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

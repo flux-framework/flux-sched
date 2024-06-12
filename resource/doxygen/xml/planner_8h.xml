@@ -1,0 +1,1283 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="planner_8h" kind="file" language="C++">
+    <compoundname>planner.h</compoundname>
+    <includes local="no">stdint.h</includes>
+    <includes local="no">stdbool.h</includes>
+    <includes local="no">stddef.h</includes>
+    <includedby refid="planner__multi_8h" local="yes">planner_multi.h</includedby>
+    <includedby refid="planner__test01_8cpp" local="yes">planner_test01.cpp</includedby>
+    <includedby refid="dfu__match__cb_8hpp" local="yes">dfu_match_cb.hpp</includedby>
+    <includedby refid="matcher_8hpp" local="yes">matcher.hpp</includedby>
+    <includedby refid="resource__reader__grug_8cpp" local="yes">resource_reader_grug.cpp</includedby>
+    <includedby refid="resource__reader__jgf_8cpp" local="yes">resource_reader_jgf.cpp</includedby>
+    <includedby refid="resource__reader__rv1exec_8cpp" local="yes">resource_reader_rv1exec.cpp</includedby>
+    <includedby refid="resource__data_8hpp" local="yes">resource_data.hpp</includedby>
+    <includedby refid="sched__data_8hpp" local="yes">sched_data.hpp</includedby>
+    <includedby refid="dfu__impl_8hpp" local="yes">dfu_impl.hpp</includedby>
+    <incdepgraph>
+      <node id="3">
+        <label>stdbool.h</label>
+      </node>
+      <node id="2">
+        <label>stdint.h</label>
+      </node>
+      <node id="4">
+        <label>stddef.h</label>
+      </node>
+      <node id="1">
+        <label>planner.h</label>
+        <link refid="planner_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="15">
+        <label>dfu_match_locality.hpp</label>
+        <link refid="dfu__match__locality_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>dfu_match_low_id_first.hpp</label>
+        <link refid="dfu__match__low__id__first_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>resource_reader_base.hpp</label>
+        <link refid="resource__reader__base_8hpp_source"/>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>planner_multi.h</label>
+        <link refid="planner__multi_8h_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>dfu_match_cb.hpp</label>
+        <link refid="dfu__match__cb_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>resource_reader_hwloc.hpp</label>
+        <link refid="resource__reader__hwloc_8hpp_source"/>
+      </node>
+      <node id="5">
+        <label>resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="21">
+        <label>dfu.hpp</label>
+        <link refid="dfu_8hpp_source"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>command.hpp</label>
+        <link refid="command_8hpp_source"/>
+      </node>
+      <node id="25">
+        <label>resource_reader_factory.hpp</label>
+        <link refid="resource__reader__factory_8hpp_source"/>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>resource_data.hpp</label>
+        <link refid="resource__data_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>scoring_api.hpp</label>
+        <link refid="scoring__api_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>dfu_match_high_id_first.hpp</label>
+        <link refid="dfu__match__high__id__first_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>fold.hpp</label>
+        <link refid="fold_8hpp_source"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>rq2.hpp</label>
+        <link refid="rq2_8hpp_source"/>
+      </node>
+      <node id="23">
+        <label>expr_eval_vtx_target.hpp</label>
+        <link refid="expr__eval__vtx__target_8hpp_source"/>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>reapi_cli.hpp</label>
+        <link refid="reapi__cli_8hpp_source"/>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>edge_eval_api.hpp</label>
+        <link refid="edge__eval__api_8hpp_source"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>dfu_match_policy_factory.hpp</label>
+        <link refid="dfu__match__policy__factory_8hpp_source"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>reapi_cli_impl.hpp</label>
+        <link refid="reapi__cli__impl_8hpp_source"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="31">
+        <label>matcher.hpp</label>
+        <link refid="matcher_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>resource_reader_jgf.hpp</label>
+        <link refid="resource__reader__jgf_8hpp_source"/>
+      </node>
+      <node id="1">
+        <label>planner.h</label>
+        <link refid="planner_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>dfu_impl.hpp</label>
+        <link refid="dfu__impl_8hpp_source"/>
+        <childnode refid="21" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>dfu_match_multilevel_id_impl.hpp</label>
+        <link refid="dfu__match__multilevel__id__impl_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>resource_reader_rv1exec.hpp</label>
+        <link refid="resource__reader__rv1exec_8hpp_source"/>
+      </node>
+      <node id="30">
+        <label>resource_graph_store.hpp</label>
+        <link refid="resource__graph__store_8hpp_source"/>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>dfu_match_var_aware.hpp</label>
+        <link refid="dfu__match__var__aware_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>dfu_match_multilevel_id.hpp</label>
+        <link refid="dfu__match__multilevel__id_8hpp_source"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>infra_data.hpp</label>
+        <link refid="infra__data_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>sched_data.hpp</label>
+        <link refid="sched__data_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>resource_reader_grug.hpp</label>
+        <link refid="resource__reader__grug_8hpp_source"/>
+      </node>
+    </invincdepgraph>
+      <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="planner_8h_1a45f1c62c863d136a5cab69c5de52c555" prot="public" static="no">
+        <type>struct <ref refid="structplanner__t" kindref="compound">planner_t</ref></type>
+        <definition>typedef struct planner_t planner_t</definition>
+        <argsstring></argsstring>
+        <name>planner_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="1" column="0" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="planner_8h_1a9f24df8322e8cddc9c0c3bbeb1a980b1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+        <definition>planner_t* planner_new</definition>
+        <argsstring>(int64_t base_time, uint64_t duration, uint64_t resource_total, const char *resource_type)</argsstring>
+        <name>planner_new</name>
+        <param>
+          <type>int64_t</type>
+          <declname>base_time</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>resource_total</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>resource_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Construct a planner.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>base_time</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>earliest schedulable point expressed in integer time (i.e., the base time of the planner to be constructed). </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>time span of this planner (i.e., all planned spans must end before base_time + duration). </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>resource_total</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the total count of available resources. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>resource_type</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the resource type string </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>new planner context; NULL on an error with errno set as follows: pointer to a <ref refid="structplanner__t" kindref="compound">planner_t</ref> object on success; -1 on an error with errno set: EINVAL: invalid argument. ERANGE: resource_total is an out-of-range value. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="41" column="11" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="292" bodyend="316" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="41" declcolumn="11"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a1c847da2982fbb0f38fe338ce3e7791b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+        <definition>planner_t* planner_new_empty</definition>
+        <argsstring>()</argsstring>
+        <name>planner_new_empty</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Initialize empty planner.</para>
+<para><simplesect kind="return"><para>new planner context; NULL on an error with errno set as follows: pointer to a <ref refid="structplanner__t" kindref="compound">planner_t</ref> object on success; -1 on an error with errno set. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="51" column="11" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="336" bodyend="347" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="51" declcolumn="11"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1aa860fe284c562310648bac5855631a3c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+        <definition>planner_t* planner_copy</definition>
+        <argsstring>(planner_t *p)</argsstring>
+        <name>planner_copy</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Copy a planner.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>p</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the base planner which will be copied and returned as a new planner context. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>new planner context; NULL on an error with errno set as follows: pointer to a <ref refid="structplanner__t" kindref="compound">planner_t</ref> object on success; -1 on an error with errno set. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="62" column="11" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="318" bodyend="329" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="62" declcolumn="11"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a8b054779c91b895725df4b0c4b0e25ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner_assign</definition>
+        <argsstring>(planner_t *lhs, planner_t *rhs)</argsstring>
+        <name>planner_assign</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>lhs</declname>
+        </param>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Assign a planner.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>lhs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the base planner which will be assigned to rhs. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rhs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the base planner which will be copied and returned as a new planner context. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="71" column="6" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="331" bodyend="334" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="71" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1aedba142ec44c70e481d63b93433e1fcf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner_reset</definition>
+        <argsstring>(planner_t *ctx, int64_t base_time, uint64_t duration)</argsstring>
+        <name>planner_reset</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>base_time</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Reset the planner with a new time bound. Destroy all existing planned spans.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>base_time</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>earliest schedulable point expressed in integer time (i.e., the base time of the planner to be constructed). </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>time span of this planner (i.e., all planned spans must end before base_time + duration). </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on an error with errno set as follows: EINVAL: invalid argument. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="83" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="349" bodyend="367" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="83" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a30b2251fc7a0eacf03814a6c733824c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner_destroy</definition>
+        <argsstring>(planner_t **ctx_p)</argsstring>
+        <name>planner_destroy</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> **</type>
+          <declname>ctx_p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Destroy the planner.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx_p</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>pointer to a planner context pointer returned. from planner_new </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="91" column="6" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="369" bodyend="375" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="91" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1ac1ee4be96a1537798f507eaa972c9f3b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_base_time</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_base_time</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Getters: <simplesect kind="return"><para>-1 or NULL on an error with errno set as follows: EINVAL: invalid argument. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="97" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="377" bodyend="384" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="97" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a8cc8c7fd07cb0562cade186478aeb36a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_duration</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_duration</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="98" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="386" bodyend="393" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="98" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a887b46c83cb16d7782217d0f4ebb9f12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_resource_total</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_resource_total</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="99" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="395" bodyend="402" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="99" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a404468e51955b0eb936c02db9698c1f6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char* planner_resource_type</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_resource_type</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="100" column="12" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="404" bodyend="411" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="100" declcolumn="12"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a7d0c1ce0a68b4a919e474bcb96240064" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_avail_time_first</definition>
+        <argsstring>(planner_t *ctx, int64_t on_or_after, uint64_t duration, uint64_t request)</argsstring>
+        <name>planner_avail_time_first</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>on_or_after</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Find and return the earliest point in integer time when the request can be satisfied.</para>
+<para>Note on semantics: this function returns a time point where the resource state changes. If the number of available resources change at time point t1 and t2 (assuming t2 is greater than t1+2), the possible schedule points that this function can return is either t1 or t2, but not t1+1 nor t1+2 even if these points also satisfy the request.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>on_or_after</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>available on or after the specified time. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>requested duration; must be greater than or equal to 1. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>request</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource count request. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>earliest time at which the request can be satisfied; -1 on an error with errno set as follows: EINVAL: invalid argument. ERANGE: request is an out-of-range value. ENOENT: no scheduleable point </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="121" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="413" bodyend="435" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="121" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1aa4e88ee97dce134e6fd6363ae87636c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_avail_time_next</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_avail_time_next</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Find and return the next earliest point in time at which the same request queried before via either planner_avail_time_first or planner_avail_time_next can be satisfied. Same semantics as planner_avail_time_first.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>earliest time at which the request can be satisfied; -1 on error with errno set as follows: EINVAL: invalid argument. ERANGE: request is out of range ENOENT: no scheduleable point </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="136" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="437" bodyend="458" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="136" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a2a3ec90fc4cf26ea50bfffdbf79b6c6b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner_avail_during</definition>
+        <argsstring>(planner_t *ctx, int64_t at, uint64_t duration, uint64_t request)</argsstring>
+        <name>planner_avail_during</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Test if the given request can be satisfied at the start time. Note on semantics: Unlike planner_avail_time* functions, this function can be used to test an arbitrary time span.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>start time from which the requested resources must be available for duration. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>requested duration; must be greater than or equal to 1. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>request</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource count request. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 if the request can be satisfied; -1 if it cannot be satisfied or an error encountered (errno as follows): EINVAL: invalid argument. ERANGE: request is an out-of-range value. ENOTSUP: internal error encountered. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="154" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="460" bodyend="474" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="154" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a604f5388985ebd3e643b08833ccfaa35" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_avail_resources_during</definition>
+        <argsstring>(planner_t *ctx, int64_t at, uint64_t duration)</argsstring>
+        <name>planner_avail_resources_during</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return how resources are available for the duration starting from at.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>instant time for which this query is made. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>requested duration; must be greater than or equal to 1. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>available resource count; -1 on an error with errno set as follows: EINVAL: invalid argument. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="166" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="476" bodyend="486" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="166" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1abadef1bc7ba816e3e6a697fc4d4b079a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_avail_resources_at</definition>
+        <argsstring>(planner_t *ctx, int64_t at)</argsstring>
+        <name>planner_avail_resources_at</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return how many resources are available at the given time.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>instant time for which this query is made. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>available resource count; -1 on an error with errno set as follows: EINVAL: invalid argument. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="177" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="488" bodyend="498" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="177" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a3fd34d6e1069d3bdf727459bb8886c18" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_add_span</definition>
+        <argsstring>(planner_t *ctx, int64_t start_time, uint64_t duration, uint64_t request)</argsstring>
+        <name>planner_add_span</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>start_time</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Add a new span to the planner and update the planner&apos;s resource/time state. Reset the planner&apos;s iterator so that planner_avail_time_next will be made to return the earliest schedulable point.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>start_time</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>start time from which the resource request must be available for duration. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>requested duration; must be greater than or equal to 1. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>request</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource count request.</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>span id on success; -1 on an error with errno set as follows: EINVAL: invalid argument. EKEYREJECTED: can&apos;t update planner&apos;s internal data. ERANGE: a resource state became out of a valid range, e.g., reserving more than available. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="196" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="500" bodyend="538" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="196" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1aef3828ac62b46812f38f5658c3272747" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner_rem_span</definition>
+        <argsstring>(planner_t *ctx, int64_t span_id)</argsstring>
+        <name>planner_rem_span</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Remove the existing span from the planner and update its resource/time state. Reset the planner&apos;s iterator such that planner_avail_time_next will be made to return the earliest schedulable point.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>span_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>span_id returned from planner_add_span. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on an error with errno set as follows: EINVAL: invalid argument. EKEYREJECTED: span could not be removed from the planner&apos;s internal data structures. ERANGE: a resource state became out of a valid range. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="211" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="540" bodyend="587" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="211" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a8d0504f17295d73553446f7a8c37c831" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_span_first</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_span_first</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+<para>Span iterators <ndash/> there is no specific iteration order. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="214" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="589" bodyend="604" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="214" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a3beba62e1bd806657adf9f23b844a566" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_span_next</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_span_next</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="215" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="606" bodyend="620" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="215" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a1b055f2222896a522b4118718f56c745" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t planner_span_size</definition>
+        <argsstring>(planner_t *ctx)</argsstring>
+        <name>planner_span_size</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="216" column="8" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="622" bodyend="629" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="216" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1ab8d62e0fc9065a296ee7be1a06902959" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner_is_active_span</definition>
+        <argsstring>(planner_t *ctx, int64_t span_id)</argsstring>
+        <name>planner_is_active_span</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <briefdescription>
+<para>Return 0 if the span has been inserted and active in the planner. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="219" column="6" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="631" bodyend="645" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="219" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a6a97935950d889c1c1a58b51ce3b5d78" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_span_start_time</definition>
+        <argsstring>(planner_t *ctx, int64_t span_id)</argsstring>
+        <name>planner_span_start_time</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <briefdescription>
+<para>Getters for span. Return -1 on an error. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="222" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="647" bodyend="661" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="222" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a2e022bf88136a6de3d1ea9e35e3e95af" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_span_duration</definition>
+        <argsstring>(planner_t *ctx, int64_t span_id)</argsstring>
+        <name>planner_span_duration</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="223" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="663" bodyend="677" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="223" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a23e68ce575b1abb46abbcc5edbd83f61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner_span_resource_count</definition>
+        <argsstring>(planner_t *ctx, int64_t span_id)</argsstring>
+        <name>planner_span_resource_count</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="224" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="679" bodyend="694" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="224" declcolumn="9"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a9cc3a0a64cf10392920fa656effe5be5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planners_equal</definition>
+        <argsstring>(planner_t *lhs, planner_t *rhs)</argsstring>
+        <name>planners_equal</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>lhs</declname>
+        </param>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="230" column="6" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="696" bodyend="699" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="230" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="planner_8h_1a126bc0573d38b7b972ced254d23f4e87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner_update_total</definition>
+        <argsstring>(planner_t *ctx, uint64_t resource_total)</argsstring>
+        <name>planner_update_total</name>
+        <param>
+          <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>resource_total</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource count to support elasticity.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>opaque planner context returned from planner_new. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>resource_total</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>64-bit unsigned integer of the total count of available resources of the resource type. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on an error with errno set as follows: EINVAL: invalid argument. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h" line="242" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c/planner_c_interface.cpp" bodystart="701" bodyend="705" declfile="/home/hobbs17/flux-sched/resource/planner/c/planner.h" declline="242" declcolumn="5"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2014<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>PLANNER_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>PLANNER_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdint.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdbool.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stddef.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/><ref refid="structplanner__t" kindref="compound">planner_t</ref>;</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*planner_new<sp/>(int64_t<sp/>base_time,<sp/>uint64_t<sp/>duration,</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>resource_total,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*resource_type);</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*planner_new_empty<sp/>();</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*planner_copy<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*p);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>planner_assign<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*lhs,<sp/><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*rhs);</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>planner_reset<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>base_time,<sp/>uint64_t<sp/>duration);</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>planner_destroy<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>**ctx_p);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight></codeline>
+<codeline lineno="97"><highlight class="normal">int64_t<sp/>planner_base_time<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="98"><highlight class="normal">int64_t<sp/>planner_duration<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="99"><highlight class="normal">int64_t<sp/>planner_resource_total<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*planner_resource_type<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal">int64_t<sp/>planner_avail_time_first<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>on_or_after,</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>duration,<sp/>uint64_t<sp/>request);</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal">int64_t<sp/>planner_avail_time_next<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight></codeline>
+<codeline lineno="154"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>planner_avail_during<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>at,<sp/>uint64_t<sp/>duration,</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>request);</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"></highlight></codeline>
+<codeline lineno="166"><highlight class="normal">int64_t<sp/>planner_avail_resources_during<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>at,</highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>duration);</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"></highlight></codeline>
+<codeline lineno="177"><highlight class="normal">int64_t<sp/>planner_avail_resources_at<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>at);</highlight></codeline>
+<codeline lineno="178"><highlight class="normal"></highlight></codeline>
+<codeline lineno="179"><highlight class="normal"></highlight></codeline>
+<codeline lineno="196"><highlight class="normal">int64_t<sp/>planner_add_span<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>start_time,<sp/>uint64_t<sp/>duration,</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>request);</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"></highlight></codeline>
+<codeline lineno="211"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>planner_rem_span<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>span_id);</highlight></codeline>
+<codeline lineno="212"><highlight class="normal"></highlight></codeline>
+<codeline lineno="214"><highlight class="normal">int64_t<sp/>planner_span_first<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="215"><highlight class="normal">int64_t<sp/>planner_span_next<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="216"><highlight class="normal"></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>planner_span_size<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="217"><highlight class="normal"></highlight></codeline>
+<codeline lineno="219"><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>planner_is_active_span<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>span_id);</highlight></codeline>
+<codeline lineno="220"><highlight class="normal"></highlight></codeline>
+<codeline lineno="222"><highlight class="normal">int64_t<sp/>planner_span_start_time<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>span_id);</highlight></codeline>
+<codeline lineno="223"><highlight class="normal">int64_t<sp/>planner_span_duration<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>span_id);</highlight></codeline>
+<codeline lineno="224"><highlight class="normal">int64_t<sp/>planner_span_resource_count<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,<sp/>int64_t<sp/>span_id);</highlight></codeline>
+<codeline lineno="225"><highlight class="normal"></highlight></codeline>
+<codeline lineno="226"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="227"><highlight class="comment"><sp/>*<sp/><sp/>Returns<sp/>true<sp/>if<sp/>all<sp/>the<sp/>member<sp/>variables<sp/>and<sp/>objects<sp/>are<sp/>equal.</highlight></codeline>
+<codeline lineno="228"><highlight class="comment"><sp/>*<sp/><sp/>Used<sp/>by<sp/>testsuite.</highlight></codeline>
+<codeline lineno="229"><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="230"><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>planners_equal<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*lhs,<sp/><ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*rhs);</highlight></codeline>
+<codeline lineno="231"><highlight class="normal"></highlight></codeline>
+<codeline lineno="242"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>planner_update_total<sp/>(<ref refid="structplanner__t" kindref="compound">planner_t</ref><sp/>*ctx,</highlight></codeline>
+<codeline lineno="243"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>resource_total);</highlight></codeline>
+<codeline lineno="244"><highlight class="normal"></highlight></codeline>
+<codeline lineno="245"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="246"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="247"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="248"><highlight class="normal"></highlight></codeline>
+<codeline lineno="249"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">/*<sp/>PLANNER_H<sp/>*/</highlight><highlight class="preprocessor"></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="250"><highlight class="normal"></highlight></codeline>
+<codeline lineno="251"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="252"><highlight class="comment"><sp/>*<sp/>vi:<sp/>ts=4<sp/>sw=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="253"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c/planner.h"/>
+  </compounddef>
+</doxygen>

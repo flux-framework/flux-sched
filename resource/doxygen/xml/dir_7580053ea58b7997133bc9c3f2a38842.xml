@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_7580053ea58b7997133bc9c3f2a38842" kind="dir">
+    <compoundname>reapi</compoundname>
+    <innerdir refid="dir_59a93ece2cc6226db70c1f599ae8b1c2">bindings</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/"/>
+  </compounddef>
+</doxygen>

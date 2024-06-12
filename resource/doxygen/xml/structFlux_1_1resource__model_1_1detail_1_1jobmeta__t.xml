@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::jobmeta_t</compoundname>
+      <sectiondef kind="public-type">
+      <memberdef kind="enum" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a0044ef16077df08d2a3db78115727765" prot="public" static="no" strong="yes">
+        <type>int</type>
+        <name>alloc_type_t</name>
+        <enumvalue id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a0044ef16077df08d2a3db78115727765a28f10b75a2f1e8e0f1681e0bda7b7d66" prot="public">
+          <name>AT_ALLOC</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a0044ef16077df08d2a3db78115727765a86c936874a11d665dd83b8bf8472a0be" prot="public">
+          <name>AT_ALLOC_ORELSE_RESERVE</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a0044ef16077df08d2a3db78115727765ae4c6d9ee50fc01093cad079288b82b2c" prot="public">
+          <name>AT_SATISFIABILITY</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="45" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="45" bodyend="49"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1aa4603cacf380fca54c996e4c9be97949" prot="public" static="no" mutable="no">
+        <type>alloc_type_t</type>
+        <definition>alloc_type_t Flux::resource_model::detail::jobmeta_t::alloc_type</definition>
+        <argsstring></argsstring>
+        <name>alloc_type</name>
+        <initializer>= alloc_type_t::AT_ALLOC</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="51" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2c3c23b08c2d5f5198bc0335991c9e92" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::detail::jobmeta_t::jobid</definition>
+        <argsstring></argsstring>
+        <name>jobid</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="52" column="13" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a11104ab98170fa3b2516b72fd5386148" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::detail::jobmeta_t::at</definition>
+        <argsstring></argsstring>
+        <name>at</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="53" column="13" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a081af6ef6f3057af773ab8ef73d44435" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::detail::jobmeta_t::now</definition>
+        <argsstring></argsstring>
+        <name>now</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="54" column="13" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2039552302ef553d83d781dc7a751d97" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::detail::jobmeta_t::duration</definition>
+        <argsstring></argsstring>
+        <name>duration</name>
+        <initializer>= SYSTEM_DEFAULT_DURATION</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="55" column="14" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1aaff4bf6fcb911893a9d299481aa9e591" prot="public" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1Jobspec_1_1Constraint" kindref="compound">Jobspec::Constraint</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;Jobspec::Constraint&gt; Flux::resource_model::detail::jobmeta_t::constraint</definition>
+        <argsstring></argsstring>
+        <name>constraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="56" column="22" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a67fa4f38e19fc7bf067d3fabb016a6ab" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::jobmeta_t::m_queue_set</definition>
+        <argsstring></argsstring>
+        <name>m_queue_set</name>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="102" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="102" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1abdca27b441a2d5be432f57fde1843311" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::jobmeta_t::m_queue</definition>
+        <argsstring></argsstring>
+        <name>m_queue</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="103" column="17" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1af3bad18553ae972f2982109820e5e707" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::jobmeta_t::is_queue_set</definition>
+        <argsstring>() const</argsstring>
+        <name>is_queue_set</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="58" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="58" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2e800d5fec02c87ac80e16d5e34f6ac8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string&amp; Flux::resource_model::detail::jobmeta_t::get_queue</definition>
+        <argsstring>() const</argsstring>
+        <name>get_queue</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="62" column="23" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="62" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a4ac5de6db6a63a7de81430e4baa1c2b4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::detail::jobmeta_t::build</definition>
+        <argsstring>(Jobspec::Jobspec &amp;jobspec, alloc_type_t alloc, int64_t id, int64_t t, graph_duration_t &amp;graph_duration)</argsstring>
+        <name>build</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec::Jobspec</ref> &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>alloc_type_t</type>
+          <declname>alloc</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>t</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1graph__duration__t" kindref="compound">graph_duration_t</ref> &amp;</type>
+          <declname>graph_duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="66" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="66" bodyend="99"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="43" column="1" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="43" bodyend="104"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1aa4603cacf380fca54c996e4c9be97949" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>alloc_type</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a0044ef16077df08d2a3db78115727765" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>alloc_type_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a11104ab98170fa3b2516b72fd5386148" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>at</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a4ac5de6db6a63a7de81430e4baa1c2b4" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>build</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1aaff4bf6fcb911893a9d299481aa9e591" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>constraint</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2039552302ef553d83d781dc7a751d97" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>duration</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2e800d5fec02c87ac80e16d5e34f6ac8" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>get_queue</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1af3bad18553ae972f2982109820e5e707" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>is_queue_set</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a2c3c23b08c2d5f5198bc0335991c9e92" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>jobid</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1abdca27b441a2d5be432f57fde1843311" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>m_queue</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a67fa4f38e19fc7bf067d3fabb016a6ab" prot="private" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>m_queue_set</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t_1a081af6ef6f3057af773ab8ef73d44435" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::jobmeta_t</scope><name>now</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

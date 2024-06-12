@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_graph_metadata_t</compoundname>
+    <includes refid="resource__graph__store_8hpp" local="no">resource_graph_store.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a599b0d56496f595da68867647ede5408" prot="public" static="no" mutable="no">
+        <type>std::map&lt; subsystem_t, vtx_t &gt;</type>
+        <definition>std::map&lt;subsystem_t, vtx_t&gt; Flux::resource_model::resource_graph_metadata_t::roots</definition>
+        <argsstring></argsstring>
+        <name>roots</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="36" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a36b293bfe014101f7cf9e96786748186" prot="public" static="no" mutable="no">
+        <type>std::map&lt; subsystem_t, <ref refid="classFlux_1_1resource__model_1_1relation__infra__t" kindref="compound">relation_infra_t</ref> &gt;</type>
+        <definition>std::map&lt;subsystem_t, relation_infra_t&gt; Flux::resource_model::resource_graph_metadata_t::v_rt_edges</definition>
+        <argsstring></argsstring>
+        <name>v_rt_edges</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="37" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1ac58cc68c71ed227ac5b3cda08d9a3a0f" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::vector &lt;vtx_t&gt; &gt; Flux::resource_model::resource_graph_metadata_t::by_type</definition>
+        <argsstring></argsstring>
+        <name>by_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="38" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a28e6b99d9193bfa2c8db64e3c873296e" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::vector &lt;vtx_t&gt; &gt; Flux::resource_model::resource_graph_metadata_t::by_name</definition>
+        <argsstring></argsstring>
+        <name>by_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="39" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1aa74b5746088b5b69aa479626e0abdc2c" prot="public" static="no" mutable="no">
+        <type>std::map&lt; int64_t, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;int64_t, std::vector &lt;vtx_t&gt; &gt; Flux::resource_model::resource_graph_metadata_t::by_rank</definition>
+        <argsstring></argsstring>
+        <name>by_rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="40" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a2406a2eb05cff2e83782d9a0e142dbd9" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::vector&lt;vtx_t&gt; &gt; Flux::resource_model::resource_graph_metadata_t::by_path</definition>
+        <argsstring></argsstring>
+        <name>by_path</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="41" column="14" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a9eb9b9cba14a4a6af30ae4dd201892b4" prot="public" static="no" mutable="no">
+        <type>std::map&lt; vtx_t, std::map&lt; std::pair&lt; uint64_t, int64_t &gt;, edg_t, std::greater&lt; std::pair&lt; uint64_t, int64_t &gt; &gt; &gt; &gt;</type>
+        <definition>std::map&lt;vtx_t, std::map&lt;std::pair&lt;uint64_t, int64_t&gt;, edg_t, std::greater&lt;std::pair&lt;uint64_t, int64_t&gt; &gt; &gt; &gt; Flux::resource_model::resource_graph_metadata_t::by_outedges</definition>
+        <argsstring></argsstring>
+        <name>by_outedges</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="46" column="2" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a16ae42c65d09cea5d5ce85c260dad930" prot="public" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1graph__duration__t" kindref="compound">graph_duration_t</ref></type>
+        <definition>graph_duration_t Flux::resource_model::resource_graph_metadata_t::graph_duration</definition>
+        <argsstring></argsstring>
+        <name>graph_duration</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="47" column="22" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a624a23914f1a9ccd1ace1d13ddf333f5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void resource_graph_metadata_t::set_graph_duration</definition>
+        <argsstring>(graph_duration_t &amp;g_duration)</argsstring>
+        <name>set_graph_duration</name>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1graph__duration__t" kindref="compound">graph_duration_t</ref> &amp;</type>
+          <declname>g_duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Set the resource graph duration.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g_duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="structFlux_1_1resource__model_1_1graph__duration__t" kindref="compound">graph_duration_t</ref> of time_points used to set the graph duration </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="54" column="10" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.cpp" bodystart="23" bodyend="36"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Resource graph data metadata. Adjacency_list graph, roots of this graph and various indexing. </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::resource_graph_metadata_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>graph_duration</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::graph_duration_t</label>
+        <link refid="structFlux_1_1resource__model_1_1graph__duration__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="35" column="1" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="35" bodyend="55"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a28e6b99d9193bfa2c8db64e3c873296e" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>by_name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a9eb9b9cba14a4a6af30ae4dd201892b4" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>by_outedges</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a2406a2eb05cff2e83782d9a0e142dbd9" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>by_path</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1aa74b5746088b5b69aa479626e0abdc2c" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>by_rank</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1ac58cc68c71ed227ac5b3cda08d9a3a0f" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>by_type</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a16ae42c65d09cea5d5ce85c260dad930" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>graph_duration</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a599b0d56496f595da68867647ede5408" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>roots</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a624a23914f1a9ccd1ace1d13ddf333f5" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>set_graph_duration</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t_1a36b293bfe014101f7cf9e96786748186" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_metadata_t</scope><name>v_rt_edges</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

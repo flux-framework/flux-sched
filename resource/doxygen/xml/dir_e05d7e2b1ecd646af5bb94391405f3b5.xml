@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_e05d7e2b1ecd646af5bb94391405f3b5" kind="dir">
+    <compoundname>modules</compoundname>
+    <innerfile refid="resource__match_8cpp">resource_match.cpp</innerfile>
+    <innerfile refid="resource__match__opts_8cpp">resource_match_opts.cpp</innerfile>
+    <innerfile refid="resource__match__opts_8hpp">resource_match_opts.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/modules/"/>
+  </compounddef>
+</doxygen>

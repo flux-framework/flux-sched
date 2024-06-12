@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1schedule__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::schedule_t</compoundname>
+    <includes refid="sched__data_8hpp" local="no">sched_data.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1schedule__t_1ac2f7de9b9a6bd8d4b4f9410e951ece39" prot="public" static="no" mutable="no">
+        <type>std::map&lt; int64_t, int64_t &gt;</type>
+        <definition>std::map&lt;int64_t, int64_t&gt; Flux::resource_model::schedule_t::allocations</definition>
+        <argsstring></argsstring>
+        <name>allocations</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="30" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1schedule__t_1a41dd21177bbe9ed5b86acb9e1f2fed87" prot="public" static="no" mutable="no">
+        <type>std::map&lt; int64_t, int64_t &gt;</type>
+        <definition>std::map&lt;int64_t, int64_t&gt; Flux::resource_model::schedule_t::reservations</definition>
+        <argsstring></argsstring>
+        <name>reservations</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="31" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1schedule__t_1a881384c1dda6f68262bad525b8205c5f" prot="public" static="no" mutable="no">
+        <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+        <definition>planner_t* Flux::resource_model::schedule_t::plans</definition>
+        <argsstring></argsstring>
+        <name>plans</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="32" column="15" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1schedule__t_1a8dc047ee9b2dc38d78f31fae31935b89" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::schedule_t::schedule_t</definition>
+        <argsstring>()</argsstring>
+        <name>schedule_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="24" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1schedule__t_1a4f5f0ae6e560432b87bca62d92df7754" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::schedule_t::schedule_t</definition>
+        <argsstring>(const schedule_t &amp;o)</argsstring>
+        <name>schedule_t</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1schedule__t" kindref="compound">schedule_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="25" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.cpp" bodystart="24" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1schedule__t_1afec7bd2f01fa6fa58673922acdf90719" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1resource__model_1_1schedule__t" kindref="compound">schedule_t</ref> &amp;</type>
+        <definition>schedule_t &amp; Flux::resource_model::schedule_t::operator=</definition>
+        <argsstring>(const schedule_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1schedule__t" kindref="compound">schedule_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="26" column="16" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.cpp" bodystart="44" bodyend="65"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1schedule__t_1a97270ce7a9544a22227582aeb2ef51fb" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::schedule_t::operator==</definition>
+        <argsstring>(const schedule_t &amp;o) const</argsstring>
+        <name>operator==</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1schedule__t" kindref="compound">schedule_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="27" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.cpp" bodystart="67" bodyend="77"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1schedule__t_1a21261b71d957594c20b9a2c69c2fe49b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::schedule_t::~schedule_t</definition>
+        <argsstring>()</argsstring>
+        <name>~schedule_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="28" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.cpp" bodystart="79" bodyend="83"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Type to keep track of current schedule state. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::schedule_t</label>
+        <link refid="structFlux_1_1resource__model_1_1schedule__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>plans</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>planner_t</label>
+        <link refid="structplanner__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>plan</edgelabel>
+        </childnode>
+      </node>
+      <node id="4">
+        <label>mintime_resource_tree_t</label>
+        <link refid="classmintime__resource__tree__t"/>
+      </node>
+      <node id="3">
+        <label>planner</label>
+        <link refid="classplanner"/>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_mt_resource_tree</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_sched_point_tree</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>m_current_request</edgelabel>
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>m_p0</edgelabel>
+        </childnode>
+      </node>
+      <node id="12">
+        <label>ygg::RBTreeNodeBase&lt; scheduled_point_rb_node_t &gt;</label>
+      </node>
+      <node id="8">
+        <label>mt_resource_rb_node_t</label>
+        <link refid="structmt__resource__rb__node__t"/>
+        <childnode refid="9" relation="public-inheritance">
+        </childnode>
+        <childnode refid="10" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>scheduled_point_t</label>
+        <link refid="structscheduled__point__t"/>
+        <childnode refid="8" relation="usage">
+          <edgelabel>resource_rb</edgelabel>
+        </childnode>
+        <childnode refid="11" relation="usage">
+          <edgelabel>point_rb</edgelabel>
+        </childnode>
+      </node>
+      <node id="10">
+        <label>ygg::RBTreeNodeBase&lt; mt_resource_rb_node_t &gt;</label>
+      </node>
+      <node id="9">
+        <label>rb_node_base_t</label>
+        <link refid="classrb__node__base__t"/>
+        <childnode refid="7" relation="usage">
+          <edgelabel>m_point</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>scheduled_point_tree_t</label>
+        <link refid="classscheduled__point__tree__t"/>
+      </node>
+      <node id="11">
+        <label>scheduled_point_rb_node_t</label>
+        <link refid="structscheduled__point__rb__node__t"/>
+        <childnode refid="9" relation="public-inheritance">
+        </childnode>
+        <childnode refid="12" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>request_t</label>
+        <link refid="structrequest__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" line="23" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/sched_data.hpp" bodystart="23" bodyend="33"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1ac2f7de9b9a6bd8d4b4f9410e951ece39" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>allocations</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1afec7bd2f01fa6fa58673922acdf90719" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a97270ce7a9544a22227582aeb2ef51fb" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>operator==</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a881384c1dda6f68262bad525b8205c5f" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>plans</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a41dd21177bbe9ed5b86acb9e1f2fed87" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>reservations</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a8dc047ee9b2dc38d78f31fae31935b89" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>schedule_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a4f5f0ae6e560432b87bca62d92df7754" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>schedule_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1schedule__t_1a21261b71d957594c20b9a2c69c2fe49b" prot="public" virt="non-virtual"><scope>Flux::resource_model::schedule_t</scope><name>~schedule_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespaceFlux_1_1resource__model_1_1fold" kind="namespace" language="C++">
+    <compoundname>Flux::resource_model::fold</compoundname>
+    <innerclass refid="structFlux_1_1resource__model_1_1fold_1_1greater" prot="public">Flux::resource_model::fold::greater</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1fold_1_1less" prot="public">Flux::resource_model::fold::less</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1fold_1_1interval__greater" prot="public">Flux::resource_model::fold::interval_greater</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1fold_1_1interval__less" prot="public">Flux::resource_model::fold::interval_less</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1fold_1_1plus" prot="public">Flux::resource_model::fold::plus</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="fold_8hpp_1ad5ae580f32c094fc1a0bbe994cd73031" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>boost::icl::interval_set&lt; int64_t &gt;::interval_type</type>
+        <definition>boost::icl::interval_set&lt;int64_t&gt;::interval_type Flux::resource_model::fold::to_interval</definition>
+        <argsstring>(const eval_egroup_t &amp;ev)</argsstring>
+        <name>to_interval</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>ev</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" line="59" column="49" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" bodystart="59" bodyend="65"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" line="21" column="1"/>
+  </compounddef>
+</doxygen>

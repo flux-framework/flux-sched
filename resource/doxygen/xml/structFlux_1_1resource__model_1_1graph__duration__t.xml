@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1graph__duration__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::graph_duration_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1graph__duration__t_1a742ad31c16dca57ae6a53406618078c7" prot="public" static="no" mutable="no">
+        <type>std::chrono::time_point&lt; std::chrono::system_clock &gt;</type>
+        <definition>std::chrono::time_point&lt;std::chrono::system_clock&gt; Flux::resource_model::graph_duration_t::graph_start</definition>
+        <argsstring></argsstring>
+        <name>graph_start</name>
+        <initializer>=
+                                    std::chrono::system_clock::from_time_t (0)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="26" column="29" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1graph__duration__t_1ad24ef12efc1b520399c43e5802156930" prot="public" static="no" mutable="no">
+        <type>std::chrono::time_point&lt; std::chrono::system_clock &gt;</type>
+        <definition>std::chrono::time_point&lt;std::chrono::system_clock&gt; Flux::resource_model::graph_duration_t::graph_end</definition>
+        <argsstring></argsstring>
+        <name>graph_end</name>
+        <initializer>=
+        std::chrono::system_clock::from_time_t (detail::SYSTEM_MAX_DURATION)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="28" column="29" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="25" column="1" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="25" bodyend="30"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1graph__duration__t_1ad24ef12efc1b520399c43e5802156930" prot="public" virt="non-virtual"><scope>Flux::resource_model::graph_duration_t</scope><name>graph_end</name></member>
+      <member refid="structFlux_1_1resource__model_1_1graph__duration__t_1a742ad31c16dca57ae6a53406618078c7" prot="public" virt="non-virtual"><scope>Flux::resource_model::graph_duration_t</scope><name>graph_start</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

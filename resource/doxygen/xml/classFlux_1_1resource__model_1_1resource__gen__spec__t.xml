@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1resource__gen__spec__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_gen_spec_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7d451f26689f8fe09be05a1237d04078" prot="private" static="no" mutable="no">
+        <type>gg_t</type>
+        <definition>gg_t Flux::resource_model::resource_gen_spec_t::g</definition>
+        <argsstring></argsstring>
+        <name>g</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="88" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="88" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1acc2b48c24fea1fa35f7483744a1ee5eb" prot="private" static="no" mutable="no">
+        <type>boost::dynamic_properties</type>
+        <definition>boost::dynamic_properties Flux::resource_model::resource_gen_spec_t::dp</definition>
+        <argsstring></argsstring>
+        <name>dp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="89" column="31" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a6d8ba7f690ac1435473002081291a193" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>resource_gen_spec_t::resource_gen_spec_t</definition>
+        <argsstring>()</argsstring>
+        <name>resource_gen_spec_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="78" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="113" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a5da07316879e9437755fa5eda0de72fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>resource_gen_spec_t::resource_gen_spec_t</definition>
+        <argsstring>(const resource_gen_spec_t &amp;o)</argsstring>
+        <name>resource_gen_spec_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t" kindref="compound">resource_gen_spec_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="79" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="118" bodyend="122"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1ad85cf1dad6dd9effaa76c507b63364d0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const gg_t &amp;</type>
+        <definition>const gg_t &amp; resource_gen_spec_t::gen_graph</definition>
+        <argsstring>()</argsstring>
+        <name>gen_graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="80" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="124" bodyend="127"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a511acb5ad2bf098137b43ea0ef6f0f46" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const gen_meth_t</type>
+        <definition>const gen_meth_t resource_gen_spec_t::to_gen_method_t</definition>
+        <argsstring>(const std::string &amp;s) const</argsstring>
+        <name>to_gen_method_t</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return gen_meth_t enum value corresponding to the string passed in.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>s</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>gen_method string from graphml spec </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="81" column="22" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="134" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7c7a5f5d760be4c59dcf0fe99e8db106" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_gen_spec_t::read_graphml</definition>
+        <argsstring>(const std::string &amp;ifn)</argsstring>
+        <name>read_graphml</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>ifn</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load resource generator recipe graph from a graphml file</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ifn</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource generator recipe file in graphml </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="82" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="149" bodyend="158"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1aaaf3e68d485a05863d4e0b56248b1859" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_gen_spec_t::read_graphml</definition>
+        <argsstring>(std::istream &amp;in)</argsstring>
+        <name>read_graphml</name>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>in</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load resource generator recipe graph from an input stream</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>in</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>input stream for GRUG graphml </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="83" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="165" bodyend="175"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1ab6473ac3d41c6cbb4133308debc09288" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_gen_spec_t::write_graphviz</definition>
+        <argsstring>(const std::string &amp;ofn, bool simple=false)</argsstring>
+        <name>write_graphviz</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>ofn</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>simple</declname>
+          <defval>false</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Write the resource generator recipe graph in Graphviz dot format</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ofn</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>output file name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>simple</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if false, output will have more detailed info </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="84" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="183" bodyend="213"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a344203000fb7b2cf0b21bd343785f8c2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void resource_gen_spec_t::setup_dynamic_property</definition>
+        <argsstring>(boost::dynamic_properties &amp;dp, gg_t &amp;g)</argsstring>
+        <name>setup_dynamic_property</name>
+        <param>
+          <type>boost::dynamic_properties &amp;</type>
+          <declname>dp</declname>
+        </param>
+        <param>
+          <type>gg_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="87" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="85" bodyend="104"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="76" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="76" bodyend="90"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1acc2b48c24fea1fa35f7483744a1ee5eb" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>dp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7d451f26689f8fe09be05a1237d04078" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>g</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1ad85cf1dad6dd9effaa76c507b63364d0" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>gen_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7c7a5f5d760be4c59dcf0fe99e8db106" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>read_graphml</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1aaaf3e68d485a05863d4e0b56248b1859" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>read_graphml</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a6d8ba7f690ac1435473002081291a193" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>resource_gen_spec_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a5da07316879e9437755fa5eda0de72fa" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>resource_gen_spec_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a344203000fb7b2cf0b21bd343785f8c2" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>setup_dynamic_property</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a511acb5ad2bf098137b43ea0ef6f0f46" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>to_gen_method_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1ab6473ac3d41c6cbb4133308debc09288" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_gen_spec_t</scope><name>write_graphviz</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

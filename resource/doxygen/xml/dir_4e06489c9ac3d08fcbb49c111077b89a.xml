@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_4e06489c9ac3d08fcbb49c111077b89a" kind="dir">
+    <compoundname>jobinfo</compoundname>
+    <innerfile refid="jobinfo_8cpp">jobinfo.cpp</innerfile>
+    <innerfile refid="jobinfo_8hpp">jobinfo.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/jobinfo/"/>
+  </compounddef>
+</doxygen>

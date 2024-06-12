@@ -1,0 +1,71 @@
+\hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::detail\+::reapi\+\_\+cli\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t}\index{Flux::resource\_model::detail::reapi\_cli\_t@{Flux::resource\_model::detail::reapi\_cli\_t}}
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::detail\+::reapi\+\_\+cli\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::detail\+::reapi\+\_\+cli\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a58c6dfdb3ab199f602562200cf12cd73}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a58c6dfdb3ab199f602562200cf12cd73}} 
+static int {\bfseries match\+\_\+allocate} (void $\ast$h, match\+\_\+op\+\_\+t match\+\_\+op, const std\+::string \&jobspec, const uint64\+\_\+t jobid, bool \&reserved, std\+::string \&R, int64\+\_\+t \&at, double \&ov)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a7b380df73ab5e8899ae02c6d3b6db719}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a7b380df73ab5e8899ae02c6d3b6db719}} 
+static int {\bfseries match\+\_\+allocate\+\_\+multi} (void $\ast$h, bool orelse\+\_\+reserve, const char $\ast$jobs, \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t}{queue\+\_\+adapter\+\_\+base\+\_\+t}} $\ast$adapter)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ae4b1b09e107f6562fc53aa22d349cc47}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ae4b1b09e107f6562fc53aa22d349cc47}} 
+static int {\bfseries update\+\_\+allocate} (void $\ast$h, const uint64\+\_\+t jobid, const std\+::string \&R, int64\+\_\+t \&at, double \&ov, std\+::string \&R\+\_\+out)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_aaaf8bf8cc3ae5b4d031dc6c6834aafb4}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_aaaf8bf8cc3ae5b4d031dc6c6834aafb4}} 
+static int {\bfseries cancel} (void $\ast$h, const uint64\+\_\+t jobid, bool noent\+\_\+ok)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a3049f716e78d2a1267e1d70c8ba1ce03}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a3049f716e78d2a1267e1d70c8ba1ce03}} 
+static int {\bfseries find} (void $\ast$h, std\+::string criteria, json\+\_\+t $\ast$\&o)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acc94c985cce7d9a78b3281b6f316a76f}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acc94c985cce7d9a78b3281b6f316a76f}} 
+static int {\bfseries info} (void $\ast$h, const uint64\+\_\+t jobid, std\+::string \&mode, bool \&reserved, int64\+\_\+t \&at, double \&ov)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acbf1a7234ad47831b504a9292da627f0}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acbf1a7234ad47831b504a9292da627f0}} 
+static int {\bfseries info} (void $\ast$h, const uint64\+\_\+t jobid, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structFlux_1_1resource__model_1_1job__info__t}{job\+\_\+info\+\_\+t}} $>$ \&job)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a3cb2380659e8466b35eee0337f49e027}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_a3cb2380659e8466b35eee0337f49e027}} 
+static unsigned int {\bfseries preorder\+\_\+count} (void $\ast$h)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acc2ff9e87417ff732ec805db1c1075a7}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_acc2ff9e87417ff732ec805db1c1075a7}} 
+static unsigned int {\bfseries postorder\+\_\+count} (void $\ast$h)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_af9c48bae9ffce37895386de6254ab22a}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_af9c48bae9ffce37895386de6254ab22a}} 
+static int {\bfseries stat} (void $\ast$h, int64\+\_\+t \&V, int64\+\_\+t \&E, int64\+\_\+t \&J, double \&load, double \&min, double \&max, double \&avg)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ade3dc7994a704bf04e6220ffe4cb03f0}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ade3dc7994a704bf04e6220ffe4cb03f0}} 
+static const std\+::string \& {\bfseries get\+\_\+err\+\_\+message} ()
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ac92bc4436e811129a3cf53f7936b0c0c}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ac92bc4436e811129a3cf53f7936b0c0c}} 
+static void {\bfseries clear\+\_\+err\+\_\+message} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ab35feae22fa0ac1f3a0d5ef56137d89c}\label{classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t_ab35feae22fa0ac1f3a0d5ef56137d89c}} 
+static std\+::string {\bfseries m\+\_\+err\+\_\+msg} = \char`\"{}\char`\"{}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+reapi\+\_\+cli.\+hpp\item 
+reapi\+\_\+cli\+\_\+impl.\+hpp\end{DoxyCompactItemize}

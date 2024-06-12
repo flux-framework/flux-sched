@@ -1,0 +1,413 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="resource__reader__base_8hpp" kind="file" language="C++">
+    <compoundname>resource_reader_base.hpp</compoundname>
+    <includes local="no">set</includes>
+    <includes local="no">string</includes>
+    <includes local="no">cerrno</includes>
+    <includes refid="resource__graph_8hpp" local="yes">resource/schema/resource_graph.hpp</includes>
+    <includes refid="resource__graph__store_8hpp" local="yes">resource/store/resource_graph_store.hpp</includes>
+    <includes refid="resource__namespace__remapper_8hpp" local="yes">resource/readers/resource_namespace_remapper.hpp</includes>
+    <includedby refid="resource__reader__base_8cpp" local="yes">resource_reader_base.cpp</includedby>
+    <includedby refid="resource__reader__factory_8hpp" local="yes">resource_reader_factory.hpp</includedby>
+    <includedby refid="resource__reader__grug_8hpp" local="yes">resource_reader_grug.hpp</includedby>
+    <includedby refid="resource__reader__hwloc_8hpp" local="yes">resource_reader_hwloc.hpp</includedby>
+    <includedby refid="resource__reader__jgf_8hpp" local="yes">resource_reader_jgf.hpp</includedby>
+    <includedby refid="resource__reader__rv1exec_8hpp" local="yes">resource_reader_rv1exec.hpp</includedby>
+    <includedby refid="resource__graph__store_8cpp" local="yes">resource_graph_store.cpp</includedby>
+    <includedby refid="dfu__impl_8hpp" local="yes">dfu_impl.hpp</includedby>
+    <incdepgraph>
+      <node id="24">
+        <label>stdbool.h</label>
+      </node>
+      <node id="1">
+        <label>resource_reader_base.hpp</label>
+        <link refid="resource__reader__base_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>limits</label>
+      </node>
+      <node id="30">
+        <label>resource/planner/c/planner_multi.h</label>
+        <link refid="planner__multi_8h_source"/>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>boost/graph/filtered_graph.hpp</label>
+      </node>
+      <node id="17">
+        <label>cstdint</label>
+      </node>
+      <node id="23">
+        <label>stdint.h</label>
+      </node>
+      <node id="9">
+        <label>boost/graph/graphviz.hpp</label>
+      </node>
+      <node id="34">
+        <label>resource/config/system_defaults.hpp</label>
+        <link refid="system__defaults_8hpp_source"/>
+      </node>
+      <node id="21">
+        <label>stdexcept</label>
+      </node>
+      <node id="5">
+        <label>resource/schema/resource_graph.hpp</label>
+        <link refid="resource__graph_8hpp_source"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>resource/schema/data_std.hpp</label>
+        <link refid="data__std_8hpp_source"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>string</label>
+      </node>
+      <node id="14">
+        <label>map</label>
+      </node>
+      <node id="12">
+        <label>uuid/uuid.h</label>
+      </node>
+      <node id="25">
+        <label>stddef.h</label>
+      </node>
+      <node id="11">
+        <label>resource/schema/resource_data.hpp</label>
+        <link refid="resource__data_8hpp_source"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>resource/schema/ephemeral.hpp</label>
+        <link refid="ephemeral_8hpp_source"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>cerrno</label>
+      </node>
+      <node id="16">
+        <label>resource/schema/color.hpp</label>
+        <link refid="color_8hpp_source"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>resource/schema/resource_base.hpp</label>
+        <link refid="resource__base_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>unordered_map</label>
+      </node>
+      <node id="22">
+        <label>resource/planner/c/planner.h</label>
+        <link refid="planner_8h_source"/>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+      </node>
+      <node id="33">
+        <label>chrono</label>
+      </node>
+      <node id="6">
+        <label>boost/config.hpp</label>
+      </node>
+      <node id="29">
+        <label>boost/optional.hpp</label>
+      </node>
+      <node id="31">
+        <label>resource/store/resource_graph_store.hpp</label>
+        <link refid="resource__graph__store_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>resource/schema/infra_data.hpp</label>
+        <link refid="infra__data_8hpp_source"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>set</label>
+      </node>
+      <node id="7">
+        <label>boost/graph/adjacency_list.hpp</label>
+      </node>
+      <node id="10">
+        <label>boost/graph/graphml.hpp</label>
+      </node>
+      <node id="20">
+        <label>resource/schema/sched_data.hpp</label>
+        <link refid="sched__data_8hpp_source"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>cstring</label>
+      </node>
+      <node id="35">
+        <label>resource/readers/resource_namespace_remapper.hpp</label>
+        <link refid="resource__namespace__remapper_8hpp_source"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>memory</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1">
+        <label>resource_reader_base.hpp</label>
+        <link refid="resource__reader__base_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>resource_reader_hwloc.hpp</label>
+        <link refid="resource__reader__hwloc_8hpp_source"/>
+      </node>
+      <node id="11">
+        <label>dfu.hpp</label>
+        <link refid="dfu_8hpp_source"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>command.hpp</label>
+        <link refid="command_8hpp_source"/>
+      </node>
+      <node id="2">
+        <label>resource_reader_factory.hpp</label>
+        <link refid="resource__reader__factory_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>rq2.hpp</label>
+        <link refid="rq2_8hpp_source"/>
+      </node>
+      <node id="12">
+        <label>reapi_cli.hpp</label>
+        <link refid="reapi__cli_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>reapi_cli_impl.hpp</label>
+        <link refid="reapi__cli__impl_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>resource_reader_jgf.hpp</label>
+        <link refid="resource__reader__jgf_8hpp_source"/>
+      </node>
+      <node id="10">
+        <label>dfu_impl.hpp</label>
+        <link refid="dfu__impl_8hpp_source"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>resource_reader_rv1exec.hpp</label>
+        <link refid="resource__reader__rv1exec_8hpp_source"/>
+      </node>
+      <node id="6">
+        <label>resource_reader_grug.hpp</label>
+        <link refid="resource__reader__grug_8hpp_source"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__base__t" prot="public">Flux::resource_model::resource_reader_base_t</innerclass>
+    <innernamespace refid="namespaceFlux">Flux</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model">Flux::resource_model</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2019<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>RESOURCE_READER_BASE_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>RESOURCE_READER_BASE_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;set&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cerrno&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/schema/resource_graph.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/store/resource_graph_store.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/readers/resource_namespace_remapper.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">Flux<sp/>{</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">resource_model<sp/>{</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27" refid="classFlux_1_1resource__model_1_1resource__reader__base__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/>~<ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref><sp/>();</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40" refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a4d2969f7499f3c7a398e1c86949e5806" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a4d2969f7499f3c7a398e1c86949e5806" kindref="member">unpack</ref><sp/>(resource_graph_t<sp/>&amp;g,<sp/><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref><sp/>&amp;m,</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;str,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rank<sp/>=<sp/>-1)<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53" refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accc428c1d3fd14f6caf854953c5a6f3b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accc428c1d3fd14f6caf854953c5a6f3b" kindref="member">unpack_at</ref><sp/>(resource_graph_t<sp/>&amp;g,<sp/><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref><sp/>&amp;m,</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_t<sp/>&amp;vtx,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;str,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rank<sp/>=<sp/>-1)<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>remove_subgraph<sp/>(resource_graph_t<sp/>&amp;g,</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref><sp/>&amp;m,</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;path)<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="73" refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a31c23c9d83eb6b66a129f9105c563390" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a31c23c9d83eb6b66a129f9105c563390" kindref="member">update</ref><sp/>(resource_graph_t<sp/>&amp;g,<sp/><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref><sp/>&amp;m,</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;str,<sp/>int64_t<sp/>jobid,<sp/>int64_t<sp/>at,</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint64_t<sp/>dur,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>rsv,<sp/>uint64_t<sp/>trav_token)<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a990fc01533f55f58d69f312059eef0e1" kindref="member">set_allowlist</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;csl);</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a107d7b989d04b6b9d9a99ac2e4961941" kindref="member">is_allowlist_set</ref><sp/>();</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight></codeline>
+<codeline lineno="95" refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a18d3bfd358094d5c6ae040ab1531c560" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a18d3bfd358094d5c6ae040ab1531c560" kindref="member">is_allowlist_supported</ref><sp/>()<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1ac5c85f20440f7a4cb0d7e2e9f270b657" kindref="member">err_message</ref><sp/>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a451198379a7adcd65bcf09050ef8da8c" kindref="member">get_hostname_suffix</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;hn,<sp/>int64_t<sp/>&amp;</highlight><highlight class="keywordtype">id</highlight><highlight class="normal">)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accaa5f23111d5b5472206ac6756c4991" kindref="member">get_host_basename</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;hn,<sp/>std::string<sp/>&amp;basename)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1aca55df612f689f5bb53d99a5e3388452" kindref="member">clear_err_message</ref><sp/>();</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="126" refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6aefb0e4985349f0c2a9cb44c7475b2a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1resource__namespace__remapper__t" kindref="compound">resource_namespace_remapper_t</ref><sp/><ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6aefb0e4985349f0c2a9cb44c7475b2a" kindref="member">namespace_remapper</ref>;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"></highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight><highlight class="keyword">protected</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>in_allowlist<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="structresource" kindref="compound">resource</ref>);</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>split_hostname<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;hn,</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string<sp/>&amp;basename,<sp/>int64_t<sp/>&amp;</highlight><highlight class="keywordtype">id</highlight><highlight class="normal">)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/>std::set&lt;std::string&gt;<sp/>allowlist;</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/>m_err_msg<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="134"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>resource_model</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="137"><highlight class="normal">}<sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Flux</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight></codeline>
+<codeline lineno="140"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>RESOURCE_READER_BASE_HPP</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="141"><highlight class="normal"></highlight></codeline>
+<codeline lineno="142"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="143"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="144"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_base.hpp"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1queue__adapter__base__t" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>Flux::resource_model::queue_adapter_base_t</compoundname>
+    <includes refid="reapi_8hpp" local="no">reapi.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a19214f708c0aa719e2b8ba9151a7ef8a" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::queue_adapter_base_t::handle_match_success</definition>
+        <argsstring>(int64_t jobid, const char *status, const char *R, int64_t at, double ov)=0</argsstring>
+        <name>handle_match_success</name>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>status</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>When a match succeeds, this method is called back by <ref refid="classFlux_1_1resource__model_1_1reapi__t" kindref="compound">reapi_t</ref> with the matched resource information. The implementor (e.g., queue policy class) of this method is expected to dequeue the job from its pending queue and proceed to the next state transition.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Job ID of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>status</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>String indicating if the match type is allocation or reservation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Resource set: i.e., either allocated or reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Match performance overhead in terms of the elapse time to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="50" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a8f0a03057815892080f545d7437821b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::queue_adapter_base_t::handle_match_failure</definition>
+        <argsstring>(int errcode)=0</argsstring>
+        <name>handle_match_failure</name>
+        <param>
+          <type>int</type>
+          <declname>errcode</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>When a match failed (e.g., unsatisfiable jobspec, resource unavailable, no more jobspec to process), this method is called back by <ref refid="classFlux_1_1resource__model_1_1reapi__t" kindref="compound">reapi_t</ref> with errcode returned from the resource match service. The implementor of this method is expected to dequeue the the job from the pending job queue, if appropriate, and proceed to the next pending job or return 0 if the scheduling loop must be terminated per its queuing policy (e.g., FCFS).</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>errno</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>returned from the resource match service. EBUSY: resource unavailable ENODEV: unsatisfiable jobspec ENODATA: no more jobspec to process Others: one that can raised from match_multi RPC </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 when the loop must terminate; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="69" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a043544786c98653ab3eeaf9f30383e97" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>bool</type>
+        <definition>virtual bool Flux::resource_model::queue_adapter_base_t::is_sched_loop_active</definition>
+        <argsstring>()=0</argsstring>
+        <name>is_sched_loop_active</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return true if the scheduling loop is active under asynchronous execution; otherwise false. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="74" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1queue__adapter__base__t_1af4fa97fa71bfd0acef914b80d80b52d9" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::queue_adapter_base_t::set_sched_loop_active</definition>
+        <argsstring>(bool active)=0</argsstring>
+        <name>set_sched_loop_active</name>
+        <param>
+          <type>bool</type>
+          <declname>active</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Set the state of the scheduling loop. <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>active</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>true when the scheduling loop becomes active; false when becomes inactive. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; otherwise -1 an error with errno set (Note: when the scheduling loop becomes inactive, internal queueing can occur and an error can arise):<itemizedlist>
+<listitem><para>ENOENT (job is not found from some queue)</para>
+</listitem><listitem><para>EEXIST (enqueue fails due to an existent entry) </para>
+</listitem></itemizedlist>
+</para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="85" column="17"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Queue adapter base API class: define a set of methods a queue policy class (a subclass of this API class) must implement to be able to work with <ref refid="classFlux_1_1resource__model_1_1reapi__t" kindref="compound">reapi_t</ref> under asynchronous execution. </para>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="32" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="32" bodyend="86"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a8f0a03057815892080f545d7437821b3" prot="public" virt="pure-virtual"><scope>Flux::resource_model::queue_adapter_base_t</scope><name>handle_match_failure</name></member>
+      <member refid="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a19214f708c0aa719e2b8ba9151a7ef8a" prot="public" virt="pure-virtual"><scope>Flux::resource_model::queue_adapter_base_t</scope><name>handle_match_success</name></member>
+      <member refid="classFlux_1_1resource__model_1_1queue__adapter__base__t_1a043544786c98653ab3eeaf9f30383e97" prot="public" virt="pure-virtual"><scope>Flux::resource_model::queue_adapter_base_t</scope><name>is_sched_loop_active</name></member>
+      <member refid="classFlux_1_1resource__model_1_1queue__adapter__base__t_1af4fa97fa71bfd0acef914b80d80b52d9" prot="public" virt="pure-virtual"><scope>Flux::resource_model::queue_adapter_base_t</scope><name>set_sched_loop_active</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

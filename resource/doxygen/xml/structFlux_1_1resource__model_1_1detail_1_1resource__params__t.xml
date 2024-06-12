@@ -1,0 +1,239 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::resource_params_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1ab34c88129f280854263208ec84368c7a" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::load_file</definition>
+        <argsstring></argsstring>
+        <name>load_file</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="44" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af674639f68980df88d3eceb299e5fab6" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::load_format</definition>
+        <argsstring></argsstring>
+        <name>load_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="45" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af2f4c3dc975063b69fa11190f84eee23" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::load_allowlist</definition>
+        <argsstring></argsstring>
+        <name>load_allowlist</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="46" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a6b6f668c1c543a1f6645adca3653eab7" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::matcher_name</definition>
+        <argsstring></argsstring>
+        <name>matcher_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="47" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aee3129e83083b8c3c08e51398897a92f" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::matcher_policy</definition>
+        <argsstring></argsstring>
+        <name>matcher_policy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="48" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a8c761ca198248eab34296bb2da55fc9c" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::o_fname</definition>
+        <argsstring></argsstring>
+        <name>o_fname</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="49" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a5e35f634662ad71611740c696810ee2b" prot="public" static="no" mutable="no">
+        <type>std::ofstream</type>
+        <definition>std::ofstream Flux::resource_model::detail::resource_params_t::r_out</definition>
+        <argsstring></argsstring>
+        <name>r_out</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="50" column="19" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a3f2b58d3a10774c76d67ecbe92d1b21e" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::r_fname</definition>
+        <argsstring></argsstring>
+        <name>r_fname</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="51" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a7e9e8628ef865a0cf710607018f5c76a" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::o_fext</definition>
+        <argsstring></argsstring>
+        <name>o_fext</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="52" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af61f88b519399a6a0c1941c4537b3cef" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::prune_filters</definition>
+        <argsstring></argsstring>
+        <name>prune_filters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="53" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aaeef42558d970c7407ae0ddec7c6c542" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::detail::resource_params_t::match_format</definition>
+        <argsstring></argsstring>
+        <name>match_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="54" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aca898708728322aa24ee81fd5d4bafa7" prot="public" static="no" mutable="no">
+        <type>emit_format_t</type>
+        <definition>emit_format_t Flux::resource_model::detail::resource_params_t::o_format</definition>
+        <argsstring></argsstring>
+        <name>o_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="55" column="19" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a770cbe1dcb6156f6e8a061b9333d431a" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::resource_params_t::elapse_time</definition>
+        <argsstring></argsstring>
+        <name>elapse_time</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="56" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a6cbaa9de4b08410c90b2bba55522767f" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::resource_params_t::disable_prompt</definition>
+        <argsstring></argsstring>
+        <name>disable_prompt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="57" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aec1874a0d574729ac3d5db3a22ae82ca" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::detail::resource_params_t::flux_hwloc</definition>
+        <argsstring></argsstring>
+        <name>flux_hwloc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="58" column="10" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1acd3838e1ea6ba6a9b4295e533a6322a4" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t Flux::resource_model::detail::resource_params_t::reserve_vtx_vec</definition>
+        <argsstring></argsstring>
+        <name>reserve_vtx_vec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="59" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="43" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="43" bodyend="60"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a6cbaa9de4b08410c90b2bba55522767f" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>disable_prompt</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a770cbe1dcb6156f6e8a061b9333d431a" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>elapse_time</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aec1874a0d574729ac3d5db3a22ae82ca" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>flux_hwloc</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af2f4c3dc975063b69fa11190f84eee23" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>load_allowlist</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1ab34c88129f280854263208ec84368c7a" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>load_file</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af674639f68980df88d3eceb299e5fab6" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>load_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aaeef42558d970c7407ae0ddec7c6c542" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>match_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a6b6f668c1c543a1f6645adca3653eab7" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>matcher_name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aee3129e83083b8c3c08e51398897a92f" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>matcher_policy</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a7e9e8628ef865a0cf710607018f5c76a" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>o_fext</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a8c761ca198248eab34296bb2da55fc9c" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>o_fname</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1aca898708728322aa24ee81fd5d4bafa7" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>o_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1af61f88b519399a6a0c1941c4537b3cef" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>prune_filters</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a3f2b58d3a10774c76d67ecbe92d1b21e" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>r_fname</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1a5e35f634662ad71611740c696810ee2b" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>r_out</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t_1acd3838e1ea6ba6a9b4295e533a6322a4" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::resource_params_t</scope><name>reserve_vtx_vec</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

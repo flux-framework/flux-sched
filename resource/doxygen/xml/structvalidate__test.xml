@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structvalidate__test" kind="struct" language="C++" prot="public">
+    <compoundname>validate_test</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structvalidate__test_1ab48c708817aea601028f24bc4c0faf1e" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* validate_test::desc</definition>
+        <argsstring></argsstring>
+        <name>desc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="44" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvalidate__test_1a329a004327618a76a4462a979b84d6df" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* validate_test::json</definition>
+        <argsstring></argsstring>
+        <name>json</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="45" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvalidate__test_1acbdf924b1a6350eb604e33762647009b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int validate_test::rc</definition>
+        <argsstring></argsstring>
+        <name>rc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="46" column="9" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvalidate__test_1a0de61fa6f97dde3c62192fd1e0beed2c" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* validate_test::err</definition>
+        <argsstring></argsstring>
+        <name>err</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="47" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="43" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="43" bodyend="48"/>
+    <listofallmembers>
+      <member refid="structvalidate__test_1ab48c708817aea601028f24bc4c0faf1e" prot="public" virt="non-virtual"><scope>validate_test</scope><name>desc</name></member>
+      <member refid="structvalidate__test_1a0de61fa6f97dde3c62192fd1e0beed2c" prot="public" virt="non-virtual"><scope>validate_test</scope><name>err</name></member>
+      <member refid="structvalidate__test_1a329a004327618a76a4462a979b84d6df" prot="public" virt="non-virtual"><scope>validate_test</scope><name>json</name></member>
+      <member refid="structvalidate__test_1acbdf924b1a6350eb604e33762647009b" prot="public" virt="non-virtual"><scope>validate_test</scope><name>rc</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

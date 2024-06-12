@@ -1,0 +1,917 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="reapi__cli_8h" kind="file" language="C++">
+    <compoundname>reapi_cli.h</compoundname>
+    <includes local="no">flux/core.h</includes>
+    <includes refid="match__op_8h" local="yes">resource/policies/base/match_op.h</includes>
+    <includedby refid="reapi__cli_8cpp" local="yes">reapi_cli.cpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>reapi_cli.h</label>
+        <link refid="reapi__cli_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>flux/core.h</label>
+      </node>
+      <node id="3">
+        <label>resource/policies/base/match_op.h</label>
+        <link refid="match__op_8h_source"/>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="reapi__cli_8h_1af3a976bef4d0992fd17d7a6e1a24c462" prot="public" static="no">
+        <type>struct <ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx</ref></type>
+        <definition>typedef struct reapi_cli_ctx reapi_cli_ctx_t</definition>
+        <argsstring></argsstring>
+        <name>reapi_cli_ctx_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="1" column="0" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="reapi__cli_8h_1a610557a7ebe6a4fafbe3adfd2518d95f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+        <definition>reapi_cli_ctx_t* reapi_cli_new</definition>
+        <argsstring>()</argsstring>
+        <name>reapi_cli_new</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Create and initialize reapi_cli context </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="28" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="34" bodyend="54" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="28" declcolumn="17"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1ad8f5fb72868ffb6f74db1b682fc0e207" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void reapi_cli_destroy</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx)</argsstring>
+        <name>reapi_cli_destroy</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Destroy reapi cli context</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="34" column="6" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="56" bodyend="63" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="34" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a8e0efb96e24695146f26f80f898a3224" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_initialize</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)</argsstring>
+        <name>reapi_cli_initialize</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>rgraph</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>options</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Initialize Fluxion with resource graph</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rgraph</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string encoding the resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>options</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>json string initialization options </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="42" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="65" bodyend="91" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="42" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a4f4bb9d13a62fc2ceffa3bbbf541eb0b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_match</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, match_op_t match_op, const char *jobspec, uint64_t *jobid, bool *reserved, char **R, int64_t *at, double *ov)</argsstring>
+        <name>reapi_cli_match</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>match_op</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>uint64_t *</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>char **</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Match a jobspec to the &quot;best&quot; resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>match_op</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>match_op_t: set to specify the specific match option from 1 of 4 choices: MATCH_ALLOCATE: try to allocate now and fail if resources aren&apos;t available. MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve if resources aren&apos;t available now. MATCH_SATISFIABILITY: Do a satisfiablity check and do not allocate. MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run satisfiability check if resources are not available. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobspec string. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reserved</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean into which to return true if this job has been reserved instead of allocated. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>String into which to return the resource set either allocated or reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="73" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="93" bodyend="125" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="73" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a7c56bbe9ec295b0d97af64a83bc46bcf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_match_allocate</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, bool orelse_reserve, const char *jobspec, uint64_t *jobid, bool *reserved, char **R, int64_t *at, double *ov)</argsstring>
+        <name>reapi_cli_match_allocate</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>orelse_reserve</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>uint64_t *</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>char **</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Match a jobspec to the &quot;best&quot; resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>orelse_reserve</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean: if false, only allocate; otherwise, first try to allocate and if that fails, reserve. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobspec string. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reserved</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean into which to return true if this job has been reserved instead of allocated. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>String into which to return the resource set either allocated or reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="99" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="127" bodyend="137" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="99" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a36ab9caae2a97a1e14b50a9f00a53ee8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_match_satisfy</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, const char *jobspec, bool *sat, double *ov)</argsstring>
+        <name>reapi_cli_match_satisfy</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>sat</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Run Satisfiability check for jobspec.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobspec string. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>sat</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>bool sat into which to return if jobspec is satisfiable. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="115" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="139" bodyend="159" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="115" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1aa1a53dae1065b7e89684337bc6b23e49" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_update_allocate</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, const uint64_t jobid, const char *R, int64_t *at, double *ov, const char **R_out)</argsstring>
+        <name>reapi_cli_update_allocate</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>ov</declname>
+        </param>
+        <param>
+          <type>const char **</type>
+          <declname>R_out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource state with R.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>R string </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the scheduled time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R_out</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the updated R string. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="130" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="161" bodyend="184" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="130" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a4553025e231812b81ef2498b9dd3563f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_cancel</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok)</argsstring>
+        <name>reapi_cli_cancel</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>noent_ok</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Cancel the allocation or reservation corresponding to jobid.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>noent_ok</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>don&apos;t return an error on nonexistent jobid </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="141" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="186" bodyend="194" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="141" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a741a6b80929b0051488a6d2352b916a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_info</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, const uint64_t jobid, char **mode, bool *reserved, int64_t *at, double *ov)</argsstring>
+        <name>reapi_cli_info</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>char **</type>
+          <declname>mode</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get the information on the allocation or reservation corresponding to jobid.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>const jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>mode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return string containing the job state. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reserved</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean into which to return true if this job has been reserved instead of allocated. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="159" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="196" bodyend="223" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="159" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a097f974f4ca8f3869ce960314bd10d07" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int reapi_cli_stat</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx, int64_t *V, int64_t *E, int64_t *J, double *load, double *min, double *max, double *avg)</argsstring>
+        <name>reapi_cli_stat</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>V</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>E</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>J</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>load</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>min</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>max</declname>
+        </param>
+        <param>
+          <type>double *</type>
+          <declname>avg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get the performance information about the resource infrastructure.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>V</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of resource vertices </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>E</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of edges </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>J</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of jobs </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>load</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Graph load time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>min</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Min match time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>max</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Max match time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>avg</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Avg match time </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="175" column="5" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="225" bodyend="234" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="175" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a2700107686e5ff705e2b57ecd967dc6c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char* reapi_cli_get_err_msg</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx)</argsstring>
+        <name>reapi_cli_get_err_msg</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get the reapi cli error message.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>string containing the error message </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="184" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="236" bodyend="247" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="184" declcolumn="12"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__cli_8h_1a69bb444c12036c5b73759ba082f5a8a3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void reapi_cli_clear_err_msg</definition>
+        <argsstring>(reapi_cli_ctx_t *ctx)</argsstring>
+        <name>reapi_cli_clear_err_msg</name>
+        <param>
+          <type><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref> *</type>
+          <declname>ctx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Clear the reapi cli error message.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ctx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reapi_cli_ctx_t context object </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" line="190" column="6" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="249" bodyend="255" declfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h" declline="190" declcolumn="6"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2019<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>REAPI_CLI_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>REAPI_CLI_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>HAVE_CONFIG_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;config.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;flux/core.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/policies/base/match_op.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx</ref><sp/><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref>;</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*reapi_cli_new<sp/>();</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>reapi_cli_destroy<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_initialize<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*rgraph,</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*options);</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="73"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_match<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,<sp/>match_op_t<sp/>match_op,</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*jobspec,<sp/>uint64_t<sp/>*jobid,</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*reserved,</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**R,<sp/>int64_t<sp/>*at,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*ov);</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_match_allocate<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>orelse_reserve,</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*jobspec,<sp/>uint64_t<sp/>*jobid,</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*reserved,</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**R,<sp/>int64_t<sp/>*at,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*ov);</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_match_satisfy<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*jobspec,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*sat,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*ov);</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_update_allocate<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>uint64_t<sp/>jobid,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*R,<sp/>int64_t<sp/>*at,</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*ov,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**R_out);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"></highlight></codeline>
+<codeline lineno="141"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_cancel<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>uint64_t<sp/>jobid,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>noent_ok);</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="159"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_info<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>uint64_t<sp/>jobid,</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**mode,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*reserved,<sp/>int64_t<sp/>*at,<sp/></highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*ov);</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"></highlight></codeline>
+<codeline lineno="175"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>reapi_cli_stat<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx,<sp/>int64_t<sp/>*V,<sp/>int64_t<sp/>*E,</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>*J,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*load,</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*min,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*max,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>*avg);</highlight></codeline>
+<codeline lineno="178"><highlight class="normal"></highlight></codeline>
+<codeline lineno="184"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*reapi_cli_get_err_msg<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="185"><highlight class="normal"></highlight></codeline>
+<codeline lineno="190"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>reapi_cli_clear_err_msg<sp/>(<ref refid="structreapi__cli__ctx" kindref="compound">reapi_cli_ctx_t</ref><sp/>*ctx);</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"></highlight></codeline>
+<codeline lineno="192"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="193"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="195"><highlight class="normal"></highlight></codeline>
+<codeline lineno="196"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>REAPI_CLI_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="197"><highlight class="normal"></highlight></codeline>
+<codeline lineno="198"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="199"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="200"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.h"/>
+  </compounddef>
+</doxygen>

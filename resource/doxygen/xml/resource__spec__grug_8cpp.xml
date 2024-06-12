@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="resource__spec__grug_8cpp" kind="file" language="C++">
+    <compoundname>resource_spec_grug.cpp</compoundname>
+    <includes local="no">iostream</includes>
+    <includes local="no">cstdint</includes>
+    <includes local="no">boost/graph/adjacency_list.hpp</includes>
+    <includes local="no">boost/graph/graphviz.hpp</includes>
+    <includes local="no">boost/graph/graphml.hpp</includes>
+    <includes local="no">boost/filesystem.hpp</includes>
+    <includes refid="resource__spec__grug_8hpp" local="yes">resource/readers/resource_spec_grug.hpp</includes>
+    <incdepgraph>
+      <node id="3">
+        <label>cstdint</label>
+      </node>
+      <node id="5">
+        <label>boost/graph/graphviz.hpp</label>
+      </node>
+      <node id="1">
+        <label>resource_spec_grug.cpp</label>
+        <link refid="resource__spec__grug_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>string</label>
+      </node>
+      <node id="7">
+        <label>boost/filesystem.hpp</label>
+      </node>
+      <node id="2">
+        <label>iostream</label>
+      </node>
+      <node id="4">
+        <label>boost/graph/adjacency_list.hpp</label>
+      </node>
+      <node id="6">
+        <label>boost/graph/graphml.hpp</label>
+      </node>
+      <node id="8">
+        <label>resource/readers/resource_spec_grug.hpp</label>
+        <link refid="resource__spec__grug_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <innerclass refid="structstr2enum__t" prot="public">str2enum_t</innerclass>
+    <innerclass refid="classgg__label__writer__t" prot="public">gg_label_writer_t</innerclass>
+    <innerclass refid="classgg__label__writer__sim__t" prot="public">gg_label_writer_sim_t</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="resource__spec__grug_8cpp_1aaf74a2fc4a2fa0b7caf6dd67e0fba9b1" prot="public" static="no" mutable="no">
+        <type><ref refid="structstr2enum__t" kindref="compound">str2enum_t</ref></type>
+        <definition>str2enum_t str2genmeth[]</definition>
+        <argsstring>[]</argsstring>
+        <name>str2genmeth</name>
+        <initializer>= {
+    {&quot;MULTIPLY&quot;, MULTIPLY},
+    {&quot;ASSOCIATE_IN&quot;, ASSOCIATE_IN},
+    {&quot;ASSOCIATE_BY_PATH_IN&quot;, ASSOCIATE_BY_PATH_IN},
+    {&quot;&quot;, GEN_UNKNOWN}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="43" column="12" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2014<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>HAVE_CONFIG_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;config.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdint&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined<sp/>(__clang__)<sp/>||<sp/>(__GNUC__<sp/>&lt;=<sp/>11)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/adjacency_list.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/graphviz.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#elif<sp/>(__GNUC__<sp/>&gt;<sp/>11)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>GCC<sp/>diagnostic<sp/>push</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>GCC<sp/>diagnostic<sp/>ignored<sp/>&quot;-Wmaybe-uninitialized&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/adjacency_list.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/graphviz.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>GCC<sp/>diagnostic<sp/>pop</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/graphml.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/filesystem.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/readers/resource_spec_grug.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal">Flux::resource_model;</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37" refid="structstr2enum__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structstr2enum__t" kindref="compound">str2enum_t</ref></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/>str;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><ref refid="structstr2enum__t" kindref="compound">str2enum_t</ref><sp/>str2genmeth[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;MULTIPLY&quot;</highlight><highlight class="normal">,<sp/>MULTIPLY},</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;ASSOCIATE_IN&quot;</highlight><highlight class="normal">,<sp/>ASSOCIATE_IN},</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;ASSOCIATE_BY_PATH_IN&quot;</highlight><highlight class="normal">,<sp/>ASSOCIATE_BY_PATH_IN},</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">,<sp/>GEN_UNKNOWN}</highlight></codeline>
+<codeline lineno="48"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>m1,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>m2,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>m3&gt;</highlight></codeline>
+<codeline lineno="51" refid="classgg__label__writer__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classgg__label__writer__t" kindref="compound">gg_label_writer_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__t" kindref="compound">gg_label_writer_t</ref><sp/>(m1<sp/>_n1,<sp/>m2<sp/>_n2,<sp/>m3<sp/>_n3)</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>n1<sp/>(_n1),<sp/>n2<sp/>(_n2),<sp/>n3<sp/>(_n3)<sp/>{<sp/>}</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>v_or_e&gt;</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(std::ostream<sp/>&amp;out,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>v_or_e<sp/>&amp;i)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[label=\&quot;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n1[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n2[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n3[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&quot;]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/>m1<sp/>n1;</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/>m2<sp/>n2;</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/>m3<sp/>n3;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>m1&gt;</highlight></codeline>
+<codeline lineno="66" refid="classgg__label__writer__sim__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classgg__label__writer__sim__t" kindref="compound">gg_label_writer_sim_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__sim__t" kindref="compound">gg_label_writer_sim_t</ref><sp/>(m1<sp/>_n1)</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>n1<sp/>(_n1)<sp/>{<sp/>}</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>VertexOrEdge&gt;</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(std::ostream<sp/>&amp;out,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VertexOrEdge&amp;<sp/>i)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[label=\&quot;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n1[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&quot;]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/>m1<sp/>n1;</highlight></codeline>
+<codeline lineno="76"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight><highlight class="comment">/********************************************************************************</highlight></codeline>
+<codeline lineno="80"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="81"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Private<sp/>Resource<sp/>Generator<sp/>Spec<sp/>API<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="82"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="83"><highlight class="comment"><sp/>********************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>resource_gen_spec_t::setup_dynamic_property<sp/>(boost::dynamic_properties<sp/>&amp;dp,<sp/>gg_t<sp/>&amp;g)</highlight></codeline>
+<codeline lineno="86"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;root&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::root,<sp/>g));</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;type&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::type,<sp/>g));</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;basename&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::basename,<sp/>g));</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;size&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::size,<sp/>g));</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;unit&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::unit,<sp/>g));</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;subsystem&quot;</highlight><highlight class="normal">,<sp/>get(&amp;resource_pool_gen_t::subsystem,<sp/>g));</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;e_subsystem&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::e_subsystem,<sp/>g));</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;relation&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::relation,<sp/>g));</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;rrelation&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::rrelation,<sp/>g));</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;gen_method&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::gen_method,<sp/>g));</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;id_scope&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::id_scope,<sp/>g));</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;id_start&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::id_start,<sp/>g));</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;id_stride&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::id_stride,<sp/>g));</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;multi_scale&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::multi_scale,<sp/>g));</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;as_tgt_subsystem&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::as_tgt_subsystem,<sp/>g));</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;as_tgt_uplvl&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::as_tgt_uplvl,<sp/>g));</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>dp.property(</highlight><highlight class="stringliteral">&quot;as_src_uplvl&quot;</highlight><highlight class="normal">,<sp/>get(&amp;relation_gen_t::as_src_uplvl,<sp/>g));</highlight></codeline>
+<codeline lineno="104"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal"></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight><highlight class="comment">/********************************************************************************</highlight></codeline>
+<codeline lineno="108"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="109"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Public<sp/>Resource<sp/>Generator<sp/>Spec<sp/>API<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="110"><highlight class="comment"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="111"><highlight class="comment"><sp/>********************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal">resource_gen_spec_t::resource_gen_spec_t<sp/>()</highlight></codeline>
+<codeline lineno="114"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/>setup_dynamic_property<sp/>(dp,<sp/>g);</highlight></codeline>
+<codeline lineno="116"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal">resource_gen_spec_t::resource_gen_spec_t<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t" kindref="compound">resource_gen_spec_t</ref><sp/>&amp;o)</highlight></codeline>
+<codeline lineno="119"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/>g<sp/>=<sp/>o.g;</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/>dp<sp/>=<sp/>o.dp;</highlight></codeline>
+<codeline lineno="122"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>gg_t<sp/>&amp;resource_gen_spec_t::gen_graph<sp/>()</highlight></codeline>
+<codeline lineno="125"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>g;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight></codeline>
+<codeline lineno="134"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>gen_meth_t<sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a511acb5ad2bf098137b43ea0ef6f0f46" kindref="member">resource_gen_spec_t::to_gen_method_t</ref><sp/>(</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;s)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="136"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i;</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(i=0;<sp/>str2genmeth[i].str<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;<sp/>++i)</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(str2genmeth[i].str<sp/>==<sp/>s)</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(gen_meth_t)str2genmeth[i].e;</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(gen_meth_t)str2genmeth[i].e;</highlight></codeline>
+<codeline lineno="142"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="149"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7c7a5f5d760be4c59dcf0fe99e8db106" kindref="member">resource_gen_spec_t::read_graphml</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;ifn)</highlight></codeline>
+<codeline lineno="150"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/>std::ifstream<sp/>in_file<sp/>(ifn.c_str<sp/>());</highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!in_file.good<sp/>())</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>-1;</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/>rc<sp/>=<sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7c7a5f5d760be4c59dcf0fe99e8db106" kindref="member">read_graphml</ref><sp/>(in_file);</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/>in_file.close<sp/>();</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="158"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"></highlight></codeline>
+<codeline lineno="165"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1a7c7a5f5d760be4c59dcf0fe99e8db106" kindref="member">resource_gen_spec_t::read_graphml</ref><sp/>(std::istream<sp/>&amp;in)</highlight></codeline>
+<codeline lineno="166"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::read_graphml<sp/>(in,<sp/>g,<sp/>dp);</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(boost::exception<sp/>&amp;e)<sp/>{</highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>errno<sp/>=<sp/>EINVAL;</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="173"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="175"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"></highlight></codeline>
+<codeline lineno="183"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t_1ab6473ac3d41c6cbb4133308debc09288" kindref="member">resource_gen_spec_t::write_graphviz</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;ofn,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>simple)</highlight></codeline>
+<codeline lineno="184"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="185"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="186"><highlight class="normal"><sp/><sp/><sp/><sp/>std::fstream<sp/>out_file<sp/>(ofn,<sp/>std::fstream::out);</highlight></codeline>
+<codeline lineno="187"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="188"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_basename_map_t<sp/>v_bn_map<sp/>=<sp/>get<sp/>(&amp;resource_pool_gen_t::basename,<sp/>g);</highlight></codeline>
+<codeline lineno="189"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_size_map_t<sp/>v_sz_map<sp/>=<sp/>get<sp/>(&amp;resource_pool_gen_t::size,<sp/>g);</highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//vtx_unit_map_t<sp/>v_ut_map<sp/>=<sp/>get<sp/>(&amp;resource_pool_gen_t::unit,<sp/>g);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_subsystem_map_t<sp/>v_ss_map<sp/>=<sp/>get<sp/>(&amp;resource_pool_gen_t::subsystem,<sp/>g);</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edg_relation_map_t<sp/>e_rel_map<sp/>=<sp/>get<sp/>(&amp;relation_gen_t::relation,<sp/>g);</highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edg_gen_method_map_t<sp/>e_gen_map<sp/>=<sp/>get<sp/>(&amp;relation_gen_t::gen_method,<sp/>g);</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edg_multi_scale_map_t<sp/>e_ms_map<sp/>=<sp/>get<sp/>(&amp;relation_gen_t::multi_scale,<sp/>g);</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!simple)<sp/>{</highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__t" kindref="compound">gg_label_writer_t</ref>&lt;vtx_subsystem_map_t,</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vtx_basename_map_t,<sp/>vtx_size_map_t&gt;<sp/>vwr<sp/>(</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>v_ss_map,<sp/>v_bn_map,<sp/>v_sz_map);</highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__t" kindref="compound">gg_label_writer_t</ref>&lt;edg_relation_map_t,</highlight></codeline>
+<codeline lineno="200"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edg_gen_method_map_t,<sp/>edg_multi_scale_map_t&gt;<sp/>ewr<sp/>(</highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>e_rel_map,<sp/>e_gen_map,<sp/>e_ms_map);</highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::write_graphviz<sp/>(out_file,<sp/>g,<sp/>vwr,<sp/>ewr);</highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="204"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__sim__t" kindref="compound">gg_label_writer_sim_t&lt;vtx_basename_map_t&gt;</ref><sp/>vwr<sp/>(v_bn_map);</highlight></codeline>
+<codeline lineno="205"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classgg__label__writer__sim__t" kindref="compound">gg_label_writer_sim_t&lt;edg_relation_map_t&gt;</ref><sp/>ewr<sp/>(e_rel_map);</highlight></codeline>
+<codeline lineno="206"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::write_graphviz<sp/>(out_file,<sp/>g,<sp/>vwr,<sp/>ewr);</highlight></codeline>
+<codeline lineno="207"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="208"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(boost::graph_exception<sp/>&amp;e)<sp/>{</highlight></codeline>
+<codeline lineno="209"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="210"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="211"><highlight class="normal"><sp/><sp/><sp/><sp/>out_file.close<sp/>();</highlight></codeline>
+<codeline lineno="212"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="213"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="214"><highlight class="normal"></highlight></codeline>
+<codeline lineno="215"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="216"><highlight class="comment"><sp/>*<sp/>vi:tabstop=4<sp/>shiftwidth=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="217"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp"/>
+  </compounddef>
+</doxygen>

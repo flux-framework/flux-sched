@@ -1,0 +1,462 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="test_2constraint_8cpp" kind="file" language="C++">
+    <compoundname>test/constraint.cpp</compoundname>
+    <includes local="no">iostream</includes>
+    <includes local="no">string</includes>
+    <includes local="no">map</includes>
+    <includes local="no">yaml-cpp/yaml.h</includes>
+    <includes refid="resource__base_8hpp" local="yes">resource/schema/resource_base.hpp</includes>
+    <includes refid="constraint_8hpp" local="yes">resource/libjobspec/constraint.hpp</includes>
+    <includes local="yes">src/common/libtap/tap.h</includes>
+    <incdepgraph>
+      <node id="9">
+        <label>stdexcept</label>
+      </node>
+      <node id="3">
+        <label>string</label>
+      </node>
+      <node id="4">
+        <label>map</label>
+      </node>
+      <node id="7">
+        <label>resource/libjobspec/constraint.hpp</label>
+        <link refid="constraint_8hpp_source"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>yaml-cpp/yaml.h</label>
+      </node>
+      <node id="1">
+        <label>constraint.cpp</label>
+        <link refid="test_2constraint_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>iostream</label>
+      </node>
+      <node id="6">
+        <label>resource/schema/resource_base.hpp</label>
+        <link refid="resource__base_8hpp_source"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>parse_error.hpp</label>
+        <link refid="parse__error_8hpp_source"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>src/common/libtap/tap.h</label>
+      </node>
+    </incdepgraph>
+    <innerclass refid="structresource" prot="public">resource</innerclass>
+    <innerclass refid="structmatch__test" prot="public">match_test</innerclass>
+    <innerclass refid="structvalidate__test" prot="public">validate_test</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="test_2constraint_8cpp_1a5c91d2d9288ec30929a1888e6e3e9719" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structmatch__test" kindref="compound">match_test</ref></type>
+        <definition>struct match_test match_tests[]</definition>
+        <argsstring>[]</argsstring>
+        <name>match_tests</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="1" column="0" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="test_2constraint_8cpp_1adff57f92a27515c9b416339d0c70ce5c" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structvalidate__test" kindref="compound">validate_test</ref></type>
+        <definition>struct validate_test validate_tests[]</definition>
+        <argsstring>[]</argsstring>
+        <name>validate_tests</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="140" column="6" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="160" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="test_2constraint_8cpp_1a21688acf4e90270c849391bfd02287b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test_match</definition>
+        <argsstring>()</argsstring>
+        <name>test_match</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="140" column="6" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="140" bodyend="158"/>
+      </memberdef>
+      <memberdef kind="function" id="test_2constraint_8cpp_1a41edac605eb9e9a6834232b0cb0f3f7f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test_validate</definition>
+        <argsstring>()</argsstring>
+        <name>test_validate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="262" column="6" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="262" bodyend="285"/>
+      </memberdef>
+      <memberdef kind="function" id="test_2constraint_8cpp_1a302714e18c11868ac6f9b0f2c23b9cd8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int main</definition>
+        <argsstring>(int ac, char *argv[])</argsstring>
+        <name>main</name>
+        <param>
+          <type>int</type>
+          <declname>ac</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>argv</declname>
+          <array>[]</array>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="287" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="287" bodyend="294"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2023<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>HAVE_CONFIG_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;config.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;yaml-cpp/yaml.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/schema/resource_base.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/libjobspec/constraint.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;src/common/libtap/tap.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="comment">//<sp/>fake<sp/>resource<sp/>type<sp/>for<sp/>testing</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27" refid="structresource" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structresource" kindref="compound">resource</ref><sp/>:<sp/><ref refid="structFlux_1_1resource__model_1_1resource__t" kindref="compound">Flux::resource_model::resource_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref><sp/>()<sp/>{};</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>add_property<sp/>(std::string<sp/>name)<sp/>{</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>properties.insert(std::pair&lt;std::string,<sp/>std::string&gt;(name,<sp/></highlight><highlight class="stringliteral">&quot;t&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="32"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal">Flux;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal">Flux::Jobspec;</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37" refid="structmatch__test" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structmatch__test" kindref="compound">match_test</ref><sp/>{</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*desc;</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*json;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>result;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43" refid="structvalidate__test" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structvalidate__test" kindref="compound">validate_test</ref><sp/>{</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*desc;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*json;</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*err;</highlight></codeline>
+<codeline lineno="48"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight><highlight class="comment">/*<sp/><sp/>These<sp/>tests<sp/>all<sp/>assume<sp/>a<sp/>node<sp/>object<sp/>foo0<sp/>with<sp/>properties<sp/>xx<sp/>and<sp/>yy.</highlight></codeline>
+<codeline lineno="51"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structmatch__test" kindref="compound">match_test</ref><sp/>match_tests[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>json<sp/>object<sp/>matches<sp/>everything&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&quot;{}&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal"><sp/>},</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>properties<sp/>dict<sp/>matches<sp/>everything&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;property<sp/>matches&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;logical<sp/>not<sp/>on<sp/>property&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;^xx\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;logical<sp/>not<sp/>on<sp/>unset<sp/>property&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;^zz\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;property<sp/>list<sp/>matches<sp/>like<sp/>&apos;and&apos;&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;,<sp/>\&quot;yy\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><sp/></highlight><highlight class="stringliteral">&quot;property<sp/>list<sp/>match<sp/>fails<sp/>unless<sp/>node<sp/>has<sp/>all&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;,<sp/>\&quot;zz\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;property<sp/>list<sp/>match<sp/>fails<sp/>if<sp/>property<sp/>missing&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;zz\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;and<sp/>with<sp/>two<sp/>true<sp/>statements&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;and\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="84"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;yy\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="85"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;and<sp/>with<sp/>one<sp/>false<sp/>statement&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;and\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="90"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;zz\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="91"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;or<sp/>with<sp/>two<sp/>true<sp/>statements&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;or\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="96"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;yy\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="97"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;or<sp/>with<sp/>one<sp/>true<sp/>statements&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;or\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;zz\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="102"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;yy\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="103"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;or<sp/>with<sp/>two<sp/>false<sp/>statements&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;or\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;zz\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="108"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;aa\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="109"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>with<sp/>or<sp/>with<sp/>one<sp/>true<sp/>statement&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;not\&quot;:<sp/>[<sp/>\</highlight></codeline>
+<codeline lineno="114"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;or\&quot;:<sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;zz\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="115"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;yy\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="116"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]}<sp/>\</highlight></codeline>
+<codeline lineno="117"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]<sp/>\</highlight></codeline>
+<codeline lineno="118"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;hostlist<sp/>operator<sp/>works&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;hostlist\&quot;:<sp/>[\&quot;foo[0-2]\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;hostlist<sp/>operator<sp/>works<sp/>with<sp/>non-matching<sp/>hostlist&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;hostlist\&quot;:<sp/>[\&quot;foo[1-3]\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;ranks<sp/>operator<sp/>works&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;ranks\&quot;:<sp/>[\&quot;0-2\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;ranks<sp/>operator<sp/>works<sp/>with<sp/>non-intersecting<sp/>ranks&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;ranks\&quot;:<sp/>[\&quot;1-3\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>NULL,<sp/>NULL,<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal"><sp/>},</highlight></codeline>
+<codeline lineno="138"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight></codeline>
+<codeline lineno="140"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>test_match<sp/>()</highlight></codeline>
+<codeline lineno="141"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref><sp/><ref refid="structresource" kindref="compound">resource</ref>;</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.add_property<sp/>(</highlight><highlight class="stringliteral">&quot;xx&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.add_property<sp/>(</highlight><highlight class="stringliteral">&quot;yy&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.type<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;node&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.name<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;foo0&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.basename<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;foo&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structresource" kindref="compound">resource</ref>.rank<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"></highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structmatch__test" kindref="compound">match_test</ref><sp/>*t<sp/>=<sp/>match_tests;</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(t-&gt;desc)<sp/>{</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>c<sp/>=<sp/>constraint_parser<sp/>(YAML::Load<sp/>(t-&gt;json));</highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>errno<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(c-&gt;match<sp/>(<ref refid="structresource" kindref="compound">resource</ref>)<sp/>==<sp/>t-&gt;result,<sp/></highlight><highlight class="stringliteral">&quot;%s&quot;</highlight><highlight class="normal">,<sp/>t-&gt;desc);</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(errno<sp/>==<sp/>0,<sp/></highlight><highlight class="stringliteral">&quot;errno<sp/>is<sp/>preserved&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>t++;</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="158"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"></highlight></codeline>
+<codeline lineno="160"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structvalidate__test" kindref="compound">validate_test</ref><sp/>validate_tests[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;non-object<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;[]&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;constraint<sp/>is<sp/>not<sp/>a<sp/>mapping&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="165"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="166"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;Unknown<sp/>operation<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;foo\&quot;:<sp/>[]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;unknown<sp/>constraint<sp/>operator:<sp/>foo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;multiple<sp/>operations<sp/>in<sp/>one<sp/>object<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;],<sp/>\&quot;hostlist\&quot;:<sp/>[\&quot;foo\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="173"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;constraint<sp/>map<sp/>may<sp/>not<sp/>contain<sp/>&gt;<sp/>1<sp/>operation&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="175"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;non-array<sp/>argument<sp/>to<sp/>&apos;and&apos;<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;and\&quot;:<sp/>\&quot;foo\&quot;<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>operator<sp/>value<sp/>must<sp/>be<sp/>an<sp/>array&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="180"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="181"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;non-array<sp/>argument<sp/>to<sp/>&apos;or&apos;<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;or\&quot;:<sp/>\&quot;foo\&quot;<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="183"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="184"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;or<sp/>operator<sp/>value<sp/>must<sp/>be<sp/>an<sp/>array&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="185"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="186"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;non-array<sp/>argument<sp/>to<sp/>&apos;properties&apos;<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="187"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;properties\&quot;:<sp/>\&quot;foo\&quot;<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="188"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="189"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;properties<sp/>operator<sp/>value<sp/>must<sp/>be<sp/>an<sp/>array&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;non-string<sp/>property<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;properties\&quot;:<sp/>[<sp/>\&quot;foo\&quot;,<sp/>42<sp/>]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;non-string<sp/>property<sp/>specified&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>property<sp/>string<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;properties\&quot;:<sp/>[<sp/>\&quot;foo\&quot;,<sp/>\&quot;bar&amp;\&quot;<sp/>]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;bar&amp;<sp/>is<sp/>invalid&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="200"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>object<sp/>is<sp/>valid<sp/>constraint&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="204"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="205"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="206"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>and<sp/>object<sp/>is<sp/>valid<sp/>constraint&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="207"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;and\&quot;:<sp/>[]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="208"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="209"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="210"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="211"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>or<sp/>object<sp/>is<sp/>valid<sp/>constraint&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="212"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;or\&quot;:<sp/>[]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="213"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="214"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="215"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="216"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;empty<sp/>properties<sp/>object<sp/>is<sp/>valid<sp/>constraint&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="217"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;properties\&quot;:<sp/>[]<sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="218"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="219"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="220"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="221"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;complex<sp/>conditional<sp/>works&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="222"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{<sp/>\&quot;and\&quot;:<sp/>\</highlight></codeline>
+<codeline lineno="223"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[<sp/>{<sp/>\&quot;or\&quot;:<sp/>\</highlight></codeline>
+<codeline lineno="224"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;foo\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="225"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;bar\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="226"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]<sp/>\</highlight></codeline>
+<codeline lineno="227"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>},<sp/>\</highlight></codeline>
+<codeline lineno="228"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{<sp/>\&quot;and\&quot;:<sp/>\</highlight></codeline>
+<codeline lineno="229"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[<sp/>{\&quot;properties\&quot;:<sp/>[\&quot;xx\&quot;]},<sp/>\</highlight></codeline>
+<codeline lineno="230"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{\&quot;properties\&quot;:<sp/>[\&quot;yy\&quot;]}<sp/><sp/>\</highlight></codeline>
+<codeline lineno="231"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]<sp/>\</highlight></codeline>
+<codeline lineno="232"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/>\</highlight></codeline>
+<codeline lineno="233"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]<sp/>\</highlight></codeline>
+<codeline lineno="234"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="235"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="236"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="237"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;hostlist<sp/>can<sp/>be<sp/>included&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;hostlist\&quot;:<sp/>[\&quot;foo[0-10]\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="241"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="242"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="243"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>hostlist<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="244"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;hostlist\&quot;:<sp/>[\&quot;foo0-10]\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="245"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="246"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>hostlist<sp/>`foo0-10]&apos;&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="247"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="248"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;ranks<sp/>can<sp/>be<sp/>included&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="249"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;ranks\&quot;:<sp/>[\&quot;0-10\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="250"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>0,</highlight></codeline>
+<codeline lineno="251"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="252"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="253"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>ranks<sp/>entry<sp/>fails&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="254"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;{\&quot;ranks\&quot;:<sp/>[\&quot;5,1-3\&quot;]}&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="255"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>-1,</highlight></codeline>
+<codeline lineno="256"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>idset<sp/>`5,1-3&apos;&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="257"><highlight class="normal"><sp/><sp/><sp/><sp/>},</highlight></codeline>
+<codeline lineno="258"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>NULL,<sp/>NULL,<sp/>0,<sp/>NULL<sp/>}</highlight></codeline>
+<codeline lineno="259"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="260"><highlight class="normal"></highlight></codeline>
+<codeline lineno="261"><highlight class="normal"></highlight></codeline>
+<codeline lineno="262"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>test_validate<sp/>()</highlight></codeline>
+<codeline lineno="263"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="264"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structvalidate__test" kindref="compound">validate_test</ref><sp/>*t<sp/>=<sp/>validate_tests;</highlight></codeline>
+<codeline lineno="265"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(t-&gt;desc)<sp/>{</highlight></codeline>
+<codeline lineno="266"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>exception<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="267"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string<sp/>errmsg;</highlight></codeline>
+<codeline lineno="268"><highlight class="normal"></highlight></codeline>
+<codeline lineno="269"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="270"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>constraint_parser<sp/>(YAML::Load<sp/>(t-&gt;json));</highlight></codeline>
+<codeline lineno="271"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="272"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(<ref refid="classFlux_1_1Jobspec_1_1parse__error" kindref="compound">Flux::Jobspec::parse_error</ref>&amp;<sp/>e)<sp/>{</highlight></codeline>
+<codeline lineno="273"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>exception<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="274"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>errmsg<sp/>=<sp/>e.what<sp/>();</highlight></codeline>
+<codeline lineno="275"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="276"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(t-&gt;rc<sp/>!=<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="277"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(exception,<sp/></highlight><highlight class="stringliteral">&quot;%s&quot;</highlight><highlight class="normal">,<sp/>t-&gt;desc);</highlight></codeline>
+<codeline lineno="278"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>is<sp/>(errmsg.c_str(),<sp/>t-&gt;err,<sp/></highlight><highlight class="stringliteral">&quot;%s:<sp/>got<sp/>expected<sp/>error&quot;</highlight><highlight class="normal">,<sp/>t-&gt;desc);</highlight></codeline>
+<codeline lineno="279"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="280"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="281"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(!exception,<sp/></highlight><highlight class="stringliteral">&quot;%s&quot;</highlight><highlight class="normal">,<sp/>t-&gt;desc);</highlight></codeline>
+<codeline lineno="282"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="283"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>t++;</highlight></codeline>
+<codeline lineno="284"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="285"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="286"><highlight class="normal"></highlight></codeline>
+<codeline lineno="287"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ac,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])</highlight></codeline>
+<codeline lineno="288"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="289"><highlight class="normal"><sp/><sp/><sp/><sp/>plan<sp/>(NO_PLAN);</highlight></codeline>
+<codeline lineno="290"><highlight class="normal"><sp/><sp/><sp/><sp/>test_match<sp/>();</highlight></codeline>
+<codeline lineno="291"><highlight class="normal"><sp/><sp/><sp/><sp/>test_validate<sp/>();</highlight></codeline>
+<codeline lineno="292"><highlight class="normal"><sp/><sp/><sp/><sp/>done_testing<sp/>();</highlight></codeline>
+<codeline lineno="293"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline lineno="294"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="295"><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp"/>
+  </compounddef>
+</doxygen>

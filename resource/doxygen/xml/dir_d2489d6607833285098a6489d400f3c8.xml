@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_d2489d6607833285098a6489d400f3c8" kind="dir">
+    <compoundname>readers</compoundname>
+    <innerfile refid="resource__namespace__remapper_8cpp">resource_namespace_remapper.cpp</innerfile>
+    <innerfile refid="resource__namespace__remapper_8hpp">resource_namespace_remapper.hpp</innerfile>
+    <innerfile refid="resource__reader__base_8cpp">resource_reader_base.cpp</innerfile>
+    <innerfile refid="resource__reader__base_8hpp">resource_reader_base.hpp</innerfile>
+    <innerfile refid="resource__reader__factory_8cpp">resource_reader_factory.cpp</innerfile>
+    <innerfile refid="resource__reader__factory_8hpp">resource_reader_factory.hpp</innerfile>
+    <innerfile refid="resource__reader__grug_8cpp">resource_reader_grug.cpp</innerfile>
+    <innerfile refid="resource__reader__grug_8hpp">resource_reader_grug.hpp</innerfile>
+    <innerfile refid="resource__reader__hwloc_8cpp">resource_reader_hwloc.cpp</innerfile>
+    <innerfile refid="resource__reader__hwloc_8hpp">resource_reader_hwloc.hpp</innerfile>
+    <innerfile refid="resource__reader__jgf_8cpp">resource_reader_jgf.cpp</innerfile>
+    <innerfile refid="resource__reader__jgf_8hpp">resource_reader_jgf.hpp</innerfile>
+    <innerfile refid="resource__reader__rv1exec_8cpp">resource_reader_rv1exec.cpp</innerfile>
+    <innerfile refid="resource__reader__rv1exec_8hpp">resource_reader_rv1exec.hpp</innerfile>
+    <innerfile refid="resource__spec__grug_8cpp">resource_spec_grug.cpp</innerfile>
+    <innerfile refid="resource__spec__grug_8hpp">resource_spec_grug.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/"/>
+  </compounddef>
+</doxygen>

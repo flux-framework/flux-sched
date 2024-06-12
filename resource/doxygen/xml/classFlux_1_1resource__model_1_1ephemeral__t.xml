@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1ephemeral__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::ephemeral_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1ephemeral__t_1ac1ae68e998cd6674b9d1b50ff73a22e8" prot="private" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::string &gt;</type>
+        <definition>std::map&lt;std::string, std::string&gt; Flux::resource_model::ephemeral_t::m_store</definition>
+        <argsstring></argsstring>
+        <name>m_store</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="33" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1ephemeral__t_1afe615afd873105780a63ef7a07fc0296" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::ephemeral_t::m_epoch</definition>
+        <argsstring></argsstring>
+        <name>m_epoch</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="35" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1a3049db199b36417651d8f61b20f41333" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::ephemeral_t::insert</definition>
+        <argsstring>(uint64_t epoch, const std::string &amp;key, const std::string &amp;value)</argsstring>
+        <name>insert</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>epoch</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="23" column="9" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="22" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1acb3e2e9349766e61db955a324be669ab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>boost::optional&lt; std::string &gt;</type>
+        <definition>boost::optional&lt; std::string &gt; Flux::resource_model::ephemeral_t::get</definition>
+        <argsstring>(uint64_t epoch, const std::string &amp;key)</argsstring>
+        <name>get</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>epoch</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="26" column="21" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="44" bodyend="61"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1a9995c9ec4c1416b3380bf90e38f7bc73" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+        <definition>const std::map&lt; std::string, std::string &gt; &amp; Flux::resource_model::ephemeral_t::to_map</definition>
+        <argsstring>(uint64_t epoch)</argsstring>
+        <name>to_map</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>epoch</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="27" column="20" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="65" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1a5dc219a40fa3b7671e9bc1a3df138310" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+        <definition>const std::map&lt; std::string, std::string &gt; &amp; Flux::resource_model::ephemeral_t::to_map</definition>
+        <argsstring>() const</argsstring>
+        <name>to_map</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="28" column="20" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="71" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1af8ba6408252a69da682b35d34aa77119" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::ephemeral_t::check_and_clear_if_stale</definition>
+        <argsstring>(uint64_t epoch)</argsstring>
+        <name>check_and_clear_if_stale</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>epoch</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="29" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="76" bodyend="84"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1ephemeral__t_1a0080944512927904e099463ca269650e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::ephemeral_t::clear</definition>
+        <argsstring>()</argsstring>
+        <name>clear</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="30" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.cpp" bodystart="87" bodyend="90"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" line="21" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/ephemeral.hpp" bodystart="21" bodyend="36"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1af8ba6408252a69da682b35d34aa77119" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>check_and_clear_if_stale</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1a0080944512927904e099463ca269650e" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>clear</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1acb3e2e9349766e61db955a324be669ab" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>get</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1a3049db199b36417651d8f61b20f41333" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>insert</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1afe615afd873105780a63ef7a07fc0296" prot="private" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>m_epoch</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1ac1ae68e998cd6674b9d1b50ff73a22e8" prot="private" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>m_store</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1a9995c9ec4c1416b3380bf90e38f7bc73" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>to_map</name></member>
+      <member refid="classFlux_1_1resource__model_1_1ephemeral__t_1a5dc219a40fa3b7671e9bc1a3df138310" prot="public" virt="non-virtual"><scope>Flux::resource_model::ephemeral_t</scope><name>to_map</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

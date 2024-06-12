@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classmsg__wrap__t" kind="class" language="C++" prot="public">
+    <compoundname>msg_wrap_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classmsg__wrap__t_1a0e2ba106f0947f9e0d35279b8ab8789f" prot="private" static="no" mutable="no">
+        <type>const flux_msg_t *</type>
+        <definition>const flux_msg_t* msg_wrap_t::m_msg</definition>
+        <argsstring></argsstring>
+        <name>m_msg</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="87" column="22" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classmsg__wrap__t_1a86622736715a6805a72e945e0a08bfd6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>msg_wrap_t::msg_wrap_t</definition>
+        <argsstring>()=default</argsstring>
+        <name>msg_wrap_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="80" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classmsg__wrap__t_1a60113fbb7274ed33fc1375a657fae485" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>msg_wrap_t::msg_wrap_t</definition>
+        <argsstring>(const msg_wrap_t &amp;o)</argsstring>
+        <name>msg_wrap_t</name>
+        <param>
+          <type>const <ref refid="classmsg__wrap__t" kindref="compound">msg_wrap_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="81" column="5" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="145" bodyend="148"/>
+      </memberdef>
+      <memberdef kind="function" id="classmsg__wrap__t_1a4a9b3c82e38caf0800465ca2dad89c19" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classmsg__wrap__t" kindref="compound">msg_wrap_t</ref> &amp;</type>
+        <definition>msg_wrap_t &amp; msg_wrap_t::operator=</definition>
+        <argsstring>(const msg_wrap_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classmsg__wrap__t" kindref="compound">msg_wrap_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="82" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="150" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classmsg__wrap__t_1a16358034b73c80511907d39936f821f5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>msg_wrap_t::~msg_wrap_t</definition>
+        <argsstring>()</argsstring>
+        <name>~msg_wrap_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="83" column="5" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="156" bodyend="159"/>
+      </memberdef>
+      <memberdef kind="function" id="classmsg__wrap__t_1a7012fc5db4ec2209714d0086bd7361ed" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const flux_msg_t *</type>
+        <definition>const flux_msg_t * msg_wrap_t::get_msg</definition>
+        <argsstring>() const</argsstring>
+        <name>get_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="84" column="22" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="161" bodyend="164"/>
+      </memberdef>
+      <memberdef kind="function" id="classmsg__wrap__t_1ab6ff6296790fc82d98e5cf87eae271fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void msg_wrap_t::set_msg</definition>
+        <argsstring>(const flux_msg_t *msg)</argsstring>
+        <name>set_msg</name>
+        <param>
+          <type>const flux_msg_t *</type>
+          <declname>msg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="85" column="10" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="166" bodyend="171"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="78" column="1" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="78" bodyend="88"/>
+    <listofallmembers>
+      <member refid="classmsg__wrap__t_1a7012fc5db4ec2209714d0086bd7361ed" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>get_msg</name></member>
+      <member refid="classmsg__wrap__t_1a0e2ba106f0947f9e0d35279b8ab8789f" prot="private" virt="non-virtual"><scope>msg_wrap_t</scope><name>m_msg</name></member>
+      <member refid="classmsg__wrap__t_1a86622736715a6805a72e945e0a08bfd6" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>msg_wrap_t</name></member>
+      <member refid="classmsg__wrap__t_1a60113fbb7274ed33fc1375a657fae485" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>msg_wrap_t</name></member>
+      <member refid="classmsg__wrap__t_1a4a9b3c82e38caf0800465ca2dad89c19" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>operator=</name></member>
+      <member refid="classmsg__wrap__t_1ab6ff6296790fc82d98e5cf87eae271fa" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>set_msg</name></member>
+      <member refid="classmsg__wrap__t_1a16358034b73c80511907d39936f821f5" prot="public" virt="non-virtual"><scope>msg_wrap_t</scope><name>~msg_wrap_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

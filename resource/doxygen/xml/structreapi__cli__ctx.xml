@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structreapi__cli__ctx" kind="struct" language="C++" prot="public">
+    <compoundname>reapi_cli_ctx</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structreapi__cli__ctx_1a494fd63f1c3524b23cabdc09f88b08e7" prot="public" static="no" mutable="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t" kindref="compound">resource_query_t</ref> *</type>
+        <definition>resource_query_t* reapi_cli_ctx::rqt</definition>
+        <argsstring></argsstring>
+        <name>rqt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" line="30" column="22" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structreapi__cli__ctx_1a6e6951072a30656858cf09b0f9f2bfcd" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string reapi_cli_ctx::err_msg</definition>
+        <argsstring></argsstring>
+        <name>err_msg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" line="31" column="17" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>Flux::resource_model::detail::resource_query_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>perf</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>params</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::detail::match_perf_t</label>
+        <link refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t"/>
+      </node>
+      <node id="4">
+        <label>Flux::resource_model::detail::resource_params_t</label>
+        <link refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t"/>
+      </node>
+      <node id="1">
+        <label>reapi_cli_ctx</label>
+        <link refid="structreapi__cli__ctx"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>rqt</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_cli.cpp" bodystart="29" bodyend="32"/>
+    <listofallmembers>
+      <member refid="structreapi__cli__ctx_1a6e6951072a30656858cf09b0f9f2bfcd" prot="public" virt="non-virtual"><scope>reapi_cli_ctx</scope><name>err_msg</name></member>
+      <member refid="structreapi__cli__ctx_1a494fd63f1c3524b23cabdc09f88b08e7" prot="public" virt="non-virtual"><scope>reapi_cli_ctx</scope><name>rqt</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

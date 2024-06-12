@@ -1,0 +1,92 @@
+\hypertarget{classFlux_1_1resource__model_1_1queue__adapter__base__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::queue\+\_\+adapter\+\_\+base\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1queue__adapter__base__t}\index{Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}}
+
+
+{\ttfamily \#include $<$reapi.\+hpp$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t_a19214f708c0aa719e2b8ba9151a7ef8a}{handle\+\_\+match\+\_\+success}} (int64\+\_\+t jobid, const char $\ast$status, const char $\ast$R, int64\+\_\+t at, double ov)=0
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t_a8f0a03057815892080f545d7437821b3}{handle\+\_\+match\+\_\+failure}} (int errcode)=0
+\item 
+virtual bool \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t_a043544786c98653ab3eeaf9f30383e97}{is\+\_\+sched\+\_\+loop\+\_\+active}} ()=0
+\item 
+virtual int \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t_af4fa97fa71bfd0acef914b80d80b52d9}{set\+\_\+sched\+\_\+loop\+\_\+active}} (bool active)=0
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Queue adapter base API class\+: define a set of methods a queue policy class (a subclass of this API class) must implement to be able to work with \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t}{reapi\+\_\+t}} under asynchronous execution. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1queue__adapter__base__t_a8f0a03057815892080f545d7437821b3}\label{classFlux_1_1resource__model_1_1queue__adapter__base__t_a8f0a03057815892080f545d7437821b3}} 
+\index{Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}!handle\_match\_failure@{handle\_match\_failure}}
+\index{handle\_match\_failure@{handle\_match\_failure}!Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}}
+\doxyparagraph{\texorpdfstring{handle\_match\_failure()}{handle\_match\_failure()}}
+{\footnotesize\ttfamily virtual int Flux\+::resource\+\_\+model\+::queue\+\_\+adapter\+\_\+base\+\_\+t\+::handle\+\_\+match\+\_\+failure (\begin{DoxyParamCaption}\item[{int}]{errcode }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+When a match failed (e.\+g., unsatisfiable jobspec, resource unavailable, no more jobspec to process), this method is called back by \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t}{reapi\+\_\+t}} with errcode returned from the resource match service. The implementor of this method is expected to dequeue the the job from the pending job queue, if appropriate, and proceed to the next pending job or return 0 if the scheduling loop must be terminated per its queuing policy (e.\+g., FCFS).
+
+
+\begin{DoxyParams}{Parameters}
+{\em errno} & returned from the resource match service. EBUSY\+: resource unavailable ENODEV\+: unsatisfiable jobspec ENODATA\+: no more jobspec to process Others\+: one that can raised from match\+\_\+multi RPC \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 when the loop must terminate; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1queue__adapter__base__t_a19214f708c0aa719e2b8ba9151a7ef8a}\label{classFlux_1_1resource__model_1_1queue__adapter__base__t_a19214f708c0aa719e2b8ba9151a7ef8a}} 
+\index{Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}!handle\_match\_success@{handle\_match\_success}}
+\index{handle\_match\_success@{handle\_match\_success}!Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}}
+\doxyparagraph{\texorpdfstring{handle\_match\_success()}{handle\_match\_success()}}
+{\footnotesize\ttfamily virtual int Flux\+::resource\+\_\+model\+::queue\+\_\+adapter\+\_\+base\+\_\+t\+::handle\+\_\+match\+\_\+success (\begin{DoxyParamCaption}\item[{int64\+\_\+t}]{jobid,  }\item[{const char $\ast$}]{status,  }\item[{const char $\ast$}]{R,  }\item[{int64\+\_\+t}]{at,  }\item[{double}]{ov }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+When a match succeeds, this method is called back by \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t}{reapi\+\_\+t}} with the matched resource information. The implementor (e.\+g., queue policy class) of this method is expected to dequeue the job from its pending queue and proceed to the next state transition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jobid} & Job ID of the uint64\+\_\+t type. \\
+\hline
+{\em status} & String indicating if the match type is allocation or reservation. \\
+\hline
+{\em R} & Resource set\+: i.\+e., either allocated or reserved. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Match performance overhead in terms of the elapse time to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1queue__adapter__base__t_a043544786c98653ab3eeaf9f30383e97}\label{classFlux_1_1resource__model_1_1queue__adapter__base__t_a043544786c98653ab3eeaf9f30383e97}} 
+\index{Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}!is\_sched\_loop\_active@{is\_sched\_loop\_active}}
+\index{is\_sched\_loop\_active@{is\_sched\_loop\_active}!Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}}
+\doxyparagraph{\texorpdfstring{is\_sched\_loop\_active()}{is\_sched\_loop\_active()}}
+{\footnotesize\ttfamily virtual bool Flux\+::resource\+\_\+model\+::queue\+\_\+adapter\+\_\+base\+\_\+t\+::is\+\_\+sched\+\_\+loop\+\_\+active (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Return true if the scheduling loop is active under asynchronous execution; otherwise false. \mbox{\Hypertarget{classFlux_1_1resource__model_1_1queue__adapter__base__t_af4fa97fa71bfd0acef914b80d80b52d9}\label{classFlux_1_1resource__model_1_1queue__adapter__base__t_af4fa97fa71bfd0acef914b80d80b52d9}} 
+\index{Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}!set\_sched\_loop\_active@{set\_sched\_loop\_active}}
+\index{set\_sched\_loop\_active@{set\_sched\_loop\_active}!Flux::resource\_model::queue\_adapter\_base\_t@{Flux::resource\_model::queue\_adapter\_base\_t}}
+\doxyparagraph{\texorpdfstring{set\_sched\_loop\_active()}{set\_sched\_loop\_active()}}
+{\footnotesize\ttfamily virtual int Flux\+::resource\+\_\+model\+::queue\+\_\+adapter\+\_\+base\+\_\+t\+::set\+\_\+sched\+\_\+loop\+\_\+active (\begin{DoxyParamCaption}\item[{bool}]{active }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Set the state of the scheduling loop. 
+\begin{DoxyParams}{Parameters}
+{\em active} & true when the scheduling loop becomes active; false when becomes inactive. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; otherwise -\/1 an error with errno set (Note\+: when the scheduling loop becomes inactive, internal queueing can occur and an error can arise)\+:
+\begin{DoxyItemize}
+\item ENOENT (job is not found from some queue)
+\item EEXIST (enqueue fails due to an existent entry) 
+\end{DoxyItemize}
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+reapi.\+hpp\end{DoxyCompactItemize}

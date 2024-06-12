@@ -1,0 +1,63 @@
+\hypertarget{resource__reader__jgf_8cpp}{}\doxysubsection{resource\+\_\+reader\+\_\+jgf.\+cpp File Reference}
+\label{resource__reader__jgf_8cpp}\index{resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}}
+{\ttfamily \#include $<$map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$jansson.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}resource/readers/resource\+\_\+reader\+\_\+jgf.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/store/resource\+\_\+graph\+\_\+store.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/planner/c/planner.\+h\char`\"{}}\newline
+Include dependency graph for resource\+\_\+reader\+\_\+jgf.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource__reader__jgf_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classfetch__remap__support__t}{fetch\+\_\+remap\+\_\+support\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structvmap__val__t}{vmap\+\_\+val\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{resource__reader__jgf_8cpp_ab8026e6b026dfa316d441880bb01fb43}{operator==}} (const std\+::map$<$ std\+::string, std\+::string $>$ lhs, const std\+::map$<$ std\+::string, std\+::string $>$ rhs)
+\item 
+bool \mbox{\hyperlink{resource__reader__jgf_8cpp_ac4bb8f70b45b79fa916d5465a550c1c1}{operator==}} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&r, const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&f)
+\item 
+bool \mbox{\hyperlink{resource__reader__jgf_8cpp_a645ee02061bd3cfb62c2dc957c141338}{operator!=}} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&r, const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&f)
+\item 
+std\+::string \mbox{\hyperlink{resource__reader__jgf_8cpp_ac943f51f32dcf7bd2d760b00eb5e81de}{diff}} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&r, const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&f)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{resource__reader__jgf_8cpp_ac943f51f32dcf7bd2d760b00eb5e81de}\label{resource__reader__jgf_8cpp_ac943f51f32dcf7bd2d760b00eb5e81de}} 
+\index{resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}!diff@{diff}}
+\index{diff@{diff}!resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}}
+\doxyparagraph{\texorpdfstring{diff()}{diff()}}
+{\footnotesize\ttfamily std\+::string diff (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&}]{r,  }\item[{const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&}]{f }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{resource__reader__jgf_8cpp_a645ee02061bd3cfb62c2dc957c141338}\label{resource__reader__jgf_8cpp_a645ee02061bd3cfb62c2dc957c141338}} 
+\index{resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}!operator"!=@{operator"!=}}
+\index{operator"!=@{operator"!=}!resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}}
+\doxyparagraph{\texorpdfstring{operator"!=()}{operator!=()}}
+{\footnotesize\ttfamily bool operator!= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&}]{r,  }\item[{const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&}]{f }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{resource__reader__jgf_8cpp_ac4bb8f70b45b79fa916d5465a550c1c1}\label{resource__reader__jgf_8cpp_ac4bb8f70b45b79fa916d5465a550c1c1}} 
+\index{resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}!operator==@{operator==}}
+\index{operator==@{operator==}!resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}}
+\doxyparagraph{\texorpdfstring{operator==()}{operator==()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily bool operator== (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&}]{r,  }\item[{const \mbox{\hyperlink{structfetch__helper__t}{fetch\+\_\+helper\+\_\+t}} \&}]{f }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{resource__reader__jgf_8cpp_ab8026e6b026dfa316d441880bb01fb43}\label{resource__reader__jgf_8cpp_ab8026e6b026dfa316d441880bb01fb43}} 
+\index{resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}!operator==@{operator==}}
+\index{operator==@{operator==}!resource\_reader\_jgf.cpp@{resource\_reader\_jgf.cpp}}
+\doxyparagraph{\texorpdfstring{operator==()}{operator==()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily bool operator== (\begin{DoxyParamCaption}\item[{const std\+::map$<$ std\+::string, std\+::string $>$}]{lhs,  }\item[{const std\+::map$<$ std\+::string, std\+::string $>$}]{rhs }\end{DoxyParamCaption})}
+

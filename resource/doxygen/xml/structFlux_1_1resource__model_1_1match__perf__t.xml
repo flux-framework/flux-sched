@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1match__perf__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::match_perf_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1match__perf__t_1a7e3167d36fdab39d6d301d8655293462" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::match_perf_t::min</definition>
+        <argsstring></argsstring>
+        <name>min</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="47" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1match__perf__t_1a6536a8a660bb529654c3ce22f48551a9" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::match_perf_t::max</definition>
+        <argsstring></argsstring>
+        <name>max</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="48" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1match__perf__t_1a322d5d69d20a17088f6ea2344d6fe9a4" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::match_perf_t::accum</definition>
+        <argsstring></argsstring>
+        <name>accum</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="49" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="46" column="1" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="46" bodyend="50"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1match__perf__t_1a322d5d69d20a17088f6ea2344d6fe9a4" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_perf_t</scope><name>accum</name></member>
+      <member refid="structFlux_1_1resource__model_1_1match__perf__t_1a6536a8a660bb529654c3ce22f48551a9" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_perf_t</scope><name>max</name></member>
+      <member refid="structFlux_1_1resource__model_1_1match__perf__t_1a7e3167d36fdab39d6d301d8655293462" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_perf_t</scope><name>min</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

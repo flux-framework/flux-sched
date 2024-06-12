@@ -1,0 +1,113 @@
+\hypertarget{classplanner__multi}{}\doxysubsection{planner\+\_\+multi Class Reference}
+\label{classplanner__multi}\index{planner\_multi@{planner\_multi}}
+
+
+Collaboration diagram for planner\+\_\+multi\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=155pt]{classplanner__multi__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classplanner__multi_a1470a285406246a1b4797d6bca6c00bc}\label{classplanner__multi_a1470a285406246a1b4797d6bca6c00bc}} 
+{\bfseries planner\+\_\+multi} (int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration, const uint64\+\_\+t $\ast$resource\+\_\+totals, const char $\ast$$\ast$resource\+\_\+types, size\+\_\+t len)
+\item 
+\mbox{\Hypertarget{classplanner__multi_a9ec14e182f91b42015ea0d7cfe0c681f}\label{classplanner__multi_a9ec14e182f91b42015ea0d7cfe0c681f}} 
+{\bfseries planner\+\_\+multi} (const \mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner__multi_a7b0fe22eebfcd6062c3a5b8efcb5c15e}\label{classplanner__multi_a7b0fe22eebfcd6062c3a5b8efcb5c15e}} 
+\mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}} \& {\bfseries operator=} (const \mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner__multi_af15aec2567b2739b45b80ff81174482a}\label{classplanner__multi_af15aec2567b2739b45b80ff81174482a}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_aaf0532bc9abbc3adcac8d6a14ed13312}\label{classplanner__multi_aaf0532bc9abbc3adcac8d6a14ed13312}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_a576abfa80ca1f59d9182179a9a01bbd4}\label{classplanner__multi_a576abfa80ca1f59d9182179a9a01bbd4}} 
+void {\bfseries erase} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_a669868bea5b0b003e58d07a6189e2032}\label{classplanner__multi_a669868bea5b0b003e58d07a6189e2032}} 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ {\bfseries get\+\_\+planner\+\_\+at} (size\+\_\+t i) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_a7b757a442b36d56fb31e3d990ee43357}\label{classplanner__multi_a7b757a442b36d56fb31e3d990ee43357}} 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ {\bfseries get\+\_\+planner\+\_\+at} (const char $\ast$type) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_ac4a4e7f0d931f77597d5a7063b9d6212}\label{classplanner__multi_ac4a4e7f0d931f77597d5a7063b9d6212}} 
+void {\bfseries update\+\_\+planner\+\_\+index} (const char $\ast$type, size\+\_\+t i)
+\item 
+\mbox{\Hypertarget{classplanner__multi_aec91664a892cf002d1904665dd2e062e}\label{classplanner__multi_aec91664a892cf002d1904665dd2e062e}} 
+int {\bfseries update\+\_\+planner\+\_\+total} (uint64\+\_\+t total, size\+\_\+t i)
+\item 
+\mbox{\Hypertarget{classplanner__multi_a23bae6a75e76218f29bacdc6626e2164}\label{classplanner__multi_a23bae6a75e76218f29bacdc6626e2164}} 
+bool {\bfseries planner\+\_\+at} (const char $\ast$type) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_a36b85eb15d0fc0d116f9d4e86abf6b32}\label{classplanner__multi_a36b85eb15d0fc0d116f9d4e86abf6b32}} 
+size\+\_\+t {\bfseries get\+\_\+planners\+\_\+size} () const
+\item 
+\mbox{\Hypertarget{classplanner__multi_a33086ead27062fb37662972ad9883070}\label{classplanner__multi_a33086ead27062fb37662972ad9883070}} 
+int64\+\_\+t {\bfseries get\+\_\+resource\+\_\+total\+\_\+at} (size\+\_\+t i) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_a5e59ba4d23746650cb25858f7eb522e2}\label{classplanner__multi_a5e59ba4d23746650cb25858f7eb522e2}} 
+int64\+\_\+t {\bfseries get\+\_\+resource\+\_\+total\+\_\+at} (const char $\ast$type) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_ad2f38552287f0dbd53be7c94ed29159c}\label{classplanner__multi_ad2f38552287f0dbd53be7c94ed29159c}} 
+const char $\ast$ {\bfseries get\+\_\+resource\+\_\+type\+\_\+at} (size\+\_\+t i) const
+\item 
+\mbox{\Hypertarget{classplanner__multi_ab9e2bd3689b1a71bdd17b96cf05eb2c1}\label{classplanner__multi_ab9e2bd3689b1a71bdd17b96cf05eb2c1}} 
+struct \mbox{\hyperlink{structrequest__multi}{request\+\_\+multi}} \& {\bfseries get\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_a8c64385b3ed2239fcccbe804c2441c5f}\label{classplanner__multi_a8c64385b3ed2239fcccbe804c2441c5f}} 
+std\+::map$<$ uint64\+\_\+t, std\+::vector$<$ int64\+\_\+t $>$ $>$ \& {\bfseries get\+\_\+span\+\_\+lookup} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_a5a2a13e6b6de759859b0971f97457a5c}\label{classplanner__multi_a5a2a13e6b6de759859b0971f97457a5c}} 
+std\+::map$<$ uint64\+\_\+t, std\+::vector$<$ int64\+\_\+t $>$ $>$\+::iterator \& {\bfseries get\+\_\+span\+\_\+lookup\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_a56db5eeadb32de56d51821f5b49a42ae}\label{classplanner__multi_a56db5eeadb32de56d51821f5b49a42ae}} 
+void {\bfseries set\+\_\+span\+\_\+lookup\+\_\+iter} (std\+::map$<$ uint64\+\_\+t, std\+::vector$<$ int64\+\_\+t $>$$>$\+::iterator \&it)
+\item 
+\mbox{\Hypertarget{classplanner__multi_a852cf03588e95b726328512155d08443}\label{classplanner__multi_a852cf03588e95b726328512155d08443}} 
+void {\bfseries incr\+\_\+span\+\_\+lookup\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_acf5a4c36c577cfc35904cd34ee131aa5}\label{classplanner__multi_acf5a4c36c577cfc35904cd34ee131aa5}} 
+uint64\+\_\+t {\bfseries get\+\_\+span\+\_\+counter} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_ac2d6ffdc63ff446eef91a5e28a286cf9}\label{classplanner__multi_ac2d6ffdc63ff446eef91a5e28a286cf9}} 
+void {\bfseries set\+\_\+span\+\_\+counter} (uint64\+\_\+t sc)
+\item 
+\mbox{\Hypertarget{classplanner__multi_a1c0f893835f57cf4944b21965fa68be2}\label{classplanner__multi_a1c0f893835f57cf4944b21965fa68be2}} 
+void {\bfseries incr\+\_\+span\+\_\+counter} ()
+\item 
+\mbox{\Hypertarget{classplanner__multi_a8d788e97c35b446736d621cb03b480ea}\label{classplanner__multi_a8d788e97c35b446736d621cb03b480ea}} 
+void {\bfseries add\+\_\+planner} (int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration, const uint64\+\_\+t resource\+\_\+total, const char $\ast$resource\+\_\+type, size\+\_\+t i)
+\item 
+\mbox{\Hypertarget{classplanner__multi_abac98ed19c4810f99d147ca4b5d709c9}\label{classplanner__multi_abac98ed19c4810f99d147ca4b5d709c9}} 
+void {\bfseries delete\+\_\+planners} (const std\+::unordered\+\_\+set$<$ std\+::string $>$ \&rtypes)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classplanner__multi_adad8d65cf8df621af2a98529f56f11d2}\label{classplanner__multi_adad8d65cf8df621af2a98529f56f11d2}} 
+multi\+\_\+container {\bfseries m\+\_\+types\+\_\+totals\+\_\+planners}
+\item 
+\mbox{\Hypertarget{classplanner__multi_a80cfaea426d9c2a7fe2d094fd3bdf9d9}\label{classplanner__multi_a80cfaea426d9c2a7fe2d094fd3bdf9d9}} 
+struct \mbox{\hyperlink{structrequest__multi}{request\+\_\+multi}} {\bfseries m\+\_\+iter}
+\item 
+\mbox{\Hypertarget{classplanner__multi_aa2958d360320587e62e45efd93a25654}\label{classplanner__multi_aa2958d360320587e62e45efd93a25654}} 
+std\+::map$<$ uint64\+\_\+t, std\+::vector$<$ int64\+\_\+t $>$ $>$ {\bfseries m\+\_\+span\+\_\+lookup}
+\item 
+\mbox{\Hypertarget{classplanner__multi_afa322d86209b53d405a99c604d3623b0}\label{classplanner__multi_afa322d86209b53d405a99c604d3623b0}} 
+std\+::map$<$ uint64\+\_\+t, std\+::vector$<$ int64\+\_\+t $>$ $>$\+::iterator {\bfseries m\+\_\+span\+\_\+lookup\+\_\+iter}
+\item 
+\mbox{\Hypertarget{classplanner__multi_ad074d391e08e4f6cb8bf1a2bd6b8347f}\label{classplanner__multi_ad074d391e08e4f6cb8bf1a2bd6b8347f}} 
+uint64\+\_\+t {\bfseries m\+\_\+span\+\_\+counter} = 0
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+planner\+\_\+multi.\+hpp\item 
+planner\+\_\+multi.\+cpp\end{DoxyCompactItemize}

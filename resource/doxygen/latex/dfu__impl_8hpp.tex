@@ -1,0 +1,62 @@
+\hypertarget{dfu__impl_8hpp}{}\doxysubsection{dfu\+\_\+impl.\+hpp File Reference}
+\label{dfu__impl_8hpp}\index{dfu\_impl.hpp@{dfu\_impl.hpp}}
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$cstdlib$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include \char`\"{}resource/libjobspec/jobspec.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/config/system\+\_\+defaults.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/schema/resource\+\_\+data.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/schema/resource\+\_\+graph.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/base/dfu\+\_\+match\+\_\+cb.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/evaluators/scoring\+\_\+api.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/evaluators/expr\+\_\+eval\+\_\+api.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/evaluators/expr\+\_\+eval\+\_\+vtx\+\_\+target.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/writers/match\+\_\+writers.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/store/resource\+\_\+graph\+\_\+store.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/readers/resource\+\_\+reader\+\_\+base.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/planner/c/planner.\+h\char`\"{}}\newline
+Include dependency graph for dfu\+\_\+impl.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dfu__impl_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dfu__impl_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1resource__model_1_1detail_1_1jobmeta__t}{Flux\+::resource\+\_\+model\+::detail\+::jobmeta\+\_\+t}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t}{Flux\+::resource\+\_\+model\+::detail\+::dfu\+\_\+impl\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceFlux}{Flux}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model}{Flux\+::resource\+\_\+model}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail}{Flux\+::resource\+\_\+model\+::detail}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_ae68e3e40c45ade1948fde75120551180}{Flux\+::resource\+\_\+model\+::detail\+::visit\+\_\+t}} \{ \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_ae68e3e40c45ade1948fde75120551180a2d7ed3fdb07f9852acd06b5b55607af1}{Flux\+::resource\+\_\+model\+::detail\+::\+DFV}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_ae68e3e40c45ade1948fde75120551180ab311bf385aca15a1f5da8a19593d0a23}{Flux\+::resource\+\_\+model\+::detail\+::\+UPV}}
+ \}
+\item 
+enum class \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_acc7ca3b33cc596bcf61a518df01732e0}{Flux\+::resource\+\_\+model\+::detail\+::match\+\_\+kind\+\_\+t}} \{ \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_acc7ca3b33cc596bcf61a518df01732e0afcf92c1e3b975e566ed1854abf4abccd}{Flux\+::resource\+\_\+model\+::detail\+::\+RESOURCE\+\_\+\+MATCH}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_acc7ca3b33cc596bcf61a518df01732e0a6bee9b16ab48f7ffb23b10e9a7c3f0ed}{Flux\+::resource\+\_\+model\+::detail\+::\+SLOT\+\_\+\+MATCH}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_acc7ca3b33cc596bcf61a518df01732e0a3220eefe695e471f15191ab20840982c}{Flux\+::resource\+\_\+model\+::detail\+::\+NONE\+\_\+\+MATCH}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_1_1detail_acc7ca3b33cc596bcf61a518df01732e0a568c9e9daa8aed5fc0ea39deaae4447d}{Flux\+::resource\+\_\+model\+::detail\+::\+PRESTINE\+\_\+\+NONE\+\_\+\+MATCH}}
+ \}
+\end{DoxyCompactItemize}

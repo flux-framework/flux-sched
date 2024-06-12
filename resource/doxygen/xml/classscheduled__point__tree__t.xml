@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classscheduled__point__tree__t" kind="class" language="C++" prot="public">
+    <compoundname>scheduled_point_tree_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classscheduled__point__tree__t_1a5c569f3c96c2772e00fe72f40eff8cb0" prot="private" static="no" mutable="no">
+        <type>scheduled_point_rb_tree_t</type>
+        <definition>scheduled_point_rb_tree_t scheduled_point_tree_t::m_tree</definition>
+        <argsstring></argsstring>
+        <name>m_tree</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="70" column="31" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classscheduled__point__tree__t_1af0dce96fd2d91edbac188e64b56a1912" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>scheduled_point_tree_t::~scheduled_point_tree_t</definition>
+        <argsstring>()</argsstring>
+        <name>~scheduled_point_tree_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="55" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="86" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1af4d266cbaf3889c573902083269bcccc" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * scheduled_point_tree_t::next</definition>
+        <argsstring>(scheduled_point_t *point) const</argsstring>
+        <name>next</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="56" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="114" bodyend="124"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1aa01436ff45bfc1098080cb2dcf4a8c9c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * scheduled_point_tree_t::next</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>next</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="57" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="102" bodyend="112"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1a5f93791ec7602c51e2255d4340c9a3e7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * scheduled_point_tree_t::search</definition>
+        <argsstring>(int64_t tm)</argsstring>
+        <name>search</name>
+        <param>
+          <type>int64_t</type>
+          <declname>tm</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="58" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="126" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1a951f6a71eb24b77f33d5ff7076533932" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * scheduled_point_tree_t::get_state</definition>
+        <argsstring>(int64_t at) const</argsstring>
+        <name>get_state</name>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>While scheduled_point_search returns the exact match scheduled_point_state returns the most recent scheduled point, representing the accurate resource state at the time t. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="59" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="136" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1ae70d38dc70b8635d40b7197ca0fc694a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int scheduled_point_tree_t::insert</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>insert</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="60" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="156" bodyend="165"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1aad04c0d973ed72e77b1ee6f97c1c2301" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int scheduled_point_tree_t::remove</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>remove</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="61" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="167" bodyend="175"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1aaf383b4841d736a5a0b6a410b9c352d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void scheduled_point_tree_t::destroy</definition>
+        <argsstring>()</argsstring>
+        <name>destroy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="62" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="94" bodyend="100"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1abbb59ab629d9eef9663eaee72014e614" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool scheduled_point_tree_t::empty</definition>
+        <argsstring>() const</argsstring>
+        <name>empty</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="63" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="177" bodyend="180"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1a9cb958de69e1238a24d1fcbe0c51c09c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t scheduled_point_tree_t::get_size</definition>
+        <argsstring>() const</argsstring>
+        <name>get_size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="64" column="12" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="182" bodyend="185"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classscheduled__point__tree__t_1a20269158c99d3a88cf4af4863b965ff8" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * scheduled_point_tree_t::get_recent_state</definition>
+        <argsstring>(scheduled_point_t *new_point, scheduled_point_t *old_point) const</argsstring>
+        <name>get_recent_state</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>new_point</declname>
+        </param>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>old_point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="67" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="26" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classscheduled__point__tree__t_1a78f5bea515028d39fae6effcb44fcd51" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void scheduled_point_tree_t::destroy</definition>
+        <argsstring>(scheduled_point_rb_node_t *node)</argsstring>
+        <name>destroy</name>
+        <param>
+          <type><ref refid="structscheduled__point__rb__node__t" kindref="compound">scheduled_point_rb_node_t</ref> *</type>
+          <declname>node</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="69" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.cpp" bodystart="35" bodyend="44"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" line="53" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/scheduled_point_tree.hpp" bodystart="53" bodyend="71"/>
+    <listofallmembers>
+      <member refid="classscheduled__point__tree__t_1aaf383b4841d736a5a0b6a410b9c352d8" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>destroy</name></member>
+      <member refid="classscheduled__point__tree__t_1a78f5bea515028d39fae6effcb44fcd51" prot="private" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>destroy</name></member>
+      <member refid="classscheduled__point__tree__t_1abbb59ab629d9eef9663eaee72014e614" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>empty</name></member>
+      <member refid="classscheduled__point__tree__t_1a20269158c99d3a88cf4af4863b965ff8" prot="private" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>get_recent_state</name></member>
+      <member refid="classscheduled__point__tree__t_1a9cb958de69e1238a24d1fcbe0c51c09c" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>get_size</name></member>
+      <member refid="classscheduled__point__tree__t_1a951f6a71eb24b77f33d5ff7076533932" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>get_state</name></member>
+      <member refid="classscheduled__point__tree__t_1ae70d38dc70b8635d40b7197ca0fc694a" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>insert</name></member>
+      <member refid="classscheduled__point__tree__t_1a5c569f3c96c2772e00fe72f40eff8cb0" prot="private" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>m_tree</name></member>
+      <member refid="classscheduled__point__tree__t_1af4d266cbaf3889c573902083269bcccc" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>next</name></member>
+      <member refid="classscheduled__point__tree__t_1aa01436ff45bfc1098080cb2dcf4a8c9c" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>next</name></member>
+      <member refid="classscheduled__point__tree__t_1aad04c0d973ed72e77b1ee6f97c1c2301" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>remove</name></member>
+      <member refid="classscheduled__point__tree__t_1a5f93791ec7602c51e2255d4340c9a3e7" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>search</name></member>
+      <member refid="classscheduled__point__tree__t_1af0dce96fd2d91edbac188e64b56a1912" prot="public" virt="non-virtual"><scope>scheduled_point_tree_t</scope><name>~scheduled_point_tree_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1HostlistConstraint" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::HostlistConstraint</compoundname>
+    <basecompoundref refid="classFlux_1_1Jobspec_1_1Constraint" prot="public" virt="non-virtual">Flux::Jobspec::Constraint</basecompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a90d3f10ca3cc7244d3e3b8db5238068c" prot="private" static="no" mutable="no">
+        <type>struct hostlist *</type>
+        <definition>struct hostlist* Flux::Jobspec::HostlistConstraint::hl</definition>
+        <argsstring></argsstring>
+        <name>hl</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="29" column="19" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a1f40c593ec949ace6e680cd62bf0a630" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>HostlistConstraint::HostlistConstraint</definition>
+        <argsstring>(const YAML::Node &amp;)</argsstring>
+        <name>HostlistConstraint</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <defname>values</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="24" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.cpp" bodystart="21" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a6a41b4f943c3890b6e3a8815da1a43d7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::HostlistConstraint::HostlistConstraint</definition>
+        <argsstring>()=default</argsstring>
+        <name>HostlistConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="25" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a203e17e8c708b1ca864a2ea1548d967b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::HostlistConstraint::~HostlistConstraint</definition>
+        <argsstring>()</argsstring>
+        <name>~HostlistConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="26" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" bodystart="26" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a8d78cdaf9eaf816f60ed0c21978329e5" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool HostlistConstraint::match</definition>
+        <argsstring>(const Flux::resource_model::resource_t &amp;resource) const</argsstring>
+        <name>match</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1ae444700152a356a49b9e24a3ca3493cb">match</reimplements>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1resource__t" kindref="compound">Flux::resource_model::resource_t</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="32" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.cpp" bodystart="35" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1HostlistConstraint_1a7d0ada92b31337f014fa13cd84db0815" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>YAML::Node</type>
+        <definition>YAML::Node HostlistConstraint::as_yaml</definition>
+        <argsstring>() const</argsstring>
+        <name>as_yaml</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1a55958a0879a6acbc5be43b903b69b5ff">as_yaml</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="33" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.cpp" bodystart="43" bodyend="50"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::HostlistConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1HostlistConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::HostlistConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1HostlistConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" line="22" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/hostlist_constraint.hpp" bodystart="22" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a7d0ada92b31337f014fa13cd84db0815" prot="public" virt="virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>as_yaml</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1aff150c3f204e9c3ead2023fc31f7dc20" prot="public" virt="non-virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>Constraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a90d3f10ca3cc7244d3e3b8db5238068c" prot="private" virt="non-virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>hl</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a1f40c593ec949ace6e680cd62bf0a630" prot="public" virt="non-virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>HostlistConstraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a6a41b4f943c3890b6e3a8815da1a43d7" prot="public" virt="non-virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>HostlistConstraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a8d78cdaf9eaf816f60ed0c21978329e5" prot="public" virt="virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>match</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1a79c854a5620d10d9aa286eacfb42cb49" prot="public" virt="virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>~Constraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1HostlistConstraint_1a203e17e8c708b1ca864a2ea1548d967b" prot="public" virt="non-virtual"><scope>Flux::Jobspec::HostlistConstraint</scope><name>~HostlistConstraint</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

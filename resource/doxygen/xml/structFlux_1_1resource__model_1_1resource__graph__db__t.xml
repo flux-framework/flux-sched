@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1resource__graph__db__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_graph_db_t</compoundname>
+    <includes refid="resource__graph__store_8hpp" local="no">resource_graph_store.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__db__t_1a419b09eacc9966f6a996bb6931681d07" prot="public" static="no" mutable="no">
+        <type>resource_graph_t</type>
+        <definition>resource_graph_t Flux::resource_model::resource_graph_db_t::resource_graph</definition>
+        <argsstring></argsstring>
+        <name>resource_graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="61" column="22" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__graph__db__t_1af4a52d51dbc8299abed2a2bc6a8594bc" prot="public" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref></type>
+        <definition>resource_graph_metadata_t Flux::resource_model::resource_graph_db_t::metadata</definition>
+        <argsstring></argsstring>
+        <name>metadata</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="62" column="31" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1resource__graph__db__t_1a86b8be7c131e3a47722b4c5e85ada31e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool resource_graph_db_t::known_subsystem</definition>
+        <argsstring>(const std::string &amp;s)</argsstring>
+        <name>known_subsystem</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return true if s is known subsystem </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="66" column="10" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.cpp" bodystart="38" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1resource__graph__db__t_1a5dce6a53a90b1473e7c143b73cd61cb1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_graph_db_t::load</definition>
+        <argsstring>(const std::string &amp;str, std::shared_ptr&lt; resource_reader_base_t &gt; &amp;reader, int rank=-1)</argsstring>
+        <name>load</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref> &gt; &amp;</type>
+          <declname>reader</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load str into the resource graph</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a GRUG specification </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reader</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource reader base class object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign this rank to all the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; non-zero integer on an error ENOMEM: out of memory EINVAL: invalid input or operation (e.g. hwloc version or json string load error) EPROTO: str violates the schema </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="79" column="9" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.cpp" bodystart="43" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1resource__graph__db__t_1acf2b2eabfa474aa28200bef2b767a62a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_graph_db_t::load</definition>
+        <argsstring>(const std::string &amp;str, std::shared_ptr&lt; resource_reader_base_t &gt; &amp;reader, vtx_t &amp;vtx_at, int rank=-1)</argsstring>
+        <name>load</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref> &gt; &amp;</type>
+          <declname>reader</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>vtx_at</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load str into the resource graph and graft the top-level vertices to vtx_at. <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a GRUG specification </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reader</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource reader base class object </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>vtx_at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>parent vtx at which to graft the deserialized graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign this rank to all the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; non-zero integer on an error ENOMEM: out of memory EINVAL: invalid input or operation (e.g. hwloc version or json string load error) EPROTO: str violates the schema </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="95" column="9" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.cpp" bodystart="50" bodyend="55"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Resource graph data store. Adjacency_list graph, roots of this graph and various indexing. </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::resource_model::resource_graph_db_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__graph__db__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>metadata</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_graph_metadata_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>graph_duration</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::graph_duration_t</label>
+        <link refid="structFlux_1_1resource__model_1_1graph__duration__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" line="60" column="1" bodyfile="/home/hobbs17/flux-sched/resource/store/resource_graph_store.hpp" bodystart="60" bodyend="98"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__db__t_1a86b8be7c131e3a47722b4c5e85ada31e" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_db_t</scope><name>known_subsystem</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__db__t_1a5dce6a53a90b1473e7c143b73cd61cb1" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_db_t</scope><name>load</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__db__t_1acf2b2eabfa474aa28200bef2b767a62a" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_db_t</scope><name>load</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__db__t_1af4a52d51dbc8299abed2a2bc6a8594bc" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_db_t</scope><name>metadata</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__graph__db__t_1a419b09eacc9966f6a996bb6931681d07" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_graph_db_t</scope><name>resource_graph</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

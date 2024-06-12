@@ -1,0 +1,95 @@
+\hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::rlite\+\_\+match\+\_\+writers\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1rlite__match__writers__t}\index{Flux::resource\_model::rlite\_match\_writers\_t@{Flux::resource\_model::rlite\_match\_writers\_t}}
+
+
+{\ttfamily \#include $<$match\+\_\+writers.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::rlite\+\_\+match\+\_\+writers\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=194pt]{classFlux_1_1resource__model_1_1rlite__match__writers__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::rlite\+\_\+match\+\_\+writers\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=194pt]{classFlux_1_1resource__model_1_1rlite__match__writers__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t}{rank\+\_\+host\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a56047fc354ddd0d9b275a76f85d6ed3d}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a56047fc354ddd0d9b275a76f85d6ed3d}} 
+{\bfseries rlite\+\_\+match\+\_\+writers\+\_\+t} (const \mbox{\hyperlink{classFlux_1_1resource__model_1_1rlite__match__writers__t}{rlite\+\_\+match\+\_\+writers\+\_\+t}} \&w)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_add5225281d795fe225d4f353e8bc674c}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_add5225281d795fe225d4f353e8bc674c}} 
+\mbox{\hyperlink{classFlux_1_1resource__model_1_1rlite__match__writers__t}{rlite\+\_\+match\+\_\+writers\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{classFlux_1_1resource__model_1_1rlite__match__writers__t}{rlite\+\_\+match\+\_\+writers\+\_\+t}} \&w)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_af621640171b829d39755d8ceaf6b969f}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_af621640171b829d39755d8ceaf6b969f}} 
+virtual bool {\bfseries empty} ()
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a86f756ee9a87e8f3e2a149d788665cc4}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a86f756ee9a87e8f3e2a149d788665cc4}} 
+virtual int {\bfseries emit\+\_\+json} (json\+\_\+t $\ast$$\ast$o, json\+\_\+t $\ast$$\ast$aux=nullptr)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_aa7d835c256771f55356c9d491398ab29}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_aa7d835c256771f55356c9d491398ab29}} 
+virtual int {\bfseries emit} (std\+::stringstream \&out, bool newline)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a80a81397ce8041b09da9fbf3583a751b}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a80a81397ce8041b09da9fbf3583a751b}} 
+virtual int {\bfseries emit} (std\+::stringstream \&out)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a9fdc269d966d6d0681f8ea9ecdecaca6}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a9fdc269d966d6d0681f8ea9ecdecaca6}} 
+virtual int {\bfseries emit\+\_\+vtx} (const std\+::string \&prefix, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, const vtx\+\_\+t \&u, unsigned int needs, bool exclusive)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_aeb135e448e8575f190d8edffc36fb4f5}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_aeb135e448e8575f190d8edffc36fb4f5}} 
+bool {\bfseries m\+\_\+reducer\+\_\+set} ()
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_addd208b7a8e292143ce34a33f5e50812}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_addd208b7a8e292143ce34a33f5e50812}} 
+int {\bfseries emit\+\_\+gatherer} (const f\+\_\+resource\+\_\+graph\+\_\+t \&g, const vtx\+\_\+t \&u)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_abea1b8068da27e8a829ec524422f777e}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_abea1b8068da27e8a829ec524422f777e}} 
+int {\bfseries get\+\_\+gatherer\+\_\+children} (std\+::string \&children)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_ad5542c45c47c1191d9d746f735f3897b}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_ad5542c45c47c1191d9d746f735f3897b}} 
+int {\bfseries fill} (json\+\_\+t $\ast$rlite\+\_\+array, json\+\_\+t $\ast$host\+\_\+array, json\+\_\+t $\ast$props)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a4dec797cc2007490b2f263a49bf26c94}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a4dec797cc2007490b2f263a49bf26c94}} 
+int {\bfseries fill\+\_\+hosts} (std\+::vector$<$ std\+::string $>$ \&hosts, json\+\_\+t $\ast$host\+\_\+array)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a80009cda4cd1de4fa673da1f9c60b166}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a80009cda4cd1de4fa673da1f9c60b166}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ int64\+\_\+t $>$ $>$ {\bfseries m\+\_\+reducer}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a0ac83d75c426acb20dc327944108695c}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a0ac83d75c426acb20dc327944108695c}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t}{rank\+\_\+host\+\_\+t}} $>$ $>$ {\bfseries m\+\_\+gl\+\_\+gatherer}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_a423400c9012dfab1487543a0a6c9af49}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_a423400c9012dfab1487543a0a6c9af49}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ int64\+\_\+t $>$ $>$ {\bfseries m\+\_\+gl\+\_\+prop\+\_\+gatherer}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1rlite__match__writers__t_aaa1f9dc482c4a8015579c24e61327b5e}\label{classFlux_1_1resource__model_1_1rlite__match__writers__t_aaa1f9dc482c4a8015579c24e61327b5e}} 
+std\+::set$<$ std\+::string $>$ {\bfseries m\+\_\+gatherer}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+RLITE match writers class for a matched resource set 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+match\+\_\+writers.\+hpp\item 
+match\+\_\+writers.\+cpp\end{DoxyCompactItemize}

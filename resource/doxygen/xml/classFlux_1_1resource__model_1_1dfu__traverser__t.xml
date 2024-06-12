@@ -1,0 +1,967 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1dfu__traverser__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::dfu_traverser_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" prot="protected" virt="non-virtual">Flux::resource_model::detail::dfu_impl_t</basecompoundref>
+    <includes refid="dfu_8hpp" local="no">dfu.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a2e56a506ee6c15c8568431e8e15d0d2a" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::dfu_traverser_t::m_initialized</definition>
+        <argsstring></argsstring>
+        <name>m_initialized</name>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="195" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" bodystart="195" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1ac40ffb8efaff66f0bd5a86a7640fcc73" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::dfu_traverser_t::m_total_preorder</definition>
+        <argsstring></argsstring>
+        <name>m_total_preorder</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="196" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" bodystart="196" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1af2f19deadb2ea7e6fffa34d2bd7ab4dc" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::dfu_traverser_t::m_total_postorder</definition>
+        <argsstring></argsstring>
+        <name>m_total_postorder</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="197" column="18" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1aef889ccaa8bb9cc3237ad92e846a15e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_traverser_t::dfu_traverser_t</definition>
+        <argsstring>()</argsstring>
+        <name>dfu_traverser_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="29" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="152" bodyend="155"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a5e3c7395ae1167145150e6fb11db33c6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_traverser_t::dfu_traverser_t</definition>
+        <argsstring>(std::shared_ptr&lt; f_resource_graph_t &gt; g, std::shared_ptr&lt; resource_graph_db_t &gt; db, std::shared_ptr&lt; dfu_match_cb_t &gt; m)</argsstring>
+        <name>dfu_traverser_t</name>
+        <param>
+          <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+          <declname>db</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="30" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="157" bodyend="163"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1aa8d02658bccdfb550b3b450c0dc556ea" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_traverser_t::dfu_traverser_t</definition>
+        <argsstring>(const dfu_traverser_t &amp;o)</argsstring>
+        <name>dfu_traverser_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="33" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="165" bodyend="169"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a82cd306cd71a3ed2960f9a08b671e72c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::dfu_traverser_t::dfu_traverser_t</definition>
+        <argsstring>(dfu_traverser_t &amp;&amp;o)=default</argsstring>
+        <name>dfu_traverser_t</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;&amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="34" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a8baee0edd70d9421cdce8c60573ab2bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;</type>
+        <definition>dfu_traverser_t &amp; dfu_traverser_t::operator=</definition>
+        <argsstring>(const dfu_traverser_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="35" column="21" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="171" bodyend="175"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a400857702b3d4c127e3287f9c19bd78b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;</type>
+        <definition>dfu_traverser_t&amp; Flux::resource_model::dfu_traverser_t::operator=</definition>
+        <argsstring>(dfu_traverser_t &amp;&amp;o)=default</argsstring>
+        <name>operator=</name>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1dfu__traverser__t" kindref="compound">dfu_traverser_t</ref> &amp;&amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="36" column="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a085c08beb8288cb65379f76fa13d42ef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfu_traverser_t::~dfu_traverser_t</definition>
+        <argsstring>()</argsstring>
+        <name>~dfu_traverser_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="37" column="5" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="177" bodyend="180"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a89e4c053f0f5e1c9cf5efd951d085f8d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const f_resource_graph_t &gt;</type>
+        <definition>const std::shared_ptr&lt; const f_resource_graph_t &gt; dfu_traverser_t::get_graph</definition>
+        <argsstring>() const</argsstring>
+        <name>get_graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="39" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="183" bodyend="186"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1af256e8fa402e71215655671a561dfe69" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+        <definition>const std::shared_ptr&lt; const resource_graph_db_t &gt; dfu_traverser_t::get_graph_db</definition>
+        <argsstring>() const</argsstring>
+        <name>get_graph_db</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="40" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="189" bodyend="192"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a6d6f9e4b50345078d3708ef4f6e02909" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::shared_ptr&lt; const <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+        <definition>const std::shared_ptr&lt; const dfu_match_cb_t &gt; dfu_traverser_t::get_match_cb</definition>
+        <argsstring>() const</argsstring>
+        <name>get_match_cb</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="41" column="27" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="195" bodyend="198"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1ad8f08c7863d7a9b3456fdee2c20a8a9c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; dfu_traverser_t::err_message</definition>
+        <argsstring>() const</argsstring>
+        <name>err_message</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="42" column="23" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="200" bodyend="203"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1aecc3bb47d9997aeda3d7ced470be65f9" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int dfu_traverser_t::get_total_preorder_count</definition>
+        <argsstring>() const</argsstring>
+        <name>get_total_preorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="43" column="24" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="205" bodyend="208"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a4f6806b0756f3d62366981776ce45478" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const unsigned int</type>
+        <definition>const unsigned int dfu_traverser_t::get_total_postorder_count</definition>
+        <argsstring>() const</argsstring>
+        <name>get_total_postorder_count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="44" column="24" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="210" bodyend="213"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a27f675abfd1b2acf6dc98b0c5f2f6493" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_traverser_t::set_graph</definition>
+        <argsstring>(std::shared_ptr&lt; f_resource_graph_t &gt; g)</argsstring>
+        <name>set_graph</name>
+        <param>
+          <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+          <declname>g</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="46" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="215" bodyend="218"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a761a427d50bd6b77d8a4bb31fa374b07" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_traverser_t::set_graph_db</definition>
+        <argsstring>(std::shared_ptr&lt; resource_graph_db_t &gt; db)</argsstring>
+        <name>set_graph_db</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+          <declname>db</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="47" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="220" bodyend="223"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a36b6fd98f59b9a08a69afcf7370fc365" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_traverser_t::set_match_cb</definition>
+        <argsstring>(std::shared_ptr&lt; dfu_match_cb_t &gt; m)</argsstring>
+        <name>set_match_cb</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="48" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="225" bodyend="228"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a6d9cfad17fe292871d0c33b4061999ec" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfu_traverser_t::clear_err_message</definition>
+        <argsstring>()</argsstring>
+        <name>clear_err_message</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="49" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="230" bodyend="233"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a1baf0c834c3e334079268a002e87c846" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dfu_traverser_t::is_initialized</definition>
+        <argsstring>() const</argsstring>
+        <name>is_initialized</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="51" column="10" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="235" bodyend="238"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1ac50ded5b8aef81799cb61ab9d38111ea" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::initialize</definition>
+        <argsstring>()</argsstring>
+        <name>initialize</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Prime the resource graph with subtree plans. Assume that resource graph, roots and match callback have already been registered. The subtree plans are instantiated on certain resource vertices and updated with the information on their subtree resources. For example, the subtree plan of a compute node resource vertex can be configured to track the number of available compute cores in aggregate at its subtree. <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> provides an interface to tell this initializer what subtree resources to track at higher-level resource vertices.</para>
+<para><simplesect kind="return"><para>0 on success; -1 on error. EINVAL: graph, roots or match callback not set. ENOTSUP: roots does not contain a subsystem the match callback object need to use. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="67" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="240" bodyend="265"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1af3c55645e5380df819980d815b8d18fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::initialize</definition>
+        <argsstring>(std::shared_ptr&lt; f_resource_graph_t &gt; g, std::shared_ptr&lt; resource_graph_db_t &gt; db, std::shared_ptr&lt; dfu_match_cb_t &gt; m)</argsstring>
+        <name>initialize</name>
+        <param>
+          <type>std::shared_ptr&lt; f_resource_graph_t &gt;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__graph__db__t" kindref="compound">resource_graph_db_t</ref> &gt;</type>
+          <declname>db</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Prime the resource graph with subtree plans. Assume that resource graph, roots and match callback have already been registered. The subtree plans are instantiated on certain resource vertices and updated with the information on their subtree resources. For example, the subtree plan of a compute node resource vertex can be configured to track the number of available compute cores in aggregate at its subtree. <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> provides an interface to tell this initializer what subtree resources to track at higher-level resource vertices.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph of f_resource_graph_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>roots</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>map of root vertices, each is a root of a subsystem. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>match callback object of <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> type. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: graph, roots or match callback not set. ENOTSUP: roots does not contain a subsystem the match callback uses. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="86" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="267" bodyend="275"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1adfcd9c1b83f6377fa849f671853833bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::run</definition>
+        <argsstring>(Jobspec::Jobspec &amp;jobspec, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, match_op_t op, int64_t id, int64_t *at)</argsstring>
+        <name>run</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec::Jobspec</ref> &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>op</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>int64_t *</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Begin a graph traversal for the jobspec and allocate, reserve or check its satisfiability on the resources in the resource graph. Best-matching resources are selected in accordance with the scoring done by the match callback methods. Initialization must have successfully finished before this method is called.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Jobspec object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched labels </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>op</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>schedule operation: allocate, allocate_with_satisfiability, allocate_orelse_reserve or satisfiability. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>job ID to use for the schedule operation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at[out]</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>when the job is scheduled if reserved. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: graph, roots or match callback not set. ENOTSUP: roots does not contain a subsystem the match callback uses. EBUSY: cannot match because resources/devices are currently in use. ENODEV: unsatifiable jobspec because no resources/devices can satisfy the request. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="113" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="277" bodyend="333"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a9dad4268009c8e0c3a3b4a8b701379f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::run</definition>
+        <argsstring>(const std::string &amp;str, std::shared_ptr&lt; match_writers_t &gt; &amp;writers, std::shared_ptr&lt; resource_reader_base_t &gt; &amp;reader, int64_t id, int64_t at, uint64_t duration)</argsstring>
+        <name>run</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref> &gt; &amp;</type>
+          <declname>reader</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Read str which is a serialized allocation data (e.g., written in JGF) with rd, and traverse the resource graph to update it with this data.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>allocation string such as written in JGF. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched labels </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reader</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>reader object that deserialize str to update the graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>job ID to use for the schedule operation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the starting time of this job. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>duration</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the duration of this job </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. TODO: Fill in errnos </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="129" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="335" bodyend="360"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a114a298047707fd8b4a63cc26e7decd4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::find</definition>
+        <argsstring>(std::shared_ptr&lt; match_writers_t &gt; &amp;writers, const std::string &amp;criteria)</argsstring>
+        <name>find</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1match__writers__t" kindref="compound">match_writers_t</ref> &gt; &amp;</type>
+          <declname>writers</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>criteria</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Traverse the resource graph and emit those resources whose status is matched with the matching criteria.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>writers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>vertex/edge writers to emit the matched labels </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>criteria</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>matching criteria expression string. Each individual criterion is expressed as a key-value pair, representing a predicate p(x) where key is is p and value is x. Currently supported expressions are &quot;status={up|down}&quot;, &quot;sched-now={allocated|free}&quot;, &quot;sched-future={reserved|free}, or any combination
+                 of them separated with &quot;and&quot;, &quot;or&quot;, or a whitespace
+                 which is also interpreted as &quot;and" logical operator of two expressions. Parentheses are supported to group expressions with a higher operator precedence. For example, in &quot;status=up and
+                 (sched-now=allocated or sched-future=reserved)&quot; The parenthesized expression is evaluated before taking the &quot;and&quot; operator with the the result of the first predicate. Other extra whitespaces around predicates are ignored. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="158" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="362" bodyend="366"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a681918449339ce8024544ceeb2a6e322" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::remove</definition>
+        <argsstring>(int64_t jobid)</argsstring>
+        <name>remove</name>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Remove the allocation/reservation referred to by jobid and update the resource state.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>job id. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: graph, roots or match callback not set. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="168" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="368" bodyend="381"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1ae3a1781adbda5adb42b370ad528fc435" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::mark</definition>
+        <argsstring>(const std::string &amp;root_path, resource_pool_t::status_t status)</argsstring>
+        <name>mark</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>root_path</declname>
+        </param>
+        <param>
+          <type>resource_pool_t::status_t</type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Mark the resource status up|down|etc starting at subtree_root.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>root_path</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path to the root of the subtree to update. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>status</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>new status value </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: roots or by_path not found. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="177" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="383" bodyend="387"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a04ce7996b9fd008c8d9fb00049f1fffc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::mark</definition>
+        <argsstring>(std::set&lt; int64_t &gt; &amp;ranks, resource_pool_t::status_t status)</argsstring>
+        <name>mark</name>
+        <param>
+          <type>std::set&lt; int64_t &gt; &amp;</type>
+          <declname>ranks</declname>
+        </param>
+        <param>
+          <type>resource_pool_t::status_t</type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Mark the resource status up|down|etc for subgraph represented by ranks.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>ranks</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>set of ranks representing the subgraph to update. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>status</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>new status value </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. EINVAL: roots or by_path not found. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="186" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="389" bodyend="393"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1a7062f45b19bdf418dc5f6081016c1ca4" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::is_satisfiable</definition>
+        <argsstring>(Jobspec::Jobspec &amp;jobspec, detail::jobmeta_t &amp;meta, bool x, vtx_t root, std::unordered_map&lt; std::string, int64_t &gt; &amp;dfv)</argsstring>
+        <name>is_satisfiable</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec::Jobspec</ref> &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">detail::jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::unordered_map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="189" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="32" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1dfu__traverser__t_1adb76d715c77435adf1a39eaa3a5d8e99" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfu_traverser_t::schedule</definition>
+        <argsstring>(Jobspec::Jobspec &amp;jobspec, detail::jobmeta_t &amp;meta, bool x, match_op_t op, vtx_t root, std::unordered_map&lt; std::string, int64_t &gt; &amp;dfv)</argsstring>
+        <name>schedule</name>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec::Jobspec</ref> &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" kindref="compound">detail::jobmeta_t</ref> &amp;</type>
+          <declname>meta</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>match_op_t</type>
+          <declname>op</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::unordered_map&lt; std::string, int64_t &gt; &amp;</type>
+          <declname>dfv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="192" column="9" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.cpp" bodystart="62" bodyend="143"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Depth-First-and-Up traverser. Perform depth-first visit on the dominant subsystem and upwalk on each and all of the auxiliary subsystems selected by the matcher callback object (<ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>). Corresponding match callback methods are invoked at various well-defined graph visit events. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::resource_model::detail::dfu_impl_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t"/>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::dfu_traverser_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__traverser__t"/>
+        <childnode refid="2" relation="protected-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Flux::resource_model::detail::dfu_impl_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_color</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_expr_eval</edgelabel>
+        </childnode>
+      </node>
+      <node id="4">
+        <label>Flux::resource_model::expr_eval_api_t</label>
+        <link refid="classFlux_1_1resource__model_1_1expr__eval__api__t"/>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::color_t</label>
+        <link refid="classFlux_1_1resource__model_1_1color__t"/>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::dfu_traverser_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__traverser__t"/>
+        <childnode refid="2" relation="protected-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" line="26" column="1" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu.hpp" bodystart="27" bodyend="198"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a000334449d013958e4f588204726b4f0" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>accum_if</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61342025772eace4cf836e5df61d1ef5" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>accum_if</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae811ac79854006b4ba6f4d7e3148c5b2" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>accum_to_parent</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b505fd668f3868ab8676fc455f43397" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>aux_find_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a090f6a859586bed9687c184e0776bbd2" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>aux_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af8f863121e47158d9f2162343e630bc4" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>by_avail</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a72d3cf7e913f7b855ee9f58f09dd2c54" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>by_excl</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a63080a2f8c3e444d69e36f1abea3efa0" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>by_subplan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a6d9cfad17fe292871d0c33b4061999ec" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>clear_err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae35ad733acc6a8c5aa1a4073f88ad110" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>cnt_slot</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec032226b2fd63441d88f31be2ec02f9" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>count_relevant_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ad30b688ef27c95ca846a279ba174c36e" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5fc6d04e0b22f3c34fa8ca7aa2220af1" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a05b5e76d118c9170f38fad36b31e5176" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd31099b56c95735d3e671aa0c5b9df6" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1aef889ccaa8bb9cc3237ad92e846a15e5" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_traverser_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a5e3c7395ae1167145150e6fb11db33c6" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_traverser_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1aa8d02658bccdfb550b3b450c0dc556ea" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_traverser_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a82cd306cd71a3ed2960f9a08b671e72c" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dfu_traverser_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7fe4eedd884aae29a63289404cc3c56c" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dom_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4e80500c26670286f04adc9c1be1e5ac" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dom_exp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3388b269da83323c87aa7c52d52541a0" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dom_find_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a36a864d1ccee664d627e57d0fd282bd7" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>dom_slot</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9db3b7b9b1ba379e5cd083feec41e3e5" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>emit_edg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acf8db5771ebded81ef52dddab2fc24ed" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>emit_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a513c309914a9b212a3414b1c86c7104c" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>enforce</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2f016e179d2d9b6006d623dc302858fc" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>enforce_constrained</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2ae48d2f09236329777ee76905c463ae" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>enforce_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b63d73c6b13cde58c1d44adfb144cbc" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>enforce_remaining</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1ad8f08c7863d7a9b3456fdee2c20a8a9c" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a7f58c65eb160d80a886d04d30a8abf4d" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>exclusivity</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9c8c9891a0698b2674b882baf05980d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>explore</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aac80456728295f0e6392f8030a7d8930" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>explore_dynamically</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a5cb780b590a33765c7b35ed9c2a0163a" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>explore_statically</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a114a298047707fd8b4a63cc26e7decd4" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>find</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abe5dc30d4bbe14c9c974dcf509997576" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_eff_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0a189079204d6be2a7d32a93fa484691" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_eff_needs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afb5c9707fa0138b4f44ee5ce14cec80f" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a191e977e814eb17f65f77987d1a978a1" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_expr_eval</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a89e4c053f0f5e1c9cf5efd951d085f8d" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1af256e8fa402e71215655671a561dfe69" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a6d6f9e4b50345078d3708ef4f6e02909" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_match_cb</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3fc7228b09da82bd3c0b4cc78275f0b0" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_postorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab5020605f89b437c8c3715f99fcf3e3d" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_preorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a4f6806b0756f3d62366981776ce45478" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_total_postorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1aecc3bb47d9997aeda3d7ced470be65f9" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>get_total_preorder_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a77c1fa82aa2987d6fdbea8a59631de75" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>has_remaining</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3037745eca08e28ec4cc97bdabaeae98" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>has_root</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9d023bfa5343355798a2bdaf636e2ad1" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>in_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1ac50ded5b8aef81799cb61ab9d38111ea" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>initialize</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1af3c55645e5380df819980d815b8d18fe" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>initialize</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a76881923235407a96ad8a5bef4a9d7b3" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>is_enough</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a1baf0c834c3e334079268a002e87c846" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>is_initialized</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa27039400fb9296e91876706e8e087e8" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>is_pconstraint_matched</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a7062f45b19bdf418dc5f6081016c1ca4" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>is_satisfiable</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a615d75fe296f34d00231e53f119d7def" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a6fa326b3af48f8c866350423bd08479e" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_best_k_cnt</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aab9e0a38a37e5649291e93f0a36e17fd" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_color</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1adc4e8b60aa5c2e0e6a888aee4958fc35" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a21104a772cda8db25384decc6275b67f" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_expr_eval</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac11bfb84ddd9be80ee615eadec8882ad" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a010f089d5c09b901fcabe8695b1991b3" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a2e56a506ee6c15c8568431e8e15d0d2a" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_initialized</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a25b83852ea75632e92ead7d3e4a467c4" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aec89754975e8c18eced6aa100d9a466e" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_postorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1abebb2163338491db384a8ca2c0f9e301" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_preorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a8b5b8127fb5884e87b0bed879bbd1f0d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_roots</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1af2f19deadb2ea7e6fffa34d2bd7ab4dc" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_total_postorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1ac40ffb8efaff66f0bd5a86a7640fcc73" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_total_preorder</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e063ec55d92dafbd7d535fdbcab2631" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>m_trav_level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1ae3a1781adbda5adb42b370ad528fc435" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>mark</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a04ce7996b9fd008c8d9fb00049f1fffc" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>mark</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a344ea05948807c274f154e4c50a3e441" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1156a2c5c9c5b187f2a9d9d67af17fa8" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>modify_traversal</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a087cab6dde0f929e51ef03abcf15703d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>new_sat_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a8baee0edd70d9421cdce8c60573ab2bf" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a400857702b3d4c127e3287f9c19bd78b" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af3d8386aa0726b044e1d000bb67d8ee1" prot="protected" virt="non-virtual" ambiguityscope="Flux::resource_model::detail::dfu_impl_t::"><scope>Flux::resource_model::dfu_traverser_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aed81039c7fd95cdf2aa8dec5f47867b6" prot="protected" virt="non-virtual" ambiguityscope="Flux::resource_model::detail::dfu_impl_t::"><scope>Flux::resource_model::dfu_traverser_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a1d13adbc5a04e5b89796a55c273a336b" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>prime_exp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a42292cfe93c9354444c97d84a51d972e" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>prime_jobspec</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3e82cc35ceab13cda17f76cc4f0c14b3" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>prime_pruning_filter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1acd16aeecd79744c2e0bda9524cb29fb5" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>prune</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a49cdfb130226a54763be1fa728b33be4" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_agfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a61730db9d2b3095ec59e10e3594a267d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2e4d9b1d145ca494aba9894dd0b91d61" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_exv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a9013151fc2bd06057c99f53f44bc728d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_idata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a06851feaf2b7fa9f88518c9f788f3996" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9f14314850c1a02964aff13535f1010" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_txfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a2a43810ee2226f353d2681e4850ea223" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>rem_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a681918449339ce8024544ceeb2a6e322" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>remove</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae9a42dbc4e4417aa58a3403a27bd5ef6" prot="protected" virt="non-virtual" ambiguityscope="Flux::resource_model::detail::dfu_impl_t::"><scope>Flux::resource_model::dfu_traverser_t</scope><name>remove</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afad4bb80129442076d088e8a7fd0d899" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>reset_color</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a51305be07904b969159f3f5f500c6ca7" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>reset_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a84657f1d147f0c6765f2fde3108304b7" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>resolve</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd83c6400f410888fccc07474965c7a3" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>resolve_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1adfcd9c1b83f6377fa849f671853833bf" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>run</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a9dad4268009c8e0c3a3b4a8b701379f7" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>run</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1adb76d715c77435adf1a39eaa3a5d8e99" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>schedule</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a59829164153c0690c9f528f1c4d89ddc" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>select</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a27f675abfd1b2acf6dc98b0c5f2f6493" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>set_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a761a427d50bd6b77d8a4bb31fa374b07" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>set_graph_db</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a36b6fd98f59b9a08a69afcf7370fc365" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>set_match_cb</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1afd9741eeb38df82c1090d40b620a3109" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>slot_match</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aef91048f94bd84635634e2ce4250bd6c" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>stop_explore</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a91365dd6cb1b51833aba96e40fd95ed4" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>stop_explore_best</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a0d91543908ec607d347386402e416bde" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>subtree_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a221e50eb23deb7b2a634302d541242ab" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>test</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ace6ef44bfe00e2db5606e1151895cb6d" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>tick</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a50b49774ae2bf42ddf6e7e8dc8e0c75c" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_agfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ae84f3521ee7f2441e539ddbad7e1fa1b" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_by_outedges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ab8d95eee46a328d4cff652bfa3c71e59" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_dfv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4112be55870da099aa87b4d7f11ec390" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_idata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a064bd3e8a6d79e7cf5833785d23399f9" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_meta</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4c63fd510f6a334a9eebec9eb8991908" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_plan</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa62bad9e5ee41f36836fbe88d9c3cd35" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_sched</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1ac643b80a2251ee9ee9fbbc3a0c6579f8" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_txfilter</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a73d199c8efa25dd054c5a9ce2f81386c" prot="private" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>upd_upv</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a3b82a4ce4a4c43e92047e21cc8ed3995" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1a4976d66fd9efe01951c965a136e7e4e7" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1af0f80d2e84e3a6ea9b375d2c6a292a11" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t_1aa2fe6281623e6c5d6d4eaa4921a91684" prot="protected" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>~dfu_impl_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__traverser__t_1a085c08beb8288cb65379f76fa13d42ef" prot="public" virt="non-virtual"><scope>Flux::resource_model::dfu_traverser_t</scope><name>~dfu_traverser_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

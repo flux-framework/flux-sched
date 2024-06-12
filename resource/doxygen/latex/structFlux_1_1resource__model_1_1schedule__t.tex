@@ -1,0 +1,48 @@
+\hypertarget{structFlux_1_1resource__model_1_1schedule__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::schedule\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1schedule__t}\index{Flux::resource\_model::schedule\_t@{Flux::resource\_model::schedule\_t}}
+
+
+{\ttfamily \#include $<$sched\+\_\+data.\+hpp$>$}
+
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::schedule\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structFlux_1_1resource__model_1_1schedule__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_a4f5f0ae6e560432b87bca62d92df7754}\label{structFlux_1_1resource__model_1_1schedule__t_a4f5f0ae6e560432b87bca62d92df7754}} 
+{\bfseries schedule\+\_\+t} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1schedule__t}{schedule\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_afec7bd2f01fa6fa58673922acdf90719}\label{structFlux_1_1resource__model_1_1schedule__t_afec7bd2f01fa6fa58673922acdf90719}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1schedule__t}{schedule\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1schedule__t}{schedule\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_a97270ce7a9544a22227582aeb2ef51fb}\label{structFlux_1_1resource__model_1_1schedule__t_a97270ce7a9544a22227582aeb2ef51fb}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1schedule__t}{schedule\+\_\+t}} \&o) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_ac2f7de9b9a6bd8d4b4f9410e951ece39}\label{structFlux_1_1resource__model_1_1schedule__t_ac2f7de9b9a6bd8d4b4f9410e951ece39}} 
+std\+::map$<$ int64\+\_\+t, int64\+\_\+t $>$ {\bfseries allocations}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_a41dd21177bbe9ed5b86acb9e1f2fed87}\label{structFlux_1_1resource__model_1_1schedule__t_a41dd21177bbe9ed5b86acb9e1f2fed87}} 
+std\+::map$<$ int64\+\_\+t, int64\+\_\+t $>$ {\bfseries reservations}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1schedule__t_a881384c1dda6f68262bad525b8205c5f}\label{structFlux_1_1resource__model_1_1schedule__t_a881384c1dda6f68262bad525b8205c5f}} 
+\mbox{\hyperlink{structplanner__t}{planner\+\_\+t}} $\ast$ {\bfseries plans} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Type to keep track of current schedule state. 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+sched\+\_\+data.\+hpp\item 
+sched\+\_\+data.\+cpp\end{DoxyCompactItemize}

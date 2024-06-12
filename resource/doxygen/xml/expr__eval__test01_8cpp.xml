@@ -1,0 +1,381 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="expr__eval__test01_8cpp" kind="file" language="C++">
+    <compoundname>expr_eval_test01.cpp</compoundname>
+    <includes local="no">vector</includes>
+    <includes local="no">iostream</includes>
+    <includes refid="expr__eval__api_8hpp" local="yes">resource/evaluators/expr_eval_api.hpp</includes>
+    <includes refid="expr__eval__target_8hpp" local="yes">resource/evaluators/expr_eval_target.hpp</includes>
+    <includes local="yes">src/common/libtap/tap.h</includes>
+    <incdepgraph>
+      <node id="5">
+        <label>string</label>
+      </node>
+      <node id="6">
+        <label>resource/evaluators/expr_eval_target.hpp</label>
+        <link refid="expr__eval__target_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>expr_eval_test01.cpp</label>
+        <link refid="expr__eval__test01_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>vector</label>
+      </node>
+      <node id="3">
+        <label>iostream</label>
+      </node>
+      <node id="7">
+        <label>src/common/libtap/tap.h</label>
+      </node>
+      <node id="4">
+        <label>resource/evaluators/expr_eval_api.hpp</label>
+        <link refid="expr__eval__api_8hpp_source"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <innerclass refid="classexpr__eval__test__target__t" prot="public">expr_eval_test_target_t</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1a8faffa38be73a3770c1ad8ce6be25784" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void build_simple_expr</definition>
+        <argsstring>(std::vector&lt; std::string &gt; &amp;expr_vector)</argsstring>
+        <name>build_simple_expr</name>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>expr_vector</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="57" column="6" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="57" bodyend="84"/>
+      </memberdef>
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1a3cf712a4720202b3153a6a56e983ab58" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void build_paren_expr</definition>
+        <argsstring>(std::vector&lt; std::string &gt; &amp;expr_vector)</argsstring>
+        <name>build_paren_expr</name>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>expr_vector</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="86" column="6" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="86" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1a2d3138fabd3adc0825bd72f40f29332d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void build_invalid_expr</definition>
+        <argsstring>(std::vector&lt; std::string &gt; &amp;expr_vector)</argsstring>
+        <name>build_invalid_expr</name>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>expr_vector</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="106" column="6" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="106" bodyend="121"/>
+      </memberdef>
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1a3a2e94451bbe54c53db286ac5099dc07" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test_validation</definition>
+        <argsstring>(std::vector&lt; std::string &gt; &amp;expr_vector, const std::string &amp;label, bool must_success)</argsstring>
+        <name>test_validation</name>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>expr_vector</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>label</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>must_success</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="123" column="6" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="123" bodyend="136"/>
+      </memberdef>
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1acf9ea971a1c61ba07a85d2e66df31a92" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test_evaluation</definition>
+        <argsstring>(std::vector&lt; std::string &gt; &amp;expr_vector, const std::string &amp;label, bool must_success)</argsstring>
+        <name>test_evaluation</name>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>expr_vector</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>label</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>must_success</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="138" column="6" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="138" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="expr__eval__test01_8cpp_1a0ddf1224851353fc92bfbff6f499fa97" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int main</definition>
+        <argsstring>(int argc, char *argv[])</argsstring>
+        <name>main</name>
+        <param>
+          <type>int</type>
+          <declname>argc</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>argv</declname>
+          <array>[]</array>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" line="158" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp" bodystart="158" bodyend="191"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*****************************************************************************\</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>2020<sp/>Lawrence<sp/>Livermore<sp/>National<sp/>Security,<sp/>LLC</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>(c.f.<sp/>AUTHORS,<sp/>NOTICE.LLNS,<sp/>LICENSE)</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>Flux<sp/>resource<sp/>manager<sp/>framework.</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>For<sp/>details,<sp/>see<sp/>https://github.com/flux-framework.</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>LGPL-3.0</highlight></codeline>
+<codeline lineno="9"><highlight class="comment">\*****************************************************************************/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>HAVE_CONFIG_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;config.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/evaluators/expr_eval_api.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;resource/evaluators/expr_eval_target.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;src/common/libtap/tap.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal">Flux;</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal">Flux::resource_model;</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26" refid="classexpr__eval__test__target__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classexpr__eval__test__target__t" kindref="compound">expr_eval_test_target_t</ref><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/><ref refid="classFlux_1_1resource__model_1_1expr__eval__target__base__t" kindref="compound">expr_eval_target_base_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>validate<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;x)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>evaluate<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;p,</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;x,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>&amp;result)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classexpr__eval__test__target__t_1aa432ac5d59054cbf0513e767ef2a88ba" kindref="member">expr_eval_test_target_t::validate</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;p,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;x)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="37"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(p<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;status&quot;</highlight><highlight class="normal"><sp/>&amp;&amp;<sp/>p<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;sched-now&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>-1;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(p<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;status&quot;</highlight><highlight class="normal"><sp/>&amp;&amp;<sp/>(x<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;up&quot;</highlight><highlight class="normal"><sp/>&amp;&amp;<sp/>x<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;down&quot;</highlight><highlight class="normal">))</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>-1;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(p<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;sched-now&quot;</highlight><highlight class="normal"><sp/>&amp;&amp;<sp/>(x<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;allocated&quot;</highlight><highlight class="normal"><sp/>&amp;&amp;<sp/>x<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;free&quot;</highlight><highlight class="normal">))</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>-1;</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classexpr__eval__test__target__t_1ae5d8380c24e34ba3e38a14bb85e0efb9" kindref="member">expr_eval_test_target_t::evaluate</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;p,</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;x,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>&amp;result)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline lineno="49"><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>(rc<sp/>=<sp/>validate<sp/>(p,<sp/>x))<sp/>&lt;<sp/>0)</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>result<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rc;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>build_simple_expr<sp/>(std::vector&lt;std::string&gt;<sp/>&amp;expr_vector)</highlight></codeline>
+<codeline lineno="58"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>status=up<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;<sp/><sp/>status=up<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sched-now=allocated<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>and<sp/>sched-now=allocated&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>or<sp/>sched-now=allocated&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/><sp/><sp/>and<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>or<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/><sp/><sp/>sched-now=allocated&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/>and<sp/>sched-now=allocated&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/>or<sp/>sched-now=allocated&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/>and<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=down<sp/>or<sp/>sched-now=free&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>and<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>or<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>or<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>or<sp/><sp/><sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>or<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>or<sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>and<sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=allocated<sp/>or<sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>and<sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/><sp/>or<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>status=down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="84"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>build_paren_expr<sp/>(std::vector&lt;std::string&gt;<sp/>&amp;expr_vector)</highlight></codeline>
+<codeline lineno="87"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up<sp/>and<sp/>sched-now=allocated)<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>(sched-now=free<sp/>and<sp/>status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;status=up<sp/>and<sp/>sched-now=allocated<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>(sched-now=free<sp/>and<sp/>status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;status=up<sp/>and<sp/>sched-now=allocated<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>sched-now=free<sp/>and<sp/>status=down<sp/><sp/>&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;status=up<sp/>sched-now=allocated<sp/>((<sp/>sched-now=free<sp/>status=down))&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>sched-now=allocated<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;((<sp/>sched-now=free<sp/>and<sp/>(status=down<sp/>or<sp/>sched-now=allocated)))&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>sched-now=allocated<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;(sched-now=free<sp/>(status=down<sp/>or<sp/>sched-now=allocated))&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>and<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;(status=down<sp/>or<sp/>sched-now=allocated)<sp/>and<sp/>status=up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="104"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>build_invalid_expr<sp/>(std::vector&lt;std::string&gt;<sp/>&amp;expr_vector)</highlight></codeline>
+<codeline lineno="107"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;status=up<sp/>sched-now=allocated<sp/>((<sp/>sched=free<sp/>status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;status=up<sp/>and<sp/>sched-now=foo&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>status=down<sp/>and&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;sched-now=free<sp/>status=d<sp/>own&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up<sp/>(sched-now=allocated)<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>(sched-now=free<sp/>and)<sp/>status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up<sp/>(sched-now=allocated)<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;and<sp/>(sched-now=free)status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up)(sched-now=allocated)&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;(sched-now=free)(status=down)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up<sp/>and<sp/>sched-now=allocated))&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/>expr_vector.push_back<sp/>(</highlight><highlight class="stringliteral">&quot;(status=up<sp/>and<sp/>sched-now=allocated)))&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="121"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>test_validation<sp/>(std::vector&lt;std::string&gt;<sp/>&amp;expr_vector,</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;label,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>must_success)</highlight></codeline>
+<codeline lineno="125"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>expected<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t" kindref="compound">Flux::resource_model::expr_eval_api_t</ref><sp/>evaluator;</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classexpr__eval__test__target__t" kindref="compound">expr_eval_test_target_t</ref><sp/>expr_eval_test_target;</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>&amp;expr<sp/>:<sp/>expr_vector)<sp/>{</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>evaluator.<ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t_1a81ca23da607b3fd67b9ac9430bab23cf" kindref="member">validate</ref><sp/>(expr,<sp/>expr_eval_test_target);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>expected<sp/>=<sp/>must_success?<sp/>rc<sp/>==<sp/>0<sp/>:<sp/>rc<sp/>&lt;<sp/>0;</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(expected,<sp/></highlight><highlight class="stringliteral">&quot;%s:<sp/>^%s$&quot;</highlight><highlight class="normal">,<sp/>label.c_str<sp/>(),<sp/>expr.c_str<sp/>());</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="136"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>test_evaluation<sp/>(std::vector&lt;std::string&gt;<sp/>&amp;expr_vector,</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;label,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>must_success)</highlight></codeline>
+<codeline lineno="140"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rc<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>expected<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>expected_result<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>result<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t" kindref="compound">Flux::resource_model::expr_eval_api_t</ref><sp/>evaluator;</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classexpr__eval__test__target__t" kindref="compound">expr_eval_test_target_t</ref><sp/>expr_eval_test_target;</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"></highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>&amp;expr<sp/>:<sp/>expr_vector)<sp/>{</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>result<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rc<sp/>=<sp/>evaluator.<ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t_1a3cdad210c555da4632618b154c631b6c" kindref="member">evaluate</ref><sp/>(expr,<sp/>expr_eval_test_target,<sp/>result);</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>expected<sp/>=<sp/>must_success?<sp/>rc<sp/>==<sp/>0<sp/>:<sp/>rc<sp/>&lt;<sp/>0;</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>expected_result<sp/>=<sp/>must_success?<sp/>result<sp/>:<sp/>!result;</highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ok<sp/>(expected<sp/>&amp;&amp;<sp/>expected_result,</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;%s:<sp/>^%s$&quot;</highlight><highlight class="normal">,<sp/>label.c_str<sp/>(),<sp/>expr.c_str<sp/>());</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="156"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"></highlight></codeline>
+<codeline lineno="158"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])</highlight></codeline>
+<codeline lineno="159"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>ntests<sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;std::string&gt;<sp/>expr_vector1;</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;std::string&gt;<sp/>expr_vector2;</highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;std::string&gt;<sp/>expr_vector3;</highlight></codeline>
+<codeline lineno="164"><highlight class="normal"></highlight></codeline>
+<codeline lineno="165"><highlight class="normal"><sp/><sp/><sp/><sp/>build_simple_expr<sp/>(expr_vector1);</highlight></codeline>
+<codeline lineno="166"><highlight class="normal"></highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/>build_paren_expr<sp/>(expr_vector2);</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"></highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/>build_invalid_expr<sp/>(expr_vector3);</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"></highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/>ntests<sp/>=<sp/>expr_vector1.size<sp/>()</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/>expr_vector2.size<sp/>()<sp/>+<sp/>expr_vector3.size<sp/>();;</highlight></codeline>
+<codeline lineno="173"><highlight class="normal"></highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/>plan<sp/>(2<sp/>*<sp/>ntests);</highlight></codeline>
+<codeline lineno="175"><highlight class="normal"></highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/>test_validation<sp/>(expr_vector1,<sp/></highlight><highlight class="stringliteral">&quot;validates<sp/>simple<sp/>expr&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"></highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/>test_evaluation<sp/>(expr_vector1,<sp/></highlight><highlight class="stringliteral">&quot;evaluates<sp/>simple<sp/>expr&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"></highlight></codeline>
+<codeline lineno="180"><highlight class="normal"><sp/><sp/><sp/><sp/>test_validation<sp/>(expr_vector2,<sp/></highlight><highlight class="stringliteral">&quot;validates<sp/>paren<sp/>expr&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="181"><highlight class="normal"></highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/>test_evaluation<sp/>(expr_vector2,<sp/></highlight><highlight class="stringliteral">&quot;evaluates<sp/>paren<sp/>expr&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="183"><highlight class="normal"></highlight></codeline>
+<codeline lineno="184"><highlight class="normal"><sp/><sp/><sp/><sp/>test_validation<sp/>(expr_vector3,<sp/></highlight><highlight class="stringliteral">&quot;invalidates<sp/>malformed<sp/>expr&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="185"><highlight class="normal"></highlight></codeline>
+<codeline lineno="186"><highlight class="normal"><sp/><sp/><sp/><sp/>test_evaluation<sp/>(expr_vector3,<sp/></highlight><highlight class="stringliteral">&quot;expectedly<sp/>evaluates<sp/>malformed&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="187"><highlight class="normal"></highlight></codeline>
+<codeline lineno="188"><highlight class="normal"><sp/><sp/><sp/><sp/>done_testing<sp/>();</highlight></codeline>
+<codeline lineno="189"><highlight class="normal"></highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline lineno="191"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"></highlight></codeline>
+<codeline lineno="193"><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="194"><highlight class="comment"><sp/>*<sp/>vi:<sp/>ts=4<sp/>sw=4<sp/>expandtab</highlight></codeline>
+<codeline lineno="195"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/test/expr_eval_test01.cpp"/>
+  </compounddef>
+</doxygen>

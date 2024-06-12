@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structcommand__t" kind="struct" language="C++" prot="public">
+    <compoundname>command_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcommand__t_1aec243104ffb460e0e72d976bd7744143" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string command_t::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" line="50" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcommand__t_1a4fd48f651afb602cfaeb3df26dc0bdba" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string command_t::abbr</definition>
+        <argsstring></argsstring>
+        <name>abbr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" line="51" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcommand__t_1aba1c447892c884af8acba8099c0c3b7e" prot="public" static="no" mutable="no">
+        <type>cmd_func_f *</type>
+        <definition>cmd_func_f* command_t::cmd</definition>
+        <argsstring></argsstring>
+        <name>cmd</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" line="52" column="16" bodyfile="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcommand__t_1aaba9174299fc1b4b3d5812ba06d0d815" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string command_t::note</definition>
+        <argsstring></argsstring>
+        <name>note</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" line="53" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" line="49" column="1" bodyfile="/home/hobbs17/flux-sched/resource/utilities/rq2.cpp" bodystart="49" bodyend="54"/>
+    <listofallmembers>
+      <member refid="structcommand__t_1a4fd48f651afb602cfaeb3df26dc0bdba" prot="public" virt="non-virtual"><scope>command_t</scope><name>abbr</name></member>
+      <member refid="structcommand__t_1aba1c447892c884af8acba8099c0c3b7e" prot="public" virt="non-virtual"><scope>command_t</scope><name>cmd</name></member>
+      <member refid="structcommand__t_1aec243104ffb460e0e72d976bd7744143" prot="public" virt="non-virtual"><scope>command_t</scope><name>name</name></member>
+      <member refid="structcommand__t_1aaba9174299fc1b4b3d5812ba06d0d815" prot="public" virt="non-virtual"><scope>command_t</scope><name>note</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,92 @@
+\hypertarget{namespaceFlux_1_1Jobspec}{}\doxysubsection{Flux\+::Jobspec Namespace Reference}
+\label{namespaceFlux_1_1Jobspec}\index{Flux::Jobspec@{Flux::Jobspec}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Constraint}{Constraint}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1HostlistConstraint}{Hostlist\+Constraint}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Resource}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Task}{Task}}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1Jobspec_1_1System}{System}}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1Jobspec_1_1Attributes}{Attributes}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Jobspec}{Jobspec}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1parse__error}{parse\+\_\+error}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1Jobspec_1_1RankConstraint}{Rank\+Constraint}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688e}{tristate\+\_\+t}} \{ \mbox{\hyperlink{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea946003f97ccc52d5d3b54ac0ec31bbfc}{FALSE}}
+, \mbox{\hyperlink{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688eac0d83f0b82a6b30de8811e69e6d95c61}{TRUE}}
+, \mbox{\hyperlink{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea1c04cc3823d476c3017238679a0fdf52}{UNSPECIFIED}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Constraint}{Constraint}} $>$ \mbox{\hyperlink{namespaceFlux_1_1Jobspec_aead45a758d11bb8cdacdfe7dbe22f5a9}{constraint\+\_\+parser}} (const YAML\+::\+Node \&constraint)
+\item 
+std\+::ostream \& \mbox{\hyperlink{namespaceFlux_1_1Jobspec_a4afffa69dadecc4454e11e627ebc9983}{operator$<$$<$}} (std\+::ostream \&s, \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Jobspec}{Jobspec}} const \&js)
+\item 
+std\+::ostream \& \mbox{\hyperlink{namespaceFlux_1_1Jobspec_afbce1e84f2a8f6af2ce2a20bd3d297be}{operator$<$$<$}} (std\+::ostream \&s, \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Resource}} const \&r)
+\item 
+std\+::ostream \& \mbox{\hyperlink{namespaceFlux_1_1Jobspec_a162b8976726bdce2ba00c90157f0487e}{operator$<$$<$}} (std\+::ostream \&s, \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Task}{Task}} const \&t)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688e}\label{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688e}} 
+\index{Flux::Jobspec@{Flux::Jobspec}!tristate\_t@{tristate\_t}}
+\index{tristate\_t@{tristate\_t}!Flux::Jobspec@{Flux::Jobspec}}
+\doxyparagraph{\texorpdfstring{tristate\_t}{tristate\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688e}{Flux\+::\+Jobspec\+::tristate\+\_\+t}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{FALSE@{FALSE}!Flux::Jobspec@{Flux::Jobspec}}\index{Flux::Jobspec@{Flux::Jobspec}!FALSE@{FALSE}}}\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea946003f97ccc52d5d3b54ac0ec31bbfc}\label{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea946003f97ccc52d5d3b54ac0ec31bbfc}} 
+FALSE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{TRUE@{TRUE}!Flux::Jobspec@{Flux::Jobspec}}\index{Flux::Jobspec@{Flux::Jobspec}!TRUE@{TRUE}}}\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688eac0d83f0b82a6b30de8811e69e6d95c61}\label{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688eac0d83f0b82a6b30de8811e69e6d95c61}} 
+TRUE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{UNSPECIFIED@{UNSPECIFIED}!Flux::Jobspec@{Flux::Jobspec}}\index{Flux::Jobspec@{Flux::Jobspec}!UNSPECIFIED@{UNSPECIFIED}}}\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea1c04cc3823d476c3017238679a0fdf52}\label{namespaceFlux_1_1Jobspec_af100910e315d82fceb6b2e69baaf688ea1c04cc3823d476c3017238679a0fdf52}} 
+UNSPECIFIED&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_aead45a758d11bb8cdacdfe7dbe22f5a9}\label{namespaceFlux_1_1Jobspec_aead45a758d11bb8cdacdfe7dbe22f5a9}} 
+\index{Flux::Jobspec@{Flux::Jobspec}!constraint\_parser@{constraint\_parser}}
+\index{constraint\_parser@{constraint\_parser}!Flux::Jobspec@{Flux::Jobspec}}
+\doxyparagraph{\texorpdfstring{constraint\_parser()}{constraint\_parser()}}
+{\footnotesize\ttfamily std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Constraint}{Constraint}} $>$ Flux\+::\+Jobspec\+::constraint\+\_\+parser (\begin{DoxyParamCaption}\item[{const YAML\+::\+Node \&}]{constraint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_a4afffa69dadecc4454e11e627ebc9983}\label{namespaceFlux_1_1Jobspec_a4afffa69dadecc4454e11e627ebc9983}} 
+\index{Flux::Jobspec@{Flux::Jobspec}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Flux::Jobspec@{Flux::Jobspec}}
+\doxyparagraph{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily std\+::ostream \& Flux\+::\+Jobspec\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{s,  }\item[{\mbox{\hyperlink{classFlux_1_1Jobspec_1_1Jobspec}{Jobspec}} const \&}]{js }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_afbce1e84f2a8f6af2ce2a20bd3d297be}\label{namespaceFlux_1_1Jobspec_afbce1e84f2a8f6af2ce2a20bd3d297be}} 
+\index{Flux::Jobspec@{Flux::Jobspec}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Flux::Jobspec@{Flux::Jobspec}}
+\doxyparagraph{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily std\+::ostream \& Flux\+::\+Jobspec\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{s,  }\item[{\mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Resource}} const \&}]{r }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespaceFlux_1_1Jobspec_a162b8976726bdce2ba00c90157f0487e}\label{namespaceFlux_1_1Jobspec_a162b8976726bdce2ba00c90157f0487e}} 
+\index{Flux::Jobspec@{Flux::Jobspec}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Flux::Jobspec@{Flux::Jobspec}}
+\doxyparagraph{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily std\+::ostream \& Flux\+::\+Jobspec\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{s,  }\item[{\mbox{\hyperlink{classFlux_1_1Jobspec_1_1Task}{Task}} const \&}]{t }\end{DoxyParamCaption})}
+

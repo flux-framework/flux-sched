@@ -1,0 +1,105 @@
+\hypertarget{planner__test02_8cpp}{}\doxysubsection{planner\+\_\+test02.\+cpp File Reference}
+\label{planner__test02_8cpp}\index{planner\_test02.cpp@{planner\_test02.cpp}}
+{\ttfamily \#include $<$cstdlib$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cerrno$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$map$>$}\newline
+{\ttfamily \#include \char`\"{}resource/planner/c/planner\+\_\+multi.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}src/common/libtap/tap.\+h\char`\"{}}\newline
+Include dependency graph for planner\+\_\+test02.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{planner__test02_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{planner__test02_8cpp_a38a12f0abb4004c10d3fe01a413dcd7b}{to\+\_\+stream}} (int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration, const uint64\+\_\+t $\ast$cnts, const char $\ast$$\ast$types, size\+\_\+t len, std\+::stringstream \&ss)
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_ab4d571483a64c8e985eb8af4322e6149}{test\+\_\+multi\+\_\+basics}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_a5d93309b835781aa89c1ca4995a5b6c1}{test\+\_\+multi\+\_\+getters}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_ad5e124c5fa4355fa1135e2f517b06921}{test\+\_\+multi\+\_\+strictly\+\_\+larger}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_adf7e65ef4d2985f451ec0569344b1028}{test\+\_\+multi\+\_\+partially\+\_\+larger}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_ab1341781c661786665745ad99f9845c6}{test\+\_\+multi\+\_\+many\+\_\+spans}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_ae518aad5611c685349cc19f72c4b421c}{test\+\_\+multi\+\_\+add\+\_\+remove}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_a4ec155a326a7a397864b0b91880d9605}{test\+\_\+constructors\+\_\+and\+\_\+overload}} ()
+\item 
+static int \mbox{\hyperlink{planner__test02_8cpp_a383b81d8ceaa31ddcd4526aa0d7cc49c}{test\+\_\+multi\+\_\+update}} ()
+\item 
+int \mbox{\hyperlink{planner__test02_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{main}} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{planner__test02_8cpp_a0ddf1224851353fc92bfbff6f499fa97}\label{planner__test02_8cpp_a0ddf1224851353fc92bfbff6f499fa97}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!main@{main}}
+\index{main@{main}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$}]{argv\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{planner__test02_8cpp_a4ec155a326a7a397864b0b91880d9605}\label{planner__test02_8cpp_a4ec155a326a7a397864b0b91880d9605}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_constructors\_and\_overload@{test\_constructors\_and\_overload}}
+\index{test\_constructors\_and\_overload@{test\_constructors\_and\_overload}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_constructors\_and\_overload()}{test\_constructors\_and\_overload()}}
+{\footnotesize\ttfamily static int test\+\_\+constructors\+\_\+and\+\_\+overload (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_ae518aad5611c685349cc19f72c4b421c}\label{planner__test02_8cpp_ae518aad5611c685349cc19f72c4b421c}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_add\_remove@{test\_multi\_add\_remove}}
+\index{test\_multi\_add\_remove@{test\_multi\_add\_remove}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_add\_remove()}{test\_multi\_add\_remove()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+add\+\_\+remove (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_ab4d571483a64c8e985eb8af4322e6149}\label{planner__test02_8cpp_ab4d571483a64c8e985eb8af4322e6149}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_basics@{test\_multi\_basics}}
+\index{test\_multi\_basics@{test\_multi\_basics}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_basics()}{test\_multi\_basics()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+basics (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_a5d93309b835781aa89c1ca4995a5b6c1}\label{planner__test02_8cpp_a5d93309b835781aa89c1ca4995a5b6c1}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_getters@{test\_multi\_getters}}
+\index{test\_multi\_getters@{test\_multi\_getters}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_getters()}{test\_multi\_getters()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+getters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_ab1341781c661786665745ad99f9845c6}\label{planner__test02_8cpp_ab1341781c661786665745ad99f9845c6}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_many\_spans@{test\_multi\_many\_spans}}
+\index{test\_multi\_many\_spans@{test\_multi\_many\_spans}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_many\_spans()}{test\_multi\_many\_spans()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+many\+\_\+spans (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_adf7e65ef4d2985f451ec0569344b1028}\label{planner__test02_8cpp_adf7e65ef4d2985f451ec0569344b1028}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_partially\_larger@{test\_multi\_partially\_larger}}
+\index{test\_multi\_partially\_larger@{test\_multi\_partially\_larger}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_partially\_larger()}{test\_multi\_partially\_larger()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+partially\+\_\+larger (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_ad5e124c5fa4355fa1135e2f517b06921}\label{planner__test02_8cpp_ad5e124c5fa4355fa1135e2f517b06921}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_strictly\_larger@{test\_multi\_strictly\_larger}}
+\index{test\_multi\_strictly\_larger@{test\_multi\_strictly\_larger}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_strictly\_larger()}{test\_multi\_strictly\_larger()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+strictly\+\_\+larger (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_a383b81d8ceaa31ddcd4526aa0d7cc49c}\label{planner__test02_8cpp_a383b81d8ceaa31ddcd4526aa0d7cc49c}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!test\_multi\_update@{test\_multi\_update}}
+\index{test\_multi\_update@{test\_multi\_update}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{test\_multi\_update()}{test\_multi\_update()}}
+{\footnotesize\ttfamily static int test\+\_\+multi\+\_\+update (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{planner__test02_8cpp_a38a12f0abb4004c10d3fe01a413dcd7b}\label{planner__test02_8cpp_a38a12f0abb4004c10d3fe01a413dcd7b}} 
+\index{planner\_test02.cpp@{planner\_test02.cpp}!to\_stream@{to\_stream}}
+\index{to\_stream@{to\_stream}!planner\_test02.cpp@{planner\_test02.cpp}}
+\doxyparagraph{\texorpdfstring{to\_stream()}{to\_stream()}}
+{\footnotesize\ttfamily static void to\+\_\+stream (\begin{DoxyParamCaption}\item[{int64\+\_\+t}]{base\+\_\+time,  }\item[{uint64\+\_\+t}]{duration,  }\item[{const uint64\+\_\+t $\ast$}]{cnts,  }\item[{const char $\ast$$\ast$}]{types,  }\item[{size\+\_\+t}]{len,  }\item[{std\+::stringstream \&}]{ss }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+

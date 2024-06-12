@@ -1,0 +1,54 @@
+\hypertarget{classFlux_1_1resource__model_1_1match__writers__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::match\+\_\+writers\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1match__writers__t}\index{Flux::resource\_model::match\_writers\_t@{Flux::resource\_model::match\_writers\_t}}
+
+
+{\ttfamily \#include $<$match\+\_\+writers.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::match\+\_\+writers\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classFlux_1_1resource__model_1_1match__writers__t__inherit__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_a28d55a6b072962336ca080358e19e1ca}\label{classFlux_1_1resource__model_1_1match__writers__t_a28d55a6b072962336ca080358e19e1ca}} 
+virtual bool {\bfseries empty} ()=0
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_a6310ac6ada710dfeb3ce40356d74f773}\label{classFlux_1_1resource__model_1_1match__writers__t_a6310ac6ada710dfeb3ce40356d74f773}} 
+virtual int {\bfseries emit\+\_\+json} (json\+\_\+t $\ast$$\ast$o, json\+\_\+t $\ast$$\ast$aux=nullptr)=0
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_a9b6ffb61977b58decfdc9dfc711b5efa}\label{classFlux_1_1resource__model_1_1match__writers__t_a9b6ffb61977b58decfdc9dfc711b5efa}} 
+virtual int {\bfseries emit} (std\+::stringstream \&out)=0
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_aecc460623175faffc119d89f9dd8dd52}\label{classFlux_1_1resource__model_1_1match__writers__t_aecc460623175faffc119d89f9dd8dd52}} 
+virtual int {\bfseries emit\+\_\+vtx} (const std\+::string \&prefix, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, const vtx\+\_\+t \&u, unsigned int needs, bool exclusive)=0
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_af18cceb7e9ef55647c50ffd0bff5110c}\label{classFlux_1_1resource__model_1_1match__writers__t_af18cceb7e9ef55647c50ffd0bff5110c}} 
+virtual int {\bfseries emit\+\_\+edg} (const std\+::string \&prefix, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, const edg\+\_\+t \&e)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_afad615322bd73cb95bf1b1d0556792b4}\label{classFlux_1_1resource__model_1_1match__writers__t_afad615322bd73cb95bf1b1d0556792b4}} 
+virtual int {\bfseries emit\+\_\+tm} (uint64\+\_\+t starttime, uint64\+\_\+t expiration)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_a113f3c9d423da81ed8de6e473c507fcc}\label{classFlux_1_1resource__model_1_1match__writers__t_a113f3c9d423da81ed8de6e473c507fcc}} 
+virtual int {\bfseries emit\+\_\+attrs} (const std\+::string \&k, const std\+::string \&v)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_aa9d22a554dc5c7ff8e0c67759290b5e2}\label{classFlux_1_1resource__model_1_1match__writers__t_aa9d22a554dc5c7ff8e0c67759290b5e2}} 
+int {\bfseries compress\+\_\+ids} (std\+::stringstream \&o, const std\+::vector$<$ int64\+\_\+t $>$ \&ids)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1match__writers__t_a54996ecabb85352f17d3080380636257}\label{classFlux_1_1resource__model_1_1match__writers__t_a54996ecabb85352f17d3080380636257}} 
+int {\bfseries compress\+\_\+hosts} (const std\+::vector$<$ std\+::string $>$ \&hosts, const char $\ast$hostlist\+\_\+init, char $\ast$$\ast$hostlist)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Base match writers class for a matched resource set 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+match\+\_\+writers.\+hpp\item 
+match\+\_\+writers.\+cpp\end{DoxyCompactItemize}

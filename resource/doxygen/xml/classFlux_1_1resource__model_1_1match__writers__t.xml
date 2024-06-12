@@ -1,0 +1,315 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1match__writers__t" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>Flux::resource_model::match_writers_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1jgf__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::jgf_match_writers_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::pretty_sim_match_writers_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1rlite__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::rlite_match_writers_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1rv1__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::rv1_match_writers_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::rv1_nosched_match_writers_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1sim__match__writers__t" prot="public" virt="non-virtual">Flux::resource_model::sim_match_writers_t</derivedcompoundref>
+    <includes refid="match__writers_8hpp" local="no">match_writers.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a5c19e1d684c08bfd6aac0f4d5116f142" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type></type>
+        <definition>virtual Flux::resource_model::match_writers_t::~match_writers_t</definition>
+        <argsstring>()</argsstring>
+        <name>~match_writers_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="38" column="13" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="38" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a28d55a6b072962336ca080358e19e1ca" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>bool</type>
+        <definition>virtual bool Flux::resource_model::match_writers_t::empty</definition>
+        <argsstring>()=0</argsstring>
+        <name>empty</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1sim__match__writers__t_1a0a849db7d3bdd585ffc927fb947beb66">empty</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a1e01aa5c2dd4aa2d86be3b48007d7f90">empty</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1af621640171b829d39755d8ceaf6b969f">empty</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a3e983552f1cebdb7b1ea22ab4a409478">empty</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t_1ae92101fa95765e7cc18cfe3dfaf4ef74">empty</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t_1a8104d78a550a03be66a90ff3443994d7">empty</reimplementedby>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="39" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a6310ac6ada710dfeb3ce40356d74f773" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit_json</definition>
+        <argsstring>(json_t **o, json_t **aux=nullptr)=0</argsstring>
+        <name>emit_json</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1sim__match__writers__t_1a5e3b50db43044743d67e3ced245704a5">emit_json</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a49f37bcfc9f73503a2d8e463c6c9fd76">emit_json</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1a86f756ee9a87e8f3e2a149d788665cc4">emit_json</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a4184843875fd5341451ebcbec897534c">emit_json</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t_1ae1ed8ebb6fdfbf79e7d24c096f4cc5be">emit_json</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t_1a88e5b44bdc9440ae56336119906c27c6">emit_json</reimplementedby>
+        <param>
+          <type>json_t **</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>json_t **</type>
+          <declname>aux</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="40" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a9b6ffb61977b58decfdc9dfc711b5efa" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit</definition>
+        <argsstring>(std::stringstream &amp;out)=0</argsstring>
+        <name>emit</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1sim__match__writers__t_1ad04425f3b13d19ec51d60c01a340d04d">emit</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1ae4c96bcbb1d0cc322e3ec3e00a2a1ebd">emit</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1a80a81397ce8041b09da9fbf3583a751b">emit</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a25a7745c2e7f83b231caa9d18b4d5aaf">emit</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t_1a693d239e776c333459ed576fe2a3b827">emit</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t_1a607849f51ec82f6cacbbd5522261fe66">emit</reimplementedby>
+        <param>
+          <type>std::stringstream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="41" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1aecc460623175faffc119d89f9dd8dd52" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit_vtx</definition>
+        <argsstring>(const std::string &amp;prefix, const f_resource_graph_t &amp;g, const vtx_t &amp;u, unsigned int needs, bool exclusive)=0</argsstring>
+        <name>emit_vtx</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1sim__match__writers__t_1aede5576a114765e30b44953034d89872">emit_vtx</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1aa7aad4e7154ff693b0b5fc662d3e2879">emit_vtx</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1a9fdc269d966d6d0681f8ea9ecdecaca6">emit_vtx</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1ad1c290d17f0a0a4f356b326985051287">emit_vtx</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t_1a1acba21aaf2d8c5257b6ddee5b9bee13">emit_vtx</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t_1aa29561486badc1888a3d09d6a48e7e2d">emit_vtx</reimplementedby>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prefix</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const vtx_t &amp;</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>needs</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclusive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="42" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1af18cceb7e9ef55647c50ffd0bff5110c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit_edg</definition>
+        <argsstring>(const std::string &amp;prefix, const f_resource_graph_t &amp;g, const edg_t &amp;e)</argsstring>
+        <name>emit_edg</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1jgf__match__writers__t_1a300da64417c486259725924256319dd8">emit_edg</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a72e41aceef83026eebb70cb1179d6287">emit_edg</reimplementedby>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prefix</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>const edg_t &amp;</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="45" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="45" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1afad615322bd73cb95bf1b1d0556792b4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit_tm</definition>
+        <argsstring>(uint64_t starttime, uint64_t expiration)</argsstring>
+        <name>emit_tm</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a4421515433842c6ebb88969c7fb237c1">emit_tm</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t_1ad6b5218492dd8f0b75c53b18606cbc49">emit_tm</reimplementedby>
+        <param>
+          <type>uint64_t</type>
+          <declname>starttime</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>expiration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="49" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="49" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a113f3c9d423da81ed8de6e473c507fcc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::match_writers_t::emit_attrs</definition>
+        <argsstring>(const std::string &amp;k, const std::string &amp;v)</argsstring>
+        <name>emit_attrs</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1rv1__match__writers__t_1a2958f634d8d5d293492cc5b9304d8a55">emit_attrs</reimplementedby>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>k</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="52" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="52" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1aa9d22a554dc5c7ff8e0c67759290b5e2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::match_writers_t::compress_ids</definition>
+        <argsstring>(std::stringstream &amp;o, const std::vector&lt; int64_t &gt; &amp;ids)</argsstring>
+        <name>compress_ids</name>
+        <param>
+          <type>std::stringstream &amp;</type>
+          <declname>o</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; int64_t &gt; &amp;</type>
+          <declname>ids</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="55" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="37" bodyend="65"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1match__writers__t_1a54996ecabb85352f17d3080380636257" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::match_writers_t::compress_hosts</definition>
+        <argsstring>(const std::vector&lt; std::string &gt; &amp;hosts, const char *hostlist_init, char **hostlist)</argsstring>
+        <name>compress_hosts</name>
+        <param>
+          <type>const std::vector&lt; std::string &gt; &amp;</type>
+          <declname>hosts</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>hostlist_init</declname>
+        </param>
+        <param>
+          <type>char **</type>
+          <declname>hostlist</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="56" column="9" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="67" bodyend="103"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Base match writers class for a matched resource set </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="4">
+        <label>Flux::resource_model::rlite_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1rlite__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>Flux::resource_model::rv1_nosched_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>Flux::resource_model::rv1_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1rv1__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::jgf_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1jgf__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>Flux::resource_model::sim_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1sim__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1match__writers__t"/>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::pretty_sim_match_writers_t</label>
+        <link refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="36" column="1" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="36" bodyend="58"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a54996ecabb85352f17d3080380636257" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>compress_hosts</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1aa9d22a554dc5c7ff8e0c67759290b5e2" prot="public" virt="non-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>compress_ids</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a9b6ffb61977b58decfdc9dfc711b5efa" prot="public" virt="pure-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a113f3c9d423da81ed8de6e473c507fcc" prot="public" virt="virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit_attrs</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1af18cceb7e9ef55647c50ffd0bff5110c" prot="public" virt="virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit_edg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a6310ac6ada710dfeb3ce40356d74f773" prot="public" virt="pure-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit_json</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1afad615322bd73cb95bf1b1d0556792b4" prot="public" virt="virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit_tm</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1aecc460623175faffc119d89f9dd8dd52" prot="public" virt="pure-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>emit_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a28d55a6b072962336ca080358e19e1ca" prot="public" virt="pure-virtual"><scope>Flux::resource_model::match_writers_t</scope><name>empty</name></member>
+      <member refid="classFlux_1_1resource__model_1_1match__writers__t_1a5c19e1d684c08bfd6aac0f4d5116f142" prot="public" virt="virtual"><scope>Flux::resource_model::match_writers_t</scope><name>~match_writers_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
