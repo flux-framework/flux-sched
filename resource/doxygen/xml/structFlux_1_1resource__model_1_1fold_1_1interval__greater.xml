@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1fold_1_1interval__greater" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::fold::interval_greater</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1fold_1_1interval__greater_1aa0c82d7bfbadef565a665da91725a020" prot="public" static="no" mutable="no">
+        <type>boost::icl::interval_set&lt; int64_t &gt;</type>
+        <definition>boost::icl::interval_set&lt;int64_t&gt; Flux::resource_model::fold::interval_greater::ivset</definition>
+        <argsstring></argsstring>
+        <name>ivset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" line="41" column="30" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1fold_1_1interval__greater_1aeb76b08e50c05a79469a007f6560b7de" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::fold::interval_greater::operator()</definition>
+        <argsstring>(const eval_egroup_t &amp;a, const eval_egroup_t &amp;b) const</argsstring>
+        <name>operator()</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" line="37" column="17" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" bodystart="37" bodyend="40"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" line="36" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/fold.hpp" bodystart="36" bodyend="42"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1fold_1_1interval__greater_1aa0c82d7bfbadef565a665da91725a020" prot="public" virt="non-virtual"><scope>Flux::resource_model::fold::interval_greater</scope><name>ivset</name></member>
+      <member refid="structFlux_1_1resource__model_1_1fold_1_1interval__greater_1aeb76b08e50c05a79469a007f6560b7de" prot="public" virt="non-virtual"><scope>Flux::resource_model::fold::interval_greater</scope><name>operator()</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

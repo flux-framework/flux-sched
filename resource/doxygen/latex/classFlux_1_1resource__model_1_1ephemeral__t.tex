@@ -1,0 +1,38 @@
+\hypertarget{classFlux_1_1resource__model_1_1ephemeral__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::ephemeral\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1ephemeral__t}\index{Flux::resource\_model::ephemeral\_t@{Flux::resource\_model::ephemeral\_t}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_a3049db199b36417651d8f61b20f41333}\label{classFlux_1_1resource__model_1_1ephemeral__t_a3049db199b36417651d8f61b20f41333}} 
+int {\bfseries insert} (uint64\+\_\+t epoch, const std\+::string \&key, const std\+::string \&value)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_acb3e2e9349766e61db955a324be669ab}\label{classFlux_1_1resource__model_1_1ephemeral__t_acb3e2e9349766e61db955a324be669ab}} 
+boost\+::optional$<$ std\+::string $>$ {\bfseries get} (uint64\+\_\+t epoch, const std\+::string \&key)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_a9995c9ec4c1416b3380bf90e38f7bc73}\label{classFlux_1_1resource__model_1_1ephemeral__t_a9995c9ec4c1416b3380bf90e38f7bc73}} 
+const std\+::map$<$ std\+::string, std\+::string $>$ \& {\bfseries to\+\_\+map} (uint64\+\_\+t epoch)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_a5dc219a40fa3b7671e9bc1a3df138310}\label{classFlux_1_1resource__model_1_1ephemeral__t_a5dc219a40fa3b7671e9bc1a3df138310}} 
+const std\+::map$<$ std\+::string, std\+::string $>$ \& {\bfseries to\+\_\+map} () const
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_af8ba6408252a69da682b35d34aa77119}\label{classFlux_1_1resource__model_1_1ephemeral__t_af8ba6408252a69da682b35d34aa77119}} 
+bool {\bfseries check\+\_\+and\+\_\+clear\+\_\+if\+\_\+stale} (uint64\+\_\+t epoch)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_a0080944512927904e099463ca269650e}\label{classFlux_1_1resource__model_1_1ephemeral__t_a0080944512927904e099463ca269650e}} 
+void {\bfseries clear} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_ac1ae68e998cd6674b9d1b50ff73a22e8}\label{classFlux_1_1resource__model_1_1ephemeral__t_ac1ae68e998cd6674b9d1b50ff73a22e8}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries m\+\_\+store}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1ephemeral__t_afe615afd873105780a63ef7a07fc0296}\label{classFlux_1_1resource__model_1_1ephemeral__t_afe615afd873105780a63ef7a07fc0296}} 
+uint64\+\_\+t {\bfseries m\+\_\+epoch} = 0
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+ephemeral.\+hpp\item 
+ephemeral.\+cpp\end{DoxyCompactItemize}

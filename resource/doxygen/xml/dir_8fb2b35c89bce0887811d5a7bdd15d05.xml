@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_8fb2b35c89bce0887811d5a7bdd15d05" kind="dir">
+    <compoundname>writers</compoundname>
+    <innerfile refid="match__writers_8cpp">match_writers.cpp</innerfile>
+    <innerfile refid="match__writers_8hpp">match_writers.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/writers/"/>
+  </compounddef>
+</doxygen>

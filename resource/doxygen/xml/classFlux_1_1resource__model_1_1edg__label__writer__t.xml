@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1edg__label__writer__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::edg_label_writer_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1edg__label__writer__t_1ae5037dca1dbc4e9152eb9e13ee047521" prot="private" static="no" mutable="no">
+        <type>f_edg_infra_map_t</type>
+        <definition>f_edg_infra_map_t Flux::resource_model::edg_label_writer_t::m_infra</definition>
+        <argsstring></argsstring>
+        <name>m_infra</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="130" column="23" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="130" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1edg__label__writer__t_1a7f1516b31472a8629f3976a59711d414" prot="private" static="no" mutable="no">
+        <type>subsystem_t</type>
+        <definition>subsystem_t Flux::resource_model::edg_label_writer_t::m_s</definition>
+        <argsstring></argsstring>
+        <name>m_s</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="131" column="17" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="131" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1edg__label__writer__t_1a6d1af83221662abab40015b699bda63c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::edg_label_writer_t::edg_label_writer_t</definition>
+        <argsstring>(f_edg_infra_map_t &amp;idata, subsystem_t &amp;s)</argsstring>
+        <name>edg_label_writer_t</name>
+        <param>
+          <type>f_edg_infra_map_t &amp;</type>
+          <declname>idata</declname>
+        </param>
+        <param>
+          <type>subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="118" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="118" bodyend="119"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1edg__label__writer__t_1aa746dc9cce0ac7ed6921ad814f39758f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::edg_label_writer_t::operator()</definition>
+        <argsstring>(std::ostream &amp;out, const edg_t &amp;e) const</argsstring>
+        <name>operator()</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>const edg_t &amp;</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="120" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="120" bodyend="128"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="116" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="116" bodyend="132"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1edg__label__writer__t_1a6d1af83221662abab40015b699bda63c" prot="public" virt="non-virtual"><scope>Flux::resource_model::edg_label_writer_t</scope><name>edg_label_writer_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1edg__label__writer__t_1ae5037dca1dbc4e9152eb9e13ee047521" prot="private" virt="non-virtual"><scope>Flux::resource_model::edg_label_writer_t</scope><name>m_infra</name></member>
+      <member refid="classFlux_1_1resource__model_1_1edg__label__writer__t_1a7f1516b31472a8629f3976a59711d414" prot="private" virt="non-virtual"><scope>Flux::resource_model::edg_label_writer_t</scope><name>m_s</name></member>
+      <member refid="classFlux_1_1resource__model_1_1edg__label__writer__t_1aa746dc9cce0ac7ed6921ad814f39758f" prot="public" virt="non-virtual"><scope>Flux::resource_model::edg_label_writer_t</scope><name>operator()</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

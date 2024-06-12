@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1relation__gen__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::relation_gen_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a4c291fb59234619467f18abda588ecfc" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::relation_gen_t::e_subsystem</definition>
+        <argsstring></argsstring>
+        <name>e_subsystem</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="41" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a3cc1db22008ebbb1d9621f939e96ca74" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::relation_gen_t::relation</definition>
+        <argsstring></argsstring>
+        <name>relation</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="42" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a7f0ea07020f3c403304ed74c304fac3c" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::relation_gen_t::rrelation</definition>
+        <argsstring></argsstring>
+        <name>rrelation</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="43" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1ad2eab0ae0e855d48fbb264e8a45c666e" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::id_scope</definition>
+        <argsstring></argsstring>
+        <name>id_scope</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="44" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a6fdc4560f9461c777d745eb8840ac650" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::id_start</definition>
+        <argsstring></argsstring>
+        <name>id_start</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="45" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1aeb63483d9fb28bc021a84dbb5e9e4484" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::id_stride</definition>
+        <argsstring></argsstring>
+        <name>id_stride</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="46" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1af2a301d22ced71ff64491c7f4793da86" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::relation_gen_t::gen_method</definition>
+        <argsstring></argsstring>
+        <name>gen_method</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="47" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a3e120e7616502a1bd8faad8a224ff201" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::multi_scale</definition>
+        <argsstring></argsstring>
+        <name>multi_scale</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="48" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1aad7d0e518e911e090ff66816af39b6b0" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::relation_gen_t::as_tgt_subsystem</definition>
+        <argsstring></argsstring>
+        <name>as_tgt_subsystem</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="49" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1a575bde7c5813b19ab00fb0b8546f956a" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::as_tgt_uplvl</definition>
+        <argsstring></argsstring>
+        <name>as_tgt_uplvl</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="50" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1relation__gen__t_1abc3b95d8780ccd5c2159684133673982" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::relation_gen_t::as_src_uplvl</definition>
+        <argsstring></argsstring>
+        <name>as_src_uplvl</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="51" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="40" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="40" bodyend="52"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1abc3b95d8780ccd5c2159684133673982" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>as_src_uplvl</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1aad7d0e518e911e090ff66816af39b6b0" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>as_tgt_subsystem</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a575bde7c5813b19ab00fb0b8546f956a" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>as_tgt_uplvl</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a4c291fb59234619467f18abda588ecfc" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>e_subsystem</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1af2a301d22ced71ff64491c7f4793da86" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>gen_method</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1ad2eab0ae0e855d48fbb264e8a45c666e" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>id_scope</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a6fdc4560f9461c777d745eb8840ac650" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>id_start</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1aeb63483d9fb28bc021a84dbb5e9e4484" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>id_stride</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a3e120e7616502a1bd8faad8a224ff201" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>multi_scale</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a3cc1db22008ebbb1d9621f939e96ca74" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>relation</name></member>
+      <member refid="structFlux_1_1resource__model_1_1relation__gen__t_1a7f0ea07020f3c403304ed74c304fac3c" prot="public" virt="non-virtual"><scope>Flux::resource_model::relation_gen_t</scope><name>rrelation</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

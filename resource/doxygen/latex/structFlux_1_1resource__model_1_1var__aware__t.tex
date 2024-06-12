@@ -1,0 +1,118 @@
+\hypertarget{structFlux_1_1resource__model_1_1var__aware__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1var__aware__t}\index{Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}}
+
+
+{\ttfamily \#include $<$dfu\+\_\+match\+\_\+var\+\_\+aware.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=318pt]{structFlux_1_1resource__model_1_1var__aware__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=318pt]{structFlux_1_1resource__model_1_1var__aware__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_a0fccf1391644caae82e8c4ca66dabd89}\label{structFlux_1_1resource__model_1_1var__aware__t_a0fccf1391644caae82e8c4ca66dabd89}} 
+{\bfseries var\+\_\+aware\+\_\+t} (const std\+::string \&name)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_adb77c2ef9a573ddcee1d318b898939b7}\label{structFlux_1_1resource__model_1_1var__aware__t_adb77c2ef9a573ddcee1d318b898939b7}} 
+{\bfseries var\+\_\+aware\+\_\+t} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t}{var\+\_\+aware\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_a8a473f6837b49db309c7d3019fe2ce89}\label{structFlux_1_1resource__model_1_1var__aware__t_a8a473f6837b49db309c7d3019fe2ce89}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t}{var\+\_\+aware\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t}{var\+\_\+aware\+\_\+t}} \&o)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t_add8101d6efdc60c549791c0a1a36f135}{dom\+\_\+finish\+\_\+graph}} (const subsystem\+\_\+t \&subsystem, const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&resources, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t_af8661816452c1438fd6a5a20ceae08a9}{dom\+\_\+finish\+\_\+vtx}} (vtx\+\_\+t u, const subsystem\+\_\+t \&subsystem, const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&resources, const f\+\_\+resource\+\_\+graph\+\_\+t \&g, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\item 
+int \mbox{\hyperlink{structFlux_1_1resource__model_1_1var__aware__t_af77db5ef2f9da61377b9a553315b6ee8}{dom\+\_\+finish\+\_\+slot}} (const subsystem\+\_\+t \&subsystem, \mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&dfu)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Variation-\/aware policy\+: allocate resources based on similar performance class. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_add8101d6efdc60c549791c0a1a36f135}\label{structFlux_1_1resource__model_1_1var__aware__t_add8101d6efdc60c549791c0a1a36f135}} 
+\index{Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}!dom\_finish\_graph@{dom\_finish\_graph}}
+\index{dom\_finish\_graph@{dom\_finish\_graph}!Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_graph()}{dom\_finish\_graph()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t\+::dom\+\_\+finish\+\_\+graph (\begin{DoxyParamCaption}\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&}]{resources,  }\item[{const f\+\_\+resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back when all of the graph vertices and edges have been visited. Must be overridden by a derived class if this visit event should be programed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em subsystem} & subsystem\+\_\+t object of the dominant subsystem. \\
+\hline
+{\em resources} & vector of resources to be matched. \\
+\hline
+{\em g} & filtered resource graph. \\
+\hline
+{\em dfu} & score interface object -\/ See utilities/\+README.\+md \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+return 0 on success; otherwise -\/1. 
+\end{DoxyReturn}
+
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_abc5ab933d4523b8c56c51e11f4555b1d}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_af77db5ef2f9da61377b9a553315b6ee8}\label{structFlux_1_1resource__model_1_1var__aware__t_af77db5ef2f9da61377b9a553315b6ee8}} 
+\index{Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}!dom\_finish\_slot@{dom\_finish\_slot}}
+\index{dom\_finish\_slot@{dom\_finish\_slot}!Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_slot()}{dom\_finish\_slot()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t\+::dom\+\_\+finish\+\_\+slot (\begin{DoxyParamCaption}\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back on each postorder visit of a group of slot resources (resources that can be contained within one or more slots) of the dominant subsystem. 
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_a6d27b52a925bf4d9b00a2d0de41f3ec5}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1var__aware__t_af8661816452c1438fd6a5a20ceae08a9}\label{structFlux_1_1resource__model_1_1var__aware__t_af8661816452c1438fd6a5a20ceae08a9}} 
+\index{Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}!dom\_finish\_vtx@{dom\_finish\_vtx}}
+\index{dom\_finish\_vtx@{dom\_finish\_vtx}!Flux::resource\_model::var\_aware\_t@{Flux::resource\_model::var\_aware\_t}}
+\doxyparagraph{\texorpdfstring{dom\_finish\_vtx()}{dom\_finish\_vtx()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::var\+\_\+aware\+\_\+t\+::dom\+\_\+finish\+\_\+vtx (\begin{DoxyParamCaption}\item[{vtx\+\_\+t}]{u,  }\item[{const subsystem\+\_\+t \&}]{subsystem,  }\item[{const std\+::vector$<$ \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} $>$ \&}]{resources,  }\item[{const f\+\_\+resource\+\_\+graph\+\_\+t \&}]{g,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1scoring__api__t}{scoring\+\_\+api\+\_\+t}} \&}]{dfu }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Called back on each postorder visit of the dominant subsystem. Must be overridden by a derived class if this visit event should be programed. Should return a score calculated based on the subtree and up walks using the score API object (dfu). Any score above MATCH\+\_\+\+MET is qualified to be a match.
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & descriptor of the visiting vertex \\
+\hline
+{\em subsystem} & subsystem\+\_\+t object of the dominant subsystem \\
+\hline
+{\em resources} & vector of resources to be matched \\
+\hline
+{\em g} & filtered resource graph \\
+\hline
+{\em dfu} & score interface object -- See utilities/\+README.\+md\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+return 0 on success; otherwise -\/1 
+\end{DoxyReturn}
+
+
+Reimplemented from \mbox{\hyperlink{classFlux_1_1resource__model_1_1dfu__match__cb__t_ac8faa0951729c43d6fa75eac86918b5d}{Flux\+::resource\+\_\+model\+::dfu\+\_\+match\+\_\+cb\+\_\+t}}.
+
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+dfu\+\_\+match\+\_\+var\+\_\+aware.\+hpp\item 
+dfu\+\_\+match\+\_\+var\+\_\+aware.\+cpp\end{DoxyCompactItemize}

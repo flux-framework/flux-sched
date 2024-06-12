@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1detail_1_1match__perf__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::detail::match_perf_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1aee0f274334c715cf22f7457a39240576" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::detail::match_perf_t::min</definition>
+        <argsstring></argsstring>
+        <name>min</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="38" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1a35ae1925a7706710d3f7b13fb09b1ffd" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::detail::match_perf_t::max</definition>
+        <argsstring></argsstring>
+        <name>max</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="39" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1a20c4403a721c3cc4a1125b0a706c0d85" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::detail::match_perf_t::accum</definition>
+        <argsstring></argsstring>
+        <name>accum</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="40" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="37" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="37" bodyend="41"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1a20c4403a721c3cc4a1125b0a706c0d85" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::match_perf_t</scope><name>accum</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1a35ae1925a7706710d3f7b13fb09b1ffd" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::match_perf_t</scope><name>max</name></member>
+      <member refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t_1aee0f274334c715cf22f7457a39240576" prot="public" virt="non-virtual"><scope>Flux::resource_model::detail::match_perf_t</scope><name>min</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

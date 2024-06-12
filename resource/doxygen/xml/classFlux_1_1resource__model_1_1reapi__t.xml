@@ -1,0 +1,571 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1reapi__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::reapi_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t" prot="public" virt="non-virtual">Flux::resource_model::detail::reapi_cli_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t" prot="public" virt="non-virtual">Flux::resource_model::detail::reapi_module_t</derivedcompoundref>
+    <includes refid="reapi_8hpp" local="no">reapi.hpp</includes>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1a8b54a24b38dd103af4ccf18da9fb2a03" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::match_allocate</definition>
+        <argsstring>(void *h, bool orelse_reserve, const std::string &amp;jobspec, const uint64_t jobid, bool &amp;reserved, std::string &amp;R, int64_t &amp;at, double &amp;ov)</argsstring>
+        <name>match_allocate</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>orelse_reserve</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jobspec</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Match a jobspec to the &quot;best&quot; resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>match_op</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>match_op_t: set to specify the specific match option from 1 of 4 choices: MATCH_ALLOCATE: try to allocate now and fail if resources aren&apos;t available. MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve if resources aren&apos;t available now. MATCH_SATISFIABILITY: Do a satisfiablity check and do not allocate. MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run satisfiability check if resources are not available. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobspec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobspec string. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reserved</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean into which to return true if this job has been reserved instead of allocated. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>String into which to return the resource set either allocated or reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="125" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="125" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1a4c39d281708130066509cedb5c421fa8" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::match_allocate_multi</definition>
+        <argsstring>(void *h, bool orelse_reserve, const char *jobs, queue_adapter_base_t *adapter)</argsstring>
+        <name>match_allocate_multi</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>orelse_reserve</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>jobs</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1queue__adapter__base__t" kindref="compound">queue_adapter_base_t</ref> *</type>
+          <declname>adapter</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Multi-Match jobspecs to the &quot;best&quot; resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>match_op</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>match_op_t: set to specify the specific match option from 1 of 4 choices: MATCH_ALLOCATE: try to allocate now and fail if resources aren&apos;t available. MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve if resources aren&apos;t available now. MATCH_SATISFIABILITY: Do a satisfiablity check and do not allocate. MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>JSON array of jobspecs. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>adapter</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classFlux_1_1resource__model_1_1queue__adapter__base__t" kindref="compound">queue_adapter_base_t</ref> object that provides a set of callback methods to be called each time the result of a match is returned from the resource match service. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="157" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1ae707c72f89027b3d22f3bb66cb9b634d" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::update_allocate</definition>
+        <argsstring>(void *h, const uint64_t jobid, const std::string &amp;R, int64_t &amp;at, double &amp;ov, std::string &amp;R_out)</argsstring>
+        <name>update_allocate</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>R</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>R_out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update the resource state with R.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>R String of std::string. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the scheduled time. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the performance overhead in terms of elapse time needed to complete the update operation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>R_out</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return the updated R string. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="176" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="176" bodyend="181"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1a16eecc3aa7e618f2e3055a6cc0276e69" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::cancel</definition>
+        <argsstring>(void *h, const uint64_t jobid, bool noent_ok)</argsstring>
+        <name>cancel</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>noent_ok</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Cancel the allocation or reservation corresponding to jobid.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>noent_ok</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>don&apos;t return an error with nonexistent jobid </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="193" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="193" bodyend="196"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1a15bb686e9d0d17b9fcfd4bc332d65236" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::info</definition>
+        <argsstring>(void *h, const uint64_t jobid, std::string &amp;mode, bool &amp;reserved, int64_t &amp;at, double &amp;ov)</argsstring>
+        <name>info</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>mode</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>reserved</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>ov</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get the information on the allocation or reservation corresponding to jobid.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>const jobid of the uint64_t type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>mode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return string containing the job state. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>reserved</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Boolean into which to return true if this job has been reserved instead of allocated. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>If allocated, 0 is returned; if reserved, actual time at which the job is reserved. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ov</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Double into which to return performance overhead in terms of elapse time needed to complete the match operation. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="217" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="217" bodyend="222"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1reapi__t_1a83634c16c5c8256fc1a2543c0a11d4de" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::reapi_t::stat</definition>
+        <argsstring>(void *h, int64_t &amp;V, int64_t &amp;E, int64_t &amp;J, double &amp;load, double &amp;min, double &amp;max, double &amp;avg)</argsstring>
+        <name>stat</name>
+        <param>
+          <type>void *</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>V</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>E</declname>
+        </param>
+        <param>
+          <type>int64_t &amp;</type>
+          <declname>J</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>load</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>min</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>max</declname>
+        </param>
+        <param>
+          <type>double &amp;</type>
+          <declname>avg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get the performance information about the resource infrastructure.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux&apos;s service module, it is expected to be a pointer to a flux_t object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>V</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of resource vertices </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>E</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of edges </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>J</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of jobs </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>load</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Graph load time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>min</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Min match time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>max</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Max match time </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>avg</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Avg match time </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="239" column="16" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="239" bodyend="243"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>High-level resource API base class. Derived classes must implement the methods. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::resource_model::detail::reapi_cli_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::detail::reapi_module_t</label>
+        <link refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::reapi_t</label>
+        <link refid="classFlux_1_1resource__model_1_1reapi__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" line="92" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi.hpp" bodystart="92" bodyend="244"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a16eecc3aa7e618f2e3055a6cc0276e69" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>cancel</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a15bb686e9d0d17b9fcfd4bc332d65236" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>info</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a8b54a24b38dd103af4ccf18da9fb2a03" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>match_allocate</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a4c39d281708130066509cedb5c421fa8" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>match_allocate_multi</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1a83634c16c5c8256fc1a2543c0a11d4de" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>stat</name></member>
+      <member refid="classFlux_1_1resource__model_1_1reapi__t_1ae707c72f89027b3d22f3bb66cb9b634d" prot="public" virt="non-virtual"><scope>Flux::resource_model::reapi_t</scope><name>update_allocate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

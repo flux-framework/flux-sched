@@ -1,0 +1,57 @@
+\hypertarget{structspan__t}{}\doxysubsection{span\+\_\+t Struct Reference}
+\label{structspan__t}\index{span\_t@{span\_t}}
+
+
+{\ttfamily \#include $<$planner.\+hpp$>$}
+
+
+
+Collaboration diagram for span\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structspan__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structspan__t_a9e750f004347fc064f1fb476e1526d11}\label{structspan__t_a9e750f004347fc064f1fb476e1526d11}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{structspan__t}{span\+\_\+t}} \&o) const
+\item 
+\mbox{\Hypertarget{structspan__t_a4dba0a809940438a72d2999c3d772389}\label{structspan__t_a4dba0a809940438a72d2999c3d772389}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{structspan__t}{span\+\_\+t}} \&o) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structspan__t_a424813b4d789e5be887f3ed06cf80ef3}\label{structspan__t_a424813b4d789e5be887f3ed06cf80ef3}} 
+int64\+\_\+t {\bfseries start}
+\item 
+\mbox{\Hypertarget{structspan__t_ab7460375483f6185fb38454ad8114a2a}\label{structspan__t_ab7460375483f6185fb38454ad8114a2a}} 
+int64\+\_\+t {\bfseries last}
+\item 
+\mbox{\Hypertarget{structspan__t_a7400ec41e010e91146e60c34d5b88b00}\label{structspan__t_a7400ec41e010e91146e60c34d5b88b00}} 
+int64\+\_\+t {\bfseries span\+\_\+id}
+\item 
+\mbox{\Hypertarget{structspan__t_aa9d4dfb25f6d66d379c901c997c10c58}\label{structspan__t_aa9d4dfb25f6d66d379c901c997c10c58}} 
+int64\+\_\+t {\bfseries planned}
+\item 
+\mbox{\Hypertarget{structspan__t_a72ceddf6832e4cdacca7bbdcc1a3a6e1}\label{structspan__t_a72ceddf6832e4cdacca7bbdcc1a3a6e1}} 
+int {\bfseries in\+\_\+system}
+\item 
+\mbox{\Hypertarget{structspan__t_a0db49655ece09f7ba944c266b7afaf6c}\label{structspan__t_a0db49655ece09f7ba944c266b7afaf6c}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries start\+\_\+p}
+\item 
+\mbox{\Hypertarget{structspan__t_a7c37ef951c186957e129e9cd1c39d9c9}\label{structspan__t_a7c37ef951c186957e129e9cd1c39d9c9}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries last\+\_\+p}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Node in a span interval tree to enable fast retrieval of intercepting spans. 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+planner.\+hpp\item 
+planner.\+cpp\end{DoxyCompactItemize}

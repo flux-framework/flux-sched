@@ -1,0 +1,41 @@
+\hypertarget{classmintime__resource__tree__t}{}\doxysubsection{mintime\+\_\+resource\+\_\+tree\+\_\+t Class Reference}
+\label{classmintime__resource__tree__t}\index{mintime\_resource\_tree\_t@{mintime\_resource\_tree\_t}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_af181e87adfca326d203b417faa828eb5}\label{classmintime__resource__tree__t_af181e87adfca326d203b417faa828eb5}} 
+int {\bfseries insert} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_a7733022c8f69a4e36bb8f0fae7f36c25}\label{classmintime__resource__tree__t_a7733022c8f69a4e36bb8f0fae7f36c25}} 
+int {\bfseries remove} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_ad8b7ae1d859e27454e67d766daac85be}\label{classmintime__resource__tree__t_ad8b7ae1d859e27454e67d766daac85be}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries get\+\_\+mintime} (int64\+\_\+t request) const
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_ade5a64ad4b09c8a46b06ebd23c5a0e51}\label{classmintime__resource__tree__t_ade5a64ad4b09c8a46b06ebd23c5a0e51}} 
+void {\bfseries clear} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_a52c351ddf4d22d579a23caf2d351a308}\label{classmintime__resource__tree__t_a52c351ddf4d22d579a23caf2d351a308}} 
+int64\+\_\+t {\bfseries right\+\_\+branch\+\_\+mintime} (\mbox{\hyperlink{structmt__resource__rb__node__t}{mt\+\_\+resource\+\_\+rb\+\_\+node\+\_\+t}} $\ast$n) const
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_ad8a634f4a9e5248ca90709cd41bd05c2}\label{classmintime__resource__tree__t_ad8a634f4a9e5248ca90709cd41bd05c2}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries find\+\_\+mintime\+\_\+point} (\mbox{\hyperlink{structmt__resource__rb__node__t}{mt\+\_\+resource\+\_\+rb\+\_\+node\+\_\+t}} $\ast$anchor, int64\+\_\+t min\+\_\+time) const
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_ac361e5e76b704b339ce5fee040ef3eff}\label{classmintime__resource__tree__t_ac361e5e76b704b339ce5fee040ef3eff}} 
+int64\+\_\+t {\bfseries find\+\_\+mintime\+\_\+anchor} (int64\+\_\+t request, \mbox{\hyperlink{structmt__resource__rb__node__t}{mt\+\_\+resource\+\_\+rb\+\_\+node\+\_\+t}} $\ast$$\ast$anchor\+\_\+p) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmintime__resource__tree__t_a61d082d42b8f1cad99efe1d7430b1277}\label{classmintime__resource__tree__t_a61d082d42b8f1cad99efe1d7430b1277}} 
+mt\+\_\+resource\+\_\+rb\+\_\+tree\+\_\+t {\bfseries m\+\_\+tree}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+mintime\+\_\+resource\+\_\+tree.\+hpp\item 
+mintime\+\_\+resource\+\_\+tree.\+cpp\end{DoxyCompactItemize}

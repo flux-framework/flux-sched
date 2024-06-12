@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structmatch__test" kind="struct" language="C++" prot="public">
+    <compoundname>match_test</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmatch__test_1a625efe46c9656ff27a81d0d04e297bd6" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* match_test::desc</definition>
+        <argsstring></argsstring>
+        <name>desc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="38" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__test_1aecb9901eb7f610eeb00d0400c9085e2b" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* match_test::json</definition>
+        <argsstring></argsstring>
+        <name>json</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="39" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__test_1a183b180299cce41294fdbe1755cfb968" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool match_test::result</definition>
+        <argsstring></argsstring>
+        <name>result</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="40" column="10" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="37" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="37" bodyend="41"/>
+    <listofallmembers>
+      <member refid="structmatch__test_1a625efe46c9656ff27a81d0d04e297bd6" prot="public" virt="non-virtual"><scope>match_test</scope><name>desc</name></member>
+      <member refid="structmatch__test_1aecb9901eb7f610eeb00d0400c9085e2b" prot="public" virt="non-virtual"><scope>match_test</scope><name>json</name></member>
+      <member refid="structmatch__test_1a183b180299cce41294fdbe1755cfb968" prot="public" virt="non-virtual"><scope>match_test</scope><name>result</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

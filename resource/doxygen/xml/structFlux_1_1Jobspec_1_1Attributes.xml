@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1Jobspec_1_1Attributes" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::Attributes</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1Attributes_1a2b8d2b52fd5087f833569a96bc960eef" prot="public" static="no" mutable="no">
+        <type>YAML::Node</type>
+        <definition>YAML::Node Flux::Jobspec::Attributes::user</definition>
+        <argsstring></argsstring>
+        <name>user</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="97" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1Attributes_1a7094c5781a51065bc3301a7c36c1c5ac" prot="public" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref></type>
+        <definition>System Flux::Jobspec::Attributes::system</definition>
+        <argsstring></argsstring>
+        <name>system</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="98" column="12" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1Attributes_1a59d55d7a37b0af36639138584ec3fea8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::Attributes::Attributes</definition>
+        <argsstring>()=default</argsstring>
+        <name>Attributes</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="100" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1Attributes_1a1609e1a505fa3583fcfd0d1960707ada" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::Attributes::Attributes</definition>
+        <argsstring>(const Attributes &amp;a)=delete</argsstring>
+        <name>Attributes</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="101" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1Attributes_1aa19e187b044f9825d508dd858dcaff4a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::Attributes::Attributes</definition>
+        <argsstring>(Attributes &amp;&amp;a)=default</argsstring>
+        <name>Attributes</name>
+        <param>
+          <type><ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;&amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="102" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1Attributes_1aeba57709ff70038bc9ab9d7d64d78ca1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;</type>
+        <definition>Attributes&amp; Flux::Jobspec::Attributes::operator=</definition>
+        <argsstring>(const Attributes &amp;&amp;a)=delete</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;&amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="103" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1Attributes_1a19f1fdf3d29b92853eabebef886d4b42" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;</type>
+        <definition>Attributes&amp; Flux::Jobspec::Attributes::operator=</definition>
+        <argsstring>(Attributes &amp;&amp;a)=default</argsstring>
+        <name>operator=</name>
+        <param>
+          <type><ref refid="structFlux_1_1Jobspec_1_1Attributes" kindref="compound">Attributes</ref> &amp;&amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="104" column="16"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Flux::Jobspec::Attributes</label>
+        <link refid="structFlux_1_1Jobspec_1_1Attributes"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>system</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::Jobspec::System</label>
+        <link refid="structFlux_1_1Jobspec_1_1System"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="96" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="96" bodyend="105"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1a59d55d7a37b0af36639138584ec3fea8" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>Attributes</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1a1609e1a505fa3583fcfd0d1960707ada" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>Attributes</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1aa19e187b044f9825d508dd858dcaff4a" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>Attributes</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1aeba57709ff70038bc9ab9d7d64d78ca1" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1a19f1fdf3d29b92853eabebef886d4b42" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1a7094c5781a51065bc3301a7c36c1c5ac" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>system</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1Attributes_1a2b8d2b52fd5087f833569a96bc960eef" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Attributes</scope><name>user</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

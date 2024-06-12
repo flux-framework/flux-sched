@@ -1,0 +1,41 @@
+\hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+namespace\+\_\+remapper\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t}\index{Flux::resource\_model::resource\_namespace\_remapper\_t@{Flux::resource\_model::resource\_namespace\_remapper\_t}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a89911259aa34e0d9413158e23e2ff0c3}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a89911259aa34e0d9413158e23e2ff0c3}} 
+int {\bfseries add} (const uint64\+\_\+t exec\+\_\+target\+\_\+high, const uint64\+\_\+t exec\+\_\+target\+\_\+low, const std\+::string \&name\+\_\+type, uint64\+\_\+t ref\+\_\+id, uint64\+\_\+t remapped\+\_\+id)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a48e6434fe003dc048d5e8c1bb3929692}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a48e6434fe003dc048d5e8c1bb3929692}} 
+int {\bfseries add} (const std\+::string \&exec\+\_\+target\+\_\+range, const std\+::string \&name\+\_\+type, uint64\+\_\+t ref\+\_\+id, uint64\+\_\+t remapped\+\_\+id)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_acc806805c776a85adc20a882a536d334}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_acc806805c776a85adc20a882a536d334}} 
+int {\bfseries add\+\_\+exec\+\_\+target\+\_\+range} (const std\+::string \&exec\+\_\+target\+\_\+range, const \mbox{\hyperlink{classFlux_1_1resource__model_1_1distinct__range__t}{distinct\+\_\+range\+\_\+t}} \&remapped\+\_\+exec\+\_\+target\+\_\+range)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a561b9aa6449afd88fb5f0d134ac63191}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a561b9aa6449afd88fb5f0d134ac63191}} 
+int {\bfseries query} (const uint64\+\_\+t exec\+\_\+target, const std\+::string \&name\+\_\+type, uint64\+\_\+t ref\+\_\+id, uint64\+\_\+t \&remapped\+\_\+id\+\_\+out) const
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a09305d770a583974d1d815b4444c0cce}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a09305d770a583974d1d815b4444c0cce}} 
+int {\bfseries query\+\_\+exec\+\_\+target} (const uint64\+\_\+t exec\+\_\+target, uint64\+\_\+t \&remapped\+\_\+exec\+\_\+target) const
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a5fb93f6d65eee5056ce56d928872d886}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a5fb93f6d65eee5056ce56d928872d886}} 
+bool {\bfseries is\+\_\+remapped} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a72f2fd2a57484fc94e7961fbf4d7febf}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a72f2fd2a57484fc94e7961fbf4d7febf}} 
+int {\bfseries get\+\_\+low\+\_\+high} (const std\+::string \&exec\+\_\+target\+\_\+range, uint64\+\_\+t \&low, uint64\+\_\+t \&high) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a3030249876dd409ba02fd09700d5ad57}\label{classFlux_1_1resource__model_1_1resource__namespace__remapper__t_a3030249876dd409ba02fd09700d5ad57}} 
+std\+::map$<$ const \mbox{\hyperlink{classFlux_1_1resource__model_1_1distinct__range__t}{distinct\+\_\+range\+\_\+t}}, std\+::map$<$ const std\+::string, std\+::map$<$ uint64\+\_\+t, uint64\+\_\+t $>$ $>$ $>$ {\bfseries m\+\_\+remap}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+namespace\+\_\+remapper.\+hpp\item 
+resource\+\_\+namespace\+\_\+remapper.\+cpp\end{DoxyCompactItemize}

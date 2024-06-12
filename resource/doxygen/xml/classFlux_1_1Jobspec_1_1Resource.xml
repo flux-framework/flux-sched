@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1Resource" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::Resource</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a232431af7928a8e6e0172cadf6786102" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Resource::type</definition>
+        <argsstring></argsstring>
+        <name>type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="50" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1ad404e5a085c143e9e5bcf97a4b2e3fb9" prot="public" static="no" mutable="no">
+        <type>unsigned</type>
+        <definition>unsigned Flux::Jobspec::Resource::min</definition>
+        <argsstring></argsstring>
+        <name>min</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="52" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1adbd4449a16032010128829b742ed36f8" prot="public" static="no" mutable="no">
+        <type>unsigned</type>
+        <definition>unsigned Flux::Jobspec::Resource::max</definition>
+        <argsstring></argsstring>
+        <name>max</name>
+        <initializer>= std::numeric_limits&lt;unsigned int&gt;::max()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="53" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1aeda884fe9908f22419f0e5643106fa8a" prot="public" static="no" mutable="no">
+        <type>char</type>
+        <definition>char Flux::Jobspec::Resource::oper</definition>
+        <argsstring></argsstring>
+        <name>oper</name>
+        <initializer>= &apos;+&apos;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="54" column="14" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1adc5ca20f9d74d53c4b394b65d7e2a40f" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::Jobspec::Resource::operand</definition>
+        <argsstring></argsstring>
+        <name>operand</name>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="55" column="13" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a160bd203800754a57d2a54046ec4c9a3" prot="public" static="no" mutable="no">
+        <type>struct Flux::Jobspec::Resource::@0</type>
+        <definition>struct Flux::Jobspec::Resource::@0 Flux::Jobspec::Resource::count</definition>
+        <argsstring></argsstring>
+        <name>count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="56" column="11"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1af6b214d91b4b2b3220d2486384eabd95" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Resource::unit</definition>
+        <argsstring></argsstring>
+        <name>unit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="57" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a1f681b82516ba5a7f67f2a7baa5ac664" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Resource::label</definition>
+        <argsstring></argsstring>
+        <name>label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="58" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a2350acfd52d4ebdfe44ecd91762bd292" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Resource::id</definition>
+        <argsstring></argsstring>
+        <name>id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="59" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a92f536f2b28058f665ee6664dc23219b" prot="public" static="no" mutable="no">
+        <type>tristate_t</type>
+        <definition>tristate_t Flux::Jobspec::Resource::exclusive</definition>
+        <argsstring></argsstring>
+        <name>exclusive</name>
+        <initializer>= tristate_t::UNSPECIFIED</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="60" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1a9ba66c24d72cebfcc6d83091145cc728" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Resource</ref> &gt;</type>
+        <definition>std::vector&lt;Resource&gt; Flux::Jobspec::Resource::with</definition>
+        <argsstring></argsstring>
+        <name>with</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="61" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Resource_1acfa0fefdb4ecb13ea9c3876dcbd12ab7" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, int64_t &gt;</type>
+        <definition>std::unordered_map&lt;std::string, int64_t&gt; Flux::Jobspec::Resource::user_data</definition>
+        <argsstring></argsstring>
+        <name>user_data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="65" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Resource_1aed8c86ddfa1c4ca20fd9dcddfbbb0d63" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Resource::Resource</definition>
+        <argsstring>(const YAML::Node &amp;)</argsstring>
+        <name>Resource</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <defname>resnode</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="67" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="116" bodyend="199"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="48" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="48" bodyend="68"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a160bd203800754a57d2a54046ec4c9a3" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>count</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a92f536f2b28058f665ee6664dc23219b" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>exclusive</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a2350acfd52d4ebdfe44ecd91762bd292" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>id</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a1f681b82516ba5a7f67f2a7baa5ac664" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>label</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1adbd4449a16032010128829b742ed36f8" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>max</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1ad404e5a085c143e9e5bcf97a4b2e3fb9" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>min</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1aeda884fe9908f22419f0e5643106fa8a" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>oper</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1adc5ca20f9d74d53c4b394b65d7e2a40f" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>operand</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1aed8c86ddfa1c4ca20fd9dcddfbbb0d63" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>Resource</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a232431af7928a8e6e0172cadf6786102" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>type</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1af6b214d91b4b2b3220d2486384eabd95" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>unit</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1acfa0fefdb4ecb13ea9c3876dcbd12ab7" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>user_data</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Resource_1a9ba66c24d72cebfcc6d83091145cc728" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Resource</scope><name>with</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

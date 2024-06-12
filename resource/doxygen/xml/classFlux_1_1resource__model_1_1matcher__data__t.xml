@@ -1,0 +1,308 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1matcher__data__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::matcher_data_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" prot="public" virt="non-virtual">Flux::resource_model::dfu_match_cb_t</derivedcompoundref>
+    <includes refid="matcher_8hpp" local="no">matcher.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__data__t_1a57c5a5984b1911376531a4c93d9a8b70" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::matcher_data_t::m_name</definition>
+        <argsstring></argsstring>
+        <name>m_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="79" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__data__t_1a456ab580ca312f996af6ecab49328f8b" prot="private" static="no" mutable="no">
+        <type>subsystem_t</type>
+        <definition>subsystem_t Flux::resource_model::matcher_data_t::m_err_subsystem</definition>
+        <argsstring></argsstring>
+        <name>m_err_subsystem</name>
+        <initializer>= &quot;error&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="80" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__data__t_1a26bc983ac3b15c1f10642fbf8cc5acd5" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; subsystem_t &gt;</type>
+        <definition>std::vector&lt;subsystem_t&gt; Flux::resource_model::matcher_data_t::m_subsystems</definition>
+        <argsstring></argsstring>
+        <name>m_subsystems</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="81" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__data__t_1a9c7c059edfc78a2e3db9510570988c5e" prot="private" static="no" mutable="no">
+        <type>multi_subsystemsS</type>
+        <definition>multi_subsystemsS Flux::resource_model::matcher_data_t::m_subsystems_map</definition>
+        <argsstring></argsstring>
+        <name>m_subsystems_map</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="82" column="23" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1aa42527edc5f30a25a6b6456b8ca9e419" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::matcher_data_t::matcher_data_t</definition>
+        <argsstring>()</argsstring>
+        <name>matcher_data_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="39" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="30" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1aed1c4cb262376f3bf1fc4a09330bc561" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::matcher_data_t::matcher_data_t</definition>
+        <argsstring>(const std::string &amp;name)</argsstring>
+        <name>matcher_data_t</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="40" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="35" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1aa84a1b3bdd4454e9d5f3f20902cb77c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::matcher_data_t::matcher_data_t</definition>
+        <argsstring>(const matcher_data_t &amp;o)</argsstring>
+        <name>matcher_data_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1matcher__data__t" kindref="compound">matcher_data_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="41" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="40" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a77f02472039329405cc3248d4ddeef64" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1matcher__data__t" kindref="compound">matcher_data_t</ref> &amp;</type>
+        <definition>matcher_data_t &amp; Flux::resource_model::matcher_data_t::operator=</definition>
+        <argsstring>(const matcher_data_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1matcher__data__t" kindref="compound">matcher_data_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="42" column="20" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="47" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a5bfc6cf2f135803ea0b62ec953cff8e4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::matcher_data_t::~matcher_data_t</definition>
+        <argsstring>()</argsstring>
+        <name>~matcher_data_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="43" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="55" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1adfd25279c48db1c8e106ad6ffcb43c57" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::matcher_data_t::add_subsystem</definition>
+        <argsstring>(const subsystem_t s, const std::string tf=&quot;*&quot;)</argsstring>
+        <name>add_subsystem</name>
+        <param>
+          <type>const subsystem_t</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string</type>
+          <declname>tf</declname>
+          <defval>&quot;*&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Add a subsystem and the relationship type that this resource base matcher will use. Vertices and edges of the resource graph are filtered based on this information. Each vertex and edge that is a part of this subsystem and relationship type will be selected.</para>
+<para>This method must be called at least once to set the dominant subsystem to use. This method can be called multiple times with a distinct subsystem, each additional subsystem becomes an auxiliary subsystem.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>subsystem</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>subsystem to select </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>tf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>edge (or relation type) to select. pass * to select all types </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="60" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="61" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a5f8daa40e3e6b1d89d73f54efe1754af" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; Flux::resource_model::matcher_data_t::matcher_name</definition>
+        <argsstring>() const</argsstring>
+        <name>matcher_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="62" column="23" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="71" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a014b7605a2b475952b3e131f19211062" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::matcher_data_t::set_matcher_name</definition>
+        <argsstring>(const std::string &amp;name)</argsstring>
+        <name>set_matcher_name</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="63" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="76" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1aaa70abe63c4eb9e71590b602ad66002f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::vector&lt; subsystem_t &gt; &amp;</type>
+        <definition>const std::vector&lt; subsystem_t &gt; &amp; Flux::resource_model::matcher_data_t::subsystems</definition>
+        <argsstring>() const</argsstring>
+        <name>subsystems</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="64" column="23" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="81" bodyend="84"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a47427f20920713ee9065a45c22a711d4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const subsystem_t &amp;</type>
+        <definition>const subsystem_t &amp; Flux::resource_model::matcher_data_t::dom_subsystem</definition>
+        <argsstring>() const</argsstring>
+        <name>dom_subsystem</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="70" column="23" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="86" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__data__t_1a9e6f3ea87c5ad0b94dad8697ba113aae" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const multi_subsystemsS &amp;</type>
+        <definition>const multi_subsystemsS &amp; Flux::resource_model::matcher_data_t::subsystemsS</definition>
+        <argsstring>() const</argsstring>
+        <name>subsystemsS</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="76" column="29" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="94" bodyend="97"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Base matcher data class. Provide idioms to specify the target subsystems and resource relationship types which then allow for filtering the graph data store for the match callback object. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="5">
+        <label>Flux::resource_model::var_aware_t</label>
+        <link refid="structFlux_1_1resource__model_1_1var__aware__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::dfu_match_cb_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__match__cb__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;</label>
+        <link refid="classFlux_1_1resource__model_1_1multilevel__id__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::matcher_data_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__data__t"/>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::greater_interval_first_t</label>
+        <link refid="structFlux_1_1resource__model_1_1greater__interval__first__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="36" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="37" bodyend="83"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1adfd25279c48db1c8e106ad6ffcb43c57" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>add_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a47427f20920713ee9065a45c22a711d4" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>dom_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a456ab580ca312f996af6ecab49328f8b" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>m_err_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a57c5a5984b1911376531a4c93d9a8b70" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>m_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a26bc983ac3b15c1f10642fbf8cc5acd5" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>m_subsystems</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a9c7c059edfc78a2e3db9510570988c5e" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>m_subsystems_map</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aa42527edc5f30a25a6b6456b8ca9e419" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aed1c4cb262376f3bf1fc4a09330bc561" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aa84a1b3bdd4454e9d5f3f20902cb77c1" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a5f8daa40e3e6b1d89d73f54efe1754af" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>matcher_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a77f02472039329405cc3248d4ddeef64" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a014b7605a2b475952b3e131f19211062" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>set_matcher_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aaa70abe63c4eb9e71590b602ad66002f" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>subsystems</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a9e6f3ea87c5ad0b94dad8697ba113aae" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>subsystemsS</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a5bfc6cf2f135803ea0b62ec953cff8e4" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_data_t</scope><name>~matcher_data_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

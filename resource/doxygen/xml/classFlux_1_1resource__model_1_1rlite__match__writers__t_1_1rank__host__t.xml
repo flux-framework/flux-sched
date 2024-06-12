@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t" kind="class" language="C++" prot="private">
+    <compoundname>Flux::resource_model::rlite_match_writers_t::rank_host_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t_1a49280e8121d10749c96022c24087e413" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::rlite_match_writers_t::rank_host_t::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="134" column="17" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="134" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t_1a4de12d22b5bf366949d83314818dbd6e" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::rlite_match_writers_t::rank_host_t::host</definition>
+        <argsstring></argsstring>
+        <name>host</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="135" column="21" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="135" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="132" column="5" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="132" bodyend="136"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t_1a4de12d22b5bf366949d83314818dbd6e" prot="public" virt="non-virtual"><scope>Flux::resource_model::rlite_match_writers_t::rank_host_t</scope><name>host</name></member>
+      <member refid="classFlux_1_1resource__model_1_1rlite__match__writers__t_1_1rank__host__t_1a49280e8121d10749c96022c24087e413" prot="public" virt="non-virtual"><scope>Flux::resource_model::rlite_match_writers_t::rank_host_t</scope><name>rank</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

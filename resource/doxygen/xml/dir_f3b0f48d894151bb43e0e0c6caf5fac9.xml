@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_f3b0f48d894151bb43e0e0c6caf5fac9" kind="dir">
+    <compoundname>policies</compoundname>
+    <innerdir refid="dir_3bf4e2f8ec4a1b399300d4b57b24b4f0">base</innerdir>
+    <innerfile refid="dfu__match__high__id__first_8hpp">dfu_match_high_id_first.hpp</innerfile>
+    <innerfile refid="dfu__match__locality_8cpp">dfu_match_locality.cpp</innerfile>
+    <innerfile refid="dfu__match__locality_8hpp">dfu_match_locality.hpp</innerfile>
+    <innerfile refid="dfu__match__low__id__first_8hpp">dfu_match_low_id_first.hpp</innerfile>
+    <innerfile refid="dfu__match__multilevel__id_8hpp">dfu_match_multilevel_id.hpp</innerfile>
+    <innerfile refid="dfu__match__multilevel__id__impl_8hpp">dfu_match_multilevel_id_impl.hpp</innerfile>
+    <innerfile refid="dfu__match__policy__factory_8cpp">dfu_match_policy_factory.cpp</innerfile>
+    <innerfile refid="dfu__match__policy__factory_8hpp">dfu_match_policy_factory.hpp</innerfile>
+    <innerfile refid="dfu__match__var__aware_8cpp">dfu_match_var_aware.cpp</innerfile>
+    <innerfile refid="dfu__match__var__aware_8hpp">dfu_match_var_aware.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/policies/"/>
+  </compounddef>
+</doxygen>

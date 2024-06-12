@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1resource__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_t</compoundname>
+    <derivedcompoundref refid="structFlux_1_1resource__model_1_1resource__pool__t" prot="public" virt="non-virtual">Flux::resource_model::resource_pool_t</derivedcompoundref>
+    <derivedcompoundref refid="structresource" prot="public" virt="non-virtual">resource</derivedcompoundref>
+    <includes refid="resource__base_8hpp" local="no">resource_base.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1a45917bc9648bfdeabcfcc022ccb37749" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_t::type</definition>
+        <argsstring></argsstring>
+        <name>type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="23" column="17" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1af94539f5b774e264881c68efcf337ab4" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_t::basename</definition>
+        <argsstring></argsstring>
+        <name>basename</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="24" column="17" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1aa00f7aa228043a75bc92a0da3a95021b" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_t::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="25" column="17" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1afec5e41d2a0777b5b99ff372a05526b6" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::string &gt;</type>
+        <definition>std::map&lt;std::string, std::string&gt; Flux::resource_model::resource_t::properties</definition>
+        <argsstring></argsstring>
+        <name>properties</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="26" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1aecfd3607b4565fe6936dc9f83a20b85d" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::resource_t::id</definition>
+        <argsstring></argsstring>
+        <name>id</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="27" column="13" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__t_1aad702619d4b7296d0dceb53baa0faf72" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::resource_t::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="28" column="9" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Base resource type. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>resource</label>
+        <link refid="structresource"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_pool_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__pool__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::resource_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" line="22" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_base.hpp" bodystart="22" bodyend="29"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1af94539f5b774e264881c68efcf337ab4" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>basename</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aecfd3607b4565fe6936dc9f83a20b85d" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>id</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aa00f7aa228043a75bc92a0da3a95021b" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1afec5e41d2a0777b5b99ff372a05526b6" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>properties</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aad702619d4b7296d0dceb53baa0faf72" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>rank</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1a45917bc9648bfdeabcfcc022ccb37749" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_t</scope><name>type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

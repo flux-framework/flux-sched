@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structrequest__multi" kind="struct" language="C++" prot="public">
+    <compoundname>request_multi</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structrequest__multi_1aef9433abbdd8cf2303885d98df82412d" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t request_multi::on_or_after</definition>
+        <argsstring></argsstring>
+        <name>on_or_after</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="23" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structrequest__multi_1a18ebbcf85af46a041dcd1d15361d82fd" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t request_multi::duration</definition>
+        <argsstring></argsstring>
+        <name>duration</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="24" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structrequest__multi_1a54de0fc8a71930c35e9ee064c29ca44d" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, int64_t &gt;</type>
+        <definition>std::unordered_map&lt;std::string, int64_t&gt; request_multi::counts</definition>
+        <argsstring></argsstring>
+        <name>counts</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="25" column="24" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="22" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="22" bodyend="26"/>
+    <listofallmembers>
+      <member refid="structrequest__multi_1a54de0fc8a71930c35e9ee064c29ca44d" prot="public" virt="non-virtual"><scope>request_multi</scope><name>counts</name></member>
+      <member refid="structrequest__multi_1a18ebbcf85af46a041dcd1d15361d82fd" prot="public" virt="non-virtual"><scope>request_multi</scope><name>duration</name></member>
+      <member refid="structrequest__multi_1aef9433abbdd8cf2303885d98df82412d" prot="public" virt="non-virtual"><scope>request_multi</scope><name>on_or_after</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

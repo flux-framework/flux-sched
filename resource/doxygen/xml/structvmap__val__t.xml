@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structvmap__val__t" kind="struct" language="C++" prot="public">
+    <compoundname>vmap_val_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structvmap__val__t_1a5d6ed4266d89e9c692781ab680fc8a51" prot="public" static="no" mutable="no">
+        <type>vtx_t</type>
+        <definition>vtx_t vmap_val_t::v</definition>
+        <argsstring></argsstring>
+        <name>v</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="155" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="155" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvmap__val__t_1a5ea0353ad33cfc94a2eaa1b8f284bfe3" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, bool &gt;</type>
+        <definition>std::map&lt;std::string, bool&gt; vmap_val_t::is_roots</definition>
+        <argsstring></argsstring>
+        <name>is_roots</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="156" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="156" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvmap__val__t_1a3a99384268286716cac15b676645d5e4" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int vmap_val_t::needs</definition>
+        <argsstring></argsstring>
+        <name>needs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="157" column="18" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structvmap__val__t_1abf812789434ac8b6cc583c87d97a74c6" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int vmap_val_t::exclusive</definition>
+        <argsstring></argsstring>
+        <name>exclusive</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="158" column="18" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="158" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="154" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="154" bodyend="159"/>
+    <listofallmembers>
+      <member refid="structvmap__val__t_1abf812789434ac8b6cc583c87d97a74c6" prot="public" virt="non-virtual"><scope>vmap_val_t</scope><name>exclusive</name></member>
+      <member refid="structvmap__val__t_1a5ea0353ad33cfc94a2eaa1b8f284bfe3" prot="public" virt="non-virtual"><scope>vmap_val_t</scope><name>is_roots</name></member>
+      <member refid="structvmap__val__t_1a3a99384268286716cac15b676645d5e4" prot="public" virt="non-virtual"><scope>vmap_val_t</scope><name>needs</name></member>
+      <member refid="structvmap__val__t_1a5d6ed4266d89e9c692781ab680fc8a51" prot="public" virt="non-virtual"><scope>vmap_val_t</scope><name>v</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

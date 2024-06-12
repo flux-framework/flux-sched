@@ -1,0 +1,127 @@
+\hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::matcher\+\_\+util\+\_\+api\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1matcher__util__api__t}\index{Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}}
+
+
+{\ttfamily \#include $<$matcher.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::matcher\+\_\+util\+\_\+api\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classFlux_1_1resource__model_1_1matcher__util__api__t__inherit__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \mbox{\hyperlink{classFlux_1_1resource__model_1_1matcher__util__api__t_acb7086d922080c12528e3bd34d1ee8f5}{calc\+\_\+count}} (const \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} \&\mbox{\hyperlink{structresource}{resource}}, unsigned int qual\+\_\+cnt) const
+\item 
+unsigned int \mbox{\hyperlink{classFlux_1_1resource__model_1_1matcher__util__api__t_adca59dd8da6133d47d5fcccc40c42a86}{calc\+\_\+effective\+\_\+max}} (const \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} \&\mbox{\hyperlink{structresource}{resource}}) const
+\item 
+int \mbox{\hyperlink{classFlux_1_1resource__model_1_1matcher__util__api__t_a9dd39a530f176db43f406c6e2e8ac687}{set\+\_\+pruning\+\_\+types\+\_\+w\+\_\+spec}} (const std\+::string \&subsystem, const std\+::string \&spec)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a97e8108cd4b598d8f083bf7c5afee68c}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a97e8108cd4b598d8f083bf7c5afee68c}} 
+void {\bfseries set\+\_\+pruning\+\_\+type} (const std\+::string \&subsystem, const std\+::string \&anchor\+\_\+type, const std\+::string \&prune\+\_\+type)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_aa33d6d971be5fe49166ad925204147fa}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_aa33d6d971be5fe49166ad925204147fa}} 
+bool {\bfseries is\+\_\+my\+\_\+pruning\+\_\+type} (const std\+::string \&subsystem, const std\+::string \&anchor\+\_\+type, const std\+::string \&prune\+\_\+type)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a0ae3e17de59d8c078a2e3fdf014c4c6f}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a0ae3e17de59d8c078a2e3fdf014c4c6f}} 
+bool {\bfseries is\+\_\+pruning\+\_\+type} (const std\+::string \&subsystem, const std\+::string \&prune\+\_\+type)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a38dd5ce78db680417e7b340e47f5f634}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a38dd5ce78db680417e7b340e47f5f634}} 
+bool {\bfseries get\+\_\+my\+\_\+pruning\+\_\+types} (const std\+::string \&subsystem, const std\+::string \&anchor\+\_\+type, std\+::vector$<$ std\+::string $>$ \&out\+\_\+prune\+\_\+types)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a866375743eab8e141cc5017a03976c9b}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a866375743eab8e141cc5017a03976c9b}} 
+int {\bfseries add\+\_\+exclusive\+\_\+resource\+\_\+type} (const std\+::string \&type)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a5b8a02f247cba99f289b59c985b2dcc9}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a5b8a02f247cba99f289b59c985b2dcc9}} 
+bool {\bfseries is\+\_\+resource\+\_\+type\+\_\+exclusive} (const std\+::string \&type)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a2139cafb9dedce38e8ef90b197ed8bec}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a2139cafb9dedce38e8ef90b197ed8bec}} 
+const std\+::set$<$ std\+::string $>$ \& {\bfseries get\+\_\+exclusive\+\_\+resource\+\_\+types} () const
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a73323a2d2736559d9858e4616d62c373}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a73323a2d2736559d9858e4616d62c373}} 
+int {\bfseries reset\+\_\+exclusive\+\_\+resource\+\_\+types} (const std\+::set$<$ std\+::string $>$ \&x\+\_\+types)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a2e2bbd4c7b24a84e83a91a27792d8481}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a2e2bbd4c7b24a84e83a91a27792d8481}} 
+int {\bfseries register\+\_\+resource\+\_\+pair} (const std\+::string \&subsystem, std\+::string \&r\+\_\+pair)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a41476a6cef1834ab550d1ecea6e0e47d}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a41476a6cef1834ab550d1ecea6e0e47d}} 
+std\+::set$<$ std\+::string $>$ {\bfseries m\+\_\+x\+\_\+resource\+\_\+types}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a38a73bf6d64422f6668c65d9deea821f}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a38a73bf6d64422f6668c65d9deea821f}} 
+std\+::map$<$ subsystem\+\_\+t, std\+::map$<$ std\+::string, std\+::set$<$ std\+::string $>$ $>$ $>$ {\bfseries m\+\_\+pruning\+\_\+types}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_aa6ada097e69637aca778319b51edd0eb}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_aa6ada097e69637aca778319b51edd0eb}} 
+std\+::map$<$ subsystem\+\_\+t, std\+::set$<$ std\+::string $>$ $>$ {\bfseries m\+\_\+total\+\_\+set}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Base utility method for matchers. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_acb7086d922080c12528e3bd34d1ee8f5}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_acb7086d922080c12528e3bd34d1ee8f5}} 
+\index{Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}!calc\_count@{calc\_count}}
+\index{calc\_count@{calc\_count}!Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}}
+\doxyparagraph{\texorpdfstring{calc\_count()}{calc\_count()}}
+{\footnotesize\ttfamily unsigned int Flux\+::resource\+\_\+model\+::matcher\+\_\+util\+\_\+api\+\_\+t\+::calc\+\_\+count (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} \&}]{resource,  }\item[{unsigned int}]{qual\+\_\+cnt }\end{DoxyParamCaption}) const}
+
+Calculate the count that should be allocated, which is a function of the number of qualifed available resources, minimum/maximum/operator requirement of the jobspec.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource} & resource section of the jobspec. \\
+\hline
+{\em qual\+\_\+cnt} & available qualified resources. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 when not available; count otherwise. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_adca59dd8da6133d47d5fcccc40c42a86}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_adca59dd8da6133d47d5fcccc40c42a86}} 
+\index{Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}!calc\_effective\_max@{calc\_effective\_max}}
+\index{calc\_effective\_max@{calc\_effective\_max}!Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}}
+\doxyparagraph{\texorpdfstring{calc\_effective\_max()}{calc\_effective\_max()}}
+{\footnotesize\ttfamily unsigned int Flux\+::resource\+\_\+model\+::matcher\+\_\+util\+\_\+api\+\_\+t\+::calc\+\_\+effective\+\_\+max (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Resource}{Flux\+::\+Jobspec\+::\+Resource}} \&}]{resource }\end{DoxyParamCaption}) const}
+
+Calculate the effective max count that should be allocated.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource} & resource section of the jobspec. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Effective max count; 0 if an error is encountered. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1matcher__util__api__t_a9dd39a530f176db43f406c6e2e8ac687}\label{classFlux_1_1resource__model_1_1matcher__util__api__t_a9dd39a530f176db43f406c6e2e8ac687}} 
+\index{Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}!set\_pruning\_types\_w\_spec@{set\_pruning\_types\_w\_spec}}
+\index{set\_pruning\_types\_w\_spec@{set\_pruning\_types\_w\_spec}!Flux::resource\_model::matcher\_util\_api\_t@{Flux::resource\_model::matcher\_util\_api\_t}}
+\doxyparagraph{\texorpdfstring{set\_pruning\_types\_w\_spec()}{set\_pruning\_types\_w\_spec()}}
+{\footnotesize\ttfamily int Flux\+::resource\+\_\+model\+::matcher\+\_\+util\+\_\+api\+\_\+t\+::set\+\_\+pruning\+\_\+types\+\_\+w\+\_\+spec (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{subsystem,  }\item[{const std\+::string \&}]{spec }\end{DoxyParamCaption})}
+
+Set prune filters based on spec. The spec should comply with the following format\+: $<$HL-\/resource1\+:LL-\/resource1\mbox{[},HL-\/resource2\+:LL-\/resource2...\mbox{]}...\mbox{]}$>$ Install a planner-\/based filter at each High-\/\+Level (HL) resource vertex which tracks the state of the Low-\/\+Level (LL) resources in aggregate, residing under its subtree. If a jobspec requests 1 node with 4 cores, and the visiting compute-\/node vertex has only a total of 2 available cores in aggregate at its subtree, this filter allows the traverser to prune a further descent to accelerate the search. Use the ALL keyword for HL-\/resource if you want LL-\/resource to be tracked at all of the HL-\/resource vertices. Examples\+: rack\+:node,node\+:core ALL\+:core,cluster\+:node,rack\+:node
+
+
+\begin{DoxyParams}{Parameters}
+{\em subsystem} & subsystem \\
+\hline
+{\em spec} & prune filter specification string \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+matcher.\+hpp\item 
+matcher.\+cpp\end{DoxyCompactItemize}

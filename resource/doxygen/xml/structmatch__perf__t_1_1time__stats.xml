@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structmatch__perf__t_1_1time__stats" kind="struct" language="C++" prot="public">
+    <compoundname>match_perf_t::time_stats</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1abc2e707d5d2248bc1fddfcb252b1bb8f" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t match_perf_t::time_stats::njobs</definition>
+        <argsstring></argsstring>
+        <name>njobs</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="67" column="18" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1a1b04a20df9f645c1cf9380e90ee8637b" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t match_perf_t::time_stats::njobs_reset</definition>
+        <argsstring></argsstring>
+        <name>njobs_reset</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="68" column="18" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1a74e0da79457f914651f33f674587d4ff" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double match_perf_t::time_stats::min</definition>
+        <argsstring></argsstring>
+        <name>min</name>
+        <initializer>= std::numeric_limits&lt;double&gt;::max ()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="69" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1a07b43532b8617d59bc647aeac1290f36" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double match_perf_t::time_stats::max</definition>
+        <argsstring></argsstring>
+        <name>max</name>
+        <initializer>= 0.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="70" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1ac8822d7ffa003f16c4bc7173ed892094" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double match_perf_t::time_stats::avg</definition>
+        <argsstring></argsstring>
+        <name>avg</name>
+        <initializer>= 0.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="71" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structmatch__perf__t_1_1time__stats_1a4bf050c08a0469485e38a1e01e8647fb" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double match_perf_t::time_stats::M2</definition>
+        <argsstring></argsstring>
+        <name>M2</name>
+        <initializer>= 0.0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="72" column="16" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structmatch__perf__t_1_1time__stats_1a323f6e722e210d8f018a6603176796fb" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void match_perf_t::time_stats::update_stats</definition>
+        <argsstring>(double elapsed)</argsstring>
+        <name>update_stats</name>
+        <param>
+          <type>double</type>
+          <declname>elapsed</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="53" column="14" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="53" bodyend="66"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" line="52" column="5" bodyfile="/home/hobbs17/flux-sched/resource/modules/resource_match.cpp" bodystart="52" bodyend="73"/>
+    <listofallmembers>
+      <member refid="structmatch__perf__t_1_1time__stats_1ac8822d7ffa003f16c4bc7173ed892094" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>avg</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1a4bf050c08a0469485e38a1e01e8647fb" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>M2</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1a07b43532b8617d59bc647aeac1290f36" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>max</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1a74e0da79457f914651f33f674587d4ff" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>min</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1abc2e707d5d2248bc1fddfcb252b1bb8f" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>njobs</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1a1b04a20df9f645c1cf9380e90ee8637b" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>njobs_reset</name></member>
+      <member refid="structmatch__perf__t_1_1time__stats_1a323f6e722e210d8f018a6603176796fb" prot="public" virt="non-virtual"><scope>match_perf_t::time_stats</scope><name>update_stats</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

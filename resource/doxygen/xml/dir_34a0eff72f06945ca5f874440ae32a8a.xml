@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_34a0eff72f06945ca5f874440ae32a8a" kind="dir">
+    <compoundname>c++</compoundname>
+    <innerfile refid="mintime__resource__tree_8cpp">mintime_resource_tree.cpp</innerfile>
+    <innerfile refid="mintime__resource__tree_8hpp">mintime_resource_tree.hpp</innerfile>
+    <innerfile refid="planner_8cpp">planner.cpp</innerfile>
+    <innerfile refid="planner_8hpp">planner.hpp</innerfile>
+    <innerfile refid="planner__internal__tree_8cpp">planner_internal_tree.cpp</innerfile>
+    <innerfile refid="planner__internal__tree_8hpp">planner_internal_tree.hpp</innerfile>
+    <innerfile refid="planner__multi_8cpp">planner_multi.cpp</innerfile>
+    <innerfile refid="planner__multi_8hpp">planner_multi.hpp</innerfile>
+    <innerfile refid="scheduled__point__tree_8cpp">scheduled_point_tree.cpp</innerfile>
+    <innerfile refid="scheduled__point__tree_8hpp">scheduled_point_tree.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/"/>
+  </compounddef>
+</doxygen>

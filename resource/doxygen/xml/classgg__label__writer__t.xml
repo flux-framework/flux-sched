@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classgg__label__writer__t" kind="class" language="C++" prot="public">
+    <compoundname>gg_label_writer_t</compoundname>
+    <templateparamlist>
+      <param>
+        <type>class m1</type>
+      </param>
+      <param>
+        <type>class m2</type>
+      </param>
+      <param>
+        <type>class m3</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classgg__label__writer__t_1a39172bf333b3d53ada1bd245e8660990" prot="private" static="no" mutable="no">
+        <type>m1</type>
+        <definition>m1 gg_label_writer_t&lt; m1, m2, m3 &gt;::n1</definition>
+        <argsstring></argsstring>
+        <name>n1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="60" column="8" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgg__label__writer__t_1a6b49ea09f0607713666a35e69b18353c" prot="private" static="no" mutable="no">
+        <type>m2</type>
+        <definition>m2 gg_label_writer_t&lt; m1, m2, m3 &gt;::n2</definition>
+        <argsstring></argsstring>
+        <name>n2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="61" column="8" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgg__label__writer__t_1ad93978482dd6abe476bd6d768a327798" prot="private" static="no" mutable="no">
+        <type>m3</type>
+        <definition>m3 gg_label_writer_t&lt; m1, m2, m3 &gt;::n3</definition>
+        <argsstring></argsstring>
+        <name>n3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="62" column="8" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classgg__label__writer__t_1aaeaa5249c536d70b350e81c376219585" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>gg_label_writer_t&lt; m1, m2, m3 &gt;::gg_label_writer_t</definition>
+        <argsstring>(m1 _n1, m2 _n2, m3 _n3)</argsstring>
+        <name>gg_label_writer_t</name>
+        <param>
+          <type>m1</type>
+          <declname>_n1</declname>
+        </param>
+        <param>
+          <type>m2</type>
+          <declname>_n2</declname>
+        </param>
+        <param>
+          <type>m3</type>
+          <declname>_n3</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="53" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="53" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classgg__label__writer__t_1a92acf4a0ca2c1290217dfc7781125369" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class v_or_e</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void gg_label_writer_t&lt; m1, m2, m3 &gt;::operator()</definition>
+        <argsstring>(std::ostream &amp;out, const v_or_e &amp;i) const</argsstring>
+        <name>operator()</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>const v_or_e &amp;</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="56" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="56" bodyend="58"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" line="51" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.cpp" bodystart="51" bodyend="63"/>
+    <listofallmembers>
+      <member refid="classgg__label__writer__t_1aaeaa5249c536d70b350e81c376219585" prot="public" virt="non-virtual"><scope>gg_label_writer_t</scope><name>gg_label_writer_t</name></member>
+      <member refid="classgg__label__writer__t_1a39172bf333b3d53ada1bd245e8660990" prot="private" virt="non-virtual"><scope>gg_label_writer_t</scope><name>n1</name></member>
+      <member refid="classgg__label__writer__t_1a6b49ea09f0607713666a35e69b18353c" prot="private" virt="non-virtual"><scope>gg_label_writer_t</scope><name>n2</name></member>
+      <member refid="classgg__label__writer__t_1ad93978482dd6abe476bd6d768a327798" prot="private" virt="non-virtual"><scope>gg_label_writer_t</scope><name>n3</name></member>
+      <member refid="classgg__label__writer__t_1a92acf4a0ca2c1290217dfc7781125369" prot="public" virt="non-virtual"><scope>gg_label_writer_t</scope><name>operator()</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

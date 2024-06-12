@@ -1,0 +1,1053 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classplanner" kind="class" language="C++" prot="public">
+    <compoundname>planner</compoundname>
+    <includes refid="planner_8hpp" local="no">planner.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classplanner_1a79bb34c9981bed49734c0ddf585487a4" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t planner::m_total_resources</definition>
+        <argsstring></argsstring>
+        <name>m_total_resources</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="100" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a649f536b543445f61cf461b1bc0211c4" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string planner::m_resource_type</definition>
+        <argsstring></argsstring>
+        <name>m_resource_type</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="101" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1aeae9a89b4301f50bbc4255d09c80a363" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t planner::m_plan_start</definition>
+        <argsstring></argsstring>
+        <name>m_plan_start</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="102" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="102" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1ae5af49863580a975d518a71326e13653" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t planner::m_plan_end</definition>
+        <argsstring></argsstring>
+        <name>m_plan_end</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="103" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1aa5398fc392f4527351ab4f3d9a60e64d" prot="private" static="no" mutable="no">
+        <type><ref refid="classscheduled__point__tree__t" kindref="compound">scheduled_point_tree_t</ref></type>
+        <definition>scheduled_point_tree_t planner::m_sched_point_tree</definition>
+        <argsstring></argsstring>
+        <name>m_sched_point_tree</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="104" column="28" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1aee0a724aa6354706af8173c2b8b93e7d" prot="private" static="no" mutable="no">
+        <type><ref refid="classmintime__resource__tree__t" kindref="compound">mintime_resource_tree_t</ref></type>
+        <definition>mintime_resource_tree_t planner::m_mt_resource_tree</definition>
+        <argsstring></argsstring>
+        <name>m_mt_resource_tree</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="105" column="29" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a446442a0cd63189106534f1c2ea0a7ea" prot="private" static="no" mutable="no">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t* planner::m_p0</definition>
+        <argsstring></argsstring>
+        <name>m_p0</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="106" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a714cb0285aad8874c3c9a99ce10bb5f2" prot="private" static="no" mutable="no">
+        <type>std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt; &gt;</type>
+        <definition>std::map&lt;int64_t, std::shared_ptr&lt;span_t&gt; &gt; planner::m_span_lookup</definition>
+        <argsstring></argsstring>
+        <name>m_span_lookup</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="107" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a87bb7f9c91acdd59c5824b8a9561a094" prot="private" static="no" mutable="no">
+        <type>std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt; &gt;::iterator</type>
+        <definition>std::map&lt;int64_t, std::shared_ptr&lt;span_t&gt; &gt;::iterator planner::m_span_lookup_iter</definition>
+        <argsstring></argsstring>
+        <name>m_span_lookup_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="108" column="25" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1afaf51017ce92567be260dd09cc1328e1" prot="private" static="no" mutable="no">
+        <type>std::map&lt; int64_t, <ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> * &gt;</type>
+        <definition>std::map&lt;int64_t, scheduled_point_t *&gt; planner::m_avail_time_iter</definition>
+        <argsstring></argsstring>
+        <name>m_avail_time_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="109" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a3c42016f20d33fcd4645a2c84500b8fb" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int planner::m_avail_time_iter_set</definition>
+        <argsstring></argsstring>
+        <name>m_avail_time_iter_set</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="110" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a66c08345e5cef26e9d888c25e88e6a29" prot="private" static="no" mutable="no">
+        <type><ref refid="structrequest__t" kindref="compound">request_t</ref></type>
+        <definition>request_t planner::m_current_request</definition>
+        <argsstring></argsstring>
+        <name>m_current_request</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="111" column="15" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classplanner_1a9f7bb4230499d2bb9409b29c941fffa2" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t planner::m_span_counter</definition>
+        <argsstring></argsstring>
+        <name>m_span_counter</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="112" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classplanner_1a2c32e5a1f00b57b97ee6c97c0bd87925" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner::planner</definition>
+        <argsstring>()</argsstring>
+        <name>planner</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="42" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ac79ad22da4553b40277a159c7debbab3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner::planner</definition>
+        <argsstring>(const int64_t base_time, const uint64_t duration, const uint64_t resource_totals, const char *in_resource_type)</argsstring>
+        <name>planner</name>
+        <param>
+          <type>const int64_t</type>
+          <declname>base_time</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>const uint64_t</type>
+          <declname>resource_totals</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>in_resource_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="43" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="63" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a490964e78bc7e297641ad701fb1e9b9f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner::planner</definition>
+        <argsstring>(const planner &amp;o)</argsstring>
+        <name>planner</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="45" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="82" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1aafa370a9fd9b22de7243f75995f5f999" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+        <definition>planner &amp; planner::operator=</definition>
+        <argsstring>(const planner &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="46" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="106" bodyend="134"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a292ceb9779337989adbf2a8f71eec0dc" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner::operator==</definition>
+        <argsstring>(const planner &amp;o) const</argsstring>
+        <name>operator==</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="47" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="136" bodyend="164"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a291cb8f3cdb2d88789e82142bba760bd" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner::operator!=</definition>
+        <argsstring>(const planner &amp;o) const</argsstring>
+        <name>operator!=</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="48" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="166" bodyend="169"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1af20988ad149042a8c1cd3d32ee068ae4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner::~planner</definition>
+        <argsstring>()</argsstring>
+        <name>~planner</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="49" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="171" bodyend="180"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a41d79ef313f88326f81122193e9a4301" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::erase</definition>
+        <argsstring>()</argsstring>
+        <name>erase</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="51" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="182" bodyend="195"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a58348e251f352f8deee2a0e1e5ba73d3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::reinitialize</definition>
+        <argsstring>(int64_t base_time, uint64_t duration)</argsstring>
+        <name>reinitialize</name>
+        <param>
+          <type>int64_t</type>
+          <declname>base_time</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="52" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="197" bodyend="215"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a587416193a1f323322102fad6823d833" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::restore_track_points</definition>
+        <argsstring>()</argsstring>
+        <name>restore_track_points</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="53" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="217" bodyend="230"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a004e227247383a0fbe8f4c6f8af34209" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::update_total</definition>
+        <argsstring>(uint64_t resource_total)</argsstring>
+        <name>update_total</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>resource_total</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="54" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="232" bodyend="254"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a71e3029e14ffc324be0fd290d4332eda" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner::get_total_resources</definition>
+        <argsstring>() const</argsstring>
+        <name>get_total_resources</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="57" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="256" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ae6111f9321d6f2cf96bb194acf7dfed9" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; planner::get_resource_type</definition>
+        <argsstring>() const</argsstring>
+        <name>get_resource_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="58" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="261" bodyend="264"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a734e161f2bbf50b159437310c0b8b129" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner::get_plan_start</definition>
+        <argsstring>() const</argsstring>
+        <name>get_plan_start</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="59" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="266" bodyend="269"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a704231e4001db421d5d12033e5e0761f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t planner::get_plan_end</definition>
+        <argsstring>() const</argsstring>
+        <name>get_plan_end</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="60" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="271" bodyend="274"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a7e4ae0e239085c698fdc5bf4ac87a375" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::mt_tree_insert</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>mt_tree_insert</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="62" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="276" bodyend="279"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1af332dfa155b64993db402b3c7c354609" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::mt_tree_remove</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>mt_tree_remove</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="63" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="281" bodyend="284"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a7320991a97d32cdc5429cbfc2fad1c64" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::sp_tree_insert</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>sp_tree_insert</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="64" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="286" bodyend="289"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a12a53aba9777501bb76da0200a3eeff8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::sp_tree_remove</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>sp_tree_remove</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="65" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="291" bodyend="294"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a7dfe56eb0b264948039e7019ccf3a6f2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::destroy_sp_tree</definition>
+        <argsstring>()</argsstring>
+        <name>destroy_sp_tree</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="66" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="296" bodyend="299"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a0963704c3e81ab2ec18c25ed52f5f12f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * planner::sp_tree_search</definition>
+        <argsstring>(int64_t at)</argsstring>
+        <name>sp_tree_search</name>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="67" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="301" bodyend="304"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a25811bd6d6c7e15810328457520c41e3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * planner::sp_tree_get_state</definition>
+        <argsstring>(int64_t at)</argsstring>
+        <name>sp_tree_get_state</name>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="68" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="306" bodyend="309"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a62b3d6c511e269cd212c2fd773540811" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * planner::sp_tree_next</definition>
+        <argsstring>(scheduled_point_t *point) const</argsstring>
+        <name>sp_tree_next</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="69" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="311" bodyend="314"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a01c129e7a50114963e9e5b7b57c525dd" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * planner::mt_tree_get_mintime</definition>
+        <argsstring>(int64_t request) const</argsstring>
+        <name>mt_tree_get_mintime</name>
+        <param>
+          <type>int64_t</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="70" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="316" bodyend="319"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a5fb1064af6296d49e30944a39dfc4e70" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::clear_span_lookup</definition>
+        <argsstring>()</argsstring>
+        <name>clear_span_lookup</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="72" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="321" bodyend="324"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ae11fe5aabc80a6bb3590736aeb985e94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::span_lookup_erase</definition>
+        <argsstring>(std::map&lt; int64_t, std::shared_ptr&lt; span_t &gt;&gt;::iterator &amp;it)</argsstring>
+        <name>span_lookup_erase</name>
+        <param>
+          <type>std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt;&gt;::iterator &amp;</type>
+          <declname>it</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="73" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="326" bodyend="330"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a32e07dcca89d726ca7a50281a8142899" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt; &gt; &amp;</type>
+        <definition>const std::map&lt; int64_t, std::shared_ptr&lt; span_t &gt; &gt; &amp; planner::get_span_lookup_const</definition>
+        <argsstring>() const</argsstring>
+        <name>get_span_lookup_const</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="76" column="29" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="333" bodyend="336"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a9e3b0fba19b2f533422a2e9a8b097885" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt; &gt; &amp;</type>
+        <definition>std::map&lt; int64_t, std::shared_ptr&lt; span_t &gt; &gt; &amp; planner::get_span_lookup</definition>
+        <argsstring>()</argsstring>
+        <name>get_span_lookup</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="77" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="338" bodyend="341"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a2b09402940eb9e084081b8a3b7e2530f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t planner::span_lookup_get_size</definition>
+        <argsstring>() const</argsstring>
+        <name>span_lookup_get_size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="78" column="12" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="343" bodyend="346"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a465ae1e43b48e0cad0499dd025bd15aa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::span_lookup_insert</definition>
+        <argsstring>(int64_t span_id, std::shared_ptr&lt; span_t &gt; span)</argsstring>
+        <name>span_lookup_insert</name>
+        <param>
+          <type>int64_t</type>
+          <declname>span_id</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt;</type>
+          <declname>span</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="79" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="348" bodyend="353"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1aa3eceb772de32396a814842eb006688e" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt; &gt;::iterator</type>
+        <definition>const std::map&lt; int64_t, std::shared_ptr&lt; span_t &gt; &gt;::iterator planner::get_span_lookup_iter</definition>
+        <argsstring>() const</argsstring>
+        <name>get_span_lookup_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="81" column="29" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="362" bodyend="365"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a98afc266014b85769bc18848bdaeec8a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::set_span_lookup_iter</definition>
+        <argsstring>(std::map&lt; int64_t, std::shared_ptr&lt; span_t &gt;&gt;::iterator &amp;it)</argsstring>
+        <name>set_span_lookup_iter</name>
+        <param>
+          <type>std::map&lt; int64_t, std::shared_ptr&lt; <ref refid="structspan__t" kindref="compound">span_t</ref> &gt;&gt;::iterator &amp;</type>
+          <declname>it</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="82" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="355" bodyend="359"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ade218b415970439c060bfb7ddc7eb1b1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::incr_span_lookup_iter</definition>
+        <argsstring>()</argsstring>
+        <name>incr_span_lookup_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="84" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="367" bodyend="370"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a1f03d2aec301e03dc434cf5eb79df486" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::map&lt; int64_t, <ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> * &gt; &amp;</type>
+        <definition>std::map&lt; int64_t, scheduled_point_t * &gt; &amp; planner::get_avail_time_iter</definition>
+        <argsstring>()</argsstring>
+        <name>get_avail_time_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="86" column="14" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="372" bodyend="375"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a7933ecb80327a77143af44a4f02f318b" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::map&lt; int64_t, <ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> * &gt; &amp;</type>
+        <definition>const std::map&lt; int64_t, scheduled_point_t * &gt; &amp; planner::get_avail_time_iter_const</definition>
+        <argsstring>() const</argsstring>
+        <name>get_avail_time_iter_const</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="88" column="29" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="378" bodyend="381"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a3e64c25ed8b433b43d4dab2daf12b2dd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::clear_avail_time_iter</definition>
+        <argsstring>()</argsstring>
+        <name>clear_avail_time_iter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="89" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="383" bodyend="386"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a5589ef3cbf155dc9d3507ac1b06b00d6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::set_avail_time_iter_set</definition>
+        <argsstring>(int atime_iter_set)</argsstring>
+        <name>set_avail_time_iter_set</name>
+        <param>
+          <type>int</type>
+          <declname>atime_iter_set</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="90" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="388" bodyend="391"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1af715e60b2250461562a792b2ad340c64" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const int</type>
+        <definition>const int planner::get_avail_time_iter_set</definition>
+        <argsstring>() const</argsstring>
+        <name>get_avail_time_iter_set</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="91" column="15" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="393" bodyend="396"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a76df4f731b43512da17c7663cc799391" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structrequest__t" kindref="compound">request_t</ref> &amp;</type>
+        <definition>request_t &amp; planner::get_current_request</definition>
+        <argsstring>()</argsstring>
+        <name>get_current_request</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="93" column="15" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="398" bodyend="401"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ad4da4823c1acb23ec58bcd441cd8142c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="structrequest__t" kindref="compound">request_t</ref> &amp;</type>
+        <definition>const request_t &amp; planner::get_current_request_const</definition>
+        <argsstring>() const</argsstring>
+        <name>get_current_request_const</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="94" column="21" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="403" bodyend="406"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ac7d52f130791e891388749da57da6408" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void planner::incr_span_counter</definition>
+        <argsstring>()</argsstring>
+        <name>incr_span_counter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="96" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="408" bodyend="411"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a027999d10b14876e5cdd52d31f9c15c8" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const uint64_t</type>
+        <definition>const uint64_t planner::get_span_counter</definition>
+        <argsstring>() const</argsstring>
+        <name>get_span_counter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="97" column="20" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="413" bodyend="416"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classplanner_1a6d9d11389ff345412bcb394874f37b2b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::copy_trees</definition>
+        <argsstring>(const planner &amp;o)</argsstring>
+        <name>copy_trees</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="114" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="424" bodyend="453"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a1bf6a28dee6c18b7380058165d186414" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int planner::copy_maps</definition>
+        <argsstring>(const planner &amp;o)</argsstring>
+        <name>copy_maps</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="115" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="455" bodyend="489"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a4430154a0a1f4ff9919245536cebff8b" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner::span_lookups_equal</definition>
+        <argsstring>(const planner &amp;o) const</argsstring>
+        <name>span_lookups_equal</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="116" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="491" bodyend="510"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1a3e84cc3464c97cb97f1a625e814a873d" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner::avail_time_iters_equal</definition>
+        <argsstring>(const planner &amp;o) const</argsstring>
+        <name>avail_time_iters_equal</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="117" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="512" bodyend="534"/>
+      </memberdef>
+      <memberdef kind="function" id="classplanner_1ab750b354862d7a9d5d6fdc6a8ada28d8" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool planner::trees_equal</definition>
+        <argsstring>(const planner &amp;o) const</argsstring>
+        <name>trees_equal</name>
+        <param>
+          <type>const <ref refid="classplanner" kindref="compound">planner</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="118" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.cpp" bodystart="536" bodyend="553"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Planner class </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>mintime_resource_tree_t</label>
+        <link refid="classmintime__resource__tree__t"/>
+      </node>
+      <node id="1">
+        <label>planner</label>
+        <link refid="classplanner"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>m_mt_resource_tree</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_sched_point_tree</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_current_request</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_p0</edgelabel>
+        </childnode>
+      </node>
+      <node id="10">
+        <label>ygg::RBTreeNodeBase&lt; scheduled_point_rb_node_t &gt;</label>
+      </node>
+      <node id="6">
+        <label>mt_resource_rb_node_t</label>
+        <link refid="structmt__resource__rb__node__t"/>
+        <childnode refid="7" relation="public-inheritance">
+        </childnode>
+        <childnode refid="8" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>scheduled_point_t</label>
+        <link refid="structscheduled__point__t"/>
+        <childnode refid="6" relation="usage">
+          <edgelabel>resource_rb</edgelabel>
+        </childnode>
+        <childnode refid="9" relation="usage">
+          <edgelabel>point_rb</edgelabel>
+        </childnode>
+      </node>
+      <node id="8">
+        <label>ygg::RBTreeNodeBase&lt; mt_resource_rb_node_t &gt;</label>
+      </node>
+      <node id="7">
+        <label>rb_node_base_t</label>
+        <link refid="classrb__node__base__t"/>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_point</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>scheduled_point_tree_t</label>
+        <link refid="classscheduled__point__tree__t"/>
+      </node>
+      <node id="9">
+        <label>scheduled_point_rb_node_t</label>
+        <link refid="structscheduled__point__rb__node__t"/>
+        <childnode refid="7" relation="public-inheritance">
+        </childnode>
+        <childnode refid="10" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>request_t</label>
+        <link refid="structrequest__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" line="40" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner.hpp" bodystart="40" bodyend="119"/>
+    <listofallmembers>
+      <member refid="classplanner_1a3e84cc3464c97cb97f1a625e814a873d" prot="private" virt="non-virtual"><scope>planner</scope><name>avail_time_iters_equal</name></member>
+      <member refid="classplanner_1a3e64c25ed8b433b43d4dab2daf12b2dd" prot="public" virt="non-virtual"><scope>planner</scope><name>clear_avail_time_iter</name></member>
+      <member refid="classplanner_1a5fb1064af6296d49e30944a39dfc4e70" prot="public" virt="non-virtual"><scope>planner</scope><name>clear_span_lookup</name></member>
+      <member refid="classplanner_1a1bf6a28dee6c18b7380058165d186414" prot="private" virt="non-virtual"><scope>planner</scope><name>copy_maps</name></member>
+      <member refid="classplanner_1a6d9d11389ff345412bcb394874f37b2b" prot="private" virt="non-virtual"><scope>planner</scope><name>copy_trees</name></member>
+      <member refid="classplanner_1a7dfe56eb0b264948039e7019ccf3a6f2" prot="public" virt="non-virtual"><scope>planner</scope><name>destroy_sp_tree</name></member>
+      <member refid="classplanner_1a41d79ef313f88326f81122193e9a4301" prot="public" virt="non-virtual"><scope>planner</scope><name>erase</name></member>
+      <member refid="classplanner_1a1f03d2aec301e03dc434cf5eb79df486" prot="public" virt="non-virtual"><scope>planner</scope><name>get_avail_time_iter</name></member>
+      <member refid="classplanner_1a7933ecb80327a77143af44a4f02f318b" prot="public" virt="non-virtual"><scope>planner</scope><name>get_avail_time_iter_const</name></member>
+      <member refid="classplanner_1af715e60b2250461562a792b2ad340c64" prot="public" virt="non-virtual"><scope>planner</scope><name>get_avail_time_iter_set</name></member>
+      <member refid="classplanner_1a76df4f731b43512da17c7663cc799391" prot="public" virt="non-virtual"><scope>planner</scope><name>get_current_request</name></member>
+      <member refid="classplanner_1ad4da4823c1acb23ec58bcd441cd8142c" prot="public" virt="non-virtual"><scope>planner</scope><name>get_current_request_const</name></member>
+      <member refid="classplanner_1a704231e4001db421d5d12033e5e0761f" prot="public" virt="non-virtual"><scope>planner</scope><name>get_plan_end</name></member>
+      <member refid="classplanner_1a734e161f2bbf50b159437310c0b8b129" prot="public" virt="non-virtual"><scope>planner</scope><name>get_plan_start</name></member>
+      <member refid="classplanner_1ae6111f9321d6f2cf96bb194acf7dfed9" prot="public" virt="non-virtual"><scope>planner</scope><name>get_resource_type</name></member>
+      <member refid="classplanner_1a027999d10b14876e5cdd52d31f9c15c8" prot="public" virt="non-virtual"><scope>planner</scope><name>get_span_counter</name></member>
+      <member refid="classplanner_1a9e3b0fba19b2f533422a2e9a8b097885" prot="public" virt="non-virtual"><scope>planner</scope><name>get_span_lookup</name></member>
+      <member refid="classplanner_1a32e07dcca89d726ca7a50281a8142899" prot="public" virt="non-virtual"><scope>planner</scope><name>get_span_lookup_const</name></member>
+      <member refid="classplanner_1aa3eceb772de32396a814842eb006688e" prot="public" virt="non-virtual"><scope>planner</scope><name>get_span_lookup_iter</name></member>
+      <member refid="classplanner_1a71e3029e14ffc324be0fd290d4332eda" prot="public" virt="non-virtual"><scope>planner</scope><name>get_total_resources</name></member>
+      <member refid="classplanner_1ac7d52f130791e891388749da57da6408" prot="public" virt="non-virtual"><scope>planner</scope><name>incr_span_counter</name></member>
+      <member refid="classplanner_1ade218b415970439c060bfb7ddc7eb1b1" prot="public" virt="non-virtual"><scope>planner</scope><name>incr_span_lookup_iter</name></member>
+      <member refid="classplanner_1afaf51017ce92567be260dd09cc1328e1" prot="private" virt="non-virtual"><scope>planner</scope><name>m_avail_time_iter</name></member>
+      <member refid="classplanner_1a3c42016f20d33fcd4645a2c84500b8fb" prot="private" virt="non-virtual"><scope>planner</scope><name>m_avail_time_iter_set</name></member>
+      <member refid="classplanner_1a66c08345e5cef26e9d888c25e88e6a29" prot="private" virt="non-virtual"><scope>planner</scope><name>m_current_request</name></member>
+      <member refid="classplanner_1aee0a724aa6354706af8173c2b8b93e7d" prot="private" virt="non-virtual"><scope>planner</scope><name>m_mt_resource_tree</name></member>
+      <member refid="classplanner_1a446442a0cd63189106534f1c2ea0a7ea" prot="private" virt="non-virtual"><scope>planner</scope><name>m_p0</name></member>
+      <member refid="classplanner_1ae5af49863580a975d518a71326e13653" prot="private" virt="non-virtual"><scope>planner</scope><name>m_plan_end</name></member>
+      <member refid="classplanner_1aeae9a89b4301f50bbc4255d09c80a363" prot="private" virt="non-virtual"><scope>planner</scope><name>m_plan_start</name></member>
+      <member refid="classplanner_1a649f536b543445f61cf461b1bc0211c4" prot="private" virt="non-virtual"><scope>planner</scope><name>m_resource_type</name></member>
+      <member refid="classplanner_1aa5398fc392f4527351ab4f3d9a60e64d" prot="private" virt="non-virtual"><scope>planner</scope><name>m_sched_point_tree</name></member>
+      <member refid="classplanner_1a9f7bb4230499d2bb9409b29c941fffa2" prot="private" virt="non-virtual"><scope>planner</scope><name>m_span_counter</name></member>
+      <member refid="classplanner_1a714cb0285aad8874c3c9a99ce10bb5f2" prot="private" virt="non-virtual"><scope>planner</scope><name>m_span_lookup</name></member>
+      <member refid="classplanner_1a87bb7f9c91acdd59c5824b8a9561a094" prot="private" virt="non-virtual"><scope>planner</scope><name>m_span_lookup_iter</name></member>
+      <member refid="classplanner_1a79bb34c9981bed49734c0ddf585487a4" prot="private" virt="non-virtual"><scope>planner</scope><name>m_total_resources</name></member>
+      <member refid="classplanner_1a01c129e7a50114963e9e5b7b57c525dd" prot="public" virt="non-virtual"><scope>planner</scope><name>mt_tree_get_mintime</name></member>
+      <member refid="classplanner_1a7e4ae0e239085c698fdc5bf4ac87a375" prot="public" virt="non-virtual"><scope>planner</scope><name>mt_tree_insert</name></member>
+      <member refid="classplanner_1af332dfa155b64993db402b3c7c354609" prot="public" virt="non-virtual"><scope>planner</scope><name>mt_tree_remove</name></member>
+      <member refid="classplanner_1a291cb8f3cdb2d88789e82142bba760bd" prot="public" virt="non-virtual"><scope>planner</scope><name>operator!=</name></member>
+      <member refid="classplanner_1aafa370a9fd9b22de7243f75995f5f999" prot="public" virt="non-virtual"><scope>planner</scope><name>operator=</name></member>
+      <member refid="classplanner_1a292ceb9779337989adbf2a8f71eec0dc" prot="public" virt="non-virtual"><scope>planner</scope><name>operator==</name></member>
+      <member refid="classplanner_1a2c32e5a1f00b57b97ee6c97c0bd87925" prot="public" virt="non-virtual"><scope>planner</scope><name>planner</name></member>
+      <member refid="classplanner_1ac79ad22da4553b40277a159c7debbab3" prot="public" virt="non-virtual"><scope>planner</scope><name>planner</name></member>
+      <member refid="classplanner_1a490964e78bc7e297641ad701fb1e9b9f" prot="public" virt="non-virtual"><scope>planner</scope><name>planner</name></member>
+      <member refid="classplanner_1a58348e251f352f8deee2a0e1e5ba73d3" prot="public" virt="non-virtual"><scope>planner</scope><name>reinitialize</name></member>
+      <member refid="classplanner_1a587416193a1f323322102fad6823d833" prot="public" virt="non-virtual"><scope>planner</scope><name>restore_track_points</name></member>
+      <member refid="classplanner_1a5589ef3cbf155dc9d3507ac1b06b00d6" prot="public" virt="non-virtual"><scope>planner</scope><name>set_avail_time_iter_set</name></member>
+      <member refid="classplanner_1a98afc266014b85769bc18848bdaeec8a" prot="public" virt="non-virtual"><scope>planner</scope><name>set_span_lookup_iter</name></member>
+      <member refid="classplanner_1a25811bd6d6c7e15810328457520c41e3" prot="public" virt="non-virtual"><scope>planner</scope><name>sp_tree_get_state</name></member>
+      <member refid="classplanner_1a7320991a97d32cdc5429cbfc2fad1c64" prot="public" virt="non-virtual"><scope>planner</scope><name>sp_tree_insert</name></member>
+      <member refid="classplanner_1a62b3d6c511e269cd212c2fd773540811" prot="public" virt="non-virtual"><scope>planner</scope><name>sp_tree_next</name></member>
+      <member refid="classplanner_1a12a53aba9777501bb76da0200a3eeff8" prot="public" virt="non-virtual"><scope>planner</scope><name>sp_tree_remove</name></member>
+      <member refid="classplanner_1a0963704c3e81ab2ec18c25ed52f5f12f" prot="public" virt="non-virtual"><scope>planner</scope><name>sp_tree_search</name></member>
+      <member refid="classplanner_1ae11fe5aabc80a6bb3590736aeb985e94" prot="public" virt="non-virtual"><scope>planner</scope><name>span_lookup_erase</name></member>
+      <member refid="classplanner_1a2b09402940eb9e084081b8a3b7e2530f" prot="public" virt="non-virtual"><scope>planner</scope><name>span_lookup_get_size</name></member>
+      <member refid="classplanner_1a465ae1e43b48e0cad0499dd025bd15aa" prot="public" virt="non-virtual"><scope>planner</scope><name>span_lookup_insert</name></member>
+      <member refid="classplanner_1a4430154a0a1f4ff9919245536cebff8b" prot="private" virt="non-virtual"><scope>planner</scope><name>span_lookups_equal</name></member>
+      <member refid="classplanner_1ab750b354862d7a9d5d6fdc6a8ada28d8" prot="private" virt="non-virtual"><scope>planner</scope><name>trees_equal</name></member>
+      <member refid="classplanner_1a004e227247383a0fbe8f4c6f8af34209" prot="public" virt="non-virtual"><scope>planner</scope><name>update_total</name></member>
+      <member refid="classplanner_1af20988ad149042a8c1cd3d32ee068ae4" prot="public" virt="non-virtual"><scope>planner</scope><name>~planner</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

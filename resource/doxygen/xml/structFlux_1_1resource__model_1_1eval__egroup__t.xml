@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1eval__egroup__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::eval_egroup_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1ae2be23b85d9bc425f9cf821228060db4" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::eval_egroup_t::score</definition>
+        <argsstring></argsstring>
+        <name>score</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="39" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1aaa38a96714c1a029453aaf3c6d5c8cf5" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_egroup_t::count</definition>
+        <argsstring></argsstring>
+        <name>count</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="40" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1a05ce7806d856d52f33aea261f479f36c" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_egroup_t::needs</definition>
+        <argsstring></argsstring>
+        <name>needs</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="41" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1a5045e2a3cb0efe91e0e5cf3a906dbec8" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_egroup_t::exclusive</definition>
+        <argsstring></argsstring>
+        <name>exclusive</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="42" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1aa2a07c96af05d553accf86e258ed5d71" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::eval_egroup_t::root</definition>
+        <argsstring></argsstring>
+        <name>root</name>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="43" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__egroup__t_1ab634b32b394e7903460d0006cbe4e459" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structFlux_1_1resource__model_1_1eval__edg__t" kindref="compound">eval_edg_t</ref> &gt;</type>
+        <definition>std::vector&lt;eval_edg_t&gt; Flux::resource_model::eval_egroup_t::edges</definition>
+        <argsstring></argsstring>
+        <name>edges</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="44" column="17" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__egroup__t_1aa421a42d5315389065dc92da8e9aea82" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::eval_egroup_t::eval_egroup_t</definition>
+        <argsstring>()</argsstring>
+        <name>eval_egroup_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="33" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="42" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__egroup__t_1afde99ae3aee04f91e0162b69fd4e8730" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::eval_egroup_t::eval_egroup_t</definition>
+        <argsstring>(int64_t s, unsigned int c, unsigned int n, unsigned int x, bool r)</argsstring>
+        <name>eval_egroup_t</name>
+        <param>
+          <type>int64_t</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>c</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="34" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="47" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__egroup__t_1a7ef9064137ad7f27be972eec36b78e9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::eval_egroup_t::eval_egroup_t</definition>
+        <argsstring>(const eval_egroup_t &amp;o)</argsstring>
+        <name>eval_egroup_t</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="36" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="55" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__egroup__t_1ae0258ecd8709fa79030068380f8f394a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+        <definition>eval_egroup_t &amp; Flux::resource_model::eval_egroup_t::operator=</definition>
+        <argsstring>(const eval_egroup_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="37" column="19" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="65" bodyend="74"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="32" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="32" bodyend="45"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1aaa38a96714c1a029453aaf3c6d5c8cf5" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>count</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1ab634b32b394e7903460d0006cbe4e459" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>edges</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1aa421a42d5315389065dc92da8e9aea82" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>eval_egroup_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1afde99ae3aee04f91e0162b69fd4e8730" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>eval_egroup_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1a7ef9064137ad7f27be972eec36b78e9b" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>eval_egroup_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1a5045e2a3cb0efe91e0e5cf3a906dbec8" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>exclusive</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1a05ce7806d856d52f33aea261f479f36c" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>needs</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1ae0258ecd8709fa79030068380f8f394a" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1aa2a07c96af05d553accf86e258ed5d71" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>root</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__egroup__t_1ae2be23b85d9bc425f9cf821228060db4" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_egroup_t</scope><name>score</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

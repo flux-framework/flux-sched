@@ -1,0 +1,144 @@
+\hypertarget{classdfs__emitter__t}{}\doxysubsection{dfs\+\_\+emitter\+\_\+t Class Reference}
+\label{classdfs__emitter__t}\index{dfs\_emitter\_t@{dfs\_emitter\_t}}
+
+
+Inheritance diagram for dfs\+\_\+emitter\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=175pt]{classdfs__emitter__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for dfs\+\_\+emitter\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classdfs__emitter__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_abbe4429dee4f9795a6643b51c470124e}\label{classdfs__emitter__t_abbe4429dee4f9795a6643b51c470124e}} 
+{\bfseries dfs\+\_\+emitter\+\_\+t} (resource\+\_\+graph\+\_\+t $\ast$g\+\_\+p, \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} $\ast$gm\+\_\+p, \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t}{resource\+\_\+gen\+\_\+spec\+\_\+t}} $\ast$g)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a507669ebf68323319849c0d3b7e761e2}\label{classdfs__emitter__t_a507669ebf68323319849c0d3b7e761e2}} 
+{\bfseries dfs\+\_\+emitter\+\_\+t} (const \mbox{\hyperlink{classdfs__emitter__t}{dfs\+\_\+emitter\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a2249f6f18493919d9e86d3409fb6c80b}\label{classdfs__emitter__t_a2249f6f18493919d9e86d3409fb6c80b}} 
+\mbox{\hyperlink{classdfs__emitter__t}{dfs\+\_\+emitter\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{classdfs__emitter__t}{dfs\+\_\+emitter\+\_\+t}} \&o)
+\item 
+void \mbox{\hyperlink{classdfs__emitter__t_a13228d44d44b1dabf3b41ad74701460b}{tree\+\_\+edge}} (gge\+\_\+t e, const gg\+\_\+t \&recipe)
+\item 
+void \mbox{\hyperlink{classdfs__emitter__t_ae80e65ebb78b2e65965dfcadfd79ad82}{finish\+\_\+vertex}} (ggv\+\_\+t u, const gg\+\_\+t \&recipe)
+\item 
+const std\+::string \& \mbox{\hyperlink{classdfs__emitter__t_a4a99694253ffa9424ad55996902a3332}{err\+\_\+message}} () const
+\item 
+void \mbox{\hyperlink{classdfs__emitter__t_a3574ad46cbf2414622b6796d0a257ac2}{set\+\_\+rank}} (int rank)
+\item 
+int \mbox{\hyperlink{classdfs__emitter__t_aa6b703e9cb2d319a38a3257b1a38f2ba}{get\+\_\+rank}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_af48a74f7a92dae4c3f165cc7d514fc50}\label{classdfs__emitter__t_af48a74f7a92dae4c3f165cc7d514fc50}} 
+vtx\+\_\+t {\bfseries emit\+\_\+vertex} (ggv\+\_\+t u, gge\+\_\+t e, const gg\+\_\+t \&recipe, vtx\+\_\+t src\+\_\+v, int i, int sz, int j)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a94266974c9f86bbdbea1732f6bf1fcca}\label{classdfs__emitter__t_a94266974c9f86bbdbea1732f6bf1fcca}} 
+int {\bfseries raw\+\_\+edge} (vtx\+\_\+t src\+\_\+v, vtx\+\_\+t tgt\+\_\+v, edg\+\_\+t \&e)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a5a4f24ba97c2790aa0602742dcdcbbea}\label{classdfs__emitter__t_a5a4f24ba97c2790aa0602742dcdcbbea}} 
+void {\bfseries emit\+\_\+edges} (gge\+\_\+t e, const gg\+\_\+t \&recipe, vtx\+\_\+t src\+\_\+v, vtx\+\_\+t tgt\+\_\+v)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_ae7e1862ffe164674dcbc6cb8b533475c}\label{classdfs__emitter__t_ae7e1862ffe164674dcbc6cb8b533475c}} 
+int {\bfseries path\+\_\+prefix} (const std\+::string \&pth, int upl, std\+::string \&pref)
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a118244c8aa98c13072ceeb36b6d79eeb}\label{classdfs__emitter__t_a118244c8aa98c13072ceeb36b6d79eeb}} 
+int {\bfseries gen\+\_\+id} (gge\+\_\+t e, const gg\+\_\+t \&recipe, int i, int sz, int j)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_ace6e02597e83061d608198399e2e76ce}\label{classdfs__emitter__t_ace6e02597e83061d608198399e2e76ce}} 
+std\+::map$<$ ggv\+\_\+t, std\+::vector$<$ vtx\+\_\+t $>$ $>$ {\bfseries m\+\_\+gen\+\_\+src\+\_\+vtx}
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a0c927b92448b0a3f0521dd93744b8995}\label{classdfs__emitter__t_a0c927b92448b0a3f0521dd93744b8995}} 
+std\+::deque$<$ int $>$ {\bfseries m\+\_\+hier\+\_\+scales}
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a45a564b9d08d22f5e28c6fb404ad85e0}\label{classdfs__emitter__t_a45a564b9d08d22f5e28c6fb404ad85e0}} 
+resource\+\_\+graph\+\_\+t $\ast$ {\bfseries m\+\_\+g\+\_\+p} = NULL
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_abc94a0823f5c46e0b7d7424f720d09d4}\label{classdfs__emitter__t_abc94a0823f5c46e0b7d7424f720d09d4}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__graph__metadata__t}{resource\+\_\+graph\+\_\+metadata\+\_\+t}} $\ast$ {\bfseries m\+\_\+gm\+\_\+p} = NULL
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a1e716a6bbc208509569ec90ed3299b78}\label{classdfs__emitter__t_a1e716a6bbc208509569ec90ed3299b78}} 
+\mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t}{resource\+\_\+gen\+\_\+spec\+\_\+t}} $\ast$ {\bfseries m\+\_\+gspec\+\_\+p} = NULL
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_ad7fab59741ca7651589bbbe311a1df38}\label{classdfs__emitter__t_ad7fab59741ca7651589bbbe311a1df38}} 
+int {\bfseries m\+\_\+rank} = -\/1
+\item 
+\mbox{\Hypertarget{classdfs__emitter__t_a3765df0630390e73cd0898ca145d6b41}\label{classdfs__emitter__t_a3765df0630390e73cd0898ca145d6b41}} 
+std\+::string {\bfseries m\+\_\+err\+\_\+msg} = \char`\"{}\char`\"{}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Note that this class must be copy-\/constructible required by the concept of the depth first search visitor. It must be lightweight. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classdfs__emitter__t_a4a99694253ffa9424ad55996902a3332}\label{classdfs__emitter__t_a4a99694253ffa9424ad55996902a3332}} 
+\index{dfs\_emitter\_t@{dfs\_emitter\_t}!err\_message@{err\_message}}
+\index{err\_message@{err\_message}!dfs\_emitter\_t@{dfs\_emitter\_t}}
+\doxyparagraph{\texorpdfstring{err\_message()}{err\_message()}}
+{\footnotesize\ttfamily const std\+::string \& dfs\+\_\+emitter\+\_\+t\+::err\+\_\+message (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+Return the error message. All error messages that encountered have been concatenated.
+
+\begin{DoxyReturn}{Returns}
+error message 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdfs__emitter__t_ae80e65ebb78b2e65965dfcadfd79ad82}\label{classdfs__emitter__t_ae80e65ebb78b2e65965dfcadfd79ad82}} 
+\index{dfs\_emitter\_t@{dfs\_emitter\_t}!finish\_vertex@{finish\_vertex}}
+\index{finish\_vertex@{finish\_vertex}!dfs\_emitter\_t@{dfs\_emitter\_t}}
+\doxyparagraph{\texorpdfstring{finish\_vertex()}{finish\_vertex()}}
+{\footnotesize\ttfamily void dfs\+\_\+emitter\+\_\+t\+::finish\+\_\+vertex (\begin{DoxyParamCaption}\item[{ggv\+\_\+t}]{u,  }\item[{const gg\+\_\+t \&}]{recipe }\end{DoxyParamCaption})}
+
+Visitor method that is invoked on a finish vertex by DFS visitor
+
+
+\begin{DoxyParams}{Parameters}
+{\em u} & resource generator graph vertex descriptor \\
+\hline
+{\em recipe} & resource generator recipe graph \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classdfs__emitter__t_aa6b703e9cb2d319a38a3257b1a38f2ba}\label{classdfs__emitter__t_aa6b703e9cb2d319a38a3257b1a38f2ba}} 
+\index{dfs\_emitter\_t@{dfs\_emitter\_t}!get\_rank@{get\_rank}}
+\index{get\_rank@{get\_rank}!dfs\_emitter\_t@{dfs\_emitter\_t}}
+\doxyparagraph{\texorpdfstring{get\_rank()}{get\_rank()}}
+{\footnotesize\ttfamily int dfs\+\_\+emitter\+\_\+t\+::get\+\_\+rank (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Return rank whose value will be used to set the rank field of all of the generated vertices.
+
+\begin{DoxyReturn}{Returns}
+rank 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classdfs__emitter__t_a3574ad46cbf2414622b6796d0a257ac2}\label{classdfs__emitter__t_a3574ad46cbf2414622b6796d0a257ac2}} 
+\index{dfs\_emitter\_t@{dfs\_emitter\_t}!set\_rank@{set\_rank}}
+\index{set\_rank@{set\_rank}!dfs\_emitter\_t@{dfs\_emitter\_t}}
+\doxyparagraph{\texorpdfstring{set\_rank()}{set\_rank()}}
+{\footnotesize\ttfamily void dfs\+\_\+emitter\+\_\+t\+::set\+\_\+rank (\begin{DoxyParamCaption}\item[{int}]{rank }\end{DoxyParamCaption})}
+
+Set rank whose value will be used to set the rank field of all of the generated vertices. \mbox{\Hypertarget{classdfs__emitter__t_a13228d44d44b1dabf3b41ad74701460b}\label{classdfs__emitter__t_a13228d44d44b1dabf3b41ad74701460b}} 
+\index{dfs\_emitter\_t@{dfs\_emitter\_t}!tree\_edge@{tree\_edge}}
+\index{tree\_edge@{tree\_edge}!dfs\_emitter\_t@{dfs\_emitter\_t}}
+\doxyparagraph{\texorpdfstring{tree\_edge()}{tree\_edge()}}
+{\footnotesize\ttfamily void dfs\+\_\+emitter\+\_\+t\+::tree\+\_\+edge (\begin{DoxyParamCaption}\item[{gge\+\_\+t}]{e,  }\item[{const gg\+\_\+t \&}]{recipe }\end{DoxyParamCaption})}
+
+ROOT
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+reader\+\_\+grug.\+cpp\end{DoxyCompactItemize}

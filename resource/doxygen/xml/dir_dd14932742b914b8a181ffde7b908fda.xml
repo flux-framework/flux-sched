@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_dd14932742b914b8a181ffde7b908fda" kind="dir">
+    <compoundname>schema</compoundname>
+    <innerdir refid="dir_01f0ad7192fff4b1c9c3e821b01012af">test</innerdir>
+    <innerfile refid="color_8cpp">color.cpp</innerfile>
+    <innerfile refid="color_8hpp">color.hpp</innerfile>
+    <innerfile refid="data__std_8hpp">data_std.hpp</innerfile>
+    <innerfile refid="ephemeral_8cpp">ephemeral.cpp</innerfile>
+    <innerfile refid="ephemeral_8hpp">ephemeral.hpp</innerfile>
+    <innerfile refid="infra__data_8cpp">infra_data.cpp</innerfile>
+    <innerfile refid="infra__data_8hpp">infra_data.hpp</innerfile>
+    <innerfile refid="resource__base_8hpp">resource_base.hpp</innerfile>
+    <innerfile refid="resource__data_8cpp">resource_data.cpp</innerfile>
+    <innerfile refid="resource__data_8hpp">resource_data.hpp</innerfile>
+    <innerfile refid="resource__graph_8hpp">resource_graph.hpp</innerfile>
+    <innerfile refid="sched__data_8cpp">sched_data.cpp</innerfile>
+    <innerfile refid="sched__data_8hpp">sched_data.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/schema/"/>
+  </compounddef>
+</doxygen>

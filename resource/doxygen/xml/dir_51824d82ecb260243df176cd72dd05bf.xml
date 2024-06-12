@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_51824d82ecb260243df176cd72dd05bf" kind="dir">
+    <compoundname>test</compoundname>
+    <innerfile refid="planner__test01_8cpp">planner_test01.cpp</innerfile>
+    <innerfile refid="planner__test02_8cpp">planner_test02.cpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/test/"/>
+  </compounddef>
+</doxygen>

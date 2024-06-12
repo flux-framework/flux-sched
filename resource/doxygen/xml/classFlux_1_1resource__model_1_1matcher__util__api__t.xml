@@ -1,0 +1,399 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1matcher__util__api__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::matcher_util_api_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" prot="public" virt="non-virtual">Flux::resource_model::dfu_match_cb_t</derivedcompoundref>
+    <includes refid="matcher_8hpp" local="no">matcher.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a41476a6cef1834ab550d1ecea6e0e47d" prot="private" static="no" mutable="no">
+        <type>std::set&lt; std::string &gt;</type>
+        <definition>std::set&lt;std::string&gt; Flux::resource_model::matcher_util_api_t::m_x_resource_types</definition>
+        <argsstring></argsstring>
+        <name>m_x_resource_types</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="162" column="14" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="162" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38a73bf6d64422f6668c65d9deea821f" prot="private" static="no" mutable="no">
+        <type>std::map&lt; subsystem_t, std::map&lt; std::string, std::set&lt; std::string &gt; &gt; &gt;</type>
+        <definition>std::map&lt;subsystem_t, std::map&lt;std::string, std::set&lt;std::string&gt; &gt; &gt; Flux::resource_model::matcher_util_api_t::m_pruning_types</definition>
+        <argsstring></argsstring>
+        <name>m_pruning_types</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="173" column="2" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="173" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa6ada097e69637aca778319b51edd0eb" prot="private" static="no" mutable="no">
+        <type>std::map&lt; subsystem_t, std::set&lt; std::string &gt; &gt;</type>
+        <definition>std::map&lt;subsystem_t, std::set&lt;std::string&gt; &gt; Flux::resource_model::matcher_util_api_t::m_total_set</definition>
+        <argsstring></argsstring>
+        <name>m_total_set</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="174" column="14" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="174" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1acb7086d922080c12528e3bd34d1ee8f5" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::matcher_util_api_t::calc_count</definition>
+        <argsstring>(const Flux::Jobspec::Resource &amp;resource, unsigned int qual_cnt) const</argsstring>
+        <name>calc_count</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Flux::Jobspec::Resource</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>qual_cnt</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Calculate the count that should be allocated, which is a function of the number of qualifed available resources, minimum/maximum/operator requirement of the jobspec.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>resource</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource section of the jobspec. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>qual_cnt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>available qualified resources. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 when not available; count otherwise. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="100" column="18" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="106" bodyend="151"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1adca59dd8da6133d47d5fcccc40c42a86" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::matcher_util_api_t::calc_effective_max</definition>
+        <argsstring>(const Flux::Jobspec::Resource &amp;resource) const</argsstring>
+        <name>calc_effective_max</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Flux::Jobspec::Resource</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Calculate the effective max count that should be allocated.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>resource</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource section of the jobspec. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Effective max count; 0 if an error is encountered. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="108" column="18" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="153" bodyend="157"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a9dd39a530f176db43f406c6e2e8ac687" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::matcher_util_api_t::set_pruning_types_w_spec</definition>
+        <argsstring>(const std::string &amp;subsystem, const std::string &amp;spec)</argsstring>
+        <name>set_pruning_types_w_spec</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>spec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Set prune filters based on spec. The spec should comply with the following format: &lt;HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]&gt; Install a planner-based filter at each High-Level (HL) resource vertex which tracks the state of the Low-Level (LL) resources in aggregate, residing under its subtree. If a jobspec requests 1 node with 4 cores, and the visiting compute-node vertex has only a total of 2 available cores in aggregate at its subtree, this filter allows the traverser to prune a further descent to accelerate the search. Use the ALL keyword for HL-resource if you want LL-resource to be tracked at all of the HL-resource vertices. Examples: rack:node,node:core ALL:core,cluster:node,rack:node</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>subsystem</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>subsystem </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>spec</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>prune filter specification string </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="130" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="191" bodyend="219"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a97e8108cd4b598d8f083bf7c5afee68c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::matcher_util_api_t::set_pruning_type</definition>
+        <argsstring>(const std::string &amp;subsystem, const std::string &amp;anchor_type, const std::string &amp;prune_type)</argsstring>
+        <name>set_pruning_type</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>anchor_type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prune_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="133" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="221" bodyend="247"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa33d6d971be5fe49166ad925204147fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::matcher_util_api_t::is_my_pruning_type</definition>
+        <argsstring>(const std::string &amp;subsystem, const std::string &amp;anchor_type, const std::string &amp;prune_type)</argsstring>
+        <name>is_my_pruning_type</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>anchor_type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prune_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="137" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="249" bodyend="267"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a0ae3e17de59d8c078a2e3fdf014c4c6f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::matcher_util_api_t::is_pruning_type</definition>
+        <argsstring>(const std::string &amp;subsystem, const std::string &amp;prune_type)</argsstring>
+        <name>is_pruning_type</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>prune_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="141" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="269" bodyend="280"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38dd5ce78db680417e7b340e47f5f634" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::matcher_util_api_t::get_my_pruning_types</definition>
+        <argsstring>(const std::string &amp;subsystem, const std::string &amp;anchor_type, std::vector&lt; std::string &gt; &amp;out_prune_types)</argsstring>
+        <name>get_my_pruning_types</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>anchor_type</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>out_prune_types</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="145" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="282" bodyend="307"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a866375743eab8e141cc5017a03976c9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::matcher_util_api_t::add_exclusive_resource_type</definition>
+        <argsstring>(const std::string &amp;type)</argsstring>
+        <name>add_exclusive_resource_type</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="149" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="309" bodyend="320"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a5b8a02f247cba99f289b59c985b2dcc9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::matcher_util_api_t::is_resource_type_exclusive</definition>
+        <argsstring>(const std::string &amp;type)</argsstring>
+        <name>is_resource_type_exclusive</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="151" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="341" bodyend="344"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2139cafb9dedce38e8ef90b197ed8bec" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::set&lt; std::string &gt; &amp;</type>
+        <definition>const std::set&lt; std::string &gt; &amp; Flux::resource_model::matcher_util_api_t::get_exclusive_resource_types</definition>
+        <argsstring>() const</argsstring>
+        <name>get_exclusive_resource_types</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="153" column="20" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="322" bodyend="325"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a73323a2d2736559d9858e4616d62c373" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::matcher_util_api_t::reset_exclusive_resource_types</definition>
+        <argsstring>(const std::set&lt; std::string &gt; &amp;x_types)</argsstring>
+        <name>reset_exclusive_resource_types</name>
+        <param>
+          <type>const std::set&lt; std::string &gt; &amp;</type>
+          <declname>x_types</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="155" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="327" bodyend="339"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2e2bbd4c7b24a84e83a91a27792d8481" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::matcher_util_api_t::register_resource_pair</definition>
+        <argsstring>(const std::string &amp;subsystem, std::string &amp;r_pair)</argsstring>
+        <name>register_resource_pair</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>r_pair</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="159" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.cpp" bodystart="159" bodyend="189"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Base utility method for matchers. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Flux::resource_model::matcher_util_api_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__util__api__t"/>
+      </node>
+      <node id="5">
+        <label>Flux::resource_model::var_aware_t</label>
+        <link refid="structFlux_1_1resource__model_1_1var__aware__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::dfu_match_cb_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__match__cb__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;</label>
+        <link refid="classFlux_1_1resource__model_1_1multilevel__id__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::greater_interval_first_t</label>
+        <link refid="structFlux_1_1resource__model_1_1greater__interval__first__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="88" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="89" bodyend="175"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a866375743eab8e141cc5017a03976c9b" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>add_exclusive_resource_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1acb7086d922080c12528e3bd34d1ee8f5" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>calc_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1adca59dd8da6133d47d5fcccc40c42a86" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>calc_effective_max</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2139cafb9dedce38e8ef90b197ed8bec" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>get_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38dd5ce78db680417e7b340e47f5f634" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>get_my_pruning_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa33d6d971be5fe49166ad925204147fa" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>is_my_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a0ae3e17de59d8c078a2e3fdf014c4c6f" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>is_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a5b8a02f247cba99f289b59c985b2dcc9" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>is_resource_type_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38a73bf6d64422f6668c65d9deea821f" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>m_pruning_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa6ada097e69637aca778319b51edd0eb" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>m_total_set</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a41476a6cef1834ab550d1ecea6e0e47d" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>m_x_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2e2bbd4c7b24a84e83a91a27792d8481" prot="private" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>register_resource_pair</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a73323a2d2736559d9858e4616d62c373" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>reset_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a97e8108cd4b598d8f083bf7c5afee68c" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>set_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a9dd39a530f176db43f406c6e2e8ac687" prot="public" virt="non-virtual"><scope>Flux::resource_model::matcher_util_api_t</scope><name>set_pruning_types_w_spec</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,195 @@
+\hypertarget{classFlux_1_1resource__model_1_1reapi__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::reapi\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1reapi__t}\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+
+
+{\ttfamily \#include $<$reapi.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=344pt]{classFlux_1_1resource__model_1_1reapi__t__inherit__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_a8b54a24b38dd103af4ccf18da9fb2a03}{match\+\_\+allocate}} (void $\ast$h, bool orelse\+\_\+reserve, const std\+::string \&jobspec, const uint64\+\_\+t jobid, bool \&reserved, std\+::string \&R, int64\+\_\+t \&at, double \&ov)
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_a4c39d281708130066509cedb5c421fa8}{match\+\_\+allocate\+\_\+multi}} (void $\ast$h, bool orelse\+\_\+reserve, const char $\ast$jobs, \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t}{queue\+\_\+adapter\+\_\+base\+\_\+t}} $\ast$adapter)
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_ae707c72f89027b3d22f3bb66cb9b634d}{update\+\_\+allocate}} (void $\ast$h, const uint64\+\_\+t jobid, const std\+::string \&R, int64\+\_\+t \&at, double \&ov, std\+::string \&R\+\_\+out)
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_a16eecc3aa7e618f2e3055a6cc0276e69}{cancel}} (void $\ast$h, const uint64\+\_\+t jobid, bool noent\+\_\+ok)
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_a15bb686e9d0d17b9fcfd4bc332d65236}{info}} (void $\ast$h, const uint64\+\_\+t jobid, std\+::string \&mode, bool \&reserved, int64\+\_\+t \&at, double \&ov)
+\item 
+static int \mbox{\hyperlink{classFlux_1_1resource__model_1_1reapi__t_a83634c16c5c8256fc1a2543c0a11d4de}{stat}} (void $\ast$h, int64\+\_\+t \&V, int64\+\_\+t \&E, int64\+\_\+t \&J, double \&load, double \&min, double \&max, double \&avg)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+High-\/level resource API base class. Derived classes must implement the methods. 
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_a16eecc3aa7e618f2e3055a6cc0276e69}\label{classFlux_1_1resource__model_1_1reapi__t_a16eecc3aa7e618f2e3055a6cc0276e69}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!cancel@{cancel}}
+\index{cancel@{cancel}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{cancel()}{cancel()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::cancel (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{bool}]{noent\+\_\+ok }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Cancel the allocation or reservation corresponding to jobid.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em noent\+\_\+ok} & don\textquotesingle{}t return an error with nonexistent jobid \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_a15bb686e9d0d17b9fcfd4bc332d65236}\label{classFlux_1_1resource__model_1_1reapi__t_a15bb686e9d0d17b9fcfd4bc332d65236}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!info@{info}}
+\index{info@{info}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{info()}{info()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::info (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{std\+::string \&}]{mode,  }\item[{bool \&}]{reserved,  }\item[{int64\+\_\+t \&}]{at,  }\item[{double \&}]{ov }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Get the information on the allocation or reservation corresponding to jobid.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em jobid} & const jobid of the uint64\+\_\+t type. \\
+\hline
+{\em mode} & return string containing the job state. \\
+\hline
+{\em reserved} & Boolean into which to return true if this job has been reserved instead of allocated. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_a8b54a24b38dd103af4ccf18da9fb2a03}\label{classFlux_1_1resource__model_1_1reapi__t_a8b54a24b38dd103af4ccf18da9fb2a03}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!match\_allocate@{match\_allocate}}
+\index{match\_allocate@{match\_allocate}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{match\_allocate()}{match\_allocate()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::match\+\_\+allocate (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{bool}]{orelse\+\_\+reserve,  }\item[{const std\+::string \&}]{jobspec,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{bool \&}]{reserved,  }\item[{std\+::string \&}]{R,  }\item[{int64\+\_\+t \&}]{at,  }\item[{double \&}]{ov }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Match a jobspec to the \char`\"{}best\char`\"{} resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em match\+\_\+op} & match\+\_\+op\+\_\+t\+: set to specify the specific match option from 1 of 4 choices\+: MATCH\+\_\+\+ALLOCATE\+: try to allocate now and fail if resources aren\textquotesingle{}t available. MATCH\+\_\+\+ALLOCATE\+\_\+\+ORELSE\+\_\+\+RESERVE \+: Try to allocate and reseve if resources aren\textquotesingle{}t available now. MATCH\+\_\+\+SATISFIABILITY\+: Do a satisfiablity check and do not allocate. MATCH\+\_\+\+ALLOCATE\+\_\+\+W\+\_\+\+SATISFIABILITY\+: try to allocate and run satisfiability check if resources are not available. \\
+\hline
+{\em jobspec} & jobspec string. \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em reserved} & Boolean into which to return true if this job has been reserved instead of allocated. \\
+\hline
+{\em R} & String into which to return the resource set either allocated or reserved. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_a4c39d281708130066509cedb5c421fa8}\label{classFlux_1_1resource__model_1_1reapi__t_a4c39d281708130066509cedb5c421fa8}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!match\_allocate\_multi@{match\_allocate\_multi}}
+\index{match\_allocate\_multi@{match\_allocate\_multi}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{match\_allocate\_multi()}{match\_allocate\_multi()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::match\+\_\+allocate\+\_\+multi (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{bool}]{orelse\+\_\+reserve,  }\item[{const char $\ast$}]{jobs,  }\item[{\mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t}{queue\+\_\+adapter\+\_\+base\+\_\+t}} $\ast$}]{adapter }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+Multi-\/\+Match jobspecs to the \char`\"{}best\char`\"{} resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em match\+\_\+op} & match\+\_\+op\+\_\+t\+: set to specify the specific match option from 1 of 4 choices\+: MATCH\+\_\+\+ALLOCATE\+: try to allocate now and fail if resources aren\textquotesingle{}t available. MATCH\+\_\+\+ALLOCATE\+\_\+\+ORELSE\+\_\+\+RESERVE \+: Try to allocate and reseve if resources aren\textquotesingle{}t available now. MATCH\+\_\+\+SATISFIABILITY\+: Do a satisfiablity check and do not allocate. MATCH\+\_\+\+ALLOCATE\+\_\+\+W\+\_\+\+SATISFIABILITY\+: try to allocate and run \\
+\hline
+{\em jobs} & JSON array of jobspecs. \\
+\hline
+{\em adapter} & \mbox{\hyperlink{classFlux_1_1resource__model_1_1queue__adapter__base__t}{queue\+\_\+adapter\+\_\+base\+\_\+t}} object that provides a set of callback methods to be called each time the result of a match is returned from the resource match service. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_a83634c16c5c8256fc1a2543c0a11d4de}\label{classFlux_1_1resource__model_1_1reapi__t_a83634c16c5c8256fc1a2543c0a11d4de}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!stat@{stat}}
+\index{stat@{stat}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{stat()}{stat()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::stat (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{int64\+\_\+t \&}]{V,  }\item[{int64\+\_\+t \&}]{E,  }\item[{int64\+\_\+t \&}]{J,  }\item[{double \&}]{load,  }\item[{double \&}]{min,  }\item[{double \&}]{max,  }\item[{double \&}]{avg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Get the performance information about the resource infrastructure.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em V} & Number of resource vertices \\
+\hline
+{\em E} & Number of edges \\
+\hline
+{\em J} & Number of jobs \\
+\hline
+{\em load} & Graph load time \\
+\hline
+{\em min} & Min match time \\
+\hline
+{\em max} & Max match time \\
+\hline
+{\em avg} & Avg match time \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1reapi__t_ae707c72f89027b3d22f3bb66cb9b634d}\label{classFlux_1_1resource__model_1_1reapi__t_ae707c72f89027b3d22f3bb66cb9b634d}} 
+\index{Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}!update\_allocate@{update\_allocate}}
+\index{update\_allocate@{update\_allocate}!Flux::resource\_model::reapi\_t@{Flux::resource\_model::reapi\_t}}
+\doxyparagraph{\texorpdfstring{update\_allocate()}{update\_allocate()}}
+{\footnotesize\ttfamily static int Flux\+::resource\+\_\+model\+::reapi\+\_\+t\+::update\+\_\+allocate (\begin{DoxyParamCaption}\item[{void $\ast$}]{h,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{const std\+::string \&}]{R,  }\item[{int64\+\_\+t \&}]{at,  }\item[{double \&}]{ov,  }\item[{std\+::string \&}]{R\+\_\+out }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Update the resource state with R.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h} & Opaque handle. How it is used is an implementation detail. However, when it is used within a Flux\textquotesingle{}s service module, it is expected to be a pointer to a flux\+\_\+t object. \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em R} & R String of std\+::string. \\
+\hline
+{\em at} & return the scheduled time. \\
+\hline
+{\em ov} & return the performance overhead in terms of elapse time needed to complete the update operation. \\
+\hline
+{\em R\+\_\+out} & return the updated R string. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+reapi.\+hpp\end{DoxyCompactItemize}

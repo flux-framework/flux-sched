@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1RankConstraint" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::RankConstraint</compoundname>
+    <basecompoundref refid="classFlux_1_1Jobspec_1_1Constraint" prot="public" virt="non-virtual">Flux::Jobspec::Constraint</basecompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1RankConstraint_1a0cd798548661b23de1e42b7158098d13" prot="private" static="no" mutable="no">
+        <type>struct idset *</type>
+        <definition>struct idset* Flux::Jobspec::RankConstraint::ranks</definition>
+        <argsstring></argsstring>
+        <name>ranks</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="29" column="16" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1RankConstraint_1a7ce813e3e91e5845e959cadf09ba5876" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>RankConstraint::RankConstraint</definition>
+        <argsstring>(const YAML::Node &amp;)</argsstring>
+        <name>RankConstraint</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <defname>values</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="24" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.cpp" bodystart="33" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1RankConstraint_1ade5973c33417969b1f815cd5daa0d773" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::RankConstraint::RankConstraint</definition>
+        <argsstring>()=default</argsstring>
+        <name>RankConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="25" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1RankConstraint_1ab8cdbf3ef6866e7e48dd7b34919da526" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::RankConstraint::~RankConstraint</definition>
+        <argsstring>()</argsstring>
+        <name>~RankConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="26" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" bodystart="26" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1RankConstraint_1a24c3256742edd3db915d7e498de6d14d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool RankConstraint::match</definition>
+        <argsstring>(const Flux::resource_model::resource_t &amp;resource) const</argsstring>
+        <name>match</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1ae444700152a356a49b9e24a3ca3493cb">match</reimplements>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1resource__t" kindref="compound">Flux::resource_model::resource_t</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="32" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.cpp" bodystart="47" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1RankConstraint_1a38da3da57c4d550931e4140014a2a66a" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>YAML::Node</type>
+        <definition>YAML::Node RankConstraint::as_yaml</definition>
+        <argsstring>() const</argsstring>
+        <name>as_yaml</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1a55958a0879a6acbc5be43b903b69b5ff">as_yaml</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="33" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.cpp" bodystart="52" bodyend="59"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::RankConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1RankConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>Flux::Jobspec::RankConstraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1RankConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" line="22" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/rank_constraint.hpp" bodystart="22" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1a38da3da57c4d550931e4140014a2a66a" prot="public" virt="virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>as_yaml</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1aff150c3f204e9c3ead2023fc31f7dc20" prot="public" virt="non-virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>Constraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1a24c3256742edd3db915d7e498de6d14d" prot="public" virt="virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>match</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1a7ce813e3e91e5845e959cadf09ba5876" prot="public" virt="non-virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>RankConstraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1ade5973c33417969b1f815cd5daa0d773" prot="public" virt="non-virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>RankConstraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1a0cd798548661b23de1e42b7158098d13" prot="private" virt="non-virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>ranks</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1a79c854a5620d10d9aa286eacfb42cb49" prot="public" virt="virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>~Constraint</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1RankConstraint_1ab8cdbf3ef6866e7e48dd7b34919da526" prot="public" virt="non-virtual"><scope>Flux::Jobspec::RankConstraint</scope><name>~RankConstraint</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

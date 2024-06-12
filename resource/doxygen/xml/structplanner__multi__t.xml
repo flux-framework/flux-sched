@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structplanner__multi__t" kind="struct" language="C++" prot="public">
+    <compoundname>planner_multi_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structplanner__multi__t_1a4bbb67b2a5921a141dc1e9cba6856c61" prot="public" static="no" mutable="no">
+        <type><ref refid="classplanner__multi" kindref="compound">planner_multi</ref> *</type>
+        <definition>planner_multi* planner_multi_t::plan_multi</definition>
+        <argsstring></argsstring>
+        <name>plan_multi</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="125" column="19" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structplanner__multi__t_1ae02366f82961f64f42a503169a67f73d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner_multi_t::planner_multi_t</definition>
+        <argsstring>()</argsstring>
+        <name>planner_multi_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="118" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.cpp" bodystart="337" bodyend="344"/>
+      </memberdef>
+      <memberdef kind="function" id="structplanner__multi__t_1a8aa66316af9ea70d5488e860e3bf7fa7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner_multi_t::planner_multi_t</definition>
+        <argsstring>(const planner_multi &amp;o)</argsstring>
+        <name>planner_multi_t</name>
+        <param>
+          <type>const <ref refid="classplanner__multi" kindref="compound">planner_multi</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="119" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.cpp" bodystart="346" bodyend="353"/>
+      </memberdef>
+      <memberdef kind="function" id="structplanner__multi__t_1a2267af46ffd9dadf90f2b416e3cc1f9f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner_multi_t::planner_multi_t</definition>
+        <argsstring>(int64_t base_time, uint64_t duration, const uint64_t *resource_totals, const char **resource_types, size_t len)</argsstring>
+        <name>planner_multi_t</name>
+        <param>
+          <type>int64_t</type>
+          <declname>base_time</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>duration</declname>
+        </param>
+        <param>
+          <type>const uint64_t *</type>
+          <declname>resource_totals</declname>
+        </param>
+        <param>
+          <type>const char **</type>
+          <declname>resource_types</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="120" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.cpp" bodystart="355" bodyend="365"/>
+      </memberdef>
+      <memberdef kind="function" id="structplanner__multi__t_1aae5cf1ec6fc9db8b53bd020c345cdbfc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>planner_multi_t::~planner_multi_t</definition>
+        <argsstring>()</argsstring>
+        <name>~planner_multi_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="123" column="5" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.cpp" bodystart="367" bodyend="370"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>planner_multi_t</label>
+        <link refid="structplanner__multi__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>plan_multi</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>planner_multi</label>
+        <link refid="classplanner__multi"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_iter</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>request_multi</label>
+        <link refid="structrequest__multi"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="117" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="117" bodyend="126"/>
+    <listofallmembers>
+      <member refid="structplanner__multi__t_1a4bbb67b2a5921a141dc1e9cba6856c61" prot="public" virt="non-virtual"><scope>planner_multi_t</scope><name>plan_multi</name></member>
+      <member refid="structplanner__multi__t_1ae02366f82961f64f42a503169a67f73d" prot="public" virt="non-virtual"><scope>planner_multi_t</scope><name>planner_multi_t</name></member>
+      <member refid="structplanner__multi__t_1a8aa66316af9ea70d5488e860e3bf7fa7" prot="public" virt="non-virtual"><scope>planner_multi_t</scope><name>planner_multi_t</name></member>
+      <member refid="structplanner__multi__t_1a2267af46ffd9dadf90f2b416e3cc1f9f" prot="public" virt="non-virtual"><scope>planner_multi_t</scope><name>planner_multi_t</name></member>
+      <member refid="structplanner__multi__t_1aae5cf1ec6fc9db8b53bd020c345cdbfc" prot="public" virt="non-virtual"><scope>planner_multi_t</scope><name>~planner_multi_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

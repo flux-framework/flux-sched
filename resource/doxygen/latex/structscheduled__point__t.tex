@@ -1,0 +1,60 @@
+\hypertarget{structscheduled__point__t}{}\doxysubsection{scheduled\+\_\+point\+\_\+t Struct Reference}
+\label{structscheduled__point__t}\index{scheduled\_point\_t@{scheduled\_point\_t}}
+
+
+{\ttfamily \#include $<$planner\+\_\+internal\+\_\+tree.\+hpp$>$}
+
+
+
+Collaboration diagram for scheduled\+\_\+point\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structscheduled__point__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a5ad7c17e8e1a41cbef241d3d1e95378d}\label{structscheduled__point__t_a5ad7c17e8e1a41cbef241d3d1e95378d}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} \&o) const
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a46c4e78d6a68512260f588b6d71f93e7}\label{structscheduled__point__t_a46c4e78d6a68512260f588b6d71f93e7}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} \&o) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a1d51a47c6ef8bd1e887fec4af715c596}\label{structscheduled__point__t_a1d51a47c6ef8bd1e887fec4af715c596}} 
+\mbox{\hyperlink{structscheduled__point__rb__node__t}{scheduled\+\_\+point\+\_\+rb\+\_\+node\+\_\+t}} {\bfseries point\+\_\+rb}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_af913e0c5753c591a8fb19fd79fc05e80}\label{structscheduled__point__t_af913e0c5753c591a8fb19fd79fc05e80}} 
+\mbox{\hyperlink{structmt__resource__rb__node__t}{mt\+\_\+resource\+\_\+rb\+\_\+node\+\_\+t}} {\bfseries resource\+\_\+rb}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a05396339ab241b0e66da048b3fc84c76}\label{structscheduled__point__t_a05396339ab241b0e66da048b3fc84c76}} 
+int64\+\_\+t {\bfseries at}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a24bfbe985ecb9462e45c7ae559b652a7}\label{structscheduled__point__t_a24bfbe985ecb9462e45c7ae559b652a7}} 
+int {\bfseries in\+\_\+mt\+\_\+resource\+\_\+tree}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_abe7cacbfa37852694d2b493453046cd1}\label{structscheduled__point__t_abe7cacbfa37852694d2b493453046cd1}} 
+int {\bfseries new\+\_\+point}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a70d3a9287c579ce20e69180e84594d82}\label{structscheduled__point__t_a70d3a9287c579ce20e69180e84594d82}} 
+int {\bfseries ref\+\_\+count}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_a47d58d65fab04ad91cf5b118d10e638c}\label{structscheduled__point__t_a47d58d65fab04ad91cf5b118d10e638c}} 
+int64\+\_\+t {\bfseries scheduled}
+\item 
+\mbox{\Hypertarget{structscheduled__point__t_ac2e0e4475c3d4a2e765507e9a003b77e}\label{structscheduled__point__t_ac2e0e4475c3d4a2e765507e9a003b77e}} 
+int64\+\_\+t {\bfseries remaining}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Scheduled point\+: time at which resource state changes. Each point\textquotesingle{}s resource requirements are tracked as a node in a min-\/time resource (MTR) binary search tree. 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+planner\+\_\+internal\+\_\+tree.\+hpp\item 
+planner\+\_\+internal\+\_\+tree.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,104 @@
+\hypertarget{structFlux_1_1resource__model_1_1resource__pool__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+pool\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1resource__pool__t}\index{Flux::resource\_model::resource\_pool\_t@{Flux::resource\_model::resource\_pool\_t}}
+
+
+{\ttfamily \#include $<$resource\+\_\+data.\+hpp$>$}
+
+
+
+Inheritance diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+pool\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{structFlux_1_1resource__model_1_1resource__pool__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Flux\+::resource\+\_\+model\+::resource\+\_\+pool\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structFlux_1_1resource__model_1_1resource__pool__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_adb935bdc7731850c29ce67bd831b8706}\label{structFlux_1_1resource__model_1_1resource__pool__t_adb935bdc7731850c29ce67bd831b8706}} 
+enum class {\bfseries status\+\_\+t} \+: int \{ {\bfseries UP} = 0
+, {\bfseries DOWN} = 1
+ \}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a9bdfa575bd3d513041813c1ce84de626}\label{structFlux_1_1resource__model_1_1resource__pool__t_a9bdfa575bd3d513041813c1ce84de626}} 
+typedef std\+::unordered\+\_\+map$<$ std\+::string, status\+\_\+t $>$ {\bfseries string\+\_\+to\+\_\+status}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_af44b1d79f8f105e76784c96dfa689166}\label{structFlux_1_1resource__model_1_1resource__pool__t_af44b1d79f8f105e76784c96dfa689166}} 
+{\bfseries resource\+\_\+pool\+\_\+t} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a46a80629bf914610ce1c62f90ff0c447}\label{structFlux_1_1resource__model_1_1resource__pool__t_a46a80629bf914610ce1c62f90ff0c447}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \& {\bfseries operator=} (const \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t}{resource\+\_\+pool\+\_\+t}} \&o)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_aeda2209ba6be5272adf1bb99c50f6ce3}\label{structFlux_1_1resource__model_1_1resource__pool__t_aeda2209ba6be5272adf1bb99c50f6ce3}} 
+static const std\+::string {\bfseries status\+\_\+to\+\_\+str} (status\+\_\+t s)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a99d119e2fa5584f9cf72c743ada72608}\label{structFlux_1_1resource__model_1_1resource__pool__t_a99d119e2fa5584f9cf72c743ada72608}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries paths}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_ad2b18e719aaef04d62980682a907ac00}\label{structFlux_1_1resource__model_1_1resource__pool__t_ad2b18e719aaef04d62980682a907ac00}} 
+int64\+\_\+t {\bfseries uniq\+\_\+id}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_aabc6c0d5af974d7fd399b0dd93d17713}\label{structFlux_1_1resource__model_1_1resource__pool__t_aabc6c0d5af974d7fd399b0dd93d17713}} 
+unsigned int {\bfseries size} = 0
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a3809d7e159cfceac7c10fa87f5f781a3}\label{structFlux_1_1resource__model_1_1resource__pool__t_a3809d7e159cfceac7c10fa87f5f781a3}} 
+std\+::string {\bfseries unit}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_aefb07a38057d2128abc62eab370c601f}\label{structFlux_1_1resource__model_1_1resource__pool__t_aefb07a38057d2128abc62eab370c601f}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1schedule__t}{schedule\+\_\+t}} \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t_aefb07a38057d2128abc62eab370c601f}{schedule}}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_af10f8cd4708a37bebe5526fdea266c8a}\label{structFlux_1_1resource__model_1_1resource__pool__t_af10f8cd4708a37bebe5526fdea266c8a}} 
+\mbox{\hyperlink{structFlux_1_1resource__model_1_1pool__infra__t}{pool\+\_\+infra\+\_\+t}} \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__t_af10f8cd4708a37bebe5526fdea266c8a}{idata}}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a2c53b2231bf9e4557ebc62a35c919e1c}\label{structFlux_1_1resource__model_1_1resource__pool__t_a2c53b2231bf9e4557ebc62a35c919e1c}} 
+status\+\_\+t {\bfseries status} = status\+\_\+t\+::\+UP
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const string\+\_\+to\+\_\+status {\bfseries str\+\_\+to\+\_\+status}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Resource pool data type. 
+
+\doxysubsubsection{Member Data Documentation}
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1resource__pool__t_a49343768a8d8c5af0c7af014ae5bfe33}\label{structFlux_1_1resource__model_1_1resource__pool__t_a49343768a8d8c5af0c7af014ae5bfe33}} 
+\index{Flux::resource\_model::resource\_pool\_t@{Flux::resource\_model::resource\_pool\_t}!str\_to\_status@{str\_to\_status}}
+\index{str\_to\_status@{str\_to\_status}!Flux::resource\_model::resource\_pool\_t@{Flux::resource\_model::resource\_pool\_t}}
+\doxyparagraph{\texorpdfstring{str\_to\_status}{str\_to\_status}}
+{\footnotesize\ttfamily const resource\+\_\+pool\+\_\+t\+::string\+\_\+to\+\_\+status Flux\+::resource\+\_\+model\+::resource\+\_\+pool\+\_\+t\+::str\+\_\+to\+\_\+status\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= }
+\DoxyCodeLine{      \{ \{ \textcolor{stringliteral}{"{}up"{}}, resource\_pool\_t::status\_t::UP \}, }
+\DoxyCodeLine{      \{ \textcolor{stringliteral}{"{}down"{}}, resource\_pool\_t::status\_t::DOWN \} \}}
+
+\end{DoxyCode}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+data.\+hpp\item 
+resource\+\_\+data.\+cpp\end{DoxyCompactItemize}

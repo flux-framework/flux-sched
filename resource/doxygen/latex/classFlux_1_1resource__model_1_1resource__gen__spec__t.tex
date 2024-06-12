@@ -1,0 +1,109 @@
+\hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::resource\+\_\+gen\+\_\+spec\+\_\+t Class Reference}
+\label{classFlux_1_1resource__model_1_1resource__gen__spec__t}\index{Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_a5da07316879e9437755fa5eda0de72fa}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_a5da07316879e9437755fa5eda0de72fa}} 
+{\bfseries resource\+\_\+gen\+\_\+spec\+\_\+t} (const \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t}{resource\+\_\+gen\+\_\+spec\+\_\+t}} \&o)
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_ad85cf1dad6dd9effaa76c507b63364d0}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_ad85cf1dad6dd9effaa76c507b63364d0}} 
+const gg\+\_\+t \& {\bfseries gen\+\_\+graph} ()
+\item 
+const gen\+\_\+meth\+\_\+t \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t_a511acb5ad2bf098137b43ea0ef6f0f46}{to\+\_\+gen\+\_\+method\+\_\+t}} (const std\+::string \&s) const
+\item 
+int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t_a7c7a5f5d760be4c59dcf0fe99e8db106}{read\+\_\+graphml}} (const std\+::string \&ifn)
+\item 
+int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t_aaaf3e68d485a05863d4e0b56248b1859}{read\+\_\+graphml}} (std\+::istream \&in)
+\item 
+int \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t_ab6473ac3d41c6cbb4133308debc09288}{write\+\_\+graphviz}} (const std\+::string \&ofn, bool simple=false)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_a344203000fb7b2cf0b21bd343785f8c2}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_a344203000fb7b2cf0b21bd343785f8c2}} 
+void {\bfseries setup\+\_\+dynamic\+\_\+property} (boost\+::dynamic\+\_\+properties \&dp, gg\+\_\+t \&g)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_a7d451f26689f8fe09be05a1237d04078}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_a7d451f26689f8fe09be05a1237d04078}} 
+gg\+\_\+t {\bfseries g}
+\item 
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_acc2b48c24fea1fa35f7483744a1ee5eb}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_acc2b48c24fea1fa35f7483744a1ee5eb}} 
+boost\+::dynamic\+\_\+properties {\bfseries dp}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_a7c7a5f5d760be4c59dcf0fe99e8db106}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_a7c7a5f5d760be4c59dcf0fe99e8db106}} 
+\index{Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}!read\_graphml@{read\_graphml}}
+\index{read\_graphml@{read\_graphml}!Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}}
+\doxyparagraph{\texorpdfstring{read\_graphml()}{read\_graphml()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily int resource\+\_\+gen\+\_\+spec\+\_\+t\+::read\+\_\+graphml (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{ifn }\end{DoxyParamCaption})}
+
+Load resource generator recipe graph from a graphml file
+
+
+\begin{DoxyParams}{Parameters}
+{\em ifn} & resource generator recipe file in graphml \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_aaaf3e68d485a05863d4e0b56248b1859}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_aaaf3e68d485a05863d4e0b56248b1859}} 
+\index{Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}!read\_graphml@{read\_graphml}}
+\index{read\_graphml@{read\_graphml}!Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}}
+\doxyparagraph{\texorpdfstring{read\_graphml()}{read\_graphml()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily int resource\+\_\+gen\+\_\+spec\+\_\+t\+::read\+\_\+graphml (\begin{DoxyParamCaption}\item[{std\+::istream \&}]{in }\end{DoxyParamCaption})}
+
+Load resource generator recipe graph from an input stream
+
+
+\begin{DoxyParams}{Parameters}
+{\em in} & input stream for GRUG graphml \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_a511acb5ad2bf098137b43ea0ef6f0f46}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_a511acb5ad2bf098137b43ea0ef6f0f46}} 
+\index{Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}!to\_gen\_method\_t@{to\_gen\_method\_t}}
+\index{to\_gen\_method\_t@{to\_gen\_method\_t}!Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}}
+\doxyparagraph{\texorpdfstring{to\_gen\_method\_t()}{to\_gen\_method\_t()}}
+{\footnotesize\ttfamily const gen\+\_\+meth\+\_\+t resource\+\_\+gen\+\_\+spec\+\_\+t\+::to\+\_\+gen\+\_\+method\+\_\+t (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{s }\end{DoxyParamCaption}) const}
+
+Return gen\+\_\+meth\+\_\+t enum value corresponding to the string passed in.
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & gen\+\_\+method string from graphml spec \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFlux_1_1resource__model_1_1resource__gen__spec__t_ab6473ac3d41c6cbb4133308debc09288}\label{classFlux_1_1resource__model_1_1resource__gen__spec__t_ab6473ac3d41c6cbb4133308debc09288}} 
+\index{Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}!write\_graphviz@{write\_graphviz}}
+\index{write\_graphviz@{write\_graphviz}!Flux::resource\_model::resource\_gen\_spec\_t@{Flux::resource\_model::resource\_gen\_spec\_t}}
+\doxyparagraph{\texorpdfstring{write\_graphviz()}{write\_graphviz()}}
+{\footnotesize\ttfamily int resource\+\_\+gen\+\_\+spec\+\_\+t\+::write\+\_\+graphviz (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{ofn,  }\item[{bool}]{simple = {\ttfamily false} }\end{DoxyParamCaption})}
+
+Write the resource generator recipe graph in Graphviz dot format
+
+
+\begin{DoxyParams}{Parameters}
+{\em ofn} & output file name \\
+\hline
+{\em simple} & if false, output will have more detailed info \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 otherwise 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+resource\+\_\+spec\+\_\+grug.\+hpp\item 
+resource\+\_\+spec\+\_\+grug.\+cpp\end{DoxyCompactItemize}

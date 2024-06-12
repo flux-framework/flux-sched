@@ -1,0 +1,33 @@
+\hypertarget{structFlux_1_1resource__model_1_1vtx__predicates__override__t}{}\doxysubsection{Flux\+::resource\+\_\+model\+::vtx\+\_\+predicates\+\_\+override\+\_\+t Struct Reference}
+\label{structFlux_1_1resource__model_1_1vtx__predicates__override__t}\index{Flux::resource\_model::vtx\_predicates\_override\_t@{Flux::resource\_model::vtx\_predicates\_override\_t}}
+
+
+{\ttfamily \#include $<$expr\+\_\+eval\+\_\+vtx\+\_\+target.\+hpp$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1vtx__predicates__override__t_ae2300e0b681ea5e4276f284fef7e5074}\label{structFlux_1_1resource__model_1_1vtx__predicates__override__t_ae2300e0b681ea5e4276f284fef7e5074}} 
+void {\bfseries set} (bool sd, bool sna, bool sfr)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1vtx__predicates__override__t_ae17fb692c3d0282eefe3e4dd9fd14aab}\label{structFlux_1_1resource__model_1_1vtx__predicates__override__t_ae17fb692c3d0282eefe3e4dd9fd14aab}} 
+bool {\bfseries status\+\_\+down} \{false\}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1vtx__predicates__override__t_a6d9b8e3f06688f4768a9ec37ca47a421}\label{structFlux_1_1resource__model_1_1vtx__predicates__override__t_a6d9b8e3f06688f4768a9ec37ca47a421}} 
+bool {\bfseries sched\+\_\+now\+\_\+allocated} \{false\}
+\item 
+\mbox{\Hypertarget{structFlux_1_1resource__model_1_1vtx__predicates__override__t_aaaca05d9707a11a16f7329d61c9540fa}\label{structFlux_1_1resource__model_1_1vtx__predicates__override__t_aaaca05d9707a11a16f7329d61c9540fa}} 
+bool {\bfseries sched\+\_\+future\+\_\+reserved} \{false\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Assist \mbox{\hyperlink{classFlux_1_1resource__model_1_1expr__eval__vtx__target__t}{expr\+\_\+eval\+\_\+vtx\+\_\+target\+\_\+t}} with an ability to override certain predicates associated with a resource vertex. Certain vertex predicates cannot be determined only by inspecting the vertex\textquotesingle{}s own state, and this class helps override those predicates. Example\+: if the status of the parent resource vertex (e.\+g., compute node vertex) is \char`\"{}down\char`\"{}, the status of a child vertex (e.\+g., compute core vertex) must also be \char`\"{}down\char`\"{} even if its status was not explicitly marked \char`\"{}down\char`\"{}. 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+expr\+\_\+eval\+\_\+vtx\+\_\+target.\+hpp\item 
+expr\+\_\+eval\+\_\+vtx\+\_\+target.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,62 @@
+\hypertarget{dfu__match__policy__factory_8hpp}{}\doxysubsection{dfu\+\_\+match\+\_\+policy\+\_\+factory.\+hpp File Reference}
+\label{dfu__match__policy__factory_8hpp}\index{dfu\_match\_policy\_factory.hpp@{dfu\_match\_policy\_factory.hpp}}
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include \char`\"{}resource/policies/base/dfu\+\_\+match\+\_\+cb.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+high\+\_\+id\+\_\+first.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+low\+\_\+id\+\_\+first.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+locality.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+var\+\_\+aware.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+multilevel\+\_\+id.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource/policies/dfu\+\_\+match\+\_\+multilevel\+\_\+id\+\_\+impl.\+hpp\char`\"{}}\newline
+Include dependency graph for dfu\+\_\+match\+\_\+policy\+\_\+factory.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dfu__match__policy__factory_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dfu__match__policy__factory_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceFlux}{Flux}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model}{Flux\+::resource\+\_\+model}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{namespaceFlux_1_1resource__model_a9d85d85ad86413bf4059a8ee44768c4c}{Flux\+::resource\+\_\+model\+::known\+\_\+match\+\_\+policy}} (const std\+::string \&policy)
+\item 
+std\+::shared\+\_\+ptr$<$ dfu\+\_\+match\+\_\+cb\+\_\+t $>$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a9ab99415d376a89cb727842b7dbdd2b9}{Flux\+::resource\+\_\+model\+::create\+\_\+match\+\_\+cb}} (const std\+::string \&policy)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a126c97dbc27c706bc066949ad0f9556d}{Flux\+::resource\+\_\+model\+::\+FIRST\+\_\+\+MATCH}} = \char`\"{}first\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a7ba44eccdce8ef0601246f2e4619d30a}{Flux\+::resource\+\_\+model\+::\+FIRST\+\_\+\+NODEX\+\_\+\+MATCH}} = \char`\"{}firstnodex\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a417ec87e4a7b7a0fb1ada9cb47ce59e4}{Flux\+::resource\+\_\+model\+::\+HIGH\+\_\+\+ID\+\_\+\+FIRST}} = \char`\"{}high\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1013b5f6db1e59750d83be1b736176a5}{Flux\+::resource\+\_\+model\+::\+LOW\+\_\+\+ID\+\_\+\+FIRST}} = \char`\"{}low\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a10c425de3c0033392e8eb00a0feefb05}{Flux\+::resource\+\_\+model\+::\+LOW\+\_\+\+NODE\+\_\+\+FIRST}} = \char`\"{}lonode\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a47be335bc59da33ae19f34aa948b14ba}{Flux\+::resource\+\_\+model\+::\+HIGH\+\_\+\+NODE\+\_\+\+FIRST}} = \char`\"{}hinode\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a692aa40941e51690b27ffe1e6d2cb93c}{Flux\+::resource\+\_\+model\+::\+LOW\+\_\+\+NODEX\+\_\+\+FIRST}} = \char`\"{}lonodex\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a324c6ac18d7ee30874b685d4e0a5c48f}{Flux\+::resource\+\_\+model\+::\+HIGH\+\_\+\+NODEX\+\_\+\+FIRST}} = \char`\"{}hinodex\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a5e9abe0f37c0d89a9b872cc0cfdb8518}{Flux\+::resource\+\_\+model\+::\+LOCALITY\+\_\+\+AWARE}} = \char`\"{}locality\char`\"{}
+\item 
+const std\+::string \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1ec3a7433384f0a8a28915a70e1b2817}{Flux\+::resource\+\_\+model\+::\+VAR\+\_\+\+AWARE}} = \char`\"{}variation\char`\"{}
+\end{DoxyCompactItemize}

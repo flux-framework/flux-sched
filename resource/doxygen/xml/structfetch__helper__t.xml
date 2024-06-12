@@ -1,0 +1,304 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structfetch__helper__t" kind="struct" language="C++" prot="public">
+    <compoundname>fetch_helper_t</compoundname>
+    <basecompoundref refid="classfetch__remap__support__t" prot="public" virt="non-virtual">fetch_remap_support_t</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structfetch__helper__t_1ac116b39bdc9cd0dc56dc0e262d28a049" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::id</definition>
+        <argsstring></argsstring>
+        <name>id</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="53" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a63dd02ef97afb79800a19c08f82ee7c8" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="54" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a861c55b2d09c53d5921e6bc291d03e6b" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="55" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a750e74b0c08ba39f133c1135a6f26e77" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::uniq_id</definition>
+        <argsstring></argsstring>
+        <name>uniq_id</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="56" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1ad99c970217a1d46dd653d9a25a4c847f" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int fetch_helper_t::exclusive</definition>
+        <argsstring></argsstring>
+        <name>exclusive</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="57" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a8ca1803538566fa8ed96fc63d66ad8ef" prot="public" static="no" mutable="no">
+        <type>resource_pool_t::status_t</type>
+        <definition>resource_pool_t::status_t fetch_helper_t::status</definition>
+        <argsstring></argsstring>
+        <name>status</name>
+        <initializer>= resource_pool_t::status_t::UP</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="58" column="31" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a0a60f073bad53f13172979f4859eb0b3" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* fetch_helper_t::type</definition>
+        <argsstring></argsstring>
+        <name>type</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="59" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a960c9dce5afb36d2e3822b5bf746e092" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* fetch_helper_t::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="60" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1ae6b2813dbee91264cb2a8b04e52b49fe" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* fetch_helper_t::unit</definition>
+        <argsstring></argsstring>
+        <name>unit</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="61" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1aad3ce8a3b53347e8577ac4c78bef10f3" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* fetch_helper_t::basename</definition>
+        <argsstring></argsstring>
+        <name>basename</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="62" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a51eba7660fd7f148543c4c0c7324c1db" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* fetch_helper_t::vertex_id</definition>
+        <argsstring></argsstring>
+        <name>vertex_id</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="63" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="63" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1a69a08abf6f961895e69701e4558b2a2e" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::string &gt;</type>
+        <definition>std::map&lt;std::string, std::string&gt; fetch_helper_t::properties</definition>
+        <argsstring></argsstring>
+        <name>properties</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="64" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfetch__helper__t_1ad366f2cd1ca947529c37701946a395bd" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::string &gt;</type>
+        <definition>std::map&lt;std::string, std::string&gt; fetch_helper_t::paths</definition>
+        <argsstring></argsstring>
+        <name>paths</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="65" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structfetch__helper__t_1a27b4179802518e1bdc75802fdc1b1023" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * fetch_helper_t::get_proper_name</definition>
+        <argsstring>() const</argsstring>
+        <name>get_proper_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="48" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="120" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="structfetch__helper__t_1ac0c425586d8c1975f4c5031ec81508e5" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::get_proper_id</definition>
+        <argsstring>() const</argsstring>
+        <name>get_proper_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="49" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="125" bodyend="128"/>
+      </memberdef>
+      <memberdef kind="function" id="structfetch__helper__t_1af8608bf93c9f2b8ed9392fa599fefdd4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t fetch_helper_t::get_proper_rank</definition>
+        <argsstring>() const</argsstring>
+        <name>get_proper_rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="50" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="130" bodyend="133"/>
+      </memberdef>
+      <memberdef kind="function" id="structfetch__helper__t_1a18fcd5cdccb4d0c59ad7290a578ffc55" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void fetch_helper_t::scrub</definition>
+        <argsstring>()</argsstring>
+        <name>scrub</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="51" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="135" bodyend="151"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>fetch_remap_support_t</label>
+        <link refid="classfetch__remap__support__t"/>
+      </node>
+      <node id="1">
+        <label>fetch_helper_t</label>
+        <link refid="structfetch__helper__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>fetch_remap_support_t</label>
+        <link refid="classfetch__remap__support__t"/>
+      </node>
+      <node id="1">
+        <label>fetch_helper_t</label>
+        <link refid="structfetch__helper__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="47" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="47" bodyend="66"/>
+    <listofallmembers>
+      <member refid="structfetch__helper__t_1aad3ce8a3b53347e8577ac4c78bef10f3" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>basename</name></member>
+      <member refid="classfetch__remap__support__t_1ad1fa6516e917ae87c69aa877eeac16b6" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>clear</name></member>
+      <member refid="structfetch__helper__t_1ad99c970217a1d46dd653d9a25a4c847f" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>exclusive</name></member>
+      <member refid="structfetch__helper__t_1ac0c425586d8c1975f4c5031ec81508e5" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_proper_id</name></member>
+      <member refid="structfetch__helper__t_1a27b4179802518e1bdc75802fdc1b1023" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_proper_name</name></member>
+      <member refid="structfetch__helper__t_1af8608bf93c9f2b8ed9392fa599fefdd4" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_proper_rank</name></member>
+      <member refid="classfetch__remap__support__t_1affa03c6c90bb63813c0a0269debdd221" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1a043f92354c20ee234c041f5cf20490ed" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1a4cf1a9d38ff91a5ddce229d765252d39" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>get_remapped_rank</name></member>
+      <member refid="structfetch__helper__t_1ac116b39bdc9cd0dc56dc0e262d28a049" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>id</name></member>
+      <member refid="classfetch__remap__support__t_1a9ededddd770d9a558e4e88a2e48891ef" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>is_id_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1a8b0dcb0816ae8471ccf130ce5be6b299" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>is_name_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1ac919628fa17a0e45d099b3cbb07d27b2" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>is_rank_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1adb31e4bb859517f09a7cb7eaa1dce249" prot="private" virt="non-virtual"><scope>fetch_helper_t</scope><name>m_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1acd0ee0f9ae692e86a6ff6fda1fdc689b" prot="private" virt="non-virtual"><scope>fetch_helper_t</scope><name>m_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1a5a8f3cfb1039c4e59fb376f6f57316f3" prot="private" virt="non-virtual"><scope>fetch_helper_t</scope><name>m_remapped_rank</name></member>
+      <member refid="structfetch__helper__t_1a960c9dce5afb36d2e3822b5bf746e092" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>name</name></member>
+      <member refid="structfetch__helper__t_1ad366f2cd1ca947529c37701946a395bd" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>paths</name></member>
+      <member refid="structfetch__helper__t_1a69a08abf6f961895e69701e4558b2a2e" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>properties</name></member>
+      <member refid="structfetch__helper__t_1a63dd02ef97afb79800a19c08f82ee7c8" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>rank</name></member>
+      <member refid="structfetch__helper__t_1a18fcd5cdccb4d0c59ad7290a578ffc55" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>scrub</name></member>
+      <member refid="classfetch__remap__support__t_1ab7c9073f9779528737a8c1e0de01a9bb" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>set_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1a7592d1d960474be2c786e70e1685590e" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>set_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1acee2b85994c7057dc62447f84e77d260" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>set_remapped_rank</name></member>
+      <member refid="structfetch__helper__t_1a861c55b2d09c53d5921e6bc291d03e6b" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>size</name></member>
+      <member refid="structfetch__helper__t_1a8ca1803538566fa8ed96fc63d66ad8ef" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>status</name></member>
+      <member refid="structfetch__helper__t_1a0a60f073bad53f13172979f4859eb0b3" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>type</name></member>
+      <member refid="structfetch__helper__t_1a750e74b0c08ba39f133c1135a6f26e77" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>uniq_id</name></member>
+      <member refid="structfetch__helper__t_1ae6b2813dbee91264cb2a8b04e52b49fe" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>unit</name></member>
+      <member refid="structfetch__helper__t_1a51eba7660fd7f148543c4c0c7324c1db" prot="public" virt="non-virtual"><scope>fetch_helper_t</scope><name>vertex_id</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

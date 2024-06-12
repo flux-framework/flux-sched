@@ -1,0 +1,747 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1scoring__api__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::scoring_api_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1scoring__api__t_1a3a60264a558c5b39d0089ece3cf945bf" prot="private" static="no" mutable="no">
+        <type>std::map&lt; const subsystem_t, std::map&lt; const std::string, <ref refid="classFlux_1_1resource__model_1_1detail_1_1evals__t" kindref="compound">detail::evals_t</ref> * &gt; * &gt;</type>
+        <definition>std::map&lt;const subsystem_t, std::map&lt;const std::string, detail::evals_t *&gt; *&gt; Flux::resource_model::scoring_api_t::m_ssys_map</definition>
+        <argsstring></argsstring>
+        <name>m_ssys_map</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="111" column="2" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1scoring__api__t_1ae953a7cfb8b4d9e08a7b1f1b35df5ec4" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::scoring_api_t::m_hier_constrain_now</definition>
+        <argsstring></argsstring>
+        <name>m_hier_constrain_now</name>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="112" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1scoring__api__t_1a693f5f9c5707374564186d986874b9ab" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::m_overall_score</definition>
+        <argsstring></argsstring>
+        <name>m_overall_score</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="113" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1scoring__api__t_1acae039996d7bf4ae632f632c7a7e4868" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::m_avail</definition>
+        <argsstring></argsstring>
+        <name>m_avail</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="114" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1acfbaf69aff3881fccf38c8cd8fdba194" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::scoring_api_t::scoring_api_t</definition>
+        <argsstring>()</argsstring>
+        <name>scoring_api_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="30" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="60" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a3d8a2371072389a90e038bbaeda14754" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::scoring_api_t::scoring_api_t</definition>
+        <argsstring>(const scoring_api_t &amp;o)</argsstring>
+        <name>scoring_api_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="31" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="65" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a7f4f68fe823863c88fd1b8801cf2a361" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+        <definition>const scoring_api_t &amp; Flux::resource_model::scoring_api_t::operator=</definition>
+        <argsstring>(const scoring_api_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="32" column="25" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="81" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a1c5d1bf876fa7a639369d9ff3657fcfb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::scoring_api_t::~scoring_api_t</definition>
+        <argsstring>()</argsstring>
+        <name>~scoring_api_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="33" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="98" bodyend="111"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a9a7f68e448615627afa00e2b2d84ad8b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::cutline</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>cutline</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="35" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="113" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a0899a901c6ab6b058a1c2019e42be491" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::set_cutline</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, int64_t c)</argsstring>
+        <name>set_cutline</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="36" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="120" bodyend="126"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1aa40a8f1565b4be9fdb987dc0614c9726" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::eval_egroups_iter_reset</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>eval_egroups_iter_reset</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="38" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="129" bodyend="135"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a37e9ba63922c08d68f7966de727d629b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &gt;::iterator</type>
+        <definition>std::vector&lt; eval_egroup_t &gt;::iterator Flux::resource_model::scoring_api_t::eval_egroups_iter_next</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>eval_egroups_iter_next</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="39" column="28" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="137" bodyend="144"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a2fe832bda0fbfcf488263b33171fcbce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &gt;::iterator</type>
+        <definition>std::vector&lt; eval_egroup_t &gt;::iterator Flux::resource_model::scoring_api_t::eval_egroups_end</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>eval_egroups_end</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="42" column="28" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="146" bodyend="153"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1af378525d28a4943a0d19178c715cb325" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::scoring_api_t::add</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, const eval_egroup_t &amp;eg)</argsstring>
+        <name>add</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+          <declname>eg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="45" column="9" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="155" bodyend="161"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a5eb93212b717a2a469da4102579ea8ba" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="structFlux_1_1resource__model_1_1eval__egroup__t" kindref="compound">eval_egroup_t</ref> &amp;</type>
+        <definition>const eval_egroup_t &amp; Flux::resource_model::scoring_api_t::at</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, unsigned int i)</argsstring>
+        <name>at</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+<para>Can throw an out_of_range exception. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="48" column="25" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="164" bodyend="170"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a18fdc6769b997c0e4177d57c65dde144" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::qualified_count</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>qualified_count</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="50" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="172" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a2646060a05acd22ef06df4839b0f5d03" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::qualified_granules</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>qualified_granules</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="51" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="180" bodyend="186"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a7a6be24d4d74217b995fc99de5780b80" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::total_count</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>total_count</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="52" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="188" bodyend="194"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a87062c8712878d9cdfa4fa832472c65a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::best_k</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>best_k</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="53" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="196" bodyend="201"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1af83d25af98788f3657bbec75e554f332" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::best_i</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>best_i</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="54" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="203" bodyend="208"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a5b79e21a8ac46786dbfded53bf995cee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::scoring_api_t::hier_constrain_now</definition>
+        <argsstring>()</argsstring>
+        <name>hier_constrain_now</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="55" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="210" bodyend="213"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a0b037619dbeaa7be94fa23256eca4bc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::merge</definition>
+        <argsstring>(const scoring_api_t &amp;o)</argsstring>
+        <name>merge</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="56" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="215" bodyend="228"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1aff69fc7b98115431c4dc32e8e02c3877" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::resrc_types</definition>
+        <argsstring>(const subsystem_t &amp;s, std::vector&lt; std::string &gt; &amp;v)</argsstring>
+        <name>resrc_types</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="57" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="230" bodyend="236"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a109b74d01b1adc4b50caed2d22679e72" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::overall_score</definition>
+        <argsstring>()</argsstring>
+        <name>overall_score</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="58" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="240" bodyend="243"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a2c3d0e9a046e7baad6cac94a859f8a56" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::set_overall_score</definition>
+        <argsstring>(int64_t overall)</argsstring>
+        <name>set_overall_score</name>
+        <param>
+          <type>int64_t</type>
+          <declname>overall</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="59" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="245" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1ae2b368309d37481b94b8e489569b15b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::scoring_api_t::avail</definition>
+        <argsstring>()</argsstring>
+        <name>avail</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="60" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="250" bodyend="253"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1adb0af12330f50fb87c4991a054ef3494" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::set_avail</definition>
+        <argsstring>(unsigned int avail)</argsstring>
+        <name>set_avail</name>
+        <param>
+          <type>unsigned int</type>
+          <declname>avail</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="61" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="255" bodyend="258"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a6f00aeb762ef56134205f1c1dad646c6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::scoring_api_t::is_contained</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>is_contained</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="62" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="260" bodyend="270"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a359daf6de16201aa496c9a4ce864b40c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class compare_op</type>
+            <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref></defval>
+          </param>
+          <param>
+            <type>class binary_op</type>
+            <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref></defval>
+          </param>
+        </templateparamlist>
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::choose_accum_best_k</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, unsigned int k, compare_op comp=fold::greater(), binary_op accum=fold::plus())</argsstring>
+        <name>choose_accum_best_k</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>k</declname>
+        </param>
+        <param>
+          <type>compare_op</type>
+          <declname>comp</declname>
+          <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref>()</defval>
+        </param>
+        <param>
+          <type>binary_op</type>
+          <declname>accum</declname>
+          <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="65" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="65" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1afcc69760b7d1d0b6c73b619ef4ddf6f1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class compare_op</type>
+            <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref></defval>
+          </param>
+          <param>
+            <type>class binary_op</type>
+            <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref></defval>
+          </param>
+        </templateparamlist>
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::scoring_api_t::choose_accum_all</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, compare_op comp=fold::greater(), binary_op accum=fold::plus())</argsstring>
+        <name>choose_accum_all</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>compare_op</type>
+          <declname>comp</declname>
+          <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref>()</defval>
+        </param>
+        <param>
+          <type>binary_op</type>
+          <declname>accum</declname>
+          <defval><ref refid="structFlux_1_1resource__model_1_1fold_1_1plus" kindref="compound">fold::plus</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="81" column="13" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="81" bodyend="94"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a5724574a9c0b1aa51d0b31e322e5ba70" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class output_it</type>
+          </param>
+          <param>
+            <type>class unary_op</type>
+          </param>
+        </templateparamlist>
+        <type>output_it</type>
+        <definition>output_it Flux::resource_model::scoring_api_t::transform</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r, output_it o_it, unary_op uop)</argsstring>
+        <name>transform</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <param>
+          <type>output_it</type>
+          <declname>o_it</declname>
+        </param>
+        <param>
+          <type>unary_op</type>
+          <declname>uop</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="97" column="15" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="97" bodyend="103"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1ac201d1f643aaa40e2b096c4beddb5c42" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::handle_new_keys</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>handle_new_keys</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="106" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="29" bodyend="34"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a9796fbaf47f9000defe785925627c196" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::handle_new_subsystem</definition>
+        <argsstring>(const subsystem_t &amp;s)</argsstring>
+        <name>handle_new_subsystem</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="107" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="36" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1scoring__api__t_1a8617714a01ab63f7ed33325bf5ec9bb2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::scoring_api_t::handle_new_resrc_type</definition>
+        <argsstring>(const subsystem_t &amp;s, const std::string &amp;r)</argsstring>
+        <name>handle_new_resrc_type</name>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="108" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.cpp" bodystart="44" bodyend="51"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/scoring_api.hpp" bodystart="28" bodyend="115"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1af378525d28a4943a0d19178c715cb325" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>add</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a5eb93212b717a2a469da4102579ea8ba" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>at</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1ae2b368309d37481b94b8e489569b15b3" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>avail</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1af83d25af98788f3657bbec75e554f332" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>best_i</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a87062c8712878d9cdfa4fa832472c65a" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>best_k</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1afcc69760b7d1d0b6c73b619ef4ddf6f1" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>choose_accum_all</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a359daf6de16201aa496c9a4ce864b40c" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>choose_accum_best_k</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a9a7f68e448615627afa00e2b2d84ad8b" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>cutline</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a2fe832bda0fbfcf488263b33171fcbce" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>eval_egroups_end</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a37e9ba63922c08d68f7966de727d629b" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>eval_egroups_iter_next</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1aa40a8f1565b4be9fdb987dc0614c9726" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>eval_egroups_iter_reset</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1ac201d1f643aaa40e2b096c4beddb5c42" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>handle_new_keys</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a8617714a01ab63f7ed33325bf5ec9bb2" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>handle_new_resrc_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a9796fbaf47f9000defe785925627c196" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>handle_new_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a5b79e21a8ac46786dbfded53bf995cee" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>hier_constrain_now</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a6f00aeb762ef56134205f1c1dad646c6" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>is_contained</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1acae039996d7bf4ae632f632c7a7e4868" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>m_avail</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1ae953a7cfb8b4d9e08a7b1f1b35df5ec4" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>m_hier_constrain_now</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a693f5f9c5707374564186d986874b9ab" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>m_overall_score</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a3a60264a558c5b39d0089ece3cf945bf" prot="private" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>m_ssys_map</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a0b037619dbeaa7be94fa23256eca4bc0" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>merge</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a7f4f68fe823863c88fd1b8801cf2a361" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a109b74d01b1adc4b50caed2d22679e72" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>overall_score</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a18fdc6769b997c0e4177d57c65dde144" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>qualified_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a2646060a05acd22ef06df4839b0f5d03" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>qualified_granules</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1aff69fc7b98115431c4dc32e8e02c3877" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>resrc_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1acfbaf69aff3881fccf38c8cd8fdba194" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>scoring_api_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a3d8a2371072389a90e038bbaeda14754" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>scoring_api_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1adb0af12330f50fb87c4991a054ef3494" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>set_avail</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a0899a901c6ab6b058a1c2019e42be491" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>set_cutline</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a2c3d0e9a046e7baad6cac94a859f8a56" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>set_overall_score</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a7a6be24d4d74217b995fc99de5780b80" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>total_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a5724574a9c0b1aa51d0b31e322e5ba70" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>transform</name></member>
+      <member refid="classFlux_1_1resource__model_1_1scoring__api__t_1a1c5d1bf876fa7a639369d9ff3657fcfb" prot="public" virt="non-virtual"><scope>Flux::resource_model::scoring_api_t</scope><name>~scoring_api_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

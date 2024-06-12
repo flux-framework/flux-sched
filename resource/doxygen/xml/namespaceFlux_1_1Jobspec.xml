@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespaceFlux_1_1Jobspec" kind="namespace" language="C++">
+    <compoundname>Flux::Jobspec</compoundname>
+    <innerclass refid="classFlux_1_1Jobspec_1_1Constraint" prot="public">Flux::Jobspec::Constraint</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1HostlistConstraint" prot="public">Flux::Jobspec::HostlistConstraint</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1Resource" prot="public">Flux::Jobspec::Resource</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1Task" prot="public">Flux::Jobspec::Task</innerclass>
+    <innerclass refid="structFlux_1_1Jobspec_1_1System" prot="public">Flux::Jobspec::System</innerclass>
+    <innerclass refid="structFlux_1_1Jobspec_1_1Attributes" prot="public">Flux::Jobspec::Attributes</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1Jobspec" prot="public">Flux::Jobspec::Jobspec</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1parse__error" prot="public">Flux::Jobspec::parse_error</innerclass>
+    <innerclass refid="classFlux_1_1Jobspec_1_1RankConstraint" prot="public">Flux::Jobspec::RankConstraint</innerclass>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="jobspec_8hpp_1af100910e315d82fceb6b2e69baaf688e" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>tristate_t</name>
+        <enumvalue id="jobspec_8hpp_1af100910e315d82fceb6b2e69baaf688ea946003f97ccc52d5d3b54ac0ec31bbfc" prot="public">
+          <name>FALSE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobspec_8hpp_1af100910e315d82fceb6b2e69baaf688eac0d83f0b82a6b30de8811e69e6d95c61" prot="public">
+          <name>TRUE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobspec_8hpp_1af100910e315d82fceb6b2e69baaf688ea1c04cc3823d476c3017238679a0fdf52" prot="public">
+          <name>UNSPECIFIED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="46" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="46" bodyend="46"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="constraint_8hpp_1aead45a758d11bb8cdacdfe7dbe22f5a9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::unique_ptr&lt; <ref refid="classFlux_1_1Jobspec_1_1Constraint" kindref="compound">Constraint</ref> &gt;</type>
+        <definition>std::unique_ptr&lt; Constraint &gt; Flux::Jobspec::constraint_parser</definition>
+        <argsstring>(const YAML::Node &amp;constraint)</argsstring>
+        <name>constraint_parser</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <declname>constraint</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="36" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="62" bodyend="99" declfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" declline="36" declcolumn="17"/>
+      </memberdef>
+      <memberdef kind="function" id="jobspec_8hpp_1a4afffa69dadecc4454e11e627ebc9983" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; Flux::Jobspec::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;s, Jobspec const &amp;js)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Jobspec</ref> const &amp;</type>
+          <declname>js</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="120" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="462" bodyend="494" declfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" declline="120" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="jobspec_8hpp_1afbce1e84f2a8f6af2ce2a20bd3d297be" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; Flux::Jobspec::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;s, Resource const &amp;r)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Resource</ref> const &amp;</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="121" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="496" bodyend="524" declfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" declline="121" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="jobspec_8hpp_1a162b8976726bdce2ba00c90157f0487e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; Flux::Jobspec::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;s, Task const &amp;t)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Task" kindref="compound">Task</ref> const &amp;</type>
+          <declname>t</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="122" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="526" bodyend="558" declfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" declline="122" declcolumn="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.hpp" line="26" column="1"/>
+  </compounddef>
+</doxygen>

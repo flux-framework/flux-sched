@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespaceFlux" kind="namespace" language="C++">
+    <compoundname>Flux</compoundname>
+    <innernamespace refid="namespaceFlux_1_1Jobspec">Flux::Jobspec</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1opts__manager">Flux::opts_manager</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model">Flux::resource_model</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" line="15" column="1"/>
+  </compounddef>
+</doxygen>

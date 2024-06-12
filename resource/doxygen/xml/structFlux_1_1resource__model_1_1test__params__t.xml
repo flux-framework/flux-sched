@@ -1,0 +1,239 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1test__params__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::test_params_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a4b8a6da4582eb95a035abd2dd629b2e9" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::load_file</definition>
+        <argsstring></argsstring>
+        <name>load_file</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="28" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1aa5df37429fff51a3d07a41b0ce76e2e2" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::load_format</definition>
+        <argsstring></argsstring>
+        <name>load_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="29" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1ac28f12cc56c647580a60c4c4e04ce5b6" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::load_allowlist</definition>
+        <argsstring></argsstring>
+        <name>load_allowlist</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="30" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a5c2ef272500571c793bd796a02010888" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::matcher_name</definition>
+        <argsstring></argsstring>
+        <name>matcher_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="31" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a3547145a50454c1cb388f9a6127d559d" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::matcher_policy</definition>
+        <argsstring></argsstring>
+        <name>matcher_policy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="32" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a50632a6dad23a60337f5eb0b22bdfcac" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::o_fname</definition>
+        <argsstring></argsstring>
+        <name>o_fname</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="33" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a6e4442e3316c06b77223b82100fe38f7" prot="public" static="no" mutable="no">
+        <type>std::ofstream</type>
+        <definition>std::ofstream Flux::resource_model::test_params_t::r_out</definition>
+        <argsstring></argsstring>
+        <name>r_out</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="34" column="19" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a32200268c518d52e55649b0a8b5f202d" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::r_fname</definition>
+        <argsstring></argsstring>
+        <name>r_fname</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="35" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a28e691ac39a42746584736b96d94d8d0" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::o_fext</definition>
+        <argsstring></argsstring>
+        <name>o_fext</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="36" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a861e635be011898bce7fe8c3692d15cf" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::prune_filters</definition>
+        <argsstring></argsstring>
+        <name>prune_filters</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="37" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1aa15e52abb336f81dfe16679a40e904b2" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::test_params_t::match_format</definition>
+        <argsstring></argsstring>
+        <name>match_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="38" column="17" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a5becfa8477e88624edb81982c422f11f" prot="public" static="no" mutable="no">
+        <type>emit_format_t</type>
+        <definition>emit_format_t Flux::resource_model::test_params_t::o_format</definition>
+        <argsstring></argsstring>
+        <name>o_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="39" column="19" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1ae57a3a20e631abbd1cdc9cc8d5b3eb1b" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::test_params_t::elapse_time</definition>
+        <argsstring></argsstring>
+        <name>elapse_time</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="40" column="10" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1ab8ee0443ddaf00c554b8074498f4c6dc" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::test_params_t::disable_prompt</definition>
+        <argsstring></argsstring>
+        <name>disable_prompt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="41" column="10" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1a3454536c908cc009db80638d82b7d0a3" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::test_params_t::flux_hwloc</definition>
+        <argsstring></argsstring>
+        <name>flux_hwloc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="42" column="10" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1test__params__t_1afb276dc67753b2e399d3256c0eca12a8" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t Flux::resource_model::test_params_t::reserve_vtx_vec</definition>
+        <argsstring></argsstring>
+        <name>reserve_vtx_vec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="43" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="27" column="1" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="27" bodyend="44"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1ab8ee0443ddaf00c554b8074498f4c6dc" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>disable_prompt</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1ae57a3a20e631abbd1cdc9cc8d5b3eb1b" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>elapse_time</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a3454536c908cc009db80638d82b7d0a3" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>flux_hwloc</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1ac28f12cc56c647580a60c4c4e04ce5b6" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>load_allowlist</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a4b8a6da4582eb95a035abd2dd629b2e9" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>load_file</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1aa5df37429fff51a3d07a41b0ce76e2e2" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>load_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1aa15e52abb336f81dfe16679a40e904b2" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>match_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a5c2ef272500571c793bd796a02010888" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>matcher_name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a3547145a50454c1cb388f9a6127d559d" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>matcher_policy</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a28e691ac39a42746584736b96d94d8d0" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>o_fext</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a50632a6dad23a60337f5eb0b22bdfcac" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>o_fname</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a5becfa8477e88624edb81982c422f11f" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>o_format</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a861e635be011898bce7fe8c3692d15cf" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>prune_filters</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a32200268c518d52e55649b0a8b5f202d" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>r_fname</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1a6e4442e3316c06b77223b82100fe38f7" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>r_out</name></member>
+      <member refid="structFlux_1_1resource__model_1_1test__params__t_1afb276dc67753b2e399d3256c0eca12a8" prot="public" virt="non-virtual"><scope>Flux::resource_model::test_params_t</scope><name>reserve_vtx_vec</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

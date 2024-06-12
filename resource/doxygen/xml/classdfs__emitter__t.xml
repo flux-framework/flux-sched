@@ -1,0 +1,534 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classdfs__emitter__t" kind="class" language="C++" prot="public">
+    <compoundname>dfs_emitter_t</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">boost::default_dfs_visitor</basecompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdfs__emitter__t_1ace6e02597e83061d608198399e2e76ce" prot="private" static="no" mutable="no">
+        <type>std::map&lt; ggv_t, std::vector&lt; vtx_t &gt; &gt;</type>
+        <definition>std::map&lt;ggv_t, std::vector&lt;vtx_t&gt; &gt; dfs_emitter_t::m_gen_src_vtx</definition>
+        <argsstring></argsstring>
+        <name>m_gen_src_vtx</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="59" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1a0c927b92448b0a3f0521dd93744b8995" prot="private" static="no" mutable="no">
+        <type>std::deque&lt; int &gt;</type>
+        <definition>std::deque&lt;int&gt; dfs_emitter_t::m_hier_scales</definition>
+        <argsstring></argsstring>
+        <name>m_hier_scales</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="60" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1a45a564b9d08d22f5e28c6fb404ad85e0" prot="private" static="no" mutable="no">
+        <type>resource_graph_t *</type>
+        <definition>resource_graph_t* dfs_emitter_t::m_g_p</definition>
+        <argsstring></argsstring>
+        <name>m_g_p</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="61" column="22" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1abc94a0823f5c46e0b7d7424f720d09d4" prot="private" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> *</type>
+        <definition>resource_graph_metadata_t* dfs_emitter_t::m_gm_p</definition>
+        <argsstring></argsstring>
+        <name>m_gm_p</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="62" column="31" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1a1e716a6bbc208509569ec90ed3299b78" prot="private" static="no" mutable="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t" kindref="compound">resource_gen_spec_t</ref> *</type>
+        <definition>resource_gen_spec_t* dfs_emitter_t::m_gspec_p</definition>
+        <argsstring></argsstring>
+        <name>m_gspec_p</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="63" column="25" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="63" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1ad7fab59741ca7651589bbbe311a1df38" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int dfs_emitter_t::m_rank</definition>
+        <argsstring></argsstring>
+        <name>m_rank</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="64" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdfs__emitter__t_1a3765df0630390e73cd0898ca145d6b41" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string dfs_emitter_t::m_err_msg</definition>
+        <argsstring></argsstring>
+        <name>m_err_msg</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="65" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdfs__emitter__t_1aae2cd6fc5ee4ba79575cd1d4ef483cb4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfs_emitter_t::dfs_emitter_t</definition>
+        <argsstring>()</argsstring>
+        <name>dfs_emitter_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="34" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="256" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1abbe4429dee4f9795a6643b51c470124e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfs_emitter_t::dfs_emitter_t</definition>
+        <argsstring>(resource_graph_t *g_p, resource_graph_metadata_t *gm_p, resource_gen_spec_t *g)</argsstring>
+        <name>dfs_emitter_t</name>
+        <param>
+          <type>resource_graph_t *</type>
+          <declname>g_p</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> *</type>
+          <declname>gm_p</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1resource__gen__spec__t" kindref="compound">resource_gen_spec_t</ref> *</type>
+          <declname>g</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="35" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="261" bodyend="268"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a507669ebf68323319849c0d3b7e761e2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfs_emitter_t::dfs_emitter_t</definition>
+        <argsstring>(const dfs_emitter_t &amp;o)</argsstring>
+        <name>dfs_emitter_t</name>
+        <param>
+          <type>const <ref refid="classdfs__emitter__t" kindref="compound">dfs_emitter_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="37" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="270" bodyend="276"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a2249f6f18493919d9e86d3409fb6c80b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdfs__emitter__t" kindref="compound">dfs_emitter_t</ref> &amp;</type>
+        <definition>dfs_emitter_t &amp; dfs_emitter_t::operator=</definition>
+        <argsstring>(const dfs_emitter_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classdfs__emitter__t" kindref="compound">dfs_emitter_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="38" column="19" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="284" bodyend="291"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1abc0f695a5585f2bb788c2a8b433bfdc9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dfs_emitter_t::~dfs_emitter_t</definition>
+        <argsstring>()</argsstring>
+        <name>~dfs_emitter_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="39" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="278" bodyend="282"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a13228d44d44b1dabf3b41ad74701460b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfs_emitter_t::tree_edge</definition>
+        <argsstring>(gge_t e, const gg_t &amp;recipe)</argsstring>
+        <name>tree_edge</name>
+        <param>
+          <type>gge_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const gg_t &amp;</type>
+          <declname>recipe</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+<para>ROOT</para>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="41" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="300" bodyend="396"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1ae80e65ebb78b2e65965dfcadfd79ad82" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfs_emitter_t::finish_vertex</definition>
+        <argsstring>(ggv_t u, const gg_t &amp;recipe)</argsstring>
+        <name>finish_vertex</name>
+        <param>
+          <type>ggv_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const gg_t &amp;</type>
+          <declname>recipe</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Visitor method that is invoked on a finish vertex by DFS visitor</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>u</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource generator graph vertex descriptor </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>recipe</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource generator recipe graph </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="42" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="403" bodyend="407"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a4a99694253ffa9424ad55996902a3332" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; dfs_emitter_t::err_message</definition>
+        <argsstring>() const</argsstring>
+        <name>err_message</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return the error message. All error messages that encountered have been concatenated.</para>
+<para><simplesect kind="return"><para>error message </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="43" column="23" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="414" bodyend="417"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a3574ad46cbf2414622b6796d0a257ac2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfs_emitter_t::set_rank</definition>
+        <argsstring>(int rank)</argsstring>
+        <name>set_rank</name>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Set rank whose value will be used to set the rank field of all of the generated vertices. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="45" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="422" bodyend="425"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1aa6b703e9cb2d319a38a3257b1a38f2ba" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfs_emitter_t::get_rank</definition>
+        <argsstring>()</argsstring>
+        <name>get_rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Return rank whose value will be used to set the rank field of all of the generated vertices.</para>
+<para><simplesect kind="return"><para>rank </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="46" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="432" bodyend="435"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdfs__emitter__t_1af48a74f7a92dae4c3f165cc7d514fc50" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t dfs_emitter_t::emit_vertex</definition>
+        <argsstring>(ggv_t u, gge_t e, const gg_t &amp;recipe, vtx_t src_v, int i, int sz, int j)</argsstring>
+        <name>emit_vertex</name>
+        <param>
+          <type>ggv_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>gge_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const gg_t &amp;</type>
+          <declname>recipe</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>src_v</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>sz</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>j</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="49" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="199" bodyend="247"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a94266974c9f86bbdbea1732f6bf1fcca" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfs_emitter_t::raw_edge</definition>
+        <argsstring>(vtx_t src_v, vtx_t tgt_v, edg_t &amp;e)</argsstring>
+        <name>raw_edge</name>
+        <param>
+          <type>vtx_t</type>
+          <declname>src_v</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>tgt_v</declname>
+        </param>
+        <param>
+          <type>edg_t &amp;</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="51" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="130" bodyend="179"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a5a4f24ba97c2790aa0602742dcdcbbea" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void dfs_emitter_t::emit_edges</definition>
+        <argsstring>(gge_t e, const gg_t &amp;recipe, vtx_t src_v, vtx_t tgt_v)</argsstring>
+        <name>emit_edges</name>
+        <param>
+          <type>gge_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const gg_t &amp;</type>
+          <declname>recipe</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>src_v</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>tgt_v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="52" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="181" bodyend="197"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1ae7e1862ffe164674dcbc6cb8b533475c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfs_emitter_t::path_prefix</definition>
+        <argsstring>(const std::string &amp;pth, int upl, std::string &amp;pref)</argsstring>
+        <name>path_prefix</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>pth</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>upl</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>pref</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="54" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="75" bodyend="95"/>
+      </memberdef>
+      <memberdef kind="function" id="classdfs__emitter__t_1a118244c8aa98c13072ceeb36b6d79eeb" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dfs_emitter_t::gen_id</definition>
+        <argsstring>(gge_t e, const gg_t &amp;recipe, int i, int sz, int j)</argsstring>
+        <name>gen_id</name>
+        <param>
+          <type>gge_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>const gg_t &amp;</type>
+          <declname>recipe</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>sz</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>j</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="56" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="107" bodyend="128"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Note that this class must be copy-constructible required by the concept of the depth first search visitor. It must be lightweight. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>boost::default_dfs_visitor</label>
+      </node>
+      <node id="1">
+        <label>dfs_emitter_t</label>
+        <link refid="classdfs__emitter__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>boost::default_dfs_visitor</label>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::resource_graph_metadata_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t"/>
+        <childnode refid="4" relation="usage">
+          <edgelabel>graph_duration</edgelabel>
+        </childnode>
+      </node>
+      <node id="1">
+        <label>dfs_emitter_t</label>
+        <link refid="classdfs__emitter__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_gm_p</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_gspec_p</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>Flux::resource_model::resource_gen_spec_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__gen__spec__t"/>
+      </node>
+      <node id="4">
+        <label>Flux::resource_model::graph_duration_t</label>
+        <link refid="structFlux_1_1resource__model_1_1graph__duration__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" line="32" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_grug.cpp" bodystart="32" bodyend="66"/>
+    <listofallmembers>
+      <member refid="classdfs__emitter__t_1aae2cd6fc5ee4ba79575cd1d4ef483cb4" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>dfs_emitter_t</name></member>
+      <member refid="classdfs__emitter__t_1abbe4429dee4f9795a6643b51c470124e" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>dfs_emitter_t</name></member>
+      <member refid="classdfs__emitter__t_1a507669ebf68323319849c0d3b7e761e2" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>dfs_emitter_t</name></member>
+      <member refid="classdfs__emitter__t_1a5a4f24ba97c2790aa0602742dcdcbbea" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>emit_edges</name></member>
+      <member refid="classdfs__emitter__t_1af48a74f7a92dae4c3f165cc7d514fc50" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>emit_vertex</name></member>
+      <member refid="classdfs__emitter__t_1a4a99694253ffa9424ad55996902a3332" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>err_message</name></member>
+      <member refid="classdfs__emitter__t_1ae80e65ebb78b2e65965dfcadfd79ad82" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>finish_vertex</name></member>
+      <member refid="classdfs__emitter__t_1a118244c8aa98c13072ceeb36b6d79eeb" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>gen_id</name></member>
+      <member refid="classdfs__emitter__t_1aa6b703e9cb2d319a38a3257b1a38f2ba" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>get_rank</name></member>
+      <member refid="classdfs__emitter__t_1a3765df0630390e73cd0898ca145d6b41" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_err_msg</name></member>
+      <member refid="classdfs__emitter__t_1a45a564b9d08d22f5e28c6fb404ad85e0" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_g_p</name></member>
+      <member refid="classdfs__emitter__t_1ace6e02597e83061d608198399e2e76ce" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_gen_src_vtx</name></member>
+      <member refid="classdfs__emitter__t_1abc94a0823f5c46e0b7d7424f720d09d4" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_gm_p</name></member>
+      <member refid="classdfs__emitter__t_1a1e716a6bbc208509569ec90ed3299b78" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_gspec_p</name></member>
+      <member refid="classdfs__emitter__t_1a0c927b92448b0a3f0521dd93744b8995" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_hier_scales</name></member>
+      <member refid="classdfs__emitter__t_1ad7fab59741ca7651589bbbe311a1df38" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>m_rank</name></member>
+      <member refid="classdfs__emitter__t_1a2249f6f18493919d9e86d3409fb6c80b" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>operator=</name></member>
+      <member refid="classdfs__emitter__t_1ae7e1862ffe164674dcbc6cb8b533475c" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>path_prefix</name></member>
+      <member refid="classdfs__emitter__t_1a94266974c9f86bbdbea1732f6bf1fcca" prot="private" virt="non-virtual"><scope>dfs_emitter_t</scope><name>raw_edge</name></member>
+      <member refid="classdfs__emitter__t_1a3574ad46cbf2414622b6796d0a257ac2" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>set_rank</name></member>
+      <member refid="classdfs__emitter__t_1a13228d44d44b1dabf3b41ad74701460b" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>tree_edge</name></member>
+      <member refid="classdfs__emitter__t_1abc0f695a5585f2bb788c2a8b433bfdc9" prot="public" virt="non-virtual"><scope>dfs_emitter_t</scope><name>~dfs_emitter_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

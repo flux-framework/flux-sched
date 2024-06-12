@@ -1,0 +1,207 @@
+\hypertarget{classplanner}{}\doxysubsection{planner Class Reference}
+\label{classplanner}\index{planner@{planner}}
+
+
+{\ttfamily \#include $<$planner.\+hpp$>$}
+
+
+
+Collaboration diagram for planner\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classplanner__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classplanner_ac79ad22da4553b40277a159c7debbab3}\label{classplanner_ac79ad22da4553b40277a159c7debbab3}} 
+{\bfseries planner} (const int64\+\_\+t base\+\_\+time, const uint64\+\_\+t duration, const uint64\+\_\+t resource\+\_\+totals, const char $\ast$in\+\_\+resource\+\_\+type)
+\item 
+\mbox{\Hypertarget{classplanner_a490964e78bc7e297641ad701fb1e9b9f}\label{classplanner_a490964e78bc7e297641ad701fb1e9b9f}} 
+{\bfseries planner} (const \mbox{\hyperlink{classplanner}{planner}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner_aafa370a9fd9b22de7243f75995f5f999}\label{classplanner_aafa370a9fd9b22de7243f75995f5f999}} 
+\mbox{\hyperlink{classplanner}{planner}} \& {\bfseries operator=} (const \mbox{\hyperlink{classplanner}{planner}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner_a292ceb9779337989adbf2a8f71eec0dc}\label{classplanner_a292ceb9779337989adbf2a8f71eec0dc}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{classplanner}{planner}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner_a291cb8f3cdb2d88789e82142bba760bd}\label{classplanner_a291cb8f3cdb2d88789e82142bba760bd}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{classplanner}{planner}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner_a41d79ef313f88326f81122193e9a4301}\label{classplanner_a41d79ef313f88326f81122193e9a4301}} 
+int {\bfseries erase} ()
+\item 
+\mbox{\Hypertarget{classplanner_a58348e251f352f8deee2a0e1e5ba73d3}\label{classplanner_a58348e251f352f8deee2a0e1e5ba73d3}} 
+int {\bfseries reinitialize} (int64\+\_\+t base\+\_\+time, uint64\+\_\+t duration)
+\item 
+\mbox{\Hypertarget{classplanner_a587416193a1f323322102fad6823d833}\label{classplanner_a587416193a1f323322102fad6823d833}} 
+int {\bfseries restore\+\_\+track\+\_\+points} ()
+\item 
+\mbox{\Hypertarget{classplanner_a004e227247383a0fbe8f4c6f8af34209}\label{classplanner_a004e227247383a0fbe8f4c6f8af34209}} 
+int {\bfseries update\+\_\+total} (uint64\+\_\+t resource\+\_\+total)
+\item 
+\mbox{\Hypertarget{classplanner_a71e3029e14ffc324be0fd290d4332eda}\label{classplanner_a71e3029e14ffc324be0fd290d4332eda}} 
+int64\+\_\+t {\bfseries get\+\_\+total\+\_\+resources} () const
+\item 
+\mbox{\Hypertarget{classplanner_ae6111f9321d6f2cf96bb194acf7dfed9}\label{classplanner_ae6111f9321d6f2cf96bb194acf7dfed9}} 
+const std\+::string \& {\bfseries get\+\_\+resource\+\_\+type} () const
+\item 
+\mbox{\Hypertarget{classplanner_a734e161f2bbf50b159437310c0b8b129}\label{classplanner_a734e161f2bbf50b159437310c0b8b129}} 
+int64\+\_\+t {\bfseries get\+\_\+plan\+\_\+start} () const
+\item 
+\mbox{\Hypertarget{classplanner_a704231e4001db421d5d12033e5e0761f}\label{classplanner_a704231e4001db421d5d12033e5e0761f}} 
+int64\+\_\+t {\bfseries get\+\_\+plan\+\_\+end} () const
+\item 
+\mbox{\Hypertarget{classplanner_a7e4ae0e239085c698fdc5bf4ac87a375}\label{classplanner_a7e4ae0e239085c698fdc5bf4ac87a375}} 
+int {\bfseries mt\+\_\+tree\+\_\+insert} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classplanner_af332dfa155b64993db402b3c7c354609}\label{classplanner_af332dfa155b64993db402b3c7c354609}} 
+int {\bfseries mt\+\_\+tree\+\_\+remove} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classplanner_a7320991a97d32cdc5429cbfc2fad1c64}\label{classplanner_a7320991a97d32cdc5429cbfc2fad1c64}} 
+int {\bfseries sp\+\_\+tree\+\_\+insert} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classplanner_a12a53aba9777501bb76da0200a3eeff8}\label{classplanner_a12a53aba9777501bb76da0200a3eeff8}} 
+int {\bfseries sp\+\_\+tree\+\_\+remove} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point)
+\item 
+\mbox{\Hypertarget{classplanner_a7dfe56eb0b264948039e7019ccf3a6f2}\label{classplanner_a7dfe56eb0b264948039e7019ccf3a6f2}} 
+void {\bfseries destroy\+\_\+sp\+\_\+tree} ()
+\item 
+\mbox{\Hypertarget{classplanner_a0963704c3e81ab2ec18c25ed52f5f12f}\label{classplanner_a0963704c3e81ab2ec18c25ed52f5f12f}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries sp\+\_\+tree\+\_\+search} (int64\+\_\+t at)
+\item 
+\mbox{\Hypertarget{classplanner_a25811bd6d6c7e15810328457520c41e3}\label{classplanner_a25811bd6d6c7e15810328457520c41e3}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries sp\+\_\+tree\+\_\+get\+\_\+state} (int64\+\_\+t at)
+\item 
+\mbox{\Hypertarget{classplanner_a62b3d6c511e269cd212c2fd773540811}\label{classplanner_a62b3d6c511e269cd212c2fd773540811}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries sp\+\_\+tree\+\_\+next} (\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$point) const
+\item 
+\mbox{\Hypertarget{classplanner_a01c129e7a50114963e9e5b7b57c525dd}\label{classplanner_a01c129e7a50114963e9e5b7b57c525dd}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries mt\+\_\+tree\+\_\+get\+\_\+mintime} (int64\+\_\+t request) const
+\item 
+\mbox{\Hypertarget{classplanner_a5fb1064af6296d49e30944a39dfc4e70}\label{classplanner_a5fb1064af6296d49e30944a39dfc4e70}} 
+void {\bfseries clear\+\_\+span\+\_\+lookup} ()
+\item 
+\mbox{\Hypertarget{classplanner_ae11fe5aabc80a6bb3590736aeb985e94}\label{classplanner_ae11fe5aabc80a6bb3590736aeb985e94}} 
+void {\bfseries span\+\_\+lookup\+\_\+erase} (std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$$>$\+::iterator \&it)
+\item 
+\mbox{\Hypertarget{classplanner_a32e07dcca89d726ca7a50281a8142899}\label{classplanner_a32e07dcca89d726ca7a50281a8142899}} 
+const std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ $>$ \& {\bfseries get\+\_\+span\+\_\+lookup\+\_\+const} () const
+\item 
+\mbox{\Hypertarget{classplanner_a9e3b0fba19b2f533422a2e9a8b097885}\label{classplanner_a9e3b0fba19b2f533422a2e9a8b097885}} 
+std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ $>$ \& {\bfseries get\+\_\+span\+\_\+lookup} ()
+\item 
+\mbox{\Hypertarget{classplanner_a2b09402940eb9e084081b8a3b7e2530f}\label{classplanner_a2b09402940eb9e084081b8a3b7e2530f}} 
+size\+\_\+t {\bfseries span\+\_\+lookup\+\_\+get\+\_\+size} () const
+\item 
+\mbox{\Hypertarget{classplanner_a465ae1e43b48e0cad0499dd025bd15aa}\label{classplanner_a465ae1e43b48e0cad0499dd025bd15aa}} 
+void {\bfseries span\+\_\+lookup\+\_\+insert} (int64\+\_\+t span\+\_\+id, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ span)
+\item 
+\mbox{\Hypertarget{classplanner_aa3eceb772de32396a814842eb006688e}\label{classplanner_aa3eceb772de32396a814842eb006688e}} 
+const std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ $>$\+::iterator {\bfseries get\+\_\+span\+\_\+lookup\+\_\+iter} () const
+\item 
+\mbox{\Hypertarget{classplanner_a98afc266014b85769bc18848bdaeec8a}\label{classplanner_a98afc266014b85769bc18848bdaeec8a}} 
+void {\bfseries set\+\_\+span\+\_\+lookup\+\_\+iter} (std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$$>$\+::iterator \&it)
+\item 
+\mbox{\Hypertarget{classplanner_ade218b415970439c060bfb7ddc7eb1b1}\label{classplanner_ade218b415970439c060bfb7ddc7eb1b1}} 
+void {\bfseries incr\+\_\+span\+\_\+lookup\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner_a1f03d2aec301e03dc434cf5eb79df486}\label{classplanner_a1f03d2aec301e03dc434cf5eb79df486}} 
+std\+::map$<$ int64\+\_\+t, \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ $>$ \& {\bfseries get\+\_\+avail\+\_\+time\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner_a7933ecb80327a77143af44a4f02f318b}\label{classplanner_a7933ecb80327a77143af44a4f02f318b}} 
+const std\+::map$<$ int64\+\_\+t, \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ $>$ \& {\bfseries get\+\_\+avail\+\_\+time\+\_\+iter\+\_\+const} () const
+\item 
+\mbox{\Hypertarget{classplanner_a3e64c25ed8b433b43d4dab2daf12b2dd}\label{classplanner_a3e64c25ed8b433b43d4dab2daf12b2dd}} 
+void {\bfseries clear\+\_\+avail\+\_\+time\+\_\+iter} ()
+\item 
+\mbox{\Hypertarget{classplanner_a5589ef3cbf155dc9d3507ac1b06b00d6}\label{classplanner_a5589ef3cbf155dc9d3507ac1b06b00d6}} 
+void {\bfseries set\+\_\+avail\+\_\+time\+\_\+iter\+\_\+set} (int atime\+\_\+iter\+\_\+set)
+\item 
+\mbox{\Hypertarget{classplanner_af715e60b2250461562a792b2ad340c64}\label{classplanner_af715e60b2250461562a792b2ad340c64}} 
+const int {\bfseries get\+\_\+avail\+\_\+time\+\_\+iter\+\_\+set} () const
+\item 
+\mbox{\Hypertarget{classplanner_a76df4f731b43512da17c7663cc799391}\label{classplanner_a76df4f731b43512da17c7663cc799391}} 
+\mbox{\hyperlink{structrequest__t}{request\+\_\+t}} \& {\bfseries get\+\_\+current\+\_\+request} ()
+\item 
+\mbox{\Hypertarget{classplanner_ad4da4823c1acb23ec58bcd441cd8142c}\label{classplanner_ad4da4823c1acb23ec58bcd441cd8142c}} 
+const \mbox{\hyperlink{structrequest__t}{request\+\_\+t}} \& {\bfseries get\+\_\+current\+\_\+request\+\_\+const} () const
+\item 
+\mbox{\Hypertarget{classplanner_ac7d52f130791e891388749da57da6408}\label{classplanner_ac7d52f130791e891388749da57da6408}} 
+void {\bfseries incr\+\_\+span\+\_\+counter} ()
+\item 
+\mbox{\Hypertarget{classplanner_a027999d10b14876e5cdd52d31f9c15c8}\label{classplanner_a027999d10b14876e5cdd52d31f9c15c8}} 
+const uint64\+\_\+t {\bfseries get\+\_\+span\+\_\+counter} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classplanner_a6d9d11389ff345412bcb394874f37b2b}\label{classplanner_a6d9d11389ff345412bcb394874f37b2b}} 
+int {\bfseries copy\+\_\+trees} (const \mbox{\hyperlink{classplanner}{planner}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner_a1bf6a28dee6c18b7380058165d186414}\label{classplanner_a1bf6a28dee6c18b7380058165d186414}} 
+int {\bfseries copy\+\_\+maps} (const \mbox{\hyperlink{classplanner}{planner}} \&o)
+\item 
+\mbox{\Hypertarget{classplanner_a4430154a0a1f4ff9919245536cebff8b}\label{classplanner_a4430154a0a1f4ff9919245536cebff8b}} 
+bool {\bfseries span\+\_\+lookups\+\_\+equal} (const \mbox{\hyperlink{classplanner}{planner}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner_a3e84cc3464c97cb97f1a625e814a873d}\label{classplanner_a3e84cc3464c97cb97f1a625e814a873d}} 
+bool {\bfseries avail\+\_\+time\+\_\+iters\+\_\+equal} (const \mbox{\hyperlink{classplanner}{planner}} \&o) const
+\item 
+\mbox{\Hypertarget{classplanner_ab750b354862d7a9d5d6fdc6a8ada28d8}\label{classplanner_ab750b354862d7a9d5d6fdc6a8ada28d8}} 
+bool {\bfseries trees\+\_\+equal} (const \mbox{\hyperlink{classplanner}{planner}} \&o) const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classplanner_a79bb34c9981bed49734c0ddf585487a4}\label{classplanner_a79bb34c9981bed49734c0ddf585487a4}} 
+int64\+\_\+t {\bfseries m\+\_\+total\+\_\+resources} = 0
+\item 
+\mbox{\Hypertarget{classplanner_a649f536b543445f61cf461b1bc0211c4}\label{classplanner_a649f536b543445f61cf461b1bc0211c4}} 
+std\+::string {\bfseries m\+\_\+resource\+\_\+type} = \char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classplanner_aeae9a89b4301f50bbc4255d09c80a363}\label{classplanner_aeae9a89b4301f50bbc4255d09c80a363}} 
+int64\+\_\+t {\bfseries m\+\_\+plan\+\_\+start} = 0
+\item 
+\mbox{\Hypertarget{classplanner_ae5af49863580a975d518a71326e13653}\label{classplanner_ae5af49863580a975d518a71326e13653}} 
+int64\+\_\+t {\bfseries m\+\_\+plan\+\_\+end} = 0
+\item 
+\mbox{\Hypertarget{classplanner_aa5398fc392f4527351ab4f3d9a60e64d}\label{classplanner_aa5398fc392f4527351ab4f3d9a60e64d}} 
+\mbox{\hyperlink{classscheduled__point__tree__t}{scheduled\+\_\+point\+\_\+tree\+\_\+t}} {\bfseries m\+\_\+sched\+\_\+point\+\_\+tree}
+\item 
+\mbox{\Hypertarget{classplanner_aee0a724aa6354706af8173c2b8b93e7d}\label{classplanner_aee0a724aa6354706af8173c2b8b93e7d}} 
+\mbox{\hyperlink{classmintime__resource__tree__t}{mintime\+\_\+resource\+\_\+tree\+\_\+t}} {\bfseries m\+\_\+mt\+\_\+resource\+\_\+tree}
+\item 
+\mbox{\Hypertarget{classplanner_a446442a0cd63189106534f1c2ea0a7ea}\label{classplanner_a446442a0cd63189106534f1c2ea0a7ea}} 
+\mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ {\bfseries m\+\_\+p0} = nullptr
+\item 
+\mbox{\Hypertarget{classplanner_a714cb0285aad8874c3c9a99ce10bb5f2}\label{classplanner_a714cb0285aad8874c3c9a99ce10bb5f2}} 
+std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ $>$ {\bfseries m\+\_\+span\+\_\+lookup}
+\item 
+\mbox{\Hypertarget{classplanner_a87bb7f9c91acdd59c5824b8a9561a094}\label{classplanner_a87bb7f9c91acdd59c5824b8a9561a094}} 
+std\+::map$<$ int64\+\_\+t, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{structspan__t}{span\+\_\+t}} $>$ $>$\+::iterator {\bfseries m\+\_\+span\+\_\+lookup\+\_\+iter}
+\item 
+\mbox{\Hypertarget{classplanner_afaf51017ce92567be260dd09cc1328e1}\label{classplanner_afaf51017ce92567be260dd09cc1328e1}} 
+std\+::map$<$ int64\+\_\+t, \mbox{\hyperlink{structscheduled__point__t}{scheduled\+\_\+point\+\_\+t}} $\ast$ $>$ {\bfseries m\+\_\+avail\+\_\+time\+\_\+iter}
+\item 
+\mbox{\Hypertarget{classplanner_a3c42016f20d33fcd4645a2c84500b8fb}\label{classplanner_a3c42016f20d33fcd4645a2c84500b8fb}} 
+int {\bfseries m\+\_\+avail\+\_\+time\+\_\+iter\+\_\+set} = 0
+\item 
+\mbox{\Hypertarget{classplanner_a66c08345e5cef26e9d888c25e88e6a29}\label{classplanner_a66c08345e5cef26e9d888c25e88e6a29}} 
+\mbox{\hyperlink{structrequest__t}{request\+\_\+t}} {\bfseries m\+\_\+current\+\_\+request}
+\item 
+\mbox{\Hypertarget{classplanner_a9f7bb4230499d2bb9409b29c941fffa2}\label{classplanner_a9f7bb4230499d2bb9409b29c941fffa2}} 
+uint64\+\_\+t {\bfseries m\+\_\+span\+\_\+counter} = 0
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Planner class 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+planner.\+hpp\item 
+planner.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_70ea1f735a6e493fa0bde3be35020950" kind="dir">
+    <compoundname>libjobspec</compoundname>
+    <innerdir refid="dir_f06c387644307462b1383ac5ffe709ea">test</innerdir>
+    <innerfile refid="constraint_8cpp">constraint.cpp</innerfile>
+    <innerfile refid="constraint_8hpp">constraint.hpp</innerfile>
+    <innerfile refid="flux-jobspec-validate_8cpp">flux-jobspec-validate.cpp</innerfile>
+    <innerfile refid="hostlist__constraint_8cpp">hostlist_constraint.cpp</innerfile>
+    <innerfile refid="hostlist__constraint_8hpp">hostlist_constraint.hpp</innerfile>
+    <innerfile refid="jobspec_8cpp">jobspec.cpp</innerfile>
+    <innerfile refid="jobspec_8hpp">jobspec.hpp</innerfile>
+    <innerfile refid="parse__error_8hpp">parse_error.hpp</innerfile>
+    <innerfile refid="rank__constraint_8cpp">rank_constraint.cpp</innerfile>
+    <innerfile refid="rank__constraint_8hpp">rank_constraint.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/"/>
+  </compounddef>
+</doxygen>

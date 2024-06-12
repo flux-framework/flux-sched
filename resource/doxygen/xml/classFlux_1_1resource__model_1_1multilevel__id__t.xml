@@ -1,0 +1,494 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1multilevel__id__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::multilevel_id_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" prot="public" virt="non-virtual">Flux::resource_model::dfu_match_cb_t</basecompoundref>
+    <includes refid="dfu__match__multilevel__id_8hpp" local="no">dfu_match_multilevel_id.hpp</includes>
+    <innerclass refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t" prot="private">Flux::resource_model::multilevel_id_t::score_factor_t</innerclass>
+    <templateparamlist>
+      <param>
+        <type>typename FOLD</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a74057f2d484dcbcd9e5674ad85648812" prot="private" static="no" mutable="no">
+        <type>FOLD</type>
+        <definition>FOLD Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::m_comp</definition>
+        <argsstring></argsstring>
+        <name>m_comp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="121" column="10" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="121" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a62cde34c1b655ded0e29ab6992d0026e" prot="private" static="no" mutable="no">
+        <type>unsigned</type>
+        <definition>unsigned Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::m_stop_on_k_matches</definition>
+        <argsstring></argsstring>
+        <name>m_stop_on_k_matches</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="122" column="14" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a5401522cb9b5031f56baa5bd3abf0589" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::m_multilevel_scores</definition>
+        <argsstring></argsstring>
+        <name>m_multilevel_scores</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="123" column="13" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1af468988303789e4f1dbcdee2b34388c4" prot="private" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, <ref refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t" kindref="compound">score_factor_t</ref> &gt;</type>
+        <definition>std::unordered_map&lt;std::string, score_factor_t&gt; Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::m_multilevel_factors</definition>
+        <argsstring></argsstring>
+        <name>m_multilevel_factors</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="124" column="24" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1afe5a37b97baeb79465ff62926813a6ec" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::multilevel_id_t</definition>
+        <argsstring>()</argsstring>
+        <name>multilevel_id_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="35" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="76" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a8bd4009a8babbb35a4fb810f0e0331e8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::multilevel_id_t</definition>
+        <argsstring>(const std::string &amp;name)</argsstring>
+        <name>multilevel_id_t</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="36" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="82" bodyend="86"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a5d0239903e64d3a48768cc19f3ada019" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::multilevel_id_t</definition>
+        <argsstring>(const multilevel_id_t &amp;o)</argsstring>
+        <name>multilevel_id_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1multilevel__id__t" kindref="compound">multilevel_id_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="37" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="89" bodyend="95"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a77a1e250df15284f5e167925eebd6230" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classFlux_1_1resource__model_1_1multilevel__id__t" kindref="compound">multilevel_id_t</ref> &amp;</type>
+        <definition>multilevel_id_t&lt; FOLD &gt; &amp; Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::operator=</definition>
+        <argsstring>(const multilevel_id_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1multilevel__id__t" kindref="compound">multilevel_id_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="38" column="21" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="98" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a008590aefcb5fde94223a092a553a536" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::~multilevel_id_t</definition>
+        <argsstring>()</argsstring>
+        <name>~multilevel_id_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="39" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="109" bodyend="112"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a26153da7092c750db5af02cbc5f9e216" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::dom_finish_graph</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, const std::vector&lt; Flux::Jobspec::Resource &gt; &amp;resources, const f_resource_graph_t &amp;g, scoring_api_t &amp;dfu)</argsstring>
+        <name>dom_finish_graph</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1abc5ab933d4523b8c56c51e11f4555b1d">dom_finish_graph</reimplements>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Flux::Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="44" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="115" bodyend="136"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a7d0bdfc597b448e0d41c5841d7958ea9" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::dom_finish_slot</definition>
+        <argsstring>(const subsystem_t &amp;subsystem, scoring_api_t &amp;dfu)</argsstring>
+        <name>dom_finish_slot</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a6d27b52a925bf4d9b00a2d0de41f3ec5">dom_finish_slot</reimplements>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="51" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="139" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a5b4ad777423fb6a46462b9786fce2999" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::dom_discover_vtx</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Flux::Jobspec::Resource &gt; &amp;resources, const f_resource_graph_t &amp;g)</argsstring>
+        <name>dom_discover_vtx</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1acf3e8a6ffa6c81e8fca051c08fba7ffa">dom_discover_vtx</reimplements>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Flux::Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="56" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="150" bodyend="168"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a8c40e5e9032fe00ddda3572e1ab4dd51" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::dom_finish_vtx</definition>
+        <argsstring>(vtx_t u, const subsystem_t &amp;subsystem, const std::vector&lt; Flux::Jobspec::Resource &gt; &amp;resources, const f_resource_graph_t &amp;g, scoring_api_t &amp;dfu)</argsstring>
+        <name>dom_finish_vtx</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1ac8faa0951729c43d6fa75eac86918b5d">dom_finish_vtx</reimplements>
+        <param>
+          <type>vtx_t</type>
+          <declname>u</declname>
+        </param>
+        <param>
+          <type>const subsystem_t &amp;</type>
+          <declname>subsystem</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="classFlux_1_1Jobspec_1_1Resource" kindref="compound">Flux::Jobspec::Resource</ref> &gt; &amp;</type>
+          <declname>resources</declname>
+        </param>
+        <param>
+          <type>const f_resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1resource__model_1_1scoring__api__t" kindref="compound">scoring_api_t</ref> &amp;</type>
+          <declname>dfu</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="64" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="171" bodyend="208"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a8b9f8e2ee3be3cc3b884f3e7d0412312" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::set_stop_on_k_matches</definition>
+        <argsstring>(unsigned int k)</argsstring>
+        <name>set_stop_on_k_matches</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a544a89cfc3c50866eabb3c2135925a8f">set_stop_on_k_matches</reimplements>
+        <param>
+          <type>unsigned int</type>
+          <declname>k</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="71" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="211" bodyend="217"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a46da4ecfeafebdc41657103751eefe33" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::get_stop_on_k_matches</definition>
+        <argsstring>() const</argsstring>
+        <name>get_stop_on_k_matches</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a662c366359bb57314ec7c3f5537a3ca1">get_stop_on_k_matches</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Please see its overriding method within <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref>@base/dfu_match_cb.hpp </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="76" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="220" bodyend="223"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1a0e6cb6e7d0fc0009c2c33770f82394de" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::add_score_factor</definition>
+        <argsstring>(const std::string &amp;type, unsigned add_by, unsigned multiply_by)</argsstring>
+        <name>add_score_factor</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>add_by</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>multiply_by</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Add a high-level resource type to the multilevel factor vector. The preorder visit callback (<ref refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a5b4ad777423fb6a46462b9786fce2999" kindref="member">dom_discover_vtx()</ref>) then calculates the factor of the visiting resource vertex of this type and adds that to multilevel score vector: (the numeric ID of the visiting resource of the added type + add_by) * multiply_by. This method may be called multiple times to add multiple high-level resource types to the score factors vector.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>type</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>high-level resource type to add to the multilevel factors. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>add_by</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>unsigned integer to add to the ID of each resource of the added type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>multiply_by</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>unsigned integer to multiply with (ID + add_by)</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>return 0 on success; -1 on error with errno set: EEXIST: type already has been added; ENOMEM: out of memory. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="99" column="9" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="226" bodyend="247"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1ab57b9bf09c536a4419df5468e1b23d50" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::set_base_factor</definition>
+        <argsstring>(const std::string &amp;type, unsigned int id)</argsstring>
+        <name>set_base_factor</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="119" column="10"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>MultiLevel ID-based match policy: select each resource using a user-defined function of numeric IDs of their containing high-level resources and of itself. Templated on a binary functor in the fold namespace (e.g., <ref refid="structFlux_1_1resource__model_1_1fold_1_1less" kindref="compound">fold::less</ref>, <ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref> etc). This policy can be used to incorporate one or more containing (or ancestor) resources into each contained resource. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="4">
+        <label>Flux::resource_model::matcher_util_api_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__util__api__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::dfu_match_cb_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__match__cb__t"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+        <childnode refid="4" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;</label>
+        <link refid="classFlux_1_1resource__model_1_1multilevel__id__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::matcher_data_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__data__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="4">
+        <label>Flux::resource_model::matcher_util_api_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__util__api__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::dfu_match_cb_t</label>
+        <link refid="classFlux_1_1resource__model_1_1dfu__match__cb__t"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+        <childnode refid="4" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;</label>
+        <link refid="classFlux_1_1resource__model_1_1multilevel__id__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>Flux::resource_model::matcher_data_t</label>
+        <link refid="classFlux_1_1resource__model_1_1matcher__data__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="31" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="32" bodyend="125"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a866375743eab8e141cc5017a03976c9b" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>add_exclusive_resource_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a0e6cb6e7d0fc0009c2c33770f82394de" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>add_score_factor</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1adfd25279c48db1c8e106ad6ffcb43c57" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>add_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1ac43df9a49fea23c8b2a2b8d2b3c40ed0" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>aux_discover_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1aaa2ce92b62f5b428fc6af21a9214c27d" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>aux_finish_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1acb7086d922080c12528e3bd34d1ee8f5" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>calc_count</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1adca59dd8da6133d47d5fcccc40c42a86" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>calc_effective_max</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a68c85dbce1817bd003a7966b4431edf5" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>decr</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1afdac97234d38c38e7bf4ec5a935e2c16" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dfu_match_cb_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a6af82f94ab1d86dc54e95b7fb5a22c68" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dfu_match_cb_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a60f6bbb63e13aa71b890fe463b0a0c3c" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dfu_match_cb_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a5b4ad777423fb6a46462b9786fce2999" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dom_discover_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a26153da7092c750db5af02cbc5f9e216" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dom_finish_graph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a7d0bdfc597b448e0d41c5841d7958ea9" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dom_finish_slot</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a8c40e5e9032fe00ddda3572e1ab4dd51" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dom_finish_vtx</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a47427f20920713ee9065a45c22a711d4" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>dom_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2139cafb9dedce38e8ef90b197ed8bec" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>get_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38dd5ce78db680417e7b340e47f5f634" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>get_my_pruning_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a46da4ecfeafebdc41657103751eefe33" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>get_stop_on_k_matches</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a0b17c2d16b6b0bc7d1ebf0dc3867a918" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>incr</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa33d6d971be5fe49166ad925204147fa" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>is_my_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a0ae3e17de59d8c078a2e3fdf014c4c6f" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>is_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a5b8a02f247cba99f289b59c985b2dcc9" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>is_resource_type_exclusive</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a99289c650036dda7cecb1afb7d6ed45c" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a74057f2d484dcbcd9e5674ad85648812" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_comp</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a456ab580ca312f996af6ecab49328f8b" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_err_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1af468988303789e4f1dbcdee2b34388c4" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_multilevel_factors</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a5401522cb9b5031f56baa5bd3abf0589" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_multilevel_scores</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a57c5a5984b1911376531a4c93d9a8b70" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a38a73bf6d64422f6668c65d9deea821f" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_pruning_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a62cde34c1b655ded0e29ab6992d0026e" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_stop_on_k_matches</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a26bc983ac3b15c1f10642fbf8cc5acd5" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_subsystems</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a9c7c059edfc78a2e3db9510570988c5e" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_subsystems_map</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1aa6ada097e69637aca778319b51edd0eb" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_total_set</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1ab78f7b1cd1e771655806ccff8185bbc2" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_trav_level</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a41476a6cef1834ab550d1ecea6e0e47d" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>m_x_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aa42527edc5f30a25a6b6456b8ca9e419" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aed1c4cb262376f3bf1fc4a09330bc561" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aa84a1b3bdd4454e9d5f3f20902cb77c1" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a5f8daa40e3e6b1d89d73f54efe1754af" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>matcher_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1afe5a37b97baeb79465ff62926813a6ec" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>multilevel_id_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a8bd4009a8babbb35a4fb810f0e0331e8" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>multilevel_id_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a5d0239903e64d3a48768cc19f3ada019" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>multilevel_id_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a77a1e250df15284f5e167925eebd6230" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1add42c351ba5bc2e29553a22120734c7b" prot="public" virt="non-virtual" ambiguityscope="Flux::resource_model::dfu_match_cb_t::"><scope>Flux::resource_model::multilevel_id_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a77f02472039329405cc3248d4ddeef64" prot="public" virt="non-virtual" ambiguityscope="Flux::resource_model::matcher_data_t::"><scope>Flux::resource_model::multilevel_id_t</scope><name>operator=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a2e2bbd4c7b24a84e83a91a27792d8481" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>register_resource_pair</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a73323a2d2736559d9858e4616d62c373" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>reset_exclusive_resource_types</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1ab57b9bf09c536a4419df5468e1b23d50" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>set_base_factor</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a014b7605a2b475952b3e131f19211062" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>set_matcher_name</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a97e8108cd4b598d8f083bf7c5afee68c" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>set_pruning_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__util__api__t_1a9dd39a530f176db43f406c6e2e8ac687" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>set_pruning_types_w_spec</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a8b9f8e2ee3be3cc3b884f3e7d0412312" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>set_stop_on_k_matches</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1aaa70abe63c4eb9e71590b602ad66002f" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>subsystems</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a9e6f3ea87c5ad0b94dad8697ba113aae" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>subsystemsS</name></member>
+      <member refid="classFlux_1_1resource__model_1_1dfu__match__cb__t_1a2f344ffbf6cc26e15b17bada842841f9" prot="public" virt="virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>~dfu_match_cb_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1matcher__data__t_1a5bfc6cf2f135803ea0b62ec953cff8e4" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>~matcher_data_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1a008590aefcb5fde94223a092a553a536" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t</scope><name>~multilevel_id_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

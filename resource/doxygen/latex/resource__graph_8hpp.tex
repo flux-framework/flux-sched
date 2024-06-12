@@ -1,0 +1,88 @@
+\hypertarget{resource__graph_8hpp}{}\doxysubsection{resource\+\_\+graph.\+hpp File Reference}
+\label{resource__graph_8hpp}\index{resource\_graph.hpp@{resource\_graph.hpp}}
+{\ttfamily \#include $<$boost/config.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/adjacency\+\_\+list.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/filtered\+\_\+graph.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/graphviz.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/graphml.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}resource/schema/resource\+\_\+data.\+hpp\char`\"{}}\newline
+Include dependency graph for resource\+\_\+graph.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource__graph_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource__graph_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1subsystem__selector__t}{Flux\+::resource\+\_\+model\+::subsystem\+\_\+selector\+\_\+t$<$ graph\+\_\+entity, inframap $>$}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1label__writer__t}{Flux\+::resource\+\_\+model\+::label\+\_\+writer\+\_\+t$<$ name\+\_\+map, graph\+\_\+entity $>$}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1edg__label__writer__t}{Flux\+::resource\+\_\+model\+::edg\+\_\+label\+\_\+writer\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceFlux}{Flux}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model}{Flux\+::resource\+\_\+model}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ac48f66a89c50129b406a2fe8a2bb8868}{Flux\+::resource\+\_\+model\+::pinfra\+\_\+t}} = pool\+\_\+infra\+\_\+t resource\+\_\+pool\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab1fd7c59718064965e31529ebba5c0e6}{Flux\+::resource\+\_\+model\+::pname\+\_\+t}} = std\+::string resource\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a8b611bffb41822db6229709215e5dfbc}{Flux\+::resource\+\_\+model\+::rname\+\_\+t}} = std\+::string resource\+\_\+relation\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a7e9ecd8fdd697b899f3dc311698e7b5d}{Flux\+::resource\+\_\+model\+::rinfra\+\_\+t}} = relation\+\_\+infra\+\_\+t resource\+\_\+relation\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a384f113976d60748fbef26e93809bf6d}{Flux\+::resource\+\_\+model\+::resource\+\_\+graph\+\_\+t}} = boost\+::adjacency\+\_\+list$<$ boost\+::vecS, boost\+::vecS, boost\+::directedS, resource\+\_\+pool\+\_\+t, resource\+\_\+relation\+\_\+t, std\+::string $>$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a5c35c0ef9561b812ad3a7cdb5483b144}{Flux\+::resource\+\_\+model\+::vtx\+\_\+infra\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ resource\+\_\+graph\+\_\+t, pinfra\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ac21c636a12b04f8a75afa280ab84ed55}{Flux\+::resource\+\_\+model\+::edg\+\_\+infra\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ resource\+\_\+graph\+\_\+t, rinfra\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab9495daa8e0ef09757a95c6b7e66c149}{Flux\+::resource\+\_\+model\+::vtx\+\_\+t}} = boost\+::graph\+\_\+traits$<$ resource\+\_\+graph\+\_\+t $>$\+::vertex\+\_\+descriptor
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a98f18dd9b1efd76310e4b021becbe32e}{Flux\+::resource\+\_\+model\+::edg\+\_\+t}} = boost\+::graph\+\_\+traits$<$ resource\+\_\+graph\+\_\+t $>$\+::edge\+\_\+descriptor
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab652cec8115a11dc30554bdac47301c8}{Flux\+::resource\+\_\+model\+::vtx\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ resource\+\_\+graph\+\_\+t $>$\+::vertex\+\_\+iterator
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a47f97b638f6e9ad8cdd197a58fe0e095}{Flux\+::resource\+\_\+model\+::edg\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ resource\+\_\+graph\+\_\+t $>$\+::edge\+\_\+iterator
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_aa54bf633024ee9f6562ad7e17e76749d}{Flux\+::resource\+\_\+model\+::out\+\_\+edg\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ resource\+\_\+graph\+\_\+t $>$\+::out\+\_\+edge\+\_\+iterator
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a11f6bc2f7c039d1d680ad81c1130df59}{Flux\+::resource\+\_\+model\+::f\+\_\+resource\+\_\+graph\+\_\+t}} = boost\+::filtered\+\_\+graph$<$ resource\+\_\+graph\+\_\+t, subsystem\+\_\+selector\+\_\+t$<$ edg\+\_\+t, edg\+\_\+infra\+\_\+map\+\_\+t $>$, subsystem\+\_\+selector\+\_\+t$<$ vtx\+\_\+t, vtx\+\_\+infra\+\_\+map\+\_\+t $>$ $>$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a87a0a195bd7789de249fe5ce7551ab7b}{Flux\+::resource\+\_\+model\+::f\+\_\+edg\+\_\+infra\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ f\+\_\+resource\+\_\+graph\+\_\+t, rinfra\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_aa9d0bfc72b2dcc27f8c569ec3cf668b1}{Flux\+::resource\+\_\+model\+::f\+\_\+vtx\+\_\+infra\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ f\+\_\+resource\+\_\+graph\+\_\+t, pinfra\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a09ac0103ddc0720fff77a213c4fd7a3c}{Flux\+::resource\+\_\+model\+::f\+\_\+res\+\_\+name\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ f\+\_\+resource\+\_\+graph\+\_\+t, pname\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a9dfccdc82f7262d8aff648427a5f0e85}{Flux\+::resource\+\_\+model\+::f\+\_\+rel\+\_\+name\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ f\+\_\+resource\+\_\+graph\+\_\+t, rname\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_aba55bf9fe7203ebe0be78fab6070964a}{Flux\+::resource\+\_\+model\+::f\+\_\+vtx\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ f\+\_\+resource\+\_\+graph\+\_\+t $>$\+::vertex\+\_\+iterator
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a42a591ab7db32e92aa71cc7509a6527a}{Flux\+::resource\+\_\+model\+::f\+\_\+edg\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ f\+\_\+resource\+\_\+graph\+\_\+t $>$\+::edge\+\_\+iterator
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_af7a15842eaa383e1123f7b889066295a}{Flux\+::resource\+\_\+model\+::f\+\_\+out\+\_\+edg\+\_\+iterator\+\_\+t}} = boost\+::graph\+\_\+traits$<$ f\+\_\+resource\+\_\+graph\+\_\+t $>$\+::out\+\_\+edge\+\_\+iterator
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7}{Flux\+::resource\+\_\+model\+::emit\+\_\+format\+\_\+t}} \{ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7a03eebb938f03fc5ba6e9396b4242463e}{Flux\+::resource\+\_\+model\+::\+GRAPHVIZ\+\_\+\+DOT}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4ed2a7ca624f7f0e7d7fb8a01a5704d7afce79fb657652dbc57925d64de9aa480}{Flux\+::resource\+\_\+model\+::\+GRAPH\+\_\+\+ML}}
+ \}
+\end{DoxyCompactItemize}

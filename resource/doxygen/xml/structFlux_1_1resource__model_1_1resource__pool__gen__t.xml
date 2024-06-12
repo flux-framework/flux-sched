@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1resource__pool__gen__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_pool_gen_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a5a1527fceda809bdd48d58bde43862b5" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::resource_pool_gen_t::root</definition>
+        <argsstring></argsstring>
+        <name>root</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="31" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1ad11b7966e412807178cbb7dd46789672" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_pool_gen_t::type</definition>
+        <argsstring></argsstring>
+        <name>type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="32" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1aa354913422957ea0bbac2e5d0dbf2c05" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_pool_gen_t::basename</definition>
+        <argsstring></argsstring>
+        <name>basename</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="33" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a190494385c44936558523730567b96bb" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Flux::resource_model::resource_pool_gen_t::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="34" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1afa61db4ee68f3a72412a04460ade6248" prot="public" static="no" mutable="no">
+        <type>long</type>
+        <definition>long Flux::resource_model::resource_pool_gen_t::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="35" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a4790502cf043d4990c97ff0b58363baa" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_pool_gen_t::unit</definition>
+        <argsstring></argsstring>
+        <name>unit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="36" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1resource__pool__gen__t_1adf33757e20af7f96b5fd1f3943169bc6" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::resource_pool_gen_t::subsystem</definition>
+        <argsstring></argsstring>
+        <name>subsystem</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="37" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="30" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="30" bodyend="38"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1aa354913422957ea0bbac2e5d0dbf2c05" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>basename</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a190494385c44936558523730567b96bb" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>rank</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a5a1527fceda809bdd48d58bde43862b5" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>root</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1afa61db4ee68f3a72412a04460ade6248" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>size</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1adf33757e20af7f96b5fd1f3943169bc6" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>subsystem</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1ad11b7966e412807178cbb7dd46789672" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>type</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__pool__gen__t_1a4790502cf043d4990c97ff0b58363baa" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_pool_gen_t</scope><name>unit</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

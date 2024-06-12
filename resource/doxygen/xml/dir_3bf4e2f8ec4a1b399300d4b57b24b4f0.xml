@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_3bf4e2f8ec4a1b399300d4b57b24b4f0" kind="dir">
+    <compoundname>base</compoundname>
+    <innerdir refid="dir_2f8970f5ce0fe559470ef65e8f4c877d">test</innerdir>
+    <innerfile refid="dfu__match__cb_8cpp">dfu_match_cb.cpp</innerfile>
+    <innerfile refid="dfu__match__cb_8hpp">dfu_match_cb.hpp</innerfile>
+    <innerfile refid="match__op_8h">match_op.h</innerfile>
+    <innerfile refid="matcher_8cpp">matcher.cpp</innerfile>
+    <innerfile refid="matcher_8hpp">matcher.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/policies/base/"/>
+  </compounddef>
+</doxygen>

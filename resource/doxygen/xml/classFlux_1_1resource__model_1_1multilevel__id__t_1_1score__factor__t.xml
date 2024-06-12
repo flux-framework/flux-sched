@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t" kind="class" language="C++" prot="private">
+    <compoundname>Flux::resource_model::multilevel_id_t::score_factor_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a1652ca704dcd9b535b6303aeb2b7ebaa" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::m_factor</definition>
+        <argsstring></argsstring>
+        <name>m_factor</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="111" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a04de2d5f4afe54190650e61381d07923" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::m_type</definition>
+        <argsstring></argsstring>
+        <name>m_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="114" column="21" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a5edbfbb2da77ece13fb43af7cbb31ec1" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::m_add_by</definition>
+        <argsstring></argsstring>
+        <name>m_add_by</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="115" column="22" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1ab192308c82094ac05b98dba66a7f095d" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::m_multiply_by</definition>
+        <argsstring></argsstring>
+        <name>m_multiply_by</name>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="116" column="22" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a250b681b99100822b08cbd7b8d4b1f35" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::score_factor_t</definition>
+        <argsstring>()=default</argsstring>
+        <name>score_factor_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="105" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a74fb9ac683363256b6a44e635e79c5a1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::score_factor_t</definition>
+        <argsstring>(const std::string &amp;type, unsigned int add_by, unsigned int multiply_by)</argsstring>
+        <name>score_factor_t</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>add_by</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>multiply_by</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="106" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a75dbcd5a3cb3bb32f70c45f08667f426" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::score_factor_t</definition>
+        <argsstring>(const score_factor_t &amp;o)=default</argsstring>
+        <name>score_factor_t</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t" kindref="compound">score_factor_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="109" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1af97a9c8d9081fc397659ef78bea7c26e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::multilevel_id_t&lt; FOLD &gt;::score_factor_t::calc_factor</definition>
+        <argsstring>(int64_t base_factor, int64_t break_tie)</argsstring>
+        <name>calc_factor</name>
+        <param>
+          <type>int64_t</type>
+          <declname>base_factor</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>break_tie</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="110" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id_impl.hpp" bodystart="37" bodyend="66"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" line="103" column="5" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_multilevel_id.hpp" bodystart="103" bodyend="117"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1af97a9c8d9081fc397659ef78bea7c26e" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>calc_factor</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a5edbfbb2da77ece13fb43af7cbb31ec1" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>m_add_by</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a1652ca704dcd9b535b6303aeb2b7ebaa" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>m_factor</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1ab192308c82094ac05b98dba66a7f095d" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>m_multiply_by</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a04de2d5f4afe54190650e61381d07923" prot="private" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>m_type</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a250b681b99100822b08cbd7b8d4b1f35" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>score_factor_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a74fb9ac683363256b6a44e635e79c5a1" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>score_factor_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1multilevel__id__t_1_1score__factor__t_1a75dbcd5a3cb3bb32f70c45f08667f426" prot="public" virt="non-virtual"><scope>Flux::resource_model::multilevel_id_t::score_factor_t</scope><name>score_factor_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1distinct__range__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::distinct_range_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1distinct__range__t_1a3a45ee704f300a9bac08c4e9163851fd" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::distinct_range_t::m_low</definition>
+        <argsstring></argsstring>
+        <name>m_low</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="37" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1distinct__range__t_1a47be513c38fcc6271858871e852dd6fc" prot="private" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::distinct_range_t::m_high</definition>
+        <argsstring></argsstring>
+        <name>m_high</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="38" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a5ea97551fa4e8ad2212fb0c36af5406c" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>distinct_range_t::distinct_range_t</definition>
+        <argsstring>(uint64_t point)</argsstring>
+        <name>distinct_range_t</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="23" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="35" bodyend="39"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1aaf72b0b4c381318211e4b100e550367f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>distinct_range_t::distinct_range_t</definition>
+        <argsstring>(uint64_t lo, uint64_t hi)</argsstring>
+        <name>distinct_range_t</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>lo</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>hi</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="24" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="41" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1ac8c662612f7b64e5921904627cb51e20" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t distinct_range_t::get_low</definition>
+        <argsstring>() const</argsstring>
+        <name>get_low</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="26" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="49" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a7e7af5d1a07e41cbb6eb19c641f96cbd" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t distinct_range_t::get_high</definition>
+        <argsstring>() const</argsstring>
+        <name>get_high</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="27" column="14" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="54" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a0880f5066d6006c29e3c2a4533d85978" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool distinct_range_t::is_point</definition>
+        <argsstring>() const</argsstring>
+        <name>is_point</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="28" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="59" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a871e25bfc99fc1adf87f109dd50c72b9" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool distinct_range_t::operator&lt;</definition>
+        <argsstring>(const distinct_range_t &amp;o) const</argsstring>
+        <name>operator&lt;</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1distinct__range__t" kindref="compound">distinct_range_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="29" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="64" bodyend="68"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a0f49fbe35034d7906894c2b7ecfa4820" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool distinct_range_t::operator==</definition>
+        <argsstring>(const distinct_range_t &amp;o) const</argsstring>
+        <name>operator==</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1distinct__range__t" kindref="compound">distinct_range_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="30" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="70" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1ac11302b14c65bf6e35b0fc1a8ce0a05d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool distinct_range_t::operator!=</definition>
+        <argsstring>(const distinct_range_t &amp;o) const</argsstring>
+        <name>operator!=</name>
+        <param>
+          <type>const <ref refid="classFlux_1_1resource__model_1_1distinct__range__t" kindref="compound">distinct_range_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="31" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="76" bodyend="79"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1distinct__range__t_1a467f36ac6741383aa4cc73678122b12a" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int distinct_range_t::get_low_high</definition>
+        <argsstring>(const std::string &amp;exec_target_range, uint64_t &amp;low, uint64_t &amp;high)</argsstring>
+        <name>get_low_high</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>exec_target_range</declname>
+        </param>
+        <param>
+          <type>uint64_t &amp;</type>
+          <declname>low</declname>
+        </param>
+        <param>
+          <type>uint64_t &amp;</type>
+          <declname>high</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="33" column="16" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.cpp" bodystart="81" bodyend="115"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" line="21" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_namespace_remapper.hpp" bodystart="21" bodyend="39"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a5ea97551fa4e8ad2212fb0c36af5406c" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>distinct_range_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1aaf72b0b4c381318211e4b100e550367f" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>distinct_range_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a7e7af5d1a07e41cbb6eb19c641f96cbd" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>get_high</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1ac8c662612f7b64e5921904627cb51e20" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>get_low</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a467f36ac6741383aa4cc73678122b12a" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>get_low_high</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a0880f5066d6006c29e3c2a4533d85978" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>is_point</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a47be513c38fcc6271858871e852dd6fc" prot="private" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>m_high</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a3a45ee704f300a9bac08c4e9163851fd" prot="private" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>m_low</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1ac11302b14c65bf6e35b0fc1a8ce0a05d" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>operator!=</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a871e25bfc99fc1adf87f109dd50c72b9" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>operator&lt;</name></member>
+      <member refid="classFlux_1_1resource__model_1_1distinct__range__t_1a0f49fbe35034d7906894c2b7ecfa4820" prot="public" virt="non-virtual"><scope>Flux::resource_model::distinct_range_t</scope><name>operator==</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

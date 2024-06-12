@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structreapi__module__ctx" kind="struct" language="C++" prot="public">
+    <compoundname>reapi_module_ctx</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structreapi__module__ctx_1a2329da22bbfe83450d069a02878c4b1e" prot="public" static="no" mutable="no">
+        <type>flux_t *</type>
+        <definition>flux_t* reapi_module_ctx::h</definition>
+        <argsstring></argsstring>
+        <name>h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_module.cpp" line="30" column="12" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_module.cpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_module.cpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c/reapi_module.cpp" bodystart="29" bodyend="31"/>
+    <listofallmembers>
+      <member refid="structreapi__module__ctx_1a2329da22bbfe83450d069a02878c4b1e" prot="public" virt="non-virtual"><scope>reapi_module_ctx</scope><name>h</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

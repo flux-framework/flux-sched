@@ -1,0 +1,311 @@
+\hypertarget{reapi__cli_8h}{}\doxysubsection{reapi\+\_\+cli.\+h File Reference}
+\label{reapi__cli_8h}\index{reapi\_cli.h@{reapi\_cli.h}}
+{\ttfamily \#include $<$flux/core.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}resource/policies/base/match\+\_\+op.\+h\char`\"{}}\newline
+Include dependency graph for reapi\+\_\+cli.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=274pt]{reapi__cli_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=151pt]{reapi__cli_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structreapi__cli__ctx}{reapi\+\_\+cli\+\_\+ctx}} \mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ \mbox{\hyperlink{reapi__cli_8h_a610557a7ebe6a4fafbe3adfd2518d95f}{reapi\+\_\+cli\+\_\+new}} ()
+\item 
+void \mbox{\hyperlink{reapi__cli_8h_ad8f5fb72868ffb6f74db1b682fc0e207}{reapi\+\_\+cli\+\_\+destroy}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a8e0efb96e24695146f26f80f898a3224}{reapi\+\_\+cli\+\_\+initialize}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, const char $\ast$rgraph, const char $\ast$options)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a4f4bb9d13a62fc2ceffa3bbbf541eb0b}{reapi\+\_\+cli\+\_\+match}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, \mbox{\hyperlink{match__op_8h_a3a5c7ad83c237d18420f25be120a05ae}{match\+\_\+op\+\_\+t}} match\+\_\+op, const char $\ast$jobspec, uint64\+\_\+t $\ast$jobid, bool $\ast$reserved, char $\ast$$\ast$R, int64\+\_\+t $\ast$at, double $\ast$ov)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a7c56bbe9ec295b0d97af64a83bc46bcf}{reapi\+\_\+cli\+\_\+match\+\_\+allocate}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, bool orelse\+\_\+reserve, const char $\ast$jobspec, uint64\+\_\+t $\ast$jobid, bool $\ast$reserved, char $\ast$$\ast$R, int64\+\_\+t $\ast$at, double $\ast$ov)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a36ab9caae2a97a1e14b50a9f00a53ee8}{reapi\+\_\+cli\+\_\+match\+\_\+satisfy}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, const char $\ast$jobspec, bool $\ast$sat, double $\ast$ov)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_aa1a53dae1065b7e89684337bc6b23e49}{reapi\+\_\+cli\+\_\+update\+\_\+allocate}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, const uint64\+\_\+t jobid, const char $\ast$R, int64\+\_\+t $\ast$at, double $\ast$ov, const char $\ast$$\ast$R\+\_\+out)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a4553025e231812b81ef2498b9dd3563f}{reapi\+\_\+cli\+\_\+cancel}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, const uint64\+\_\+t jobid, bool noent\+\_\+ok)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a741a6b80929b0051488a6d2352b916a7}{reapi\+\_\+cli\+\_\+info}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, const uint64\+\_\+t jobid, char $\ast$$\ast$mode, bool $\ast$reserved, int64\+\_\+t $\ast$at, double $\ast$ov)
+\item 
+int \mbox{\hyperlink{reapi__cli_8h_a097f974f4ca8f3869ce960314bd10d07}{reapi\+\_\+cli\+\_\+stat}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx, int64\+\_\+t $\ast$V, int64\+\_\+t $\ast$E, int64\+\_\+t $\ast$J, double $\ast$load, double $\ast$min, double $\ast$max, double $\ast$avg)
+\item 
+const char $\ast$ \mbox{\hyperlink{reapi__cli_8h_a2700107686e5ff705e2b57ecd967dc6c}{reapi\+\_\+cli\+\_\+get\+\_\+err\+\_\+msg}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx)
+\item 
+void \mbox{\hyperlink{reapi__cli_8h_a69bb444c12036c5b73759ba082f5a8a3}{reapi\+\_\+cli\+\_\+clear\+\_\+err\+\_\+msg}} (\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$ctx)
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Typedef Documentation}
+\mbox{\Hypertarget{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}\label{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_ctx\_t@{reapi\_cli\_ctx\_t}}
+\index{reapi\_cli\_ctx\_t@{reapi\_cli\_ctx\_t}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_ctx\_t}{reapi\_cli\_ctx\_t}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structreapi__cli__ctx}{reapi\+\_\+cli\+\_\+ctx}} \mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}}}
+
+
+
+\doxysubsubsection{Function Documentation}
+\mbox{\Hypertarget{reapi__cli_8h_a4553025e231812b81ef2498b9dd3563f}\label{reapi__cli_8h_a4553025e231812b81ef2498b9dd3563f}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_cancel@{reapi\_cli\_cancel}}
+\index{reapi\_cli\_cancel@{reapi\_cli\_cancel}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_cancel()}{reapi\_cli\_cancel()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+cancel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{bool}]{noent\+\_\+ok }\end{DoxyParamCaption})}
+
+Cancel the allocation or reservation corresponding to jobid.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em noent\+\_\+ok} & don\textquotesingle{}t return an error on nonexistent jobid \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a69bb444c12036c5b73759ba082f5a8a3}\label{reapi__cli_8h_a69bb444c12036c5b73759ba082f5a8a3}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_clear\_err\_msg@{reapi\_cli\_clear\_err\_msg}}
+\index{reapi\_cli\_clear\_err\_msg@{reapi\_cli\_clear\_err\_msg}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_clear\_err\_msg()}{reapi\_cli\_clear\_err\_msg()}}
+{\footnotesize\ttfamily void reapi\+\_\+cli\+\_\+clear\+\_\+err\+\_\+msg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+Clear the reapi cli error message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{reapi__cli_8h_ad8f5fb72868ffb6f74db1b682fc0e207}\label{reapi__cli_8h_ad8f5fb72868ffb6f74db1b682fc0e207}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_destroy@{reapi\_cli\_destroy}}
+\index{reapi\_cli\_destroy@{reapi\_cli\_destroy}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_destroy()}{reapi\_cli\_destroy()}}
+{\footnotesize\ttfamily void reapi\+\_\+cli\+\_\+destroy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+Destroy reapi cli context
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{reapi__cli_8h_a2700107686e5ff705e2b57ecd967dc6c}\label{reapi__cli_8h_a2700107686e5ff705e2b57ecd967dc6c}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_get\_err\_msg@{reapi\_cli\_get\_err\_msg}}
+\index{reapi\_cli\_get\_err\_msg@{reapi\_cli\_get\_err\_msg}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_get\_err\_msg()}{reapi\_cli\_get\_err\_msg()}}
+{\footnotesize\ttfamily const char$\ast$ reapi\+\_\+cli\+\_\+get\+\_\+err\+\_\+msg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
+Get the reapi cli error message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+string containing the error message 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a741a6b80929b0051488a6d2352b916a7}\label{reapi__cli_8h_a741a6b80929b0051488a6d2352b916a7}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_info@{reapi\_cli\_info}}
+\index{reapi\_cli\_info@{reapi\_cli\_info}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_info()}{reapi\_cli\_info()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+info (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{char $\ast$$\ast$}]{mode,  }\item[{bool $\ast$}]{reserved,  }\item[{int64\+\_\+t $\ast$}]{at,  }\item[{double $\ast$}]{ov }\end{DoxyParamCaption})}
+
+Get the information on the allocation or reservation corresponding to jobid.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em jobid} & const jobid of the uint64\+\_\+t type. \\
+\hline
+{\em mode} & return string containing the job state. \\
+\hline
+{\em reserved} & Boolean into which to return true if this job has been reserved instead of allocated. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a8e0efb96e24695146f26f80f898a3224}\label{reapi__cli_8h_a8e0efb96e24695146f26f80f898a3224}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_initialize@{reapi\_cli\_initialize}}
+\index{reapi\_cli\_initialize@{reapi\_cli\_initialize}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_initialize()}{reapi\_cli\_initialize()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+initialize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{const char $\ast$}]{rgraph,  }\item[{const char $\ast$}]{options }\end{DoxyParamCaption})}
+
+Initialize Fluxion with resource graph
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em rgraph} & string encoding the resource graph \\
+\hline
+{\em options} & json string initialization options \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{reapi__cli_8h_a4f4bb9d13a62fc2ceffa3bbbf541eb0b}\label{reapi__cli_8h_a4f4bb9d13a62fc2ceffa3bbbf541eb0b}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_match@{reapi\_cli\_match}}
+\index{reapi\_cli\_match@{reapi\_cli\_match}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_match()}{reapi\_cli\_match()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+match (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{\mbox{\hyperlink{match__op_8h_a3a5c7ad83c237d18420f25be120a05ae}{match\+\_\+op\+\_\+t}}}]{match\+\_\+op,  }\item[{const char $\ast$}]{jobspec,  }\item[{uint64\+\_\+t $\ast$}]{jobid,  }\item[{bool $\ast$}]{reserved,  }\item[{char $\ast$$\ast$}]{R,  }\item[{int64\+\_\+t $\ast$}]{at,  }\item[{double $\ast$}]{ov }\end{DoxyParamCaption})}
+
+Match a jobspec to the \char`\"{}best\char`\"{} resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em match\+\_\+op} & match\+\_\+op\+\_\+t\+: set to specify the specific match option from 1 of 4 choices\+: MATCH\+\_\+\+ALLOCATE\+: try to allocate now and fail if resources aren\textquotesingle{}t available. MATCH\+\_\+\+ALLOCATE\+\_\+\+ORELSE\+\_\+\+RESERVE \+: Try to allocate and reserve if resources aren\textquotesingle{}t available now. MATCH\+\_\+\+SATISFIABILITY\+: Do a satisfiablity check and do not allocate. MATCH\+\_\+\+ALLOCATE\+\_\+\+W\+\_\+\+SATISFIABILITY\+: try to allocate and run satisfiability check if resources are not available. \\
+\hline
+{\em jobspec} & jobspec string. \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em reserved} & Boolean into which to return true if this job has been reserved instead of allocated. \\
+\hline
+{\em R} & String into which to return the resource set either allocated or reserved. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a7c56bbe9ec295b0d97af64a83bc46bcf}\label{reapi__cli_8h_a7c56bbe9ec295b0d97af64a83bc46bcf}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_match\_allocate@{reapi\_cli\_match\_allocate}}
+\index{reapi\_cli\_match\_allocate@{reapi\_cli\_match\_allocate}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_match\_allocate()}{reapi\_cli\_match\_allocate()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+match\+\_\+allocate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{bool}]{orelse\+\_\+reserve,  }\item[{const char $\ast$}]{jobspec,  }\item[{uint64\+\_\+t $\ast$}]{jobid,  }\item[{bool $\ast$}]{reserved,  }\item[{char $\ast$$\ast$}]{R,  }\item[{int64\+\_\+t $\ast$}]{at,  }\item[{double $\ast$}]{ov }\end{DoxyParamCaption})}
+
+Match a jobspec to the \char`\"{}best\char`\"{} resources and either allocate orelse reserve them. The best resources are determined by the selected match policy.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em orelse\+\_\+reserve} & Boolean\+: if false, only allocate; otherwise, first try to allocate and if that fails, reserve. \\
+\hline
+{\em jobspec} & jobspec string. \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em reserved} & Boolean into which to return true if this job has been reserved instead of allocated. \\
+\hline
+{\em R} & String into which to return the resource set either allocated or reserved. \\
+\hline
+{\em at} & If allocated, 0 is returned; if reserved, actual time at which the job is reserved. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a36ab9caae2a97a1e14b50a9f00a53ee8}\label{reapi__cli_8h_a36ab9caae2a97a1e14b50a9f00a53ee8}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_match\_satisfy@{reapi\_cli\_match\_satisfy}}
+\index{reapi\_cli\_match\_satisfy@{reapi\_cli\_match\_satisfy}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_match\_satisfy()}{reapi\_cli\_match\_satisfy()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+match\+\_\+satisfy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{const char $\ast$}]{jobspec,  }\item[{bool $\ast$}]{sat,  }\item[{double $\ast$}]{ov }\end{DoxyParamCaption})}
+
+Run Satisfiability check for jobspec.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em jobspec} & jobspec string. \\
+\hline
+{\em sat} & bool sat into which to return if jobspec is satisfiable. \\
+\hline
+{\em ov} & Double into which to return performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_a610557a7ebe6a4fafbe3adfd2518d95f}\label{reapi__cli_8h_a610557a7ebe6a4fafbe3adfd2518d95f}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_new@{reapi\_cli\_new}}
+\index{reapi\_cli\_new@{reapi\_cli\_new}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_new()}{reapi\_cli\_new()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}}$\ast$ reapi\+\_\+cli\+\_\+new (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Create and initialize reapi\+\_\+cli context \mbox{\Hypertarget{reapi__cli_8h_a097f974f4ca8f3869ce960314bd10d07}\label{reapi__cli_8h_a097f974f4ca8f3869ce960314bd10d07}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_stat@{reapi\_cli\_stat}}
+\index{reapi\_cli\_stat@{reapi\_cli\_stat}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_stat()}{reapi\_cli\_stat()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+stat (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{int64\+\_\+t $\ast$}]{V,  }\item[{int64\+\_\+t $\ast$}]{E,  }\item[{int64\+\_\+t $\ast$}]{J,  }\item[{double $\ast$}]{load,  }\item[{double $\ast$}]{min,  }\item[{double $\ast$}]{max,  }\item[{double $\ast$}]{avg }\end{DoxyParamCaption})}
+
+Get the performance information about the resource infrastructure.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em V} & Number of resource vertices \\
+\hline
+{\em E} & Number of edges \\
+\hline
+{\em J} & Number of jobs \\
+\hline
+{\em load} & Graph load time \\
+\hline
+{\em min} & Min match time \\
+\hline
+{\em max} & Max match time \\
+\hline
+{\em avg} & Avg match time \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{reapi__cli_8h_aa1a53dae1065b7e89684337bc6b23e49}\label{reapi__cli_8h_aa1a53dae1065b7e89684337bc6b23e49}} 
+\index{reapi\_cli.h@{reapi\_cli.h}!reapi\_cli\_update\_allocate@{reapi\_cli\_update\_allocate}}
+\index{reapi\_cli\_update\_allocate@{reapi\_cli\_update\_allocate}!reapi\_cli.h@{reapi\_cli.h}}
+\doxyparagraph{\texorpdfstring{reapi\_cli\_update\_allocate()}{reapi\_cli\_update\_allocate()}}
+{\footnotesize\ttfamily int reapi\+\_\+cli\+\_\+update\+\_\+allocate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{reapi__cli_8h_af3a976bef4d0992fd17d7a6e1a24c462}{reapi\+\_\+cli\+\_\+ctx\+\_\+t}} $\ast$}]{ctx,  }\item[{const uint64\+\_\+t}]{jobid,  }\item[{const char $\ast$}]{R,  }\item[{int64\+\_\+t $\ast$}]{at,  }\item[{double $\ast$}]{ov,  }\item[{const char $\ast$$\ast$}]{R\+\_\+out }\end{DoxyParamCaption})}
+
+Update the resource state with R.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & reapi\+\_\+cli\+\_\+ctx\+\_\+t context object \\
+\hline
+{\em jobid} & jobid of the uint64\+\_\+t type. \\
+\hline
+{\em R} & R string \\
+\hline
+{\em at} & return the scheduled time \\
+\hline
+{\em ov} & return the performance overhead in terms of elapse time needed to complete the match operation. \\
+\hline
+{\em R\+\_\+out} & return the updated R string. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success; -\/1 on error. 
+\end{DoxyReturn}

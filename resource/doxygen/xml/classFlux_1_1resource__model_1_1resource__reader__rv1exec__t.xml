@@ -1,0 +1,1074 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::resource_reader_rv1exec_t</compoundname>
+    <basecompoundref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" prot="public" virt="non-virtual">Flux::resource_model::resource_reader_base_t</basecompoundref>
+    <includes refid="resource__reader__rv1exec_8hpp" local="no">resource_reader_rv1exec.hpp</includes>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" prot="private">Flux::resource_model::resource_reader_rv1exec_t::properties_t</innerclass>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a04d448df83bf3057cd2fb55f39a6afc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>resource_reader_rv1exec_t::~resource_reader_rv1exec_t</definition>
+        <argsstring>()</argsstring>
+        <name>~resource_reader_rv1exec_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="41" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="952" bodyend="955"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a2ae97bf8b2aa4d94582e8c22f8351c7c" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;str, int rank=-1)</argsstring>
+        <name>unpack</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a4d2969f7499f3c7a398e1c86949e5806">unpack</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Unpack str into a resource graph.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a RV1&apos;s .execution key value </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign rank to all of the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; non-zero integer on an error EOVERFLOW: hostname suffix too large EEXIST: mal-formed ranks ENOMEM: out of memory EINVAL: invalid input or operation </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="55" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="957" bodyend="988"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a57b0a220771f9db04b8e90a7c76d3257" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_at</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t &amp;vtx, const std::string &amp;str, int rank=-1)</argsstring>
+        <name>unpack_at</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accc428c1d3fd14f6caf854953c5a6f3b">unpack_at</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t &amp;</type>
+          <declname>vtx</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+          <defval>-1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Unpack str into a resource graph and graft the top-level vertices to vtx.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>vtx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>parent vtx at which to graft the deserialized graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>string containing a RV1&apos;s .execution key value </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rank</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>assign this rank to all the newly created resource vertices </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>-1 with ENOTSUP (Not supported yet) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="68" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="990" bodyend="997"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af85c4d5c4ab1b179093c6c23f5e24b88" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::remove_subgraph</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;path)</argsstring>
+        <name>remove_subgraph</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1afd4d9e32c562453e94b31689d7cb3c82">remove_subgraph</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="71" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="999" bodyend="1005"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ac67959bc2083e1f20597227556130233" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::update</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, const std::string &amp;str, int64_t jobid, int64_t at, uint64_t dur, bool rsv, uint64_t trav_token)</argsstring>
+        <name>update</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a31c23c9d83eb6b66a129f9105c563390">update</reimplements>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>dur</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>rsv</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>trav_token</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Update resource graph g with str.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>g</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>m</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource graph meta data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>resource set string </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>jobid</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>jobid of str </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>at</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>start time of this job </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>dur</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>duration of this job </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rsv</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>true if this update is for a reservation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>trav_token</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>token to be used by traverser </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>-1 with ENOTSUP (Not supported yet) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="88" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="1007" bodyend="1045"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a4e69ff5c61bf4d93b53b5f537cdba73f" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool resource_reader_rv1exec_t::is_allowlist_supported</definition>
+        <argsstring>()</argsstring>
+        <name>is_allowlist_supported</name>
+        <reimplements refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a18d3bfd358094d5c6ae040ab1531c560">is_allowlist_supported</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Is the selected reader format support allowlist</para>
+<para><simplesect kind="return"><para>false </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="96" column="18" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="1047" bodyend="1050"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a837251b4f46c1a92ed186e9549d0d4fe" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t resource_reader_rv1exec_t::add_vertex</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, int64_t id, const std::string &amp;subsys, const std::string &amp;type, const std::string &amp;basename, const std::string &amp;name, const std::map&lt; std::string, std::string &gt; &amp;props, int size, int rank)</argsstring>
+        <name>add_vertex</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsys</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>basename</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>props</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="111" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="82" bodyend="134"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a7229e3b3fc5fede0b6fbe78db05b4d75" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::add_metadata</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, edg_t e, vtx_t src, vtx_t dst)</argsstring>
+        <name>add_metadata</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>dst</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="121" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="136" bodyend="171"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a901391862ed1a002227a2139bd29c8e7" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::add_edges</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t src, vtx_t dst, const std::string &amp;subsys, const std::string &amp;relation, const std::string &amp;rev_relation)</argsstring>
+        <name>add_edges</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsys</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>relation</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>rev_relation</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="125" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="173" bodyend="207"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a6cab8269ee9a8912bf9089addf761dc3" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::add_cluster_vertex</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m)</argsstring>
+        <name>add_cluster_vertex</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="132" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="209" bodyend="223"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ab671710f683a80dea5c98df118c18147" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t resource_reader_rv1exec_t::find_vertex</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, int64_t id, const std::string &amp;subsys, const std::string &amp;type, const std::string &amp;basename, const std::string &amp;name, int size, int rank)</argsstring>
+        <name>find_vertex</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsys</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>basename</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="135" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="225" bodyend="264"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ad201ddbeb0523ee6bf09470c6ed55507" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::update_vertex</definition>
+        <argsstring>(resource_graph_t &amp;g, vtx_t vtx, updater_data &amp;update_data)</argsstring>
+        <name>update_vertex</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>vtx</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="143" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="266" bodyend="327"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a515a9bc6267c927603f41327b64445a0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::undo_vertices</definition>
+        <argsstring>(resource_graph_t &amp;g, updater_data &amp;update_data)</argsstring>
+        <name>undo_vertices</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="147" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="329" bodyend="367"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1acb05c0629a69c20649ae1767927e1033" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::update_edges</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t src, vtx_t dst, updater_data &amp;update_data)</argsstring>
+        <name>update_edges</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="149" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="369" bodyend="400"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a2886cdaad037311399c5fcc197d4135b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::update_exclusivity</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t vtx, updater_data &amp;update_data)</argsstring>
+        <name>update_exclusivity</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>vtx</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="154" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="402" bodyend="456"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a51d88622ea8bff47b12e1feeabdab9be" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>vtx_t</type>
+        <definition>vtx_t resource_reader_rv1exec_t::add_or_update</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, int64_t id, const std::string &amp;subsys, const std::string &amp;type, const std::string &amp;basename, const std::string &amp;name, int size, int rank, std::map&lt; std::string, std::string &gt; &amp;properties, updater_data &amp;update_data)</argsstring>
+        <name>add_or_update</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>subsys</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>basename</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>properties</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="160" column="11" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="458" bodyend="518"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af36feab40204fd752db89340dfb6e53d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::build_rmap</definition>
+        <argsstring>(json_t *rlite, std::map&lt; unsigned, unsigned &gt; &amp;rmap)</argsstring>
+        <name>build_rmap</name>
+        <param>
+          <type>json_t *</type>
+          <declname>rlite</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, unsigned &gt; &amp;</type>
+          <declname>rmap</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="172" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="520" bodyend="584"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a4e996a312e5381920adcf32f0662a97e" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::build_pmap</definition>
+        <argsstring>(json_t *properties, std::map&lt; unsigned, properties_t &gt; &amp;pmap)</argsstring>
+        <name>build_pmap</name>
+        <param>
+          <type>json_t *</type>
+          <declname>properties</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="174" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="586" bodyend="639"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af96b3dba2ab30b95dacfde793bb5814d" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_child</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, const char *resource_type, const char *resource_ids, unsigned rank, std::map&lt; unsigned, properties_t &gt; &amp;pmap, updater_data &amp;update_data)</argsstring>
+        <name>unpack_child</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>resource_type</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>resource_ids</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="177" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="641" bodyend="692"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1afc7be96bd7ed7690dd7dde61c9f86d9a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_children</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, json_t *children, unsigned rank, std::map&lt; unsigned, properties_t &gt; &amp;pmap, updater_data &amp;update_data)</argsstring>
+        <name>unpack_children</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>children</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="184" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="695" bodyend="726"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a0657f643d46b3dd75d1c0d770a4d6b8c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_rank</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, unsigned rank, json_t *children, struct hostlist *hlist, std::map&lt; unsigned, unsigned &gt; &amp;rmap, std::map&lt; unsigned, properties_t &gt; &amp;pmap, updater_data &amp;update_data)</argsstring>
+        <name>unpack_rank</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>children</declname>
+        </param>
+        <param>
+          <type>struct hostlist *</type>
+          <declname>hlist</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, unsigned &gt; &amp;</type>
+          <declname>rmap</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="190" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="728" bodyend="797"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a71142cc277c3bfd7c4bdc525858c078c" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_rlite_entry</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, vtx_t parent, json_t *entry, struct hostlist *hlist, std::map&lt; unsigned, unsigned &gt; &amp;rmap, std::map&lt; unsigned, properties_t &gt; &amp;pmap, updater_data &amp;update_data)</argsstring>
+        <name>unpack_rlite_entry</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>vtx_t</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>entry</declname>
+        </param>
+        <param>
+          <type>struct hostlist *</type>
+          <declname>hlist</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, unsigned &gt; &amp;</type>
+          <declname>rmap</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="198" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="799" bodyend="844"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a85bb51de8ee3540f1109f43e27bd1008" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_rlite</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, json_t *rlite, struct hostlist *hlist, std::map&lt; unsigned, unsigned &gt; &amp;rmap, std::map&lt; unsigned, properties_t &gt; &amp;pmap, updater_data &amp;update_data)</argsstring>
+        <name>unpack_rlite</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>rlite</declname>
+        </param>
+        <param>
+          <type>struct hostlist *</type>
+          <declname>hlist</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, unsigned &gt; &amp;</type>
+          <declname>rmap</declname>
+        </param>
+        <param>
+          <type>std::map&lt; unsigned, <ref refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kindref="compound">properties_t</ref> &gt; &amp;</type>
+          <declname>pmap</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="206" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="846" bodyend="882"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a7cfaf9ab552c4f507ba7b64eae1d6f86" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::unpack_internal</definition>
+        <argsstring>(resource_graph_t &amp;g, resource_graph_metadata_t &amp;m, json_t *rv1, updater_data &amp;update_data)</argsstring>
+        <name>unpack_internal</name>
+        <param>
+          <type>resource_graph_t &amp;</type>
+          <declname>g</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" kindref="compound">resource_graph_metadata_t</ref> &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>json_t *</type>
+          <declname>rv1</declname>
+        </param>
+        <param>
+          <type><ref refid="structFlux_1_1resource__model_1_1updater__data" kindref="compound">updater_data</ref> &amp;</type>
+          <declname>update_data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="213" column="9" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="884" bodyend="943"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>RV1EXEC resource reader class. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::resource_model::resource_reader_base_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__base__t"/>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::resource_reader_rv1exec_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>Flux::resource_model::resource_namespace_remapper_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__namespace__remapper__t"/>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_reader_base_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__base__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>namespace_remapper</edgelabel>
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::resource_reader_rv1exec_t</label>
+        <link refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="38" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="38" bodyend="216"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a6cab8269ee9a8912bf9089addf761dc3" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>add_cluster_vertex</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a901391862ed1a002227a2139bd29c8e7" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>add_edges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a7229e3b3fc5fede0b6fbe78db05b4d75" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>add_metadata</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a51d88622ea8bff47b12e1feeabdab9be" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>add_or_update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a837251b4f46c1a92ed186e9549d0d4fe" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>add_vertex</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a9c7c9c007c102a3406ff6af28e8979ae" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a4e996a312e5381920adcf32f0662a97e" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>build_pmap</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af36feab40204fd752db89340dfb6e53d" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>build_rmap</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1aca55df612f689f5bb53d99a5e3388452" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>clear_err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1ac5c85f20440f7a4cb0d7e2e9f270b657" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>err_message</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ab671710f683a80dea5c98df118c18147" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>find_vertex</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1accaa5f23111d5b5472206ac6756c4991" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>get_host_basename</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a451198379a7adcd65bcf09050ef8da8c" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>get_hostname_suffix</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a761e2ccff8181b693c06bd5cd8785a78" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>in_allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a107d7b989d04b6b9d9a99ac2e4961941" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>is_allowlist_set</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a4e69ff5c61bf4d93b53b5f537cdba73f" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>is_allowlist_supported</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6c768c7f14076e9e0da32aa159cae18b" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>m_err_msg</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a6aefb0e4985349f0c2a9cb44c7475b2a" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>namespace_remapper</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af85c4d5c4ab1b179093c6c23f5e24b88" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>remove_subgraph</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a990fc01533f55f58d69f312059eef0e1" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>set_allowlist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1abde9fb8638c59116bf19c6eadb51097e" prot="protected" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>split_hostname</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a515a9bc6267c927603f41327b64445a0" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>undo_vertices</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a2ae97bf8b2aa4d94582e8c22f8351c7c" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a57b0a220771f9db04b8e90a7c76d3257" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_at</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1af96b3dba2ab30b95dacfde793bb5814d" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_child</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1afc7be96bd7ed7690dd7dde61c9f86d9a" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_children</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a7cfaf9ab552c4f507ba7b64eae1d6f86" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_internal</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a0657f643d46b3dd75d1c0d770a4d6b8c" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_rank</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a85bb51de8ee3540f1109f43e27bd1008" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_rlite</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a71142cc277c3bfd7c4bdc525858c078c" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>unpack_rlite_entry</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ac67959bc2083e1f20597227556130233" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>update</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1acb05c0629a69c20649ae1767927e1033" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>update_edges</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a2886cdaad037311399c5fcc197d4135b" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>update_exclusivity</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1ad201ddbeb0523ee6bf09470c6ed55507" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>update_vertex</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__base__t_1a102373fe1e3a791007d1128ab9fecb26" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>~resource_reader_base_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1a04d448df83bf3057cd2fb55f39a6afc0" prot="public" virt="virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t</scope><name>~resource_reader_rv1exec_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

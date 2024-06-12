@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1subsystem__selector__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::subsystem_selector_t</compoundname>
+    <includes refid="resource__graph_8hpp" local="no">resource_graph.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename graph_entity</type>
+      </param>
+      <param>
+        <type>typename inframap</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1a882bef56676ba53ed7b65843319b1f37" prot="private" static="no" mutable="no">
+        <type>multi_subsystemsS</type>
+        <definition>multi_subsystemsS Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::m_selector</definition>
+        <argsstring></argsstring>
+        <name>m_selector</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="79" column="23" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1a0d07b574a4012508a9bc3b08b547eb66" prot="private" static="no" mutable="no">
+        <type>inframap</type>
+        <definition>inframap Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::m_imap</definition>
+        <argsstring></argsstring>
+        <name>m_imap</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="80" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1af36be8aeb9c3754673a1d2dceb7cda57" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::m_single_subsystem</definition>
+        <argsstring></argsstring>
+        <name>m_single_subsystem</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="81" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1af51136ce058ea20ab9ef22dba389a23c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::subsystem_selector_t</definition>
+        <argsstring>()</argsstring>
+        <name>subsystem_selector_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="46" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="46" bodyend="46"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1aefcf855573925827962525aef55fbbf0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::~subsystem_selector_t</definition>
+        <argsstring>()</argsstring>
+        <name>~subsystem_selector_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="47" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="47" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1ac71670da5ed9299f5415c4114509282a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::subsystem_selector_t</definition>
+        <argsstring>(inframap &amp;im, const multi_subsystemsS &amp;sel, int subsys_size)</argsstring>
+        <name>subsystem_selector_t</name>
+        <param>
+          <type>inframap &amp;</type>
+          <declname>im</declname>
+        </param>
+        <param>
+          <type>const multi_subsystemsS &amp;</type>
+          <declname>sel</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>subsys_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="48" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="48" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1subsystem__selector__t_1a8b7aa7d4d0094c2c717bfa80ef673480" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::subsystem_selector_t&lt; graph_entity, inframap &gt;::operator()</definition>
+        <argsstring>(const graph_entity &amp;ent) const</argsstring>
+        <name>operator()</name>
+        <param>
+          <type>const graph_entity &amp;</type>
+          <declname>ent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="56" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="56" bodyend="76"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>For each chosen subsystem, a selector has std::set&lt;string&gt;. If edge/vertex&apos;s member_of[subsystem] matches with one of these strings, select that egde/vertex. Edge/vertex itself can also self-select. If its member_of[subsystem] has been annotated with &apos;*&apos;, it is selected. </para>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="44" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="44" bodyend="82"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1a0d07b574a4012508a9bc3b08b547eb66" prot="private" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>m_imap</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1a882bef56676ba53ed7b65843319b1f37" prot="private" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>m_selector</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1af36be8aeb9c3754673a1d2dceb7cda57" prot="private" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>m_single_subsystem</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1a8b7aa7d4d0094c2c717bfa80ef673480" prot="public" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>operator()</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1af51136ce058ea20ab9ef22dba389a23c" prot="public" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>subsystem_selector_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1ac71670da5ed9299f5415c4114509282a" prot="public" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>subsystem_selector_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1subsystem__selector__t_1aefcf855573925827962525aef55fbbf0" prot="public" virt="non-virtual"><scope>Flux::resource_model::subsystem_selector_t</scope><name>~subsystem_selector_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

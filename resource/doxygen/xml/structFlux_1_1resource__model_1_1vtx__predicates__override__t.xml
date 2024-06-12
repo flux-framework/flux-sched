@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1vtx__predicates__override__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::vtx_predicates_override_t</compoundname>
+    <includes refid="expr__eval__vtx__target_8hpp" local="no">expr_eval_vtx_target.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1ae17fb692c3d0282eefe3e4dd9fd14aab" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::vtx_predicates_override_t::status_down</definition>
+        <argsstring></argsstring>
+        <name>status_down</name>
+        <initializer>{false}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" line="33" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1a6d9b8e3f06688f4768a9ec37ca47a421" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::vtx_predicates_override_t::sched_now_allocated</definition>
+        <argsstring></argsstring>
+        <name>sched_now_allocated</name>
+        <initializer>{false}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" line="34" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1aaaca05d9707a11a16f7329d61c9540fa" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::vtx_predicates_override_t::sched_future_reserved</definition>
+        <argsstring></argsstring>
+        <name>sched_future_reserved</name>
+        <initializer>{false}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" line="35" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1ae2300e0b681ea5e4276f284fef7e5074" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::vtx_predicates_override_t::set</definition>
+        <argsstring>(bool sd, bool sna, bool sfr)</argsstring>
+        <name>set</name>
+        <param>
+          <type>bool</type>
+          <declname>sd</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>sna</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>sfr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" line="36" column="10" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.cpp" bodystart="24" bodyend="32"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Assist <ref refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t" kindref="compound">expr_eval_vtx_target_t</ref> with an ability to override certain predicates associated with a resource vertex. Certain vertex predicates cannot be determined only by inspecting the vertex&apos;s own state, and this class helps override those predicates. Example: if the status of the parent resource vertex (e.g., compute node vertex) is &quot;down&quot;, the status of a child vertex (e.g., compute core vertex) must also be &quot;down&quot; even if its status was not explicitly marked &quot;down&quot;. </para>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" line="32" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_vtx_target.hpp" bodystart="32" bodyend="37"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1aaaca05d9707a11a16f7329d61c9540fa" prot="public" virt="non-virtual"><scope>Flux::resource_model::vtx_predicates_override_t</scope><name>sched_future_reserved</name></member>
+      <member refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1a6d9b8e3f06688f4768a9ec37ca47a421" prot="public" virt="non-virtual"><scope>Flux::resource_model::vtx_predicates_override_t</scope><name>sched_now_allocated</name></member>
+      <member refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1ae2300e0b681ea5e4276f284fef7e5074" prot="public" virt="non-virtual"><scope>Flux::resource_model::vtx_predicates_override_t</scope><name>set</name></member>
+      <member refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t_1ae17fb692c3d0282eefe3e4dd9fd14aab" prot="public" virt="non-virtual"><scope>Flux::resource_model::vtx_predicates_override_t</scope><name>status_down</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

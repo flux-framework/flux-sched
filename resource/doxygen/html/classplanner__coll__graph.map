@@ -1,0 +1,12 @@
+<map id="planner" name="planner">
+<area shape="rect" id="node1" title=" " alt="" coords="402,80,466,107"/>
+<area shape="rect" id="node2" href="$classmintime__resource__tree__t.html" title=" " alt="" coords="5,107,171,133"/>
+<area shape="rect" id="node3" href="$classscheduled__point__tree__t.html" title=" " alt="" coords="10,5,166,32"/>
+<area shape="rect" id="node4" href="$structrequest__t.html" title=" " alt="" coords="50,56,126,83"/>
+<area shape="rect" id="node5" href="$structscheduled__point__t.html" title=" " alt="" coords="25,257,151,284"/>
+<area shape="rect" id="node7" href="$classrb__node__base__t.html" title=" " alt="" coords="377,321,491,348"/>
+<area shape="rect" id="node6" href="$structmt__resource__rb__node__t.html" title=" " alt="" coords="575,263,733,289"/>
+<area shape="rect" id="node9" href="$structscheduled__point__rb__node__t.html" title=" " alt="" coords="587,366,721,407"/>
+<area shape="rect" id="node8" title=" " alt="" coords="343,255,525,297"/>
+<area shape="rect" id="node10" title=" " alt="" coords="357,435,511,491"/>
+</map>

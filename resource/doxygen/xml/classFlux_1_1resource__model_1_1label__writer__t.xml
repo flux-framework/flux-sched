@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1label__writer__t" kind="class" language="C++" prot="public">
+    <compoundname>Flux::resource_model::label_writer_t</compoundname>
+    <templateparamlist>
+      <param>
+        <type>class name_map</type>
+      </param>
+      <param>
+        <type>class graph_entity</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1label__writer__t_1a74bdfe5eece8435c17f247b9ca06f54f" prot="private" static="no" mutable="no">
+        <type>name_map</type>
+        <definition>name_map Flux::resource_model::label_writer_t&lt; name_map, graph_entity &gt;::m</definition>
+        <argsstring></argsstring>
+        <name>m</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="113" column="14" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1label__writer__t_1af1a422c414ce7d3df390c2e4161d9285" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::label_writer_t&lt; name_map, graph_entity &gt;::label_writer_t</definition>
+        <argsstring>(name_map &amp;in_map)</argsstring>
+        <name>label_writer_t</name>
+        <param>
+          <type>name_map &amp;</type>
+          <declname>in_map</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="108" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="108" bodyend="108"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1label__writer__t_1a967eeb7fd469956e085da88734984834" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::label_writer_t&lt; name_map, graph_entity &gt;::operator()</definition>
+        <argsstring>(std::ostream &amp;out, const graph_entity ent) const</argsstring>
+        <name>operator()</name>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>const graph_entity</type>
+          <declname>ent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="109" column="10" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="109" bodyend="111"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="106" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="106" bodyend="114"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1label__writer__t_1af1a422c414ce7d3df390c2e4161d9285" prot="public" virt="non-virtual"><scope>Flux::resource_model::label_writer_t</scope><name>label_writer_t</name></member>
+      <member refid="classFlux_1_1resource__model_1_1label__writer__t_1a74bdfe5eece8435c17f247b9ca06f54f" prot="private" virt="non-virtual"><scope>Flux::resource_model::label_writer_t</scope><name>m</name></member>
+      <member refid="classFlux_1_1resource__model_1_1label__writer__t_1a967eeb7fd469956e085da88734984834" prot="public" virt="non-virtual"><scope>Flux::resource_model::label_writer_t</scope><name>operator()</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

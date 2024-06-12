@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1Jobspec_1_1Task" kind="class" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::Task</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Task_1aaa696c517c22044b1f6864cfcc61cd85" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt;std::string&gt; Flux::Jobspec::Task::command</definition>
+        <argsstring></argsstring>
+        <name>command</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="72" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Task_1aafe26c1efeffb36e01a6c5112a0d4f2d" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Task::slot</definition>
+        <argsstring></argsstring>
+        <name>slot</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="73" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Task_1a15e093e5d05089cab7c8380634c5b53c" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, std::string &gt;</type>
+        <definition>std::unordered_map&lt;std::string, std::string&gt; Flux::Jobspec::Task::count</definition>
+        <argsstring></argsstring>
+        <name>count</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="74" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Task_1ac335e156e8d313f60fdc25fadc181cd7" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::Task::distribution</definition>
+        <argsstring></argsstring>
+        <name>distribution</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="75" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFlux_1_1Jobspec_1_1Task_1aa02ab768895647110a9bbb2438ea4b24" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, std::string &gt;</type>
+        <definition>std::unordered_map&lt;std::string, std::string&gt; Flux::Jobspec::Task::attributes</definition>
+        <argsstring></argsstring>
+        <name>attributes</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="76" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1Jobspec_1_1Task_1ae6c09839e36bacce6913a87361fcee4c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Task::Task</definition>
+        <argsstring>(const YAML::Node &amp;)</argsstring>
+        <name>Task</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <defname>tasknode</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="78" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.cpp" bodystart="201" bodyend="265"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="70" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="70" bodyend="79"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1aa02ab768895647110a9bbb2438ea4b24" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>attributes</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1aaa696c517c22044b1f6864cfcc61cd85" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>command</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1a15e093e5d05089cab7c8380634c5b53c" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>count</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1ac335e156e8d313f60fdc25fadc181cd7" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>distribution</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1aafe26c1efeffb36e01a6c5112a0d4f2d" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>slot</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Task_1ae6c09839e36bacce6913a87361fcee4c" prot="public" virt="non-virtual"><scope>Flux::Jobspec::Task</scope><name>Task</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1Jobspec_1_1System" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::Jobspec::System</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1a8c74b1f5e8db28d32dc25a238af96122" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::Jobspec::System::duration</definition>
+        <argsstring></argsstring>
+        <name>duration</name>
+        <initializer>= 0.0f</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="82" column="12" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1ae6ca4bea96643807745263de0d337f22" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::System::queue</definition>
+        <argsstring></argsstring>
+        <name>queue</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="83" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="83" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1a6ab8556f775444e209083226be2c4055" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::Jobspec::System::cwd</definition>
+        <argsstring></argsstring>
+        <name>cwd</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="84" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1ac11686d25370ef0374164db8d2a343fb" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, std::string &gt;</type>
+        <definition>std::unordered_map&lt;std::string, std::string&gt; Flux::Jobspec::System::environment</definition>
+        <argsstring></argsstring>
+        <name>environment</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="85" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1a63cf1605a81dde6253b338200f82e0c5" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, YAML::Node &gt;</type>
+        <definition>std::unordered_map&lt;std::string, YAML::Node&gt; Flux::Jobspec::System::optional</definition>
+        <argsstring></argsstring>
+        <name>optional</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="86" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1Jobspec_1_1System_1aabef519fd40e28a5de69dfd88484fbc5" prot="public" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1Jobspec_1_1Constraint" kindref="compound">Constraint</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;Constraint&gt; Flux::Jobspec::System::constraint</definition>
+        <argsstring></argsstring>
+        <name>constraint</name>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="87" column="21" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1System_1a86f998f5eee2096fe896f3d47065d738" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::System::System</definition>
+        <argsstring>()=default</argsstring>
+        <name>System</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="89" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1System_1a49923bd85ce94f218721f9fd27c03157" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::System::System</definition>
+        <argsstring>(const System &amp;s)=delete</argsstring>
+        <name>System</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="90" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1System_1a42cefa4ad294b80ef765499b62c97c13" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::Jobspec::System::System</definition>
+        <argsstring>(System &amp;&amp;s)=default</argsstring>
+        <name>System</name>
+        <param>
+          <type><ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;&amp;</type>
+          <declname>s</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="91" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1System_1a67b8343cac326dcac26d398577483ed4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;</type>
+        <definition>System&amp; Flux::Jobspec::System::operator=</definition>
+        <argsstring>(const System &amp;&amp;a)=delete</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;&amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="92" column="12"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1Jobspec_1_1System_1aa60baa06b7c8f8d95356306af9106845" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;</type>
+        <definition>System&amp; Flux::Jobspec::System::operator=</definition>
+        <argsstring>(System &amp;&amp;a)=default</argsstring>
+        <name>operator=</name>
+        <param>
+          <type><ref refid="structFlux_1_1Jobspec_1_1System" kindref="compound">System</ref> &amp;&amp;</type>
+          <declname>a</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="93" column="12"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" line="81" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/jobspec.hpp" bodystart="81" bodyend="94"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1Jobspec_1_1System_1aabef519fd40e28a5de69dfd88484fbc5" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>constraint</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a6ab8556f775444e209083226be2c4055" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>cwd</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a8c74b1f5e8db28d32dc25a238af96122" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>duration</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1ac11686d25370ef0374164db8d2a343fb" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>environment</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a67b8343cac326dcac26d398577483ed4" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1aa60baa06b7c8f8d95356306af9106845" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a63cf1605a81dde6253b338200f82e0c5" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>optional</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1ae6ca4bea96643807745263de0d337f22" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>queue</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a86f998f5eee2096fe896f3d47065d738" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>System</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a49923bd85ce94f218721f9fd27c03157" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>System</name></member>
+      <member refid="structFlux_1_1Jobspec_1_1System_1a42cefa4ad294b80ef765499b62c97c13" prot="public" virt="non-virtual"><scope>Flux::Jobspec::System</scope><name>System</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classfetch__remap__support__t" kind="class" language="C++" prot="public">
+    <compoundname>fetch_remap_support_t</compoundname>
+    <derivedcompoundref refid="structfetch__helper__t" prot="public" virt="non-virtual">fetch_helper_t</derivedcompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classfetch__remap__support__t_1adb31e4bb859517f09a7cb7eaa1dce249" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_remap_support_t::m_remapped_id</definition>
+        <argsstring></argsstring>
+        <name>m_remapped_id</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="42" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfetch__remap__support__t_1a5a8f3cfb1039c4e59fb376f6f57316f3" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t fetch_remap_support_t::m_remapped_rank</definition>
+        <argsstring></argsstring>
+        <name>m_remapped_rank</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="43" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfetch__remap__support__t_1acd0ee0f9ae692e86a6ff6fda1fdc689b" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string fetch_remap_support_t::m_remapped_name</definition>
+        <argsstring></argsstring>
+        <name>m_remapped_name</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="44" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classfetch__remap__support__t_1affa03c6c90bb63813c0a0269debdd221" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t fetch_remap_support_t::get_remapped_id</definition>
+        <argsstring>() const</argsstring>
+        <name>get_remapped_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="30" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="68" bodyend="71"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1a4cf1a9d38ff91a5ddce229d765252d39" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t fetch_remap_support_t::get_remapped_rank</definition>
+        <argsstring>() const</argsstring>
+        <name>get_remapped_rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="31" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="73" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1a043f92354c20ee234c041f5cf20490ed" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; fetch_remap_support_t::get_remapped_name</definition>
+        <argsstring>() const</argsstring>
+        <name>get_remapped_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="32" column="23" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="78" bodyend="81"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1ab7c9073f9779528737a8c1e0de01a9bb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void fetch_remap_support_t::set_remapped_id</definition>
+        <argsstring>(int64_t i)</argsstring>
+        <name>set_remapped_id</name>
+        <param>
+          <type>int64_t</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="33" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="83" bodyend="86"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1acee2b85994c7057dc62447f84e77d260" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void fetch_remap_support_t::set_remapped_rank</definition>
+        <argsstring>(int64_t r)</argsstring>
+        <name>set_remapped_rank</name>
+        <param>
+          <type>int64_t</type>
+          <declname>r</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="34" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="88" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1a7592d1d960474be2c786e70e1685590e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void fetch_remap_support_t::set_remapped_name</definition>
+        <argsstring>(const std::string &amp;n)</argsstring>
+        <name>set_remapped_name</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="35" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="93" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1a8b0dcb0816ae8471ccf130ce5be6b299" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool fetch_remap_support_t::is_name_remapped</definition>
+        <argsstring>() const</argsstring>
+        <name>is_name_remapped</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="36" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="98" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1a9ededddd770d9a558e4e88a2e48891ef" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool fetch_remap_support_t::is_id_remapped</definition>
+        <argsstring>() const</argsstring>
+        <name>is_id_remapped</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="37" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="103" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1ac919628fa17a0e45d099b3cbb07d27b2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool fetch_remap_support_t::is_rank_remapped</definition>
+        <argsstring>() const</argsstring>
+        <name>is_rank_remapped</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="38" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="108" bodyend="111"/>
+      </memberdef>
+      <memberdef kind="function" id="classfetch__remap__support__t_1ad1fa6516e917ae87c69aa877eeac16b6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void fetch_remap_support_t::clear</definition>
+        <argsstring>()</argsstring>
+        <name>clear</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="39" column="10" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="113" bodyend="118"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>fetch_remap_support_t</label>
+        <link refid="classfetch__remap__support__t"/>
+      </node>
+      <node id="2">
+        <label>fetch_helper_t</label>
+        <link refid="structfetch__helper__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_jgf.cpp" bodystart="28" bodyend="45"/>
+    <listofallmembers>
+      <member refid="classfetch__remap__support__t_1ad1fa6516e917ae87c69aa877eeac16b6" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>clear</name></member>
+      <member refid="classfetch__remap__support__t_1affa03c6c90bb63813c0a0269debdd221" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>get_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1a043f92354c20ee234c041f5cf20490ed" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>get_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1a4cf1a9d38ff91a5ddce229d765252d39" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>get_remapped_rank</name></member>
+      <member refid="classfetch__remap__support__t_1a9ededddd770d9a558e4e88a2e48891ef" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>is_id_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1a8b0dcb0816ae8471ccf130ce5be6b299" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>is_name_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1ac919628fa17a0e45d099b3cbb07d27b2" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>is_rank_remapped</name></member>
+      <member refid="classfetch__remap__support__t_1adb31e4bb859517f09a7cb7eaa1dce249" prot="private" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>m_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1acd0ee0f9ae692e86a6ff6fda1fdc689b" prot="private" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>m_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1a5a8f3cfb1039c4e59fb376f6f57316f3" prot="private" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>m_remapped_rank</name></member>
+      <member refid="classfetch__remap__support__t_1ab7c9073f9779528737a8c1e0de01a9bb" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>set_remapped_id</name></member>
+      <member refid="classfetch__remap__support__t_1a7592d1d960474be2c786e70e1685590e" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>set_remapped_name</name></member>
+      <member refid="classfetch__remap__support__t_1acee2b85994c7057dc62447f84e77d260" prot="public" virt="non-virtual"><scope>fetch_remap_support_t</scope><name>set_remapped_rank</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

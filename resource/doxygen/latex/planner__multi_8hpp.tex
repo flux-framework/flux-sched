@@ -1,0 +1,56 @@
+\hypertarget{planner__multi_8hpp}{}\doxysubsection{planner\+\_\+multi.\+hpp File Reference}
+\label{planner__multi_8hpp}\index{planner\_multi.hpp@{planner\_multi.hpp}}
+{\ttfamily \#include \char`\"{}planner.\+hpp\char`\"{}}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$boost/multi\+\_\+index\+\_\+container.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/multi\+\_\+index/member.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/multi\+\_\+index/random\+\_\+access\+\_\+index.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/multi\+\_\+index/hashed\+\_\+index.\+hpp$>$}\newline
+Include dependency graph for planner\+\_\+multi.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{planner__multi_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=338pt]{planner__multi_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structrequest__multi}{request\+\_\+multi}}
+\item 
+struct \mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}
+\item 
+struct \mbox{\hyperlink{structidx}{idx}}
+\item 
+struct \mbox{\hyperlink{structres__type}{res\+\_\+type}}
+\item 
+struct \mbox{\hyperlink{structpolyfill__allocator}{polyfill\+\_\+allocator$<$ T $>$}}
+\item 
+struct \mbox{\hyperlink{structpolyfill__allocator_1_1rebind}{polyfill\+\_\+allocator$<$ T $>$\+::rebind$<$ U $>$}}
+\item 
+class \mbox{\hyperlink{classplanner__multi}{planner\+\_\+multi}}
+\item 
+struct \mbox{\hyperlink{structplanner__multi__t}{planner\+\_\+multi\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef multi\+\_\+index\+\_\+container$<$ \mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}, indexed\+\_\+by$<$ random\+\_\+access$<$ tag$<$ \mbox{\hyperlink{structidx}{idx}} $>$ $>$, hashed\+\_\+unique$<$ tag$<$ \mbox{\hyperlink{structres__type}{res\+\_\+type}} $>$, member$<$ \mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}, std\+::string, \&\mbox{\hyperlink{structplanner__multi__meta_af87028c8b73bfc9692ea3688ffce58c8}{planner\+\_\+multi\+\_\+meta\+::resource\+\_\+type}} $>$ $>$ $>$, \mbox{\hyperlink{structpolyfill__allocator}{polyfill\+\_\+allocator}}$<$ \mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}} $>$$>$ \mbox{\hyperlink{planner__multi_8hpp_acdd69c432264bfd0d4f82427744c0d05}{multi\+\_\+container}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Typedef Documentation}
+\mbox{\Hypertarget{planner__multi_8hpp_acdd69c432264bfd0d4f82427744c0d05}\label{planner__multi_8hpp_acdd69c432264bfd0d4f82427744c0d05}} 
+\index{planner\_multi.hpp@{planner\_multi.hpp}!multi\_container@{multi\_container}}
+\index{multi\_container@{multi\_container}!planner\_multi.hpp@{planner\_multi.hpp}}
+\doxyparagraph{\texorpdfstring{multi\_container}{multi\_container}}
+{\footnotesize\ttfamily typedef multi\+\_\+index\+\_\+container$<$ \mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}, indexed\+\_\+by$<$ random\+\_\+access$<$ tag$<$\mbox{\hyperlink{structidx}{idx}}$>$ $>$, hashed\+\_\+unique$<$ tag$<$\mbox{\hyperlink{structres__type}{res\+\_\+type}}$>$, member$<$\mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}, std\+::string, \&\mbox{\hyperlink{structplanner__multi__meta_af87028c8b73bfc9692ea3688ffce58c8}{planner\+\_\+multi\+\_\+meta\+::resource\+\_\+type}}$>$ $>$ $>$, \mbox{\hyperlink{structpolyfill__allocator}{polyfill\+\_\+allocator}}$<$\mbox{\hyperlink{structplanner__multi__meta}{planner\+\_\+multi\+\_\+meta}}$>$$>$ \mbox{\hyperlink{planner__multi_8hpp_acdd69c432264bfd0d4f82427744c0d05}{multi\+\_\+container}}}
+

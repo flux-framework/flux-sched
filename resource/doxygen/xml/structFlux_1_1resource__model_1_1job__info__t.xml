@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1job__info__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::job_info_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1af98c7c5e961a90014773bf0a361ce0f6" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t Flux::resource_model::job_info_t::jobid</definition>
+        <argsstring></argsstring>
+        <name>jobid</name>
+        <initializer>= UINT64_MAX</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="30" column="14" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1ac9ec5bd407b209310ad1a65c24d1f9cb" prot="public" static="no" mutable="no">
+        <type>job_lifecycle_t</type>
+        <definition>job_lifecycle_t Flux::resource_model::job_info_t::state</definition>
+        <argsstring></argsstring>
+        <name>state</name>
+        <initializer>= job_lifecycle_t::INIT</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="31" column="21" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1a4480a599836b918ab1559407dd2f75e7" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Flux::resource_model::job_info_t::scheduled_at</definition>
+        <argsstring></argsstring>
+        <name>scheduled_at</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="32" column="13" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1a64b5805fd0eb1eb1f342614d6150f18e" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::job_info_t::jobspec_fn</definition>
+        <argsstring></argsstring>
+        <name>jobspec_fn</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="33" column="17" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1a21c9fec2a04c515a9ef3defc4203e4db" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::job_info_t::jobspec_str</definition>
+        <argsstring></argsstring>
+        <name>jobspec_str</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="34" column="17" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1ae9bc7fb09a3ee6714643015c70e6655f" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string Flux::resource_model::job_info_t::R</definition>
+        <argsstring></argsstring>
+        <name>R</name>
+        <initializer>= &quot;&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="35" column="17" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1job__info__t_1aa0d9c591538eb3819bfcd876f14bffb2" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Flux::resource_model::job_info_t::overhead</definition>
+        <argsstring></argsstring>
+        <name>overhead</name>
+        <initializer>= 0.0f</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="36" column="12" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1job__info__t_1a040f726979c1fee24a6743672963732a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::job_info_t::job_info_t</definition>
+        <argsstring>(uint64_t j, job_lifecycle_t s, int64_t at, const std::string &amp;j_fn, const std::string &amp;jstr, const std::string &amp;R_str, double o)</argsstring>
+        <name>job_info_t</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>j</declname>
+        </param>
+        <param>
+          <type>job_lifecycle_t</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>j_fn</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jstr</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>R_str</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="23" column="5" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.cpp" bodystart="23" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1job__info__t_1a25e69abb7f7ee9f7d7d36d9b229b0ac2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::job_info_t::job_info_t</definition>
+        <argsstring>(uint64_t j, job_lifecycle_t s, int64_t at, const std::string &amp;j_fn, const std::string &amp;jstr, double o)</argsstring>
+        <name>job_info_t</name>
+        <param>
+          <type>uint64_t</type>
+          <declname>j</declname>
+        </param>
+        <param>
+          <type>job_lifecycle_t</type>
+          <declname>s</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>j_fn</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jstr</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="27" column="5" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.cpp" bodystart="31" bodyend="37"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="22" column="1" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="22" bodyend="37"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1a040f726979c1fee24a6743672963732a" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>job_info_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1a25e69abb7f7ee9f7d7d36d9b229b0ac2" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>job_info_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1af98c7c5e961a90014773bf0a361ce0f6" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>jobid</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1a64b5805fd0eb1eb1f342614d6150f18e" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>jobspec_fn</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1a21c9fec2a04c515a9ef3defc4203e4db" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>jobspec_str</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1aa0d9c591538eb3819bfcd876f14bffb2" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>overhead</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1ae9bc7fb09a3ee6714643015c70e6655f" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>R</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1a4480a599836b918ab1559407dd2f75e7" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>scheduled_at</name></member>
+      <member refid="structFlux_1_1resource__model_1_1job__info__t_1ac9ec5bd407b209310ad1a65c24d1f9cb" prot="public" virt="non-virtual"><scope>Flux::resource_model::job_info_t</scope><name>state</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

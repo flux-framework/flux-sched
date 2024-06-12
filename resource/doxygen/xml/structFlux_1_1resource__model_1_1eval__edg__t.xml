@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1eval__edg__t" kind="struct" language="C++" prot="public">
+    <compoundname>Flux::resource_model::eval_edg_t</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__edg__t_1a0788b546a85aa0d797ba946cfc971a08" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_edg_t::count</definition>
+        <argsstring></argsstring>
+        <name>count</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="26" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__edg__t_1a9671765455571cc789f063dc51128971" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_edg_t::needs</definition>
+        <argsstring></argsstring>
+        <name>needs</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="27" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__edg__t_1ab1f479d064ee2d71c9082f381c3b890b" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Flux::resource_model::eval_edg_t::exclusive</definition>
+        <argsstring></argsstring>
+        <name>exclusive</name>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="28" column="18" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1eval__edg__t_1aa6e9be062b55fa3b4862a0669c709af6" prot="public" static="no" mutable="no">
+        <type>edg_t</type>
+        <definition>edg_t Flux::resource_model::eval_edg_t::edge</definition>
+        <argsstring></argsstring>
+        <name>edge</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="29" column="11" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__edg__t_1ac2493a09f31800b2108a9704fd4011e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::eval_edg_t::eval_edg_t</definition>
+        <argsstring>(unsigned int c, unsigned int n, unsigned int x, edg_t e)</argsstring>
+        <name>eval_edg_t</name>
+        <param>
+          <type>unsigned int</type>
+          <declname>c</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>edg_t</type>
+          <declname>e</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="22" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="29" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1eval__edg__t_1a9e811e503c6df163f12d0824e595f4b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::eval_edg_t::eval_edg_t</definition>
+        <argsstring>(unsigned int c, unsigned int n, unsigned int x)</argsstring>
+        <name>eval_edg_t</name>
+        <param>
+          <type>unsigned int</type>
+          <declname>c</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>x</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="23" column="5" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.cpp" bodystart="35" bodyend="39"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" line="21" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/edge_eval_api.hpp" bodystart="21" bodyend="30"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1a0788b546a85aa0d797ba946cfc971a08" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>count</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1aa6e9be062b55fa3b4862a0669c709af6" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>edge</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1ac2493a09f31800b2108a9704fd4011e5" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>eval_edg_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1a9e811e503c6df163f12d0824e595f4b7" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>eval_edg_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1ab1f479d064ee2d71c9082f381c3b890b" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>exclusive</name></member>
+      <member refid="structFlux_1_1resource__model_1_1eval__edg__t_1a9671765455571cc789f063dc51128971" prot="public" virt="non-virtual"><scope>Flux::resource_model::eval_edg_t</scope><name>needs</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

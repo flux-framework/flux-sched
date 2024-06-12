@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_a0dcaad23ee98f6ef2cf61127ae2a1aa" kind="dir">
+    <compoundname>c++</compoundname>
+    <innerfile refid="reapi_8hpp">reapi.hpp</innerfile>
+    <innerfile refid="reapi__cli_8hpp">reapi_cli.hpp</innerfile>
+    <innerfile refid="reapi__cli__impl_8hpp">reapi_cli_impl.hpp</innerfile>
+    <innerfile refid="reapi__module_8hpp">reapi_module.hpp</innerfile>
+    <innerfile refid="reapi__module__impl_8hpp">reapi_module_impl.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/"/>
+  </compounddef>
+</doxygen>

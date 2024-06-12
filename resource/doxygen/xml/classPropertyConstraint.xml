@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classPropertyConstraint" kind="class" language="C++" prot="public">
+    <compoundname>PropertyConstraint</compoundname>
+    <basecompoundref refid="classFlux_1_1Jobspec_1_1Constraint" prot="public" virt="non-virtual">Flux::Jobspec::Constraint</basecompoundref>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classPropertyConstraint_1a50c554e324208f43566c0e55fde8e9d8" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt;std::string&gt; PropertyConstraint::values</definition>
+        <argsstring></argsstring>
+        <name>values</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="36" column="17" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classPropertyConstraint_1a68bbd0826c4a5171e8a92b9e56b40ea2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>PropertyConstraint::PropertyConstraint</definition>
+        <argsstring>(const YAML::Node &amp;)</argsstring>
+        <name>PropertyConstraint</name>
+        <param>
+          <type>const YAML::Node &amp;</type>
+          <defname>properties</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="31" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="119" bodyend="139"/>
+      </memberdef>
+      <memberdef kind="function" id="classPropertyConstraint_1a3f8065d88828e0027fd4275869b818b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>PropertyConstraint::PropertyConstraint</definition>
+        <argsstring>()</argsstring>
+        <name>PropertyConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="32" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classPropertyConstraint_1a81326683f2aa88de801404d5c55216ef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>PropertyConstraint::~PropertyConstraint</definition>
+        <argsstring>()=default</argsstring>
+        <name>~PropertyConstraint</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="33" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classPropertyConstraint_1a10dc4317b1c3176e557033b1522a01d4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool PropertyConstraint::match</definition>
+        <argsstring>(const Flux::resource_model::resource_t &amp;resource) const</argsstring>
+        <name>match</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1ae444700152a356a49b9e24a3ca3493cb">match</reimplements>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1resource__t" kindref="compound">Flux::resource_model::resource_t</ref> &amp;</type>
+          <declname>resource</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="39" column="18" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="141" bodyend="158"/>
+      </memberdef>
+      <memberdef kind="function" id="classPropertyConstraint_1a606b9525a7f1e5002ce427c21217859b" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>YAML::Node</type>
+        <definition>YAML::Node PropertyConstraint::as_yaml</definition>
+        <argsstring>() const</argsstring>
+        <name>as_yaml</name>
+        <reimplements refid="classFlux_1_1Jobspec_1_1Constraint_1a55958a0879a6acbc5be43b903b69b5ff">as_yaml</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="40" column="24" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="160" bodyend="166"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>PropertyConstraint</label>
+        <link refid="classPropertyConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Flux::Jobspec::Constraint</label>
+        <link refid="classFlux_1_1Jobspec_1_1Constraint"/>
+      </node>
+      <node id="1">
+        <label>PropertyConstraint</label>
+        <link refid="classPropertyConstraint"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/constraint.cpp" bodystart="29" bodyend="41"/>
+    <listofallmembers>
+      <member refid="classPropertyConstraint_1a606b9525a7f1e5002ce427c21217859b" prot="public" virt="virtual"><scope>PropertyConstraint</scope><name>as_yaml</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1aff150c3f204e9c3ead2023fc31f7dc20" prot="public" virt="non-virtual"><scope>PropertyConstraint</scope><name>Constraint</name></member>
+      <member refid="classPropertyConstraint_1a10dc4317b1c3176e557033b1522a01d4" prot="public" virt="virtual"><scope>PropertyConstraint</scope><name>match</name></member>
+      <member refid="classPropertyConstraint_1a68bbd0826c4a5171e8a92b9e56b40ea2" prot="public" virt="non-virtual"><scope>PropertyConstraint</scope><name>PropertyConstraint</name></member>
+      <member refid="classPropertyConstraint_1a3f8065d88828e0027fd4275869b818b7" prot="public" virt="non-virtual"><scope>PropertyConstraint</scope><name>PropertyConstraint</name></member>
+      <member refid="classPropertyConstraint_1a50c554e324208f43566c0e55fde8e9d8" prot="private" virt="non-virtual"><scope>PropertyConstraint</scope><name>values</name></member>
+      <member refid="classFlux_1_1Jobspec_1_1Constraint_1a79c854a5620d10d9aa286eacfb42cb49" prot="public" virt="virtual"><scope>PropertyConstraint</scope><name>~Constraint</name></member>
+      <member refid="classPropertyConstraint_1a81326683f2aa88de801404d5c55216ef" prot="public" virt="non-virtual"><scope>PropertyConstraint</scope><name>~PropertyConstraint</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

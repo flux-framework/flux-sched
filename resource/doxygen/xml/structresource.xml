@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structresource" kind="struct" language="C++" prot="public">
+    <compoundname>resource</compoundname>
+    <basecompoundref refid="structFlux_1_1resource__model_1_1resource__t" prot="public" virt="non-virtual">Flux::resource_model::resource_t</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structresource_1af108024014bf216643afaf5c6d15c4ef" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>resource::resource</definition>
+        <argsstring>()</argsstring>
+        <name>resource</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="28" column="5" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="28" bodyend="28"/>
+      </memberdef>
+      <memberdef kind="function" id="structresource_1a8773491a5b74b493092b787fd61c59cf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void resource::add_property</definition>
+        <argsstring>(std::string name)</argsstring>
+        <name>add_property</name>
+        <param>
+          <type>std::string</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="29" column="10" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="29" bodyend="31"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>resource</label>
+        <link refid="structresource"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>resource</label>
+        <link refid="structresource"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::resource_t</label>
+        <link refid="structFlux_1_1resource__model_1_1resource__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" line="27" column="1" bodyfile="/home/hobbs17/flux-sched/resource/libjobspec/test/constraint.cpp" bodystart="27" bodyend="32"/>
+    <listofallmembers>
+      <member refid="structresource_1a8773491a5b74b493092b787fd61c59cf" prot="public" virt="non-virtual"><scope>resource</scope><name>add_property</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1af94539f5b774e264881c68efcf337ab4" prot="public" virt="non-virtual"><scope>resource</scope><name>basename</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aecfd3607b4565fe6936dc9f83a20b85d" prot="public" virt="non-virtual"><scope>resource</scope><name>id</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aa00f7aa228043a75bc92a0da3a95021b" prot="public" virt="non-virtual"><scope>resource</scope><name>name</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1afec5e41d2a0777b5b99ff372a05526b6" prot="public" virt="non-virtual"><scope>resource</scope><name>properties</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1aad702619d4b7296d0dceb53baa0faf72" prot="public" virt="non-virtual"><scope>resource</scope><name>rank</name></member>
+      <member refid="structresource_1af108024014bf216643afaf5c6d15c4ef" prot="public" virt="non-virtual"><scope>resource</scope><name>resource</name></member>
+      <member refid="structFlux_1_1resource__model_1_1resource__t_1a45917bc9648bfdeabcfcc022ccb37749" prot="public" virt="non-virtual"><scope>resource</scope><name>type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

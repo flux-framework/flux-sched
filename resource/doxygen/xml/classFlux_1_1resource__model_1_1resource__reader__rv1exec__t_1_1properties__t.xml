@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t" kind="class" language="C++" prot="private">
+    <compoundname>Flux::resource_model::resource_reader_rv1exec_t::properties_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a5adc8d3204fce218681a0d64a632012f" prot="private" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::map&lt; std::string, std::string &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::map&lt;std::string, std::string&gt; &gt; Flux::resource_model::resource_reader_rv1exec_t::properties_t::m_properties</definition>
+        <argsstring></argsstring>
+        <name>m_properties</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="108" column="18" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a9b16edb413c5bb0b37fb8c0c7f01b7a5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::properties_t::insert</definition>
+        <argsstring>(const std::string &amp;res_type, const std::string &amp;property)</argsstring>
+        <name>insert</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>res_type</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>property</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="102" column="12" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="35" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1abe636c85fe713a1a1949706a55a1ae35" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool resource_reader_rv1exec_t::properties_t::exist</definition>
+        <argsstring>(const std::string &amp;res_type)</argsstring>
+        <name>exist</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>res_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="103" column="13" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="62" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a521490c1a27b01cc1c05558d1081166d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int resource_reader_rv1exec_t::properties_t::copy</definition>
+        <argsstring>(const std::string &amp;res_type, std::map&lt; std::string, std::string &gt; &amp;properties)</argsstring>
+        <name>copy</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>res_type</declname>
+        </param>
+        <param>
+          <type>std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>properties</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="104" column="12" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.cpp" bodystart="69" bodyend="80"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" line="100" column="5" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_rv1exec.hpp" bodystart="100" bodyend="109"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a521490c1a27b01cc1c05558d1081166d" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t::properties_t</scope><name>copy</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1abe636c85fe713a1a1949706a55a1ae35" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t::properties_t</scope><name>exist</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a9b16edb413c5bb0b37fb8c0c7f01b7a5" prot="public" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t::properties_t</scope><name>insert</name></member>
+      <member refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t_1_1properties__t_1a5adc8d3204fce218681a0d64a632012f" prot="private" virt="non-virtual"><scope>Flux::resource_model::resource_reader_rv1exec_t::properties_t</scope><name>m_properties</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

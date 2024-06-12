@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespaceFlux_1_1resource__model_1_1detail" kind="namespace" language="C++">
+    <compoundname>Flux::resource_model::detail</compoundname>
+    <innerclass refid="classFlux_1_1resource__model_1_1detail_1_1evals__t" prot="public">Flux::resource_model::detail::evals_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1detail_1_1match__perf__t" prot="public">Flux::resource_model::detail::match_perf_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1detail_1_1resource__params__t" prot="public">Flux::resource_model::detail::resource_params_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1detail_1_1resource__query__t" prot="public">Flux::resource_model::detail::resource_query_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1detail_1_1reapi__cli__t" prot="public">Flux::resource_model::detail::reapi_cli_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1detail_1_1reapi__module__t" prot="public">Flux::resource_model::detail::reapi_module_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1detail_1_1jobmeta__t" prot="public">Flux::resource_model::detail::jobmeta_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1detail_1_1dfu__impl__t" prot="public">Flux::resource_model::detail::dfu_impl_t</innerclass>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="reapi__cli_8hpp_1a68259a1ff7ec31344e35e8b869d08110" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>emit_format_t</name>
+        <enumvalue id="reapi__cli_8hpp_1a68259a1ff7ec31344e35e8b869d08110a03eebb938f03fc5ba6e9396b4242463e" prot="public">
+          <name>GRAPHVIZ_DOT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="reapi__cli_8hpp_1a68259a1ff7ec31344e35e8b869d08110afce79fb657652dbc57925d64de9aa480" prot="public">
+          <name>GRAPH_ML</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" line="35" column="1" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli.hpp" bodystart="35" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="enum" id="dfu__impl_8hpp_1ae68e3e40c45ade1948fde75120551180" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>visit_t</name>
+        <enumvalue id="dfu__impl_8hpp_1ae68e3e40c45ade1948fde75120551180a2d7ed3fdb07f9852acd06b5b55607af1" prot="public">
+          <name>DFV</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="dfu__impl_8hpp_1ae68e3e40c45ade1948fde75120551180ab311bf385aca15a1f5da8a19593d0a23" prot="public">
+          <name>UPV</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="36" column="1" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="36" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="enum" id="dfu__impl_8hpp_1acc7ca3b33cc596bcf61a518df01732e0" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>match_kind_t</name>
+        <enumvalue id="dfu__impl_8hpp_1acc7ca3b33cc596bcf61a518df01732e0afcf92c1e3b975e566ed1854abf4abccd" prot="public">
+          <name>RESOURCE_MATCH</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="dfu__impl_8hpp_1acc7ca3b33cc596bcf61a518df01732e0a6bee9b16ab48f7ffb23b10e9a7c3f0ed" prot="public">
+          <name>SLOT_MATCH</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="dfu__impl_8hpp_1acc7ca3b33cc596bcf61a518df01732e0a3220eefe695e471f15191ab20840982c" prot="public">
+          <name>NONE_MATCH</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="dfu__impl_8hpp_1acc7ca3b33cc596bcf61a518df01732e0a568c9e9daa8aed5fc0ea39deaae4447d" prot="public">
+          <name>PRESTINE_NONE_MATCH</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" line="38" column="1" bodyfile="/home/hobbs17/flux-sched/resource/traversers/dfu_impl.hpp" bodystart="38" bodyend="41"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="system__defaults_8hpp_1a72d3101eeba844e6bf4ea2c3691133bc" prot="public" static="no" mutable="no">
+        <type>const int64_t</type>
+        <definition>const int64_t Flux::resource_model::detail::SYSTEM_DEFAULT_DURATION</definition>
+        <argsstring></argsstring>
+        <name>SYSTEM_DEFAULT_DURATION</name>
+        <initializer>= 43200</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" line="18" column="19" bodyfile="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="system__defaults_8hpp_1a1b81972fa8f41c32d288747b0f1c0f78" prot="public" static="no" mutable="no">
+        <type>const int64_t</type>
+        <definition>const int64_t Flux::resource_model::detail::SYSTEM_MAX_DURATION</definition>
+        <argsstring></argsstring>
+        <name>SYSTEM_MAX_DURATION</name>
+        <initializer>= 3153600000</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" line="19" column="19" bodyfile="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="reapi__cli__impl_8hpp_1a7669a768fb88e8621df194a80a17a983" prot="public" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int Flux::resource_model::detail::NOT_YET_IMPLEMENTED</definition>
+        <argsstring></argsstring>
+        <name>NOT_YET_IMPLEMENTED</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" line="31" column="11" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="reapi__cli__impl_8hpp_1a999021ab1411e81ada01e68131b3525c" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>static double Flux::resource_model::detail::get_elapsed_time</definition>
+        <argsstring>(timeval &amp;st, timeval &amp;et)</argsstring>
+        <name>get_elapsed_time</name>
+        <param>
+          <type>timeval &amp;</type>
+          <declname>st</declname>
+        </param>
+        <param>
+          <type>timeval &amp;</type>
+          <declname>et</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" line="33" column="15" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_cli_impl.hpp" bodystart="33" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="reapi__module__impl_8hpp_1a13f69a5f8b358557003d4b15107dbb22" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::detail::match_allocate_multi_cont</definition>
+        <argsstring>(flux_future_t *f, void *arg)</argsstring>
+        <name>match_allocate_multi_cont</name>
+        <param>
+          <type>flux_future_t *</type>
+          <declname>f</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>arg</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" line="84" column="6" bodyfile="/home/hobbs17/flux-sched/resource/reapi/bindings/c++/reapi_module_impl.hpp" bodystart="84" bodyend="112"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" line="17" column="1"/>
+  </compounddef>
+</doxygen>

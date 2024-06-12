@@ -1,0 +1,87 @@
+\hypertarget{command_8cpp}{}\doxysubsection{command.\+cpp File Reference}
+\label{command_8cpp}\index{command.cpp@{command.cpp}}
+{\ttfamily \#include $<$sys/time.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}command.\+hpp\char`\"{}}\newline
+Include dependency graph for command.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{command_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1resource__model_1_1command__t}{Flux\+::resource\+\_\+model\+::command\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceFlux}{Flux}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model}{Flux\+::resource\+\_\+model}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_aac3347799082cabca191289fb3a51ab9}{Flux\+::resource\+\_\+model\+::do\+\_\+remove}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, int64\+\_\+t jobid)
+\item 
+static void \mbox{\hyperlink{namespaceFlux_1_1resource__model_aca70db3c4af050b01908b287a45a1484}{Flux\+::resource\+\_\+model\+::print\+\_\+sat\+\_\+info}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::ostream \&out, bool sat, double elapse, unsigned int pre, unsigned int post)
+\item 
+static void \mbox{\hyperlink{namespaceFlux_1_1resource__model_a165da6544f9de80ae59584ef3b907eaa}{Flux\+::resource\+\_\+model\+::print\+\_\+schedule\+\_\+info}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::ostream \&out, uint64\+\_\+t jobid, const std\+::string \&jobspec\+\_\+fn, bool matched, int64\+\_\+t at, bool sat, double elapse, unsigned int pre, unsigned int post)
+\item 
+static void \mbox{\hyperlink{namespaceFlux_1_1resource__model_a6e202d2dfa8ee3f0cfdf654ce41eb405}{Flux\+::resource\+\_\+model\+::update\+\_\+match\+\_\+perf}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, double elapse)
+\item 
+double \mbox{\hyperlink{namespaceFlux_1_1resource__model_a3492e6a4bbc419debc02a8a6368565d1}{Flux\+::resource\+\_\+model\+::get\+\_\+elapse\+\_\+time}} (timeval \&st, timeval \&et)
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_ac69344b946b8a92b7359b726bc601307}{Flux\+::resource\+\_\+model\+::run\+\_\+match}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, int64\+\_\+t jobid, const std\+::string cmd, const std\+::string \&jobspec\+\_\+fn, \mbox{\hyperlink{classFlux_1_1Jobspec_1_1Jobspec}{Flux\+::\+Jobspec\+::\+Jobspec}} \&job)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a7f1bf21f8dd9a557fb079a4885ed3697}{Flux\+::resource\+\_\+model\+::cmd\+\_\+match}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a3f24313d6fe29881f4ec48e314e33ff1}{Flux\+::resource\+\_\+model\+::cmd\+\_\+match\+\_\+multi}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_adfcb539c26d1693fdaf9ba4ea494eeb2}{Flux\+::resource\+\_\+model\+::update\+\_\+run}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, const std\+::string \&fn, const std\+::string \&str, int64\+\_\+t id, int64\+\_\+t at, uint64\+\_\+t d, const std\+::string \&reader)
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a5834b36ae76fb8b9582f082aad8e91af}{Flux\+::resource\+\_\+model\+::update}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_af454824e30f4a7f800c9a7b3601f81c4}{Flux\+::resource\+\_\+model\+::cmd\+\_\+update}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a112a92cb660327b21692d8f02c95f65e}{Flux\+::resource\+\_\+model\+::attach}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+static int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a68212268fae00f01e976ade4e250d62a}{Flux\+::resource\+\_\+model\+::remove}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_ac955a3112450b19957a087f8588b5caf}{Flux\+::resource\+\_\+model\+::cmd\+\_\+attach}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a10c1f7e64c4f004db9eacf5658995028}{Flux\+::resource\+\_\+model\+::cmd\+\_\+remove}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_ab10b2e276802fed22413d3c71ff32d7f}{Flux\+::resource\+\_\+model\+::cmd\+\_\+find}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a3da77868d3488aa42250a368edc86a47}{Flux\+::resource\+\_\+model\+::cmd\+\_\+cancel}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a44b29cc0c0f8a1595a364095f1e584cb}{Flux\+::resource\+\_\+model\+::cmd\+\_\+set\+\_\+property}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a5bd1421fc69254dcaee88b4b8562d9c3}{Flux\+::resource\+\_\+model\+::cmd\+\_\+get\+\_\+property}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_ae02d0792c3ec86d06ebec8505765caaf}{Flux\+::resource\+\_\+model\+::cmd\+\_\+set\+\_\+status}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a3243e707fd05c5219bb557d81285d55d}{Flux\+::resource\+\_\+model\+::cmd\+\_\+get\+\_\+status}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a67abd30a806a5829d6d8d37d14f3ffa0}{Flux\+::resource\+\_\+model\+::cmd\+\_\+list}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a70fea5f1144c5a74b524a78df632f5f8}{Flux\+::resource\+\_\+model\+::cmd\+\_\+info}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_afd84faac271517b60a6061a0031921f0}{Flux\+::resource\+\_\+model\+::cmd\+\_\+stat}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a2822cbdcc77295235f5a74be740688a9}{Flux\+::resource\+\_\+model\+::cmd\+\_\+cat}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_aeef79b815b35f158677675bb3fd10b1a}{Flux\+::resource\+\_\+model\+::cmd\+\_\+help}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+int \mbox{\hyperlink{namespaceFlux_1_1resource__model_a8919f6ebd4af5a8a0caabf9a0a0c203f}{Flux\+::resource\+\_\+model\+::cmd\+\_\+quit}} (std\+::shared\+\_\+ptr$<$ resource\+\_\+context\+\_\+t $>$ \&ctx, std\+::vector$<$ std\+::string $>$ \&args)
+\item 
+\mbox{\hyperlink{rq2_8cpp_a1abc42b6315b5b77967b7309a073a193}{cmd\+\_\+func\+\_\+f}} $\ast$ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a40bc4fe430365566f55aacb8c4ed5cf0}{Flux\+::resource\+\_\+model\+::find\+\_\+cmd}} (const std\+::string \&cmd\+\_\+str)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcommand__t}{command\+\_\+t}} \mbox{\hyperlink{namespaceFlux_1_1resource__model_a913f91f3cb4013533c77ef39419795b4}{Flux\+::resource\+\_\+model\+::commands}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}

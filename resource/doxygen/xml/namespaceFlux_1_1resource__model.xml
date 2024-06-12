@@ -1,0 +1,1778 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespaceFlux_1_1resource__model" kind="namespace" language="C++">
+    <compoundname>Flux::resource_model</compoundname>
+    <innerclass refid="structFlux_1_1resource__model_1_1eval__edg__t" prot="public">Flux::resource_model::eval_edg_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1eval__egroup__t" prot="public">Flux::resource_model::eval_egroup_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1expr__eval__api__t" prot="public">Flux::resource_model::expr_eval_api_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1expr__eval__target__base__t" prot="public">Flux::resource_model::expr_eval_target_base_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1vtx__predicates__override__t" prot="public">Flux::resource_model::vtx_predicates_override_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t" prot="public">Flux::resource_model::expr_eval_vtx_target_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1scoring__api__t" prot="public">Flux::resource_model::scoring_api_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1job__info__t" prot="public">Flux::resource_model::job_info_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" prot="public">Flux::resource_model::dfu_match_cb_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1matcher__data__t" prot="public">Flux::resource_model::matcher_data_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1matcher__util__api__t" prot="public">Flux::resource_model::matcher_util_api_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1greater__interval__first__t" prot="public">Flux::resource_model::greater_interval_first_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1multilevel__id__t" prot="public">Flux::resource_model::multilevel_id_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1var__aware__t" prot="public">Flux::resource_model::var_aware_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1distinct__range__t" prot="public">Flux::resource_model::distinct_range_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__namespace__remapper__t" prot="public">Flux::resource_model::resource_namespace_remapper_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__base__t" prot="public">Flux::resource_model::resource_reader_base_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__grug__t" prot="public">Flux::resource_model::resource_reader_grug_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__hwloc__t" prot="public">Flux::resource_model::resource_reader_hwloc_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__jgf__t" prot="public">Flux::resource_model::resource_reader_jgf_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1updater__data" prot="public">Flux::resource_model::updater_data</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__reader__rv1exec__t" prot="public">Flux::resource_model::resource_reader_rv1exec_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__pool__gen__t" prot="public">Flux::resource_model::resource_pool_gen_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1relation__gen__t" prot="public">Flux::resource_model::relation_gen_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1resource__gen__spec__t" prot="public">Flux::resource_model::resource_gen_spec_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1queue__adapter__base__t" prot="public">Flux::resource_model::queue_adapter_base_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1reapi__t" prot="public">Flux::resource_model::reapi_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1color__t" prot="public">Flux::resource_model::color_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1ephemeral__t" prot="public">Flux::resource_model::ephemeral_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1infra__base__t" prot="public">Flux::resource_model::infra_base_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1pool__infra__t" prot="public">Flux::resource_model::pool_infra_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1relation__infra__t" prot="public">Flux::resource_model::relation_infra_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__t" prot="public">Flux::resource_model::resource_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__pool__t" prot="public">Flux::resource_model::resource_pool_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__relation__t" prot="public">Flux::resource_model::resource_relation_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1subsystem__selector__t" prot="public">Flux::resource_model::subsystem_selector_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1label__writer__t" prot="public">Flux::resource_model::label_writer_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1edg__label__writer__t" prot="public">Flux::resource_model::edg_label_writer_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1schedule__t" prot="public">Flux::resource_model::schedule_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1graph__duration__t" prot="public">Flux::resource_model::graph_duration_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__graph__metadata__t" prot="public">Flux::resource_model::resource_graph_metadata_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__graph__db__t" prot="public">Flux::resource_model::resource_graph_db_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1dfu__traverser__t" prot="public">Flux::resource_model::dfu_traverser_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1command__t" prot="public">Flux::resource_model::command_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1test__params__t" prot="public">Flux::resource_model::test_params_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1match__perf__t" prot="public">Flux::resource_model::match_perf_t</innerclass>
+    <innerclass refid="structFlux_1_1resource__model_1_1resource__context__t" prot="public">Flux::resource_model::resource_context_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1match__writers__t" prot="public">Flux::resource_model::match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1sim__match__writers__t" prot="public">Flux::resource_model::sim_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1jgf__match__writers__t" prot="public">Flux::resource_model::jgf_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1rlite__match__writers__t" prot="public">Flux::resource_model::rlite_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1rv1__match__writers__t" prot="public">Flux::resource_model::rv1_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1rv1__nosched__match__writers__t" prot="public">Flux::resource_model::rv1_nosched_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1pretty__sim__match__writers__t" prot="public">Flux::resource_model::pretty_sim_match_writers_t</innerclass>
+    <innerclass refid="classFlux_1_1resource__model_1_1match__writers__factory__t" prot="public">Flux::resource_model::match_writers_factory_t</innerclass>
+    <innernamespace refid="namespaceFlux_1_1resource__model_1_1detail">Flux::resource_model::detail</innernamespace>
+    <innernamespace refid="namespaceFlux_1_1resource__model_1_1fold">Flux::resource_model::fold</innernamespace>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>job_lifecycle_t</name>
+        <enumvalue id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9afaee4ca3c30ee18148ce3ada37466498" prot="public">
+          <name>INIT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9a3bd3560ef2b34fbdace988abac0bedc8" prot="public">
+          <name>ALLOCATED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9a83c7f2aa8c3ac10ed8beb75cad162827" prot="public">
+          <name>RESERVED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9ad4539bffb6062bdcbd7e7cc1b1228926" prot="public">
+          <name>CANCELED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="jobinfo_8hpp_1a9694f7fd93c12db57d1b8cb82818d5f9abb1ca97ec761fc37101737ba0aa2e7c5" prot="public">
+          <name>ERROR</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" line="20" column="1" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" bodystart="20" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="enum" id="matcher_8hpp_1a916fefd437ccaec2aaf75edb9af70e72" prot="public" static="no" strong="no">
+        <type></type>
+        <name>match_score_t</name>
+        <enumvalue id="matcher_8hpp_1a916fefd437ccaec2aaf75edb9af70e72adb06f1ebed26eb48e634b725a14b2afa" prot="public">
+          <name>MATCH_UNMET</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="matcher_8hpp_1a916fefd437ccaec2aaf75edb9af70e72aaa050757633655c7cbe34b381e15035c" prot="public">
+          <name>MATCH_MET</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="29" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="enum" id="resource__spec__grug_8hpp_1a1423d969beb37ab589162462b1cc351b" prot="public" static="no" strong="no">
+        <type></type>
+        <name>gen_meth_t</name>
+        <enumvalue id="resource__spec__grug_8hpp_1a1423d969beb37ab589162462b1cc351ba8c15299e254499936cef42c1a684dca8" prot="public">
+          <name>MULTIPLY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="resource__spec__grug_8hpp_1a1423d969beb37ab589162462b1cc351ba65f0820368c3bdf4e3db226a92b5672c" prot="public">
+          <name>ASSOCIATE_IN</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="resource__spec__grug_8hpp_1a1423d969beb37ab589162462b1cc351ba3c3e364f1b93312f7c04f32afdb61fcf" prot="public">
+          <name>ASSOCIATE_BY_PATH_IN</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="resource__spec__grug_8hpp_1a1423d969beb37ab589162462b1cc351bafa2ef097443402d6361e2c0bb16718f1" prot="public">
+          <name>GEN_UNKNOWN</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="23" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="23" bodyend="28"/>
+      </memberdef>
+      <memberdef kind="enum" id="resource__graph_8hpp_1a4ed2a7ca624f7f0e7d7fb8a01a5704d7" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>emit_format_t</name>
+        <enumvalue id="resource__graph_8hpp_1a4ed2a7ca624f7f0e7d7fb8a01a5704d7a03eebb938f03fc5ba6e9396b4242463e" prot="public">
+          <name>GRAPHVIZ_DOT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="resource__graph_8hpp_1a4ed2a7ca624f7f0e7d7fb8a01a5704d7afce79fb657652dbc57925d64de9aa480" prot="public">
+          <name>GRAPH_ML</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="24" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="24" bodyend="24"/>
+      </memberdef>
+      <memberdef kind="enum" id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>match_format_t</name>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4ae5564829e2f85f6a6873a9d5c4f26d09" prot="public">
+          <name>SIMPLE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4ac870c6ff08222e2176ca15b9d2ad17ed" prot="public">
+          <name>JGF</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4a8949131dfa1a71bb6f848554964cf973" prot="public">
+          <name>RLITE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4a4290c9618f4b3a52601b82d94b9a7869" prot="public">
+          <name>RV1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4af1aa5911536cc49eec9e4b455ffdda19" prot="public">
+          <name>RV1_NOSCHED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="match__writers_8hpp_1af7b3adee7faf5c10c8ad930bef4e11f4a8a72b2c7ffccad81477c482adc7c0792" prot="public">
+          <name>PRETTY_SIMPLE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" line="26" column="1" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" bodystart="26" bodyend="31"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="dfu__match__high__id__first_8hpp_1a45f1dedb1a6eb360c7c68da2deb22333" prot="public" static="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1multilevel__id__t" kindref="compound">multilevel_id_t</ref>&lt; <ref refid="structFlux_1_1resource__model_1_1fold_1_1greater" kindref="compound">fold::greater</ref> &gt;</type>
+        <definition>using Flux::resource_model::high_first_t = typedef multilevel_id_t&lt;fold::greater&gt;</definition>
+        <argsstring></argsstring>
+        <name>high_first_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_high_id_first.hpp" line="23" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_high_id_first.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="dfu__match__low__id__first_8hpp_1a04017696fb2b8c536ef2a082713b249e" prot="public" static="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1multilevel__id__t" kindref="compound">multilevel_id_t</ref>&lt; <ref refid="structFlux_1_1resource__model_1_1fold_1_1less" kindref="compound">fold::less</ref> &gt;</type>
+        <definition>using Flux::resource_model::low_first_t = typedef multilevel_id_t&lt;fold::less&gt;</definition>
+        <argsstring></argsstring>
+        <name>low_first_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_low_id_first.hpp" line="23" column="1" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_low_id_first.hpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a0a15cb9b566c4c77ce73d7c2a3441e30" prot="public" static="no">
+        <type>boost::adjacency_list&lt; boost::vecS, boost::vecS, boost::directedS, <ref refid="structFlux_1_1resource__model_1_1resource__pool__gen__t" kindref="compound">resource_pool_gen_t</ref>, <ref refid="structFlux_1_1resource__model_1_1relation__gen__t" kindref="compound">relation_gen_t</ref> &gt;</type>
+        <definition>using Flux::resource_model::gg_t = typedef boost::adjacency_list&lt;boost::vecS, boost::vecS, boost::directedS, resource_pool_gen_t, relation_gen_t&gt;</definition>
+        <argsstring></argsstring>
+        <name>gg_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="54" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a4bc653840d974e6ace3324ddbe99379c" prot="public" static="no">
+        <type>std::string resource_pool_gen_t::*</type>
+        <definition>using Flux::resource_model::pgen_t = typedef std::string resource_pool_gen_t::*</definition>
+        <argsstring></argsstring>
+        <name>pgen_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="59" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a4c17df74c20e4302eaee2108fd3f3a3c" prot="public" static="no">
+        <type>std::string relation_gen_t::*</type>
+        <definition>using Flux::resource_model::rgen_t = typedef std::string relation_gen_t::*</definition>
+        <argsstring></argsstring>
+        <name>rgen_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="60" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1ad3d1eb0ec5f0216a15ff7142799c073d" prot="public" static="no">
+        <type>boost::graph_traits&lt; gg_t &gt;::vertex_descriptor</type>
+        <definition>using Flux::resource_model::ggv_t = typedef boost::graph_traits&lt;gg_t&gt;::vertex_descriptor</definition>
+        <argsstring></argsstring>
+        <name>ggv_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="61" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a3ad6862648607e539f09ef36952d870e" prot="public" static="no">
+        <type>boost::graph_traits&lt; gg_t &gt;::edge_descriptor</type>
+        <definition>using Flux::resource_model::gge_t = typedef boost::graph_traits&lt;gg_t&gt;::edge_descriptor</definition>
+        <argsstring></argsstring>
+        <name>gge_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="62" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1abe235005c3dfab9be589c3a728cd437a" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, pgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_type_map_t = typedef boost::property_map&lt;gg_t, pgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_type_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="64" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1ad2d86a5703c4d030e7eb53db560288f2" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, pgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_basename_map_t = typedef boost::property_map&lt;gg_t, pgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_basename_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="65" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a7d7665cb2b79680053ae59341dcb1241" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, long resource_pool_gen_t::* &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_size_map_t = typedef boost::property_map&lt;gg_t, long resource_pool_gen_t::* &gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_size_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="66" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a5ce062971856776f49888eeebb4520b6" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, pgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_unit_map_t = typedef boost::property_map&lt;gg_t, pgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_unit_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="67" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a93c18921be2f35daa6486dc82fd36708" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, pgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_subsystem_map_t = typedef boost::property_map&lt;gg_t, pgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_subsystem_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="68" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1af6efb718c973296dfd0aa3a2f85c15ac" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, rgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_e_subsystem_map_t = typedef boost::property_map&lt;gg_t, rgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_e_subsystem_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="69" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a578ee47f6949324f98549c44dc348d77" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, rgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_relation_map_t = typedef boost::property_map&lt;gg_t, rgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_relation_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="70" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a8072e6798be175747921d79da4a6e468" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, rgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_rrelation_map_t = typedef boost::property_map&lt;gg_t, rgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_rrelation_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="71" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1ae300c951673509271717db0428083e64" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, rgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_gen_method_map_t = typedef boost::property_map&lt;gg_t, rgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_gen_method_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="72" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1aa57d12d3a1cf324576554d4c6bb63f99" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, rgen_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_id_method_map_t = typedef boost::property_map&lt;gg_t, rgen_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_id_method_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="73" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__spec__grug_8hpp_1a96e015059844d90625bac583aa2d648a" prot="public" static="no">
+        <type>boost::property_map&lt; gg_t, int relation_gen_t::* &gt;::type</type>
+        <definition>using Flux::resource_model::edg_multi_scale_map_t = typedef boost::property_map&lt;gg_t, int relation_gen_t::* &gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_multi_scale_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" line="74" column="1" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_spec_grug.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="data__std_8hpp_1af303ab8851cdb51ebe9afa4bfd1cd29d" prot="public" static="no">
+        <type>std::string</type>
+        <definition>using Flux::resource_model::subsystem_t = typedef std::string</definition>
+        <argsstring></argsstring>
+        <name>subsystem_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="data__std_8hpp_1aea35cd6ae4f6cb01dbc41d5254aede07" prot="public" static="no">
+        <type>std::map&lt; subsystem_t, std::string &gt;</type>
+        <definition>using Flux::resource_model::multi_subsystems_t = typedef std::map&lt;subsystem_t, std::string&gt;</definition>
+        <argsstring></argsstring>
+        <name>multi_subsystems_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="data__std_8hpp_1ac4d4529f5ca92dbf033bd5b26e50b278" prot="public" static="no">
+        <type>std::map&lt; subsystem_t, std::set&lt; std::string &gt; &gt;</type>
+        <definition>using Flux::resource_model::multi_subsystemsS = typedef std::map&lt;subsystem_t, std::set&lt;std::string&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>multi_subsystemsS</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" line="30" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1ac48f66a89c50129b406a2fe8a2bb8868" prot="public" static="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1pool__infra__t" kindref="compound">pool_infra_t</ref> resource_pool_t::*</type>
+        <definition>using Flux::resource_model::pinfra_t = typedef pool_infra_t resource_pool_t::*</definition>
+        <argsstring></argsstring>
+        <name>pinfra_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="26" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1ab1fd7c59718064965e31529ebba5c0e6" prot="public" static="no">
+        <type>std::string resource_t::*</type>
+        <definition>using Flux::resource_model::pname_t = typedef std::string resource_t::*</definition>
+        <argsstring></argsstring>
+        <name>pname_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="27" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a8b611bffb41822db6229709215e5dfbc" prot="public" static="no">
+        <type>std::string resource_relation_t::*</type>
+        <definition>using Flux::resource_model::rname_t = typedef std::string resource_relation_t::*</definition>
+        <argsstring></argsstring>
+        <name>rname_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a7e9ecd8fdd697b899f3dc311698e7b5d" prot="public" static="no">
+        <type><ref refid="classFlux_1_1resource__model_1_1relation__infra__t" kindref="compound">relation_infra_t</ref> resource_relation_t::*</type>
+        <definition>using Flux::resource_model::rinfra_t = typedef relation_infra_t resource_relation_t::*</definition>
+        <argsstring></argsstring>
+        <name>rinfra_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="29" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a384f113976d60748fbef26e93809bf6d" prot="public" static="no">
+        <type>boost::adjacency_list&lt; boost::vecS, boost::vecS, boost::directedS, <ref refid="structFlux_1_1resource__model_1_1resource__pool__t" kindref="compound">resource_pool_t</ref>, <ref refid="structFlux_1_1resource__model_1_1resource__relation__t" kindref="compound">resource_relation_t</ref>, std::string &gt;</type>
+        <definition>using Flux::resource_model::resource_graph_t = typedef boost::adjacency_list&lt;boost::vecS, boost::vecS, boost::directedS, resource_pool_t, resource_relation_t, std::string&gt;</definition>
+        <argsstring></argsstring>
+        <name>resource_graph_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="30" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a5c35c0ef9561b812ad3a7cdb5483b144" prot="public" static="no">
+        <type>boost::property_map&lt; resource_graph_t, pinfra_t &gt;::type</type>
+        <definition>using Flux::resource_model::vtx_infra_map_t = typedef boost::property_map&lt;resource_graph_t, pinfra_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>vtx_infra_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="84" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1ac21c636a12b04f8a75afa280ab84ed55" prot="public" static="no">
+        <type>boost::property_map&lt; resource_graph_t, rinfra_t &gt;::type</type>
+        <definition>using Flux::resource_model::edg_infra_map_t = typedef boost::property_map&lt;resource_graph_t, rinfra_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>edg_infra_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="85" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1ab9495daa8e0ef09757a95c6b7e66c149" prot="public" static="no">
+        <type>boost::graph_traits&lt; resource_graph_t &gt;::vertex_descriptor</type>
+        <definition>using Flux::resource_model::vtx_t = typedef boost::graph_traits&lt;resource_graph_t&gt;::vertex_descriptor</definition>
+        <argsstring></argsstring>
+        <name>vtx_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="86" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a98f18dd9b1efd76310e4b021becbe32e" prot="public" static="no">
+        <type>boost::graph_traits&lt; resource_graph_t &gt;::edge_descriptor</type>
+        <definition>using Flux::resource_model::edg_t = typedef boost::graph_traits&lt;resource_graph_t&gt;::edge_descriptor</definition>
+        <argsstring></argsstring>
+        <name>edg_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="87" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1ab652cec8115a11dc30554bdac47301c8" prot="public" static="no">
+        <type>boost::graph_traits&lt; resource_graph_t &gt;::vertex_iterator</type>
+        <definition>using Flux::resource_model::vtx_iterator_t = typedef boost::graph_traits&lt;resource_graph_t&gt;::vertex_iterator</definition>
+        <argsstring></argsstring>
+        <name>vtx_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="88" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="88" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a47f97b638f6e9ad8cdd197a58fe0e095" prot="public" static="no">
+        <type>boost::graph_traits&lt; resource_graph_t &gt;::edge_iterator</type>
+        <definition>using Flux::resource_model::edg_iterator_t = typedef boost::graph_traits&lt;resource_graph_t&gt;::edge_iterator</definition>
+        <argsstring></argsstring>
+        <name>edg_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="89" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1aa54bf633024ee9f6562ad7e17e76749d" prot="public" static="no">
+        <type>boost::graph_traits&lt; resource_graph_t &gt;::out_edge_iterator</type>
+        <definition>using Flux::resource_model::out_edg_iterator_t = typedef boost::graph_traits&lt;resource_graph_t&gt;::out_edge_iterator</definition>
+        <argsstring></argsstring>
+        <name>out_edg_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="90" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="90" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a11f6bc2f7c039d1d680ad81c1130df59" prot="public" static="no">
+        <type>boost::filtered_graph&lt; resource_graph_t, <ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref>&lt; edg_t, edg_infra_map_t &gt;, <ref refid="classFlux_1_1resource__model_1_1subsystem__selector__t" kindref="compound">subsystem_selector_t</ref>&lt; vtx_t, vtx_infra_map_t &gt; &gt;</type>
+        <definition>using Flux::resource_model::f_resource_graph_t = typedef boost::filtered_graph&lt;resource_graph_t, subsystem_selector_t&lt;edg_t, edg_infra_map_t&gt;, subsystem_selector_t&lt;vtx_t, vtx_infra_map_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>f_resource_graph_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="91" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a87a0a195bd7789de249fe5ce7551ab7b" prot="public" static="no">
+        <type>boost::property_map&lt; f_resource_graph_t, rinfra_t &gt;::type</type>
+        <definition>using Flux::resource_model::f_edg_infra_map_t = typedef boost::property_map&lt;f_resource_graph_t, rinfra_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>f_edg_infra_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="96" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1aa9d0bfc72b2dcc27f8c569ec3cf668b1" prot="public" static="no">
+        <type>boost::property_map&lt; f_resource_graph_t, pinfra_t &gt;::type</type>
+        <definition>typedef boost::property_map&lt; f_resource_graph_t, pinfra_t &gt;::type Flux::resource_model::f_vtx_infra_map_t</definition>
+        <argsstring></argsstring>
+        <name>f_vtx_infra_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="97" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a09ac0103ddc0720fff77a213c4fd7a3c" prot="public" static="no">
+        <type>boost::property_map&lt; f_resource_graph_t, pname_t &gt;::type</type>
+        <definition>using Flux::resource_model::f_res_name_map_t = typedef boost::property_map&lt;f_resource_graph_t, pname_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>f_res_name_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="98" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a9dfccdc82f7262d8aff648427a5f0e85" prot="public" static="no">
+        <type>boost::property_map&lt; f_resource_graph_t, rname_t &gt;::type</type>
+        <definition>using Flux::resource_model::f_rel_name_map_t = typedef boost::property_map&lt;f_resource_graph_t, rname_t&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>f_rel_name_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="99" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1aba55bf9fe7203ebe0be78fab6070964a" prot="public" static="no">
+        <type>boost::graph_traits&lt; f_resource_graph_t &gt;::vertex_iterator</type>
+        <definition>using Flux::resource_model::f_vtx_iterator_t = typedef boost::graph_traits&lt;f_resource_graph_t&gt;::vertex_iterator</definition>
+        <argsstring></argsstring>
+        <name>f_vtx_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="101" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1a42a591ab7db32e92aa71cc7509a6527a" prot="public" static="no">
+        <type>boost::graph_traits&lt; f_resource_graph_t &gt;::edge_iterator</type>
+        <definition>using Flux::resource_model::f_edg_iterator_t = typedef boost::graph_traits&lt;f_resource_graph_t&gt;::edge_iterator</definition>
+        <argsstring></argsstring>
+        <name>f_edg_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="102" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="102" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="resource__graph_8hpp_1af7a15842eaa383e1123f7b889066295a" prot="public" static="no">
+        <type>boost::graph_traits&lt; f_resource_graph_t &gt;::out_edge_iterator</type>
+        <definition>using Flux::resource_model::f_out_edg_iterator_t = typedef boost::graph_traits&lt;f_resource_graph_t&gt;::out_edge_iterator</definition>
+        <argsstring></argsstring>
+        <name>f_out_edg_iterator_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" line="103" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/resource_graph.hpp" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="command_8hpp_1a48800d1f1a829e6d12c36717de5780ef" prot="public" static="no">
+        <type>int</type>
+        <definition>typedef int Flux::resource_model::cmd_func_f(std::shared_ptr&lt; resource_context_t &gt; &amp;, std::vector&lt; std::string &gt; &amp;)</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;, std::vector&lt; std::string &gt; &amp;)</argsstring>
+        <name>cmd_func_f</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.hpp" line="66" column="13" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="matcher_8hpp_1a5aa5a2ab417cdf2078442e48e4c67a4f" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::ANY_RESOURCE_TYPE</definition>
+        <argsstring></argsstring>
+        <name>ANY_RESOURCE_TYPE</name>
+        <initializer>= &quot;*&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" line="27" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/base/matcher.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a126c97dbc27c706bc066949ad0f9556d" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::FIRST_MATCH</definition>
+        <argsstring></argsstring>
+        <name>FIRST_MATCH</name>
+        <initializer>= &quot;first&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="27" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a7ba44eccdce8ef0601246f2e4619d30a" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::FIRST_NODEX_MATCH</definition>
+        <argsstring></argsstring>
+        <name>FIRST_NODEX_MATCH</name>
+        <initializer>= &quot;firstnodex&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="28" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a417ec87e4a7b7a0fb1ada9cb47ce59e4" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::HIGH_ID_FIRST</definition>
+        <argsstring></argsstring>
+        <name>HIGH_ID_FIRST</name>
+        <initializer>= &quot;high&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="29" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a1013b5f6db1e59750d83be1b736176a5" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::LOW_ID_FIRST</definition>
+        <argsstring></argsstring>
+        <name>LOW_ID_FIRST</name>
+        <initializer>= &quot;low&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="30" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a10c425de3c0033392e8eb00a0feefb05" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::LOW_NODE_FIRST</definition>
+        <argsstring></argsstring>
+        <name>LOW_NODE_FIRST</name>
+        <initializer>= &quot;lonode&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="31" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a47be335bc59da33ae19f34aa948b14ba" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::HIGH_NODE_FIRST</definition>
+        <argsstring></argsstring>
+        <name>HIGH_NODE_FIRST</name>
+        <initializer>= &quot;hinode&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="32" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a692aa40941e51690b27ffe1e6d2cb93c" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::LOW_NODEX_FIRST</definition>
+        <argsstring></argsstring>
+        <name>LOW_NODEX_FIRST</name>
+        <initializer>= &quot;lonodex&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="33" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a324c6ac18d7ee30874b685d4e0a5c48f" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::HIGH_NODEX_FIRST</definition>
+        <argsstring></argsstring>
+        <name>HIGH_NODEX_FIRST</name>
+        <initializer>= &quot;hinodex&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="34" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a5e9abe0f37c0d89a9b872cc0cfdb8518" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::LOCALITY_AWARE</definition>
+        <argsstring></argsstring>
+        <name>LOCALITY_AWARE</name>
+        <initializer>= &quot;locality&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="35" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="dfu__match__policy__factory_8hpp_1a1ec3a7433384f0a8a28915a70e1b2817" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string Flux::resource_model::VAR_AWARE</definition>
+        <argsstring></argsstring>
+        <name>VAR_AWARE</name>
+        <initializer>= &quot;variation&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" line="36" column="19" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="data__std_8hpp_1a73a334d1d2d12b9fc5d5c09468ee6fac" prot="public" static="no" mutable="no">
+        <type>const char *const</type>
+        <definition>const char* const Flux::resource_model::X_CHECKER_JOBS_STR</definition>
+        <argsstring></argsstring>
+        <name>X_CHECKER_JOBS_STR</name>
+        <initializer>= &quot;jobs&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" line="25" column="19" bodyfile="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="data__std_8hpp_1a659f725fbff2d4308cd3d68df2200ff1" prot="public" static="no" mutable="no">
+        <type>const int64_t</type>
+        <definition>const int64_t Flux::resource_model::X_CHECKER_NJOBS</definition>
+        <argsstring></argsstring>
+        <name>X_CHECKER_NJOBS</name>
+        <initializer>= 0x40000000</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" line="26" column="15" bodyfile="/home/hobbs17/flux-sched/resource/schema/data_std.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="command_8cpp_1a913f91f3cb4013533c77ef39419795b4" prot="public" static="no" mutable="no">
+        <type><ref refid="structFlux_1_1resource__model_1_1command__t" kindref="compound">command_t</ref></type>
+        <definition>command_t Flux::resource_model::commands[]</definition>
+        <argsstring>[]</argsstring>
+        <name>commands</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="32" column="11" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="jobinfo_8cpp_1ac2824525d9e4efdf517b5ea3b2dd7653" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Flux::resource_model::get_jobstate_str</definition>
+        <argsstring>(job_lifecycle_t state, std::string &amp;status)</argsstring>
+        <name>get_jobstate_str</name>
+        <param>
+          <type>job_lifecycle_t</type>
+          <declname>state</declname>
+        </param>
+        <param>
+          <type>std::string &amp;</type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.cpp" line="39" column="6" bodyfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.cpp" bodystart="39" bodyend="60" declfile="/home/hobbs17/flux-sched/resource/jobinfo/jobinfo.hpp" declline="39" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="dfu__match__policy__factory_8cpp_1a9d85d85ad86413bf4059a8ee44768c4c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::known_match_policy</definition>
+        <argsstring>(const std::string &amp;policy)</argsstring>
+        <name>known_match_policy</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>policy</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.cpp" line="23" column="6" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.cpp" bodystart="23" bodyend="34" declfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" declline="38" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="dfu__match__policy__factory_8cpp_1a9ab99415d376a89cb727842b7dbdd2b9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1dfu__match__cb__t" kindref="compound">dfu_match_cb_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; dfu_match_cb_t &gt; Flux::resource_model::create_match_cb</definition>
+        <argsstring>(const std::string &amp;policy)</argsstring>
+        <name>create_match_cb</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>policy</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Factory method for creating a matching callback object, representing a matching policy. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.cpp" line="36" column="17" bodyfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.cpp" bodystart="36" bodyend="78" declfile="/home/hobbs17/flux-sched/resource/policies/dfu_match_policy_factory.hpp" declline="43" declcolumn="17"/>
+      </memberdef>
+      <memberdef kind="function" id="resource__reader__factory_8cpp_1a2545131b4787f5f8a7e106edd907449c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::known_resource_reader</definition>
+        <argsstring>(const std::string &amp;name)</argsstring>
+        <name>known_resource_reader</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.cpp" line="26" column="6" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.cpp" bodystart="26" bodyend="32" declfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.hpp" declline="21" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="resource__reader__factory_8cpp_1a41f3b7ac91cfe7ba072a5c859a063f5a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classFlux_1_1resource__model_1_1resource__reader__base__t" kindref="compound">resource_reader_base_t</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; resource_reader_base_t &gt; Flux::resource_model::create_resource_reader</definition>
+        <argsstring>(const std::string &amp;name)</argsstring>
+        <name>create_resource_reader</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.cpp" line="34" column="17" bodyfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.cpp" bodystart="34" bodyend="56" declfile="/home/hobbs17/flux-sched/resource/readers/resource_reader_factory.hpp" declline="22" declcolumn="17"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1aac3347799082cabca191289fb3a51ab9" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::do_remove</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, int64_t jobid)</argsstring>
+        <name>do_remove</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="72" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="72" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1aca70db3c4af050b01908b287a45a1484" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void Flux::resource_model::print_sat_info</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::ostream &amp;out, bool sat, double elapse, unsigned int pre, unsigned int post)</argsstring>
+        <name>print_sat_info</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>sat</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>elapse</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>pre</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>post</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="87" column="13" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="87" bodyend="103"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a165da6544f9de80ae59584ef3b907eaa" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void Flux::resource_model::print_schedule_info</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::ostream &amp;out, uint64_t jobid, const std::string &amp;jobspec_fn, bool matched, int64_t at, bool sat, double elapse, unsigned int pre, unsigned int post)</argsstring>
+        <name>print_schedule_info</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jobspec_fn</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>matched</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>sat</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>elapse</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>pre</declname>
+        </param>
+        <param>
+          <type>unsigned int</type>
+          <declname>post</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="105" column="13" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="105" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a6e202d2dfa8ee3f0cfdf654ce41eb405" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void Flux::resource_model::update_match_perf</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, double elapse)</argsstring>
+        <name>update_match_perf</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>elapse</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="156" column="13" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="156" bodyend="162"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a3492e6a4bbc419debc02a8a6368565d1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double Flux::resource_model::get_elapse_time</definition>
+        <argsstring>(timeval &amp;st, timeval &amp;et)</argsstring>
+        <name>get_elapse_time</name>
+        <param>
+          <type>timeval &amp;</type>
+          <declname>st</declname>
+        </param>
+        <param>
+          <type>timeval &amp;</type>
+          <declname>et</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="164" column="8" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="164" bodyend="169" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="104" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1ac69344b946b8a92b7359b726bc601307" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::run_match</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, int64_t jobid, const std::string cmd, const std::string &amp;jobspec_fn, Flux::Jobspec::Jobspec &amp;job)</argsstring>
+        <name>run_match</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>jobid</declname>
+        </param>
+        <param>
+          <type>const std::string</type>
+          <declname>cmd</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>jobspec_fn</declname>
+        </param>
+        <param>
+          <type><ref refid="classFlux_1_1Jobspec_1_1Jobspec" kindref="compound">Flux::Jobspec::Jobspec</ref> &amp;</type>
+          <declname>job</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="171" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="171" bodyend="244"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a7f1bf21f8dd9a557fb079a4885ed3697" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_match</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_match</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="246" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="246" bodyend="279" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="70" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a3f24313d6fe29881f4ec48e314e33ff1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_match_multi</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_match_multi</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="281" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="281" bodyend="317" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="72" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1adfcb539c26d1693fdaf9ba4ea494eeb2" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::update_run</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, const std::string &amp;fn, const std::string &amp;str, int64_t id, int64_t at, uint64_t d, const std::string &amp;reader)</argsstring>
+        <name>update_run</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>fn</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>at</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>d</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>reader</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="319" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="319" bodyend="362"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a5834b36ae76fb8b9582f082aad8e91af" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::update</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>update</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="364" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="364" bodyend="406"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1af454824e30f4a7f800c9a7b3601f81c4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_update</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_update</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="408" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="408" bodyend="424" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="74" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a112a92cb660327b21692d8f02c95f65e" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::attach</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>attach</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="426" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="426" bodyend="461"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a68212268fae00f01e976ade4e250d62a" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int Flux::resource_model::remove</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>remove</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="463" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="463" bodyend="483"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1ac955a3112450b19957a087f8588b5caf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_attach</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_attach</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="485" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="485" bodyend="501" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="76" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a10c1f7e64c4f004db9eacf5658995028" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_remove</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_remove</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="503" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="503" bodyend="519" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="78" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1ab10b2e276802fed22413d3c71ff32d7f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_find</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_find</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="521" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="521" bodyend="569" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="80" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a3da77868d3488aa42250a368edc86a47" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_cancel</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_cancel</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="571" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="571" bodyend="601" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="82" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a44b29cc0c0f8a1595a364095f1e584cb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_set_property</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_set_property</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="603" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="603" bodyend="651" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="84" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a5bd1421fc69254dcaee88b4b8562d9c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_get_property</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_get_property</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="653" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="653" bodyend="688" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="86" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1ae02d0792c3ec86d06ebec8505765caaf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_set_status</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_set_status</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="690" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="690" bodyend="719" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="88" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a3243e707fd05c5219bb557d81285d55d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_get_status</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_get_status</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="721" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="721" bodyend="763" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="90" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a67abd30a806a5829d6d8d37d14f3ffa0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_list</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_list</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="765" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="765" bodyend="777" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="92" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a70fea5f1144c5a74b524a78df632f5f8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_info</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_info</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="779" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="779" bodyend="798" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="94" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1afd84faac271517b60a6061a0031921f0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_stat</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_stat</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="800" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="800" bodyend="820" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="96" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a2822cbdcc77295235f5a74be740688a9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_cat</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_cat</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="822" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="822" bodyend="835" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="98" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1aeef79b815b35f158677675bb3fd10b1a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_help</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_help</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="837" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="837" bodyend="861" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="102" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a8919f6ebd4af5a8a0caabf9a0a0c203f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Flux::resource_model::cmd_quit</definition>
+        <argsstring>(std::shared_ptr&lt; resource_context_t &gt; &amp;ctx, std::vector&lt; std::string &gt; &amp;args)</argsstring>
+        <name>cmd_quit</name>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="structFlux_1_1resource__model_1_1resource__context__t" kindref="compound">resource_context_t</ref> &gt; &amp;</type>
+          <declname>ctx</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="863" column="5" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="863" bodyend="867" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="100" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="command_8cpp_1a40bc4fe430365566f55aacb8c4ed5cf0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cmd_func_f *</type>
+        <definition>cmd_func_f * Flux::resource_model::find_cmd</definition>
+        <argsstring>(const std::string &amp;cmd_str)</argsstring>
+        <name>find_cmd</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>cmd_str</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/utilities/command.cpp" line="869" column="12" bodyfile="/home/hobbs17/flux-sched/resource/utilities/command.cpp" bodystart="869" bodyend="878" declfile="/home/hobbs17/flux-sched/resource/utilities/command.hpp" declline="69" declcolumn="12"/>
+      </memberdef>
+      <memberdef kind="function" id="match__writers_8cpp_1a874ed691921a1ac09296b331b9de0277" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Flux::resource_model::known_match_format</definition>
+        <argsstring>(const std::string &amp;format)</argsstring>
+        <name>known_match_format</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>format</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" line="1338" column="6" bodyfile="/home/hobbs17/flux-sched/resource/writers/match_writers.cpp" bodystart="1338" bodyend="1346" declfile="/home/hobbs17/flux-sched/resource/writers/match_writers.hpp" declline="220" declcolumn="6"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/config/system_defaults.hpp" line="16" column="1"/>
+  </compounddef>
+</doxygen>

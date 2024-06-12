@@ -13,6 +13,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
@@ -24,16 +25,18 @@
 namespace Flux {
 namespace resource_model {
 
-const std::string FIRST_MATCH = "first";
-const std::string FIRST_NODEX_MATCH = "firstnodex";
-const std::string HIGH_ID_FIRST = "high";
-const std::string LOW_ID_FIRST = "low";
-const std::string LOW_NODE_FIRST = "lonode";
-const std::string HIGH_NODE_FIRST = "hinode";
-const std::string LOW_NODEX_FIRST = "lonodex";
-const std::string HIGH_NODEX_FIRST = "hinodex";
-const std::string LOCALITY_AWARE = "locality";
-const std::string VAR_AWARE = "variation";
+const std::map<std::string, std::string> policies = {{"first", "FIRST_MATCH"},
+                                                     {"firstnodex", "FIRST_NODEX_MATCH"},
+                                                     {"high", "HIGH_ID_FIRST"},
+                                                     {"low", "LOW_ID_FIRST"},
+                                                     {"lonode", "LOW_NODE_FIRST"},
+                                                     {"hinode", "HIGH_NODE_FIRST"},
+                                                     {"lonodex", "LOW_NODEX_FIRST"},
+                                                     {"hinodex", "HIGH_NODEX_FIRST"},
+                                                     {"locality", "LOCALITY_AWARE"},
+                                                     {"variation", "VAR_AWARE"}};
+
+
 
 bool known_match_policy (const std::string &policy);
 

@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structplanner__multi__meta" kind="struct" language="C++" prot="public">
+    <compoundname>planner_multi_meta</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structplanner__multi__meta_1af87028c8b73bfc9692ea3688ffce58c8" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string planner_multi_meta::resource_type</definition>
+        <argsstring></argsstring>
+        <name>resource_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="29" column="17" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structplanner__multi__meta_1a7513ddbf2a733c8e1c60e2a8dd32f2cd" prot="public" static="no" mutable="yes">
+        <type>uint64_t</type>
+        <definition>uint64_t planner_multi_meta::resource_total</definition>
+        <argsstring></argsstring>
+        <name>resource_total</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="30" column="22" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structplanner__multi__meta_1a883004234b7a7d74b12188973195914d" prot="public" static="no" mutable="no">
+        <type><ref refid="structplanner__t" kindref="compound">planner_t</ref> *</type>
+        <definition>planner_t* planner_multi_meta::planner</definition>
+        <argsstring></argsstring>
+        <name>planner</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="31" column="15" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>planner_multi_meta</label>
+        <link refid="structplanner__multi__meta"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>planner</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>planner_t</label>
+        <link refid="structplanner__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>plan</edgelabel>
+        </childnode>
+      </node>
+      <node id="4">
+        <label>mintime_resource_tree_t</label>
+        <link refid="classmintime__resource__tree__t"/>
+      </node>
+      <node id="3">
+        <label>planner</label>
+        <link refid="classplanner"/>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_mt_resource_tree</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_sched_point_tree</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>m_current_request</edgelabel>
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>m_p0</edgelabel>
+        </childnode>
+      </node>
+      <node id="12">
+        <label>ygg::RBTreeNodeBase&lt; scheduled_point_rb_node_t &gt;</label>
+      </node>
+      <node id="8">
+        <label>mt_resource_rb_node_t</label>
+        <link refid="structmt__resource__rb__node__t"/>
+        <childnode refid="9" relation="public-inheritance">
+        </childnode>
+        <childnode refid="10" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>scheduled_point_t</label>
+        <link refid="structscheduled__point__t"/>
+        <childnode refid="8" relation="usage">
+          <edgelabel>resource_rb</edgelabel>
+        </childnode>
+        <childnode refid="11" relation="usage">
+          <edgelabel>point_rb</edgelabel>
+        </childnode>
+      </node>
+      <node id="10">
+        <label>ygg::RBTreeNodeBase&lt; mt_resource_rb_node_t &gt;</label>
+      </node>
+      <node id="9">
+        <label>rb_node_base_t</label>
+        <link refid="classrb__node__base__t"/>
+        <childnode refid="7" relation="usage">
+          <edgelabel>m_point</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>scheduled_point_tree_t</label>
+        <link refid="classscheduled__point__tree__t"/>
+      </node>
+      <node id="11">
+        <label>scheduled_point_rb_node_t</label>
+        <link refid="structscheduled__point__rb__node__t"/>
+        <childnode refid="9" relation="public-inheritance">
+        </childnode>
+        <childnode refid="12" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>request_t</label>
+        <link refid="structrequest__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" line="28" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/planner_multi.hpp" bodystart="28" bodyend="32"/>
+    <listofallmembers>
+      <member refid="structplanner__multi__meta_1a883004234b7a7d74b12188973195914d" prot="public" virt="non-virtual"><scope>planner_multi_meta</scope><name>planner</name></member>
+      <member refid="structplanner__multi__meta_1a7513ddbf2a733c8e1c60e2a8dd32f2cd" prot="public" virt="non-virtual"><scope>planner_multi_meta</scope><name>resource_total</name></member>
+      <member refid="structplanner__multi__meta_1af87028c8b73bfc9692ea3688ffce58c8" prot="public" virt="non-virtual"><scope>planner_multi_meta</scope><name>resource_type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

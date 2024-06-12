@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classmintime__resource__tree__t" kind="class" language="C++" prot="public">
+    <compoundname>mintime_resource_tree_t</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classmintime__resource__tree__t_1a61d082d42b8f1cad99efe1d7430b1277" prot="private" static="no" mutable="no">
+        <type>mt_resource_rb_tree_t</type>
+        <definition>mt_resource_rb_tree_t mintime_resource_tree_t::m_tree</definition>
+        <argsstring></argsstring>
+        <name>m_tree</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="74" column="27" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classmintime__resource__tree__t_1af181e87adfca326d203b417faa828eb5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int mintime_resource_tree_t::insert</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>insert</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="62" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="228" bodyend="240"/>
+      </memberdef>
+      <memberdef kind="function" id="classmintime__resource__tree__t_1a7733022c8f69a4e36bb8f0fae7f36c25" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int mintime_resource_tree_t::remove</definition>
+        <argsstring>(scheduled_point_t *point)</argsstring>
+        <name>remove</name>
+        <param>
+          <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="63" column="9" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="242" bodyend="251"/>
+      </memberdef>
+      <memberdef kind="function" id="classmintime__resource__tree__t_1ad8b7ae1d859e27454e67d766daac85be" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * mintime_resource_tree_t::get_mintime</definition>
+        <argsstring>(int64_t request) const</argsstring>
+        <name>get_mintime</name>
+        <param>
+          <type>int64_t</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="64" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="253" bodyend="258"/>
+      </memberdef>
+      <memberdef kind="function" id="classmintime__resource__tree__t_1ade5a64ad4b09c8a46b06ebd23c5a0e51" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void mintime_resource_tree_t::clear</definition>
+        <argsstring>()</argsstring>
+        <name>clear</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="65" column="10" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="260" bodyend="263"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classmintime__resource__tree__t_1a52c351ddf4d22d579a23caf2d351a308" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t mintime_resource_tree_t::right_branch_mintime</definition>
+        <argsstring>(mt_resource_rb_node_t *n) const</argsstring>
+        <name>right_branch_mintime</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> *</type>
+          <declname>n</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="68" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="29" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classmintime__resource__tree__t_1ad8a634f4a9e5248ca90709cd41bd05c2" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structscheduled__point__t" kindref="compound">scheduled_point_t</ref> *</type>
+        <definition>scheduled_point_t * mintime_resource_tree_t::find_mintime_point</definition>
+        <argsstring>(mt_resource_rb_node_t *anchor, int64_t min_time) const</argsstring>
+        <name>find_mintime_point</name>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> *</type>
+          <declname>anchor</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>min_time</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="69" column="23" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="38" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classmintime__resource__tree__t_1ac361e5e76b704b339ce5fee040ef3eff" prot="private" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t mintime_resource_tree_t::find_mintime_anchor</definition>
+        <argsstring>(int64_t request, mt_resource_rb_node_t **anchor_p) const</argsstring>
+        <name>find_mintime_anchor</name>
+        <param>
+          <type>int64_t</type>
+          <declname>request</declname>
+        </param>
+        <param>
+          <type><ref refid="structmt__resource__rb__node__t" kindref="compound">mt_resource_rb_node_t</ref> **</type>
+          <declname>anchor_p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="71" column="13" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.cpp" bodystart="64" bodyend="91"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" line="60" column="1" bodyfile="/home/hobbs17/flux-sched/resource/planner/c++/mintime_resource_tree.hpp" bodystart="60" bodyend="75"/>
+    <listofallmembers>
+      <member refid="classmintime__resource__tree__t_1ade5a64ad4b09c8a46b06ebd23c5a0e51" prot="public" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>clear</name></member>
+      <member refid="classmintime__resource__tree__t_1ac361e5e76b704b339ce5fee040ef3eff" prot="private" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>find_mintime_anchor</name></member>
+      <member refid="classmintime__resource__tree__t_1ad8a634f4a9e5248ca90709cd41bd05c2" prot="private" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>find_mintime_point</name></member>
+      <member refid="classmintime__resource__tree__t_1ad8b7ae1d859e27454e67d766daac85be" prot="public" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>get_mintime</name></member>
+      <member refid="classmintime__resource__tree__t_1af181e87adfca326d203b417faa828eb5" prot="public" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>insert</name></member>
+      <member refid="classmintime__resource__tree__t_1a61d082d42b8f1cad99efe1d7430b1277" prot="private" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>m_tree</name></member>
+      <member refid="classmintime__resource__tree__t_1a7733022c8f69a4e36bb8f0fae7f36c25" prot="public" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>remove</name></member>
+      <member refid="classmintime__resource__tree__t_1a52c351ddf4d22d579a23caf2d351a308" prot="private" virt="non-virtual"><scope>mintime_resource_tree_t</scope><name>right_branch_mintime</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

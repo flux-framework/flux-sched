@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="structFlux_1_1resource__model_1_1infra__base__t" kind="struct" language="C++" prot="public" abstract="yes">
+    <compoundname>Flux::resource_model::infra_base_t</compoundname>
+    <derivedcompoundref refid="structFlux_1_1resource__model_1_1pool__infra__t" prot="public" virt="non-virtual">Flux::resource_model::pool_infra_t</derivedcompoundref>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1relation__infra__t" prot="public" virt="non-virtual">Flux::resource_model::relation_infra_t</derivedcompoundref>
+    <includes refid="infra__data_8hpp" local="no">infra_data.hpp</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structFlux_1_1resource__model_1_1infra__base__t_1a40c57012a57383df6b8eb675a24b4f1b" prot="public" static="no" mutable="no">
+        <type>multi_subsystems_t</type>
+        <definition>multi_subsystems_t Flux::resource_model::infra_base_t::member_of</definition>
+        <argsstring></argsstring>
+        <name>member_of</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="34" column="24" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1infra__base__t_1a567c57be37f4b3486e9b6e8e69c43ec2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::infra_base_t::infra_base_t</definition>
+        <argsstring>()</argsstring>
+        <name>infra_base_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="28" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1infra__base__t_1ad96a038bba3b1be06a639f747c194c1f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Flux::resource_model::infra_base_t::infra_base_t</definition>
+        <argsstring>(const infra_base_t &amp;o)</argsstring>
+        <name>infra_base_t</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1infra__base__t" kindref="compound">infra_base_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="29" column="5" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="32" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1infra__base__t_1a91749fcff420d48f6d66aaa362c871a9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structFlux_1_1resource__model_1_1infra__base__t" kindref="compound">infra_base_t</ref> &amp;</type>
+        <definition>infra_base_t &amp; Flux::resource_model::infra_base_t::operator=</definition>
+        <argsstring>(const infra_base_t &amp;o)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const <ref refid="structFlux_1_1resource__model_1_1infra__base__t" kindref="compound">infra_base_t</ref> &amp;</type>
+          <declname>o</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="30" column="18" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="37" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1infra__base__t_1a31709c25655c47a3e1107ff81a182f0a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>Flux::resource_model::infra_base_t::~infra_base_t</definition>
+        <argsstring>()</argsstring>
+        <name>~infra_base_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="31" column="13" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.cpp" bodystart="43" bodyend="46"/>
+      </memberdef>
+      <memberdef kind="function" id="structFlux_1_1resource__model_1_1infra__base__t_1af5354c43c45facc643e5c7c6f4c63ebd" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>void</type>
+        <definition>virtual void Flux::resource_model::infra_base_t::scrub</definition>
+        <argsstring>()=0</argsstring>
+        <name>scrub</name>
+        <reimplementedby refid="structFlux_1_1resource__model_1_1pool__infra__t_1a4757f3c80001f96ff7672895ee585a00">scrub</reimplementedby>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1relation__infra__t_1a38d2e99844b84ffcbe343c706aa2f691">scrub</reimplementedby>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="32" column="18"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Base type to organize the data supporting scheduling infrastructure&apos;s operations (e.g., graph organization, coloring and edge evaluation). </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>Flux::resource_model::relation_infra_t</label>
+        <link refid="classFlux_1_1resource__model_1_1relation__infra__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Flux::resource_model::pool_infra_t</label>
+        <link refid="structFlux_1_1resource__model_1_1pool__infra__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::infra_base_t</label>
+        <link refid="structFlux_1_1resource__model_1_1infra__base__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" line="27" column="1" bodyfile="/home/hobbs17/flux-sched/resource/schema/infra_data.hpp" bodystart="27" bodyend="35"/>
+    <listofallmembers>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a567c57be37f4b3486e9b6e8e69c43ec2" prot="public" virt="non-virtual"><scope>Flux::resource_model::infra_base_t</scope><name>infra_base_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1ad96a038bba3b1be06a639f747c194c1f" prot="public" virt="non-virtual"><scope>Flux::resource_model::infra_base_t</scope><name>infra_base_t</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a40c57012a57383df6b8eb675a24b4f1b" prot="public" virt="non-virtual"><scope>Flux::resource_model::infra_base_t</scope><name>member_of</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a91749fcff420d48f6d66aaa362c871a9" prot="public" virt="non-virtual"><scope>Flux::resource_model::infra_base_t</scope><name>operator=</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1af5354c43c45facc643e5c7c6f4c63ebd" prot="public" virt="pure-virtual"><scope>Flux::resource_model::infra_base_t</scope><name>scrub</name></member>
+      <member refid="structFlux_1_1resource__model_1_1infra__base__t_1a31709c25655c47a3e1107ff81a182f0a" prot="public" virt="virtual"><scope>Flux::resource_model::infra_base_t</scope><name>~infra_base_t</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,81 @@
+\hypertarget{resource__spec__grug_8hpp}{}\doxysubsection{resource\+\_\+spec\+\_\+grug.\+hpp File Reference}
+\label{resource__spec__grug_8hpp}\index{resource\_spec\_grug.hpp@{resource\_spec\_grug.hpp}}
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$boost/graph/adjacency\+\_\+list.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/graphviz.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/graph/graphml.\+hpp$>$}\newline
+{\ttfamily \#include $<$boost/filesystem.\+hpp$>$}\newline
+Include dependency graph for resource\+\_\+spec\+\_\+grug.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource__spec__grug_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resource__spec__grug_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1resource__model_1_1resource__pool__gen__t}{Flux\+::resource\+\_\+model\+::resource\+\_\+pool\+\_\+gen\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structFlux_1_1resource__model_1_1relation__gen__t}{Flux\+::resource\+\_\+model\+::relation\+\_\+gen\+\_\+t}}
+\item 
+class \mbox{\hyperlink{classFlux_1_1resource__model_1_1resource__gen__spec__t}{Flux\+::resource\+\_\+model\+::resource\+\_\+gen\+\_\+spec\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceFlux}{Flux}}
+\item 
+ \mbox{\hyperlink{namespaceFlux_1_1resource__model}{Flux\+::resource\+\_\+model}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a0a15cb9b566c4c77ce73d7c2a3441e30}{Flux\+::resource\+\_\+model\+::gg\+\_\+t}} = boost\+::adjacency\+\_\+list$<$ boost\+::vecS, boost\+::vecS, boost\+::directedS, resource\+\_\+pool\+\_\+gen\+\_\+t, relation\+\_\+gen\+\_\+t $>$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4bc653840d974e6ace3324ddbe99379c}{Flux\+::resource\+\_\+model\+::pgen\+\_\+t}} = std\+::string resource\+\_\+pool\+\_\+gen\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a4c17df74c20e4302eaee2108fd3f3a3c}{Flux\+::resource\+\_\+model\+::rgen\+\_\+t}} = std\+::string relation\+\_\+gen\+\_\+t\+::$\ast$
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ad3d1eb0ec5f0216a15ff7142799c073d}{Flux\+::resource\+\_\+model\+::ggv\+\_\+t}} = boost\+::graph\+\_\+traits$<$ gg\+\_\+t $>$\+::vertex\+\_\+descriptor
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a3ad6862648607e539f09ef36952d870e}{Flux\+::resource\+\_\+model\+::gge\+\_\+t}} = boost\+::graph\+\_\+traits$<$ gg\+\_\+t $>$\+::edge\+\_\+descriptor
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_abe235005c3dfab9be589c3a728cd437a}{Flux\+::resource\+\_\+model\+::vtx\+\_\+type\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, pgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ad2d86a5703c4d030e7eb53db560288f2}{Flux\+::resource\+\_\+model\+::vtx\+\_\+basename\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, pgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a7d7665cb2b79680053ae59341dcb1241}{Flux\+::resource\+\_\+model\+::vtx\+\_\+size\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, long resource\+\_\+pool\+\_\+gen\+\_\+t\+::$\ast$ $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a5ce062971856776f49888eeebb4520b6}{Flux\+::resource\+\_\+model\+::vtx\+\_\+unit\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, pgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a93c18921be2f35daa6486dc82fd36708}{Flux\+::resource\+\_\+model\+::vtx\+\_\+subsystem\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, pgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_af6efb718c973296dfd0aa3a2f85c15ac}{Flux\+::resource\+\_\+model\+::edg\+\_\+e\+\_\+subsystem\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, rgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a578ee47f6949324f98549c44dc348d77}{Flux\+::resource\+\_\+model\+::edg\+\_\+relation\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, rgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a8072e6798be175747921d79da4a6e468}{Flux\+::resource\+\_\+model\+::edg\+\_\+rrelation\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, rgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_ae300c951673509271717db0428083e64}{Flux\+::resource\+\_\+model\+::edg\+\_\+gen\+\_\+method\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, rgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_aa57d12d3a1cf324576554d4c6bb63f99}{Flux\+::resource\+\_\+model\+::edg\+\_\+id\+\_\+method\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, rgen\+\_\+t $>$\+::type
+\item 
+using \mbox{\hyperlink{namespaceFlux_1_1resource__model_a96e015059844d90625bac583aa2d648a}{Flux\+::resource\+\_\+model\+::edg\+\_\+multi\+\_\+scale\+\_\+map\+\_\+t}} = boost\+::property\+\_\+map$<$ gg\+\_\+t, int relation\+\_\+gen\+\_\+t\+::$\ast$ $>$\+::type
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1423d969beb37ab589162462b1cc351b}{Flux\+::resource\+\_\+model\+::gen\+\_\+meth\+\_\+t}} \{ \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1423d969beb37ab589162462b1cc351ba8c15299e254499936cef42c1a684dca8}{Flux\+::resource\+\_\+model\+::\+MULTIPLY}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1423d969beb37ab589162462b1cc351ba65f0820368c3bdf4e3db226a92b5672c}{Flux\+::resource\+\_\+model\+::\+ASSOCIATE\+\_\+\+IN}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1423d969beb37ab589162462b1cc351ba3c3e364f1b93312f7c04f32afdb61fcf}{Flux\+::resource\+\_\+model\+::\+ASSOCIATE\+\_\+\+BY\+\_\+\+PATH\+\_\+\+IN}}
+, \mbox{\hyperlink{namespaceFlux_1_1resource__model_a1423d969beb37ab589162462b1cc351bafa2ef097443402d6361e2c0bb16718f1}{Flux\+::resource\+\_\+model\+::\+GEN\+\_\+\+UNKNOWN}}
+ \}
+\end{DoxyCompactItemize}

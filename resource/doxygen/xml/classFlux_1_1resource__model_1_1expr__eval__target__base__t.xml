@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classFlux_1_1resource__model_1_1expr__eval__target__base__t" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>Flux::resource_model::expr_eval_target_base_t</compoundname>
+    <derivedcompoundref refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t" prot="public" virt="non-virtual">Flux::resource_model::expr_eval_vtx_target_t</derivedcompoundref>
+    <derivedcompoundref refid="classexpr__eval__test__target__t" prot="public" virt="non-virtual">expr_eval_test_target_t</derivedcompoundref>
+    <includes refid="expr__eval__target_8hpp" local="no">expr_eval_target.hpp</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1expr__eval__target__base__t_1a14d21a191a02f9d9bd46edc74f90aac2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::expr_eval_target_base_t::validate</definition>
+        <argsstring>(const std::string &amp;p, const std::string &amp;x) const =0</argsstring>
+        <name>validate</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t_1ae44580cba7f1eb042c926ac1588742ef">validate</reimplementedby>
+        <reimplementedby refid="classexpr__eval__test__target__t_1aa432ac5d59054cbf0513e767ef2a88ba">validate</reimplementedby>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>x</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Validate a predicate expression. As a predicate is often denoted as p(x), the method parameters follow this convention: i.e., p for predicate name and x for the input to the predicate.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>p</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>predicate name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>x</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>input to the predicate </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_target.hpp" line="38" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classFlux_1_1resource__model_1_1expr__eval__target__base__t_1acbe9bd21d8bcf8384a50c72ebec70a8d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int Flux::resource_model::expr_eval_target_base_t::evaluate</definition>
+        <argsstring>(const std::string &amp;p, const std::string &amp;x, bool &amp;result) const =0</argsstring>
+        <name>evaluate</name>
+        <reimplementedby refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t_1a66cd08ed375977be0f3d2293893dd2b3">evaluate</reimplementedby>
+        <reimplementedby refid="classexpr__eval__test__target__t_1ae5d8380c24e34ba3e38a14bb85e0efb9">evaluate</reimplementedby>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type>bool &amp;</type>
+          <declname>result</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Evaluate if predicate p(x) is true or false. As a predicate is often denoted as p(x), the method parameters follow this convention: i.e., p for predicate name and x for the input to the predicate.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>p</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>predicate name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>x</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>input to the predicate </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>result</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>return true or false as p(x) is evaluated on this expression evaluation target. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>0 on success; -1 on error </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_target.hpp" line="51" column="17"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Expression evaluation target base abstract class. Define the interfaces that <ref refid="classFlux_1_1resource__model_1_1expr__eval__api__t" kindref="compound">expr_eval_api_t</ref> uses to evaluate and validate a leaf-level expression predicate: p(x). These interfaces are defined as pure virtual methods. Therefore, a derived class must override and implement them. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Flux::resource_model::expr_eval_vtx_target_t</label>
+        <link refid="classFlux_1_1resource__model_1_1expr__eval__vtx__target__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>expr_eval_test_target_t</label>
+        <link refid="classexpr__eval__test__target__t"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Flux::resource_model::expr_eval_target_base_t</label>
+        <link refid="classFlux_1_1resource__model_1_1expr__eval__target__base__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_target.hpp" line="26" column="1" bodyfile="/home/hobbs17/flux-sched/resource/evaluators/expr_eval_target.hpp" bodystart="26" bodyend="53"/>
+    <listofallmembers>
+      <member refid="classFlux_1_1resource__model_1_1expr__eval__target__base__t_1acbe9bd21d8bcf8384a50c72ebec70a8d" prot="public" virt="pure-virtual"><scope>Flux::resource_model::expr_eval_target_base_t</scope><name>evaluate</name></member>
+      <member refid="classFlux_1_1resource__model_1_1expr__eval__target__base__t_1a14d21a191a02f9d9bd46edc74f90aac2" prot="public" virt="pure-virtual"><scope>Flux::resource_model::expr_eval_target_base_t</scope><name>validate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

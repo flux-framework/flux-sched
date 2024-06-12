@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_df38b2a5d584e0f6066b4518b95c638b" kind="dir">
+    <compoundname>utilities</compoundname>
+    <innerfile refid="command_8cpp">command.cpp</innerfile>
+    <innerfile refid="command_8hpp">command.hpp</innerfile>
+    <innerfile refid="grug2dot_8cpp">grug2dot.cpp</innerfile>
+    <innerfile refid="resource-query_8cpp">resource-query.cpp</innerfile>
+    <innerfile refid="rq2_8cpp">rq2.cpp</innerfile>
+    <innerfile refid="rq2_8hpp">rq2.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/hobbs17/flux-sched/resource/utilities/"/>
+  </compounddef>
+</doxygen>
