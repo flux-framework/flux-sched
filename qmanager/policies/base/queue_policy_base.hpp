@@ -179,6 +179,7 @@ public:
         m_pending_reconsider = false;
         m_pending.merge (m_blocked);
         assert (m_blocked.size () == 0);
+        set_schedulability (true);
     }
 
     /// @brief move any jobs in blocked state to pending
