@@ -150,17 +150,15 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
                           int &n)
 {
     int rc = 0;
+    int64_t span = -1;
+    planner_t *plans = NULL;
 
     if (excl) {
-
         n++;
-	if (!full) {
+        if (!full) {
             // If not full mode, plan has already been updated, thus return.
             return 0;
         }
-
-        int64_t span = -1;
-        planner_t *plans = NULL;
 
         if ( (plans = (*m_graph)[u].schedule.plans) == NULL) {
             m_err_msg += __FUNCTION__;
