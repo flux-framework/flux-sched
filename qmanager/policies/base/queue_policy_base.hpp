@@ -177,8 +177,12 @@ public:
         if (!m_pending_reconsider)
             return;
         m_pending_reconsider = false;
+        auto cnt = m_blocked.size ();
         m_pending.merge (m_blocked);
         assert (m_blocked.size () == 0);
+        if (cnt > 0) {
+            set_schedulability (true);
+        }
     }
 
     /// @brief move any jobs in blocked state to pending
