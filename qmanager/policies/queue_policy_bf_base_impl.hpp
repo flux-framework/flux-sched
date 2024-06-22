@@ -47,6 +47,21 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
     return rc;
 }
 
+template <class reapi_type>
+void queue_policy_bf_base_t<reapi_type>::init_sched_loop () {
+    set_sched_loop_active (false);
+
+    // move jobs in m_pending_provisional queue into
+    // m_pending.
+    m_pending.merge (m_pending_provisional);
+    m_pending_provisional.clear ();
+
+    // reset our iterator to the start
+    m_in_progress_iter = m_pending.begin ();
+    m_reservation_cnt = 0;
+    m_scheduled_cnt = 0;
+}
+
 template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
                                                                       bool use_alloced_queue)
@@ -62,16 +77,7 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     // done_ and the qmanager callbacks should re-enter the scheduling
     // loop in the next check phase.
     if (!this->is_sched_loop_active ()) {
-        // move jobs in m_pending_provisional queue into
-        // m_pending.
-        m_pending.merge (m_pending_provisional);
-        m_pending_provisional.clear ();
-
-        // reset our iterator to the start
-        m_in_progress_iter = m_pending.begin ();
-        m_reservation_cnt = 0;
-        m_scheduled_cnt = 0;
-
+        init_sched_loop ();
         set_sched_loop_active (true);
     }
 
@@ -176,6 +182,19 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloce
             return rc;
     }
     return allocate_orelse_reserve_jobs (h, use_alloced_queue);
+}
+
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::cancel_sched_loop ()
+{
+    int rc = 0;
+    if (!is_sched_loop_active ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    init_sched_loop ();
+    set_schedulability (true);
+    return 0;
 }
 
 template<class reapi_type>

@@ -526,7 +526,7 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
             ctx = nullptr;
             goto done;
         }
-        if (!(ctx->prep = flux_prepare_watcher_create (
+        if (!(ctx->prep = flux_check_watcher_create (
                               reactor,
                               &qmanager_safe_cb_t::prep_watcher_cb,
                               std::static_pointer_cast<
@@ -535,8 +535,10 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
             ctx = nullptr;
             goto done;
         }
-        if (!(ctx->check = flux_check_watcher_create (
+        if (!(ctx->check = flux_timer_watcher_create (
                                reactor,
+                               0.0,
+                               0.0,
                                &qmanager_safe_cb_t::check_watcher_cb,
                                std::static_pointer_cast<
                                    qmanager_ctx_t> (ctx).get ()))) {
@@ -561,7 +563,6 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
             goto done;
         }
         flux_watcher_start (ctx->prep);
-        flux_watcher_start (ctx->check);
 
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;

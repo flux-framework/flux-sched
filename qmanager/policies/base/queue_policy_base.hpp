@@ -27,6 +27,7 @@ extern "C" {
 #include <memory>
 #include <cstdint>
 #include <tuple>
+#include <iostream>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
@@ -149,6 +150,29 @@ public:
      *                       EINVAL: invalid argument.
      */
     virtual int run_sched_loop (void *h, bool use_alloced_queue) = 0;
+
+    /*! This method must implement any logic required to cancel an in-progress
+     *  scheduling loop. Since many policies may complete the entire loop during
+     *  the execution of the call, and if the loop is delegated to resource
+     *  cancelation may be best effort, a default is provided that does nothing
+     *  if the sched loop is inactive, and raises an error if it's active.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
+     *  \return          0 on success; -1 on error; 1 when a previous
+     *                   loop invocation is still active under asynchronous
+     *                   execution.
+     *                       EINVAL: invalid argument.
+     */
+    virtual int cancel_sched_loop () {
+        if (is_sched_loop_active()) {
+            errno = EINVAL;
+            return -1;
+        }
+        return 0;
+    }
 
     /*! Resource reconstruct interface that must be implemented by
      *  derived classes.
@@ -427,7 +451,10 @@ public:
         }
 
         job->t_stamps.canceled_ts = m_cancel_cnt++;
-        if (is_sched_loop_active ()) {
+        // try to cancel current sched loop, if result is zero the loop is
+        // cancelled and the cancellation can proceed immediately
+        if (is_sched_loop_active () && cancel_sched_loop () < 0) {
+            std::clog << "removing deferred: " << job->id << std::endl;
             // if sched-loop is active, the job's pending state
             // cannot be determined. There is "MAYBE pending state" where
             // a request has been sent out to the match service.
@@ -439,6 +466,7 @@ public:
                 goto out;
             }
         } else {
+            std::clog << "removing immediately: " << job->id << std::endl;
             bool found_in_provisional = false;
             if (erase_pending_job (job, found_in_provisional) < 0)
                 goto out;

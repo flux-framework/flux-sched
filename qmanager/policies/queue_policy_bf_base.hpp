@@ -24,6 +24,7 @@ class queue_policy_bf_base_t : public queue_policy_base_t
 public:
     virtual ~queue_policy_bf_base_t ();
     virtual int run_sched_loop (void *h, bool use_alloced_queue);
+    int cancel_sched_loop () override;
     virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
                                       std::string &R_out);
     virtual int apply_params ();
@@ -33,6 +34,7 @@ protected:
     unsigned int m_max_reservation_depth = MAX_RESERVATION_DEPTH;
 
 private:
+    void init_sched_loop ();
     int cancel_completed_jobs (void *h);
     int cancel_reserved_jobs (void *h);
     int allocate_orelse_reserve_jobs (void *h, bool use_alloced_queue);

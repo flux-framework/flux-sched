@@ -19,6 +19,8 @@ extern "C" {
 #include "resource/libjobspec/jobspec.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
 
+#include <iostream>
+
 using namespace Flux;
 using namespace Flux::Jobspec;
 using namespace Flux::queue_manager;
@@ -229,7 +231,9 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     json_t *jobspec;
     char *jobspec_str = NULL;
     char errbuf[80];
+    static int cnt = 0;
 
+    std::clog << "processing alloc #" << cnt++ << std::endl;
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s:o}",
                          "id", &id,
@@ -298,6 +302,7 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
+    std::clog << "free_cb" << std::endl;
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "id", &id) < 0) {
         flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
@@ -328,6 +333,7 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
     flux_jobid_t id;
+    std::clog << "cancel_cb" << std::endl;
 
     if (flux_msg_unpack (msg, "{s:I}", "id", &id) < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
@@ -411,8 +417,12 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
         ctx->pls_post_loop = ctx->pls_post_loop
                               || queue->is_scheduled ();
     }
-    if (ctx->pls_sched_loop || ctx->pls_post_loop)
+    if (!ctx->check_active && (ctx->pls_sched_loop || ctx->pls_post_loop)) {
+        ctx->check_active = true;
+        flux_timer_watcher_reset (ctx->check, 0.05, 0.0);
+        flux_watcher_start (ctx->check);
         flux_watcher_start (ctx->idle);
+    }
 }
 
 void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
@@ -421,10 +431,14 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
 
+    ctx->check_active = false;
     if (ctx->idle)
         flux_watcher_stop (ctx->idle);
+    if (ctx->check)
+        flux_watcher_stop (ctx->check);
     if (!ctx->pls_sched_loop && !ctx->pls_post_loop)
         return;
+    std::clog << "check_watcher" << std::endl;
     if (ctx->pls_sched_loop) {
         for (auto &kv: ctx->queues) {
             std::shared_ptr<queue_policy_base_t> &queue = kv.second;
