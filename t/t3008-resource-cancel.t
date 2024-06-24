@@ -1,12 +1,13 @@
 #!/bin/sh
 
-test_description='Test reservations of jobs of varying geometries and durations'
+test_description='Test cancellation of jobs of varying geometries and durations'
 
 . $(dirname $0)/sharness.sh
 
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/cancel"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/cancel"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
+rv1s="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec.json"
 query="../../resource/utilities/resource-query"
 
 #
@@ -115,6 +116,49 @@ test_expect_success "${test014_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
     ${query} -L ${grugs} -S CA -P lonodex -t 014.R.out < cmds014 &&
     test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
+# Partial cancel/release -- Use low node policy
+#     Tests to ensure correctness of partial cancel/release behavior
+
+cmds015="${cmd_dir}/cmds03.in"
+test015_desc="test reader file option"
+test_expect_success "${test015_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+    ${query} -f rv1exec -L ${rv1s} -S CA -P low -t 015.R.out < cmds015 2>> 015.R.out &&
+    test_cmp 015.R.out ${exp_dir}/015.R.out
+'
+
+cmds016="${cmd_dir}/cmds04.in"
+test016_desc="test partial cancel and reallocation of one rank"
+test_expect_success "${test016_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds016} > cmds016 &&
+    ${query} -f rv1exec -L ${rv1s} -S CA -P low -t 016.R.out < cmds016 &&
+    test_cmp 016.R.out ${exp_dir}/016.R.out
+'
+
+cmds017="${cmd_dir}/cmds05.in"
+test017_desc="check for unsupported partial cancel of reservation"
+test_expect_success "${test017_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds017} > cmds017 &&
+    ${query} -f rv1exec -L ${rv1s} -S CA -P low -t 017.R.out < cmds017 2>> 017.R.out &&
+    test_cmp 017.R.out ${exp_dir}/017.R.out
+'
+
+cmds018="${cmd_dir}/cmds06.in"
+test018_desc="partial cancel of full allocation is the same as full cancel"
+test_expect_success "${test018_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds018} > cmds018 &&
+    ${query} -f rv1exec -L ${rv1s} -S CA -P low -t 018.R.out < cmds018 &&
+    test_cmp 018.R.out ${exp_dir}/018.R.out
+'
+
+cmds019="${cmd_dir}/cmds06.in"
+test019_desc="partial cancel of full allocation is the same as full cancel with all pruning filters set"
+test_expect_success "${test019_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds019} > cmds019 &&
+    ${query} -f rv1exec -L ${rv1s} -S CA -P low --prune-filters=ALL:core,ALL:node,ALL:gpu -t 019.R.out < cmds019 &&
+    test_cmp 019.R.out ${exp_dir}/018.R.out
 '
 
 test_done
