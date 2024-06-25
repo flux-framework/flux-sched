@@ -8,6 +8,7 @@ cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/cancel"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/cancel"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
 rv1s="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec.json"
+jgfs="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/elastic/tiny-partial-cancel.json"
 query="../../resource/utilities/resource-query"
 
 #
@@ -159,6 +160,30 @@ test_expect_success "${test019_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds019} > cmds019 &&
     ${query} -f rv1exec -L ${rv1s} -S CA -P low --prune-filters=ALL:core,ALL:node,ALL:gpu -t 019.R.out < cmds019 &&
     test_cmp 019.R.out ${exp_dir}/018.R.out
+'
+
+cmds020="${cmd_dir}/cmds07.in"
+test020_desc="test partial cancel and reallocation of one rank; jgf"
+test_expect_success "${test020_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds020} > cmds020 &&
+    ${query} -f jgf -L ${jgfs} -S CA -P low -t 020.R.out < cmds020 &&
+    test_cmp 020.R.out ${exp_dir}/020.R.out
+'
+
+cmds021="${cmd_dir}/cmds08.in"
+test021_desc="partial cancel of full allocation is the same as full cancel; jgf"
+test_expect_success "${test021_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds021} > cmds021 &&
+    ${query} -f jgf -L ${jgfs} -S CA -P low -t 021.R.out < cmds021 &&
+    test_cmp 021.R.out ${exp_dir}/021.R.out
+'
+
+cmds022="${cmd_dir}/cmds08.in"
+test022_desc="partial cancel of full allocation is the same as full cancel with all pruning filters set; jgf"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -f jgf -L ${jgfs} -S CA -P low --prune-filters=ALL:core,ALL:node,ALL:gpu -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/021.R.out
 '
 
 test_done
