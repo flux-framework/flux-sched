@@ -27,19 +27,25 @@ public:
     virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
                                       std::string &R_out);
     virtual int apply_params ();
+    virtual int handle_match_success (flux_jobid_t jobid, const char *status,
+                                      const char *R, int64_t at, double ov);
+    virtual int handle_match_failure (flux_jobid_t jobid, int errcode);
 
 protected:
     unsigned int m_reservation_depth;
     unsigned int m_max_reservation_depth = MAX_RESERVATION_DEPTH;
 
 private:
+    int next_match_iter ();
     int cancel_completed_jobs (void *h);
     int cancel_reserved_jobs (void *h);
     int allocate_orelse_reserve_jobs (void *h, bool use_alloced_queue);
     std::map<uint64_t, flux_jobid_t> m_reserved;
     int m_reservation_cnt;
     int m_scheduled_cnt;
+    bool m_try_reserve = false;
     decltype (m_pending)::iterator m_in_progress_iter = m_pending.end();
+    void *m_handle = NULL;
 };
 
 } // namespace Flux::queue_manager::detail
