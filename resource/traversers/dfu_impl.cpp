@@ -738,16 +738,15 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
         goto done;
     if ((rc = m_match->dom_finish_slot (dom, dfu_slot)) != 0)
         goto done;
-
-    for (auto &slot : slots)
-    {
-        auto &slot_shape = slot.with;
-        qual_num_slots = cnt_slot (slot_shape, dfu_slot);
-        for (unsigned int i = 0; i < qual_num_slots; ++i) {
-            bool found = true;
-            std::unordered_set<edg_t *> test_edges;
-            eval_egroup_t edg_group;
+    for (unsigned int i = 0; i < nslots; ++i) {
+        std::unordered_set<edg_t *> remove_edges;
+        eval_egroup_t edg_group;
+        for (auto slot : slots) {
+            auto slot_shape = slot.with;
             int64_t score = MATCH_MET;
+            eval_egroup_t test_edg_group;
+            std::unordered_set<edg_t *> test_edges;
+            bool found = true;
             for (auto &slot_elem : slot_shape) {
                 unsigned int j = 0;
                 unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
@@ -769,22 +768,24 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
                                     (*egroup_i).edges[0].count, 1,
                                     (*egroup_i).edges[0].edge);
                     score += (*egroup_i).score;
-                    edg_group.edges.push_back (ev_edg);
+                    test_edg_group.edges.push_back (ev_edg);
                     j += (*egroup_i).edges[0].count;
                 }
-                
 
             }
-            if (found) {
-                    edges_used.insert(test_edges.begin(), test_edges.end());
+            if (!found) {
+                    continue;
                 }
-            else
-                continue;
-            edg_group.score = score;
-            edg_group.count = 1;
-            edg_group.exclusive = 1;
-            edg_group_vector.push_back (edg_group);
+            if (edg_group.score < score){
+                remove_edges = test_edges;
+                test_edg_group.score = score;
+                test_edg_group.count = 1;
+                test_edg_group.exclusive = 1;
+                edg_group = test_edg_group;
+            }
         }
+        edges_used.insert(remove_edges.begin(), remove_edges.end());
+        edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
             dfu.add (dom, std::string ("or_slot"), edg_group);
