@@ -295,8 +295,10 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
         if (anchor_type != ANY_RESOURCE_TYPE
             && s.find (ANY_RESOURCE_TYPE) != s.end ()) {
             auto &m = s.at (ANY_RESOURCE_TYPE);
-            for (auto &k : m)
-                out.push_back (k);
+            for (auto &k : m) {
+                if (anchor_type != k)
+                    out.push_back (k);
+            }
         }
     } catch (std::out_of_range &e) {
         rc = false;
