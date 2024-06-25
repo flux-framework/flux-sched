@@ -150,6 +150,7 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_failure (flux_jobid_t jobid, i
         set_schedulability (true);
         m_queue_depth_limit = false;
     }
+    set_sched_loop_active (false);
     // whatever happened here, a job transition has occurred, we need to run the
     // post_sched_loop
     m_scheduled = true;

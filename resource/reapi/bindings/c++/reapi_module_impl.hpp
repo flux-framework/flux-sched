@@ -103,7 +103,6 @@ void match_allocate_multi_cont (flux_future_t *f, void *arg)
         }
     } else {
         adapter->handle_match_failure (jobid, errno);
-        adapter->set_sched_loop_active (false);
         flux_future_destroy (f);
         return;
     }
