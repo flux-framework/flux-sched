@@ -406,7 +406,7 @@ public:
         m_pending_provisional.emplace (job->get_key (), job->id);
         m_jobs.insert (std::pair<flux_jobid_t, std::shared_ptr<job_t>> (job->id,
                                                                         job));
-        m_schedulable = true;
+        set_schedulability (true);
         rc = 0;
     out:
         return rc;
@@ -454,7 +454,7 @@ public:
                 errno = EEXIST;
                 goto out;
             }
-            m_schedulable = true;
+            set_schedulability (true);
         }
         rc = 0;
     out:
@@ -496,7 +496,7 @@ public:
             m_complete.insert (std::pair<uint64_t,
                                         flux_jobid_t> (job->t_stamps.complete_ts,
                                                        job->id));
-            m_schedulable = true;
+            set_schedulability (true);
             break;
         default:
             break;
@@ -758,30 +758,17 @@ public:
             return -1;
         }
 
-        if (is_sched_loop_active ()) {
-            // if sched-loop is active, the job's pending state
-            // cannot be determined. There is "MAYBE pending state" where
-            // a request has sent out to the match service.
-            auto res = m_pending_reprio_provisional.insert (
-                           std::pair<uint64_t,
-                                     std::pair<flux_jobid_t, unsigned int>> (
-                               m_reprio_cnt, std::make_pair (job->id, priority)));
-            m_reprio_cnt++;
-            if (!res.second) {
-                errno = EEXIST;
-                return -1;
-            }
-        } else {
-            bool found_in_prov = false;
-            if (erase_pending_job (job.get (), found_in_prov) < 0)
-                return -1;
-            job->priority = priority;
-            if (insert_pending_job (job, found_in_prov) < 0)
-                return -1;
-            m_schedulable = true;
-            // in case this job is now lower priority than one it was blocking,
-            // reconsider blocked jobs
-            reconsider_blocked_jobs ();
+        auto res = m_pending_reprio_provisional.insert (
+                       std::pair<uint64_t,
+                                 std::pair<flux_jobid_t, unsigned int>> (
+                           m_reprio_cnt, std::make_pair (job->id, priority)));
+        m_reprio_cnt++;
+        if (!res.second) {
+            errno = EEXIST;
+            return -1;
+        }
+        if (!is_sched_loop_active ()) {
+            return process_provisional_reprio ();
         }
         return 0;
     }
@@ -881,12 +868,12 @@ protected:
                 job->priority = priority;
                 if (insert_pending_job (job, found_in_provisional) < 0)
                     return -1;
-                m_schedulable = true;
+                set_schedulability (true);
+                // in case this job is now lower priority than one it was blocking,
+                // reconsider blocked jobs
+                reconsider_blocked_jobs ();
             }
         }
-        // in case this job is now lower priority than one it was blocking,
-        // reconsider blocked jobs
-        reconsider_blocked_jobs ();
         m_pending_reprio_provisional.clear ();
         return 0;
     }
