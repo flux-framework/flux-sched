@@ -14,7 +14,6 @@
 #include "resource/schema/resource_data.hpp"
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/graph/graphviz.hpp>
 
@@ -96,19 +95,14 @@ using edg_t = boost::graph_traits<resource_graph_t>::edge_descriptor;
 using vtx_iterator_t = boost::graph_traits<resource_graph_t>::vertex_iterator;
 using edg_iterator_t = boost::graph_traits<resource_graph_t>::edge_iterator;
 using out_edg_iterator_t = boost::graph_traits<resource_graph_t>::out_edge_iterator;
-using f_resource_graph_t = boost::filtered_graph<resource_graph_t,
-                                                 subsystem_selector_t<edg_t,
-                                                               edg_infra_map_t>,
-                                                 subsystem_selector_t<vtx_t,
-                                                               vtx_infra_map_t>>;
-using f_edg_infra_map_t = boost::property_map<f_resource_graph_t, rinfra_t>::type;
-using f_vtx_infra_map_t = boost::property_map<f_resource_graph_t, pinfra_t>::type;
-using f_res_name_map_t = boost::property_map<f_resource_graph_t, pname_t>::type;
-using f_rel_name_map_t = boost::property_map<f_resource_graph_t, rname_t>::type;
-using f_vtx_infra_map_t = boost::property_map<f_resource_graph_t, pinfra_t>::type;
-using f_vtx_iterator_t = boost::graph_traits<f_resource_graph_t>::vertex_iterator;
-using f_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::edge_iterator;
-using f_out_edg_iterator_t = boost::graph_traits<f_resource_graph_t>::out_edge_iterator;
+using f_edg_infra_map_t = boost::property_map<resource_graph_t, rinfra_t>::type;
+using f_vtx_infra_map_t = boost::property_map<resource_graph_t, pinfra_t>::type;
+using f_res_name_map_t = boost::property_map<resource_graph_t, pname_t>::type;
+using f_rel_name_map_t = boost::property_map<resource_graph_t, rname_t>::type;
+using f_vtx_infra_map_t = boost::property_map<resource_graph_t, pinfra_t>::type;
+using f_vtx_iterator_t = boost::graph_traits<resource_graph_t>::vertex_iterator;
+using f_edg_iterator_t = boost::graph_traits<resource_graph_t>::edge_iterator;
+using f_out_edg_iterator_t = boost::graph_traits<resource_graph_t>::out_edge_iterator;
 
 template<class name_map, class graph_entity>
 class label_writer_t {

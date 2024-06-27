@@ -43,7 +43,7 @@ public:
      */
     int dom_finish_graph (const subsystem_t &subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g, scoring_api_t &dfu);
+                          const resource_graph_t &g, scoring_api_t &dfu);
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
@@ -56,14 +56,14 @@ public:
     int dom_discover_vtx (vtx_t u,
                           const subsystem_t &subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const f_resource_graph_t &g);
+                          const resource_graph_t &g);
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
     int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
-                        const f_resource_graph_t &g, scoring_api_t &dfu);
+                        const resource_graph_t &g, scoring_api_t &dfu);
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp

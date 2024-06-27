@@ -51,7 +51,7 @@ dfu_match_cb_t::~dfu_match_cb_t ()
 int dfu_match_cb_t::dom_finish_graph (
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g,
+    const resource_graph_t &g,
     scoring_api_t &dfu)
 {
     return 0;
@@ -68,7 +68,7 @@ int dfu_match_cb_t::dom_discover_vtx (
     vtx_t u,
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g)
+    const resource_graph_t &g)
 {
     m_trav_level++;
     return 0;
@@ -78,7 +78,7 @@ int dfu_match_cb_t::dom_finish_vtx (
     vtx_t u,
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g,
+    const resource_graph_t &g,
     scoring_api_t &dfu)
 {
     m_trav_level--;
@@ -89,7 +89,7 @@ int dfu_match_cb_t::aux_discover_vtx (
     vtx_t u,
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g)
+    const resource_graph_t &g)
 
 {
     m_trav_level++;
@@ -100,7 +100,7 @@ int dfu_match_cb_t::aux_finish_vtx (
     vtx_t u,
     const subsystem_t &subsystem,
     const std::vector<Flux::Jobspec::Resource> &resources,
-    const f_resource_graph_t &g,
+    const resource_graph_t &g,
     scoring_api_t &dfu)
 {
     m_trav_level--;

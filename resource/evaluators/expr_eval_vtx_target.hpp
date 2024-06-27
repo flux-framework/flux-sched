@@ -84,9 +84,7 @@ public:
      *  \param u         vertex. g[u] must return the corresponding state.
      *  \return          0 on success; -1 on error
      */
-    void initialize (const vtx_predicates_override_t &p,
-                     const std::shared_ptr<
-                         const f_resource_graph_t> g, vtx_t u);
+    void initialize (const vtx_predicates_override_t &p, const resource_graph_t *g, vtx_t u);
 
     /*! Is this object initialized?
      */
@@ -95,7 +93,7 @@ public:
 private:
     bool m_initialized{false};
     vtx_predicates_override_t m_overridden;
-    std::shared_ptr<const f_resource_graph_t> m_g;
+    const resource_graph_t *m_g;
     vtx_t m_u;
 };
 

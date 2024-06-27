@@ -11,6 +11,7 @@
 #ifndef DATA_STD_H
 #define DATA_STD_H
 
+#include <map>
 #include <set>
 #include <string>
 

@@ -142,7 +142,7 @@ int sim_match_writers_t::emit (std::stringstream &out)
 }
 
 int sim_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g, const vtx_t &u,
+                                   const resource_graph_t &g, const vtx_t &u,
                                    unsigned int needs, bool exclusive)
 {
     std::string mode = (exclusive)? "x" : "s";
@@ -258,7 +258,7 @@ ret:
 }
 
 int jgf_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g, const vtx_t &u,
+                                   const resource_graph_t &g, const vtx_t &u,
                                    unsigned int needs, bool exclusive)
 {
     int rc = 0;
@@ -306,7 +306,7 @@ out:
 }
 
 int jgf_match_writers_t::emit_edg (const std::string &prefix,
-                                   const f_resource_graph_t &g, const edg_t &e)
+                                   const resource_graph_t &g, const edg_t &e)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -396,7 +396,7 @@ ret:
     return rc;
 }
 
-json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
+json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
                                             const vtx_t &u,
                                             unsigned int needs, bool exclusive)
 {
@@ -490,7 +490,7 @@ out:
     return rc;
 }
 
-int jgf_match_writers_t::emit_edg_meta (json_t *o, const f_resource_graph_t &g,
+int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g,
                                         const edg_t &e)
 {
     int rc = 0;
@@ -664,7 +664,7 @@ int rlite_match_writers_t::emit (std::stringstream &out)
 }
 
 int rlite_match_writers_t::emit_vtx (const std::string &prefix,
-                                     const f_resource_graph_t &g,
+                                     const resource_graph_t &g,
                                      const vtx_t &u,
                                      unsigned int needs,
                                      bool exclusive)
@@ -754,7 +754,7 @@ ret:
     return rc;
 }
 
-int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
+int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g,
                                           const vtx_t &u)
 {
     int rc = 0;
@@ -1072,7 +1072,7 @@ ret:
 }
 
 int rv1_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g,
+                                   const resource_graph_t &g,
                                    const vtx_t &u,
                                    unsigned int needs,
                                    bool exclusive)
@@ -1084,7 +1084,7 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
-                                   const f_resource_graph_t &g,
+                                   const resource_graph_t &g,
                                    const edg_t &e)
 {
     int rc = 0;
@@ -1196,7 +1196,7 @@ ret:
 }
 
 int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
-                                           const f_resource_graph_t &g,
+                                           const resource_graph_t &g,
                                            const vtx_t &u,
                                            unsigned int needs,
                                            bool exclusive)
@@ -1256,7 +1256,7 @@ int pretty_sim_match_writers_t::emit (std::stringstream &out)
 }
 
 int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
-                                          const f_resource_graph_t &g,
+                                          const resource_graph_t &g,
                                           const vtx_t &u,
                                           unsigned int needs, bool exclusive)
 {
