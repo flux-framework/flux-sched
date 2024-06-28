@@ -709,6 +709,77 @@ done:
     return (qual_num_slots)? 0 : -1;
 }
 
+std::tuple<std::string, int, int> dfu_impl_t::select_or_config(const std::vector<Resource> &slots,
+                                 std::map<std::string, int> resource_counts,
+                                 unsigned int nslots,
+                                 std::map<std::string, std::tuple<std::string, int, int>> &or_config)
+{    
+    int best = -1;
+    int i = -1;
+    std::string index = "";
+
+    for ( auto it = resource_counts.begin(); it != resource_counts.end(); it++)
+    {
+        index = index + std::to_string(it->second) + " ";
+    }
+
+    auto it = or_config.find(index);
+
+    if (it != or_config.end())
+    {
+        return it->second;
+    }
+
+
+    for ( auto slot : slots)
+    {   
+        int test;
+        ++i;
+        bool match = true;
+        std::map<std::string, int> updated_counts;
+        std::string updated_index = "";
+        updated_counts = resource_counts;
+        for (auto slot_elem : slot.with )
+        {
+            unsigned int qc = resource_counts[slot_elem.type];
+            unsigned int count = m_match->calc_count (slot_elem, qc);
+            if (count <= 0)
+            {
+                match =false; 
+                break;
+            }
+            updated_counts[slot_elem.type] = updated_counts[slot_elem.type] - count;
+        }
+        for ( auto it = updated_counts.begin(); it != updated_counts.end(); it++)
+        {
+            updated_index = updated_index + std::to_string(it->second) + " ";
+        }
+        if (!match)
+            continue;
+
+        auto it = or_config.find(updated_index);
+
+        if (it != or_config.end())
+        {
+            test = std::get<1>(it->second);
+        } else
+        {
+            test = std::get<1>(select_or_config (slots, updated_counts, nslots, or_config));
+        }
+        if ( best < test)
+        {
+            best = test;
+            or_config[index] = std::make_tuple(updated_index, best + 1, i);
+        }
+
+    }
+
+    if (best < 0)
+    {
+        or_config[index] = std::make_tuple("", best + 1, -1);
+    }
+    return or_config[index];
+}
 int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
                           const std::vector<Resource> &slots,
                           unsigned int nslots,
@@ -721,13 +792,15 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
     const subsystem_t &dom = m_match->dom_subsystem ();
     std::unordered_set<edg_t *> edges_used;
     scoring_api_t dfu_slot;
-    
+    std::map<std::string, std::tuple<std::string, int, int>> or_config;
+    std::tuple<std::string, int, int> starting_config;
+
     std::vector<Resource> slot_intersection;
-    std::set<std::string> resource_types;
+    std::map<std::string, int> resource_types;
     for (auto &slot : slots){
         for (auto r : slot.with) {
             if (resource_types.find(r.type) == resource_types.end()){
-                resource_types.insert(r.type);
+                resource_types [r.type] = 0;
                 slot_intersection.push_back(r);
             }
         }
@@ -738,58 +811,50 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta, vtx_t u,
         goto done;
     if ((rc = m_match->dom_finish_slot (dom, dfu_slot)) != 0)
         goto done;
-    for (unsigned int i = 0; i < nslots; ++i) {
-        std::unordered_set<edg_t *> remove_edges;
-        eval_egroup_t edg_group;
-        for (auto slot : slots) {
-            auto slot_shape = slot.with;
-            int64_t score = MATCH_MET;
-            eval_egroup_t test_edg_group;
-            std::unordered_set<edg_t *> test_edges;
-            bool found = true;
-            for (auto &slot_elem : slot_shape) {
-                unsigned int j = 0;
-                unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
-                unsigned int count = m_match->calc_count (slot_elem, qc);
-                dfu_slot.eval_egroups_iter_reset(dom, slot_elem.type);
-                while (j < count) { 
-                    auto egroup_i = dfu_slot.eval_egroups_iter_next (
-                                                dom, slot_elem.type);
-                    if (egroup_i == dfu_slot.eval_egroups_end (dom,
-                                                            slot_elem.type)) {
-                        found = false;
-                        break;
-                    }
-                    if (edges_used.find(& (*egroup_i).edges[0].edge) == edges_used.end())
-                        test_edges.insert(& (*egroup_i).edges[0].edge);
-                    else
-                        continue;
-                    eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                    (*egroup_i).edges[0].count, 1,
-                                    (*egroup_i).edges[0].edge);
-                    score += (*egroup_i).score;
-                    test_edg_group.edges.push_back (ev_edg);
-                    j += (*egroup_i).edges[0].count;
-                }
 
-            }
-            if (!found) {
-                    continue;
+    for (auto &it : resource_types )
+    {
+        it.second = dfu_slot.qualified_count(dom, it.first);
+    }
+
+    starting_config = select_or_config(slots, resource_types, nslots, or_config);
+    qual_num_slots = std::get<1> (starting_config);
+    for (unsigned int i = 0; i < qual_num_slots; ++i) {
+        auto slot_index = std::get<2> (starting_config);
+        eval_egroup_t edg_group;
+        int64_t score = MATCH_MET;
+        for (auto &slot_elem : slots[slot_index].with) {
+            unsigned int j = 0;
+            unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
+            unsigned int count = m_match->calc_count (slot_elem, qc);
+            while (j < count) {
+                auto egroup_i = dfu_slot.eval_egroups_iter_next (
+                                             dom, slot_elem.type);
+                if (egroup_i == dfu_slot.eval_egroups_end (dom,
+                                                           slot_elem.type)) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": not enough slots.\n";
+                    qual_num_slots = 0;
+                    goto done;
                 }
-            if (edg_group.score < score){
-                remove_edges = test_edges;
-                test_edg_group.score = score;
-                test_edg_group.count = 1;
-                test_edg_group.exclusive = 1;
-                edg_group = test_edg_group;
+                eval_edg_t ev_edg ((*egroup_i).edges[0].count,
+                                   (*egroup_i).edges[0].count, 1,
+                                   (*egroup_i).edges[0].edge);
+                score += (*egroup_i).score;
+                edg_group.edges.push_back (ev_edg);
+                j += (*egroup_i).edges[0].count;
             }
         }
-        edges_used.insert(remove_edges.begin(), remove_edges.end());
+        edg_group.score = score;
+        edg_group.count = 1;
+        edg_group.exclusive = 1;
         edg_group_vector.push_back (edg_group);
+
+        starting_config = or_config[std::get<0> (starting_config)];
     }
     for (auto &edg_group : edg_group_vector)
-            dfu.add (dom, std::string ("or_slot"), edg_group);
-
+        dfu.add (dom, std::string ("or_slot"), edg_group);
+    
 done:
     return (qual_num_slots)? 0 : -1;
 }

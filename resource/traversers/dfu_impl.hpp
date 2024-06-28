@@ -407,6 +407,10 @@ private:
                   const std::vector<Jobspec::Resource> &resources,
                   unsigned int nslots,  bool prestine,
                   bool *excl, scoring_api_t &dfu);
+    std::tuple<std::string, int, int> select_or_config(const std::vector<Jobspec::Resource> &slots,
+                         std::map<std::string, int> resource_counts,
+                         unsigned int nslots,
+                         std::map<std::string, std::tuple<std::string, int, int>> &or_config);
     int dom_or_slot (const jobmeta_t &meta, vtx_t u,
                   const std::vector<Jobspec::Resource> &resources,
                   unsigned int nslots,  bool prestine,
