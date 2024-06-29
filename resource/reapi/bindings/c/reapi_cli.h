@@ -141,6 +141,20 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
 int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
                       const uint64_t jobid, bool noent_ok);
 
+/*! Cancel the allocation or reservation corresponding to jobid.
+ *
+ *  \param ctx       reapi_module_ctx_t context object
+ *  \param jobid     jobid of the uint64_t type.
+ *  \param R         R string to remove
+ *  \param noent_ok  don't return an error on nonexistent jobid
+ *  \param full_removal  don't return an error on nonexistent jobid
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
+                              const uint64_t jobid,
+                              const char *R,
+                              bool noent_ok, bool *full_removal);
+
 /*! Get the information on the allocation or reservation corresponding
  *  to jobid.
  *
