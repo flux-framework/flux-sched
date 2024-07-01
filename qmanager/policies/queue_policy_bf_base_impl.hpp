@@ -51,9 +51,16 @@ int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
 
 template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::next_match_iter () {
-    if (m_in_progress_iter == m_pending.end () || (m_scheduled_cnt >= m_queue_depth)) {
+    bool reached_queue_depth = m_scheduled_cnt >= m_queue_depth;
+    bool reached_end_of_queue = m_in_progress_iter == m_pending.end ();
+    if (reached_end_of_queue || reached_queue_depth) {
         // we're at the end, clean up
         set_sched_loop_active (false);
+        if (reached_queue_depth && !reached_end_of_queue && is_scheduled ()) {
+            // there are more jobs to schedule, and we scheduled something
+            // successfully, start the loop over
+            set_schedulability (true);
+        }
         return 0;
     }
 
@@ -107,7 +114,7 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
         // now that we've initialized, start the chain
         return next_match_iter ();
     }
-    return 0; 
+    return 0;
 }
 
 
@@ -213,8 +220,8 @@ template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloced_queue)
 {
     int rc = 0;
-    set_schedulability (false);
     if (!is_sched_loop_active ()) {
+        set_schedulability (false);
         rc = cancel_completed_jobs (h);
         if (rc != 0)
             return rc;
