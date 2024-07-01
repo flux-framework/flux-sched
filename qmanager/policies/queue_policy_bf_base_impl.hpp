@@ -25,20 +25,6 @@ namespace detail {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::cancel_completed_jobs (void *h)
-{
-    int rc = 0;
-    std::shared_ptr<job_t> job;
-
-    // Pop newly completed jobs (e.g., per a free request from
-    // job-manager as received by qmanager) to remove them from the
-    // resource infrastructure.
-    while ((job = complete_pop ()) != nullptr)
-        rc += reapi_type::cancel (h, job->id, true);
-    return rc;
-}
-
-template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::cancel_reserved_jobs (void *h)
 {
     int rc = 0;
@@ -116,6 +102,13 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h)
     return 0;
 }
 
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::cancel (void *h, flux_jobid_t id,
+                                                const char *R, bool noent_ok,
+                                                bool &full_removal)
+{
+    return reapi_type::cancel (h, id, R, noent_ok, full_removal);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API of Queue Policy Backfill Base
@@ -227,9 +220,6 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloce
     int rc = 0;
     if (!is_sched_loop_active ()) {
         set_schedulability (false);
-        rc = cancel_completed_jobs (h);
-        if (rc != 0)
-            return rc;
         rc = cancel_reserved_jobs (h);
         if (rc != 0)
             return rc;

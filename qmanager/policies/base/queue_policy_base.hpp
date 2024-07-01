@@ -492,49 +492,80 @@ public:
      *  state. This queue becomes "schedulable" if pending job
      *  queue is not empty: i.e., is_schedulable() returns true;
      *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
      *  \param id        jobid of flux_jobid_t type.
+     *  \param R         Resource set for partial cancel
      *  \return          0 on success; -1 on error.
      *                       ENOENT: unknown id.
      */
-    int remove (flux_jobid_t id)
+    int remove (void *h, flux_jobid_t id, const char *R)
     {
-        int rc = -1;
-        std::shared_ptr<job_t> job = nullptr;
+    int rc = -1;
+    bool full_removal = false;
 
-        if (m_jobs.find (id) == m_jobs.end ()) {
-            errno = ENOENT;
-            goto out;
-        }
+    auto job_it = m_jobs.find (id);
+    if (job_it == m_jobs.end ()) {
+        errno = ENOENT;
+        goto out;
+    }
 
-        job = m_jobs[id];
-        switch (job->state) {
-        case job_state_kind_t::PENDING:
-            this->remove_pending(job.get ());
+    switch (job_it->second->state) {
+    case job_state_kind_t::PENDING:
+        this->remove_pending(job_it->second.get ());
+        break;
+    case job_state_kind_t::ALLOC_RUNNING:
+        // deliberately fall through
+    case job_state_kind_t::RUNNING:
+        if ( (rc = cancel (h, job_it->second->id, R, true, full_removal) != 0))
             break;
-        case job_state_kind_t::ALLOC_RUNNING:
-            m_alloced.erase (job->t_stamps.running_ts);
-            // deliberately fall through
-        case job_state_kind_t::RUNNING:
-            m_running.erase (job->t_stamps.running_ts);
-            job->t_stamps.complete_ts = m_cq_cnt++;
-            job->state = job_state_kind_t::COMPLETE;
-            m_complete.insert (std::pair<uint64_t,
-                                        flux_jobid_t> (job->t_stamps.complete_ts,
-                                                       job->id));
-            set_schedulability (true);
-            break;
-        default:
-            break;
+        if (full_removal) {
+            m_alloced.erase (job_it->second->t_stamps.running_ts);
+            m_running.erase (job_it->second->t_stamps.running_ts);
+            job_it->second->t_stamps.complete_ts = m_cq_cnt++;
+            job_it->second->state = job_state_kind_t::COMPLETE;
+            m_jobs.erase (job_it);
         }
-        // with a job finishing or being canceled, restart the sched loop
-        cancel_sched_loop ();
-        // blocked jobs must be reconsidered after a job completes
-        // this covers cases where jobs that couldn't run because of an
-        // existing job's reservation can when it completes early
-        reconsider_blocked_jobs ();
-        rc = 0;
-    out:
-        return rc;
+        set_schedulability (true);
+        break;
+    default:
+        break;
+    }
+    cancel_sched_loop ();
+    // blocked jobs must be reconsidered after a job completes
+    // this covers cases where jobs that couldn't run because of an
+    // existing job's reservation can when it completes early
+    reconsider_blocked_jobs ();
+
+    rc = 0;
+out:
+    return rc;
+    }
+
+    /*! Remove a job whose jobid is id from any internal queues
+     *  (e.g., pending queue, running queue, and alloced queue.)
+     *  If succeeds, it changes the pending queue or resource
+     *  state. This queue becomes "schedulable" if pending job
+     *  queue is not empty: i.e., is_schedulable() returns true;
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
+     *  \param id        jobid of flux_jobid_t type.
+     *  \param R         Resource set for partial cancel
+     *  \param noent_ok  don't return an error on nonexistent jobid
+     *  \param full_removal  bool indictating whether the job is fully canceled
+     *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
+     */
+    virtual int cancel (void *h, flux_jobid_t id, const char *R, bool noent_ok,
+                        bool &full_removal)
+    {
+        full_removal = true;
+        return 0;
     }
 
     /*! Return true if this queue has become schedulable since
@@ -648,26 +679,6 @@ public:
         m_jobs.erase (id);
         return job;
     }
-
-    /*! Pop the first job from the internal completed job queue.
-     *  The popped is completely graduated from the queue policy layer.
-     *  \return          a shared pointer pointing to a job_t object
-     *                   on success; nullptr when the queue is empty.
-     */
-    std::shared_ptr<job_t> complete_pop () {
-        std::shared_ptr<job_t> job;
-        flux_jobid_t id;
-        if (m_complete.empty ())
-            return nullptr;
-        id = m_complete.begin ()->second;
-        if (m_jobs.find (id) == m_jobs.end ())
-            return nullptr;
-        job = m_jobs[id];
-        m_complete.erase (job->t_stamps.complete_ts);
-        m_jobs.erase (id);
-        return job;
-    }
-
 
     /*! Pop the first job from the alloced job queue. The popped
      *  job still remains in the queue policy layer (i.e., in the
@@ -939,28 +950,6 @@ protected:
         return 0;
     }
 
-    std::map<uint64_t, flux_jobid_t>::iterator 
-        to_complete (std::map<uint64_t, flux_jobid_t>::iterator running_iter)
-    {
-        flux_jobid_t id = running_iter->second;
-        if (m_jobs.find (id) == m_jobs.end ()) {
-            errno = EINVAL;
-            return running_iter;
-        }
-
-        std::shared_ptr<job_t> job = m_jobs[id];
-        job->state = job_state_kind_t::COMPLETE;
-        job->t_stamps.complete_ts = m_cq_cnt++;
-        auto res = m_complete.insert (std::pair<uint64_t, flux_jobid_t>(
-                                          job->t_stamps.complete_ts, job->id));
-        if (!res.second) {
-            errno = ENOMEM;
-            return running_iter;
-        }
-        m_alloced.erase (job->t_stamps.running_ts);
-        return m_running.erase (running_iter);
-    }
-
     job_map_iter to_rejected (job_map_iter pending_iter,
                      const std::string &note)
     {
@@ -1008,7 +997,6 @@ protected:
 	                         unsigned int>> m_pending_reprio_provisional;
     std::map<uint64_t, flux_jobid_t> m_running;
     std::map<uint64_t, flux_jobid_t> m_alloced;
-    std::map<uint64_t, flux_jobid_t> m_complete;
     std::map<uint64_t, flux_jobid_t> m_rejected;
     std::map<uint64_t, flux_jobid_t> m_canceled;
     std::map<flux_jobid_t, std::shared_ptr<job_t>> m_jobs;
