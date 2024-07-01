@@ -292,29 +292,42 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
                                         const char *R, void *arg)
 {
     flux_jobid_t id;
+    json_t *Res;
+    const char *Rstr = NULL;
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
 
-    if (flux_request_unpack (msg, NULL, "{s:I}", "id", &id) < 0) {
+    if (flux_request_unpack (msg, NULL, "{s:I s:O}",
+                                           "id", &id, "R", &Res) < 0) {
         flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
+    }
+    if (!(Rstr = json_dumps (Res, JSON_COMPACT))) {
+        errno = ENOMEM;
+        flux_log (h, LOG_ERR, "%s: json_dumps ", __FUNCTION__);
+        goto done;
     }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
         flux_log_error (h, "%s: can't find queue for job (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (id));
-        return;
+        goto done;
     }
-    if ((queue->remove (id)) < 0) {
+    if ( (queue->remove (static_cast<void *> (h), id, Rstr)) < 0) {
         flux_log_error (h, "%s: remove (queue=%s id=%jd)", __FUNCTION__,
-                       queue_name.c_str (), static_cast<intmax_t> (id));
-        return;
+                    queue_name.c_str (), static_cast<intmax_t> (id));
+        goto done;
     }
     if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
-        return;
+        goto done;
     }
+
+done:
+    json_decref (Res);
+    free ((void *)Rstr);
+    return;
 }
 
 void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
