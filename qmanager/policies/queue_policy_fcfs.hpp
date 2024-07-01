@@ -30,6 +30,7 @@ public:
     virtual int handle_match_success (flux_jobid_t jobid, const char *status,
                                       const char *R, int64_t at, double ov);
     virtual int handle_match_failure (flux_jobid_t jobid, int errcode);
+    int remove (void *h, flux_jobid_t id, const char *R) override;
 
 private:
     int cancel_completed_jobs (void *h);

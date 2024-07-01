@@ -146,6 +146,52 @@ int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
     return 0; 
 }
 
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::remove (void *h, flux_jobid_t id,
+                                                const char *R)
+{
+    int rc = -1;
+    std::shared_ptr<job_t> job = nullptr;
+    bool full_removal = false;
+
+    if (m_jobs.find (id) == m_jobs.end ()) {
+        errno = ENOENT;
+        goto out;
+    }
+
+    job = m_jobs[id];
+    switch (job->state) {
+    case job_state_kind_t::PENDING:
+        this->remove_pending(job.get ());
+        break;
+    case job_state_kind_t::ALLOC_RUNNING:
+        // deliberately fall through
+    case job_state_kind_t::RUNNING:
+        if ((rc = reapi_type::cancel (h, job->id, R, true, full_removal) !=0))
+            break;
+        if (full_removal) {
+            m_alloced.erase (job->t_stamps.running_ts);
+            m_running.erase (job->t_stamps.running_ts);
+            job->t_stamps.complete_ts = m_cq_cnt++;
+            job->state = job_state_kind_t::COMPLETE;
+            m_complete.insert (std::pair<uint64_t,
+                                    flux_jobid_t> (job->t_stamps.complete_ts,
+                                                   job->id));
+        }
+        m_schedulable = true;
+        break;
+    default:
+        break;
+    }
+
+    // blocked jobs must be reconsidered after a job completes
+    // this covers cases where jobs that couldn't run because of an
+    // existing job's reservation can when it completes early
+    reconsider_blocked_jobs ();
+    rc = 0;
+out:
+    return rc;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API of Queue Policy Backfill Base

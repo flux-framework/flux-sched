@@ -510,6 +510,22 @@ public:
         return rc;
     }
 
+    /*! Remove a job whose jobid is id from any internal queues
+     *  (e.g., pending queue, running queue, and alloced queue.)
+     *  If succeeds, it changes the pending queue or resource
+     *  state. This queue becomes "schedulable" if pending job
+     *  queue is not empty: i.e., is_schedulable() returns true;
+     *
+     *  \param id        jobid of flux_jobid_t type.
+     *  \param R         Resource set for partial cancel
+     *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
+     */
+    virtual int remove (void *h, flux_jobid_t id, const char *R)
+    {
+        return 0;
+    }
+
     /*! Return true if this queue has become schedulable since
      *  its state had been reset with set_schedulability (false).
      *  "Being schedulable" means one or more job or resource events

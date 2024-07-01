@@ -27,6 +27,7 @@ public:
     virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job,
                                       std::string &R_out);
     virtual int apply_params ();
+    int remove (void *h, flux_jobid_t id, const char *R) override;
 
 protected:
     unsigned int m_reservation_depth;
