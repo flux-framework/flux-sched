@@ -45,7 +45,7 @@ test_expect_success 'no jobs received alloc-check exception' '
 	test_must_fail grep "job.exception type=alloc-check" joberr
 '
 test_expect_success 'clean up' '
-	flux job cancelall -f &&
+	flux cancel --all &&
 	flux queue idle &&
 	(flux resource undrain 0 || true)
 '
@@ -61,8 +61,32 @@ test_expect_success 'no jobs received alloc-check exception' '
 	test_must_fail grep "job.exception type=alloc-check" joberr2
 '
 test_expect_success 'clean up' '
+	flux cancel --all &&
+	flux queue idle &&
+	(flux resource undrain 0 || true)
+'
+
+send_sched_cancel() {
+	local JOB_ID=$1
+	shift
+	flux python -c "import flux; from flux.job.JobID import id_parse; flux.Flux().rpc('sched.cancel', {'id': id_parse('$JOB_ID')})"
+}
+
+# ensure sched.cancel doesn't free resources when an epilog is pending
+test_expect_success 'submit a job that cannot run, cancel it during epilog, submit another ' '
+    (flux submit -N 1 --flags=waitable --wait-event epilog-start -c 4 /command/that/does/not/exist > ji1 || true ) &&
+	send_sched_cancel $(cat ji1) &&
+    flux submit -N 1 --exclusive hostname > ji2 &&
+	(flux job wait-event $(cat ji1) epilog-finish || true) &&
+	(flux job info $(cat ji1) eventlog | grep epilog-finish | jq ".timestamp" > time1) &&
+	(flux job info $(cat ji2) eventlog | grep alloc | jq ".timestamp" > time2) &&
+	awk -vt1=$(cat time1) -vt2=$(cat time2) "BEGIN {exit (t1 < t2) ? 0 : 1}"
+'
+
+test_expect_success 'clean up' '
 	cleanup_active_jobs
 '
+
 test_expect_success 'remove fluxion modules' '
 	remove_qmanager &&
 	remove_resource

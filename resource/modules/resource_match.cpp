@@ -31,23 +31,18 @@ extern "C" {
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource_match_opts.hpp"
+#include "resource/schema/perf_data.hpp"
 
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
 
-/******************************************************************************
- *                                                                            *
- *                Resource Matching Service Module Context                    *
- *                                                                            *
- ******************************************************************************/
+// Global perf struct from schema
+extern struct Flux::resource_model::match_perf_t Flux::resource_model::perf;
 
-struct match_perf_t {
-    double load;                   /* Graph load time */
-    uint64_t njobs;                /* Total match count */
-    double min;                    /* Min match time */
-    double max;                    /* Max match time */
-    double accum;                  /* Total match time accumulated */
-};
+
+////////////////////////////////////////////////////////////////////////////////
+// Resource Matching Service Module Context
+////////////////////////////////////////////////////////////////////////////////
 
 class msg_wrap_t {
 public:
@@ -97,10 +92,8 @@ struct resource_ctx_t : public resource_interface_t {
     std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
-    std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;   /* Vertex/Edge writers */
     std::shared_ptr<resource_reader_base_t> reader; /* resource reader */
-    match_perf_t perf;             /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */
     std::map<uint64_t, uint64_t> allocations;  /* Allocation table */
     std::map<uint64_t, uint64_t> reservations; /* Reservation table */
@@ -210,11 +203,10 @@ resource_ctx_t::~resource_ctx_t ()
 }
 
 
-/******************************************************************************
- *                                                                            *
- *                          Request Handler Prototypes                        *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Request Handler Prototypes
+////////////////////////////////////////////////////////////////////////////////
 
 static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                               const flux_msg_t *msg, void *arg);
@@ -232,6 +224,9 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
 static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
+                             const flux_msg_t *msg, void *arg);
+
+static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
 static void next_jobid_request_cb (flux_t *h, flux_msg_handler_t *w,
@@ -279,7 +274,9 @@ static const struct flux_msg_handler_spec htab[] = {
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.info", info_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
-      "sched-fluxion-resource.stat", stat_request_cb, 0 },
+      "sched-fluxion-resource.stats-get", stat_request_cb, FLUX_ROLE_USER },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.stats-clear", stat_clear_cb, FLUX_ROLE_USER },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.next_jobid", next_jobid_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
@@ -305,11 +302,10 @@ static const struct flux_msg_handler_spec htab[] = {
     FLUX_MSGHANDLER_TABLE_END
 };
 
-/******************************************************************************
- *                                                                            *
- *                   Module Initialization Routines                           *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Module Initialization Routines
+////////////////////////////////////////////////////////////////////////////////
 
 static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
 {
@@ -342,13 +338,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->h = h;
         ctx->handlers = NULL;
         set_default_args (ctx);
-        ctx->perf.load = 0.0f;
-        ctx->perf.njobs = 0;
-        ctx->perf.min = std::numeric_limits<double>::max();
-        ctx->perf.max = 0.0f;
-        ctx->perf.accum = 0.0f;
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
-        ctx->fgraph = nullptr;  /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
         ctx->reader = nullptr;  /* Cannot be allocated at this point */
         ctx->m_r_all = nullptr;
@@ -356,7 +346,6 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->m_r_alloc = nullptr;
         ctx->m_resources_updated = true;
         ctx->m_resources_down_updated = true;
-        //gettimeofday (&(ctx->m_resources_alloc_updated), NULL);
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
     }
 
@@ -480,11 +469,10 @@ error:
 }
 
 
-/******************************************************************************
- *                                                                            *
- *              Resource Graph and Traverser Initialization                   *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Resource Graph and Traverser Initialization
+////////////////////////////////////////////////////////////////////////////////
 
 static int create_reader (std::shared_ptr<resource_ctx_t> &ctx,
                           const std::string &format)
@@ -1130,14 +1118,10 @@ done:
 static int decode_all (std::shared_ptr<resource_ctx_t> &ctx,
                        std::set<int64_t> &ranks)
 {
-    int64_t size = ctx->db->metadata.by_rank.size();
-    
-    for (int64_t rank = 0; rank < size; ++rank) {
-        auto ret = ranks.insert (rank);
-        if (!ret.second) {
-            errno = EEXIST;
-            return -1;
-        }
+    ranks.clear ();
+    for (auto const& kv: ctx->db->metadata.by_rank) {
+        if (kv.first >= 0)
+            ranks.insert (kv.first);
     }
     return 0;
 }
@@ -1350,7 +1334,8 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     elapsed = std::chrono::system_clock::now () - start;
-    ctx->perf.load = elapsed.count ();
+    perf.load = elapsed.count ();
+    perf.graph_uptime = std::chrono::system_clock::now ();
     rc = 0;
 
 done:
@@ -1397,34 +1382,6 @@ done:
     return rc;
 }
 
-static std::shared_ptr<f_resource_graph_t> create_filtered_graph (
-                                               std::shared_ptr<
-                                                   resource_ctx_t> &ctx)
-{
-    std::shared_ptr<f_resource_graph_t> fg = nullptr;
-    resource_graph_t &g = ctx->db->resource_graph;
-
-    try {
-        // Set vertex and edge maps
-        vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-        edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-
-        // Set vertex and edge filters based on subsystems to use
-        int subsys_size = ctx->db->metadata.roots.size ();
-        const multi_subsystemsS &filter = ctx->matcher->subsystemsS ();
-        subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
-                                                               subsys_size);
-        subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
-                                                               subsys_size);
-        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
-    } catch (std::bad_alloc &e) {
-        errno = ENOMEM;
-        fg = nullptr;
-    }
-
-    return fg;
-}
-
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
@@ -1449,8 +1406,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
                   ctx->opts.get_opt ().get_match_subsystems ().c_str ());
         return rc;
     }
-    if ( !(ctx->fgraph = create_filtered_graph (ctx)))
-        return -1;
 
     // Create a writers object for matched vertices and edges
     match_format_t format = match_writers_factory_t::get_writers_type (
@@ -1469,7 +1424,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     // Initialize the DFU traverser
-    if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) < 0) {
+    if (ctx->traverser->initialize (ctx->db, ctx->matcher) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: traverser initialization",
                   __FUNCTION__);
         return -1;
@@ -1496,19 +1451,18 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 }
 
 
-/******************************************************************************
- *                                                                            *
- *                        Request Handler Routines                            *
- *                                                                            *
- ******************************************************************************/
 
-static void update_match_perf (std::shared_ptr<resource_ctx_t> &ctx,
-                               double elapse)
+////////////////////////////////////////////////////////////////////////////////
+// Request Handler Routines
+////////////////////////////////////////////////////////////////////////////////
+
+static void update_match_perf (double elapsed, int64_t jobid,
+                               bool match_success)
 {
-    ctx->perf.njobs++;
-    ctx->perf.min = (ctx->perf.min > elapse)? elapse : ctx->perf.min;
-    ctx->perf.max = (ctx->perf.max < elapse)? elapse : ctx->perf.max;
-    ctx->perf.accum += elapse;
+    if (match_success)
+        perf.succeeded.update_stats (elapsed, jobid, perf.tmp_iter_count);
+    else
+        perf.failed.update_stats (elapsed, jobid, perf.tmp_iter_count);
 }
 
 static inline std::string get_status_string (int64_t now, int64_t at)
@@ -1550,7 +1504,8 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
 }
 
 static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
-                    std::string &jgf, int64_t &starttime, uint64_t &duration)
+                    std::string &R_graph_fmt, int64_t &starttime, uint64_t &duration,
+                    std::string &format)
 {
     int rc = 0;
     int version = 0;
@@ -1587,20 +1542,22 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx, const char *R,
                   static_cast<intmax_t> (st), static_cast<intmax_t> (et));
         goto freemem_out;
     }
-    if (graph == NULL) {
-        rc = -1;
-        errno = ENOENT;
-        flux_log (ctx->h, LOG_ERR, "%s: no scheduling key in R", __FUNCTION__);
-        goto freemem_out;
+    if (graph != NULL) {
+        if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
+            rc = -1;
+            errno = ENOMEM;
+            flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
+            goto freemem_out;
+        }
+        R_graph_fmt = jgf_str;
+        free (jgf_str);
+        format = "jgf";
+    } else {
+        // Use the rv1exec reader
+        R_graph_fmt = R;
+        format = "rv1exec";
     }
-    if ( !(jgf_str = json_dumps (graph, JSON_INDENT (0)))) {
-        rc = -1;
-        errno = ENOMEM;
-        flux_log (ctx->h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
-        goto freemem_out;
-    }
-    jgf = jgf_str;
-    free (jgf_str);
+
     starttime = static_cast<int64_t> (st);
     duration = et - st;
 
@@ -1692,18 +1649,33 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 }
 
 static int run (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
-                const std::string &jgf, int64_t at, uint64_t duration)
+                const std::string &R, int64_t at, uint64_t duration,
+                std::string &format)
 {
     int rc = 0;
     dfu_traverser_t &tr = *(ctx->traverser);
     std::shared_ptr<resource_reader_base_t> rd;
-    if ((rd = create_resource_reader ("jgf")) == nullptr) {
+    if (format == "jgf") {
+        if ((rd = create_resource_reader ("jgf")) == nullptr) {
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "%s: create JGF reader (id=%jd)",
+                    __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto out;
+        }
+    } else if (format == "rv1exec") {
+        if ((rd = create_resource_reader ("rv1exec")) == nullptr) {
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "%s: create rv1exec reader (id=%jd)",
+                    __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto out;
+        }
+    } else {
         rc = -1;
-        flux_log (ctx->h, LOG_ERR, "%s: create_resource_reader (id=%jd)",
-                  __FUNCTION__, static_cast<intmax_t> (jobid));
+        flux_log (ctx->h, LOG_ERR, "%s: create rv1exec reader (id=%jd)",
+                __FUNCTION__, static_cast<intmax_t> (jobid));
         goto out;
     }
-    if ((rc = tr.run (jgf, ctx->writers, rd, jobid, at, duration)) < 0) {
+    if ((rc = tr.run (R, ctx->writers, rd, jobid, at, duration)) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: dfu_traverser_t::run (id=%jd): %s",
                   __FUNCTION__, static_cast<intmax_t> (jobid),
                   ctx->traverser->err_message ().c_str ());
@@ -1716,7 +1688,7 @@ out:
 
 static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                       const char *cmd, const std::string &jstr, int64_t *now,
-                      int64_t *at, double *ov, std::stringstream &o,
+                      int64_t *at, double *overhead, std::stringstream &o,
                       flux_error_t *errp)
 {
     int rc = 0;
@@ -1740,6 +1712,9 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
                                         (start.time_since_epoch ());
     *at = *now = epoch.count ();
     if ( (rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
+        elapsed = std::chrono::system_clock::now () - start;
+        *overhead = elapsed.count ();
+        update_match_perf (*overhead, jobid, false);
         goto done;
     }
     if ( (rc = ctx->writers->emit (o)) < 0) {
@@ -1749,12 +1724,12 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
 
     rsv = (*now != *at)? true : false;
     elapsed = std::chrono::system_clock::now () - start;
-    *ov = elapsed.count ();
-    update_match_perf (ctx, *ov);
+    *overhead = elapsed.count ();
+    update_match_perf (*overhead, jobid, true);
 
     if (cmd != std::string ("satisfiability")) {
         if ( (rc = track_schedule_info (ctx, jobid,
-                                        rsv, *at, jstr, o, *ov)) != 0) {
+                                        rsv, *at, jstr, o, *overhead)) != 0) {
             flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                             __FUNCTION__, (intmax_t)jobid);
             goto done;
@@ -1766,22 +1741,25 @@ done:
 }
 
 static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
-                       const char *R, int64_t &at, double &ov,
+                       const char *R, int64_t &at, double &overhead,
                        std::stringstream &o)
 {
     int rc = 0;
     uint64_t duration = 0;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
-    std::string jgf;
-    std::string R2;
+    std::string R_graph_fmt;
+    std::string format;
 
     start = std::chrono::system_clock::now ();
-    if ( (rc = parse_R (ctx, R, jgf, at, duration)) < 0) {
+    if ( (rc = parse_R (ctx, R, R_graph_fmt, at, duration, format)) < 0) {
         flux_log_error (ctx->h, "%s: parsing R", __FUNCTION__);
         goto done;
     }
-    if ( (rc = run (ctx, jobid, jgf, at, duration)) < 0) {
+    if ( (rc = run (ctx, jobid, R_graph_fmt, at, duration, format)) < 0) {
+        elapsed = std::chrono::system_clock::now () - start;
+        overhead = elapsed.count ();
+        update_match_perf (overhead, jobid, false);
         flux_log_error (ctx->h, "%s: run", __FUNCTION__);
         goto done;
     }
@@ -1790,9 +1768,9 @@ static int run_update (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
         goto done;
     }
     elapsed = std::chrono::system_clock::now () - start;
-    ov = elapsed.count ();
-    update_match_perf (ctx, ov);
-    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, ov)) != 0) {
+    overhead = elapsed.count ();
+    update_match_perf (overhead, jobid, true);
+    if ( (rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto done;
@@ -1807,7 +1785,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     char *R = NULL;
     int64_t at = 0;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     int64_t jobid = 0;
     uint64_t duration = 0;
     std::string status = "";
@@ -1837,13 +1815,13 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
         }
         elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
-        ov = elapsed.count ();
+        overhead = elapsed.count ();
         get_jobstate_str (ctx->jobs[jobid]->state, status);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
         flux_log (ctx->h, LOG_DEBUG, "%s: jobid (%jd) with matching R exists",
                   __FUNCTION__, static_cast<intmax_t> (jobid));
-    } else if (run_update (ctx, jobid, R, at, ov, o) < 0) {
+    } else if (run_update (ctx, jobid, R, at, overhead, o) < 0) {
         flux_log_error (ctx->h,
                         "%s: update failed (id=%jd)",
                         __FUNCTION__, static_cast<intmax_t> (jobid));
@@ -1856,7 +1834,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                        "jobid", jobid,
                                        "status", status.c_str (),
-                                       "overhead", ov,
+                                       "overhead", overhead,
                                        "R", o.str ().c_str (),
                                        "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
@@ -1902,7 +1880,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     int64_t at = 0;
     int64_t now = 0;
     int64_t jobid = -1;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
@@ -1918,11 +1896,16 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
                         __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
                             __FUNCTION__, (intmax_t)jobid);
+        // The resources couldn't be allocated *or reserved*
+        // Kicking back to qmanager, remove from tracking
+        if (errno == EBUSY) {
+            ctx->jobs.erase (jobid);
+        }
         goto error;
     }
 
@@ -1930,7 +1913,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w,
     if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                    "jobid", jobid,
                                    "status", status.c_str (),
-                                   "overhead", ov,
+                                   "overhead", overhead,
                                    "R", R.str ().c_str (),
                                    "at", at) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
@@ -1973,7 +1956,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
         const char *js_str;
         int64_t at = 0;
         int64_t now = 0;
-        double ov = 0.0f;
+        double overhead = 0.0f;
         std::string status = "";
         std::stringstream R;
 
@@ -1987,7 +1970,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
                             __FUNCTION__, static_cast<intmax_t> (jobid));
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &ov, R, NULL) < 0) {
+        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                         "%s: match failed due to match error (id=%jd)",
@@ -1999,7 +1982,7 @@ static void match_multi_request_cb (flux_t *h, flux_msg_handler_t *w,
         if (flux_respond_pack (h, msg, "{s:I s:s s:f s:s s:I}",
                                          "jobid", jobid,
                                          "status", status.c_str (),
-                                         "overhead", ov,
+                                         "overhead", overhead,
                                          "R", R.str ().c_str (),
                                          "at", at) < 0) {
             flux_log_error (h, "%s", __FUNCTION__);
@@ -2142,14 +2125,35 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int saved_errno;
     json_t *o = nullptr;
+    json_t *match_succeeded = nullptr;
+    json_t *match_failed = nullptr;
     double avg = 0.0f;
     double min = 0.0f;
+    double variance = 0.0f;
+    // Failed match stats
+    double avg_failed = 0.0f;
+    double min_failed = 0.0f;
+    double variance_failed = 0.0f;
+    int64_t graph_uptime_s = 0;
+    int64_t time_since_reset_s = 0;
+    std::chrono::time_point<std::chrono::system_clock> now;
 
-    if (ctx->perf.njobs) {
-        avg = ctx->perf.accum / (double)ctx->perf.njobs;
-        min = ctx->perf.min;
+    if (perf.succeeded.njobs_reset > 1) {
+        avg = perf.succeeded.avg;
+        min = perf.succeeded.min;
+        // Welford's online algorithm
+        variance = perf.succeeded.M2
+                        / (double)perf.succeeded.njobs_reset;
     }
-    if ( !(o = json_object ())) {
+    if (perf.failed.njobs_reset > 1) {
+        avg_failed = perf.failed.avg;
+        min_failed = perf.failed.min;
+        // Welford's online algorithm
+        variance_failed = perf.failed.M2
+                            / (double)perf.failed.njobs_reset;
+    }
+    if ( !(o = json_object ()) || !(match_succeeded = json_object ())
+                               || !(match_failed = json_object ())) {
         errno = ENOMEM;
         goto error;
     }
@@ -2157,27 +2161,92 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: get_stat_by_rank", __FUNCTION__);
         goto error_free;
     }
-    if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:f s:f s:f}",
-                                   "V", num_vertices (ctx->db->resource_graph),
-                                   "E", num_edges (ctx->db->resource_graph),
-                                   "by_rank", o,
-                                   "load-time", ctx->perf.load,
-                                   "njobs", ctx->perf.njobs,
-                                   "min-match", min,
-                                   "max-match", ctx->perf.max,
-                                   "avg-match", avg) < 0) {
+
+    if (!(match_succeeded = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
+                    "njobs", perf.succeeded.njobs,
+                    "njobs-reset", perf.succeeded.njobs_reset,
+                    "max-match-jobid", perf.succeeded.max_match_jobid,
+                    "max-match-iters", perf.succeeded.match_iter_count,
+                    "stats",
+                        "min", min,
+                        "max", perf.succeeded.max,
+                        "avg", avg,
+                        "variance", variance))) {
+        errno = ENOMEM;
+        goto error_free;
+    }
+    if (!(match_failed = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
+                        "njobs", perf.failed.njobs,
+                        "njobs-reset", perf.failed.njobs_reset,
+                        "max-match-jobid", perf.failed.max_match_jobid,
+                        "max-match-iters", perf.failed.match_iter_count,
+                        "stats",
+                            "min", min_failed,
+                            "max", perf.failed.max,
+                            "avg", avg_failed,
+                            "variance", variance_failed))) {
+        errno = ENOMEM;
+        goto error_free;
+    }
+    now = std::chrono::system_clock::now ();
+    graph_uptime_s = std::chrono::duration_cast<std::chrono::seconds> (
+                        now - perf.graph_uptime).count ();
+    time_since_reset_s = std::chrono::duration_cast<std::chrono::seconds> (
+                        now - perf.time_of_last_reset).count ();
+    
+    if (flux_respond_pack (h, msg, "{s:I s:I s:o s:f s:I s:I s:{s:O s:O}}",
+                        "V", num_vertices (ctx->db->resource_graph),
+                        "E", num_edges (ctx->db->resource_graph),
+                        "by_rank", o,
+                        "load-time", perf.load,
+                        "graph-uptime", graph_uptime_s,
+                        "time-since-reset", time_since_reset_s,
+                        "match",
+                            "succeeded", match_succeeded,
+                            "failed", match_failed) < 0) {
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
     }
+    json_decref (match_succeeded);
+    json_decref (match_failed);
 
     return;
 
 error_free:
     saved_errno = errno;
     json_decref (o);
+    json_decref (match_succeeded);
+    json_decref (match_failed);
     errno = saved_errno;
 error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w,
+                           const flux_msg_t *msg, void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+
+    perf.time_of_last_reset = std::chrono::system_clock::now ();
+    // Clear the jobs-related stats and reset time
+    perf.succeeded.njobs_reset = 0;
+    perf.succeeded.max_match_jobid = -1;
+    perf.succeeded.match_iter_count = -1;
+    perf.succeeded.min = std::numeric_limits<double>::max ();
+    perf.succeeded.max = 0.0;
+    perf.succeeded.avg = 0.0;
+    perf.succeeded.M2 = 0.0;
+    // Failed match stats
+    perf.failed.njobs_reset = 0;
+    perf.failed.max_match_jobid = -1;
+    perf.failed.match_iter_count = -1;
+    perf.failed.min = std::numeric_limits<double>::max ();
+    perf.failed.max = 0.0;
+    perf.failed.avg = 0.0;
+    perf.failed.M2 = 0.0;
+
+    if (flux_respond (h, msg, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
 }
 
 static inline int64_t next_jobid (const std::map<uint64_t,
@@ -2526,7 +2595,6 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
         goto error;
     }
-    flux_log (h, LOG_DEBUG, "%s: status succeeded", __FUNCTION__);
     return;
 
 error:
@@ -2583,7 +2651,7 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     int64_t at = 0;
     int64_t now = 0;
-    double ov = 0.0f;
+    double overhead = 0.0f;
     int saved_errno = 0;
     std::stringstream R;
     json_t *jobspec = nullptr;
@@ -2605,7 +2673,7 @@ static void satisfiability_request_cb (flux_t *h, flux_msg_handler_t *w,
                    js_str,
                    &now,
                    &at,
-                   &ov,
+                   &overhead,
                    R,
                    &error) < 0) {
         if (errno == ENODEV)
@@ -2716,11 +2784,10 @@ error:
     return;
 }
 
-/******************************************************************************
- *                                                                            *
- *                               Module Main                                  *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Module Main
+////////////////////////////////////////////////////////////////////////////////
 
 extern "C" int mod_main (flux_t *h, int argc, char **argv)
 {

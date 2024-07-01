@@ -6,7 +6,6 @@ set(CGO_CFLAGS "-I${CMAKE_BINARY_DIR}")
 set(CGO_LIBRARY_FLAGS -Wl,-R
     -lflux-idset
     -lstdc++
-    -lczmq
     -ljansson
     -lhwloc
     -lboost_system

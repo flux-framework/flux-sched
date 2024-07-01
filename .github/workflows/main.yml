@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -19,18 +19,18 @@ jobs:
   spelling:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Check Spelling
-      uses: crate-ci/typos@e477391cc0243daaeeb154a7bfa67cb7d6fc5831 # v1.16.8
+      uses: crate-ci/typos@bcafd462cb07ef7ba57e34abf458fe20767e808b # v1.19.0
 
   python-format:
     name: python format
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: 3.8
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -43,10 +43,10 @@ jobs:
     name: python lint
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: 3.8
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
     outputs:
         matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -89,7 +89,7 @@ jobs:
       fail-fast: false
     name: ${{matrix.name}}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
        ref: ${{ github.event.pull_request.head.sha }}
        fetch-depth: 0
@@ -100,7 +100,7 @@ jobs:
         github.ref != 'refs/heads/master'
       run: |
         # Ensure git-describe works on a tag.
-        #  (checkout@v3 action may have left current tag as
+        #  (checkout@v4 action may have left current tag as
         #   lightweight instead of annotated. See
         #   https://github.com/actions/checkout/issues/290)
         #
@@ -120,7 +120,7 @@ jobs:
 
 
     - name: docker buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
       if: matrix.needs_buildx
 
     - name: setup qemu-user-static
@@ -133,14 +133,19 @@ jobs:
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{matrix.name}}-results.xml
         path: test-results.xml
 
     - name: coverage report
       if: success() && matrix.coverage
-      run: DOCKER_REPO= bash <(curl -s https://codecov.io/bash)
+      env:
+        DOCKER_REPO:
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: ${{matrix.coverage_flags}}
 
     - name: docker deploy
       if: success() && matrix.docker_tag

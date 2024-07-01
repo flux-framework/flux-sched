@@ -40,10 +40,10 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr) = 0;
     virtual int emit (std::stringstream &out) = 0;
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive) = 0;
     virtual int emit_edg (const std::string &prefix,
-                          const f_resource_graph_t &g, const edg_t &e) {
+                          const resource_graph_t &g, const edg_t &e) {
         return 0;
     }
     virtual int emit_tm (uint64_t starttime, uint64_t expiration) {
@@ -68,7 +68,7 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
     std::stringstream m_out;
@@ -89,20 +89,20 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
     virtual int emit_edg (const std::string &prefix,
-                          const f_resource_graph_t &g, const edg_t &e);
+                          const resource_graph_t &g, const edg_t &e);
 private:
-    json_t *emit_vtx_base (const f_resource_graph_t &g, const vtx_t &u,
+    json_t *emit_vtx_base (const resource_graph_t &g, const vtx_t &u,
                            unsigned int needs, bool exclusive);
-    int emit_vtx_prop (json_t *o, const f_resource_graph_t &g,
+    int emit_vtx_prop (json_t *o, const resource_graph_t &g,
                        const vtx_t &u, unsigned int needs, bool exclusive);
-    int emit_vtx_path (json_t *o, const f_resource_graph_t &g,
+    int emit_vtx_path (json_t *o, const resource_graph_t &g,
                        const vtx_t &u, unsigned int needs, bool exclusive);
     int map2json (json_t *o, const std::map<std::string, std::string> &mp,
                   const char *key);
-    int emit_edg_meta (json_t *o, const f_resource_graph_t &g, const edg_t &e);
+    int emit_edg_meta (json_t *o, const resource_graph_t &g, const edg_t &e);
     int alloc_json_arrays ();
     int check_array_sizes ();
 
@@ -126,7 +126,7 @@ public:
     virtual int emit (std::stringstream &out, bool newline);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
     class rank_host_t {
@@ -135,7 +135,7 @@ private:
         std::string host;
     };
     bool m_reducer_set ();
-    int emit_gatherer (const f_resource_graph_t &g, const vtx_t &u);
+    int emit_gatherer (const resource_graph_t &g, const vtx_t &u);
     int get_gatherer_children (std::string &children);
     int fill (json_t *rlite_array, json_t *host_array, json_t *props);
     int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
@@ -157,10 +157,10 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
     virtual int emit_edg (const std::string &prefix,
-                          const f_resource_graph_t &g, const edg_t &e);
+                          const resource_graph_t &g, const edg_t &e);
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
 private:
@@ -183,7 +183,7 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 private:
@@ -202,7 +202,7 @@ public:
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,
-                          const f_resource_graph_t &g, const vtx_t &u,
+                          const resource_graph_t &g, const vtx_t &u,
                           unsigned int needs, bool exclusive);
 private:
     std::list<std::string> m_out;

@@ -43,7 +43,7 @@ test_expect_success 'qmanager: many basic job submitted' '
 # We don't use flux queue stop because that can lead
 # to duplicate cancel requests
 test_expect_success 'qmanager: rapidly cancel all jobs' '
-    flux job cancelall -f &&
+    flux cancel --all &&
     flux queue idle
 '
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-set(VER_FILE ${CMAKE_BINARY_DIR}/flux-sched.ver)
+set(VER_FILE ${CMAKE_SOURCE_DIR}/flux-sched.ver)
 if(DEFINED FLUX_SCHED_VER)
   # do nothing, user said so
 elseif(DEFINED ENV{FLUX_SCHED_VERSION})
@@ -19,7 +19,7 @@ if(POLICY CMP0140)
   cmake_policy(SET CMP0140 NEW)
 endif()
 
-set(CMAKE_CXX_STANDARD 14 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -36,7 +36,6 @@ if("${isSystemDir}" STREQUAL "-1")
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
-
 # Setting the include directory for the application to find config.h
 include_directories( ${CMAKE_BINARY_DIR} )
 # Since we have created a config.h add a global define for it
@@ -46,10 +45,11 @@ add_definitions( "-DPACKAGE_VERSION=\"${FLUX_SCHED_VER}\"" )
 # We build a lot of shared libs, build them all with PIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# variable to store paths to add to module path for tests
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/sanitizers-cmake/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
+
+include(FindSanitizers)
 
 # external dependencies
 find_package(PkgConfig REQUIRED)
@@ -59,8 +59,15 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(STATUS "flux core found and no specific prefix specified, using ${FLUX_CORE_PREFIX}")
   set(CMAKE_INSTALL_PREFIX ${FLUX_CORE_PREFIX} CACHE PATH "..." FORCE)
 endif()
-message(STATUS "Forcing libdir to match flux-core (${FLUX_CORE_LIBDIR})")
-set(CMAKE_INSTALL_LIBDIR ${FLUX_CORE_LIBDIR} CACHE PATH "..." FORCE)
+if("${FLUX_CORE_LIBDIR}" MATCHES "^${FLUX_CORE_PREFIX}/(.+)$")
+  set(FLUX_CORE_LIBEXT "${CMAKE_MATCH_1}")
+else()
+  set(FLUX_CORE_LIBEXT "${CMAKE_INSTALL_LIBDIR}")
+endif()
+set(CMAKE_INSTALL_LIBDIR ${FLUX_CORE_LIBEXT} CACHE PATH "..." FORCE)
+message(STATUS "Forcing libdir selection to match flux-core: prefix subdir (${FLUX_CORE_LIBEXT})")
+message(STATUS "    flux-core library path: (${FLUX_CORE_LIBDIR})")
+message(STATUS "    flux-sched library path: (${CMAKE_INSTALL_PREFIX}/${FLUX_CORE_LIBEXT})")
 if(DEFINED ENV{PYTHON})
   set(Python_EXECUTABLE $ENV{PYTHON} CACHE FILEPATH "")
 endif()
@@ -91,7 +98,7 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths
 set(FLUX_CMD_DIR "${CMAKE_INSTALL_LIBEXECDIR}/flux/cmd")
-set(FLUX_LIB_DIR "${CMAKE_INSTALL_LIBDIR}/flux")
+set(FLUX_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/flux")
 set(FLUX_MOD_DIR "${FLUX_LIB_DIR}/modules")
 set(FLUX_SHELL_PLUGIN_DIR "${FLUX_LIB_DIR}/shell/plugins")
 set(FLUX_RC1_DIR "${CMAKE_INSTALL_SYSCONFDIR}/flux/rc1.d")
@@ -147,6 +154,7 @@ function(flux_add_plugin TargetName PluginType)
     )
   target_link_options(${TargetName} PRIVATE
     "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" ${LinkerOpts})
+  add_sanitizers(${TargetName})
   target_link_libraries(${TargetName} PRIVATE flux::core)
   if (NOT ARG_NOINSTALL)
     install(TARGETS ${TargetName}
@@ -200,13 +208,13 @@ add_custom_target(installcheck
   COMMAND env FLUX_SCHED_TEST_INSTALLED=1 ${CMAKE_CTEST_COMMAND} ${CTEST_COMMON_FLAGS})
 add_custom_target(dist
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMAND echo ${FLUX_SCHED_VER} > flux-sched.ver
+  COMMAND echo ${FLUX_SCHED_VER} > ${CMAKE_BINARY_DIR}/flux-sched.ver
   COMMAND git archive --format=tar.gz
   --prefix=flux-sched-${FLUX_SCHED_VER}/
-  --add-file=flux-sched.ver
+  --add-file=${CMAKE_BINARY_DIR}/flux-sched.ver
   --output=${CMAKE_BINARY_DIR}/flux-sched-${FLUX_SCHED_VER}.tar.gz
   HEAD .
-  COMMAND rm flux-sched.ver
+  COMMAND rm ${CMAKE_BINARY_DIR}/flux-sched.ver
   COMMENT "Generated flux-sched-${FLUX_SCHED_VER}.tar.gz"
   )
 # run installcheck, if it passes then write out version information and pack up

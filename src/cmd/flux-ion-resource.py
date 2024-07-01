@@ -69,7 +69,10 @@ class ResourceModuleInterface:
         return self.handle.rpc("sched-fluxion-resource.info", payload).get()
 
     def rpc_stat(self):
-        return self.handle.rpc("sched-fluxion-resource.stat").get()
+        return self.handle.rpc("sched-fluxion-resource.stats-get").get()
+
+    def rpc_stats_clear(self):
+        return self.handle.rpc("sched-fluxion-resource.stats-clear").get()
 
     def rpc_cancel(self, jobid):
         payload = {"jobid": jobid}
@@ -219,10 +222,89 @@ def stat_action(_):
     print("Num. of Edges: ", resp["E"])
     print("Num. of Vertices by Rank: ", json.dumps(resp["by_rank"]))
     print("Graph Load Time: ", resp["load-time"], "Secs")
-    print("Num. of Jobs Matched: ", resp["njobs"])
-    print("Min. Match Time: ", resp["min-match"], "Secs")
-    print("Max. Match Time: ", resp["max-match"], "Secs")
-    print("Avg. Match Time: ", resp["avg-match"], "Secs")
+    print("Graph Upime: ", resp["graph-uptime"], "Secs")
+    print("Time Since Stats Reset: ", resp["time-since-reset"], "Secs")
+    print(
+        "Num. of Total Jobs Successfully Matched: ",
+        resp["match"]["succeeded"]["njobs"],
+    )
+    print(
+        "Num. of Jobs Successfully Matched Since Reset: ",
+        resp["match"]["succeeded"]["njobs-reset"],
+    )
+    print(
+        "Jobid corresponding to max match time: ",
+        resp["match"]["succeeded"]["max-match-jobid"],
+    )
+    print(
+        "Match iterations corresponding to max match time: ",
+        resp["match"]["succeeded"]["max-match-iters"],
+    )
+    print(
+        "Min. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["min"],
+        "Secs",
+    )
+    print(
+        "Max. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["max"],
+        "Secs",
+    )
+    print(
+        "Avg. Successful Match Time: ",
+        resp["match"]["succeeded"]["stats"]["avg"],
+        "Secs",
+    )
+    print(
+        "Successful Match Variance: ",
+        resp["match"]["succeeded"]["stats"]["variance"],
+        "Secs^2",
+    )
+    print(
+        "Num. of Jobs with Failed Matches: ",
+        resp["match"]["failed"]["njobs"],
+    )
+    print(
+        "Num. of Jobs with Failed Matches Since Reset: ",
+        resp["match"]["failed"]["njobs-reset"],
+    )
+    print(
+        "Jobid corresponding to max match time: ",
+        resp["match"]["failed"]["max-match-jobid"],
+    )
+    print(
+        "Match iterations corresponding to max match time: ",
+        resp["match"]["failed"]["max-match-iters"],
+    )
+    print(
+        "Min. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["min"],
+        "Secs",
+    )
+    print(
+        "Max. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["max"],
+        "Secs",
+    )
+    print(
+        "Avg. Match Time of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["avg"],
+        "Secs",
+    )
+    print(
+        "Match Variance of Failed Matches: ",
+        resp["match"]["failed"]["stats"]["variance"],
+        "Secs^2",
+    )
+
+
+def stats_clear_action(_):
+    """
+    Action for stats clear sub-command
+    """
+
+    rmod = ResourceModuleInterface()
+    rmod.rpc_stats_clear()
 
 
 def set_property_action(args):
@@ -417,6 +499,7 @@ def parse_set_status(parser_ss: argparse.ArgumentParser):
     parser_ss.set_defaults(func=set_status_action)
 
 
+# pylint: disable=too-many-statements
 def main():
     """
     Main entry point
@@ -447,7 +530,8 @@ def main():
     parse_match(mkparser("match", "Find the best matching resources for a jobspec."))
     parse_update(mkparser("update", "Update the resource database."))
     parse_info(mkparser("info", "Print info on a single job."))
-    parser_s = mkparser("stat", "Print overall performance statistics.")
+    parser_s = mkparser("stats", "Print overall performance statistics.")
+    parser_sc = mkparser("stats-cancel", "Clear overall performance statistics.")
     parser_c = mkparser("cancel", "Cancel an allocated or reserved job.")
     parse_find(mkparser("find", "Find resources matching with a criteria."))
     parser_st = mkparser("status", "Display resource status.")
@@ -465,6 +549,11 @@ def main():
     # Action for stat sub-command
     #
     parser_s.set_defaults(func=stat_action)
+
+    #
+    # Action for stats-clear sub-command
+    #
+    parser_sc.set_defaults(func=stats_clear_action)
 
     #
     # Positional argument for cancel sub-command

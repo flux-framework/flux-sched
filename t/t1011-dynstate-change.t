@@ -53,7 +53,7 @@ test_expect_success 'dyn-state: node drain does not kill the job' '
 '
 
 test_expect_success 'dyn-state: killing the job on the drained node works' '
-	flux job cancel ${jobid1} &&
+	flux cancel ${jobid1} &&
 	flux job wait-event -t 10 ${jobid1} clean
 '
 
@@ -72,17 +72,17 @@ test_expect_success 'dyn-state: the drained node with a job not used' '
 	jobid4=$(flux job submit 1N.json) &&
 	flux job wait-event -t 10 ${jobid4} start &&
 	flux resource drain ${rank} &&
-	flux job cancel ${jobid1} &&
+	flux cancel ${jobid1} &&
 	flux job wait-event -t 10 ${jobid1} clean &&
 	jobid5=$(flux job submit 1N.json) &&
 	test_must_fail flux job wait-event -t 1 ${jobid5} start
 '
 
 test_expect_success 'dyn-state: cancel all jobs' '
-	flux job cancel ${jobid2} &&
-	flux job cancel ${jobid3} &&
-	flux job cancel ${jobid4} &&
-	flux job cancel ${jobid5} &&
+	flux cancel ${jobid2} &&
+	flux cancel ${jobid3} &&
+	flux cancel ${jobid4} &&
+	flux cancel ${jobid5} &&
 	flux job wait-event -t 10 ${jobid2} clean &&
 	flux job wait-event -t 10 ${jobid3} clean &&
 	flux job wait-event -t 10 ${jobid4} clean &&
@@ -100,15 +100,15 @@ test_expect_success 'dyn-state: drain prevents a full job from running' '
 	flux resource drain 0 &&
 	jobid1=$(flux job submit basic.json) &&
 	test_must_fail flux job wait-event -t 1 ${jobid1} start &&
-	flux job cancel ${jobid1}
+	flux cancel ${jobid1}
 '
 
 test_expect_success 'dyn-state: a full job blocks a later job under fcfs' '
 	jobid1=$(flux job submit basic.json) &&
 	jobid2=$(flux job submit 1N.json) &&
 	test_must_fail flux job wait-event -t 1 ${jobid2} start &&
-	flux job cancel ${jobid1} &&
-	flux job cancel ${jobid2}
+	flux cancel ${jobid1} &&
+	flux cancel ${jobid2}
 '
 
 test_expect_success 'dyn-state: correct unsatifiability after drain' '
@@ -133,11 +133,11 @@ test_expect_success 'dyn-state: a full job skipped for a later job under easy' '
 	jobid1=$(flux job submit basic.json) &&
 	jobid2=$(flux job submit 1N.json) &&
 	flux job wait-event -t 10 ${jobid2} start &&
-	flux job cancel ${jobid2} &&
+	flux cancel ${jobid2} &&
 	flux job wait-event -t 10 ${jobid2} clean &&
 	flux resource undrain 3 &&
 	flux job wait-event -t 10 ${jobid1} start &&
-	flux job cancel ${jobid1} &&
+	flux cancel ${jobid1} &&
 	flux job wait-event -t 10 ${jobid1} clean
 '
 
@@ -171,8 +171,8 @@ test_expect_success 'dyn-state: a full job blocks a later job for fcfs queue' '
 	jobid1=$(flux job submit basic.debug.json) &&
 	jobid2=$(flux job submit 1N.debug.json) &&
 	test_must_fail flux job wait-event -t 1 ${jobid1} start &&
-	flux job cancel ${jobid1} &&
-	flux job cancel ${jobid2} &&
+	flux cancel ${jobid1} &&
+	flux cancel ${jobid2} &&
 	flux job wait-event -t 1 ${jobid2} clean
 '
 
@@ -180,8 +180,8 @@ test_expect_success 'dyn-state: a job skipped for a later job for easy queue' '
 	jobid1=$(flux job submit basic.batch.json) &&
 	jobid2=$(flux job submit 1N.batch.json) &&
 	flux job wait-event -t 1 ${jobid2} start &&
-	flux job cancel ${jobid1} &&
-	flux job cancel ${jobid2} &&
+	flux cancel ${jobid1} &&
+	flux cancel ${jobid2} &&
 	flux job wait-event -t 1 ${jobid2} clean
 '
 

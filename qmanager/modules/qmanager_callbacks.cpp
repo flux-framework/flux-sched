@@ -22,7 +22,6 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::Jobspec;
 using namespace Flux::queue_manager;
-using namespace Flux::queue_manager::detail;
 using namespace Flux::opts_manager;
 using namespace Flux::cplusplus_wrappers;
 
@@ -61,6 +60,8 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
     for (auto& kv: queues) {
         const std::string &queue_name = kv.first;
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
+        if (queue->is_sched_loop_active ())
+            continue;
         while ( (job = queue->alloced_pop ()) != nullptr) {
             if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
                                                       job->schedule.R.c_str (),
@@ -71,8 +72,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "alloc success (queue=%s id=%jd)",
-                     queue_name.c_str (), static_cast<intmax_t> (job->id));
         }
         while ( (job = queue->rejected_pop ()) != nullptr) {
             std::string note = "alloc denied due to type=\"" + job->note + "\"";
@@ -84,8 +83,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__, queue_name.c_str ());
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", note.c_str (),
-                     static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
         while ( (job = queue->canceled_pop ()) != nullptr) {
             if (schedutil_alloc_respond_cancel (schedutil, job->msg) < 0) {
@@ -93,8 +90,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
                                 __FUNCTION__);
                 goto out;
             }
-            flux_log (h, LOG_DEBUG, "%s (id=%jd queue=%s)", "alloc canceled",
-                      static_cast<intmax_t> (job->id), queue_name.c_str ());
         }
         for (job = queue->pending_begin (), qd = 0;
              job != nullptr && qd < queue->get_queue_depth ();
@@ -120,13 +115,30 @@ out:
     return rc;
 }
 
+/* The RFC 27 hello handshake occurs during scheduler initialization.  Its
+ * purpose is to inform the scheduler of jobs that already have resources
+ * allocated.  This callback is made once per job.  The callback should return
+ * 0 on success or -1 on failure.  On failure, the job manager raises a fatal
+ * exception on the job.
+ *
+ * Jobs that already have resources at hello need to be assigned to the correct
+ * qmanager queue, but the queue is not provided in the hello metadata.
+ * Therefore, jobspec is fetched from the KVS so that attributes.system.queue
+ * can be extracted from it.
+ *
+ * Note that fluxion instantiates the "default" queue when no named queues
+ * are configured.  Therefore, when the queue attribute is not defined, we
+ * put the job in the default queue.
+ *
+ * Fail the job if its queue attribute (or lack thereof) no longer matches a
+ * valid queue.  This can occur if queues have been reconfigured since job
+ * submission.
+ */
 int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
                                         const char *R, void *arg)
 
 {
-    int rc = 0;
-    json_t *o = NULL;
-    json_error_t err;
+    int rc = -1;
     std::string R_out;
     char *qn_attr = NULL;
     std::string queue_name;
@@ -137,53 +149,68 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
     unsigned int prio;
     uint32_t uid;
     double ts;
+    json_t *jobspec = NULL;
+    flux_future_t *f = NULL;
 
+    /* Don't expect jobspec to be set here as it is not currently defined
+     * in RFC 27.  However, add it anyway in case the hello protocol
+     * evolves to include it.  If it is not set, it must be looked up.
+     */
     if (flux_msg_unpack (msg,
-                         "{s:I s:i s:i s:f}",
+                         "{s:I s:i s:i s:f s?o}",
                          "id", &id,
                          "priority", &prio,
                          "userid", &uid,
-                         "t_submit", &ts) < 0) {
+                         "t_submit", &ts,
+                         "jobspec", &jobspec) < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         goto out;
     }
-
-    if ( (o = json_loads (R, 0, &err)) == NULL) {
-        rc = -1;
-        errno = EPROTO;
-        flux_log (h, LOG_ERR, "%s: parsing R for job (id=%jd): %s %s@%d:%d",
-                  __FUNCTION__, static_cast<intmax_t> (id),
-                  err.text, err.source, err.line, err.column);
+    if (!jobspec) {
+        char key[64] = { 0 };
+        if (flux_job_kvs_key (key, sizeof (key), id, "jobspec") < 0
+            || !(f = flux_kvs_lookup (h, NULL, 0, key))
+            || flux_kvs_lookup_get_unpack (f, "o", &jobspec) < 0) {
+            flux_log_error (h, "%s", key);
+            goto out;
+        }
+    }
+    if (json_unpack (jobspec,
+                     "{s?{s?{s?s}}}",
+                     "attributes",
+                       "system",
+                         "queue", &qn_attr) < 0) {
+        flux_log_error (h, "error parsing jobspec");
         goto out;
     }
-    if ( (rc = json_unpack (o, "{ s?:{s?:{s?:{s?:s}}} }",
-                                   "attributes",
-                                       "system",
-                                           "scheduler",
-                                                "queue", &qn_attr)) < 0) {
-        json_decref (o);
-        errno = EPROTO;
-        flux_log (h, LOG_ERR, "%s: json_unpack for attributes", __FUNCTION__);
+    if (qn_attr)
+        queue_name = qn_attr;
+    else
+        queue_name = ctx->opts.get_opt ().get_default_queue_name ();
+    if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
+        flux_log (h,
+                  LOG_ERR,
+                  "%s: unknown queue name (id=%jd queue=%s)",
+                  __FUNCTION__,
+                  static_cast<intmax_t> (id),
+                  queue_name.c_str ());
         goto out;
     }
-
-    queue_name = qn_attr? qn_attr : ctx->opts.get_opt ().get_default_queue_name ();
-    json_decref (o);
     queue = ctx->queues.at (queue_name);
     running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
                                                    id, uid, calc_priority (prio),
                                                    ts, R);
 
-    if ( (rc = queue->reconstruct (static_cast<void *> (h),
-                                   running_job, R_out)) < 0) {
+    if (queue->reconstruct (static_cast<void *> (h), running_job, R_out) < 0) {
         flux_log_error (h, "%s: reconstruct (id=%jd queue=%s)", __FUNCTION__,
                        static_cast<intmax_t> (id), queue_name.c_str ());
         goto out;
     }
     flux_log (h, LOG_DEBUG, "requeue success (queue=%s id=%jd)",
               queue_name.c_str (), static_cast<intmax_t> (id));
-
+    rc = 0;
 out:
+    flux_future_destroy (f);
     return rc;
 }
 
@@ -290,8 +317,6 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
         return;
     }
-    flux_log (h, LOG_DEBUG, "free succeeded (queue=%s id=%jd)",
-             queue_name.c_str (), static_cast<intmax_t> (id));
 }
 
 void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
@@ -316,7 +341,7 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
     if ((job = queue->lookup (id)) == nullptr
         || !job->is_pending ())
         return;
-    if (queue->remove (id) < 0) {
+    if (queue->remove_pending (job.get ()) < 0) {
         flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__,
                        static_cast<intmax_t> (id));
         return;
@@ -382,9 +407,7 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     ctx->pls_post_loop = false;
     for (auto &kv: ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
-        ctx->pls_sched_loop = ctx->pls_sched_loop
-                              || (queue->is_schedulable ()
-                                  && !queue->is_sched_loop_active ());
+        ctx->pls_sched_loop = ctx->pls_sched_loop || queue->is_schedulable ();
         ctx->pls_post_loop = ctx->pls_post_loop
                               || queue->is_scheduled ();
     }
@@ -406,6 +429,8 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
         for (auto &kv: ctx->queues) {
             std::shared_ptr<queue_policy_base_t> &queue = kv.second;
             if (queue->run_sched_loop (static_cast<void *> (ctx->h), true) < 0) {
+                if (errno == EAGAIN)
+                    continue;
                 flux_log_error (ctx->h, "%s: run_sched_loop", __FUNCTION__);
                 return;
             }

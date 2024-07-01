@@ -21,11 +21,10 @@ using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
 
-/****************************************************************************
- *                                                                          *
- *         DFU Traverser Implementation Private Update API                  *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Private Update API
+////////////////////////////////////////////////////////////////////////////////
 
 int dfu_impl_t::emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> &w,
                           unsigned int needs, bool exclusive)
@@ -534,11 +533,10 @@ int dfu_impl_t::rem_exv (int64_t jobid)
 }
 
 
-/****************************************************************************
- *                                                                          *
- *              DFU Traverser Implementation Update API                     *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Update API
+////////////////////////////////////////////////////////////////////////////////
 
 int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
                         jobmeta_t &jobmeta)

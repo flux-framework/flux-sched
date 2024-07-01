@@ -16,6 +16,7 @@ set(RESOURCE_HEADERS
     schema/sched_data.hpp
     schema/resource_base.hpp
     schema/resource_data.hpp
+    schema/perf_data.hpp
     schema/color.hpp
     schema/ephemeral.hpp
     traversers/dfu.hpp
@@ -46,6 +47,7 @@ set(RESOURCE_SRCFILES
     policies/dfu_match_policy_factory.cpp
     jobinfo/jobinfo.cpp
     schema/resource_data.cpp
+    schema/perf_data.cpp
     schema/infra_data.cpp
     schema/sched_data.cpp
     schema/color.cpp
@@ -104,6 +106,7 @@ target_link_libraries(resource PUBLIC
     #${perfflow_deps}
     perfflowaspect::perfflowaspect
     )
+add_sanitizers(resource)
 
 add_subdirectory(modules)
 add_subdirectory(reapi)

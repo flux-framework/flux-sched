@@ -20,11 +20,10 @@ using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
-/****************************************************************************
- *                                                                          *
- *         DFU Traverser Implementation Private API Definitions             *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Private API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 const std::string dfu_impl_t::level () const
 {
@@ -206,6 +205,14 @@ int dfu_impl_t::prune (const jobmeta_t &meta, bool exclusive,
     // If resource is not UP, no reason to descend further.
     if (meta.alloc_type != jobmeta_t::alloc_type_t::AT_SATISFIABILITY
         && (*m_graph)[u].status != resource_pool_t::status_t::UP) {
+        rc = -1;
+        goto done;
+    }
+    //  RFC 31 constraints only match against type == "node"
+    //  unspecified constraint matches everything
+    if (meta.constraint != nullptr
+        && (*m_graph)[u].type == "node"
+        && !meta.constraint->match ((*m_graph)[u])) {
         rc = -1;
         goto done;
     }
@@ -705,13 +712,6 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta, vtx_t u,
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
 
-    //  RFC 31 constraints only match against type == "node"
-    //  unspecified constraint matches everything
-    if (meta.constraint != nullptr
-        && (*m_graph)[u].type == "node"
-        && !meta.constraint->match ((*m_graph)[u]))
-        goto done;
-
     p = (*m_graph)[u].schedule.plans;
     if ( (avail = planner_avail_resources_during (p, at, duration)) == 0) {
         goto done;
@@ -988,60 +988,30 @@ int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
 }
 
 
-/****************************************************************************
- *                                                                          *
- *           DFU Traverser Implementation Public API Definitions            *
- *                                                                          *
- ****************************************************************************/
 
-dfu_impl_t::dfu_impl_t ()
-{
+////////////////////////////////////////////////////////////////////////////////
+// DFU Traverser Implementation Public API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
-}
-
-dfu_impl_t::dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
-                        std::shared_ptr<resource_graph_db_t> db,
+dfu_impl_t::dfu_impl_t () = default;
+dfu_impl_t::dfu_impl_t (std::shared_ptr<resource_graph_db_t> db,
                         std::shared_ptr<dfu_match_cb_t> m)
-    : m_graph (g), m_graph_db (db), m_match (m)
+    : m_graph_db (db), m_match (m)
 {
 
 }
+dfu_impl_t::dfu_impl_t (const dfu_impl_t &o) = default;
+dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o) = default;
+dfu_impl_t::dfu_impl_t (dfu_impl_t &&o) = default;
+dfu_impl_t &dfu_impl_t::operator= (dfu_impl_t &&o) = default;
+dfu_impl_t::~dfu_impl_t () = default;
 
-dfu_impl_t::dfu_impl_t (const dfu_impl_t &o)
-{
-    m_color = o.m_color;
-    m_best_k_cnt = o.m_best_k_cnt;
-    m_trav_level = o.m_trav_level;
-    m_graph = o.m_graph;
-    m_graph_db = o.m_graph_db;
-    m_match = o.m_match;
-    m_err_msg = o.m_err_msg;
-}
-
-dfu_impl_t &dfu_impl_t::operator= (const dfu_impl_t &o)
-{
-    m_color = o.m_color;
-    m_best_k_cnt = o.m_best_k_cnt;
-    m_trav_level = o.m_trav_level;
-    m_graph = o.m_graph;
-    m_graph_db = o.m_graph_db;
-    m_match = o.m_match;
-    m_err_msg = o.m_err_msg;
-    return *this;
-}
-
-dfu_impl_t::~dfu_impl_t ()
-{
-
-}
-
-const std::shared_ptr<const f_resource_graph_t> dfu_impl_t::get_graph () const
+const resource_graph_t *dfu_impl_t::get_graph () const
 {
     return m_graph;
 }
 
-const std::shared_ptr<const
-                      resource_graph_db_t> dfu_impl_t::get_graph_db () const
+const std::shared_ptr<const resource_graph_db_t> dfu_impl_t::get_graph_db () const
 {
     return m_graph_db;
 }
@@ -1071,14 +1041,10 @@ const std::set<std::string> &dfu_impl_t::get_exclusive_resource_types () const
     return m_match->get_exclusive_resource_types ();
 }
 
-void dfu_impl_t::set_graph (std::shared_ptr<f_resource_graph_t> g)
-{
-    m_graph = g;
-}
-
 void dfu_impl_t::set_graph_db (std::shared_ptr<resource_graph_db_t> db)
 {
     m_graph_db = db;
+    m_graph = &db->resource_graph;
 }
 
 void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
@@ -1131,7 +1097,12 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
         }
     }
 
-    if (!avail.empty () && !types.empty ()) {
+    if (avail.empty () || types.empty ()) {
+        rc = 0;
+        goto done;
+    }
+
+    if ( (*m_graph)[u].idata.subplans[s] == NULL) {
         errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types)) ) {
@@ -1140,6 +1111,9 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
+    } else {
+        planner_multi_update ((*m_graph)[u].idata.subplans[s], &avail[0], 
+                               &types[0], types.size ());
     }
     rc = 0;
 done:

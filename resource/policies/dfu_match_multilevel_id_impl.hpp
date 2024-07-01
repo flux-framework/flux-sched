@@ -18,11 +18,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *     MultiLevel ID Match Policy Class's Private Method Definitions        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// MultiLevel ID Match Policy Class's Private Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename FOLD>
 multilevel_id_t<FOLD>::score_factor_t::score_factor_t (const std::string &type,
@@ -66,11 +65,10 @@ int64_t multilevel_id_t<FOLD>::score_factor_t::calc_factor (
 }
 
 
-/****************************************************************************
- *                                                                          *
- *      MultiLevel ID Match Policy Class's Public Method Definitions        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// MultiLevel ID Match Policy Class's Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename FOLD>
 multilevel_id_t<FOLD>::multilevel_id_t ()
@@ -116,7 +114,7 @@ int multilevel_id_t<FOLD>::dom_finish_graph (
                                const subsystem_t &subsystem,
                                const std::vector< 
                                          Flux::Jobspec::Resource> &resources,
-                               const f_resource_graph_t &g,
+                               const resource_graph_t &g,
                                scoring_api_t &dfu)
 {
     int64_t score = MATCH_MET;
@@ -152,7 +150,7 @@ int multilevel_id_t<FOLD>::dom_discover_vtx (
                                const subsystem_t &subsystem,
                                const std::vector<
                                          Flux::Jobspec::Resource> &resources,
-                               const f_resource_graph_t &g)
+                               const resource_graph_t &g)
 {
     if (m_multilevel_factors.find (g[u].type) != m_multilevel_factors.end ()) {
         if (g[u].id < -1)
@@ -173,7 +171,7 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (
                                const subsystem_t &subsystem,
                                const std::vector<
                                          Flux::Jobspec::Resource> &resources,
-                               const f_resource_graph_t &g,
+                               const resource_graph_t &g,
                                scoring_api_t &dfu)
 {
     int64_t score = MATCH_MET;

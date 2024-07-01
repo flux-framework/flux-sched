@@ -9,13 +9,6 @@ mkdir -p config
 export FLUX_SCHED_MODULE=none
 test_under_flux 1 full -o,--config-path=$(pwd)/config
 
-get_queue() {
-	queue=$1 &&
-	jobid=$(flux job id $2) &&
-	flux dmesg | grep ${queue} | grep ${jobid} | awk '{print $5}' \
-	    | awk -F= '{print $2}'
-}
-
 test_expect_success 'qmanager: load resource' '
 	load_resource prune-filters=ALL:core subsystems=containment policy=low
 '
@@ -34,44 +27,30 @@ test_expect_success 'qmanager: loading qmanager with multiple queues' '
 	load_qmanager
 '
 
+get_policy() {
+	jq -e -r .params.$1.\"queue-policy\"
+}
+
+test_expect_success 'qmanager: all,batch,debug are fcfs queues' '
+	test $(flux qmanager-params | get_policy all) = "fcfs" &&
+	test $(flux qmanager-params | get_policy batch) = "fcfs" &&
+	test $(flux qmanager-params | get_policy debug) = "fcfs"
+'
+
 test_expect_success 'qmanager: job can be submitted to queue=all' '
-	jobid=$(flux submit -n 1 --queue=all hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = all &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = all &&
-	flux dmesg -C
+	flux run -n1 --queue=all true
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=batch' '
-	jobid=$(flux submit -n 1 --queue=batch hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = batch &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = batch &&
-	flux dmesg -C
+	flux run -n1 --queue=batch true
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=debug' '
-	jobid=$(flux submit -n 1 --queue=debug hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = debug &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = debug &&
-	flux dmesg -C
+	flux run -n1 --queue=debug true
 '
 
-test_expect_success 'qmanager: job enqueued into implicitly default queue' '
-	jobid=$(flux submit -n 1 hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = all &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = all &&
-	flux dmesg -C
+test_expect_success 'qmanager: job enqueued into default queue' '
+	flux run -n1 true
 '
 
 test_expect_success 'reconfigure qmanager with queues with different policies' '
@@ -91,44 +70,26 @@ test_expect_success 'reconfigure qmanager with queues with different policies' '
 	reload_qmanager
 '
 
+test_expect_success 'qmanager: queues have expected policies' '
+	test $(flux qmanager-params | get_policy queue1) = "easy" &&
+	test $(flux qmanager-params | get_policy queue2) = "hybrid" &&
+	test $(flux qmanager-params | get_policy queue3) = "fcfs"
+'
+
 test_expect_success 'qmanager: job can be submitted to queue=queue3 (fcfs)' '
-	jobid=$(flux submit -n 1 --queue=queue3 hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = queue3 &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = queue3 &&
-	flux dmesg -C
+	flux run -n1 --queue=queue3 true
 '
 
 test_expect_success 'qmanager: job can be submitted to queue=queue2 (hybrid)' '
-	jobid=$(flux submit -n 1 --queue=queue2 hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = queue2 &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = queue2 &&
-	flux dmesg -C
+	flux run -n1 --queue=queue2 true
 '
 
 test_expect_success 'qmanager: job submitted to queue=queue1 (conservative)' '
-	jobid=$(flux submit -n 1 --queue=queue1 hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = queue1 &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = queue1 &&
-	flux dmesg -C
+	flux run -n1 --queue=queue1 true
 '
 
-test_expect_success 'qmanager: job enqueued into explicitly default queue' '
-	jobid=$(flux submit -n 1 hostname) &&
-	flux job wait-event -t 10 ${jobid} finish &&
-	queue=$(get_queue alloc ${jobid}) &&
-	test ${queue} = queue3 &&
-	queue=$(get_queue free ${jobid}) &&
-	test ${queue} = queue3 &&
-	flux dmesg -C
+test_expect_success 'qmanager: job enqueued into default queue' '
+	flux run -n1 true
 '
 
 test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
@@ -138,6 +99,7 @@ test_expect_success 'qmanager: job is denied when submitted to unknown queue' '
 '
 
 test_expect_success 'qmanager: incorrect queue policy can be caught' '
+	flux dmesg -C &&
 	cat >config/queues.toml <<-EOT &&
 	[queues.queue1]
 	[queues.queue2]
@@ -150,6 +112,16 @@ test_expect_success 'qmanager: incorrect queue policy can be caught' '
 	flux queue start --all &&
 	reload_qmanager &&
 	flux dmesg | grep "Unknown queuing policy"
+'
+test_expect_success 'qmanager: whee, what happened' '
+	flux dmesg &&
+	flux qmanager-params
+'
+
+test_expect_success 'qmanager: fcfs was used instead of unknown policy' '
+	test $(flux qmanager-params | get_policy queue1) = "easy" &&
+	test $(flux qmanager-params | get_policy queue2) = "fcfs" &&
+	test $(flux qmanager-params | get_policy queue3) = "fcfs"
 '
 
 test_expect_success 'unload qmanager and deconfigure queues' '

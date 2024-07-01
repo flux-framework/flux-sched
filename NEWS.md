@@ -1,3 +1,72 @@
+flux-sched version 0.35.0 - 2024-06-06
+--------------------------------------
+
+### New Features
+ * Add jobid and schedule iteration count to match stats;
+   make perf a global variable (#1205)
+ * make backfill reactive during sched loop (#1211)
+### Fixes
+ * qmanager: always process unblocked jobs (#1211)
+ * qmanager: search blocked jobs during pending removal (#1209)
+ * qmanager: reconsider blocked jobs on reprioritize (#1217)
+ * avoid copying of std::map in `out_edges` (#1206)
+### Cleanup
+ * comment blocks: stop using full-star boxes (#1216)
+### Build/Testsuite
+ * test/match-formats: make jq command valid (#1213)
+ * cmake: ensure we install libraries to our prefix (#1203)
+ * Test repair (#1207)
+
+
+flux-sched version 0.34.0 - 2024-05-08
+--------------------------------------
+
+### New Features
+
+ * qmanager: defer jobs with unmatchable constraints (#1188)
+ * Add planner reinitialization for elasticity (#1156)
+ * Update match stats and implement stats-clear (#1168)
+ * Add sanitizers (#1179)
+ * reduce unnecessary logging (#1186)
+ * Update stats output to include data for failed matches (#1187)
+ * Implement rv1exec reader update to facilitate Fluxion reload (#1176)
+
+### Cleanup
+
+ * refactor: optmgr to simpler design, one file (#1177)
+ * autoconf removal (#1196)
+ * queue_base_manager: refactor to remove impl (#1178)
+
+### Fixes
+
+ * cmake: look for ver file in source directory (#1199)
+ * docker-run-checks: ensure we match user's home (#1197)
+ * Add sanitizers (#1179)
+ * resource: ensure all resources start in DOWN state when some ranks
+   are excluded by configuration (#1183)
+ * docs/cmake:stop constantly rebuilding manpages (#1190)
+ * qmanager: split remove to separate pending (#1175)
+
+### Build/Testsuite
+
+ * up the required C++ standard to 20 (#1174)
+ * test: run t10001 under flux (#1181)
+ * testsuite: add valgrind suppressions for hwloc (#1173)
+ * ci: update deprecated github actions (#1191)
+
+
+flux-sched version 0.33.1 - 2024-04-09
+--------------------------------------
+
+### Fixes
+
+ * Improve match performance with node constrains when feasibility is
+   enabled (#1162)
+ * policies: add firstnodex to the known policies (#1161)
+ * reader: fix jgf properties (#1149)
+ * Replace deprecated 'flux job cancel[all]' usage (#1157)
+ * Correct typo into 'because'.  (#1155)
+
 flux-sched version 0.33.0 - 2024-03-04
 --------------------------------------
 

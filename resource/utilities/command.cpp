@@ -39,8 +39,8 @@ command_t commands[] = {
 "allocate_orelse_reserve): "
 "resource-query> multi-match allocate jobspec1 jobspec2 ..."},
     { "update", "u", cmd_update, "Update resources with a JGF subgraph (subcmd: "
-"allocate | reserve): "
-"resource-query> update allocate jgf_file jobid starttime duration" },
+"allocate | reserve), (reader: jgf | rv1exec): "
+"resource-query> update allocate jgf jgf_file jobid starttime duration" },
     { "attach", "j", cmd_attach, "Attach a JGF subgraph to the "
 "resource graph: resource-query> attach jgf_file" },
     { "remove", "j", cmd_remove, "Experimental: remove a subgraph to the "
@@ -318,7 +318,8 @@ int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx,
 
 static int update_run (std::shared_ptr<resource_context_t> &ctx,
                        const std::string &fn, const std::string &str,
-                       int64_t id, int64_t at, uint64_t d)
+                       int64_t id, int64_t at, uint64_t d,
+                       const std::string &reader)
 {
     int rc = -1;
     double elapse = 0.0f;
@@ -326,9 +327,16 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     struct timeval st, et;
     std::shared_ptr<resource_reader_base_t> rd;
 
-    if ( (rd = create_resource_reader ("jgf")) == nullptr) {
-        std::cerr << "ERROR: can't create JGF reader " << std::endl;
-        return -1;
+    if (reader == "jgf") {
+        if ( (rd = create_resource_reader ("jgf")) == nullptr) {
+            std::cerr << "ERROR: can't create JGF reader " << std::endl;
+            return -1;
+        }
+    } else {
+        if ( (rd = create_resource_reader ("rv1exec")) == nullptr) {
+            std::cerr << "ERROR: can't create rv1exec reader " << std::endl;
+            return -1;
+        }
     }
 
     gettimeofday (&st, NULL);
@@ -360,26 +368,31 @@ static int update (std::shared_ptr<resource_context_t> &ctx,
     int64_t at = 0;
     int64_t jobid = 0;
     std::string subcmd = args[1];
+    std::string reader = args[2];
     std::stringstream buffer{};
 
     if (!(subcmd == "allocate" || subcmd == "reserve")) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return -1;
     }
-    std::ifstream jgf_file (args[2]);
+    if (!(reader == "jgf" || reader == "rv1exec")) {
+        std::cerr << "ERROR: unsupported reader " << args[2] << std::endl;
+        return -1;
+    }
+    std::ifstream jgf_file (args[3]);
     if (!jgf_file) {
-        std::cerr << "ERROR: can't open " << args[2] << std::endl;
+        std::cerr << "ERROR: can't open " << args[3] << std::endl;
         return -1;
     }
 
-    jobid = static_cast<int64_t> (std::strtoll (args[3].c_str (), NULL, 10));
+    jobid = static_cast<int64_t> (std::strtoll (args[4].c_str (), NULL, 10));
     if (ctx->allocations.find (jobid) != ctx->allocations.end ()
         || ctx->reservations.find (jobid) != ctx->reservations.end ()) {
         std::cerr << "ERROR: existing Jobid " << std::endl;
         return -1;
     }
-    at = static_cast<int64_t> (std::strtoll (args[4].c_str (), NULL, 10));
-    d = static_cast<int64_t> (std::strtoll (args[5].c_str (), NULL, 10));
+    at = static_cast<int64_t> (std::strtoll (args[5].c_str (), NULL, 10));
+    d = static_cast<int64_t> (std::strtoll (args[6].c_str (), NULL, 10));
     if (at < 0 || d == 0) {
         std::cerr << "ERROR: invalid time ("
                   << at << ", " << d << ")" << std::endl;
@@ -389,14 +402,14 @@ static int update (std::shared_ptr<resource_context_t> &ctx,
     buffer << jgf_file.rdbuf ();
     jgf_file.close ();
 
-    return update_run (ctx, args[2], buffer.str (), jobid, at, d);
+    return update_run (ctx, args[3], buffer.str (), jobid, at, d, reader);
 }
 
 int cmd_update (std::shared_ptr<resource_context_t> &ctx,
                 std::vector<std::string> &args)
 {
     try {
-        if (args.size () != 6) {
+        if (args.size () != 7) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
@@ -438,7 +451,7 @@ static int attach (std::shared_ptr<resource_context_t> &ctx,
         std::cerr << "ERROR: " << rd->err_message ();
         return -1;
     }
-    if (ctx->traverser->initialize (ctx->fgraph, ctx->db, ctx->matcher) != 0) {
+    if (ctx->traverser->initialize (ctx->db, ctx->matcher) != 0) {
         std::cerr << "ERROR: can't reinitialize traverser after attach"
                   << std::endl;
         return -1;

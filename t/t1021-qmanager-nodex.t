@@ -84,7 +84,7 @@ EOF
 '
 
 test_expect_success 'qmanager-nodex: cancel all jobs (hinodex)' '
-    flux job cancelall -f &&
+    flux cancel --all &&
     flux queue drain
 '
 
@@ -144,7 +144,7 @@ EOF
 '
 
 test_expect_success 'qmanager-nodex: cancel all jobs (lonodex)' '
-    flux job cancelall -f &&
+    flux cancel --all &&
     flux queue drain
 '
 

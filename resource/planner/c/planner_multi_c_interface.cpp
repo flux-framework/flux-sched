@@ -19,11 +19,10 @@
 #include "planner_multi.h"
 #include "resource/planner/c++/planner_multi.hpp"
 
-/****************************************************************************
- *                                                                          *
- *              Planner Multi and Resource Update APIs                      *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Planner Multi and Resource Update APIs
+////////////////////////////////////////////////////////////////////////////////
 
 static void fill_iter_request (planner_multi_t *ctx, struct request_multi *iter,
                                int64_t at, uint64_t duration,

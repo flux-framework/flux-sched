@@ -23,7 +23,7 @@ namespace resource_model {
 bool known_match_policy (const std::string &policy)
 {
     bool rc = true;
-    if (policy != FIRST_MATCH
+    if (policy != FIRST_MATCH && policy != FIRST_NODEX_MATCH
         && policy != HIGH_ID_FIRST && policy != LOW_ID_FIRST
         && policy != LOW_NODE_FIRST && policy != HIGH_NODE_FIRST
         && policy != LOW_NODEX_FIRST && policy != HIGH_NODEX_FIRST

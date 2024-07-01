@@ -55,7 +55,7 @@ struct resource_context_t {
     std::shared_ptr<dfu_match_cb_t> matcher; /* Match callback object */
     std::shared_ptr<dfu_traverser_t> traverser; /* Graph traverser object */
     std::shared_ptr<resource_graph_db_t> db;    /* Resource graph data store */
-    std::shared_ptr<f_resource_graph_t> fgraph; /* Filtered graph */
+    std::shared_ptr<resource_graph_t> fgraph; /* Filtered graph */
     std::shared_ptr<match_writers_t> writers;  /* Vertex/Edge writers */
     match_perf_t perf;           /* Match performance stats */
     std::map<uint64_t, std::shared_ptr<job_info_t>> jobs; /* Jobs table */

@@ -12,6 +12,7 @@
 #define QUEUE_POLICY_BF_BASE_HPP
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
+#include <flux/core/job.h>
 
 namespace Flux {
 namespace queue_manager {
@@ -34,17 +35,11 @@ protected:
 private:
     int cancel_completed_jobs (void *h);
     int cancel_reserved_jobs (void *h);
-    std::map<std::vector<double>, flux_jobid_t>::iterator &
-        allocate_orelse_reserve (void *h, std::shared_ptr<job_t> job,
-                                 bool use_alloced_queue,
-                                 std::map<std::vector<double>,
-                                     flux_jobid_t>::iterator &iter);
-    std::map<std::vector<double>, flux_jobid_t>::iterator &
-        allocate (void *h, std::shared_ptr<job_t> job, bool use_alloced_queue,
-        std::map<std::vector<double>, flux_jobid_t>::iterator &iter);
     int allocate_orelse_reserve_jobs (void *h, bool use_alloced_queue);
     std::map<uint64_t, flux_jobid_t> m_reserved;
-    unsigned int m_reservation_cnt;
+    int m_reservation_cnt;
+    int m_scheduled_cnt;
+    decltype (m_pending)::iterator m_in_progress_iter = m_pending.end();
 };
 
 } // namespace Flux::queue_manager::detail

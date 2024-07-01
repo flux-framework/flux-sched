@@ -28,11 +28,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *              Base Writers Class Public Method Definitions                *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Base Writers Class Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 int match_writers_t::compress_ids (std::stringstream &o,
                                    const std::vector<int64_t> &ids)
@@ -103,11 +102,10 @@ ret:
 }
 
 
-/****************************************************************************
- *                                                                          *
- *              Simple Writers Class Public Method Definitions              *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Simple Writers Class Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool sim_match_writers_t::empty ()
 {
@@ -144,7 +142,7 @@ int sim_match_writers_t::emit (std::stringstream &out)
 }
 
 int sim_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g, const vtx_t &u,
+                                   const resource_graph_t &g, const vtx_t &u,
                                    unsigned int needs, bool exclusive)
 {
     std::string mode = (exclusive)? "x" : "s";
@@ -154,11 +152,10 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
 }
 
 
-/****************************************************************************
- *                                                                          *
- *       JSON Graph Format (JGF) Writers Class Public Definitions           *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// JSON Graph Format (JGF) Writers Class Public Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 jgf_match_writers_t::jgf_match_writers_t ()
 {
@@ -261,7 +258,7 @@ ret:
 }
 
 int jgf_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g, const vtx_t &u,
+                                   const resource_graph_t &g, const vtx_t &u,
                                    unsigned int needs, bool exclusive)
 {
     int rc = 0;
@@ -309,7 +306,7 @@ out:
 }
 
 int jgf_match_writers_t::emit_edg (const std::string &prefix,
-                                   const f_resource_graph_t &g, const edg_t &e)
+                                   const resource_graph_t &g, const edg_t &e)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -348,11 +345,10 @@ out:
 }
 
 
-/****************************************************************************
- *                                                                          *
- *       JSON Graph Format (JGF) Writers Class Private Definitions          *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// JSON Graph Format (JGF) Writers Class Private Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 int jgf_match_writers_t::alloc_json_arrays ()
 {
@@ -400,7 +396,7 @@ ret:
     return rc;
 }
 
-json_t *jgf_match_writers_t::emit_vtx_base (const f_resource_graph_t &g,
+json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
                                             const vtx_t &u,
                                             unsigned int needs, bool exclusive)
 {
@@ -494,7 +490,7 @@ out:
     return rc;
 }
 
-int jgf_match_writers_t::emit_edg_meta (json_t *o, const f_resource_graph_t &g,
+int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g,
                                         const edg_t &e)
 {
     int rc = 0;
@@ -535,11 +531,10 @@ out:
 }
 
 
-/****************************************************************************
- *                                                                          *
- *            RLITE Writers Class Public Method Definitions                 *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// RLITE Writers Class Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 rlite_match_writers_t::rlite_match_writers_t ()
 {
@@ -669,7 +664,7 @@ int rlite_match_writers_t::emit (std::stringstream &out)
 }
 
 int rlite_match_writers_t::emit_vtx (const std::string &prefix,
-                                     const f_resource_graph_t &g,
+                                     const resource_graph_t &g,
                                      const vtx_t &u,
                                      unsigned int needs,
                                      bool exclusive)
@@ -693,11 +688,10 @@ ret:
 }
 
 
-/****************************************************************************
- *                                                                          *
- *            RLITE Writers Class Private Method Definitions                *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// RLITE Writers Class Private Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool rlite_match_writers_t::m_reducer_set ()
 {
@@ -760,7 +754,7 @@ ret:
     return rc;
 }
 
-int rlite_match_writers_t::emit_gatherer (const f_resource_graph_t &g,
+int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g,
                                           const vtx_t &u)
 {
     int rc = 0;
@@ -927,11 +921,10 @@ ret:
 }
 
 
-/****************************************************************************
- *                                                                          *
- *                  RV1 Writers Class Method Definitions                    *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// RV1 Writers Class Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool rv1_match_writers_t::empty ()
 {
@@ -1079,7 +1072,7 @@ ret:
 }
 
 int rv1_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const f_resource_graph_t &g,
+                                   const resource_graph_t &g,
                                    const vtx_t &u,
                                    unsigned int needs,
                                    bool exclusive)
@@ -1091,7 +1084,7 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
-                                   const f_resource_graph_t &g,
+                                   const resource_graph_t &g,
                                    const edg_t &e)
 {
     int rc = 0;
@@ -1114,11 +1107,10 @@ int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
 }
 
 
-/****************************************************************************
- *                                                                          *
- *              RV1 Nosched Writers Class Method Definitions                *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// RV1 Nosched Writers Class Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool rv1_nosched_match_writers_t::empty ()
 {
@@ -1204,7 +1196,7 @@ ret:
 }
 
 int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
-                                           const f_resource_graph_t &g,
+                                           const resource_graph_t &g,
                                            const vtx_t &u,
                                            unsigned int needs,
                                            bool exclusive)
@@ -1220,11 +1212,10 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
 }
 
 
-/****************************************************************************
- *                                                                          *
- *         PRETTY Simple Writers Class Public Method Definitions            *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// PRETTY Simple Writers Class Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool pretty_sim_match_writers_t::empty ()
 {
@@ -1265,7 +1256,7 @@ int pretty_sim_match_writers_t::emit (std::stringstream &out)
 }
 
 int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
-                                          const f_resource_graph_t &g,
+                                          const resource_graph_t &g,
                                           const vtx_t &u,
                                           unsigned int needs, bool exclusive)
 {
@@ -1278,11 +1269,10 @@ int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
 }
 
 
-/****************************************************************************
- *                                                                          *
- *             Match Writers Factory Class Method Definitions               *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Match Writers Factory Class Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 std::shared_ptr<match_writers_t> match_writers_factory_t::
                                      create (match_format_t f)

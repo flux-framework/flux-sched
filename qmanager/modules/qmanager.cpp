@@ -20,7 +20,6 @@ extern "C" {
 #include <sstream>
 
 #include "qmanager/policies/base/queue_policy_base.hpp"
-#include "qmanager/policies/base/queue_policy_base_impl.hpp"
 #include "qmanager/policies/queue_policy_factory_impl.hpp"
 #include "qmanager/modules/qmanager_opts.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
@@ -33,11 +32,10 @@ using namespace Flux::opts_manager;
 using namespace Flux::cplusplus_wrappers;
 
 
-/******************************************************************************
- *                                                                            *
- *                 Queue Manager Service Module Context                       *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Queue Manager Service Module Context
+////////////////////////////////////////////////////////////////////////////////
 
 class fluxion_resource_interface_t {
 public:
@@ -220,8 +218,11 @@ static void update_on_resource_response (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto out;
     }
-    for (auto &kv : ctx->queues)
-        kv.second->set_schedulability (true);
+    for (auto &[_, queue] : ctx->queues) {
+        queue->set_schedulability (true);
+        // constraints must be reconsidered if node status changes
+        queue->reconsider_blocked_jobs ();
+    }
 
 out:
     flux_future_reset (f);
@@ -297,7 +298,6 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w,
         flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
         goto out;
     }
-    flux_log (h, LOG_DEBUG, "%s: resource-status succeeded", __FUNCTION__);
     flux_future_destroy (f);
     return;
 
@@ -604,11 +604,10 @@ static const struct flux_msg_handler_spec htab[] = {
 };
 
 
-/******************************************************************************
- *                                                                            *
- *                               Module Main                                  *
- *                                                                            *
- ******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Module Main
+////////////////////////////////////////////////////////////////////////////////
 
 int mod_start (flux_t *h, int argc, char **argv)
 {

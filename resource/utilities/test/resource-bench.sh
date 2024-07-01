@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 
 NJOBS=4096
 NNODES=256

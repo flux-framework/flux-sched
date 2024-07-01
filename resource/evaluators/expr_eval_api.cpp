@@ -20,11 +20,10 @@ namespace Flux {
 namespace resource_model {
 
 
-/****************************************************************************
- *                                                                          *
- *           Expression Evaluation API Private Method Definitions           *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Expression Evaluation API Private Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 bool expr_eval_api_t::is_paren (const std::string &e, std::size_t at) const
 {
@@ -259,11 +258,10 @@ int expr_eval_api_t::evaluate_pred (pred_op_t op,
 }
 
 
-/****************************************************************************
- *                                                                          *
- *           Expression Evaluation API Public Method Definitions            *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Expression Evaluation API Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 int expr_eval_api_t::validate (const std::string &e,
                                const expr_eval_target_base_t &target)

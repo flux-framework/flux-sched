@@ -83,7 +83,7 @@ int reapi_module_t::match_allocate (void *h, bool orelse_reserve,
 
 void match_allocate_multi_cont (flux_future_t *f, void *arg)
 {
-    int64_t rj = -1;
+    int64_t jobid = -1;
     int64_t at;
     double ov;
     const char *rset = nullptr;
@@ -91,18 +91,18 @@ void match_allocate_multi_cont (flux_future_t *f, void *arg)
     queue_adapter_base_t *adapter = static_cast<queue_adapter_base_t *> (arg);
 
     if (flux_rpc_get_unpack (f, "{s:I s:s s:f s:s s:I}",
-                                  "jobid", &rj,
+                                  "jobid", &jobid,
                                   "status", &status,
                                   "overhead", &ov,
                                   "R", &rset,
                                   "at", &at) == 0) {
-        if (adapter->handle_match_success (rj, status, rset, at, ov) < 0) {
+        if (adapter->handle_match_success (jobid, status, rset, at, ov) < 0) {
             adapter->set_sched_loop_active (false);
             flux_future_destroy (f);
             return;
         }
     } else {
-        adapter->handle_match_failure (errno);
+        adapter->handle_match_failure (jobid, errno);
         adapter->set_sched_loop_active (false);
         flux_future_destroy (f);
         return;
@@ -160,7 +160,7 @@ int reapi_module_t::update_allocate (void *h, const uint64_t jobid,
                                     double &ov, std::string &R_out)
 {
     int rc = -1;
-    int64_t rj = -1;
+    int64_t res_jobid = -1;
     flux_t *fh = (flux_t *)h;
     flux_future_t *f = NULL;
     int64_t scheduled_at = -1;
@@ -179,13 +179,13 @@ int reapi_module_t::update_allocate (void *h, const uint64_t jobid,
                                       "R", R.c_str ())))
         goto out;
     if ( (rc = flux_rpc_get_unpack (f, "{s:I s:s s:f s:s s:I}",
-                                           "jobid", &rj,
+                                           "jobid", &res_jobid,
                                            "status", &status,
                                            "overhead", &overhead,
                                            "R", &rset,
                                            "at", &scheduled_at)) < 0)
         goto out;
-    if (rj != static_cast<int64_t> (jobid)
+    if (res_jobid != static_cast<int64_t> (jobid)
         || rset == NULL
         || status == NULL
         || std::string ("ALLOCATED") != status) {
@@ -280,7 +280,7 @@ int reapi_module_t::stat (void *h, int64_t &V, int64_t &E,int64_t &J,
         goto out;
     }
 
-    if (!(f = flux_rpc (fh, "sched-fluxion-resource.stat",
+    if (!(f = flux_rpc (fh, "sched-fluxion-resource.stats-get",
                         NULL, FLUX_NODEID_ANY, 0))) {
         goto out;
     }

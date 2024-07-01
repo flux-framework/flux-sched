@@ -10,7 +10,7 @@ RUN sudo apt-get -qq install -y --no-install-recommends \
 	libboost-system-dev \
 	libboost-filesystem-dev \
 	libboost-regex-dev \
-	python-yaml \
+	python3-yaml \
 	libyaml-cpp-dev \
 	libedit-dev \
   ninja-build \

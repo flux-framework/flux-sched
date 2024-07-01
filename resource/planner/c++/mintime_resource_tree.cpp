@@ -20,11 +20,10 @@ extern "C" {
 #include "planner_internal_tree.hpp"
 
 
-/*******************************************************************************
- *                                                                             *
- *                  Private Mintime Resource Tree Methods                      *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Mintime Resource Tree Methods
+////////////////////////////////////////////////////////////////////////////////
 
 int64_t mintime_resource_tree_t::right_branch_mintime (mt_resource_rb_node_t *n) const
 {
@@ -91,11 +90,10 @@ int64_t mintime_resource_tree_t::find_mintime_anchor (
 }
 
 
-/*******************************************************************************
- *                                                                             *
- *                 Private Mintime Resource RBTree Node Methods                *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Mintime Resource RBTree Node Methods
+////////////////////////////////////////////////////////////////////////////////
 
 template <class mt_resource_rb_node_t, class NodeTraits>
 void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::fix (
@@ -133,11 +131,10 @@ void mt_resource_node_traits<mt_resource_rb_node_t, NodeTraits>::fix (
 }
 
 
-/*******************************************************************************
- *                                                                             *
- *                  Public Mintime Resource RBTree Node Methods                *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Mintime Resource RBTree Node Methods
+////////////////////////////////////////////////////////////////////////////////
 
 template <class mt_resource_rb_node_t, class NodeTraits>
 template <class BaseTree>
@@ -219,11 +216,10 @@ bool mt_resource_rb_node_t::operator!= (const mt_resource_rb_node_t &other) cons
 
 
 
-/*******************************************************************************
- *                                                                             *
- *                  Public Minimum Time Resource Tree API                      *
- *                                                                             *
- *******************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Minimum Time Resource Tree API
+////////////////////////////////////////////////////////////////////////////////
 
 int mintime_resource_tree_t::insert (scheduled_point_t *point)
 {

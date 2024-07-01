@@ -216,11 +216,10 @@ std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
     return sstream.str ();
 }
 
-/********************************************************************************
- *                                                                              *
- *                        Private JGF Resource Reader                           *
- *                                                                              *
- ********************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Private JGF Resource Reader
+////////////////////////////////////////////////////////////////////////////////
 
 int resource_reader_jgf_t::fetch_jgf (const std::string &str, json_t **jgf_p,
                                       json_t **nodes_p, json_t **edges_p)
@@ -401,6 +400,13 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element, fetch_helper_t &f,
     }
     *properties = json_object_get (metadata, "properties");
     *paths = p;
+    if (*properties && !json_is_object (*properties)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": key (properties) must be an object or null for ";
+        m_err_msg += std::string (f.vertex_id) + ".\n";
+        goto done;
+    }
     rc = 0;
 done:
     return rc;
@@ -1164,11 +1170,10 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
 }
 
 
-/********************************************************************************
- *                                                                              *
- *                   Public JGF Resource Reader Interface                       *
- *                                                                              *
- ********************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Public JGF Resource Reader Interface
+////////////////////////////////////////////////////////////////////////////////
 
 resource_reader_jgf_t::~resource_reader_jgf_t ()
 {

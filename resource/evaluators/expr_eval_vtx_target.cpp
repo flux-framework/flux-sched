@@ -96,8 +96,7 @@ done:
 }
 
 void expr_eval_vtx_target_t::initialize (const vtx_predicates_override_t &p,
-                                         const std::shared_ptr<
-                                             const f_resource_graph_t> g,
+                                         const resource_graph_t *g,
                                          vtx_t u)
 {
     m_initialized = true;

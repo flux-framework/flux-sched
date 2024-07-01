@@ -12,8 +12,8 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 #include <vector>
-#include "src/common/liboptmgr/optmgr_impl.hpp"
 
 namespace Flux {
 namespace opts_manager {
@@ -97,14 +97,14 @@ private:
  *  iteration order on the option set.
  */
 template <class T>
-struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
+struct optmgr_kv_t {
 
     /*! Getter
      *
      * \return         Option set object of type T of "this" object.
      */
     const T &get_opt () const {
-        return detail::optmgr_kv_impl_t<T>::get_opt ();
+        return m_opt;
     }
 
     /*! Put
@@ -115,7 +115,19 @@ struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
      * \return         0 on success; -1 on error.
      */
     int put (const std::string &k, const std::string &v) {
-        return detail::optmgr_kv_impl_t<T>::put (k, v);
+        int rc = 0;
+        try {
+            auto ret = m_kv.insert (std::pair<std::string, std::string> (k, v));
+            if (!ret.second) {
+                errno = EEXIST;
+                rc = -1;
+            }
+        }
+        catch (std::bad_alloc &) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+        return rc;
     }
 
     /*! Put
@@ -125,7 +137,12 @@ struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
      * \return         0 on success; -1 on error.
      */
     int put (const std::string &kv) {
-        return detail::optmgr_kv_impl_t<T>::put (kv);
+        size_t found = std::string::npos;
+        if ( (found = kv.find_first_of ("=")) == std::string::npos) {
+            errno = EPROTO;
+            return -1;
+        }
+        return put (kv.substr (0, found), kv.substr (found + 1));
     }
 
     /*! Get
@@ -136,7 +153,19 @@ struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
      * \return         0 on success; -1 on error.
      */
     int get (const std::string &k, std::string &v) const {
-        return detail::optmgr_kv_impl_t<T>::get (k, v);
+        int rc = 0;
+        try {
+            v = m_kv.at (k);
+        }
+        catch (std::bad_alloc &) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+        catch (std::out_of_range &) {
+            errno = ENOENT;
+            rc = -1;
+        }
+        return rc;
     }
 
     /*! Parse key=value option pairs and update the state of
@@ -147,15 +176,26 @@ struct optmgr_kv_t : public detail::optmgr_kv_impl_t<T> {
      * \return         0 on success; -1 on error.
      */
     int parse (std::string &info) {
-        return detail::optmgr_kv_impl_t<T>::parse (info);
+        int rc = 0;
+        for (const auto &kv : m_kv) {
+            // If T doesn't have parse method, this produces an compiler error
+            if ( (rc = m_opt.parse (kv.first, kv.second, info)) < 0) {
+                return rc;
+            }
+        }
+        return rc;
     }
+
+private:
+    T m_opt;
+    std::map<std::string, std::string, T> m_kv;
 };
 
 
 /*! Parsing utilities.
  *
  */
-struct optmgr_parse_t : public detail::optmgr_parse_impl_t {
+struct optmgr_parse_t  {
 
     /*! Parse a string that contains key and value delimited with token.
      *  The parsed key and value are passed through k and v respectively.
@@ -170,7 +210,18 @@ struct optmgr_parse_t : public detail::optmgr_parse_impl_t {
      */
     int parse_single (const std::string &str, const std::string &token,
                       std::string &k, std::string &v) {
-        return detail::optmgr_parse_impl_t::parse_single (str, token, k, v);
+        size_t found;
+        if (str == "" || token == "") {
+            errno = EINVAL;
+            return -1;
+        }
+        if ( (found = str.find_first_of (token)) == std::string::npos) {
+            errno = EPROTO;
+            return -1;
+        }
+        k = str.substr (0, found);
+        v = str.substr (found + 1);
+        return 0;
     }
 
     /*! Parse multi_value string: each value is delimited with the
@@ -188,8 +239,19 @@ struct optmgr_parse_t : public detail::optmgr_parse_impl_t {
      */
     int parse_multi (const std::string multi_value, const char delim,
                      std::vector<std::string> &entries) {
-        return detail::optmgr_parse_impl_t::parse_multi (multi_value,
-                                                         delim, entries);
+        int rc = 0;
+        try {
+            std::stringstream ss;
+            std::string entry;
+            ss << multi_value;
+            while (getline (ss, entry, delim))
+                entries.push_back (entry);
+        }
+        catch (std::bad_alloc &) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+        return rc;
     }
 
     /*! Parse the m_opts string that contains multiple options delimited
@@ -209,8 +271,31 @@ struct optmgr_parse_t : public detail::optmgr_parse_impl_t {
     int parse_multi_options (const std::string &m_opts, const char odelim,
                              const char kdelim, std::map<std::string,
                                                          std::string> &opt_mp) {
-        return detail::optmgr_parse_impl_t::parse_multi_options (m_opts, odelim,
-                                                                 kdelim, opt_mp);
+        int rc = 0;
+        try {
+            std::vector<std::string> entries;
+            if ( (rc = parse_multi (m_opts, odelim, entries)) < 0)
+                goto done;
+            for (const auto &entry : entries) {
+                std::string n = "";
+                std::string v = "";
+                if ( (rc = parse_single (entry, std::string (1, kdelim), n, v)) < 0)
+                    goto done;
+                auto ret = opt_mp.insert (std::pair<std::string,
+                                                    std::string> (n, v));
+                if (!ret.second) {
+                    errno = EEXIST;
+                    rc = -1;
+                    goto done;
+                }
+            }
+        }
+        catch (std::bad_alloc &) {
+            errno = ENOMEM;
+            rc = -1;
+        }
+    done:
+        return rc;
     }
 };
 

@@ -37,19 +37,17 @@ static double get_elapsed_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-/****************************************************************************
- *                                                                          *
- *               REAPI CLI Class Private Definitions                        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// REAPI CLI Class Private Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 std::string reapi_cli_t::m_err_msg = "";
 
-/****************************************************************************
- *                                                                          *
- *            REAPI CLI Class Public API Definitions                        *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// REAPI CLI Class Public API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 int reapi_cli_t::match_allocate (void *h, match_op_t match_op,
                                  const std::string &jobspec,
@@ -299,39 +297,10 @@ void reapi_cli_t::clear_err_message ()
     m_err_msg = "";
 }
 
-/****************************************************************************
- *                                                                          *
- *            Resource Query Class Private API Definitions                  *
- *                                                                          *
- ****************************************************************************/
 
-std::shared_ptr<f_resource_graph_t> resource_query_t::create_filtered_graph ()
-{
-    std::shared_ptr<f_resource_graph_t> fg = nullptr;
-
-    resource_graph_t &g = db->resource_graph;
-    int subsys_size = db->metadata.roots.size ();
-    vtx_infra_map_t vmap = get (&resource_pool_t::idata, g);
-    edg_infra_map_t emap = get (&resource_relation_t::idata, g);
-    const multi_subsystemsS &filter = 
-                        matcher->subsystemsS ();
-    subsystem_selector_t<vtx_t, f_vtx_infra_map_t> vtxsel (vmap, filter,
-                                                           subsys_size);
-    subsystem_selector_t<edg_t, f_edg_infra_map_t> edgsel (emap, filter,
-                                                           subsys_size);
-
-    try {
-        fg = std::make_shared<f_resource_graph_t> (g, edgsel, vtxsel);
-    } catch (std::bad_alloc &e) {
-        errno = ENOMEM;
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": Error allocating memory: " + std::string (e.what ())
-                    + "\n";
-        fg = nullptr;
-    }
-
-    return fg;
-}
+////////////////////////////////////////////////////////////////////////////////
+// Resource Query Class Private API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 int resource_query_t::subsystem_exist (const std::string &n)
 {
@@ -517,11 +486,10 @@ out:
     return rc;
 }
 
-/****************************************************************************
- *                                                                          *
- *            Resource Query Class Public API Definitions                   *
- *                                                                          *
- ****************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// Resource Query Class Public API Definitions
+////////////////////////////////////////////////////////////////////////////////
 
 resource_query_t::resource_query_t () 
 {
@@ -589,12 +557,6 @@ resource_query_t::resource_query_t (const std::string &rgraph,
         throw std::runtime_error (tmp_err);
     }
 
-    if ( !(fgraph = create_filtered_graph ())) {
-        tmp_err = __FUNCTION__;
-        tmp_err +=  ": ERROR: can't create filtered graph\n";
-        throw std::runtime_error (tmp_err);
-    }
-
     jobid_counter = 1;
     if (params.prune_filters != ""
         && matcher->set_pruning_types_w_spec (
@@ -606,7 +568,7 @@ resource_query_t::resource_query_t (const std::string &rgraph,
         throw std::runtime_error (tmp_err);
     }
 
-    if (traverser->initialize (fgraph, db, matcher) != 0) {
+    if (traverser->initialize (db, matcher) != 0) {
         tmp_err = __FUNCTION__;
         tmp_err +=  ": ERROR: can't initialize traverser\n";
         throw std::runtime_error (tmp_err);

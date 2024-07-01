@@ -86,10 +86,11 @@ struct jobmeta_t {
             errno = EINVAL;
             return -1;
         }
-        if (jobspec.attributes.system.duration == 0.0f)
+        if (jobspec.attributes.system.duration == 0.0f) {
             duration = g_duration;
-        else
+        } else {
             duration = (int64_t)jobspec.attributes.system.duration;
+        }
         if (jobspec.attributes.system.queue != "") {
             m_queue = jobspec.attributes.system.queue;
             m_queue_set = true;
@@ -109,17 +110,16 @@ private:
 class dfu_impl_t {
 public:
     dfu_impl_t ();
-    dfu_impl_t (std::shared_ptr<f_resource_graph_t> g,
-                std::shared_ptr<resource_graph_db_t> db,
+    dfu_impl_t (std::shared_ptr<resource_graph_db_t> db,
                 std::shared_ptr<dfu_match_cb_t> m);
     dfu_impl_t (const dfu_impl_t &o);
-    dfu_impl_t (dfu_impl_t &&o) = default;
+    dfu_impl_t (dfu_impl_t &&o);
     dfu_impl_t &operator= (const dfu_impl_t &o);
-    dfu_impl_t &operator= (dfu_impl_t &&o) = default;
+    dfu_impl_t &operator= (dfu_impl_t &&o);
     ~dfu_impl_t ();
 
     //! Accessors
-    const std::shared_ptr<const f_resource_graph_t> get_graph () const;
+    const resource_graph_t *get_graph () const;
     const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
@@ -128,7 +128,6 @@ public:
     const unsigned int get_postorder_count () const;
     const std::set<std::string> &get_exclusive_resource_types () const;
 
-    void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
@@ -496,7 +495,7 @@ private:
     unsigned int m_preorder = 0;
     unsigned int m_postorder = 0;
     std::shared_ptr<std::map<subsystem_t, vtx_t>> m_roots = nullptr;
-    std::shared_ptr<f_resource_graph_t> m_graph = nullptr;
+    resource_graph_t *m_graph = nullptr;
     std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     expr_eval_api_t m_expr_eval;

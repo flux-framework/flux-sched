@@ -126,6 +126,7 @@ compile_flags.txt
 .vscode
 .idea
 .clangd
+.cache
 
 # Rules to ignore auto-generated test harness scripts
 test_*.t

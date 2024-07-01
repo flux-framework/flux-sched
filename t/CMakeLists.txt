@@ -27,6 +27,7 @@ set(ALL_TESTS
   t1022-property-constraints.t
   t1023-multiqueue-constraints.t
   t1024-alloc-check.t
+  t1025-rv1-reload.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t
@@ -79,6 +80,7 @@ set(ALL_TESTS
   t4010-match-conf.t
   t4011-match-duration.t
   t4012-set-status.t
+  t4013-unreservable.sh
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t6000-graph-size.t

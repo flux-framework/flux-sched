@@ -45,6 +45,17 @@ RV1_2 = {
     },
 }
 
+RV1_3 = {
+    "version": 1,
+    "execution": {
+        "R_lite": [{"rank": "0-19", "children": {"gpu": "0-1", "core": "0-7"}}],
+        "starttime": 0.0,
+        "expiration": 0.0,
+        "nodelist": ["compute[0-19]"],
+        "properties": {"pdebug": "0-9", "pbatch": "10-19"},
+    },
+}
+
 
 class TestResourceGraph(unittest.TestCase):
     """Test for the ResourceGraph class."""
@@ -53,7 +64,7 @@ class TestResourceGraph(unittest.TestCase):
         if metadata["type"] in ("node", "core", "gpu", "cluster"):
             self.assertEqual(metadata["unit"], "")
             self.assertEqual(metadata["size"], 1)
-            self.assertEqual(metadata["properties"], [])
+            self.assertEqual(metadata["properties"], {})
         else:
             raise ValueError(metadata["type"])
 
@@ -79,5 +90,29 @@ class TestResourceGraph(unittest.TestCase):
         for node in graph.get_nodes():
             self._check_metadata(node.get_metadata())
 
+    def test_basic_3(self):
+        graph = FluxionResourceGraphV1(RV1_3)
+        self.assertTrue(graph.is_directed())
+        j = graph.to_JSON()
+        self.assertTrue(j["graph"]["directed"])
+        self.assertEqual(len(j["graph"]["nodes"]), len(graph.get_nodes()))
+        self.assertEqual(len(j["graph"]["edges"]), len(graph.get_edges()))
+        for node in graph.get_nodes():
+            metadata = node.get_metadata()
+            if metadata["type"] != "node":
+                self._check_metadata(node.get_metadata())
+            else:
+                self.assertEqual(metadata["unit"], "")
+                self.assertEqual(metadata["size"], 1)
+                self.assertEqual(len(metadata["properties"]), 1)
+                if metadata["id"] < 10:
+                    self.assertEqual(metadata["properties"]["pdebug"], "")
+                else:
+                    self.assertEqual(metadata["properties"]["pbatch"], "")
 
-unittest.main(testRunner=TAPTestRunner())
+
+if __name__ == "__main__":
+    from subflux import rerun_under_flux
+
+    if rerun_under_flux(size=1):
+        unittest.main(testRunner=TAPTestRunner())

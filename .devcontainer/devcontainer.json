@@ -9,7 +9,8 @@
         "terminal.integrated.defaultProfile.linux": "bash"
   },
       "extensions": [
-         "ms-vscode.cmake-tools"
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack"
       ]
     }
   },

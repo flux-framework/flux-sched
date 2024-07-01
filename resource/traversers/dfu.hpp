@@ -27,8 +27,7 @@ class dfu_traverser_t : protected detail::dfu_impl_t
 {
 public:
     dfu_traverser_t ();
-    dfu_traverser_t (std::shared_ptr<f_resource_graph_t> g,
-                     std::shared_ptr<resource_graph_db_t> db,
+    dfu_traverser_t (std::shared_ptr<resource_graph_db_t> db,
                      std::shared_ptr<dfu_match_cb_t> m);
     dfu_traverser_t (const dfu_traverser_t &o);
     dfu_traverser_t (dfu_traverser_t &&o) = default;
@@ -36,14 +35,13 @@ public:
     dfu_traverser_t &operator= (dfu_traverser_t &&o) = default;
     ~dfu_traverser_t ();
 
-    const std::shared_ptr<const f_resource_graph_t> get_graph () const;
+    const resource_graph_t *get_graph () const;
     const std::shared_ptr<const resource_graph_db_t> get_graph_db () const;
     const std::shared_ptr<const dfu_match_cb_t> get_match_cb () const;
     const std::string &err_message () const;
     const unsigned int get_total_preorder_count () const;
     const unsigned int get_total_postorder_count () const;
 
-    void set_graph (std::shared_ptr<f_resource_graph_t> g);
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
@@ -75,7 +73,7 @@ public:
      *  provides an interface to tell this initializer what subtree resources
      *  to track at higher-level resource vertices.
      *
-     *  \param g         resource graph of f_resource_graph_t type.
+     *  \param g         resource graph of resource_graph_t type.
      *  \param roots     map of root vertices, each is a root of a subsystem.
      *  \param m         match callback object of dfu_match_cb_t type.
      *  \return          0 on success; -1 on error.
@@ -83,8 +81,7 @@ public:
      *                       ENOTSUP: roots does not contain a subsystem
      *                                the match callback uses.
      */
-    int initialize (std::shared_ptr<f_resource_graph_t> g,
-                    std::shared_ptr<resource_graph_db_t> db,
+    int initialize (std::shared_ptr<resource_graph_db_t> db,
                     std::shared_ptr<dfu_match_cb_t> m);
 
     /*! Begin a graph traversal for the jobspec and allocate,
@@ -107,7 +104,7 @@ public:
      *                                match callback uses.
      *                       EBUSY: cannot match because resources/devices
      *                              are currently in use.
-     *                       ENODEV: unsatifiable jobspec becuase no
+     *                       ENODEV: unsatifiable jobspec because no
      *                               resources/devices can satisfy the request.
      */
     int run (Jobspec::Jobspec &jobspec,
