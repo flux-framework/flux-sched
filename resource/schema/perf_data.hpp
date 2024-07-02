@@ -31,7 +31,7 @@ struct perf_stats {
         }
         /* Welford's online algorithm for variance */
         delta = elapsed - avg;
-        avg += delta / (double)njobs;
+        avg += delta / (double)njobs_reset;
         delta2 = elapsed - avg;
         M2 += delta * delta2;
     }
