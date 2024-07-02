@@ -182,7 +182,7 @@ if [[ "$INSTALL_ONLY" == "t" ]]; then
         --volume=$TOP:$WORKDIR \
         ${PLATFORM} \
         ${BUILD_IMAGE} \
-        sh -c "./autogen.sh &&
+        sh -c "( [ -e ./autogen.sh ] && ./autogen.sh || true ) &&
                ./configure --prefix=/usr --sysconfdir=/etc \
                 --with-systemdsystemunitdir=/etc/systemd/system \
                 --localstatedir=/var &&
