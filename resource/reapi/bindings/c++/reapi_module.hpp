@@ -47,6 +47,8 @@ public:
                                 const std::string &R, int64_t &at, double &ov,
                                 std::string &R_out);
     static int cancel (void *h, const uint64_t jobid, bool noent_ok);
+    static int cancel (void *h, const uint64_t jobid, const std::string &R,
+                       bool noent_ok, bool &full_removal);
     static int info (void *h, const uint64_t jobid,
                      bool &reserved, int64_t &at, double &ov);
     static int stat (void *h, int64_t &V, int64_t &E,int64_t &J,
