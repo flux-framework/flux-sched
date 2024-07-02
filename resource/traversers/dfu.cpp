@@ -14,7 +14,6 @@ extern "C" {
 #endif
 }
 
-#include <iostream>
 #include <cstdlib>
 #include <cerrno>
 #include "resource/traversers/dfu.hpp"
@@ -76,6 +75,58 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     int saved_errno = errno;
     planner_multi_t *p = NULL;
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+
+    // precheck to see if enough resources are available for this to be feasible
+    if (op != match_op_t::MATCH_UNKNOWN) {
+        bool checking_satisfiability = op == match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY || op == match_op_t::MATCH_SATISFIABILITY;
+        graph_duration_t graph_duration = get_graph_db ()->metadata.graph_duration;
+        auto &g = *get_graph ();
+        int64_t graph_end = std::chrono::duration_cast<std::chrono::seconds>
+            (graph_duration.graph_end.time_since_epoch ()).count ();
+        auto p_iter = g[root].idata.subplans.find (dom);
+        auto by_type_iter = get_graph_db ()->metadata.by_type.find ("node");
+        int64_t target_time = graph_end - 1;
+        int64_t target_duration = 1;
+        auto target_nodes = dfv["node"];
+        if (op == match_op_t::MATCH_ALLOCATE) {
+            // only the initial time matters for allocate, and we want to check
+            // the full duration
+            target_time = meta.at;
+            target_duration = meta.duration;
+        }
+        if (p_iter != g[root].idata.subplans.end () && by_type_iter != get_graph_db ()->metadata.by_type.end ()) {
+            p = p_iter->second;
+            auto &all_nodes = by_type_iter->second;
+            int feasible_nodes = 0;
+            for (auto const&node_vtx : all_nodes) {
+                auto const &node = g[node_vtx];
+                // if it matches the constraints
+                if ((!meta.constraint || meta.constraint->match(node))
+                        // if it's up and not drained
+                        && (checking_satisfiability || node.status == resource_pool_t::status_t::UP)
+                        // if it's available at the end of time
+                        && planner_avail_resources_during (node.schedule.plans, target_time, target_duration) == 1) {
+                    ++feasible_nodes;
+                    if (feasible_nodes >= target_nodes) {
+                        break;
+                    }
+                }
+            }
+            if (feasible_nodes < target_nodes) {
+                // no chance, don't even try
+                if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+                    errno = EBUSY;
+                    return -1;
+                }
+                if (checking_satisfiability) {
+                    // if we're checking satisfyability, only return here if
+                    // it's actually unsatisfiable
+                    errno = ENODEV;
+                    return -1;
+                }
+            }
+        }
+    }
 
     if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
