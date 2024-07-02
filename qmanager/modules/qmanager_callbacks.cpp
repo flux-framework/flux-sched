@@ -60,8 +60,6 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
     for (auto& kv: queues) {
         const std::string &queue_name = kv.first;
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
-        if (queue->is_sched_loop_active ())
-            continue;
         while ( (job = queue->alloced_pop ()) != nullptr) {
             if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
                                                       job->schedule.R.c_str (),
