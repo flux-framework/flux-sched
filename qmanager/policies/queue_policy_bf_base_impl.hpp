@@ -84,8 +84,7 @@ int queue_policy_bf_base_t<reapi_type>::next_match_iter () {
 }
 
 template<class reapi_type>
-int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h,
-                                                                      bool use_alloced_queue)
+int queue_policy_bf_base_t<reapi_type>::allocate_orelse_reserve_jobs (void *h)
 {
     // Iterate jobs in the pending job queue and try to allocate each
     // until you can't. When you can't allocate a job, you reserve it
@@ -229,7 +228,7 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloce
         if (rc != 0)
             return rc;
     }
-    return allocate_orelse_reserve_jobs (h, use_alloced_queue);
+    return allocate_orelse_reserve_jobs (h);
 }
 
 template<class reapi_type>
