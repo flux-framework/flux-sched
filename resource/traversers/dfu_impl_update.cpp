@@ -664,7 +664,8 @@ int dfu_impl_t::mark (const std::string &root_path,
     }
     for (auto &v : vit_root->second)
         (*m_graph)[v].status = status;
-    
+    m_graph_db->metadata.update_node_stats (vit_root->second.size (), status);
+
     return 0;
 }
 
@@ -677,6 +678,7 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks,
         const std::string &dom = m_match->dom_subsystem ();
         vtx_t subtree_root;
 
+        int total = 0;
         for (auto &rank : ranks) {
             // Now iterate through subgraphs keyed by rank and
             // set status appropriately
@@ -695,7 +697,9 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks,
                 }
             }
             (*m_graph)[subtree_root].status = status;
+            ++total;
         }
+        m_graph_db->metadata.update_node_stats (total, status);
     } catch (std::out_of_range &) {
         errno = ENOENT;
         return -1;
