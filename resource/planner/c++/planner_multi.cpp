@@ -231,13 +231,12 @@ planner_t *planner_multi::get_planner_at (size_t i) const
 planner_t *planner_multi::get_planner_at (const char *type) const
 {
     auto &by_res = m_types_totals_planners.get<res_type> ();
-    return by_res.find (std::string (type))->planner;
+    return by_res.find (type)->planner;
 }
 
 void planner_multi::update_planner_index (const char *type, size_t i)
 {
-    std::string rtype = std::string (type);
-    auto by_res = m_types_totals_planners.get<res_type> ().find (rtype);
+    auto by_res = m_types_totals_planners.get<res_type> ().find (type);
     auto new_idx = m_types_totals_planners.begin () + i;
     auto curr_idx = m_types_totals_planners.get<idx> ().iterator_to (*by_res);
     // noop if new_idx == curr_idx
@@ -253,7 +252,7 @@ int planner_multi::update_planner_total (uint64_t total, size_t i)
 bool planner_multi::planner_at (const char *type) const
 {
     auto &by_res = m_types_totals_planners.get<res_type> ();
-    auto result = by_res.find (std::string (type));
+    auto result = by_res.find (type);
     if (result == by_res.end ())
         return false;
     else
@@ -273,7 +272,7 @@ int64_t planner_multi::get_resource_total_at (size_t i) const
 int64_t planner_multi::get_resource_total_at (const char *type) const
 {
     auto &by_res = m_types_totals_planners.get<res_type> ();
-    auto result = by_res.find (std::string (type));
+    auto result = by_res.find (type);
     if (result == by_res.end ())
         return -1;
     else
