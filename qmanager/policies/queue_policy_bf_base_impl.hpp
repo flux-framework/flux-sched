@@ -141,7 +141,13 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_success (
         errno = EINVAL;
         return -1;
     }
-    auto &job = m_jobs[m_in_progress_iter->second];
+    auto job_it = m_jobs.find (m_in_progress_iter->second);
+    if (job_it == m_jobs.end ()) {
+        // The job is just missing, much worse
+        errno = ENOENT;
+        return -1;
+    }
+    auto &job = job_it->second;
     if (job->id != static_cast<flux_jobid_t> (jobid)) {
         errno = EINVAL;
         return -1;
@@ -229,6 +235,21 @@ int queue_policy_bf_base_t<reapi_type>::run_sched_loop (void *h, bool use_alloce
             return rc;
     }
     return allocate_orelse_reserve_jobs (h);
+}
+
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::cancel_sched_loop ()
+{
+    int rc = 0;
+    if (!is_sched_loop_active ()) {
+        // nothing to cancel, safe to proceed
+        return 0;
+    }
+    m_scheduled_cnt = m_queue_depth;
+    // we want the actual cancel deferred until the loop exits, it simplifies
+    // the handling and coherence a great deal
+    errno = 0;
+    return -1;
 }
 
 template<class reapi_type>
