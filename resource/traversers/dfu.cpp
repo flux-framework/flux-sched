@@ -14,7 +14,6 @@ extern "C" {
 #endif
 }
 
-#include <iostream>
 #include <cstdlib>
 #include <cerrno>
 #include "resource/traversers/dfu.hpp"
@@ -33,10 +32,10 @@ extern struct match_perf_t perf;
 ////////////////////////////////////////////////////////////////////////////////
 
 int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
-                                     detail::jobmeta_t &meta, bool x,
+                                     detail::jobmeta_t &meta,
+                                     bool x,
                                      vtx_t root,
-                                     std::unordered_map<std::string,
-                                                        int64_t> &dfv)
+                                     std::unordered_map<std::string, int64_t> &dfv)
 {
     int rc = 0;
     std::vector<uint64_t> agg;
@@ -45,13 +44,12 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
 
     meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
-    meta.at = planner_multi_base_time (p)
-              + planner_multi_duration (p) - meta.duration - 1;
+    meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
     detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
     errno = 0;
-    if ( (rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) < 0) {
+    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) < 0) {
         rc = -1;
-        errno = (!errno)? ENODEV : errno;
+        errno = (!errno) ? ENODEV : errno;
         detail::dfu_impl_t::update ();
     }
     m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
@@ -60,6 +58,81 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
     if (!errno)
         errno = saved_errno;
     return rc;
+}
+
+int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
+                                       match_op_t op,
+                                       vtx_t root,
+                                       std::unordered_map<std::string, int64_t> &dfv,
+                                       const subsystem_t &dom)
+{
+    if (op == match_op_t::MATCH_UNKNOWN)
+        return 0;
+
+    const auto target_nodes = dfv["node"];
+    const bool checking_satisfiability =
+        op == match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY || op == match_op_t::MATCH_SATISFIABILITY;
+
+    if ((!meta.constraint) && (target_nodes <= get_graph_db ()->metadata.nodes_up))
+        return 0;
+
+    // check if there are enough nodes up at all
+    if (target_nodes > get_graph_db ()->metadata.nodes_up) {
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+            errno = EBUSY;
+            return -1;
+        }
+        if (checking_satisfiability) {
+            // if we're checking satisfiability, only return here if
+            // it's actually unsatisfiable
+            errno = ENODEV;
+            return -1;
+        }
+    }
+
+    const auto by_type_iter = get_graph_db ()->metadata.by_type.find ("node");
+    if (by_type_iter == get_graph_db ()->metadata.by_type.end ())
+        return 0;
+    auto &all_nodes = by_type_iter->second;
+
+    auto &g = *get_graph ();
+    const int64_t graph_end =
+        std::chrono::duration_cast<std::chrono::seconds> (
+            get_graph_db ()->metadata.graph_duration.graph_end.time_since_epoch ())
+            .count ();
+    // only the initial time matters for allocate
+    const int64_t target_time = op == match_op_t::MATCH_ALLOCATE ? meta.at : graph_end - 1;
+    int feasible_nodes = 0;
+    for (auto const &node_vtx : all_nodes) {
+        auto const &node = g[node_vtx];
+        // if it matches the constraints
+        if ((!meta.constraint || meta.constraint->match (node))
+            // if it's up and not drained
+            && (checking_satisfiability || node.status == resource_pool_t::status_t::UP)
+            // if it's available
+            && planner_avail_resources_during (node.schedule.plans, target_time, meta.duration)
+                   == 1) {
+            ++feasible_nodes;
+            if (feasible_nodes >= target_nodes) {
+                break;
+            }
+        }
+    }
+    if (feasible_nodes < target_nodes) {
+        // no chance, don't even try
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+            errno = EBUSY;
+            return -1;
+        }
+        if (checking_satisfiability) {
+            // if we're checking satisfyability, only return here if
+            // it's actually unsatisfiable
+            errno = ENODEV;
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
@@ -76,6 +149,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     int saved_errno = errno;
     planner_multi_t *p = NULL;
     const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+
+    // precheck to see if enough resources are available for this to be feasible
+    if (request_feasible (meta, op, root, dfv, dom) < 0)
+        return -1;
 
     if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = detail::dfu_impl_t::get_preorder_count ();

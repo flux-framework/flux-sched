@@ -186,6 +186,11 @@ private:
     int is_satisfiable (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
                         bool x, vtx_t root,
                         std::unordered_map<std::string, int64_t> &dfv);
+    int request_feasible (detail::jobmeta_t const &meta,
+                          match_op_t op,
+                          vtx_t root,
+                          std::unordered_map<std::string, int64_t> &dfv,
+                          const subsystem_t &dom);
     int schedule (Jobspec::Jobspec &jobspec, detail::jobmeta_t &meta,
                   bool x, match_op_t op, vtx_t root,
                   std::unordered_map<std::string, int64_t> &dfv);

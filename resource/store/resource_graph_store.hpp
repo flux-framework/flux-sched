@@ -21,6 +21,7 @@ namespace Flux {
 namespace resource_model {
 
 class resource_reader_base_t;
+struct resource_graph_db_t;
 
 struct graph_duration_t {
     std::chrono::time_point<std::chrono::system_clock> graph_start =
@@ -45,6 +46,7 @@ struct resource_graph_metadata_t {
              std::map<std::pair<uint64_t, int64_t>, edg_t,
                       std::greater<std::pair<uint64_t, int64_t>>>> by_outedges;
     graph_duration_t graph_duration;
+    int64_t nodes_up = 0;
 
     /*! Set the resource graph duration.
      *
@@ -52,6 +54,8 @@ struct resource_graph_metadata_t {
      *                    the graph duration
      */
     void set_graph_duration (graph_duration_t &g_duration);
+    void update_node_stats (int count, resource_pool_t::status_t status);
+    void initialize_node_stats (resource_graph_t const &g);
 };
 
 /*! Resource graph data store.
