@@ -1,3 +1,23 @@
+flux-sched version 0.36.0 - 2024-07-04
+--------------------------------------
+
+### New Features
+ * qmanager: Asynchronously communicate with resource in the scheduling
+   loop to allow job updates while matching (#1227)
+ * pruner: don't track own type for pruning (#1228)
+ * Excise filter (#1225)
+ * qmanager: restart sched loop on updates (#1236)
+ * qpolicy/base: schedulable on reconsider (#1224)
+ * dfu: add a quick-to-test feasibility precheck to match (#1232)
+
+### Fixes
+ * Fix match average calculation (#1233)
+
+### Build/Testsuite
+ * github-actions: actually push the flux-sched manifest (#1235)
+ * checks_run: work when no autogen.sh is present (#1234)
+
+
 flux-sched version 0.35.0 - 2024-06-06
 --------------------------------------
 
