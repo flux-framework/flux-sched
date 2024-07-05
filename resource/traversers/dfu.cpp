@@ -189,7 +189,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         len = planner_multi_resources_len (p);
         duration = meta.duration;
         detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
-        for (t = planner_multi_avail_time_first (p, t, duration, &agg[0], len);
+        for (t = planner_multi_avail_time_first (p, t, duration, agg.data(), len);
              (t != -1 && rc && !errno); t = planner_multi_avail_time_next (p)) {
             meta.at = t;
             rc = detail::dfu_impl_t::select (jobspec, root, meta, x);

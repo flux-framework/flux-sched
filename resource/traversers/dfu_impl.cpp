@@ -182,7 +182,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta, const std::string &s, vtx_t u
     count_relevant_types (p, resource.user_data, aggs);
     errno = 0;
     len = aggs.size ();
-    if ((rc = planner_multi_avail_during (p, at, d, &(aggs[0]), len)) == -1) {
+    if ((rc = planner_multi_avail_during (p, at, d, aggs.data(), len)) == -1) {
         if (errno != 0 && errno != ERANGE) {
             m_err_msg += "by_subplan: planner_multi_avail_during returned -1.\n";
             m_err_msg += strerror (errno);
@@ -1112,8 +1112,8 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s, vtx_t u,
         }
         (*m_graph)[u].idata.subplans[s] = p;
     } else {
-        planner_multi_update ((*m_graph)[u].idata.subplans[s], &avail[0], 
-                               &types[0], types.size ());
+        planner_multi_update ((*m_graph)[u].idata.subplans[s], avail.data(),
+                               types.data(), types.size ());
     }
     rc = 0;
 done:
