@@ -57,7 +57,7 @@ planner_multi::planner_multi (int64_t base_time, uint64_t duration,
 
 planner_multi::planner_multi (const planner_multi &o)
 {
-    for (auto iter : o.m_types_totals_planners) {
+    for (auto &iter : o.m_types_totals_planners) {
         planner_t *np = nullptr;
         if (iter.planner) {
             try {
@@ -92,7 +92,7 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
     // Erase *this so the vectors are empty
     erase ();
 
-    for (auto iter : o.m_types_totals_planners) {
+    for (const auto &iter : o.m_types_totals_planners) {
         planner_t *np = nullptr;
         if (iter.planner) {
             try {
@@ -141,10 +141,10 @@ bool planner_multi::operator== (const planner_multi &o) const
 
     if (m_types_totals_planners.size () != o.m_types_totals_planners.size ())
         return false;
-    auto &o_by_type = o.m_types_totals_planners.get<res_type> ();
-    auto &by_type = m_types_totals_planners.get<res_type> ();
-    for (auto data : by_type) {
-        auto o_data = o_by_type.find (data.resource_type);
+    const auto &o_by_type = o.m_types_totals_planners.get<res_type> ();
+    const auto &by_type = m_types_totals_planners.get<res_type> ();
+    for (const auto &data : by_type) {
+        const auto o_data = o_by_type.find (data.resource_type);
         if (o_data == o_by_type.end ())
             return false;
         if (data.resource_type != o_data->resource_type)

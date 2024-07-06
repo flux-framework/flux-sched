@@ -250,7 +250,7 @@ vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
     if (vtx_iter == m.by_path.end ())
         return null_vtx;
     // Found in by_path
-    for (vtx_t v : vtx_iter->second) {
+    for (const vtx_t &v : vtx_iter->second) {
         if (g[v].rank == rank
                 && g[v].id == id
                 && g[v].size == size
@@ -334,7 +334,7 @@ int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g,
     planner_t *plans = NULL;
 
     for (auto &[rank, vertices] : update_data.updated_vertices) {
-        for (vtx_t vtx : vertices) {
+        for (const vtx_t &vtx : vertices) {
             // Check plan
             if ( (plans = g[vtx].schedule.plans) == NULL) {
                 errno = EINVAL;
