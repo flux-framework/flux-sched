@@ -362,7 +362,6 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                                   name, properties, size, rank);
         valid_ancestor = v;
         std::string relation = "contains";
-        std::string rev_relation = "in";
         edg_t e;
         bool inserted; // set to false when we try and insert a parallel edge
 
@@ -378,17 +377,6 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
         if (add_metadata (m, e, parent, v, g) < 0)
             return -1;
 
-        tie (e, inserted) = add_edge (v, parent, g);
-        if (!inserted) {
-            errno = ENOMEM;
-            m_err_msg += "error inserting a new edge: "
-                            + g[v].name + " -> " + g[parent].name + "; ";
-            return -1;
-        }
-        g[e].idata.member_of[subsys] = rev_relation;
-        g[e].name[subsys] = rev_relation;
-        if (add_metadata (m, e, v, parent, g) < 0)
-            return -1;
     }
 
     hwloc_obj_t curr_child = NULL;

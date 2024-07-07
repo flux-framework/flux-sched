@@ -1068,10 +1068,12 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 goto done;
             }
             json_object_foreach (name, key, value) {
-                g[e].name[std::string (key)]
-                    = std::string (json_string_value (value));
-                g[e].idata.member_of[std::string (key)]
-                    = std::string (json_string_value (value));
+                auto skey = std::string (key);
+                auto sval = std::string (json_string_value (value), json_string_length (value));
+                if (sval == std::string ("in"))
+                    continue;
+                g[e].name[skey] = sval;
+                g[e].idata.member_of[skey] = sval;
             }
             // add this edge to by_outedges metadata
             auto iter = m.by_outedges.find (vmap[source].v);
@@ -1227,8 +1229,8 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
                                             
 {
     vtx_t next_vtx;
-    boost::graph_traits<resource_graph_t>::out_edge_iterator ei, ei_end;
-    boost::tie (ei, ei_end) = boost::out_edges (vtx, g);
+    boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
+    boost::tie (ei, ei_end) = boost::in_edges (vtx, g);
     int rc = -1;
 
     for (; ei != ei_end; ++ei) {
