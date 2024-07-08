@@ -1226,7 +1226,6 @@ int resource_reader_jgf_t::get_subgraph_vertices (resource_graph_t &g,
 int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
                                            vtx_t vtx,
                                            vtx_t &parent_vtx)
-                                            
 {
     vtx_t next_vtx;
     boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
@@ -1234,19 +1233,15 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
     int rc = -1;
 
     for (; ei != ei_end; ++ei) {
-        next_vtx =  boost::target (*ei, g);
-        for (const auto &paths_it : g[vtx].paths) {
-            // check that the parent's name exists in the child's path before the child's name
-            if (paths_it.second.find (g[next_vtx].name) != std::string::npos &&
-                paths_it.second.find (g[vtx].name) > paths_it.second.find (g[next_vtx].name)) {
-                parent_vtx = next_vtx;
-                rc = 0;
-                break;
-            }
-        }    
-  }
+        next_vtx =  boost::source (*ei, g);
+        if (g[*ei].name.contains ("containment")) {
+            parent_vtx = next_vtx;
+            rc = 0;
+            break;
+        }
+    }
 
-  return rc;
+    return rc;
 }
 
 
