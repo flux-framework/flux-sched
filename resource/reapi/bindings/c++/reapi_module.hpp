@@ -37,6 +37,8 @@ public:
                                const std::string &jobspec,
                                const uint64_t jobid, bool &reserved,
                                std::string &R, int64_t &at, double &ov);
+    static int satisfy (void *h, const std::string &jobspec,
+                        int64_t &satisfied);
     static int match_allocate_multi (void *h, bool orelse_reserve,
                                      const char *jobs,
                                      queue_adapter_base_t *adapter);
