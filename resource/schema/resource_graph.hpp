@@ -12,14 +12,11 @@
 #define RESOURCE_GRAPH_HPP
 
 #include "resource/schema/resource_data.hpp"
-#include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_selectors.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/graph/graphviz.hpp>
 
 #include <utility>
-#include <memory>
 
 namespace Flux {
 namespace resource_model {
