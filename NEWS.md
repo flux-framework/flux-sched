@@ -1,3 +1,16 @@
+flux-sched version 0.36.1 - 2024-07-10
+--------------------------------------
+
+### New Features
+ * Add support for broker rank-based partial release (#1163)
+
+### Fixes
+ * planner/dfu: avoid dereferencing empty vector (#1239)
+
+### Cleanup
+ * graph: remove unused subsystem selector class (#1241)
+
+
 flux-sched version 0.36.0 - 2024-07-04
 --------------------------------------
 
