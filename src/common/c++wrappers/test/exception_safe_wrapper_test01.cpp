@@ -20,10 +20,17 @@ extern "C" {
 #include <exception>
 #include <stdexcept>
 
-#include "src/common/libtap/tap.h"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+#define ok(EXPR, DESCR) \
+    {                   \
+        INFO (DESCR);   \
+        CHECK ((EXPR)); \
+    }
 
 using namespace Flux::cplusplus_wrappers;
+using namespace std::string_literals;
 
 static void throw_exception (int en)
 {
@@ -88,7 +95,7 @@ void foo4 (int en)
     throw_exception (en);
 }
 
-static void test_functor_wrapper ()
+TEST_CASE ("basics", "[eh_wrapper_t]")
 {
     int rc = 0;
     foo_functor_eh_wrapper_t func;
@@ -118,7 +125,7 @@ static void test_functor_wrapper ()
     ok (rc == -1 && errno == ENOSYS, "eh_wrapper_t works with functor (unknown exception)");
 }
 
-static void test_function_wrapper ()
+TEST_CASE ("simple function", "[eh_wrapper_t]")
 {
     int rc = 0;
     const char *msg = NULL;
@@ -138,10 +145,10 @@ static void test_function_wrapper ()
     ok (exception_safe_wrapper.bad (),
         "eh_wrapper_t::bad() works with simple function (out_of_range)");
     msg = exception_safe_wrapper.get_err_message ();
-    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: %s", msg);
+    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: {}"s + msg);
 }
 
-static void test_function_wrapper2 ()
+TEST_CASE ("forward args by value", "[eh_wrapper_t]")
 {
     int rc = 0;
     double p1 = 1.0f;
@@ -157,7 +164,7 @@ static void test_function_wrapper2 ()
     ok (rc == sum1 && sum1 == sum2 && errno == 0, "eh_wrapper_t forwards args by value works");
 }
 
-static void test_function_wrapper3 ()
+TEST_CASE ("forward args by reference", "[eh_wrapper_t]")
 {
     int rc = 0;
     double p1 = 1.0f;
@@ -173,7 +180,7 @@ static void test_function_wrapper3 ()
     ok (rc == sum1 && sum2 == 0 && errno == 0, "eh_wrapper_t forwards args by reference works");
 }
 
-static void test_lambda_wrapper ()
+TEST_CASE ("lambda", "[eh_wrapper_t]")
 {
     int rc = 0;
     const char *msg = NULL;
@@ -204,10 +211,10 @@ static void test_lambda_wrapper ()
     ok (exception_safe_wrapper.bad (),
         "eh_wrapper_t::bad() works with simple function (out_of_range)");
     msg = exception_safe_wrapper.get_err_message ();
-    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: %s", msg);
+    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: {}"s + msg);
 }
 
-static void test_function_wrapper4 ()
+TEST_CASE ("void returning", "[eh_wrapper_t]")
 {
     const char *msg = NULL;
     eh_wrapper_t exception_safe_wrapper;
@@ -226,28 +233,7 @@ static void test_function_wrapper4 ()
     ok (exception_safe_wrapper.bad (),
         "eh_wrapper_t::bad() works with void function (out_of_range)");
     msg = exception_safe_wrapper.get_err_message ();
-    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: %s", msg);
-}
-
-int main (int argc, char *argv[])
-{
-    plan (26);
-
-    test_functor_wrapper ();
-
-    test_function_wrapper ();
-
-    test_function_wrapper2 ();
-
-    test_function_wrapper3 ();
-
-    test_lambda_wrapper ();
-
-    test_function_wrapper4 ();
-
-    done_testing ();
-
-    return EXIT_SUCCESS;
+    ok (msg != NULL, "eh_wrapper_t::get_err_message () reports: {}"s + msg);
 }
 
 /*
