@@ -89,6 +89,21 @@ public:
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token);
 
+    /*! Partial cancellation of jobid based on R.
+     *
+     * \param g      resource graph
+     * \param m      resource graph meta data
+     * \param mod_data struct containing resource types to counts, mod type,
+     *                 and set of ranks removed
+     * \param R    resource set string
+     * \param jobid  jobid of str
+     * \return       0 on success; non-zero integer on an error
+     */
+    virtual int partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid);
+
     /*! Is the selected reader format support allowlist
      *
      * \return       false
@@ -131,7 +146,7 @@ private:
 
     int add_cluster_vertex (resource_graph_t &g, resource_graph_metadata_t &m);
 
-    // Update functions
+
     vtx_t find_vertex (resource_graph_t &g, resource_graph_metadata_t &m,
                        vtx_t parent, int64_t id,
                        const std::string &subsys,
@@ -140,6 +155,7 @@ private:
                        const std::string &name,
                        int size, int rank);
 
+    // Update functions
     int update_vertex (resource_graph_t &g,
                        vtx_t vtx,
                        updater_data &update_data);
@@ -213,6 +229,12 @@ private:
     int unpack_internal (resource_graph_t &g,
                          resource_graph_metadata_t &m, json_t *rv1,
                          updater_data &update_data);
+
+    int partial_cancel_internal (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    json_t *rv1);
+
 };
 
 } // namespace resource_model

@@ -50,6 +50,8 @@ command_t commands[] = {
 "resource-query> find status=down and sched-now=allocated" },
     { "cancel", "c", cmd_cancel, "Cancel an allocation or reservation: "
 "resource-query> cancel jobid" },
+    { "partial-cancel", "pc", cmd_partial_cancel, "Partially release an allocation: "
+"resource-query> partial-cancel jobid (file format: jgf | rv1exec) R_to_cancel.file" },
     { "set-property", "p", cmd_set_property, "Add a property to a resource: "
 "resource-query> set-property resource PROPERTY=VALUE" },
 { "get-property", "g", cmd_get_property, "Get all properties of a resource: "
@@ -74,6 +76,26 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
     int rc = -1;
     if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
         if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
+           std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
+           info->state = job_lifecycle_t::CANCELED;
+        }
+    } else {
+        std::cout << ctx->traverser->err_message ();
+        ctx->traverser->clear_err_message ();
+    }
+    return rc;
+}
+
+static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
+                              std::shared_ptr<resource_reader_base_t> &reader,
+                              int64_t jobid, const std::string &R_cancel,
+                              bool &full_cancel)
+{
+    int rc = -1;
+
+    if ( (rc = ctx->traverser->remove (R_cancel, reader, (int64_t)jobid,
+                                       full_cancel)) == 0) {
+        if (full_cancel && (ctx->jobs.find (jobid) != ctx->jobs.end ())) {
            std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
            info->state = job_lifecycle_t::CANCELED;
         }
@@ -586,6 +608,72 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx,
     } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
         if ( (rc = do_remove (ctx, jobid)) == 0)
             ctx->reservations.erase (jobid);
+    } else {
+        std::cerr << "ERROR: nonexistent job " << jobid << std::endl;
+        goto done;
+    }
+
+    if (rc != 0) {
+        std::cerr << "ERROR: error encountered while removing job "
+                  << jobid << std::endl;
+    }
+
+done:
+    return 0;
+}
+
+int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx,
+                        std::vector<std::string> &args)
+{
+    int rc = -1;
+    std::stringstream buffer{};
+    std::shared_ptr<resource_reader_base_t> rd;
+
+    if (args.size () != 4) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+
+    std::string jobid_str = args[1];
+    std::string reader = args[2];
+    std::ifstream cancel_file (args[3]);
+    uint64_t jobid = (uint64_t)std::strtoll (jobid_str.c_str (), NULL, 10);
+    bool full_cancel = false;
+
+    if (!(reader == "jgf" || reader == "rv1exec")) {
+        std::cerr << "ERROR: unsupported reader " << args[2] << std::endl;
+        goto done;
+    }
+
+    if (!cancel_file) {
+        std::cerr << "ERROR: can't open " << args[3] << std::endl;
+        goto done;
+    }
+    buffer << cancel_file.rdbuf ();
+    cancel_file.close ();
+
+    if (reader == "rv1exec") {
+        if ( (rd = create_resource_reader ("rv1exec")) == nullptr) {
+            std::cerr << "ERROR: can't create rv1exec reader " << std::endl;
+            goto done;
+        }
+    } else { // must be JGF
+        if ( (rd = create_resource_reader ("jgf")) == nullptr) {
+            std::cerr << "ERROR: can't create rv1exec reader " << std::endl;
+            goto done;
+        }
+    }
+
+    if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
+        if ( (rc = do_partial_remove (ctx, rd, jobid, buffer.str (),
+                                      full_cancel)) == 0) {
+            if (full_cancel)
+                ctx->allocations.erase (jobid);
+        }
+    } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
+        std::cerr << "ERROR: reservations not currently supported by partial cancel"
+                  << std::endl;
+        goto done;
     } else {
         std::cerr << "ERROR: nonexistent job " << jobid << std::endl;
         goto done;

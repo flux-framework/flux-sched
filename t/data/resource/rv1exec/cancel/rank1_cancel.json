@@ -1,0 +1,1 @@
+{"version": 1, "execution": {"R_lite": [{"rank": "1", "children": {"core": "0-15", "gpu": "0-3"}}], "nodelist": ["node1"], "starttime": 0, "expiration": 1000000}}

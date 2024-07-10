@@ -38,7 +38,7 @@ enum class visit_t { DFV, UPV };
 enum class match_kind_t { RESOURCE_MATCH,
                           SLOT_MATCH,
                           NONE_MATCH,
-                          PRESTINE_NONE_MATCH };
+                          PRISTINE_NONE_MATCH };
 
 struct jobmeta_t {
 
@@ -292,6 +292,21 @@ public:
      */
     int remove (vtx_t root, int64_t jobid);
 
+    /*! Remove the allocation/reservation referred to by jobid and update
+     *  the resource state.
+     *
+     *  \param root      root resource vertex.
+     *  \param to_cancel deallocation string such as written in JGF.
+     *  \param reader    reader object that deserialize str to update the graph
+     *  \param jobid     job id.
+     *  \param full_cancel   bool indicating if the partial cancel cancelled all
+     *                       job resources
+     *  \return          0 on success; -1 on error.
+     */
+    int remove (vtx_t root, const std::string &to_cancel,
+                std::shared_ptr<resource_reader_base_t> &reader,
+                int64_t jobid, bool &full_cancel);
+
     /*! Update the resource status to up|down|etc starting at subtree_root.
      *
      *  \param root_path     path to the root of the subtree to update.
@@ -474,14 +489,19 @@ private:
                  unsigned int needs, bool excl, const jobmeta_t &jobmeta,
                  bool full, std::map<std::string, int64_t> &to_parent,
                  bool emit_shadow);
-
-    int rem_txfilter (vtx_t u, int64_t jobid, bool &stop);
-    int rem_agfilter (vtx_t u, int64_t jobid, const std::string &s);
-    int rem_idata (vtx_t u, int64_t jobid, const std::string &s, bool &stop);
-    int rem_plan (vtx_t u, int64_t jobid);
-    int rem_upv (vtx_t u, int64_t jobid);
-    int rem_dfv (vtx_t u, int64_t jobid);
-    int rem_exv (int64_t jobid);
+    bool rem_tag (vtx_t u, int64_t jobid);
+    int rem_exclusive_filter (vtx_t u, int64_t jobid,
+                              const modify_data_t &mod_data);
+    int mod_agfilter (vtx_t u, int64_t jobid, const std::string &s,
+                      const modify_data_t &mod_data, bool &stop);
+    int mod_idata (vtx_t u, int64_t jobid, const std::string &s,
+                   const modify_data_t &mod_data, bool &stop);
+    int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);
+    int mod_upv (vtx_t u, int64_t jobid, const modify_data_t &mod_data);
+    int mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data);
+    int mod_exv (int64_t jobid, const modify_data_t &mod_data);
+    int cancel_vertex (vtx_t vtx, modify_data_t &mod_data,
+                       int64_t jobid);
 
 
     /************************************************************************

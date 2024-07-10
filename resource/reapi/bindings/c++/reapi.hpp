@@ -196,6 +196,20 @@ public:
         return -1;
     }
 
+    /*! Cancel the allocation or reservation corresponding to jobid.
+    *
+    *  \param ctx       reapi_module_ctx_t context object
+    *  \param jobid     jobid of the uint64_t type.
+    *  \param R         R string to remove
+    *  \param noent_ok  don't return an error on nonexistent jobid
+    *  \param full_removal  bool indictating whether the job is fully canceled
+    *  \return          0 on success; -1 on error.
+    */
+    static int cancel (void *h, const uint64_t jobid,
+                       const char *R, bool noent_ok, bool &full_removal)
+    {
+        return -1;
+    }
 
     /*! Get the information on the allocation or reservation corresponding
      *  to jobid.

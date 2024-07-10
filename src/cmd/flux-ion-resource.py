@@ -78,6 +78,10 @@ class ResourceModuleInterface:
         payload = {"jobid": jobid}
         return self.handle.rpc("sched-fluxion-resource.cancel", payload).get()
 
+    def rpc_partial_cancel(self, jobid, rv1exec):
+        payload = {"jobid": jobid, "R": rv1exec}
+        return self.handle.rpc("sched-fluxion-resource.partial-cancel", payload).get()
+
     def rpc_set_property(self, sp_resource_path, sp_keyval):
         payload = {"sp_resource_path": sp_resource_path, "sp_keyval": sp_keyval}
         return self.handle.rpc("sched-fluxion-resource.set_property", payload).get()
@@ -197,6 +201,18 @@ def cancel_action(args):
     rmod = ResourceModuleInterface()
     jobid = args.jobid
     rmod.rpc_cancel(jobid)
+
+
+def partial_cancel_action(args):
+    """
+    Action for partial cancel sub-command
+    """
+
+    with open(args.rv1exec, "r") as stream:
+        rv1exec = json.dumps(json.load(stream))
+        rmod = ResourceModuleInterface()
+        jobid = args.jobid
+        rmod.rpc_partial_cancel(jobid, rv1exec)
 
 
 def info_action(args):
@@ -533,6 +549,7 @@ def main():
     parser_s = mkparser("stats", "Print overall performance statistics.")
     parser_sc = mkparser("stats-cancel", "Clear overall performance statistics.")
     parser_c = mkparser("cancel", "Cancel an allocated or reserved job.")
+    parser_pc = mkparser("partial-cancel", "Partially cancel an allocated job.")
     parse_find(mkparser("find", "Find resources matching with a criteria."))
     parser_st = mkparser("status", "Display resource status.")
     parse_set_status(mkparser("set-status", "Set up/down status of a resource vertex."))
@@ -560,6 +577,13 @@ def main():
     #
     parser_c.add_argument("jobid", metavar="Jobid", type=JobID, help="Jobid")
     parser_c.set_defaults(func=cancel_action)
+
+    #
+    # Positional argument for partial cancel sub-command
+    #
+    parser_pc.add_argument("jobid", metavar="Jobid", type=JobID, help="Jobid")
+    parser_pc.add_argument("rv1exec", metavar="rv1exec", type=str, help="RV1exec")
+    parser_pc.set_defaults(func=partial_cancel_action)
 
     #
     # Positional argument for find sub-command

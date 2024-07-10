@@ -220,6 +220,9 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w,
 static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
                                const flux_msg_t *msg, void *arg);
 
+static void partial_cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                       const flux_msg_t *msg, void *arg);
+
 static void info_request_cb (flux_t *h, flux_msg_handler_t *w,
                              const flux_msg_t *msg, void *arg);
 
@@ -271,6 +274,8 @@ static const struct flux_msg_handler_spec htab[] = {
       "sched-fluxion-resource.update", update_request_cb, 0},
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.cancel", cancel_request_cb, 0 },
+    { FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.partial-cancel", partial_cancel_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
       "sched-fluxion-resource.info", info_request_cb, 0 },
     { FLUX_MSGTYPE_REQUEST,
@@ -1846,12 +1851,27 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
+static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid,
+                       const char *R, bool part_cancel, bool &full_removal)
 {
     int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
 
-    if ((rc = tr.remove (jobid)) < 0) {
+    if (part_cancel) {
+        // RV1exec only reader supported in production currently
+        std::shared_ptr<resource_reader_base_t> reader;
+        if ( (reader = create_resource_reader ("rv1exec")) == nullptr) {
+            rc = -1;
+            flux_log (ctx->h, LOG_ERR, "%s: creating rv1exec reader (id=%jd)",
+                    __FUNCTION__, static_cast<intmax_t> (jobid));
+            goto out;
+        }
+        rc = tr.remove (R, reader, jobid, full_removal);
+    } else {
+        rc = tr.remove (jobid);
+        full_removal = true;
+    }
+    if (rc != 0) {
         if (is_existent_jobid (ctx, jobid)) {
            // When this condition arises, we will be less likely
            // to be able to reuse this jobid. Having the errored job
@@ -1865,7 +1885,7 @@ static int run_remove (std::shared_ptr<resource_ctx_t> &ctx, int64_t jobid)
         }
         goto out;
     }
-    if (is_existent_jobid (ctx, jobid))
+    if (full_removal && is_existent_jobid (ctx, jobid))
         ctx->jobs.erase (jobid);
 
     rc = 0;
@@ -2013,6 +2033,8 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
+    char *R = NULL;
+    bool full_removal = true;
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
@@ -2027,13 +2049,56 @@ static void cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
         goto error;
     }
 
-    if (run_remove (ctx, jobid) < 0) {
+    if (run_remove (ctx, jobid, R, false, full_removal) < 0) {
         flux_log_error (h, "%s: remove fails due to match error (id=%jd)",
                         __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
     if (flux_respond_pack (h, msg, "{}") < 0)
         flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void partial_cancel_request_cb (flux_t *h, flux_msg_handler_t *w,
+                                       const flux_msg_t *msg, void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    int64_t jobid = -1;
+    char *R = NULL;
+    decltype(ctx->allocations)::iterator jobid_it;
+    bool full_removal = false;
+    int int_full_removal = 0;
+
+    if (flux_request_unpack (msg, NULL, "{s:I s:s}",
+                                            "jobid", &jobid,
+                                            "R", &R) < 0)
+        goto error;
+
+    jobid_it = ctx->allocations.find (jobid);
+    if (jobid_it == ctx->allocations.end ()) {
+        errno = ENOENT;
+        flux_log (h, LOG_DEBUG, "%s: job (id=%jd) not found in allocations",
+                  __FUNCTION__, (intmax_t)jobid);
+        goto error;
+    }
+
+    if (run_remove (ctx, jobid, R, true, full_removal) < 0) {
+        flux_log_error (h, "%s: remove fails due to match error (id=%jd)",
+                        __FUNCTION__, (intmax_t)jobid);
+        goto error;
+    }
+    int_full_removal = full_removal;
+    if (flux_respond_pack (h, msg, "{s:i}",
+                                       "full-removal", int_full_removal) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    if (full_removal)
+        ctx->allocations.erase (jobid_it);
 
     return;
 

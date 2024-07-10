@@ -14,7 +14,7 @@
 #include <limits>
 #include <vector>
 #include <map>
-#include <unordered_set>
+#include <numeric>
 
 #include "planner_multi.h"
 #include "resource/planner/c++/planner_multi.hpp"
@@ -411,6 +411,115 @@ extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
     ctx->plan_multi->get_span_lookup ().erase (it);
     rc  = 0;
 done:
+    return rc;
+}
+
+extern "C" int planner_multi_reduce_span (planner_multi_t *ctx,
+                                          int64_t span_id,
+                                          const uint64_t *reduced_totals,
+                                          const char **resource_types,
+                                          size_t len,
+                                          bool &removed)
+{
+    size_t i = 0;
+    int rc = -1;
+    bool tmp_removed = false;
+    size_t mspan_idx;
+    int64_t mspan_sum = 0;
+    std::set<size_t> ext_res_types;
+
+    removed = false;
+    if (!ctx || span_id < 0 || !reduced_totals || !resource_types) {
+        errno = EINVAL;
+        return -1;
+    }
+    auto span_it = ctx->plan_multi->get_span_lookup ().find (span_id);
+    if (span_it == ctx->plan_multi->get_span_lookup ().end ()) {
+        errno = ENOENT;
+        return -1;
+    }
+    for (i = 0; i < len; ++i) {
+        if (reduced_totals[i] >
+            static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
+            errno = ERANGE;
+            return -1;
+        }
+        // Index could be different than the span_lookup due to order of
+        // iteration in the reader differing from the graph initialization
+        // order.
+        mspan_idx = ctx->plan_multi->get_resource_type_idx (resource_types[i]);
+        // Resource type not found; can happen if agfilter doesn't track resource
+        if (mspan_idx >= ctx->plan_multi->get_planners_size ())
+            continue;
+
+        tmp_removed = false;
+        if ( (rc = planner_reduce_span (
+                        ctx->plan_multi->get_planner_at (mspan_idx),
+                        span_it->second.at (mspan_idx),
+                        reduced_totals[i],
+                        tmp_removed)) == -1) {
+            // Could return -1 if the span with 0 resource request had been removed
+            // by a previous cancellation, so need to check if the span exists.
+            if (planner_is_active_span (ctx->plan_multi->get_planner_at (mspan_idx),
+                                        span_it->second.at (mspan_idx))) {
+                // We know the span is valid, so planner_reduce_span
+                // encountered another error.
+                errno = EINVAL;
+                goto error;
+            }
+        }
+        ext_res_types.insert (mspan_idx);
+        // Enter invalid span ID in the span_lookup to indicate the resource
+        // removal.
+        if (tmp_removed)
+            span_it->second[mspan_idx] = -1;
+    }
+    // Iterate over planner_multi resources since resource_types may not cover
+    // all planner_multi resources. If resource_types contains fewer types
+    // than the total planner_multi resources, this means the reader partial
+    // cancel didn't encounter those resource types. This can happen since
+    // agfilter requests for 0 resources are entered for resource types
+    // tracked by the agfilter that the job didn't request. Ex: job requests
+    // cores, but the agfilter tracks cores and memory. A span will be created
+    // for cores and memory, but the memory request will be 0. We need to
+    // remove these spans.
+    for (i = 0; i < ctx->plan_multi->get_planners_size (); ++i) {
+        tmp_removed = false;
+        // Check if the resource type was already processed in a previous
+        // loop.
+        if (ext_res_types.find (i) == ext_res_types.end ()) {
+            if ( (rc = planner_reduce_span (ctx->plan_multi->get_planner_at (i),
+                                            span_it->second.at (i),
+                                            0,
+                                            tmp_removed)) == -1) {
+                // Could return -1 if the span with 0 resource request had been
+                // removed by a previous cancellation, so need to check if the
+                // span exists.
+                if (planner_is_active_span (ctx->plan_multi->get_planner_at (i),
+                                            span_it->second.at (i))) {
+                    // We know the span is valid, so planner_reduce_span
+                    // encountered another error.
+                    errno = EINVAL;
+                    goto error;
+                }
+            }
+            // Enter invalid span ID in the span_lookup to indicate the
+            // resource removal.
+            if (tmp_removed)
+                span_it->second[i] = -1;
+        }
+    }
+    mspan_sum = std::accumulate (span_it->second.begin (),
+                                 span_it->second.end (),
+                                 0, std::plus<int64_t> ());
+    // Delete if all entries are -1
+    if (mspan_sum == (-1 * span_it->second.size ())) {
+        ctx->plan_multi->get_span_lookup ().erase (span_it);
+        removed = true;
+    }
+
+    rc  = 0;
+error:
     return rc;
 }
 

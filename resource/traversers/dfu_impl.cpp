@@ -342,7 +342,7 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
         pristine = false;
         ret = &(match_resources->with);
     } else {
-        spec = pristine? match_kind_t::PRESTINE_NONE_MATCH
+        spec = pristine? match_kind_t::PRISTINE_NONE_MATCH
                        : match_kind_t::NONE_MATCH;
     }
 

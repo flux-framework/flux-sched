@@ -86,6 +86,8 @@ public:
     void set_job (const uint64_t jobid, 
                   const std::shared_ptr<job_info_t> &job);
     int remove_job (const uint64_t jobid);
+    int remove_job (const uint64_t jobid, const std::string &R,
+                    bool &full_removal);
     void incr_job_counter ();
 
     /* Run the traverser to match the jobspec */
@@ -139,6 +141,8 @@ public:
                                 const std::string &R, int64_t &at, double &ov,
                                 std::string &R_out);
     static int cancel (void *h, const uint64_t jobid, bool noent_ok);
+    static int cancel (void *h, const uint64_t jobid, const std::string &R,
+                       bool noent_ok, bool &full_removal);
     static int find (void *h, std::string criteria, json_t *&o );
     static int info (void *h, const uint64_t jobid, std::string &mode,
                      bool &reserved, int64_t &at, double &ov);

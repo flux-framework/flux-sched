@@ -78,7 +78,8 @@ test_expect_success 'recovery: works when both modules restart (rv1)' '
 
 test_expect_success 'recovery: a cancel leads to a job schedule (rv1)' '
 	flux cancel ${jobid2} &&
-	flux job wait-event -t 10 ${jobid4} start
+	(flux job wait-event -t 10 ${jobid3} start ||
+	 flux job wait-event -t 10 ${jobid4} start)
 '
 
 test_expect_success 'recovery: cancel all jobs (rv1_nosched)' '

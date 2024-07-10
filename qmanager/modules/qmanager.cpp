@@ -580,9 +580,6 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
             while ( (job = ctx->queues.at (kv.first)->pending_pop ())
                      != nullptr)
                 flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
-            while ( (job = ctx->queues.at (kv.first)->complete_pop ())
-                     != nullptr)
-                flux_respond_error (ctx->h, job->msg, ENOSYS, "unloading");
         }
         schedutil_destroy (ctx->schedutil);
         flux_watcher_destroy (ctx->prep);

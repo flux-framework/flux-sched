@@ -14,6 +14,7 @@
 #include <set>
 #include <string>
 #include <cerrno>
+#include <unordered_set>
 #include "resource/schema/resource_graph.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_namespace_remapper.hpp"
@@ -21,6 +22,13 @@
 namespace Flux {
 namespace resource_model {
 
+enum class job_modify_t { CANCEL, PARTIAL_CANCEL, VTX_CANCEL };
+
+struct modify_data_t {
+    job_modify_t mod_type = job_modify_t::PARTIAL_CANCEL;
+    std::unordered_set<int64_t> ranks_removed;
+    std::unordered_map<const char *, int64_t> type_to_count;
+};
 
 /*!  Base resource reader class.
  */
@@ -73,6 +81,21 @@ public:
     virtual int update (resource_graph_t &g, resource_graph_metadata_t &m,
                         const std::string &str, int64_t jobid, int64_t at,
                         uint64_t dur, bool rsv, uint64_t trav_token) = 0;
+
+    /*! Partial cancellation of jobid based on R.
+     *
+     * \param g      resource graph
+     * \param m      resource graph meta data
+     * \param mod_data struct containing resource types to counts, mod type,
+     *                 and set of ranks removed
+     * \param R    resource set string
+     * \param jobid  jobid of str
+     * \return       0 on success; non-zero integer on an error
+     */
+    virtual int partial_cancel (resource_graph_t &g,
+                    resource_graph_metadata_t &m,
+                    modify_data_t &mod_data,
+                    const std::string &R, int64_t jobid) = 0;
 
     /*! Set the allowlist: only resources that are part of this allowlist
      *  will be unpacked into the graph.

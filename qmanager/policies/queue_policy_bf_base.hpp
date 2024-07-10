@@ -31,6 +31,8 @@ public:
     virtual int handle_match_success (flux_jobid_t jobid, const char *status,
                                       const char *R, int64_t at, double ov);
     virtual int handle_match_failure (flux_jobid_t jobid, int errcode);
+    int cancel (void *h, flux_jobid_t id, const char *R, bool noent_ok,
+                bool &full_removal) override;
 
 protected:
     unsigned int m_reservation_depth;
@@ -38,7 +40,6 @@ protected:
 
 private:
     int next_match_iter ();
-    int cancel_completed_jobs (void *h);
     int cancel_reserved_jobs (void *h);
     int allocate_orelse_reserve_jobs (void *h);
     std::map<uint64_t, flux_jobid_t> m_reserved;
