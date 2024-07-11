@@ -34,10 +34,7 @@ struct resource_pool_t : public resource_t {
     resource_pool_t &operator= (const resource_pool_t &o);
     ~resource_pool_t ();
 
-    enum class status_t : int { 
-        UP = 0,
-        DOWN = 1
-    };
+    enum class status_t : int { UP = 0, DOWN = 1 };
 
     typedef std::unordered_map<std::string, status_t> string_to_status;
     static const string_to_status str_to_status;
@@ -49,8 +46,8 @@ struct resource_pool_t : public resource_t {
     unsigned int size = 0;
     std::string unit;
 
-    schedule_t schedule;    //!< schedule data
-    pool_infra_t idata;     //!< scheduling infrastructure data
+    schedule_t schedule;  //!< schedule data
+    pool_infra_t idata;   //!< scheduling infrastructure data
     status_t status = status_t::UP;
 };
 
@@ -66,14 +63,14 @@ struct resource_relation_t {
     resource_relation_t &operator= (const resource_relation_t &o);
     ~resource_relation_t ();
 
-    std::map<std::string, std::string> name; //!< subsystem: relationship
-    relation_infra_t idata; //!< scheduling infrastructure data
+    std::map<std::string, std::string> name;  //!< subsystem: relationship
+    relation_infra_t idata;                   //!< scheduling infrastructure data
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_DATA_HPP
+#endif  // RESOURCE_DATA_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -49,43 +49,45 @@ int qmanager_cb_ctx_t::find_queue (flux_jobid_t id,
     return -1;
 }
 
-int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
-                                    std::map<std::string,
-                                             std::shared_ptr<
-                                                 queue_policy_base_t>> &queues)
+int qmanager_cb_t::post_sched_loop (
+    flux_t *h,
+    schedutil_t *schedutil,
+    std::map<std::string, std::shared_ptr<queue_policy_base_t>> &queues)
 {
     int rc = -1;
     unsigned int qd = 0;
     std::shared_ptr<job_t> job = nullptr;
-    for (auto& kv: queues) {
+    for (auto &kv : queues) {
         const std::string &queue_name = kv.first;
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
-        while ( (job = queue->alloced_pop ()) != nullptr) {
-            if (schedutil_alloc_respond_success_pack (schedutil, job->msg,
+        while ((job = queue->alloced_pop ()) != nullptr) {
+            if (schedutil_alloc_respond_success_pack (schedutil,
+                                                      job->msg,
                                                       job->schedule.R.c_str (),
                                                       "{ s:{s:n} }",
                                                       "sched",
-                                                          "t_estimate") < 0) {
-                flux_log_error (h, "%s: schedutil_alloc_respond_pack (queue=%s)",
-                                __FUNCTION__, queue_name.c_str ());
+                                                      "t_estimate")
+                < 0) {
+                flux_log_error (h,
+                                "%s: schedutil_alloc_respond_pack (queue=%s)",
+                                __FUNCTION__,
+                                queue_name.c_str ());
                 goto out;
             }
         }
-        while ( (job = queue->rejected_pop ()) != nullptr) {
+        while ((job = queue->rejected_pop ()) != nullptr) {
             std::string note = "alloc denied due to type=\"" + job->note + "\"";
-            if (schedutil_alloc_respond_deny (schedutil,
-                                              job->msg,
-                                              note.c_str ()) < 0) {
+            if (schedutil_alloc_respond_deny (schedutil, job->msg, note.c_str ()) < 0) {
                 flux_log_error (h,
                                 "%s: schedutil_alloc_respond_deny (queue=%s)",
-                                __FUNCTION__, queue_name.c_str ());
+                                __FUNCTION__,
+                                queue_name.c_str ());
                 goto out;
             }
         }
-        while ( (job = queue->canceled_pop ()) != nullptr) {
+        while ((job = queue->canceled_pop ()) != nullptr) {
             if (schedutil_alloc_respond_cancel (schedutil, job->msg) < 0) {
-                flux_log_error (h, "%s: schedutil_alloc_respond_cancel",
-                                __FUNCTION__);
+                flux_log_error (h, "%s: schedutil_alloc_respond_cancel", __FUNCTION__);
                 goto out;
             }
         }
@@ -95,13 +97,13 @@ int qmanager_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
             // if old_at == at, then no reason to send this annotation again.
             if (job->schedule.at == job->schedule.old_at)
                 continue;
-            if (schedutil_alloc_respond_annotate_pack (
-                    schedutil, job->msg,
-                    "{ s:{s:f} }",
-                    "sched",
-                        "t_estimate", static_cast<double> (job->schedule.at))) {
-                flux_log_error (h, "%s: schedutil_alloc_respond_annotate_pack",
-                                __FUNCTION__);
+            if (schedutil_alloc_respond_annotate_pack (schedutil,
+                                                       job->msg,
+                                                       "{ s:{s:f} }",
+                                                       "sched",
+                                                       "t_estimate",
+                                                       static_cast<double> (job->schedule.at))) {
+                flux_log_error (h, "%s: schedutil_alloc_respond_annotate_pack", __FUNCTION__);
                 goto out;
             }
         }
@@ -132,8 +134,7 @@ out:
  * valid queue.  This can occur if queues have been reconfigured since job
  * submission.
  */
-int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
-                                        const char *R, void *arg)
+int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg)
 
 {
     int rc = -1;
@@ -156,16 +157,22 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
      */
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s?o}",
-                         "id", &id,
-                         "priority", &prio,
-                         "userid", &uid,
-                         "t_submit", &ts,
-                         "jobspec", &jobspec) < 0) {
+                         "id",
+                         &id,
+                         "priority",
+                         &prio,
+                         "userid",
+                         &uid,
+                         "t_submit",
+                         &ts,
+                         "jobspec",
+                         &jobspec)
+        < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         goto out;
     }
     if (!jobspec) {
-        char key[64] = { 0 };
+        char key[64] = {0};
         if (flux_job_kvs_key (key, sizeof (key), id, "jobspec") < 0
             || !(f = flux_kvs_lookup (h, NULL, 0, key))
             || flux_kvs_lookup_get_unpack (f, "o", &jobspec) < 0) {
@@ -173,11 +180,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
             goto out;
         }
     }
-    if (json_unpack (jobspec,
-                     "{s?{s?{s?s}}}",
-                     "attributes",
-                       "system",
-                         "queue", &qn_attr) < 0) {
+    if (json_unpack (jobspec, "{s?{s?{s?s}}}", "attributes", "system", "queue", &qn_attr) < 0) {
         flux_log_error (h, "error parsing jobspec");
         goto out;
     }
@@ -195,25 +198,29 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
         goto out;
     }
     queue = ctx->queues.at (queue_name);
-    running_job = std::make_shared<job_t> (job_state_kind_t::RUNNING,
-                                                   id, uid, calc_priority (prio),
-                                                   ts, R);
+    running_job =
+        std::make_shared<job_t> (job_state_kind_t::RUNNING, id, uid, calc_priority (prio), ts, R);
 
     if (queue->reconstruct (static_cast<void *> (h), running_job, R_out) < 0) {
-        flux_log_error (h, "%s: reconstruct (id=%jd queue=%s)", __FUNCTION__,
-                       static_cast<intmax_t> (id), queue_name.c_str ());
+        flux_log_error (h,
+                        "%s: reconstruct (id=%jd queue=%s)",
+                        __FUNCTION__,
+                        static_cast<intmax_t> (id),
+                        queue_name.c_str ());
         goto out;
     }
-    flux_log (h, LOG_DEBUG, "requeue success (queue=%s id=%jd)",
-              queue_name.c_str (), static_cast<intmax_t> (id));
+    flux_log (h,
+              LOG_DEBUG,
+              "requeue success (queue=%s id=%jd)",
+              queue_name.c_str (),
+              static_cast<intmax_t> (id));
     rc = 0;
 out:
     flux_future_destroy (f);
     return rc;
 }
 
-void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                         void *arg)
+void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
@@ -230,11 +237,17 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
 
     if (flux_msg_unpack (msg,
                          "{s:I s:i s:i s:f s:o}",
-                         "id", &id,
-                         "priority", &priority,
-                         "userid", &userid,
-                         "t_submit", &t_submit,
-                         "jobspec", &jobspec) < 0) {
+                         "id",
+                         &id,
+                         "priority",
+                         &priority,
+                         "userid",
+                         &userid,
+                         "t_submit",
+                         &t_submit,
+                         "jobspec",
+                         &jobspec)
+        < 0) {
         flux_log_error (h, "%s: flux_msg_unpack", __FUNCTION__);
         return;
     }
@@ -249,10 +262,9 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->priority = calc_priority (priority);
     try {
         jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
-    } catch (const Flux::Jobspec::parse_error& e) {
+    } catch (const Flux::Jobspec::parse_error &e) {
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, e.what ()) < 0)
-            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
-                            __FUNCTION__);
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny", __FUNCTION__);
         free (jobspec_str);
         return;
     }
@@ -261,13 +273,9 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
     job->jobspec = jobspec_str;
     free (jobspec_str);
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
-        snprintf (errbuf,
-                  sizeof (errbuf),
-                  "queue (%s) doesn't exist",
-                  queue_name.c_str());
+        snprintf (errbuf, sizeof (errbuf), "queue (%s) doesn't exist", queue_name.c_str ());
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, errbuf) < 0)
-            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
-                            __FUNCTION__);
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny", __FUNCTION__);
         errno = ENOENT;
         return;
     }
@@ -278,18 +286,18 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
         snprintf (errbuf,
                   sizeof (errbuf),
                   "fluxion could not insert job into queue %s",
-                  queue_name.c_str());
-        flux_log_error (h, "%s: queue insert (id=%jd)", __FUNCTION__,
-                       static_cast<intmax_t> (job->id));
+                  queue_name.c_str ());
+        flux_log_error (h,
+                        "%s: queue insert (id=%jd)",
+                        __FUNCTION__,
+                        static_cast<intmax_t> (job->id));
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, errbuf) < 0)
-            flux_log_error (h, "%s: schedutil_alloc_respond_deny",
-                            __FUNCTION__);
+            flux_log_error (h, "%s: schedutil_alloc_respond_deny", __FUNCTION__);
         return;
     }
 }
 
-void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
-                                        const char *R, void *arg)
+void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg)
 {
     flux_jobid_t id;
     json_t *Res;
@@ -299,8 +307,7 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
 
-    if (flux_request_unpack (msg, NULL, "{s:I s:O}",
-                                           "id", &id, "R", &Res) < 0) {
+    if (flux_request_unpack (msg, NULL, "{s:I s:O}", "id", &id, "R", &Res) < 0) {
         flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
@@ -310,13 +317,18 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
         goto done;
     }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
-        flux_log_error (h, "%s: can't find queue for job (id=%jd)",
-                        __FUNCTION__, static_cast<intmax_t> (id));
+        flux_log_error (h,
+                        "%s: can't find queue for job (id=%jd)",
+                        __FUNCTION__,
+                        static_cast<intmax_t> (id));
         goto done;
     }
-    if ( (queue->remove (static_cast<void *> (h), id, Rstr)) < 0) {
-        flux_log_error (h, "%s: remove (queue=%s id=%jd)", __FUNCTION__,
-                    queue_name.c_str (), static_cast<intmax_t> (id));
+    if ((queue->remove (static_cast<void *> (h), id, Rstr)) < 0) {
+        flux_log_error (h,
+                        "%s: remove (queue=%s id=%jd)",
+                        __FUNCTION__,
+                        queue_name.c_str (),
+                        static_cast<intmax_t> (id));
         goto done;
     }
     if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
@@ -330,8 +342,7 @@ done:
     return;
 }
 
-void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
-                                          void *arg)
+void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     std::shared_ptr<job_t> job;
     qmanager_cb_ctx_t *ctx = nullptr;
@@ -345,22 +356,21 @@ void qmanager_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
         return;
     }
     if (ctx->find_queue (id, queue_name, queue) < 0) {
-        flux_log_error (h, "%s: queue not found for job (id=%jd)",
-                        __FUNCTION__, static_cast<intmax_t> (id));
+        flux_log_error (h,
+                        "%s: queue not found for job (id=%jd)",
+                        __FUNCTION__,
+                        static_cast<intmax_t> (id));
         return;
     }
-    if ((job = queue->lookup (id)) == nullptr
-        || !job->is_pending ())
+    if ((job = queue->lookup (id)) == nullptr || !job->is_pending ())
         return;
     if (queue->remove_pending (job.get ()) < 0) {
-        flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__,
-                       static_cast<intmax_t> (id));
+        flux_log_error (h, "%s: remove job (%jd)", __FUNCTION__, static_cast<intmax_t> (id));
         return;
     }
 }
 
-void qmanager_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
-                                              void *arg)
+void qmanager_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
@@ -380,54 +390,55 @@ void qmanager_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg,
         unsigned int priority;
 
         if (json_unpack (arr, "[I,i]", &id, &priority) < 0) {
-            flux_log_error (h, "%s: invalid prioritize entry",
-                            __FUNCTION__);
+            flux_log_error (h, "%s: invalid prioritize entry", __FUNCTION__);
             return;
         }
 
         if (ctx->find_queue (id, queue_name, queue) < 0) {
-            flux_log_error (h, "%s: queue not found for job (id=%jd)",
-                            __FUNCTION__, static_cast<intmax_t> (id));
+            flux_log_error (h,
+                            "%s: queue not found for job (id=%jd)",
+                            __FUNCTION__,
+                            static_cast<intmax_t> (id));
             continue;
         }
 
         if (queue->pending_reprioritize (id, calc_priority (priority)) < 0) {
             if (errno == ENOENT) {
-                flux_log_error (h, "invalid job reprioritized (id=%jd)",
+                flux_log_error (h,
+                                "invalid job reprioritized (id=%jd)",
+                                static_cast<intmax_t> (id));
+                continue;
+            } else if (errno == EINVAL) {
+                flux_log_error (h,
+                                "reprioritized non-pending job (id=%jd)",
                                 static_cast<intmax_t> (id));
                 continue;
             }
-            else if (errno == EINVAL) {
-                flux_log_error (h, "reprioritized non-pending job (id=%jd)",
-                                static_cast<intmax_t> (id));
-                continue;
-            }
-            flux_log_error (h, "%s: queue pending_reprioritize (id=%jd)",
-                            __FUNCTION__, static_cast<intmax_t> (id));
+            flux_log_error (h,
+                            "%s: queue pending_reprioritize (id=%jd)",
+                            __FUNCTION__,
+                            static_cast<intmax_t> (id));
             return;
         }
     }
 }
 
-void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
-                                     int revents, void *arg)
+void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w, int revents, void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     ctx->pls_sched_loop = false;
     ctx->pls_post_loop = false;
-    for (auto &kv: ctx->queues) {
+    for (auto &kv : ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         ctx->pls_sched_loop = ctx->pls_sched_loop || queue->is_schedulable ();
-        ctx->pls_post_loop = ctx->pls_post_loop
-                              || queue->is_scheduled ();
+        ctx->pls_post_loop = ctx->pls_post_loop || queue->is_scheduled ();
     }
     if (ctx->pls_sched_loop || ctx->pls_post_loop)
         flux_watcher_start (ctx->idle);
 }
 
-void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
-                                     int revents, void *arg)
+void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w, int revents, void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
@@ -437,7 +448,7 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     if (!ctx->pls_sched_loop && !ctx->pls_post_loop)
         return;
     if (ctx->pls_sched_loop) {
-        for (auto &kv: ctx->queues) {
+        for (auto &kv : ctx->queues) {
             std::shared_ptr<queue_policy_base_t> &queue = kv.second;
             if (queue->run_sched_loop (static_cast<void *> (ctx->h), true) < 0) {
                 if (errno == EAGAIN)
@@ -445,7 +456,7 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
                 flux_log_error (ctx->h, "%s: run_sched_loop", __FUNCTION__);
                 return;
             }
-         }
+        }
     }
     if (post_sched_loop (ctx->h, ctx->schedutil, ctx->queues) < 0) {
         flux_log_error (ctx->h, "%s: post_sched_loop", __FUNCTION__);
@@ -453,99 +464,89 @@ void qmanager_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
     }
 }
 
-int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg,
-                                             const char *R, void *arg)
+int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
+                                             const flux_msg_t *msg,
+                                             const char *R,
+                                             void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    int rc = exception_safe_wrapper (qmanager_cb_t::jobmanager_hello_cb,
-                                     h, msg, R, arg);
+    int rc = exception_safe_wrapper (qmanager_cb_t::jobmanager_hello_cb, h, msg, R, arg);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
     return rc;
 }
 
-void qmanager_safe_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg,
-                                              void *arg)
+void qmanager_safe_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    exception_safe_wrapper (qmanager_cb_t::jobmanager_alloc_cb,
-                            h, msg, arg);
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_alloc_cb, h, msg, arg);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg,
-                                             const char *R, void *arg)
+void qmanager_safe_cb_t::jobmanager_free_cb (flux_t *h,
+                                             const flux_msg_t *msg,
+                                             const char *R,
+                                             void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::jobmanager_free_cb, h, msg, R, arg);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg,
-                                               void *arg)
+void qmanager_safe_cb_t::jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb,
-                            h, msg, arg);
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_cancel_cb, h, msg, arg);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h,
-                                                   const flux_msg_t *msg,
-                                                   void *arg)
+void qmanager_safe_cb_t::jobmanager_prioritize_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    exception_safe_wrapper (qmanager_cb_t::jobmanager_prioritize_cb,
-                            h, msg, arg);
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_prioritize_cb, h, msg, arg);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
 }
 
-void qmanager_safe_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
-                                          int revents, void *arg)
+void qmanager_safe_cb_t::prep_watcher_cb (flux_reactor_t *r,
+                                          flux_watcher_t *w,
+                                          int revents,
+                                          void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
     exception_safe_wrapper (qmanager_cb_t::prep_watcher_cb, r, w, revents, arg);
     if (exception_safe_wrapper.bad ()) {
         flux_t *h = flux_handle_watcher_get_flux (w);
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
     }
 }
 
-void qmanager_safe_cb_t::check_watcher_cb (flux_reactor_t *r, flux_watcher_t *w,
-                                           int revents, void *arg)
+void qmanager_safe_cb_t::check_watcher_cb (flux_reactor_t *r,
+                                           flux_watcher_t *w,
+                                           int revents,
+                                           void *arg)
 {
     eh_wrapper_t exception_safe_wrapper;
-    exception_safe_wrapper (qmanager_cb_t::check_watcher_cb,
-                            r, w, revents, arg);
+    exception_safe_wrapper (qmanager_cb_t::check_watcher_cb, r, w, revents, arg);
     if (exception_safe_wrapper.bad ()) {
         flux_t *h = flux_handle_watcher_get_flux (w);
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
     }
 }
 
-int qmanager_safe_cb_t::post_sched_loop (flux_t *h, schedutil_t *schedutil,
-                                         std::map<std::string,
-                                                  std::shared_ptr<
-                                                      queue_policy_base_t>> &queues)
+int qmanager_safe_cb_t::post_sched_loop (
+    flux_t *h,
+    schedutil_t *schedutil,
+    std::map<std::string, std::shared_ptr<queue_policy_base_t>> &queues)
 {
     int rc;
     eh_wrapper_t exception_safe_wrapper;
-    rc = exception_safe_wrapper (qmanager_cb_t::post_sched_loop,
-                                 h, schedutil, queues);
+    rc = exception_safe_wrapper (qmanager_cb_t::post_sched_loop, h, schedutil, queues);
     if (exception_safe_wrapper.bad ())
-        flux_log_error (h, "%s: %s", __FUNCTION__,
-                        exception_safe_wrapper.get_err_message ());
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
     return rc;
 }
 

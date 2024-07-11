@@ -50,25 +50,23 @@ struct interval_less {
 };
 
 struct plus {
-    inline const int64_t operator() (const int64_t &result,
-                                     const eval_egroup_t &a) const
+    inline const int64_t operator() (const int64_t &result, const eval_egroup_t &a) const
     {
         return result + a.score;
     }
 };
-inline boost::icl::interval_set<int64_t>::interval_type to_interval (
-                                                     const eval_egroup_t &ev)
+inline boost::icl::interval_set<int64_t>::interval_type to_interval (const eval_egroup_t &ev)
 {
     using namespace boost::icl;
     int64_t tmp = ev.score;
     return interval_set<int64_t>::interval_type::closed (tmp, tmp);
 }
-} // namespace fold
+}  // namespace fold
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // FOLD_HPP
+#endif  // FOLD_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

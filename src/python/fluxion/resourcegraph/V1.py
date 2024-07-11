@@ -16,7 +16,6 @@ from fluxion.jsongraph.objects.graph import Graph, Node, Edge
 
 
 class FluxionResourcePoolV1(Node):
-
     """
     Fluxion Resource Pool Vertex Class: extend jsongraph's Node class
     """

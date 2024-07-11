@@ -20,20 +20,23 @@ namespace Flux {
 namespace Jobspec {
 
 class HostlistConstraint : public Constraint {
-public:
-    HostlistConstraint (const YAML::Node&);
+   public:
+    HostlistConstraint (const YAML::Node &);
     HostlistConstraint () = default;
-    ~HostlistConstraint () { hostlist_destroy (hl); };
+    ~HostlistConstraint ()
+    {
+        hostlist_destroy (hl);
+    };
 
-private:
+   private:
     struct hostlist *hl = nullptr;
 
-public:
+   public:
     virtual bool match (const Flux::resource_model::resource_t &resource) const;
     virtual YAML::Node as_yaml () const;
 };
 
-} // namespace Jobspec
-} // namespace Flux
+}  // namespace Jobspec
+}  // namespace Flux
 
-#endif // HOSTLIST_CONSTRAINT_HPP
+#endif  // HOSTLIST_CONSTRAINT_HPP

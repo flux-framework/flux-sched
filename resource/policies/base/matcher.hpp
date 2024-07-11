@@ -33,13 +33,12 @@ enum match_score_t { MATCH_UNMET = 0, MATCH_MET = 1 };
  *  resource relationship types which then allow for filtering the graph
  *  data store for the match callback object.
  */
-class matcher_data_t
-{
-public:
+class matcher_data_t {
+   public:
     matcher_data_t ();
     matcher_data_t (const std::string &name);
     matcher_data_t (const matcher_data_t &o);
-    matcher_data_t &operator=(const matcher_data_t &o);
+    matcher_data_t &operator= (const matcher_data_t &o);
     ~matcher_data_t ();
 
     /*! Add a subsystem and the relationship type that this resource base
@@ -75,20 +74,17 @@ public:
      */
     const multi_subsystemsS &subsystemsS () const;
 
-private:
+   private:
     std::string m_name;
     subsystem_t m_err_subsystem = "error";
     std::vector<subsystem_t> m_subsystems;
     multi_subsystemsS m_subsystems_map;
 };
 
-
 /*! Base utility method for matchers.
  */
-class matcher_util_api_t
-{
-public:
-
+class matcher_util_api_t {
+   public:
     /*! Calculate the count that should be allocated, which is a function
      *  of the number of qualifed available resources, minimum/maximum/operator
      *  requirement of the jobspec.
@@ -97,17 +93,14 @@ public:
      *  \param qual_cnt  available qualified resources.
      *  \return          0 when not available; count otherwise.
      */
-    unsigned int calc_count (const Flux::Jobspec::Resource &resource,
-                             unsigned int qual_cnt) const;
+    unsigned int calc_count (const Flux::Jobspec::Resource &resource, unsigned int qual_cnt) const;
 
     /*! Calculate the effective max count that should be allocated.
      *
      *  \param resource  resource section of the jobspec.
      *  \return          Effective max count; 0 if an error is encountered.
      */
-    unsigned int calc_effective_max (
-                     const Flux::Jobspec::Resource &resource) const;
-
+    unsigned int calc_effective_max (const Flux::Jobspec::Resource &resource) const;
 
     /*! Set prune filters based on spec. The spec should comply with
      *  the following format:
@@ -127,8 +120,7 @@ public:
      *  \param subsystem subsystem
      *  \param spec      prune filter specification string
      */
-    int set_pruning_types_w_spec (const std::string &subsystem,
-                                  const std::string &spec);
+    int set_pruning_types_w_spec (const std::string &subsystem, const std::string &spec);
 
     void set_pruning_type (const std::string &subsystem,
                            const std::string &anchor_type,
@@ -138,9 +130,7 @@ public:
                              const std::string &anchor_type,
                              const std::string &prune_type);
 
-    bool is_pruning_type (const std::string &subsystem,
-                          const std::string &prune_type);
-
+    bool is_pruning_type (const std::string &subsystem, const std::string &prune_type);
 
     bool get_my_pruning_types (const std::string &subsystem,
                                const std::string &anchor_type,
@@ -154,10 +144,8 @@ public:
 
     int reset_exclusive_resource_types (const std::set<std::string> &x_types);
 
-private:
-
-    int register_resource_pair (const std::string &subsystem,
-                                std::string &r_pair);
+   private:
+    int register_resource_pair (const std::string &subsystem, std::string &r_pair);
 
     std::set<std::string> m_x_resource_types;
 
@@ -169,15 +157,14 @@ private:
     // m_pruing_type["containment"][ANY_RESOURCE_TYPE] -> {"core"}
     //     in the containment subsystem at any level, please
     //     maintain an aggregate on the available cores under it.
-    std::map<subsystem_t,
-             std::map<std::string, std::set<std::string>>> m_pruning_types;
+    std::map<subsystem_t, std::map<std::string, std::set<std::string>>> m_pruning_types;
     std::map<subsystem_t, std::set<std::string>> m_total_set;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // MATCHER_DATA_HPP
+#endif  // MATCHER_DATA_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

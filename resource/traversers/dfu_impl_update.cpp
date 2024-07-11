@@ -20,24 +20,25 @@ using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Private Update API
 ////////////////////////////////////////////////////////////////////////////////
 
-int dfu_impl_t::emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> &w,
-                          unsigned int needs, bool exclusive)
+int dfu_impl_t::emit_vtx (vtx_t u,
+                          std::shared_ptr<match_writers_t> &w,
+                          unsigned int needs,
+                          bool exclusive)
 {
     return w->emit_vtx (level (), (*m_graph), u, needs, exclusive);
 }
 
 int dfu_impl_t::emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w)
 {
-     return w->emit_edg (level (), (*m_graph), e);
+    return w->emit_edg (level (), (*m_graph), e);
 }
 
-int dfu_impl_t::upd_txfilter (vtx_t u, const jobmeta_t &jobmeta,
+int dfu_impl_t::upd_txfilter (vtx_t u,
+                              const jobmeta_t &jobmeta,
                               const std::map<std::string, int64_t> &dfu)
 {
     // idata tag and exclusive checker update
@@ -47,13 +48,12 @@ int dfu_impl_t::upd_txfilter (vtx_t u, const jobmeta_t &jobmeta,
     // Tag on a vertex with exclusive access or all of its ancestors
     (*m_graph)[u].idata.tags[jobmeta.jobid] = jobmeta.jobid;
     // Update x_checker used for quick exclusivity check during matching
-    if ( (x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
+    if ((x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": x_checker not installed.\n";
         return -1;
     }
-    if ( (span = planner_add_span (x_checker, jobmeta.at,
-                                   jobmeta.duration, 1)) == -1) {
+    if ((span = planner_add_span (x_checker, jobmeta.at, jobmeta.duration, 1)) == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": planner_add_span returned -1.\n";
         m_err_msg += strerror (errno);
@@ -64,7 +64,8 @@ int dfu_impl_t::upd_txfilter (vtx_t u, const jobmeta_t &jobmeta,
     return 0;
 }
 
-int dfu_impl_t::upd_agfilter (vtx_t u, const subsystem_t &s,
+int dfu_impl_t::upd_agfilter (vtx_t u,
+                              const subsystem_t &s,
                               const jobmeta_t &jobmeta,
                               const std::map<std::string, int64_t> &dfu)
 {
@@ -77,8 +78,10 @@ int dfu_impl_t::upd_agfilter (vtx_t u, const subsystem_t &s,
         // using the new aggregates passed by dfu.
         count_relevant_types (subtree_plan, dfu, aggregate);
         span = planner_multi_add_span (subtree_plan,
-                                       jobmeta.at, jobmeta.duration,
-                                       aggregate.data (), aggregate.size ());
+                                       jobmeta.at,
+                                       jobmeta.duration,
+                                       aggregate.data (),
+                                       aggregate.size ());
         if (span == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_add_span returned -1.\n";
@@ -91,27 +94,30 @@ int dfu_impl_t::upd_agfilter (vtx_t u, const subsystem_t &s,
     return 0;
 }
 
-int dfu_impl_t::upd_idata (vtx_t u, const subsystem_t &s,
-                          const jobmeta_t &jobmeta,
-                          const std::map<std::string, int64_t> &dfu)
+int dfu_impl_t::upd_idata (vtx_t u,
+                           const subsystem_t &s,
+                           const jobmeta_t &jobmeta,
+                           const std::map<std::string, int64_t> &dfu)
 {
     int rc = 0;
-    if ( (rc = upd_txfilter (u, jobmeta, dfu)) != 0)
+    if ((rc = upd_txfilter (u, jobmeta, dfu)) != 0)
         goto done;
-    if ( (rc = upd_agfilter (u, s, jobmeta, dfu)) != 0)
+    if ((rc = upd_agfilter (u, s, jobmeta, dfu)) != 0)
         goto done;
 done:
     return rc;
 }
 
 int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
-                                 const jobmeta_t &jobmeta, vtx_t u, edg_t e)
+                                 const jobmeta_t &jobmeta,
+                                 vtx_t u,
+                                 edg_t e)
 {
     size_t len = 0;
     vtx_t tgt = target (e, *m_graph);
     planner_multi_t *subplan = (*m_graph)[tgt].idata.subplans[subsystem];
     if (subplan) {
-        if ( (len = planner_multi_resources_len (subplan)) == 0)
+        if ((len = planner_multi_resources_len (subplan)) == 0)
             return -1;
 
         // Set dynamic traversing order based on the following heuristics:
@@ -119,24 +125,20 @@ int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
         //     2. Last pruning filter resource type (if additional
         //        pruning filter type was given, that's a good
         //        indication that it is the scarcest resource)
-        int64_t avail = planner_multi_avail_resources_at (subplan,
-                                                          jobmeta.now, len - 1);
+        int64_t avail = planner_multi_avail_resources_at (subplan, jobmeta.now, len - 1);
         // Special case to skip (e.g., leaf resource vertices)
         if (avail == 0 && planner_multi_span_size (subplan) == 0)
             return 0;
 
-        auto key = std::make_pair ((*m_graph)[e].idata.get_weight (),
-                                   (*m_graph)[tgt].uniq_id);
+        auto key = std::make_pair ((*m_graph)[e].idata.get_weight (), (*m_graph)[tgt].uniq_id);
         m_graph_db->metadata.by_outedges[u].erase (key);
 
-        (*m_graph)[e].idata.set_weight ((avail == -1)? 0 : avail);
-        key = std::make_pair ((*m_graph)[e].idata.get_weight (),
-                              (*m_graph)[tgt].uniq_id);
+        (*m_graph)[e].idata.set_weight ((avail == -1) ? 0 : avail);
+        key = std::make_pair ((*m_graph)[e].idata.get_weight (), (*m_graph)[tgt].uniq_id);
         // Reinsert so that outedges are maintained according to the current
         // resource availability state. Leverage the fact that std::map
         // uses a RedBlack tree keep its elemented in sorted order.
-        auto ret = m_graph_db->metadata.by_outedges[u].insert (
-                                            std::make_pair (key, e));
+        auto ret = m_graph_db->metadata.by_outedges[u].insert (std::make_pair (key, e));
         if (!ret.second) {
             errno = ENOMEM;
             return -1;
@@ -145,8 +147,12 @@ int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
     return 0;
 }
 
-int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
-                          bool excl,  const jobmeta_t &jobmeta, bool full,
+int dfu_impl_t::upd_plan (vtx_t u,
+                          const subsystem_t &s,
+                          unsigned int needs,
+                          bool excl,
+                          const jobmeta_t &jobmeta,
+                          bool full,
                           int &n)
 {
     int rc = 0;
@@ -160,12 +166,12 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
             return 0;
         }
 
-        if ( (plans = (*m_graph)[u].schedule.plans) == NULL) {
+        if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": plans not installed.\n";
         }
-        if ( (span = planner_add_span (plans, jobmeta.at, jobmeta.duration,
-                                       (const uint64_t)needs)) == -1) {
+        if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
+            == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_add_span returned -1.\n";
             if (errno != 0) {
@@ -177,18 +183,18 @@ int dfu_impl_t::upd_plan (vtx_t u, const subsystem_t &s, unsigned int needs,
         }
 
         switch (jobmeta.alloc_type) {
-        case jobmeta_t::alloc_type_t::AT_ALLOC:
-            (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-            break;
-        case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
-            (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
-            break;
-        case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
-            break;
-        default:
-            rc = -1;
-            errno = EINVAL;
-            break;
+            case jobmeta_t::alloc_type_t::AT_ALLOC:
+                (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
+                break;
+            case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
+                (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
+                break;
+            case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
+                break;
+            default:
+                rc = -1;
+                errno = EINVAL;
+                break;
         }
     }
 
@@ -196,8 +202,10 @@ done:
     return rc;
 }
 
-int dfu_impl_t::accum_to_parent (vtx_t u, const subsystem_t &subsystem,
-                                 unsigned int needs, bool excl,
+int dfu_impl_t::accum_to_parent (vtx_t u,
+                                 const subsystem_t &subsystem,
+                                 unsigned int needs,
+                                 bool excl,
                                  const std::map<std::string, int64_t> &dfu,
                                  std::map<std::string, int64_t> &to_parent)
 {
@@ -205,11 +213,9 @@ int dfu_impl_t::accum_to_parent (vtx_t u, const subsystem_t &subsystem,
     // aggregate pruning filter. If exclusive, none of the vertex's resource
     // is available (size). If not, all will be available (size - needs).
     if (excl)
-        accum_if (subsystem,
-                  (*m_graph)[u].type, (*m_graph)[u].size, to_parent);
+        accum_if (subsystem, (*m_graph)[u].type, (*m_graph)[u].size, to_parent);
     else
-        accum_if (subsystem,
-                  (*m_graph)[u].type, (*m_graph)[u].size - needs, to_parent);
+        accum_if (subsystem, (*m_graph)[u].type, (*m_graph)[u].size - needs, to_parent);
 
     // Pass up the new subtree aggregates collected so far to the parent.
     for (auto &kv : dfu)
@@ -218,36 +224,45 @@ int dfu_impl_t::accum_to_parent (vtx_t u, const subsystem_t &subsystem,
     return 0;
 }
 
-int dfu_impl_t::upd_meta (vtx_t u, const subsystem_t &s, unsigned int needs,
-                          bool excl, int n, const jobmeta_t &jobmeta,
+int dfu_impl_t::upd_meta (vtx_t u,
+                          const subsystem_t &s,
+                          unsigned int needs,
+                          bool excl,
+                          int n,
+                          const jobmeta_t &jobmeta,
                           const std::map<std::string, int64_t> &dfu,
                           std::map<std::string, int64_t> &to_parent)
 {
     int rc = 0;
     if (n == 0)
         goto done;
-    if ( (rc = upd_idata (u, s, jobmeta, dfu)) == -1)
+    if ((rc = upd_idata (u, s, jobmeta, dfu)) == -1)
         goto done;
-    if ( (rc = accum_to_parent (u, s, needs, excl, dfu, to_parent)) == -1)
+    if ((rc = accum_to_parent (u, s, needs, excl, dfu, to_parent)) == -1)
         goto done;
 done:
     return rc;
 }
 
-int dfu_impl_t::upd_sched (vtx_t u, std::shared_ptr<match_writers_t> &writers,
-                           const subsystem_t &s, unsigned int needs, bool excl,
-                           int n, const jobmeta_t &jobmeta, bool full,
+int dfu_impl_t::upd_sched (vtx_t u,
+                           std::shared_ptr<match_writers_t> &writers,
+                           const subsystem_t &s,
+                           unsigned int needs,
+                           bool excl,
+                           int n,
+                           const jobmeta_t &jobmeta,
+                           bool full,
                            const std::map<std::string, int64_t> &dfu,
                            std::map<std::string, int64_t> &to_parent)
 {
     int rc = -1;
-    if ( (rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
+    if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
         goto done;
-    if ( (rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
+    if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
         goto done;
     }
     if (n > 0) {
-        if ( (rc = emit_vtx (u, writers, needs, excl)) == -1) {
+        if ((rc = emit_vtx (u, writers, needs, excl)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_vtx returned -1.\n";
         }
@@ -258,13 +273,16 @@ done:
     return n;
 }
 
-int dfu_impl_t::upd_upv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
+int dfu_impl_t::upd_upv (vtx_t u,
+                         std::shared_ptr<match_writers_t> &writers,
                          const subsystem_t &subsystem,
-                         unsigned int needs, bool excl,
-                         const jobmeta_t &jobmeta, bool full,
+                         unsigned int needs,
+                         bool excl,
+                         const jobmeta_t &jobmeta,
+                         bool full,
                          std::map<std::string, int64_t> &to_parent)
 {
-    //NYI: update resources on the UPV direction
+    // NYI: update resources on the UPV direction
     return 0;
 }
 
@@ -272,8 +290,7 @@ bool dfu_impl_t::modify_traversal (vtx_t u, bool emit_shadow_from_parent) const
 {
     // We modify our traversal if the parent says so if the
     // visiting vertex resource type is exclusive by configuration
-    return emit_shadow_from_parent
-           || m_match->is_resource_type_exclusive ((*m_graph)[u].type);
+    return emit_shadow_from_parent || m_match->is_resource_type_exclusive ((*m_graph)[u].type);
 }
 
 bool dfu_impl_t::stop_explore_best (edg_t e, bool mod_trav) const
@@ -286,15 +303,17 @@ bool dfu_impl_t::get_eff_exclusive (bool x, bool mod_trav) const
     return x || mod_trav;
 }
 
-unsigned dfu_impl_t::get_eff_needs (unsigned needs,
-                                    unsigned size, bool mod_trav) const
+unsigned dfu_impl_t::get_eff_needs (unsigned needs, unsigned size, bool mod_trav) const
 {
-    return mod_trav? size : needs;
+    return mod_trav ? size : needs;
 }
 
-int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
-                         unsigned int needs, bool excl,
-                         const jobmeta_t &jobmeta, bool full,
+int dfu_impl_t::upd_dfv (vtx_t u,
+                         std::shared_ptr<match_writers_t> &writers,
+                         unsigned int needs,
+                         bool excl,
+                         const jobmeta_t &jobmeta,
+                         bool full,
                          std::map<std::string, int64_t> &to_parent,
                          bool emit_shadow)
 {
@@ -315,18 +334,14 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
 
             vtx_t tgt = target (*ei, *m_graph);
             int n_plan_sub = 0;
-            bool x = get_eff_exclusive (
-                         (*m_graph)[*ei].idata.get_exclusive (), mod);
-            unsigned needs = get_eff_needs (
-                                 (*m_graph)[*ei].idata.get_needs (),
-                                 (*m_graph)[tgt].size, mod);
+            bool x = get_eff_exclusive ((*m_graph)[*ei].idata.get_exclusive (), mod);
+            unsigned needs =
+                get_eff_needs ((*m_graph)[*ei].idata.get_needs (), (*m_graph)[tgt].size, mod);
 
             if (subsystem == dom) {
-                n_plan_sub += upd_dfv (tgt, writers,
-                                       needs, x, jobmeta, full, dfu, mod);
+                n_plan_sub += upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, mod);
             } else {
-                n_plan_sub += upd_upv (tgt, writers, subsystem,
-                                       needs, x, jobmeta, full, dfu);
+                n_plan_sub += upd_upv (tgt, writers, subsystem, needs, x, jobmeta, full, dfu);
             }
 
             if (n_plan_sub > 0) {
@@ -344,12 +359,10 @@ int dfu_impl_t::upd_dfv (vtx_t u, std::shared_ptr<match_writers_t> &writers,
         }
     }
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
-    return upd_sched (u, writers, dom, needs,
-                      excl, n_plans, jobmeta, full, dfu, to_parent);
+    return upd_sched (u, writers, dom, needs, excl, n_plans, jobmeta, full, dfu, to_parent);
 }
 
-int dfu_impl_t::rem_exclusive_filter (vtx_t u, int64_t jobid,
-                                      const modify_data_t &mod_data)
+int dfu_impl_t::rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_t &mod_data)
 {
     int rc = -1;
     int64_t span = -1;
@@ -370,7 +383,7 @@ int dfu_impl_t::rem_exclusive_filter (vtx_t u, int64_t jobid,
     x_checker = (*m_graph)[u].idata.x_checker;
     span = span_it->second;
     (*m_graph)[u].idata.x_spans.erase (span_it);
-    if ( (rc = planner_rem_span (x_checker, span)) == -1) {
+    if ((rc = planner_rem_span (x_checker, span)) == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += "planner_rem_span returned -1.\n";
         m_err_msg += (*m_graph)[u].name + ".\n";
@@ -394,7 +407,8 @@ bool dfu_impl_t::rem_tag (vtx_t u, int64_t jobid)
     }
 }
 
-int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
+int dfu_impl_t::mod_agfilter (vtx_t u,
+                              int64_t jobid,
                               const std::string &subsystem,
                               const modify_data_t &mod_data,
                               bool &stop)
@@ -405,7 +419,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
     auto &job2span = (*m_graph)[u].idata.job2span;
     std::map<int64_t, int64_t>::iterator span_it;
 
-    if ( (subtree_plan = (*m_graph)[u].idata.subplans[subsystem]) == NULL)
+    if ((subtree_plan = (*m_graph)[u].idata.subplans[subsystem]) == NULL)
         goto done;
 
     span_it = job2span.find (jobid);
@@ -419,8 +433,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
         goto done;
     }
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if ( (rc = planner_multi_rem_span (subtree_plan,
-                                           span_it->second)) != 0) {
+        if ((rc = planner_multi_rem_span (subtree_plan, span_it->second)) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_rem_span returned -1.\n";
             m_err_msg += (*m_graph)[u].name + ".\n";
@@ -429,9 +442,8 @@ int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
             goto done;
         }
         job2span.erase (span_it);
-    } else { // PARTIAL_CANCEL
-        if ( (*m_graph)[u].idata.tags.find (jobid)
-                    == (*m_graph)[u].idata.tags.end ()) {
+    } else {  // PARTIAL_CANCEL
+        if ((*m_graph)[u].idata.tags.find (jobid) == (*m_graph)[u].idata.tags.end ()) {
             // stop removal
             stop = true;
             goto done;
@@ -439,9 +451,8 @@ int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
         // If not a default/root rank and the rank is still in the graph
         // but don't remove exclusive filter as allocation may be exclusive
         // at the subgraph rooted here.
-        if ( (mod_data.ranks_removed.find ((*m_graph)[u].rank)
-                                    == mod_data.ranks_removed.end ())
-                    && (*m_graph)[u].rank != -1) {
+        if ((mod_data.ranks_removed.find ((*m_graph)[u].rank) == mod_data.ranks_removed.end ())
+            && (*m_graph)[u].rank != -1) {
             stop = true;
             goto done;
         }
@@ -452,12 +463,13 @@ int dfu_impl_t::mod_agfilter (vtx_t u, int64_t jobid,
                 reduced_types.push_back (t2ct_it.first);
                 reduced_counts.push_back (t2ct_it.second);
             }
-            if ( (rc = planner_multi_reduce_span (subtree_plan,
-                                                  span_it->second,
-                                                  reduced_counts.data (),
-                                                  reduced_types.data (),
-                                                  mod_data.type_to_count.size (),
-                                                  removed)) != 0) {
+            if ((rc = planner_multi_reduce_span (subtree_plan,
+                                                 span_it->second,
+                                                 reduced_counts.data (),
+                                                 reduced_types.data (),
+                                                 mod_data.type_to_count.size (),
+                                                 removed))
+                != 0) {
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": planner_multi_reduce_span returned -1.\n";
                 m_err_msg += (*m_graph)[u].name + ".\n";
@@ -486,16 +498,17 @@ done:
     return rc;
 }
 
-int dfu_impl_t::mod_idata (vtx_t u, int64_t jobid,
-                               const std::string &subsystem,
-                               const modify_data_t &mod_data,
-                               bool &stop)
+int dfu_impl_t::mod_idata (vtx_t u,
+                           int64_t jobid,
+                           const std::string &subsystem,
+                           const modify_data_t &mod_data,
+                           bool &stop)
 {
     // Only remove the txfilter span and tag first if we're completely
     // cancelling the vertex
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
         // returns true if stopping
-        if ( (stop = rem_tag (u, jobid)))
+        if ((stop = rem_tag (u, jobid)))
             return 0;
         if (rem_exclusive_filter (u, jobid, mod_data) != 0)
             return -1;
@@ -506,8 +519,7 @@ int dfu_impl_t::mod_idata (vtx_t u, int64_t jobid,
     return mod_agfilter (u, jobid, subsystem, mod_data, stop);
 }
 
-int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid,
-                          modify_data_t &mod_data)
+int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 {
     int rc = 0;
     int64_t span = -1;
@@ -524,7 +536,7 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid,
         if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
             (*m_graph)[u].schedule.allocations.erase (alloc_span);
         }
-    } else if ( (res_span = (*m_graph)[u].schedule.reservations.find (jobid))
+    } else if ((res_span = (*m_graph)[u].schedule.reservations.find (jobid))
                != (*m_graph)[u].schedule.reservations.end ()) {
         span = res_span->second;
         // Can't be PARTIAL_CANCEL
@@ -537,7 +549,7 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid,
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
         if (mod_data.mod_type == job_modify_t::VTX_CANCEL)
             prev_count = planner_span_resource_count (plans, span);
-        if ( (rc = planner_rem_span (plans, span)) == -1) {
+        if ((rc = planner_rem_span (plans, span)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_rem_span returned -1.\n";
             m_err_msg += (*m_graph)[u].name + ".\n";
@@ -549,7 +561,7 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid,
         if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
             mod_data.type_to_count[(*m_graph)[u].type.c_str ()] += prev_count;
         }
-    } else { // PARTIAL_CANCEL
+    } else {  // PARTIAL_CANCEL
         m_err_msg += __FUNCTION__;
         m_err_msg += ": traverser tried to remove schedule and span";
         m_err_msg += " after vtx_cancel during partial cancel:\n";
@@ -563,25 +575,22 @@ done:
     return rc;
 }
 
-int dfu_impl_t::mod_upv (vtx_t u, int64_t jobid,
-                         const modify_data_t &mod_data)
+int dfu_impl_t::mod_upv (vtx_t u, int64_t jobid, const modify_data_t &mod_data)
 {
     // NYI: remove schedule data for upwalk
     return 0;
 }
 
-int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid,
-                         modify_data_t &mod_data)
+int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 {
     int rc = 0;
     bool stop = false;
     const std::string &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
-    if ( (rc = mod_idata (u, jobid, dom, mod_data,
-                          stop)) != 0 || stop)
+    if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
         goto done;
-    if ( (rc = mod_plan (u, jobid, mod_data)) != 0)
+    if ((rc = mod_plan (u, jobid, mod_data)) != 0)
         goto done;
     for (auto const &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
@@ -615,8 +624,7 @@ int dfu_impl_t::mod_exv (int64_t jobid, const modify_data_t &mod_data)
     // In this case, you can't find allocated resources from an accelerated
     // depth first visit (dfv). There won't be no idata for that allocation.
     for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
-        if (g[*vi].schedule.allocations.find (jobid)
-            != g[*vi].schedule.allocations.end ()) {
+        if (g[*vi].schedule.allocations.find (jobid) != g[*vi].schedule.allocations.end ()) {
             span = g[*vi].schedule.allocations[jobid];
             g[*vi].schedule.allocations.erase (jobid);
         } else if (g[*vi].schedule.reservations.find (jobid)
@@ -627,7 +635,7 @@ int dfu_impl_t::mod_exv (int64_t jobid, const modify_data_t &mod_data)
             continue;
         }
 
-        if ( (rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
+        if ((rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_rem_span returned -1.\n";
             m_err_msg += "name=" + g[*vi].name + "uniq_id=";
@@ -637,68 +645,63 @@ int dfu_impl_t::mod_exv (int64_t jobid, const modify_data_t &mod_data)
         }
     }
 
-    return (!rc)? 0 : -1;
+    return (!rc) ? 0 : -1;
 }
 
-int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data,
-                               int64_t jobid)
+int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid)
 {
     int rc = -1;
     bool stop = false;
     const std::string &dom = m_match->dom_subsystem ();
 
-    if ( (rc = mod_idata (vtx, jobid, dom, mod_data, stop)) == -1) {
+    if ((rc = mod_idata (vtx, jobid, dom, mod_data, stop)) == -1) {
         errno = EINVAL;
         return rc;
     }
-    if ( (rc = mod_plan (vtx, jobid, mod_data)) == -1)
+    if ((rc = mod_plan (vtx, jobid, mod_data)) == -1)
         errno = EINVAL;
 
     return rc;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Update API
 ////////////////////////////////////////////////////////////////////////////////
 
-int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
-                        jobmeta_t &jobmeta)
+int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, jobmeta_t &jobmeta)
 {
     int rc = -1;
     std::map<std::string, int64_t> dfu;
     const std::string &dom = m_match->dom_subsystem ();
 
-    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token ()
-        != m_best_k_cnt) {
+    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": resource state wasn't properly set up for update.\n";
         return -1;
     }
 
     unsigned int excl = m_graph_db->metadata.v_rt_edges[dom].get_exclusive ();
-    bool x = (excl == 0)? false : true;
+    bool x = (excl == 0) ? false : true;
     unsigned int needs = m_graph_db->metadata.v_rt_edges[dom].get_needs ();
     m_color.reset ();
 
     bool emit_shadow = modify_traversal (root, false);
-    if ((rc = upd_dfv (root, writers, needs,
-                       x, jobmeta, true, dfu, emit_shadow)) > 0) {
-         uint64_t starttime = jobmeta.at;
-         uint64_t endtime = jobmeta.at + jobmeta.duration;
-         if (writers->emit_tm (starttime, endtime) == -1) {
-             m_err_msg += __FUNCTION__;
-             m_err_msg += ": emit_tm returned -1.\n";
-         }
-         if (jobmeta.is_queue_set ()) {
-             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
-                 m_err_msg += __FUNCTION__;
-                 m_err_msg += ": emit_attrs returned -1.\n";
-             }
-         }
-     }
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow)) > 0) {
+        uint64_t starttime = jobmeta.at;
+        uint64_t endtime = jobmeta.at + jobmeta.duration;
+        if (writers->emit_tm (starttime, endtime) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (jobmeta.is_queue_set ()) {
+            if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": emit_attrs returned -1.\n";
+            }
+        }
+    }
 
-    return (rc > 0)? 0 : -1;
+    return (rc > 0) ? 0 : -1;
 }
 
 int dfu_impl_t::update ()
@@ -707,7 +710,8 @@ int dfu_impl_t::update ()
     return 0;
 }
 
-int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
+int dfu_impl_t::update (vtx_t root,
+                        std::shared_ptr<match_writers_t> &writers,
                         const std::string &str,
                         std::shared_ptr<resource_reader_base_t> &reader,
                         jobmeta_t &jobmeta)
@@ -718,22 +722,24 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     unsigned int needs = 0;
     std::map<std::string, int64_t> dfu;
     const std::string &dom = m_match->dom_subsystem ();
-    bool rsv = (jobmeta.alloc_type
-                 == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
+    bool rsv = (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
 
     tick ();
-    if ( (rc = reader->update (m_graph_db->resource_graph,
-                               m_graph_db->metadata, str,
-                               jobmeta.jobid, jobmeta.at,
-                               jobmeta.duration,
-                               rsv, m_best_k_cnt)) != 0) {
+    if ((rc = reader->update (m_graph_db->resource_graph,
+                              m_graph_db->metadata,
+                              str,
+                              jobmeta.jobid,
+                              jobmeta.at,
+                              jobmeta.duration,
+                              rsv,
+                              m_best_k_cnt))
+        != 0) {
         m_err_msg += reader->err_message ();
         reader->clear_err_message ();
         return rc;
     }
 
-    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token ()
-        != m_best_k_cnt) {
+    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
         // This condition occurs when the subgraph came from a
         // traverver different from this traverser, for example,
         // a traverser whose dominant subsystem is different than this.
@@ -741,52 +747,50 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers,
     }
 
     excl = m_graph_db->metadata.v_rt_edges[dom].get_exclusive ();
-    x = (excl == 0)? false : true;
-    needs = static_cast<unsigned int>(m_graph_db->metadata
-                                          .v_rt_edges[dom].get_needs ());
+    x = (excl == 0) ? false : true;
+    needs = static_cast<unsigned int> (m_graph_db->metadata.v_rt_edges[dom].get_needs ());
     m_color.reset ();
     bool emit_shadow = modify_traversal (root, false);
-    if ( (rc = upd_dfv (root, writers, needs,
-                        x, jobmeta, false, dfu, emit_shadow)) > 0) {
-         uint64_t starttime = jobmeta.at;
-         uint64_t endtime = jobmeta.at + jobmeta.duration;
-         if (writers->emit_tm (starttime, endtime) == -1) {
-             m_err_msg += __FUNCTION__;
-             m_err_msg += ": emit_tm returned -1.\n";
-         }
-         if (jobmeta.is_queue_set ()) {
-             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
-                 m_err_msg += __FUNCTION__;
-                 m_err_msg += ": emit_attrs returned -1.\n";
-             }
-         }
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow)) > 0) {
+        uint64_t starttime = jobmeta.at;
+        uint64_t endtime = jobmeta.at + jobmeta.duration;
+        if (writers->emit_tm (starttime, endtime) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (jobmeta.is_queue_set ()) {
+            if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": emit_attrs returned -1.\n";
+            }
+        }
     }
 
-    return (rc > 0)? 0: -1;
+    return (rc > 0) ? 0 : -1;
 }
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 {
-    bool root_has_jtag = ((*m_graph)[root].idata.tags.find (jobid)
-                          != (*m_graph)[root].idata.tags.end ());
+    bool root_has_jtag =
+        ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ());
     modify_data_t mod_data;
     mod_data.mod_type = job_modify_t::CANCEL;
     m_color.reset ();
-    return (root_has_jtag)? mod_dfv (root, jobid, mod_data)
-                            : mod_exv (jobid, mod_data);
+    return (root_has_jtag) ? mod_dfv (root, jobid, mod_data) : mod_exv (jobid, mod_data);
 }
 
-int dfu_impl_t::remove (vtx_t root, const std::string &R_to_cancel,
+int dfu_impl_t::remove (vtx_t root,
+                        const std::string &R_to_cancel,
                         std::shared_ptr<resource_reader_base_t> &reader,
-                        int64_t jobid, bool &full_cancel)
+                        int64_t jobid,
+                        bool &full_cancel)
 {
     int rc = -1;
     modify_data_t mod_data;
     resource_graph_t &g = m_graph_db->resource_graph;
     resource_graph_metadata_t &m = m_graph_db->metadata;
 
-    if (reader->partial_cancel (g, m, mod_data, R_to_cancel,
-                                jobid) != 0) {
+    if (reader->partial_cancel (g, m, mod_data, R_to_cancel, jobid) != 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": partial_cancel returned error.\n";
         return -1;
@@ -806,27 +810,26 @@ int dfu_impl_t::remove (vtx_t root, const std::string &R_to_cancel,
             for (const vtx_t &vtx : rank_vector->second) {
                 // Cancel the vertex if it has job tag. Not necessary
                 // but reduces number of checks before function return
-                if ( (*m_graph)[vtx].idata.tags.find (jobid)
-                            != (*m_graph)[vtx].idata.tags.end ()) {
-                    if ( (rc = cancel_vertex (vtx, mod_data, jobid)) != 0) {
-                       errno = EINVAL;
-                       return rc;
+                if ((*m_graph)[vtx].idata.tags.find (jobid) != (*m_graph)[vtx].idata.tags.end ()) {
+                    if ((rc = cancel_vertex (vtx, mod_data, jobid)) != 0) {
+                        errno = EINVAL;
+                        return rc;
                     }
                 }
             }
         }
     }
 
-    bool root_has_jtag = ((*m_graph)[root].idata.tags.find (jobid)
-                          != (*m_graph)[root].idata.tags.end ());
+    bool root_has_jtag =
+        ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ());
     // Now partial cancel DFV from graph root
     mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
     m_color.reset ();
     if (root_has_jtag) {
         rc = mod_dfv (root, jobid, mod_data);
         // Was the root vertex's job tag removed? If so, full_cancel
-        full_cancel = ((*m_graph)[root].idata.tags.find (jobid)
-                            == (*m_graph)[root].idata.tags.end ());
+        full_cancel =
+            ((*m_graph)[root].idata.tags.find (jobid) == (*m_graph)[root].idata.tags.end ());
     } else {
         rc = mod_exv (jobid, mod_data);
     }
@@ -834,17 +837,15 @@ int dfu_impl_t::remove (vtx_t root, const std::string &R_to_cancel,
     return rc;
 }
 
-int dfu_impl_t::mark (const std::string &root_path, 
-                      resource_pool_t::status_t status)
+int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t status)
 {
     std::map<std::string, std::vector<vtx_t>>::const_iterator vit_root =
         m_graph_db->metadata.by_path.find (root_path);
 
     if (vit_root == m_graph_db->metadata.by_path.end ()) {
         errno = EINVAL;
-        m_err_msg += __FUNCTION__;                
-        m_err_msg += ": could not find subtree path ("
-                  + root_path + ") in resource graph.\n";
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": could not find subtree path (" + root_path + ") in resource graph.\n";
         return -1;
     }
     for (auto &v : vit_root->second)
@@ -854,11 +855,10 @@ int dfu_impl_t::mark (const std::string &root_path,
     return 0;
 }
 
-int dfu_impl_t::mark (std::set<int64_t> &ranks, 
-                      resource_pool_t::status_t status)
+int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status)
 {
     try {
-        std::map<int64_t, std::vector <vtx_t>>::iterator vit;
+        std::map<int64_t, std::vector<vtx_t>>::iterator vit;
         std::string subtree_path = "", tmp_path = "";
         const std::string &dom = m_match->dom_subsystem ();
         vtx_t subtree_root;

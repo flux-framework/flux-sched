@@ -42,10 +42,10 @@ bool known_match_policy (const std::string &policy);
  */
 std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy);
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_POLICY_FACTORY_HPP
+#endif  // DFU_MATCH_POLICY_FACTORY_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

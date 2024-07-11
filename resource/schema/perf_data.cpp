@@ -21,8 +21,8 @@ namespace resource_model {
 
 struct match_perf_t perf;
 
-} // Flux::resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

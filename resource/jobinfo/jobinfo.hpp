@@ -20,12 +20,20 @@ namespace resource_model {
 enum class job_lifecycle_t { INIT, ALLOCATED, RESERVED, CANCELED, ERROR };
 
 struct job_info_t {
-    job_info_t (uint64_t j, job_lifecycle_t s, int64_t at,
-                const std::string &j_fn, const std::string &jstr,
-                const std::string &R_str,  double o);
+    job_info_t (uint64_t j,
+                job_lifecycle_t s,
+                int64_t at,
+                const std::string &j_fn,
+                const std::string &jstr,
+                const std::string &R_str,
+                double o);
 
-    job_info_t (uint64_t j, job_lifecycle_t s, int64_t at,
-                const std::string &j_fn, const std::string &jstr, double o);
+    job_info_t (uint64_t j,
+                job_lifecycle_t s,
+                int64_t at,
+                const std::string &j_fn,
+                const std::string &jstr,
+                double o);
 
     uint64_t jobid = UINT64_MAX;
     job_lifecycle_t state = job_lifecycle_t::INIT;
@@ -38,10 +46,10 @@ struct job_info_t {
 
 void get_jobstate_str (job_lifecycle_t state, std::string &status);
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // JOBINFO_HPP
+#endif  // JOBINFO_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

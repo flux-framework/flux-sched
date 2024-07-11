@@ -28,10 +28,10 @@ struct resource_t {
     int rank = -1;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_BASE_HPP
+#endif  // RESOURCE_BASE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
