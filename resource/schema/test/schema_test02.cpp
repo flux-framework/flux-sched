@@ -9,7 +9,7 @@
 \*****************************************************************************/
 
 #if HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 #include <cstdlib>
 #include <sstream>
@@ -43,12 +43,12 @@ static int test_constructors_and_overload ()
     infra1->colors["network"] = 1;
     infra1->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra1->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra1->subplans["network"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
 
     infra2 = new pool_infra_t ();
-    
+
     bo = (bo || (*infra1 == *infra2));
     ok (!bo, "initialized pool_infra_t not equal to uninitialized pool_infra_t");
 
@@ -59,15 +59,15 @@ static int test_constructors_and_overload ()
     infra2->colors["network"] = 1;
     infra2->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra2->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra2->subplans["network"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || !(*infra1 == *infra2));
     ok (!bo, "initialized pool_infra_t equal to identically initialized pool_infra_t");
 
     infra3 = new pool_infra_t (*infra1);
     bo = (bo || !(*infra3 == *infra1));
-    ok (!bo, "copied pool_infra_t equal to rhs pool_infra_t");    
+    ok (!bo, "copied pool_infra_t equal to rhs pool_infra_t");
 
     infra4 = new pool_infra_t ();
     *infra4 = *infra1;
@@ -86,11 +86,12 @@ static int test_constructors_and_overload ()
     infra5->colors["network"] = 1;
     infra5->x_checker = planner_new (1, INT64_MAX, resource_total, resource_type);
     infra5->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra5->subplans["network"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra5 == *infra1));
-    ok (!bo, "pool_infra_t initialized with different x_checker not equal to original pool_infra_t");
+    ok (!bo,
+        "pool_infra_t initialized with different x_checker not equal to original pool_infra_t");
 
     infra6 = new pool_infra_t ();
     infra6->tags[0] = 0;
@@ -100,9 +101,9 @@ static int test_constructors_and_overload ()
     infra6->colors["storage"] = 1;
     infra6->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra6->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra6->subplans["network"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra6 == *infra1));
     ok (!bo, "pool_infra_t initialized with different colors not equal to original pool_infra_t");
 
@@ -114,11 +115,13 @@ static int test_constructors_and_overload ()
     infra7->colors["network"] = 1;
     infra7->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra7->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra7->subplans["storage"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra7 == *infra1));
-    ok (!bo, "pool_infra_t initialized with different subplan systems not equal to original pool_infra_t");
+    ok (!bo,
+        "pool_infra_t initialized with different subplan systems not equal to original "
+        "pool_infra_t");
 
     infra8 = new pool_infra_t ();
     infra8->tags[0] = 0;
@@ -128,11 +131,13 @@ static int test_constructors_and_overload ()
     infra8->colors["network"] = 1;
     infra8->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra8->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     infra8->subplans["network"] =
-            planner_multi_new (1, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (1, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra8 == *infra1));
-    ok (!bo, "pool_infra_t initialized with different subplan planner_multis not equal to original pool_infra_t");
+    ok (!bo,
+        "pool_infra_t initialized with different subplan planner_multis not equal to original "
+        "pool_infra_t");
 
     infra9 = new pool_infra_t ();
     infra9->tags[0] = 0;
@@ -142,9 +147,11 @@ static int test_constructors_and_overload ()
     infra9->colors["network"] = 1;
     infra9->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
     infra9->subplans["containment"] =
-            planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+        planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
     bo = (bo || (*infra9 == *infra1));
-    ok (!bo, "pool_infra_t initialized with different subplan planner_multis len not equal to original pool_infra_t");
+    ok (!bo,
+        "pool_infra_t initialized with different subplan planner_multis len not equal to original "
+        "pool_infra_t");
 
     *infra9 = *infra1;
     bo = (bo || !(*infra9 == *infra1));
@@ -167,7 +174,6 @@ static int test_constructors_and_overload ()
 
     return 0;
 }
-
 
 int main (int argc, char *argv[])
 {

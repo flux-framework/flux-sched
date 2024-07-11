@@ -21,11 +21,14 @@
 namespace Flux {
 namespace resource_model {
 
-enum class emit_format_t { GRAPHVIZ_DOT, GRAPH_ML, };
+enum class emit_format_t {
+    GRAPHVIZ_DOT,
+    GRAPH_ML,
+};
 
 using pinfra_t = pool_infra_t resource_pool_t::*;
-using pname_t  = std::string resource_t::*;
-using rname_t  = std::string resource_relation_t::*;
+using pname_t = std::string resource_t::*;
+using rname_t = std::string resource_relation_t::*;
 using rinfra_t = relation_infra_t resource_relation_t::*;
 using resource_graph_t = boost::adjacency_list<boost::vecS,
                                                boost::vecS,
@@ -52,20 +55,26 @@ using f_out_edg_iterator_t = boost::graph_traits<resource_graph_t>::out_edge_ite
 
 template<class name_map, class graph_entity>
 class label_writer_t {
-public:
-    label_writer_t (name_map &in_map): m (in_map) { }
-    void operator()(std::ostream &out, const graph_entity ent) const {
+   public:
+    label_writer_t (name_map &in_map) : m (in_map)
+    {
+    }
+    void operator() (std::ostream &out, const graph_entity ent) const
+    {
         out << "[label=\"" << m[ent] << "\"]";
     }
-private:
+
+   private:
     name_map m;
 };
 
 class edg_label_writer_t {
-public:
-    edg_label_writer_t (f_edg_infra_map_t &idata, subsystem_t &s)
-        : m_infra (idata), m_s (s) {}
-    void operator()(std::ostream& out, const edg_t &e) const {
+   public:
+    edg_label_writer_t (f_edg_infra_map_t &idata, subsystem_t &s) : m_infra (idata), m_s (s)
+    {
+    }
+    void operator() (std::ostream &out, const edg_t &e) const
+    {
         multi_subsystems_t::iterator i = m_infra[e].member_of.find (m_s);
         if (i != m_infra[e].member_of.end ()) {
             out << "[label=\"" << i->second << "\"]";
@@ -74,15 +83,16 @@ public:
             out << "[label=\"" << i->second << "\"]";
         }
     }
-private:
+
+   private:
     f_edg_infra_map_t m_infra;
     subsystem_t m_s;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_GRAPH_HPP
+#endif  // RESOURCE_GRAPH_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

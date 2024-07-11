@@ -23,17 +23,17 @@ namespace resource_model {
 // job allocation/reservation -- subtract 1 from x_checker planner for the
 // scheduled span. Any vertex with less than X_CHECKER_NJOBS available in its
 // x_checker cannot be exclusively allocated or reserved.
-const char * const X_CHECKER_JOBS_STR = "jobs";
+const char *const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
 using subsystem_t = std::string;
 using multi_subsystems_t = std::map<subsystem_t, std::string>;
 using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
 
-} // Flux
-} // Flux::resource_model
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DATA_STD_H
+#endif  // DATA_STD_H
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

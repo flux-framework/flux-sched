@@ -24,15 +24,15 @@ struct scheduled_point_t {
 
     scheduled_point_rb_node_t point_rb; /* BST node for scheduled point tree */
     mt_resource_rb_node_t resource_rb;  /* BST node for min-time resource tree */
-    int64_t at;                  /* Resource-state changing time */
-    int in_mt_resource_tree;     /* 1 when inserted in min-time resource tree */
-    int new_point;               /* 1 when this point is newly created */
-    int ref_count;               /* reference counter */
-    int64_t scheduled;           /* scheduled quantity at this point */
-    int64_t remaining;           /* remaining resources (available) */
+    int64_t at;                         /* Resource-state changing time */
+    int in_mt_resource_tree;            /* 1 when inserted in min-time resource tree */
+    int new_point;                      /* 1 when this point is newly created */
+    int ref_count;                      /* reference counter */
+    int64_t scheduled;                  /* scheduled quantity at this point */
+    int64_t remaining;                  /* remaining resources (available) */
 };
 
-#endif // PLANNER_INTERNAL_TREE_HPP
+#endif  // PLANNER_INTERNAL_TREE_HPP
 
 /*
  * vi: ts=4 sw=4 expandtab

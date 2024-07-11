@@ -46,11 +46,11 @@ namespace Jobspec {
 enum class tristate_t { FALSE, TRUE, UNSPECIFIED };
 
 class Resource {
-public:
+   public:
     std::string type;
     struct {
         unsigned min;
-        unsigned max = std::numeric_limits<unsigned int>::max();
+        unsigned max = std::numeric_limits<unsigned int>::max ();
         char oper = '+';
         int operand = 1;
     } count;
@@ -64,18 +64,18 @@ public:
     // entirely for the convenience of external code
     std::unordered_map<std::string, int64_t> user_data;
 
-    Resource(const YAML::Node&);
+    Resource (const YAML::Node &);
 };
 
 class Task {
-public:
+   public:
     std::vector<std::string> command;
     std::string slot;
     std::unordered_map<std::string, std::string> count;
     std::string distribution;
     std::unordered_map<std::string, std::string> attributes;
 
-    Task(const YAML::Node&);
+    Task (const YAML::Node &);
 };
 
 struct System {
@@ -86,42 +86,42 @@ struct System {
     std::unordered_map<std::string, YAML::Node> optional;
     std::shared_ptr<Constraint> constraint = nullptr;
 
-    System() = default;
-    System(const System &s) = delete; // Force to use move ctor
-    System(System &&s) = default;
-    System& operator=(const System &&a) = delete; // Force to use move operator=
-    System& operator=(System &&a) = default;
+    System () = default;
+    System (const System &s) = delete;  // Force to use move ctor
+    System (System &&s) = default;
+    System &operator= (const System &&a) = delete;  // Force to use move operator=
+    System &operator= (System &&a) = default;
 };
 
 struct Attributes {
     YAML::Node user;
     System system;
 
-    Attributes() = default;
-    Attributes(const Attributes &a) = delete; // Force to use move ctor
-    Attributes(Attributes &&a) = default;
-    Attributes& operator=(const Attributes &&a) = delete;
-    Attributes& operator=(Attributes &&a) = default;
+    Attributes () = default;
+    Attributes (const Attributes &a) = delete;  // Force to use move ctor
+    Attributes (Attributes &&a) = default;
+    Attributes &operator= (const Attributes &&a) = delete;
+    Attributes &operator= (Attributes &&a) = default;
 };
 
 class Jobspec {
-public:
+   public:
     unsigned int version;
     std::vector<Resource> resources;
     std::vector<Task> tasks;
     Attributes attributes;
 
-    Jobspec() = default;
-    Jobspec(const YAML::Node&);
-    Jobspec(std::istream &is);
-    Jobspec(const std::string &s);
+    Jobspec () = default;
+    Jobspec (const YAML::Node &);
+    Jobspec (std::istream &is);
+    Jobspec (const std::string &s);
 };
 
-std::ostream& operator<<(std::ostream& s, Jobspec const& js);
-std::ostream& operator<<(std::ostream& s, Resource const& r);
-std::ostream& operator<<(std::ostream& s, Task const& t);
+std::ostream &operator<< (std::ostream &s, Jobspec const &js);
+std::ostream &operator<< (std::ostream &s, Resource const &r);
+std::ostream &operator<< (std::ostream &s, Task const &t);
 
-} // namespace Jobspec
-} // namespace Flux
+}  // namespace Jobspec
+}  // namespace Flux
 
-#endif // JOBSPEC_HPP
+#endif  // JOBSPEC_HPP

@@ -20,20 +20,23 @@ namespace Flux {
 namespace Jobspec {
 
 class RankConstraint : public Constraint {
-public:
-    RankConstraint (const YAML::Node&);
+   public:
+    RankConstraint (const YAML::Node &);
     RankConstraint () = default;
-    ~RankConstraint () { idset_destroy (ranks); };
+    ~RankConstraint ()
+    {
+        idset_destroy (ranks);
+    };
 
-private:
+   private:
     struct idset *ranks = nullptr;
 
-public:
+   public:
     virtual bool match (const Flux::resource_model::resource_t &resource) const;
     virtual YAML::Node as_yaml () const;
 };
 
-} // namespace Jobspec
-} // namespace Flux
+}  // namespace Jobspec
+}  // namespace Flux
 
-#endif // RANK_CONSTRAINT_HPP
+#endif  // RANK_CONSTRAINT_HPP

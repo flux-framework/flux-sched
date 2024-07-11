@@ -28,10 +28,8 @@ namespace resource_model {
  *  resource.
  */
 template<typename FOLD>
-class multilevel_id_t : public dfu_match_cb_t
-{
-public:
-
+class multilevel_id_t : public dfu_match_cb_t {
+   public:
     multilevel_id_t ();
     multilevel_id_t (const std::string &name);
     multilevel_id_t (const multilevel_id_t &o);
@@ -43,7 +41,8 @@ public:
      */
     int dom_finish_graph (const subsystem_t &subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const resource_graph_t &g, scoring_api_t &dfu);
+                          const resource_graph_t &g,
+                          scoring_api_t &dfu);
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
@@ -61,9 +60,11 @@ public:
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+    int dom_finish_vtx (vtx_t u,
+                        const subsystem_t &subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
-                        const resource_graph_t &g, scoring_api_t &dfu);
+                        const resource_graph_t &g,
+                        scoring_api_t &dfu);
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
@@ -96,21 +97,18 @@ public:
      *                       EEXIST: type already has been added;
      *                       ENOMEM: out of memory.
      */
-    int add_score_factor (const std::string &type,
-                          unsigned add_by, unsigned multiply_by);
+    int add_score_factor (const std::string &type, unsigned add_by, unsigned multiply_by);
 
-private:
+   private:
     class score_factor_t {
-    public:
+       public:
         score_factor_t () = default;
-        score_factor_t (const std::string &type,
-                        unsigned int add_by,
-                        unsigned int multiply_by);
+        score_factor_t (const std::string &type, unsigned int add_by, unsigned int multiply_by);
         score_factor_t (const score_factor_t &o) = default;
         int64_t calc_factor (int64_t base_factor, int64_t break_tie);
         int64_t m_factor = 0;
 
-    private:
+       private:
         std::string m_type;
         unsigned int m_add_by = 0;
         unsigned int m_multiply_by = 1;
@@ -124,10 +122,10 @@ private:
     std::unordered_map<std::string, score_factor_t> m_multilevel_factors;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_MULTILEVEL_ID_HPP
+#endif  // DFU_MATCH_MULTILEVEL_ID_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

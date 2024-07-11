@@ -25,7 +25,7 @@ struct resource_graph_db_t;
 
 struct graph_duration_t {
     std::chrono::time_point<std::chrono::system_clock> graph_start =
-                                    std::chrono::system_clock::from_time_t (0);
+        std::chrono::system_clock::from_time_t (0);
     std::chrono::time_point<std::chrono::system_clock> graph_end =
         std::chrono::system_clock::from_time_t (detail::SYSTEM_MAX_DURATION);
 };
@@ -36,15 +36,16 @@ struct graph_duration_t {
 struct resource_graph_metadata_t {
     std::map<subsystem_t, vtx_t> roots;
     std::map<subsystem_t, relation_infra_t> v_rt_edges;
-    std::map<std::string, std::vector <vtx_t>> by_type;
-    std::map<std::string, std::vector <vtx_t>> by_name;
-    std::map<int64_t, std::vector <vtx_t>> by_rank;
+    std::map<std::string, std::vector<vtx_t>> by_type;
+    std::map<std::string, std::vector<vtx_t>> by_name;
+    std::map<int64_t, std::vector<vtx_t>> by_rank;
     std::map<std::string, std::vector<vtx_t>> by_path;
     // by_outedges enables graph traversing order to edge "weight"
     // E.g., the more available resources an edge point to, the heavier
-    std::map<vtx_t,
-             std::map<std::pair<uint64_t, int64_t>, edg_t,
-                      std::greater<std::pair<uint64_t, int64_t>>>> by_outedges;
+    std::map<
+        vtx_t,
+        std::map<std::pair<uint64_t, int64_t>, edg_t, std::greater<std::pair<uint64_t, int64_t>>>>
+        by_outedges;
     graph_duration_t graph_duration;
     int64_t nodes_up = 0;
 
@@ -76,7 +77,7 @@ struct resource_graph_db_t {
      * \param rank   assign this rank to all the newly created resource vertices
      * \return       0 on success; non-zero integer on an error
      *                   ENOMEM: out of memory
-     *                   EINVAL: invalid input or operation (e.g. 
+     *                   EINVAL: invalid input or operation (e.g.
      *                               hwloc version or json string load error)
      *                   EPROTO: str violates the schema
      */
@@ -92,19 +93,20 @@ struct resource_graph_db_t {
      * \param rank   assign this rank to all the newly created resource vertices
      * \return       0 on success; non-zero integer on an error
      *                   ENOMEM: out of memory
-     *                   EINVAL: invalid input or operation (e.g. 
+     *                   EINVAL: invalid input or operation (e.g.
      *                               hwloc version or json string load error)
      *                   EPROTO: str violates the schema
      */
     int load (const std::string &str,
               std::shared_ptr<resource_reader_base_t> &reader,
-              vtx_t &vtx_at, int rank = -1);
+              vtx_t &vtx_at,
+              int rank = -1);
 };
 
-}
-}
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_GRAPH_STORE_HPP
+#endif  // RESOURCE_GRAPH_STORE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

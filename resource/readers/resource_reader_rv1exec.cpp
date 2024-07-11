@@ -25,32 +25,24 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::resource_model;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public RV1EXEC Resource Reader Interface
 ////////////////////////////////////////////////////////////////////////////////
 
-int resource_reader_rv1exec_t::properties_t::insert (
-                                                 const std::string &res_type,
-                                                 const std::string &property)
+int resource_reader_rv1exec_t::properties_t::insert (const std::string &res_type,
+                                                     const std::string &property)
 {
     if (m_properties.find (res_type) == m_properties.end ()) {
         auto res = m_properties.insert (
-                       std::pair<std::string,
-                                 std::map<std::string,
-                                          std::string>> (
-                                              res_type,
-                                              std::map<std::string,
-                                                       std::string> ()));
+            std::pair<std::string,
+                      std::map<std::string, std::string>> (res_type,
+                                                           std::map<std::string, std::string> ()));
         if (!res.second) {
             errno = ENOMEM;
             return -1;
         }
     }
-    auto res2 = m_properties[res_type].insert (std::pair<std::string,
-                                                         std::string> (property,
-                                                                       ""));
+    auto res2 = m_properties[res_type].insert (std::pair<std::string, std::string> (property, ""));
     if (!res2.second) {
         errno = ENOMEM;
         return -1;
@@ -58,17 +50,13 @@ int resource_reader_rv1exec_t::properties_t::insert (
     return 0;
 }
 
-bool resource_reader_rv1exec_t::properties_t::exist (
-                                                  const std::string &res_type)
+bool resource_reader_rv1exec_t::properties_t::exist (const std::string &res_type)
 {
-    return (m_properties.find (res_type) != m_properties.end ())? true : false;
+    return (m_properties.find (res_type) != m_properties.end ()) ? true : false;
 }
 
-
-int resource_reader_rv1exec_t::properties_t::copy (
-                                   const std::string &res_type,
-                                   std::map<std::string,
-                                            std::string> &properties)
+int resource_reader_rv1exec_t::properties_t::copy (const std::string &res_type,
+                                                   std::map<std::string, std::string> &properties)
 {
     int rc = -1;
     if (m_properties.find (res_type) != m_properties.end ()) {
@@ -80,23 +68,23 @@ int resource_reader_rv1exec_t::properties_t::copy (
 
 vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
-                                             vtx_t parent, int64_t id,
+                                             vtx_t parent,
+                                             int64_t id,
                                              const std::string &subsys,
                                              const std::string &type,
                                              const std::string &basename,
                                              const std::string &name,
-                                             const std::map<std::string,
-                                                            std::string> &props,
-                                             int size, int rank)
+                                             const std::map<std::string, std::string> &props,
+                                             int size,
+                                             int rank)
 {
     planner_t *plan = nullptr;
     planner_t *x_checker = nullptr;
 
-    if ( !(plan = planner_new (0, INT64_MAX, size, type.c_str ())))
+    if (!(plan = planner_new (0, INT64_MAX, size, type.c_str ())))
         return boost::graph_traits<resource_graph_t>::null_vertex ();
 
-    if ( !(x_checker = planner_new (0, INT64_MAX,
-                                    X_CHECKER_NJOBS, X_CHECKER_JOBS_STR)))
+    if (!(x_checker = planner_new (0, INT64_MAX, X_CHECKER_NJOBS, X_CHECKER_JOBS_STR)))
         return boost::graph_traits<resource_graph_t>::null_vertex ();
 
     vtx_t v = boost::add_vertex (g);
@@ -106,8 +94,8 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
     if (parent == boost::graph_traits<resource_graph_t>::null_vertex ())
         is_root = true;
 
-    std::string istr = (id != -1)? std::to_string (id) : "";
-    std::string prefix =  is_root ? "" : g[parent].paths[subsys];
+    std::string istr = (id != -1) ? std::to_string (id) : "";
+    std::string prefix = is_root ? "" : g[parent].paths[subsys];
 
     g[v].type = type;
     g[v].basename = basename;
@@ -117,7 +105,7 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
     g[v].schedule.plans = plan;
     g[v].idata.x_checker = x_checker;
     g[v].id = id;
-    g[v].name = (name != "")? name : basename + istr;
+    g[v].name = (name != "") ? name : basename + istr;
     g[v].paths[subsys] = prefix + "/" + g[v].name;
     g[v].idata.member_of[subsys] = "*";
     g[v].status = resource_pool_t::status_t::UP;
@@ -134,36 +122,34 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
 
 int resource_reader_rv1exec_t::add_metadata (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
-                                             edg_t e, vtx_t src, vtx_t dst)
+                                             edg_t e,
+                                             vtx_t src,
+                                             vtx_t dst)
 {
     // add this edge to by_outedges metadata
     auto iter = m.by_outedges.find (src);
     if (iter == m.by_outedges.end ()) {
         auto ret = m.by_outedges.insert (
-                         std::make_pair (
-                             src,
-                             std::map<std::pair<uint64_t, int64_t>, edg_t,
-                                      std::greater<
-                                               std::pair<uint64_t,
-                                                         int64_t>>> ()));
+            std::make_pair (src,
+                            std::map<std::pair<uint64_t, int64_t>,
+                                     edg_t,
+                                     std::greater<std::pair<uint64_t, int64_t>>> ()));
         if (!ret.second) {
             errno = ENOMEM;
             m_err_msg += __FUNCTION__;
-            m_err_msg += "error creating out-edge metadata map: "
-                              + g[src].name + " -> " + g[dst].name + "; ";
+            m_err_msg += "error creating out-edge metadata map: " + g[src].name + " -> "
+                         + g[dst].name + "; ";
             return -1;
         }
         iter = m.by_outedges.find (src);
     }
-    std::pair<uint64_t, int64_t> key = std::make_pair (
-                                                g[e].idata.get_weight (),
-                                                g[dst].uniq_id);
+    std::pair<uint64_t, int64_t> key = std::make_pair (g[e].idata.get_weight (), g[dst].uniq_id);
     auto ret = iter->second.insert (std::make_pair (key, e));
     if (!ret.second) {
         errno = ENOMEM;
         m_err_msg += __FUNCTION__;
-        m_err_msg += "error inserting an edge to out-edge metadata map: "
-                          + g[src].name + " -> " + g[dst].name + "; ";
+        m_err_msg += "error inserting an edge to out-edge metadata map: " + g[src].name + " -> "
+                     + g[dst].name + "; ";
         return -1;
     }
     return 0;
@@ -171,7 +157,8 @@ int resource_reader_rv1exec_t::add_metadata (resource_graph_t &g,
 
 int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
                                           resource_graph_metadata_t &m,
-                                          vtx_t src, vtx_t dst,
+                                          vtx_t src,
+                                          vtx_t dst,
                                           const std::string &subsys,
                                           const std::string &relation,
                                           const std::string &rev_relation)
@@ -187,7 +174,7 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
     g[e].idata.member_of[subsys] = relation;
     g[e].name[subsys] = relation;
     if (add_metadata (g, m, e, src, dst) < 0)
-       goto error;
+        goto error;
 
     return 0;
 
@@ -200,10 +187,18 @@ int resource_reader_rv1exec_t::add_cluster_vertex (resource_graph_t &g,
 {
     vtx_t v;
     const std::map<std::string, std::string> p;
-    if ( (v = add_vertex (g, m,
-                          boost::graph_traits<resource_graph_t>::null_vertex (),
-                          0, "containment", "cluster", "cluster", "", p, 1, -1))
-         == boost::graph_traits<resource_graph_t>::null_vertex ())
+    if ((v = add_vertex (g,
+                         m,
+                         boost::graph_traits<resource_graph_t>::null_vertex (),
+                         0,
+                         "containment",
+                         "cluster",
+                         "cluster",
+                         "",
+                         p,
+                         1,
+                         -1))
+        == boost::graph_traits<resource_graph_t>::null_vertex ())
         return -1;
 
     m.roots.emplace ("containment", v);
@@ -213,12 +208,14 @@ int resource_reader_rv1exec_t::add_cluster_vertex (resource_graph_t &g,
 
 vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
                                               resource_graph_metadata_t &m,
-                                              vtx_t parent, int64_t id,
+                                              vtx_t parent,
+                                              int64_t id,
                                               const std::string &subsys,
                                               const std::string &type,
                                               const std::string &basename,
                                               const std::string &name,
-                                              int size, int rank)
+                                              int size,
+                                              int rank)
 {
     bool is_root = false;
     std::string path = "";
@@ -229,9 +226,9 @@ vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
     if (parent == boost::graph_traits<resource_graph_t>::null_vertex ())
         is_root = true;
 
-    std::string idstr = (id != -1)? std::to_string (id) : "";
-    std::string prefix =  is_root ? "" : g[parent].paths[subsys];
-    vtx_name = (name != "")? name : basename + idstr;
+    std::string idstr = (id != -1) ? std::to_string (id) : "";
+    std::string prefix = is_root ? "" : g[parent].paths[subsys];
+    vtx_name = (name != "") ? name : basename + idstr;
     path = prefix + "/" + vtx_name;
 
     // Search graph metadata for vertex
@@ -241,10 +238,7 @@ vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
         return null_vtx;
     // Found in by_path
     for (const vtx_t &v : vtx_iter->second) {
-        if (g[v].rank == rank
-                && g[v].id == id
-                && g[v].size == size
-                && g[v].type == type) {
+        if (g[v].rank == rank && g[v].id == id && g[v].size == size && g[v].type == type) {
             return v;
         }
     }
@@ -256,22 +250,20 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
                                               vtx_t vtx,
                                               updater_data &update_data)
 {
-
     int rc = -1;
     int64_t span = -1;
     int64_t avail = -1;
     planner_t *plans = NULL;
 
     // Check and update plan
-    if ( (plans = g[vtx].schedule.plans) == NULL) {
+    if ((plans = g[vtx].schedule.plans) == NULL) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": plan for " + g[vtx].name + " is null.\n";
         goto error;
     }
-    if ( (avail = planner_avail_resources_during (plans,
-                                                update_data.at,
-                                                update_data.duration)) == -1) {
+    if ((avail = planner_avail_resources_during (plans, update_data.at, update_data.duration))
+        == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": planner_avail_resource_during return -1 for ";
         m_err_msg += g[vtx].name + ".\n";
@@ -293,10 +285,11 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
     if (g[vtx].type == "node")
         return 0;
     // Name is anything besides node
-    if ( (span = planner_add_span (plans,
-                                   update_data.at,
-                                   update_data.duration,
-                        static_cast<const uint64_t> (g[vtx].size))) == -1) {
+    if ((span = planner_add_span (plans,
+                                  update_data.at,
+                                  update_data.duration,
+                                  static_cast<const uint64_t> (g[vtx].size)))
+        == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": can't add span into " + g[vtx].name + ".\n";
         goto error;
@@ -308,17 +301,15 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
         g[vtx].schedule.allocations[update_data.jobid] = span;
 
     update_data.updated_vertices[g[vtx].rank].push_back (vtx);
- 
+
     rc = 0;
 
 error:
     return rc;
 }
 
-int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g,
-                                              updater_data &update_data)
+int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g, updater_data &update_data)
 {
-
     int rc = -1;
     int64_t span = -1;
     planner_t *plans = NULL;
@@ -326,7 +317,7 @@ int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g,
     for (auto &[rank, vertices] : update_data.updated_vertices) {
         for (const vtx_t &vtx : vertices) {
             // Check plan
-            if ( (plans = g[vtx].schedule.plans) == NULL) {
+            if ((plans = g[vtx].schedule.plans) == NULL) {
                 errno = EINVAL;
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": plan for " + g[vtx].name + " is null.\n";
@@ -356,9 +347,10 @@ error:
 }
 
 int resource_reader_rv1exec_t::update_edges (resource_graph_t &g,
-                                          resource_graph_metadata_t &m,
-                                          vtx_t src, vtx_t dst,
-                                          updater_data &update_data)
+                                             resource_graph_metadata_t &m,
+                                             vtx_t src,
+                                             vtx_t dst,
+                                             updater_data &update_data)
 {
     edg_t e;
     int rc = -1;
@@ -379,8 +371,7 @@ int resource_reader_rv1exec_t::update_edges (resource_graph_t &g,
         m_err_msg += ": rv1exec edge not found in resource graph.\n";
         goto error;
     }
-    g[e].idata.set_for_trav_update (g[dst].size,
-                                    true, update_data.token);
+    g[e].idata.set_for_trav_update (g[dst].size, true, update_data.token);
 
     return 0;
 
@@ -389,9 +380,9 @@ error:
 }
 
 int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
-                                               resource_graph_metadata_t &m,
-                                               vtx_t vtx,
-                                               updater_data &update_data)
+                                                   resource_graph_metadata_t &m,
+                                                   vtx_t vtx,
+                                                   updater_data &update_data)
 {
     // idata tag and exclusive checker update
     int64_t span = -1;
@@ -418,7 +409,7 @@ int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
     if (rank_ex->second.size () != (by_rank->second.size () - 1))
         return 0;
     // Counts indicate exclusive
-    if ( (plans = g[vtx].schedule.plans) == NULL) {
+    if ((plans = g[vtx].schedule.plans) == NULL) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": plan for " + g[vtx].name + " is null.\n";
@@ -427,8 +418,11 @@ int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
     // Update the vertex plan here (not in traverser code).
     // Traverser update () will handle aggregate filters and
     // exclusivity checking filter.
-    if ( (span = planner_add_span (plans, update_data.at, update_data.duration,
-                        static_cast<const uint64_t> (g[vtx].size))) == -1) {
+    if ((span = planner_add_span (plans,
+                                  update_data.at,
+                                  update_data.duration,
+                                  static_cast<const uint64_t> (g[vtx].size)))
+        == -1) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": can't add span into " + g[vtx].name + ".\n";
         return -1;
@@ -446,22 +440,22 @@ int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
 
 vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
-                                                vtx_t parent, int64_t id,
+                                                vtx_t parent,
+                                                int64_t id,
                                                 const std::string &subsys,
                                                 const std::string &type,
                                                 const std::string &basename,
                                                 const std::string &name,
-                                                int size, int rank,
-                                                std::map<std::string,
-                                                      std::string> &properties,
+                                                int size,
+                                                int rank,
+                                                std::map<std::string, std::string> &properties,
                                                 updater_data &update_data)
 {
     vtx_t vtx;
     vtx_t null_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
 
     if (!update_data.update) {
-        vtx = find_vertex (g, m, parent, id, subsys, type, basename,
-                               name, size, rank);
+        vtx = find_vertex (g, m, parent, id, subsys, type, basename, name, size, rank);
         // Shouldn't be found
         if (vtx != boost::graph_traits<resource_graph_t>::null_vertex ()) {
             m_err_msg += __FUNCTION__;
@@ -470,16 +464,14 @@ vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
             return null_vtx;
         }
         // Add resources
-        vtx = add_vertex (g, m, parent, id, subsys, type, basename,
-                          name, properties, size, rank);
+        vtx = add_vertex (g, m, parent, id, subsys, type, basename, name, properties, size, rank);
         if (vtx == boost::graph_traits<resource_graph_t>::null_vertex ()) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": failed to add vertex for ";
             m_err_msg += name + ".\n";
             return null_vtx;
         }
-        if (add_edges (g, m, parent, vtx, subsys,
-                        "contains", "in") < 0) {
+        if (add_edges (g, m, parent, vtx, subsys, "contains", "in") < 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": failed to add edges for ";
             m_err_msg += name + ".\n";
@@ -487,8 +479,7 @@ vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
         }
     } else {
         // Update resources
-        vtx = find_vertex (g, m, parent, id, subsys, type, basename,
-                           name, size, rank);
+        vtx = find_vertex (g, m, parent, id, subsys, type, basename, name, size, rank);
         // Not found
         if (vtx == boost::graph_traits<resource_graph_t>::null_vertex ()) {
             m_err_msg += __FUNCTION__;
@@ -506,8 +497,7 @@ vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
     return vtx;
 }
 
-int resource_reader_rv1exec_t::build_rmap (json_t *rlite,
-                                           std::map<unsigned, unsigned> &rmap)
+int resource_reader_rv1exec_t::build_rmap (json_t *rlite, std::map<unsigned, unsigned> &rmap)
 {
     int i;
     size_t index;
@@ -521,7 +511,7 @@ int resource_reader_rv1exec_t::build_rmap (json_t *rlite,
         errno = EINVAL;
         goto error;
     }
-    if ( !(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+    if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
         goto error;
 
     // Create a global rank set that combines all ranks from R_lite array
@@ -530,7 +520,7 @@ int resource_reader_rv1exec_t::build_rmap (json_t *rlite,
             errno = EINVAL;
             goto error;
         }
-        if ( !(r_ids = idset_decode (ranks)))
+        if (!(r_ids = idset_decode (ranks)))
             goto error;
 
         rank = idset_first (r_ids);
@@ -573,8 +563,7 @@ error:
 }
 
 int resource_reader_rv1exec_t::build_pmap (json_t *properties,
-                                           std::map<unsigned,
-                                                    properties_t> &pmap)
+                                           std::map<unsigned, properties_t> &pmap)
 {
     const char *key = nullptr;
     json_t *val = nullptr;
@@ -587,7 +576,7 @@ int resource_reader_rv1exec_t::build_pmap (json_t *properties,
             errno = EINVAL;
             goto error;
         }
-        if ( !(ranks = idset_decode (json_string_value (val)))) {
+        if (!(ranks = idset_decode (json_string_value (val)))) {
             errno = ENOMEM;
             goto error;
         }
@@ -604,10 +593,7 @@ int resource_reader_rv1exec_t::build_pmap (json_t *properties,
                 if (pmap[rank].insert ("node", key) < 0)
                     goto error;
             } else {
-                auto res = pmap.insert (
-                                    std::pair<unsigned,
-                                              properties_t> (rank,
-                                                             properties_t ()));
+                auto res = pmap.insert (std::pair<unsigned, properties_t> (rank, properties_t ()));
                 if (!res.second) {
                     errno = ENOMEM;
                     goto error;
@@ -633,8 +619,7 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
                                              const char *resource_type,
                                              const char *resource_ids,
                                              unsigned rank,
-                                             std::map<unsigned,
-                                                      properties_t> &pmap,
+                                             std::map<unsigned, properties_t> &pmap,
                                              updater_data &update_data)
 {
     int rc = -1;
@@ -645,7 +630,7 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
         errno = EINVAL;
         goto error;
     }
-    if ( !(ids = idset_decode (resource_ids)))
+    if (!(ids = idset_decode (resource_ids)))
         goto error;
 
     id = idset_first (ids);
@@ -661,8 +646,17 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
             }
         }
         // Returns the added or updated vertex; null_vertex on error.
-        vtx = add_or_update (g, m, parent, id, "containment", resource_type,
-                             resource_type, name, 1, rank, properties,
+        vtx = add_or_update (g,
+                             m,
+                             parent,
+                             id,
+                             "containment",
+                             resource_type,
+                             resource_type,
+                             name,
+                             1,
+                             rank,
+                             properties,
                              update_data);
         if (vtx == boost::graph_traits<resource_graph_t>::null_vertex ()) {
             m_err_msg += __FUNCTION__;
@@ -680,14 +674,12 @@ error:
     return rc;
 }
 
-
 int resource_reader_rv1exec_t::unpack_children (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
                                                 vtx_t parent,
                                                 json_t *children,
                                                 unsigned rank,
-                                                std::map<unsigned,
-                                                         properties_t> &pmap,
+                                                std::map<unsigned, properties_t> &pmap,
                                                 updater_data &update_data)
 {
     json_t *res_ids = nullptr;
@@ -704,8 +696,7 @@ int resource_reader_rv1exec_t::unpack_children (resource_graph_t &g,
             goto error;
         }
         const char *ids_str = json_string_value (res_ids);
-        if (unpack_child (g, m, parent, res_type, ids_str, rank, pmap,
-                          update_data) < 0)
+        if (unpack_child (g, m, parent, res_type, ids_str, rank, pmap, update_data) < 0)
             goto error;
     }
     return 0;
@@ -721,8 +712,7 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
                                             json_t *children,
                                             struct hostlist *hlist,
                                             std::map<unsigned, unsigned> &rmap,
-                                            std::map<unsigned,
-                                                     properties_t> &pmap,
+                                            std::map<unsigned, properties_t> &pmap,
                                             updater_data &update_data)
 {
     edg_t e;
@@ -741,10 +731,9 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
         goto error;
     }
 
-    if ( !(hostname = hostlist_nth (hlist, static_cast<int> (rmap[rank]))))
+    if (!(hostname = hostlist_nth (hlist, static_cast<int> (rmap[rank]))))
         goto error;
-    if (get_hostname_suffix (hostname, id) < 0
-        || get_host_basename (hostname, basename) < 0) {
+    if (get_hostname_suffix (hostname, id) < 0 || get_host_basename (hostname, basename) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": error splitting hostname=";
         m_err_msg += hostname + std::string ("; ");
@@ -757,8 +746,18 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
         }
     }
     // Returns the added or updated vertex; null_vtertex on error.
-    vtx = add_or_update (g, m, parent, id, "containment", "node", basename,
-                         hostname, 1, rank, properties, update_data);
+    vtx = add_or_update (g,
+                         m,
+                         parent,
+                         id,
+                         "containment",
+                         "node",
+                         basename,
+                         hostname,
+                         1,
+                         rank,
+                         properties,
+                         update_data);
     if (vtx == boost::graph_traits<resource_graph_t>::null_vertex ()) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": failed unpacking rank for ";
@@ -790,10 +789,8 @@ int resource_reader_rv1exec_t::unpack_rlite_entry (resource_graph_t &g,
                                                    vtx_t parent,
                                                    json_t *entry,
                                                    struct hostlist *hlist,
-                                                   std::map<unsigned,
-                                                            unsigned> &rmap,
-                                                   std::map<unsigned,
-                                                            properties_t> &pmap,
+                                                   std::map<unsigned, unsigned> &rmap,
+                                                   std::map<unsigned, properties_t> &pmap,
                                                    updater_data &update_data)
 {
     int rc = -1;
@@ -807,20 +804,17 @@ int resource_reader_rv1exec_t::unpack_rlite_entry (resource_graph_t &g,
         goto error;
     }
 
-    if (json_unpack (entry, "{s:s s:o}",
-                                "rank", &ranks,
-                                "children", &children) < 0) {
+    if (json_unpack (entry, "{s:s s:o}", "rank", &ranks, "children", &children) < 0) {
         errno = EINVAL;
         goto error;
     }
 
-    if ( !(r_ids = idset_decode (ranks)))
+    if (!(r_ids = idset_decode (ranks)))
         goto error;
 
     rank = idset_first (r_ids);
     while (rank != IDSET_INVALID_ID) {
-        if (unpack_rank (g, m, parent, rank, children, hlist, rmap, pmap,
-                         update_data) < 0)
+        if (unpack_rank (g, m, parent, rank, children, hlist, rmap, pmap, update_data) < 0)
             goto error;
 
         rank = idset_next (r_ids, rank);
@@ -837,8 +831,7 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
                                              json_t *rlite,
                                              struct hostlist *hlist,
                                              std::map<unsigned, unsigned> &rmap,
-                                             std::map<unsigned,
-                                                      properties_t> &pmap,
+                                             std::map<unsigned, properties_t> &pmap,
                                              updater_data &update_data)
 {
     size_t index;
@@ -857,11 +850,9 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
 
     cluster_vtx = m.roots["containment"];
     // Set the cluster "needs" and make the update shared access to the cluster
-    m.v_rt_edges["containment"].set_for_trav_update (g[cluster_vtx].size,
-                                                     false, update_data.token);
+    m.v_rt_edges["containment"].set_for_trav_update (g[cluster_vtx].size, false, update_data.token);
     json_array_foreach (rlite, index, entry) {
-        if (unpack_rlite_entry (g, m, cluster_vtx,
-                                entry, hlist, rmap, pmap, update_data) < 0)
+        if (unpack_rlite_entry (g, m, cluster_vtx, entry, hlist, rmap, pmap, update_data) < 0)
             goto error;
     }
     return 0;
@@ -886,12 +877,18 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
     std::map<unsigned, unsigned> rmap;
     std::map<unsigned, properties_t> pmap;
 
-    if (json_unpack (rv1, "{s:i s:{s:o s:o s?o}}",
-                              "version", &version,
-                              "execution",
-                                  "R_lite", &rlite,
-                                  "nodelist", &nodelist,
-                                  "properties", &properties) < 0) {
+    if (json_unpack (rv1,
+                     "{s:i s:{s:o s:o s?o}}",
+                     "version",
+                     &version,
+                     "execution",
+                     "R_lite",
+                     &rlite,
+                     "nodelist",
+                     &nodelist,
+                     "properties",
+                     &properties)
+        < 0) {
         errno = EINVAL;
         goto ret;
     }
@@ -904,7 +901,7 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
         goto ret;
     if (build_pmap (properties, pmap) < 0)
         goto ret;
-    if ( !(hlist = hostlist_create ()))
+    if (!(hlist = hostlist_create ()))
         goto ret;
 
     // Encode all nodes in nodelist array into a hostlist object.
@@ -914,7 +911,7 @@ int resource_reader_rv1exec_t::unpack_internal (resource_graph_t &g,
             errno = EINVAL;
             goto ret;
         }
-        if ( !(hlist_str = json_string_value (val))) {
+        if (!(hlist_str = json_string_value (val))) {
             errno = EINVAL;
             goto ret;
         }
@@ -932,9 +929,9 @@ ret:
 }
 
 int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
-                    resource_graph_metadata_t &m,
-                    modify_data_t &mod_data,
-                    json_t *rv1)
+                                                        resource_graph_metadata_t &m,
+                                                        modify_data_t &mod_data,
+                                                        json_t *rv1)
 {
     int rc = -1;
     int version;
@@ -948,10 +945,8 @@ int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
     // Implementing cancellation of rank subgraph
     // will require further parsing of nodelist,
     // children, and rank
-    if (json_unpack (rv1, "{s:i s:{s:o}}",
-                              "version", &version,
-                              "execution",
-                                  "R_lite", &rlite) < 0) {
+    if (json_unpack (rv1, "{s:i s:{s:o}}", "version", &version, "execution", "R_lite", &rlite)
+        < 0) {
         errno = EINVAL;
         goto error;
     }
@@ -960,13 +955,12 @@ int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
         goto error;
     }
     json_array_foreach (rlite, index, entry) {
-        if (json_unpack (entry, "{s:s}",
-                                    "rank", &ranks) < 0) {
+        if (json_unpack (entry, "{s:s}", "rank", &ranks) < 0) {
             errno = EINVAL;
             goto error;
         }
     }
-    if ( !(r_ids = idset_decode (ranks)))
+    if (!(r_ids = idset_decode (ranks)))
         goto error;
     rank = idset_first (r_ids);
     while (rank != IDSET_INVALID_ID) {
@@ -980,20 +974,18 @@ error:
     return rc;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public RV1EXEC Resource Reader Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 resource_reader_rv1exec_t::~resource_reader_rv1exec_t ()
 {
-
 }
 
 int resource_reader_rv1exec_t::unpack (resource_graph_t &g,
                                        resource_graph_metadata_t &m,
-                                       const std::string &str, int rank)
+                                       const std::string &str,
+                                       int rank)
 {
     int rc = -1;
     json_error_t error;
@@ -1010,7 +1002,7 @@ int resource_reader_rv1exec_t::unpack (resource_graph_t &g,
     if (add_cluster_vertex (g, m) < 0)
         goto ret;
 
-    if ( !(rv1 = json_loads (str.c_str (), 0, &error))) {
+    if (!(rv1 = json_loads (str.c_str (), 0, &error))) {
         errno = ENOMEM;
         goto ret;
     }
@@ -1027,7 +1019,8 @@ ret:
 int resource_reader_rv1exec_t::unpack_at (resource_graph_t &g,
                                           resource_graph_metadata_t &m,
                                           vtx_t &vtx,
-                                          const std::string &str, int rank)
+                                          const std::string &str,
+                                          int rank)
 {
     errno = ENOTSUP;
     return -1;
@@ -1037,14 +1030,17 @@ int resource_reader_rv1exec_t::remove_subgraph (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
                                                 const std::string &path)
 {
-   errno = ENOTSUP; // RV1Exec reader does not support remove
-   return -1;
+    errno = ENOTSUP;  // RV1Exec reader does not support remove
+    return -1;
 }
 
 int resource_reader_rv1exec_t::update (resource_graph_t &g,
                                        resource_graph_metadata_t &m,
-                                       const std::string &R, int64_t jobid,
-                                       int64_t at, uint64_t dur, bool rsv,
+                                       const std::string &R,
+                                       int64_t jobid,
+                                       int64_t at,
+                                       uint64_t dur,
+                                       bool rsv,
                                        uint64_t token)
 {
     int rc = -1;
@@ -1058,7 +1054,7 @@ int resource_reader_rv1exec_t::update (resource_graph_t &g,
         goto ret;
     }
 
-    if ( !(rv1 = json_loads (R.c_str (), 0, &error))) {
+    if (!(rv1 = json_loads (R.c_str (), 0, &error))) {
         errno = ENOMEM;
         goto ret;
     }
@@ -1070,7 +1066,7 @@ int resource_reader_rv1exec_t::update (resource_graph_t &g,
     update_data.reserved = rsv;
     update_data.token = token;
 
-    if ( (rc = unpack_internal (g, m, rv1, update_data)) == -1) {
+    if ((rc = unpack_internal (g, m, rv1, update_data)) == -1) {
         undo_vertices (g, update_data);
     }
 
@@ -1087,9 +1083,10 @@ bool resource_reader_rv1exec_t::is_allowlist_supported ()
 }
 
 int resource_reader_rv1exec_t::partial_cancel (resource_graph_t &g,
-                    resource_graph_metadata_t &m,
-                    modify_data_t &mod_data,
-                    const std::string &R, int64_t jobid)
+                                               resource_graph_metadata_t &m,
+                                               modify_data_t &mod_data,
+                                               const std::string &R,
+                                               int64_t jobid)
 {
     int rc = -1;
     json_error_t error;
@@ -1101,7 +1098,7 @@ int resource_reader_rv1exec_t::partial_cancel (resource_graph_t &g,
         goto ret;
     }
 
-    if ( !(rv1 = json_loads (R.c_str (), 0, &error))) {
+    if (!(rv1 = json_loads (R.c_str (), 0, &error))) {
         errno = ENOMEM;
         goto ret;
     }

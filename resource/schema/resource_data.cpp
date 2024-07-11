@@ -19,15 +19,12 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Pool Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
 resource_pool_t::resource_pool_t ()
 {
-
 }
 
 resource_pool_t::resource_pool_t (const resource_pool_t &o)
@@ -67,10 +64,7 @@ resource_pool_t &resource_pool_t::operator= (const resource_pool_t &o)
 
 resource_pool_t::~resource_pool_t ()
 {
-
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Relation Method Definitions
@@ -78,7 +72,6 @@ resource_pool_t::~resource_pool_t ()
 
 resource_relation_t::resource_relation_t ()
 {
-
 }
 
 resource_relation_t::resource_relation_t (const resource_relation_t &o)
@@ -87,8 +80,7 @@ resource_relation_t::resource_relation_t (const resource_relation_t &o)
     idata = o.idata;
 }
 
-resource_relation_t &resource_relation_t::operator= (
-                                              const resource_relation_t &o)
+resource_relation_t &resource_relation_t::operator= (const resource_relation_t &o)
 {
     name = o.name;
     idata = o.idata;
@@ -97,33 +89,31 @@ resource_relation_t &resource_relation_t::operator= (
 
 resource_relation_t::~resource_relation_t ()
 {
-
 }
 
-const resource_pool_t::string_to_status resource_pool_t::str_to_status = 
-      { { "up", resource_pool_t::status_t::UP }, 
-      { "down", resource_pool_t::status_t::DOWN } };
+const resource_pool_t::string_to_status resource_pool_t::str_to_status =
+    {{"up", resource_pool_t::status_t::UP}, {"down", resource_pool_t::status_t::DOWN}};
 
 const std::string resource_pool_t::status_to_str (status_t s)
 {
     std::string str;
     switch (s) {
-    case status_t::UP:
-        str = "UP";
-        break;
-    case status_t::DOWN:
-        str = "DOWN";
-        break;
-    default:
-        str = "";
-        errno = EINVAL;
-        break;
+        case status_t::UP:
+            str = "UP";
+            break;
+        case status_t::DOWN:
+            str = "DOWN";
+            break;
+        default:
+            str = "";
+            errno = EINVAL;
+            break;
     }
     return str;
 }
 
-} // Flux::resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

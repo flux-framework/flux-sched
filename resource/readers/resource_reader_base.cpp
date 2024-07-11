@@ -19,19 +19,14 @@ extern "C" {
 
 using namespace Flux::resource_model;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private Base Reader API
 ////////////////////////////////////////////////////////////////////////////////
 
 bool resource_reader_base_t::in_allowlist (const std::string &resource)
 {
-    return allowlist.empty ()
-           || (allowlist.find (resource) != allowlist.end ());
+    return allowlist.empty () || (allowlist.find (resource) != allowlist.end ());
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Base Reader API
@@ -39,7 +34,6 @@ bool resource_reader_base_t::in_allowlist (const std::string &resource)
 
 resource_reader_base_t::~resource_reader_base_t ()
 {
-
 }
 
 int resource_reader_base_t::set_allowlist (const std::string &csl)
@@ -62,7 +56,7 @@ int resource_reader_base_t::set_allowlist (const std::string &csl)
         if (csl_copy != "")
             allowlist.insert (csl_copy);
         errno = EINVAL;
-        rc = allowlist.empty ()? -1 : 0;
+        rc = allowlist.empty () ? -1 : 0;
     } catch (std::out_of_range &e) {
         errno = EINVAL;
         rc = -1;
@@ -113,7 +107,7 @@ int resource_reader_base_t::split_hostname (const std::string &hn,
 
     first = suffix.find_first_not_of ("0");
     if (first == std::string::npos) {
-        id = 0; // all 0s
+        id = 0;  // all 0s
         return 0;
     }
 
@@ -133,8 +127,7 @@ error:
     return -1;
 }
 
-int resource_reader_base_t::get_hostname_suffix (const std::string &hn,
-                                                 int64_t &id) const
+int resource_reader_base_t::get_hostname_suffix (const std::string &hn, int64_t &id) const
 {
     if (hn == "") {
         errno = EINVAL;
@@ -144,8 +137,7 @@ int resource_reader_base_t::get_hostname_suffix (const std::string &hn,
     return split_hostname (hn, basename, id);
 }
 
-int resource_reader_base_t::get_host_basename (const std::string &hn,
-                                               std::string &basename) const
+int resource_reader_base_t::get_host_basename (const std::string &hn, std::string &basename) const
 {
     if (hn == "") {
         errno = EINVAL;

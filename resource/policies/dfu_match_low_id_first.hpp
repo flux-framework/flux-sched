@@ -22,10 +22,10 @@ namespace resource_model {
  */
 using low_first_t = multilevel_id_t<fold::less>;
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_LOW_ID_FIRST_HPP
+#endif  // DFU_MATCH_LOW_ID_FIRST_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

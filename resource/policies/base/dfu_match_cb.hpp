@@ -29,9 +29,8 @@ namespace resource_model {
  *  Define the set of visitor methods that are called
  *  back by a DFU resource-graph traverser.
  */
-class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t
-{
-public:
+class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
+   public:
     dfu_match_cb_t ();
     dfu_match_cb_t (const std::string &name);
     dfu_match_cb_t (const dfu_match_cb_t &o);
@@ -50,8 +49,7 @@ public:
      *  \return          return 0 on success; otherwise -1.
      */
     virtual int dom_finish_graph (const subsystem_t &subsystem,
-                                  const std::vector<
-                                            Flux::Jobspec::Resource> &resources,
+                                  const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g,
                                   scoring_api_t &dfu);
 
@@ -60,8 +58,7 @@ public:
      * (resources that can be contained within one or more slots) of the
      * dominant subsystem.
      */
-    virtual int dom_finish_slot (const subsystem_t &subsystem,
-                                 scoring_api_t &dfu);
+    virtual int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
 
     /*!
      *  Called back on each preorder visit of the dominant subsystem.
@@ -78,8 +75,7 @@ public:
      */
     virtual int dom_discover_vtx (vtx_t u,
                                   const subsystem_t &subsystem,
-                                  const std::vector<
-                                            Flux::Jobspec::Resource> &resources,
+                                  const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g);
 
     /*!
@@ -100,8 +96,7 @@ public:
      */
     virtual int dom_finish_vtx (vtx_t u,
                                 const subsystem_t &subsystem,
-                                const std::vector<
-                                          Flux::Jobspec::Resource> &resources,
+                                const std::vector<Flux::Jobspec::Resource> &resources,
                                 const resource_graph_t &g,
                                 scoring_api_t &dfu);
 
@@ -118,8 +113,7 @@ public:
      */
     virtual int aux_discover_vtx (vtx_t u,
                                   const subsystem_t &subsystem,
-                                  const std::vector<
-                                            Flux::Jobspec::Resource> &resources,
+                                  const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g);
 
     /*
@@ -139,8 +133,7 @@ public:
      */
     virtual int aux_finish_vtx (vtx_t u,
                                 const subsystem_t &subsystem,
-                                const std::vector<
-                                          Flux::Jobspec::Resource> &resources,
+                                const std::vector<Flux::Jobspec::Resource> &resources,
                                 const resource_graph_t &g,
                                 scoring_api_t &dfu);
 
@@ -162,19 +155,18 @@ public:
      */
     virtual int get_stop_on_k_matches () const;
 
-
     void incr ();
     void decr ();
     std::string level ();
 
-private:
+   private:
     int m_trav_level;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_CB_HPP
+#endif  // DFU_MATCH_CB_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

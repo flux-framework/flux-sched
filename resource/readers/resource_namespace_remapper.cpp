@@ -25,8 +25,6 @@ extern "C" {
 
 using namespace Flux::resource_model;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Resource Namespace Remapper API
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,25 +58,29 @@ bool distinct_range_t::is_point () const
     return m_low == m_high;
 }
 
-bool distinct_range_t::operator< (const distinct_range_t &o) const {
+bool distinct_range_t::operator< (const distinct_range_t &o) const
+{
     // this class is used as key for std::map, which relies on the following
     // x and y are equivalent if !(x < y) && !(y < x)
     return m_high < o.m_low;
 }
 
-bool distinct_range_t::operator== (const distinct_range_t &o) const {
+bool distinct_range_t::operator== (const distinct_range_t &o) const
+{
     // x and y are equal if and only if both high and low
     // of the operands are equal
     return m_high == o.m_high && m_low == o.m_low;
 }
 
-bool distinct_range_t::operator!= (const distinct_range_t &o) const {
+bool distinct_range_t::operator!= (const distinct_range_t &o) const
+{
     // x and y are not equal if either high or low is not equal
     return m_high != o.m_high || m_low != o.m_low;
 }
 
 int distinct_range_t::get_low_high (const std::string &exec_target_range,
-                                    uint64_t &low, uint64_t &high)
+                                    uint64_t &low,
+                                    uint64_t &high)
 {
     try {
         long int n;
@@ -87,11 +89,10 @@ int distinct_range_t::get_low_high (const std::string &exec_target_range,
         std::istringstream istr{exec_target_range};
         std::vector<uint64_t> targets;
 
-        if ( (ndash = std::count (exec_target_range.begin (),
-                                  exec_target_range.end (), '-')) > 1)
+        if ((ndash = std::count (exec_target_range.begin (), exec_target_range.end (), '-')) > 1)
             goto inval;
         while (std::getline (istr, exec_target, '-')) {
-            if ( (n = std::stol (exec_target)) < 0)
+            if ((n = std::stol (exec_target)) < 0)
                 goto inval;
             targets.push_back (static_cast<uint64_t> (n));
         }
@@ -113,15 +114,15 @@ error:
     return -1;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Resource Namespace Remapper API
 ////////////////////////////////////////////////////////////////////////////////
 
-int resource_namespace_remapper_t::add (const uint64_t low, const uint64_t high,
+int resource_namespace_remapper_t::add (const uint64_t low,
+                                        const uint64_t high,
                                         const std::string &name_type,
-                                        uint64_t ref_id, uint64_t remapped_id)
+                                        uint64_t ref_id,
+                                        uint64_t remapped_id)
 {
     try {
         const distinct_range_t exec_target_range{low, high};
@@ -129,15 +130,12 @@ int resource_namespace_remapper_t::add (const uint64_t low, const uint64_t high,
 
         if (m_remap_iter == m_remap.end ()) {
             m_remap.emplace (exec_target_range,
-                             std::map<const std::string,
-                                      std::map<uint64_t, uint64_t>> ());
+                             std::map<const std::string, std::map<uint64_t, uint64_t>> ());
         } else if (exec_target_range != m_remap_iter->first)
-            goto inval; // key must be exact
+            goto inval;  // key must be exact
 
-        if (m_remap[exec_target_range].find (name_type)
-            == m_remap[exec_target_range].end ())
-            m_remap[exec_target_range][name_type] = std::map<uint64_t,
-                                                             uint64_t> ();
+        if (m_remap[exec_target_range].find (name_type) == m_remap[exec_target_range].end ())
+            m_remap[exec_target_range][name_type] = std::map<uint64_t, uint64_t> ();
         if (m_remap[exec_target_range][name_type].find (ref_id)
             != m_remap[exec_target_range][name_type].end ()) {
             errno = EEXIST;
@@ -159,7 +157,8 @@ error:
 
 int resource_namespace_remapper_t::add (const std::string &exec_target_range,
                                         const std::string &name_type,
-                                        uint64_t ref_id, uint64_t remapped_id)
+                                        uint64_t ref_id,
+                                        uint64_t remapped_id)
 {
     try {
         uint64_t low, high;
@@ -176,8 +175,8 @@ error:
 }
 
 int resource_namespace_remapper_t::add_exec_target_range (
-        const std::string &exec_target_range,
-        const distinct_range_t &remapped_exec_target_range)
+    const std::string &exec_target_range,
+    const distinct_range_t &remapped_exec_target_range)
 {
     try {
         uint64_t low, high, r_low, r_high, i, j;
@@ -208,8 +207,7 @@ int resource_namespace_remapper_t::query (const uint64_t exec_target,
                                           uint64_t &remapped_id_out) const
 {
     try {
-        remapped_id_out = m_remap.at (distinct_range_t{exec_target})
-                                         .at (name_type).at (ref_id);
+        remapped_id_out = m_remap.at (distinct_range_t{exec_target}).at (name_type).at (ref_id);
         return 0;
     } catch (std::out_of_range &) {
         errno = ENOENT;
@@ -217,13 +215,12 @@ int resource_namespace_remapper_t::query (const uint64_t exec_target,
     }
 }
 
-int resource_namespace_remapper_t::query_exec_target (
-        const uint64_t exec_target, uint64_t &remapped_exec_target) const
+int resource_namespace_remapper_t::query_exec_target (const uint64_t exec_target,
+                                                      uint64_t &remapped_exec_target) const
 {
     try {
-        remapped_exec_target = m_remap.at (distinct_range_t{exec_target})
-                                               .at ("exec-target")
-                                                        .at (exec_target);
+        remapped_exec_target =
+            m_remap.at (distinct_range_t{exec_target}).at ("exec-target").at (exec_target);
         return 0;
     } catch (std::out_of_range &) {
         errno = ENOENT;

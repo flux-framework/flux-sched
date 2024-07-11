@@ -21,19 +21,16 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Matcher Data Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
 matcher_data_t::matcher_data_t () : m_name ("anonymous")
 {
-
 }
 
 matcher_data_t::matcher_data_t (const std::string &name) : m_name (name)
 {
-
 }
 
 matcher_data_t::matcher_data_t (const matcher_data_t &o)
@@ -43,7 +40,7 @@ matcher_data_t::matcher_data_t (const matcher_data_t &o)
     m_subsystems_map = o.m_subsystems_map;
 }
 
-matcher_data_t &matcher_data_t::operator=(const matcher_data_t &o)
+matcher_data_t &matcher_data_t::operator= (const matcher_data_t &o)
 {
     m_name = o.m_name;
     m_subsystems = o.m_subsystems;
@@ -85,7 +82,7 @@ const std::vector<subsystem_t> &matcher_data_t::subsystems () const
 const subsystem_t &matcher_data_t::dom_subsystem () const
 {
     if (m_subsystems.begin () != m_subsystems.end ())
-        return *(m_subsystems.begin());
+        return *(m_subsystems.begin ());
     else
         return m_err_subsystem;
 }
@@ -95,18 +92,14 @@ const multi_subsystemsS &matcher_data_t::subsystemsS () const
     return m_subsystems_map;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Matcher Util Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-unsigned int matcher_util_api_t::calc_count (
-    const Flux::Jobspec::Resource &resource,
-    unsigned int qc) const
+unsigned int matcher_util_api_t::calc_count (const Flux::Jobspec::Resource &resource,
+                                             unsigned int qc) const
 {
-    if (resource.count.min > resource.count.max
-        || resource.count.min > qc)
+    if (resource.count.min > resource.count.max || resource.count.min > qc)
         return 0;
 
     unsigned int range = 0;
@@ -114,48 +107,45 @@ unsigned int matcher_util_api_t::calc_count (
     unsigned int cur = resource.count.min;
 
     switch (resource.count.oper) {
-    case '+':
-        count = (qc < resource.count.max)? qc : resource.count.max;
-        range = count - cur;
-        count -= (range % resource.count.operand);
-        break;
-    case '*':
-        if (resource.count.operand == 1)
-            count = cur;
-        else {
-            while (cur <= qc && cur <= resource.count.max) {
+        case '+':
+            count = (qc < resource.count.max) ? qc : resource.count.max;
+            range = count - cur;
+            count -= (range % resource.count.operand);
+            break;
+        case '*':
+            if (resource.count.operand == 1)
                 count = cur;
-                cur *= resource.count.operand;
+            else {
+                while (cur <= qc && cur <= resource.count.max) {
+                    count = cur;
+                    cur *= resource.count.operand;
+                }
             }
-        }
-        break;
-    case '^':
-        if (resource.count.operand < 2)
-            count = cur;
-        else {
-            while (cur <= qc && cur <= resource.count.max) {
-                unsigned int base = cur;
+            break;
+        case '^':
+            if (resource.count.operand < 2)
                 count = cur;
-                for (int i = 1;
-                     i < resource.count.operand; i++)
-                    cur *= base;
+            else {
+                while (cur <= qc && cur <= resource.count.max) {
+                    unsigned int base = cur;
+                    count = cur;
+                    for (int i = 1; i < resource.count.operand; i++)
+                        cur *= base;
+                }
             }
-        }
-        break;
-    default:
-        break;
+            break;
+        default:
+            break;
     }
     return count;
 }
 
-unsigned int matcher_util_api_t::calc_effective_max (
-    const Flux::Jobspec::Resource &resource) const
+unsigned int matcher_util_api_t::calc_effective_max (const Flux::Jobspec::Resource &resource) const
 {
     return calc_count (resource, std::numeric_limits<unsigned int>::max ());
 }
 
-int matcher_util_api_t::register_resource_pair (const std::string &subsystem,
-                                                std::string &r_pair)
+int matcher_util_api_t::register_resource_pair (const std::string &subsystem, std::string &r_pair)
 {
     int rc = -1;
     size_t pos = 0;
@@ -236,7 +226,7 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
                 // If prune_type does not exist against ANY_RESOURCE_TYPE
                 // Install it against anchor_type, an individual resource type
                 s[anchor_type].insert (prune_type);
-            } // orelse NOOP
+            }  // orelse NOOP
         } else {
             s[anchor_type].insert (prune_type);
         }
@@ -292,8 +282,7 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
             for (auto &k : m)
                 out.push_back (k);
         }
-        if (anchor_type != ANY_RESOURCE_TYPE
-            && s.find (ANY_RESOURCE_TYPE) != s.end ()) {
+        if (anchor_type != ANY_RESOURCE_TYPE && s.find (ANY_RESOURCE_TYPE) != s.end ()) {
             auto &m = s.at (ANY_RESOURCE_TYPE);
             for (auto &k : m) {
                 if (anchor_type != k)
@@ -343,9 +332,8 @@ bool matcher_util_api_t::is_resource_type_exclusive (const std::string &type)
     return m_x_resource_types.find (type) != m_x_resource_types.end ();
 }
 
-
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

@@ -27,14 +27,11 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Base Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-int match_writers_t::compress_ids (std::stringstream &o,
-                                   const std::vector<int64_t> &ids)
+int match_writers_t::compress_ids (std::stringstream &o, const std::vector<int64_t> &ids)
 {
     int rc = 0;
     try {
@@ -76,22 +73,22 @@ int match_writers_t::compress_hosts (const std::vector<std::string> &hosts,
         goto ret;
     }
     if (hostlist_init) {
-        if ( !(hl = hostlist_decode (hostlist_init))) {
+        if (!(hl = hostlist_decode (hostlist_init))) {
             rc = -1;
             goto ret;
         }
     } else {
-        if ( !(hl = hostlist_create ())) {
+        if (!(hl = hostlist_create ())) {
             rc = -1;
             goto ret;
         }
     }
     for (auto &hn : hosts) {
-        if ( (rc = hostlist_append (hl, hn.c_str ())) < 0)
+        if ((rc = hostlist_append (hl, hn.c_str ())) < 0)
             goto ret;
     }
 
-    if ( !(*hostlist_out = hostlist_encode (hl))) {
+    if (!(*hostlist_out = hostlist_encode (hl))) {
         rc = -1;
         goto ret;
     }
@@ -100,8 +97,6 @@ ret:
     hostlist_destroy (hl);
     return rc;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Simple Writers Class Public Method Definitions
@@ -119,7 +114,7 @@ int sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     std::string str = m_out.str ();
 
     if (!str.empty ()) {
-        if ( !(o = json_string (str.c_str ()))) {
+        if (!(o = json_string (str.c_str ()))) {
             errno = ENOMEM;
             rc = -1;
             goto done;
@@ -142,16 +137,15 @@ int sim_match_writers_t::emit (std::stringstream &out)
 }
 
 int sim_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const resource_graph_t &g, const vtx_t &u,
-                                   unsigned int needs, bool exclusive)
+                                   const resource_graph_t &g,
+                                   const vtx_t &u,
+                                   unsigned int needs,
+                                   bool exclusive)
 {
-    std::string mode = (exclusive)? "x" : "s";
-    m_out << prefix << g[u].name << "[" << needs << ":" << mode  << "]"
-          << std::endl;
+    std::string mode = (exclusive) ? "x" : "s";
+    m_out << prefix << g[u].name << "[" << needs << ":" << mode << "]" << std::endl;
     return 0;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSON Graph Format (JGF) Writers Class Public Definitions
@@ -179,8 +173,7 @@ jgf_match_writers_t::jgf_match_writers_t (const jgf_match_writers_t &w)
     }
 }
 
-jgf_match_writers_t &jgf_match_writers_t::operator=(
-                                              const jgf_match_writers_t &w)
+jgf_match_writers_t &jgf_match_writers_t::operator= (const jgf_match_writers_t &w)
 {
     if (!(m_vout = json_deep_copy (w.m_vout)))
         throw std::bad_alloc ();
@@ -211,10 +204,7 @@ int jgf_match_writers_t::emit_json (json_t **o, json_t **aux)
 
     if ((rc = check_array_sizes ()) <= 0)
         goto ret;
-    if (!(*o = json_pack ("{s:{s:o s:o}}",
-                              "graph",
-                                  "nodes", m_vout,
-                                  "edges", m_eout))) {
+    if (!(*o = json_pack ("{s:{s:o s:o}}", "graph", "nodes", m_vout, "edges", m_eout))) {
         json_decref (m_vout);
         json_decref (m_eout);
         m_vout = NULL;
@@ -254,12 +244,14 @@ int jgf_match_writers_t::emit (std::stringstream &out)
         json_decref (o);
     }
 ret:
-    return (rc == -1)? -1 : 0;
+    return (rc == -1) ? -1 : 0;
 }
 
 int jgf_match_writers_t::emit_vtx (const std::string &prefix,
-                                   const resource_graph_t &g, const vtx_t &u,
-                                   unsigned int needs, bool exclusive)
+                                   const resource_graph_t &g,
+                                   const vtx_t &u,
+                                   unsigned int needs,
+                                   bool exclusive)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -288,9 +280,8 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
         json_decref (b);
         goto out;
     }
-    if ((o = json_pack ("{s:s s:o}",
-                            "id", std::to_string (g[u].uniq_id).c_str (),
-                            "metadata", b)) == NULL) {
+    if ((o = json_pack ("{s:s s:o}", "id", std::to_string (g[u].uniq_id).c_str (), "metadata", b))
+        == NULL) {
         json_decref (b);
         rc = -1;
         errno = ENOMEM;
@@ -306,7 +297,8 @@ out:
 }
 
 int jgf_match_writers_t::emit_edg (const std::string &prefix,
-                                   const resource_graph_t &g, const edg_t &e)
+                                   const resource_graph_t &g,
+                                   const edg_t &e)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -327,9 +319,12 @@ int jgf_match_writers_t::emit_edg (const std::string &prefix,
         goto out;
     }
     if (!(o = json_pack ("{s:s s:s s:o}",
-                  "source", std::to_string (g[source (e, g)].uniq_id).c_str (),
-                  "target", std::to_string (g[target (e, g)].uniq_id).c_str (),
-                  "metadata", m))) {
+                         "source",
+                         std::to_string (g[source (e, g)].uniq_id).c_str (),
+                         "target",
+                         std::to_string (g[target (e, g)].uniq_id).c_str (),
+                         "metadata",
+                         m))) {
         json_decref (m);
         rc = -1;
         errno = ENOMEM;
@@ -343,8 +338,6 @@ int jgf_match_writers_t::emit_edg (const std::string &prefix,
 out:
     return rc;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSON Graph Format (JGF) Writers Class Private Definitions
@@ -398,19 +391,20 @@ ret:
 
 json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
                                             const vtx_t &u,
-                                            unsigned int needs, bool exclusive)
+                                            unsigned int needs,
+                                            bool exclusive)
 {
     json_t *o = NULL;
     json_t *prop = nullptr;
 
     if (!g[u].properties.empty ()) {
-        if ( !(prop = json_object ())) {
+        if (!(prop = json_object ())) {
             errno = ENOMEM;
             return nullptr;
         }
         for (auto &kv : g[u].properties) {
             json_t *value = nullptr;
-            if ( !(value = json_string (kv.second.c_str ()))) {
+            if (!(value = json_string (kv.second.c_str ()))) {
                 json_decref (prop);
                 errno = EINVAL;
                 return nullptr;
@@ -425,29 +419,48 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
 
     if (prop) {
         if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:o s:b s:s s:I}",
-                                "type", g[u].type.c_str (),
-                                "basename", g[u].basename.c_str (),
-                                "name", g[u].name.c_str (),
-                                "id", g[u].id,
-                                "uniq_id", g[u].uniq_id,
-                                "rank", g[u].rank,
-                                "properties", prop,
-                                "exclusive", (exclusive)? 1 : 0,
-                                "unit", g[u].unit.c_str (),
-                                "size", static_cast<int64_t> (needs)))) {
+                             "type",
+                             g[u].type.c_str (),
+                             "basename",
+                             g[u].basename.c_str (),
+                             "name",
+                             g[u].name.c_str (),
+                             "id",
+                             g[u].id,
+                             "uniq_id",
+                             g[u].uniq_id,
+                             "rank",
+                             g[u].rank,
+                             "properties",
+                             prop,
+                             "exclusive",
+                             (exclusive) ? 1 : 0,
+                             "unit",
+                             g[u].unit.c_str (),
+                             "size",
+                             static_cast<int64_t> (needs)))) {
             errno = EINVAL;
         }
     } else {
         if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:b s:s s:I}",
-                                "type", g[u].type.c_str (),
-                                "basename", g[u].basename.c_str (),
-                                "name", g[u].name.c_str (),
-                                "id", g[u].id,
-                                "uniq_id", g[u].uniq_id,
-                                "rank", g[u].rank,
-                                "exclusive", (exclusive)? 1 : 0,
-                                "unit", g[u].unit.c_str (),
-                                "size", static_cast<int64_t> (needs)))) {
+                             "type",
+                             g[u].type.c_str (),
+                             "basename",
+                             g[u].basename.c_str (),
+                             "name",
+                             g[u].name.c_str (),
+                             "id",
+                             g[u].id,
+                             "uniq_id",
+                             g[u].uniq_id,
+                             "rank",
+                             g[u].rank,
+                             "exclusive",
+                             (exclusive) ? 1 : 0,
+                             "unit",
+                             g[u].unit.c_str (),
+                             "size",
+                             static_cast<int64_t> (needs)))) {
             errno = EINVAL;
         }
     }
@@ -479,7 +492,7 @@ int jgf_match_writers_t::map2json (json_t *o,
                 errno = ENOMEM;
                 goto out;
             }
-         }
+        }
         if ((rc = json_object_set_new (o, key, p)) == -1) {
             errno = ENOMEM;
             goto out;
@@ -490,8 +503,7 @@ out:
     return rc;
 }
 
-int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g,
-                                        const edg_t &e)
+int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g, const edg_t &e)
 {
     int rc = 0;
     if (!o) {
@@ -530,8 +542,6 @@ out:
     return rc;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // RLITE Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -550,8 +560,7 @@ rlite_match_writers_t::rlite_match_writers_t (const rlite_match_writers_t &w)
     m_gl_gatherer = w.m_gl_gatherer;
 }
 
-rlite_match_writers_t &rlite_match_writers_t::operator=(
-                                                 const rlite_match_writers_t &w)
+rlite_match_writers_t &rlite_match_writers_t::operator= (const rlite_match_writers_t &w)
 {
     m_reducer = w.m_reducer;
     m_gatherer = w.m_gatherer;
@@ -581,12 +590,12 @@ int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
         rc = -1;
         goto ret;
     }
-    if ( !(rlite_array = json_array ())) {
+    if (!(rlite_array = json_array ())) {
         rc = -1;
         errno = ENOMEM;
         goto ret;
     }
-    if ( aux && !(host_array = json_array ())) {
+    if (aux && !(host_array = json_array ())) {
         json_decref (rlite_array);
         rc = -1;
         errno = ENOMEM;
@@ -599,7 +608,7 @@ int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
         errno = ENOMEM;
         goto ret;
     }
-    if ( (rc = fill (rlite_array, host_array, props)) < 0) {
+    if ((rc = fill (rlite_array, host_array, props)) < 0) {
         saved_errno = errno;
         json_decref (rlite_array);
         if (host_array)
@@ -614,15 +623,14 @@ int rlite_match_writers_t::emit_json (json_t **o, json_t **aux)
 
     m_gl_prop_gatherer.clear ();
 
-    if ( (rc = json_array_size (rlite_array)) != 0) {
+    if ((rc = json_array_size (rlite_array)) != 0) {
         *o = rlite_array;
         if (aux) {
-            if ( !(*aux = json_pack ("{ s:o }",
-                                          "nodelist", host_array))) {
-                 rc = -1;
-                 errno = EINVAL;
-                 goto ret;
-             }
+            if (!(*aux = json_pack ("{ s:o }", "nodelist", host_array))) {
+                rc = -1;
+                errno = EINVAL;
+                goto ret;
+            }
             if (props) {
                 if (json_object_set_new (*aux, "properties", props)) {
                     rc = -1;
@@ -653,9 +661,9 @@ int rlite_match_writers_t::emit (std::stringstream &out, bool newline)
             out << std::endl;
         free (json_str);
         json_decref (o);
-     }
+    }
 ret:
-    return (rc == -1)? -1 : 0;
+    return (rc == -1) ? -1 : 0;
 }
 
 int rlite_match_writers_t::emit (std::stringstream &out)
@@ -686,8 +694,6 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
 ret:
     return rc;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // RLITE Writers Class Private Method Definitions
@@ -724,14 +730,14 @@ int rlite_match_writers_t::get_gatherer_children (std::string &children)
             continue;
 
         std::sort (kv.second.begin (), kv.second.end ());
-        if ( (rc = compress_ids (s, kv.second)) < 0)
+        if ((rc = compress_ids (s, kv.second)) < 0)
             goto memfree_ret;
-        if ( !(vo = json_string (s.str ().c_str ()))) {
+        if (!(vo = json_string (s.str ().c_str ()))) {
             rc = -1;
             errno = ENOMEM;
             goto memfree_ret;
         }
-        if ( (rc = json_object_set_new (co, kv.first.c_str (), vo)) < 0) {
+        if ((rc = json_object_set_new (co, kv.first.c_str (), vo)) < 0) {
             errno = ENOMEM;
             goto memfree_ret;
         }
@@ -754,8 +760,7 @@ ret:
     return rc;
 }
 
-int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g,
-                                          const vtx_t &u)
+int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g, const vtx_t &u)
 {
     int rc = 0;
     std::string children;
@@ -764,7 +769,7 @@ int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g,
         if (!m_reducer_set ())
             goto ret;
 
-        if ( (rc = get_gatherer_children (children)) < 0)
+        if ((rc = get_gatherer_children (children)) < 0)
             goto ret;
 
         if (m_gl_gatherer.find (children) == m_gl_gatherer.end ())
@@ -777,12 +782,9 @@ int rlite_match_writers_t::emit_gatherer (const resource_graph_t &g,
             std::string prop = kv.first;
             if (kv.second != "")
                 prop = prop + "=" + kv.second;
-            if (m_gl_prop_gatherer.find (prop)
-                    == m_gl_prop_gatherer.end ()) {
+            if (m_gl_prop_gatherer.find (prop) == m_gl_prop_gatherer.end ()) {
                 auto ret = m_gl_prop_gatherer.insert (
-                               std::pair<std::string,
-                                         std::vector<int64_t>> (
-                                   prop, std::vector<int64_t> ()));
+                    std::pair<std::string, std::vector<int64_t>> (prop, std::vector<int64_t> ()));
                 if (!ret.second) {
                     errno = ENOMEM;
                     rc = -1;
@@ -800,14 +802,12 @@ ret:
     return rc;
 }
 
-int rlite_match_writers_t::fill (json_t *rlite_array,
-                                 json_t *host_array, json_t *props)
+int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array, json_t *props)
 {
     int rc = 0;
     int saved_errno;
     char *hl_out = nullptr;
     std::vector<rank_host_t> rankhosts_vec;
-
 
     // m_gl_gatherer is keyed by the "children" signature of each node
     // the value is the set of ranks that have the same signature.
@@ -818,48 +818,45 @@ int rlite_match_writers_t::fill (json_t *rlite_array,
         json_t *robj, *ranks, *cobj = NULL;
 
         // The primary sorting order for compression is rank
-        std::sort (kv.second.begin (), kv.second.end (),
-                   [] (const rank_host_t &a, const rank_host_t &b) {
-                       return a.rank < b.rank;
-                   });
-        std::transform (kv.second.begin (), kv.second.end (),
+        std::sort (kv.second.begin (),
+                   kv.second.end (),
+                   [] (const rank_host_t &a, const rank_host_t &b) { return a.rank < b.rank; });
+        std::transform (kv.second.begin (),
+                        kv.second.end (),
                         std::back_inserter (ranks_vec),
-                        [] (rank_host_t &o) {
-                            return o.rank;
-                        });
-        if ( (rc = compress_ids (s, ranks_vec)) < 0)
+                        [] (rank_host_t &o) { return o.rank; });
+        if ((rc = compress_ids (s, ranks_vec)) < 0)
             goto ret;
         if (host_array)
-            std::copy (kv.second.begin (),
-                       kv.second.end (), std::back_inserter (rankhosts_vec));
-        if ( !(robj = json_object ())) {
+            std::copy (kv.second.begin (), kv.second.end (), std::back_inserter (rankhosts_vec));
+        if (!(robj = json_object ())) {
             rc = -1;
             errno = ENOMEM;
             goto ret;
         }
-        if ( !(ranks = json_string (s.str ().c_str ()))) {
+        if (!(ranks = json_string (s.str ().c_str ()))) {
             json_decref (robj);
             rc = -1;
             errno = EINVAL;
             goto ret;
         }
-        if ( (rc = json_object_set_new (robj, "rank", ranks)) < 0) {
+        if ((rc = json_object_set_new (robj, "rank", ranks)) < 0) {
             json_decref (robj);
             errno = EINVAL;
             goto ret;
         }
-        if ( !(cobj = json_loads (kv.first.c_str (), 0, &err))) {
+        if (!(cobj = json_loads (kv.first.c_str (), 0, &err))) {
             json_decref (robj);
             rc = -1;
             errno = ENOMEM;
             goto ret;
         }
-        if ( (rc = json_object_set_new (robj, "children", cobj)) < 0) {
+        if ((rc = json_object_set_new (robj, "children", cobj)) < 0) {
             json_decref (robj);
             errno = EINVAL;
             goto ret;
         }
-        if ( (rc = json_array_append_new (rlite_array, robj)) < 0) {
+        if ((rc = json_array_append_new (rlite_array, robj)) < 0) {
             json_decref (robj);
             errno = EINVAL;
             goto ret;
@@ -873,9 +870,9 @@ int rlite_match_writers_t::fill (json_t *rlite_array,
 
             // kv.second is a std::vector with ranks
             std::sort (kv.second.begin (), kv.second.end ());
-            if ( (rc = compress_ids (s, kv.second)) < 0)
+            if ((rc = compress_ids (s, kv.second)) < 0)
                 goto ret;
-            if ( !(ranks = json_string (s.str ().c_str ()))) {
+            if (!(ranks = json_string (s.str ().c_str ()))) {
                 rc = -1;
                 errno = EINVAL;
                 goto ret;
@@ -891,21 +888,18 @@ int rlite_match_writers_t::fill (json_t *rlite_array,
 
     if (host_array) {
         // The primary sorting order for compression is rank
-        std::sort (rankhosts_vec.begin (), rankhosts_vec.end (),
-                   [] (const rank_host_t &a, const rank_host_t &b) {
-                       return a.rank < b.rank;
-                   });
+        std::sort (rankhosts_vec.begin (),
+                   rankhosts_vec.end (),
+                   [] (const rank_host_t &a, const rank_host_t &b) { return a.rank < b.rank; });
         std::vector<std::string> hosts_vec;
-        std::transform (rankhosts_vec.begin (), rankhosts_vec.end (),
+        std::transform (rankhosts_vec.begin (),
+                        rankhosts_vec.end (),
                         std::back_inserter (hosts_vec),
-                        [] (rank_host_t &o) {
-                            return o.host;
-                        });
-        if ( (rc = compress_hosts (hosts_vec, nullptr, &hl_out)) < 0)
+                        [] (rank_host_t &o) { return o.host; });
+        if ((rc = compress_hosts (hosts_vec, nullptr, &hl_out)) < 0)
             goto ret;
         if (hl_out) {
-            if ( (rc = json_array_append_new (host_array,
-                                              json_string (hl_out))) < 0) {
+            if ((rc = json_array_append_new (host_array, json_string (hl_out))) < 0) {
                 json_decref (rlite_array);
                 errno = EINVAL;
                 goto ret;
@@ -920,8 +914,6 @@ ret:
     return rc;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // RV1 Writers Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -931,7 +923,8 @@ bool rv1_match_writers_t::empty ()
     return (rlite.empty () && jgf.empty ());
 }
 
-int rv1_match_writers_t::attrs_json (json_t **o) {
+int rv1_match_writers_t::attrs_json (json_t **o)
+{
     int rc = 0;
     json_t *sys = NULL;
     json_t *attrs = json_object ();
@@ -950,9 +943,7 @@ int rv1_match_writers_t::attrs_json (json_t **o) {
             goto ret;
         }
     }
-    if (!(sys = json_pack ("{s:{s:o}}",
-                               "system",
-                                   "scheduler", attrs))) {
+    if (!(sys = json_pack ("{s:{s:o}}", "system", "scheduler", attrs))) {
         json_decref (attrs);
         rc = -1;
         errno = ENOMEM;
@@ -976,28 +967,31 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 
     if (rlite.empty () || jgf.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
+    if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
-    if ( (rc = jgf.emit_json (&jgf_o)) < 0) {
+    if ((rc = jgf.emit_json (&jgf_o)) < 0) {
         saved_errno = errno;
         json_decref (rlite_aux_o);
         errno = saved_errno;
         goto ret;
     }
     if (json_object_get (rlite_aux_o, "properties")) {
-        if ( !(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
-                                  "version", 1,
-                                  "execution",
-                                      "R_lite", rlite_o,
-                                      "nodelist", json_object_get (
-                                                      rlite_aux_o,
-                                                      "nodelist"),
-                                      "properties", json_object_get (
-                                                        rlite_aux_o,
-                                                        "properties"),
-                                      "starttime", m_starttime,
-                                      "expiration", m_expiration,
-                                  "scheduling", jgf_o))) {
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
+                             "version",
+                             1,
+                             "execution",
+                             "R_lite",
+                             rlite_o,
+                             "nodelist",
+                             json_object_get (rlite_aux_o, "nodelist"),
+                             "properties",
+                             json_object_get (rlite_aux_o, "properties"),
+                             "starttime",
+                             m_starttime,
+                             "expiration",
+                             m_expiration,
+                             "scheduling",
+                             jgf_o))) {
             json_decref (rlite_o);
             json_decref (jgf_o);
             json_decref (rlite_aux_o);
@@ -1006,16 +1000,20 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if ( !(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
-                                  "version", 1,
-                                  "execution",
-                                      "R_lite", rlite_o,
-                                      "nodelist", json_object_get (
-                                                      rlite_aux_o,
-                                                      "nodelist"),
-                                      "starttime", m_starttime,
-                                      "expiration", m_expiration,
-                                  "scheduling", jgf_o))) {
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
+                             "version",
+                             1,
+                             "execution",
+                             "R_lite",
+                             rlite_o,
+                             "nodelist",
+                             json_object_get (rlite_aux_o, "nodelist"),
+                             "starttime",
+                             m_starttime,
+                             "expiration",
+                             m_expiration,
+                             "scheduling",
+                             jgf_o))) {
             json_decref (rlite_o);
             json_decref (jgf_o);
             json_decref (rlite_aux_o);
@@ -1034,7 +1032,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             errno = saved_errno;
             goto ret;
         }
-        if ( (rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
+        if ((rc = json_object_set_new (o, "attributes", attrs_o)) == -1) {
             json_decref (o);
             errno = EINVAL;
             goto ret;
@@ -1054,9 +1052,9 @@ int rv1_match_writers_t::emit (std::stringstream &out)
 
     if (rlite.empty () || jgf.empty ())
         goto ret;
-    if ( (rc = emit_json (&o)) < 0)
+    if ((rc = emit_json (&o)) < 0)
         goto ret;
-    if ( !(json_str = json_dumps (o, JSON_INDENT (0)))) {
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
         json_decref (o);
         o = NULL;
         rc = -1;
@@ -1106,8 +1104,6 @@ int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
     return 0;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // RV1 Nosched Writers Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -1125,21 +1121,23 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 
     if (rlite.empty ())
         goto ret;
-    if ( (rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
+    if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
     if (json_object_get (rlite_aux_o, "properties")) {
-        if ( !(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
-                                     "version", 1,
-                                     "execution",
-                                         "R_lite", rlite_o,
-                                         "nodelist", json_object_get (
-                                                         rlite_aux_o,
-                                                         "nodelist"),
-                                         "properties", json_object_get (
-                                                           rlite_aux_o,
-                                                           "properties"),
-                                         "starttime", m_starttime,
-                                         "expiration", m_expiration))) {
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
+                                "version",
+                                1,
+                                "execution",
+                                "R_lite",
+                                rlite_o,
+                                "nodelist",
+                                json_object_get (rlite_aux_o, "nodelist"),
+                                "properties",
+                                json_object_get (rlite_aux_o, "properties"),
+                                "starttime",
+                                m_starttime,
+                                "expiration",
+                                m_expiration))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1147,15 +1145,18 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if ( !(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
-                                     "version", 1,
-                                     "execution",
-                                         "R_lite", rlite_o,
-                                         "nodelist", json_object_get (
-                                                         rlite_aux_o,
-                                                         "nodelist"),
-                                         "starttime", m_starttime,
-                                         "expiration", m_expiration))) {
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
+                                "version",
+                                1,
+                                "execution",
+                                "R_lite",
+                                rlite_o,
+                                "nodelist",
+                                json_object_get (rlite_aux_o, "nodelist"),
+                                "starttime",
+                                m_starttime,
+                                "expiration",
+                                m_expiration))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1178,9 +1179,9 @@ int rv1_nosched_match_writers_t::emit (std::stringstream &out)
 
     if (rlite.empty ())
         goto ret;
-    if ( (rc = emit_json (&o)) < 0)
+    if ((rc = emit_json (&o)) < 0)
         goto ret;
-    if ( !(json_str = json_dumps (o, JSON_INDENT (0)))) {
+    if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
         json_decref (o);
         o = NULL;
         rc = -1;
@@ -1211,8 +1212,6 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
     return 0;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // PRETTY Simple Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -1220,7 +1219,7 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
 bool pretty_sim_match_writers_t::empty ()
 {
     bool empty = true;
-    for (auto &s: m_out) {
+    for (auto &s : m_out) {
         if (!s.empty ()) {
             empty = false;
             break;
@@ -1234,11 +1233,11 @@ int pretty_sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     json_t *o = NULL;
     std::string str = "";
 
-    for (auto &s: m_out)
+    for (auto &s : m_out)
         str += s;
     m_out.clear ();
     if (!str.empty ()) {
-        if ( !(o = json_string (str.c_str ()))) {
+        if (!(o = json_string (str.c_str ()))) {
             errno = ENOMEM;
             return -1;
         }
@@ -1249,7 +1248,7 @@ int pretty_sim_match_writers_t::emit_json (json_t **j_o, json_t **aux)
 
 int pretty_sim_match_writers_t::emit (std::stringstream &out)
 {
-    for (auto &s: m_out)
+    for (auto &s : m_out)
         out << s;
     m_out.clear ();
     return 0;
@@ -1258,48 +1257,45 @@ int pretty_sim_match_writers_t::emit (std::stringstream &out)
 int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
                                           const resource_graph_t &g,
                                           const vtx_t &u,
-                                          unsigned int needs, bool exclusive)
+                                          unsigned int needs,
+                                          bool exclusive)
 {
     std::stringstream out;
-    std::string mode = (exclusive)? "exclusive" : "shared";
-    out << prefix << g[u].name << "[" << needs << ":" << mode  << "]"
-        << std::endl;
+    std::string mode = (exclusive) ? "exclusive" : "shared";
+    out << prefix << g[u].name << "[" << needs << ":" << mode << "]" << std::endl;
     m_out.push_front (out.str ());
     return 0;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Match Writers Factory Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-std::shared_ptr<match_writers_t> match_writers_factory_t::
-                                     create (match_format_t f)
+std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t f)
 {
     std::shared_ptr<match_writers_t> w = nullptr;
 
     try {
         switch (f) {
-        case match_format_t::SIMPLE:
-            w = std::make_shared<sim_match_writers_t> ();
-            break;
-        case match_format_t::JGF:
-            w = std::make_shared<jgf_match_writers_t> ();
-            break;
-        case match_format_t::RLITE:
-            w = std::make_shared<rlite_match_writers_t> ();
-            break;
-        case match_format_t::RV1_NOSCHED:
-            w = std::make_shared<rv1_nosched_match_writers_t> ();
-            break;
-        case match_format_t::PRETTY_SIMPLE:
-            w = std::make_shared<pretty_sim_match_writers_t> ();
-            break;
-        case match_format_t::RV1:
-        default:
-            w = std::make_shared<rv1_match_writers_t> ();
-            break;
+            case match_format_t::SIMPLE:
+                w = std::make_shared<sim_match_writers_t> ();
+                break;
+            case match_format_t::JGF:
+                w = std::make_shared<jgf_match_writers_t> ();
+                break;
+            case match_format_t::RLITE:
+                w = std::make_shared<rlite_match_writers_t> ();
+                break;
+            case match_format_t::RV1_NOSCHED:
+                w = std::make_shared<rv1_nosched_match_writers_t> ();
+                break;
+            case match_format_t::PRETTY_SIMPLE:
+                w = std::make_shared<pretty_sim_match_writers_t> ();
+                break;
+            case match_format_t::RV1:
+            default:
+                w = std::make_shared<rv1_match_writers_t> ();
+                break;
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -1327,16 +1323,12 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
 
 bool known_match_format (const std::string &format)
 {
-   return (format == "simple"
-           || format == "jgf"
-           || format == "rlite"
-           || format == "rv1"
-           || format == "rv1_nosched"
-           || format == "pretty_simple");
+    return (format == "simple" || format == "jgf" || format == "rlite" || format == "rv1"
+            || format == "rv1_nosched" || format == "pretty_simple");
 }
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

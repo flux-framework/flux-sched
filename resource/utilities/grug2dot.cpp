@@ -22,26 +22,25 @@ using namespace Flux::resource_model;
 
 #define OPTIONS "hm"
 static const struct option longopts[] = {
-    {"more",      no_argument,  0, 'm'},
-    {"help",      no_argument,  0, 'h'},
-    { 0, 0, 0, 0 },
+    {"more", no_argument, 0, 'm'},
+    {"help", no_argument, 0, 'h'},
+    {0, 0, 0, 0},
 };
 
 void usage (int code)
 {
-    std::cerr <<
-"Usage: grug2dot <genspec>.graphml\n"
-"    Convert a resource-graph generator spec (<genspec>.graphml)\n"
-"    to AT&T GraphViz format (<genspec>.dot). The output\n"
-"    file only contains the basic information unless --more is given.\n"
-"\n"
-"    OPTIONS:\n"
-"    -h, --help\n"
-"            Display this usage information\n"
-"\n"
-"    -m, --more\n"
-"            More information in the output file\n"
-"\n";
+    std::cerr << "Usage: grug2dot <genspec>.graphml\n"
+                 "    Convert a resource-graph generator spec (<genspec>.graphml)\n"
+                 "    to AT&T GraphViz format (<genspec>.dot). The output\n"
+                 "    file only contains the basic information unless --more is given.\n"
+                 "\n"
+                 "    OPTIONS:\n"
+                 "    -h, --help\n"
+                 "            Display this usage information\n"
+                 "\n"
+                 "    -m, --more\n"
+                 "            More information in the output file\n"
+                 "\n";
     exit (code);
 }
 

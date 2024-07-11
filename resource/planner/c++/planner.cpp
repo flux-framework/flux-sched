@@ -20,8 +20,6 @@ extern "C" {
 
 #include "planner.hpp"
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Span_t Methods
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,9 +46,8 @@ bool span_t::operator== (const span_t &o) const
 
 bool span_t::operator!= (const span_t &o) const
 {
-    return !operator == (o);
+    return !operator== (o);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Planner Methods
@@ -58,8 +55,10 @@ bool span_t::operator!= (const span_t &o) const
 
 planner::planner () = default;
 
-planner::planner (const int64_t base_time, const uint64_t duration,
-                  const uint64_t resource_totals, const char *in_resource_type)
+planner::planner (const int64_t base_time,
+                  const uint64_t duration,
+                  const uint64_t resource_totals,
+                  const char *in_resource_type)
 {
     m_total_resources = static_cast<int64_t> (resource_totals);
     m_resource_type = in_resource_type;
@@ -83,10 +82,10 @@ planner::planner (const planner &o)
     // Important: need to copy trees first,
     // since map copies fetch the scheduled
     // points inserted into the trees.
-    if ( (rc = copy_trees (o)) < 0) {
+    if ((rc = copy_trees (o)) < 0) {
         throw std::runtime_error ("ERROR copying trees\n");
     }
-    if ( (rc = copy_maps (o)) < 0) {
+    if ((rc = copy_maps (o)) < 0) {
         throw std::runtime_error ("ERROR copying maps\n");
     }
 
@@ -105,16 +104,16 @@ planner &planner::operator= (const planner &o)
 {
     int rc = -1;
 
-    if ( (rc = erase ()) != 0) {
-       throw std::runtime_error ("ERROR erasing *this\n");
+    if ((rc = erase ()) != 0) {
+        throw std::runtime_error ("ERROR erasing *this\n");
     }
     // Important: need to copy trees first,
     // since map copies fetch the scheduled
     // points inserted into the trees.
-    if ( (rc = copy_trees (o)) != 0) {
+    if ((rc = copy_trees (o)) != 0) {
         throw std::runtime_error ("ERROR copying trees to *this\n");
     }
-    if ( (rc = copy_maps (o)) != 0) {
+    if ((rc = copy_maps (o)) != 0) {
         throw std::runtime_error ("ERROR copying maps to *this\n");
     }
 
@@ -151,7 +150,7 @@ bool planner::operator== (const planner &o) const
             return false;
     } else if (m_p0 || o.m_p0) {
         return false;
-    } // else both nullptr
+    }  // else both nullptr
     if (!span_lookups_equal (o))
         return false;
     if (!avail_time_iters_equal (o))
@@ -163,13 +162,13 @@ bool planner::operator== (const planner &o) const
 
 bool planner::operator!= (const planner &o) const
 {
-    return !operator == (o);
+    return !operator== (o);
 }
 
 planner::~planner ()
 {
     // Destructor is nothrow
-    // The destroy function called in the 
+    // The destroy function called in the
     // scheduled point tree deletes all scheduled
     // points (including m_p0)
     // inserted in the class ctor
@@ -237,9 +236,9 @@ int planner::update_total (uint64_t resource_total)
     m_total_resources = static_cast<int64_t> (resource_total);
     point = m_sched_point_tree.get_state (m_plan_start);
     while (point) {
-        // Prevent remaining from taking negative values. This should 
+        // Prevent remaining from taking negative values. This should
         // reduce likelihood of errors when adding and removing spans.
-        // If the performance penalty is non-negligible we can 
+        // If the performance penalty is non-negligible we can
         // investigate letting remaining take negative values.
         tmp = point->remaining + delta;
         if (tmp >= 0)
@@ -321,14 +320,12 @@ void planner::clear_span_lookup ()
     m_span_lookup.clear ();
 }
 
-void planner::span_lookup_erase (std::map<int64_t,
-                                 std::shared_ptr<span_t>>::iterator &it)
+void planner::span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
 {
     m_span_lookup.erase (it);
 }
 
-const std::map<int64_t, std::shared_ptr<span_t>>
-                        &planner::get_span_lookup_const () const
+const std::map<int64_t, std::shared_ptr<span_t>> &planner::get_span_lookup_const () const
 {
     return m_span_lookup;
 }
@@ -343,21 +340,17 @@ size_t planner::span_lookup_get_size () const
     return m_span_lookup.size ();
 }
 
-void planner::span_lookup_insert (int64_t span_id,
-                                  std::shared_ptr<span_t> span)
+void planner::span_lookup_insert (int64_t span_id, std::shared_ptr<span_t> span)
 {
-    m_span_lookup.insert (std::pair<int64_t, std::shared_ptr<span_t>> (span_id,
-                                                                       span));
+    m_span_lookup.insert (std::pair<int64_t, std::shared_ptr<span_t>> (span_id, span));
 }
 
-void planner::set_span_lookup_iter (std::map<int64_t,
-                                    std::shared_ptr<span_t>>::iterator &it)
+void planner::set_span_lookup_iter (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
 {
     m_span_lookup_iter = it;
 }
 
-const std::map<int64_t, std::shared_ptr<span_t>>::iterator 
-                                    planner::get_span_lookup_iter () const
+const std::map<int64_t, std::shared_ptr<span_t>>::iterator planner::get_span_lookup_iter () const
 {
     return m_span_lookup_iter;
 }
@@ -372,8 +365,7 @@ std::map<int64_t, scheduled_point_t *> &planner::get_avail_time_iter ()
     return m_avail_time_iter;
 }
 
-const std::map<int64_t, scheduled_point_t *> 
-                        &planner::get_avail_time_iter_const () const
+const std::map<int64_t, scheduled_point_t *> &planner::get_avail_time_iter_const () const
 {
     return m_avail_time_iter;
 }
@@ -407,12 +399,11 @@ void planner::incr_span_counter ()
 {
     m_span_counter++;
 }
-    
+
 const uint64_t planner::get_span_counter () const
 {
     return m_span_counter;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Planner Methods
@@ -436,9 +427,9 @@ int planner::copy_trees (const planner &o)
             new_point->ref_count = point->ref_count;
             new_point->scheduled = point->scheduled;
             new_point->remaining = point->remaining;
-            if ( (rc = m_sched_point_tree.insert (new_point)) != 0)
+            if ((rc = m_sched_point_tree.insert (new_point)) != 0)
                 return rc;
-            if ( (rc = m_mt_resource_tree.insert (new_point)) != 0)
+            if ((rc = m_mt_resource_tree.insert (new_point)) != 0)
                 return rc;
             point = o.m_sched_point_tree.next (point);
         }
@@ -474,8 +465,7 @@ int planner::copy_maps (const planner &o)
         for (auto const &avail_it : o.m_avail_time_iter) {
             // Scheduled point already copied into trees, so fetch
             // from SP tree.
-            scheduled_point_t *new_avail =
-                    m_sched_point_tree.get_state (avail_it.second->at);
+            scheduled_point_t *new_avail = m_sched_point_tree.get_state (avail_it.second->at);
             m_avail_time_iter[avail_it.first] = new_avail;
         }
     } else {
@@ -535,10 +525,8 @@ bool planner::trees_equal (const planner &o) const
     if (m_sched_point_tree.get_size () != o.m_sched_point_tree.get_size ())
         return false;
     if (!m_sched_point_tree.empty ()) {
-        scheduled_point_t *this_pt =
-                        m_sched_point_tree.get_state (m_plan_start);
-        scheduled_point_t *o_pt =
-                        o.m_sched_point_tree.get_state (o.m_plan_start);
+        scheduled_point_t *this_pt = m_sched_point_tree.get_state (m_plan_start);
+        scheduled_point_t *o_pt = o.m_sched_point_tree.get_state (o.m_plan_start);
         while (this_pt) {
             if (*this_pt != *o_pt)
                 return false;
@@ -548,7 +536,6 @@ bool planner::trees_equal (const planner &o) const
     }
     return true;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Planner_t methods
@@ -572,13 +559,13 @@ planner_t::planner_t (const planner &o)
     }
 }
 
-planner_t::planner_t (const int64_t base_time, const uint64_t duration,
+planner_t::planner_t (const int64_t base_time,
+                      const uint64_t duration,
                       const uint64_t resource_totals,
                       const char *in_resource_type)
 {
     try {
-        plan = new planner (base_time, duration, resource_totals,
-                            in_resource_type);
+        plan = new planner (base_time, duration, resource_totals, in_resource_type);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
     }
