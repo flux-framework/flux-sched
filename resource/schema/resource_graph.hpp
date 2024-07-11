@@ -12,13 +12,11 @@
 #define RESOURCE_GRAPH_HPP
 
 #include "resource/schema/resource_data.hpp"
-#include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/graph/graphviz.hpp>
 
 #include <utility>
-#include <memory>
 
 namespace Flux {
 namespace resource_model {
@@ -31,7 +29,7 @@ using rname_t  = std::string resource_relation_t::*;
 using rinfra_t = relation_infra_t resource_relation_t::*;
 using resource_graph_t = boost::adjacency_list<boost::vecS,
                                                boost::vecS,
-                                               boost::directedS,
+                                               boost::bidirectionalS,
                                                resource_pool_t,
                                                resource_relation_t,
                                                std::string>;

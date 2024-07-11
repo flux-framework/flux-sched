@@ -189,16 +189,6 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
     if (add_metadata (g, m, e, src, dst) < 0)
        goto error;
 
-    tie (e, inserted) = add_edge (dst, src, g);
-    if (!inserted) {
-        errno = ENOMEM;
-        goto error;
-    }
-    g[e].idata.member_of[subsys] = rev_relation;
-    g[e].name[subsys] = rev_relation;
-    if (add_metadata (g, m, e, dst, src) < 0)
-       goto error;
-
     return 0;
 
 error:

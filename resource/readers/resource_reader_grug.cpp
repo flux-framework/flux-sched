@@ -188,11 +188,6 @@ void dfs_emitter_t::emit_edges (gge_t ge, const gg_t &recipe,
     g[e].idata.member_of[recipe[ge].e_subsystem]
         = recipe[ge].relation;
     g[e].name[recipe[ge].e_subsystem] = recipe[ge].relation;
-    if ( (rc = raw_edge (tgt_v, src_v, e)) < 0)
-        return;
-    g[e].idata.member_of[recipe[ge].e_subsystem]
-        = recipe[ge].rrelation;
-    g[e].name[recipe[ge].e_subsystem] = recipe[ge].rrelation;
 }
 
 vtx_t dfs_emitter_t::emit_vertex (ggv_t u, gge_t e, const gg_t &recipe,

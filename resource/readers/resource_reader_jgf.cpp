@@ -1068,10 +1068,12 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 goto done;
             }
             json_object_foreach (name, key, value) {
-                g[e].name[std::string (key)]
-                    = std::string (json_string_value (value));
-                g[e].idata.member_of[std::string (key)]
-                    = std::string (json_string_value (value));
+                auto skey = std::string (key);
+                auto sval = std::string (json_string_value (value), json_string_length (value));
+                if (sval == std::string ("in"))
+                    continue;
+                g[e].name[skey] = sval;
+                g[e].idata.member_of[skey] = sval;
             }
             // add this edge to by_outedges metadata
             auto iter = m.by_outedges.find (vmap[source].v);
@@ -1224,27 +1226,22 @@ int resource_reader_jgf_t::get_subgraph_vertices (resource_graph_t &g,
 int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g,
                                            vtx_t vtx,
                                            vtx_t &parent_vtx)
-                                            
 {
     vtx_t next_vtx;
-    boost::graph_traits<resource_graph_t>::out_edge_iterator ei, ei_end;
-    boost::tie (ei, ei_end) = boost::out_edges (vtx, g);
+    boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
+    boost::tie (ei, ei_end) = boost::in_edges (vtx, g);
     int rc = -1;
 
     for (; ei != ei_end; ++ei) {
-        next_vtx =  boost::target (*ei, g);
-        for (const auto &paths_it : g[vtx].paths) {
-            // check that the parent's name exists in the child's path before the child's name
-            if (paths_it.second.find (g[next_vtx].name) != std::string::npos &&
-                paths_it.second.find (g[vtx].name) > paths_it.second.find (g[next_vtx].name)) {
-                parent_vtx = next_vtx;
-                rc = 0;
-                break;
-            }
-        }    
-  }
+        next_vtx =  boost::source (*ei, g);
+        if (g[*ei].name.contains ("containment")) {
+            parent_vtx = next_vtx;
+            rc = 0;
+            break;
+        }
+    }
 
-  return rc;
+    return rc;
 }
 
 
