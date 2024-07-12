@@ -1,7 +1,7 @@
 add_executable(exception_safe_wrapper_test01 exception_safe_wrapper_test01.cpp)
 add_sanitizers(exception_safe_wrapper_test01)
 target_link_libraries(exception_safe_wrapper_test01 PRIVATE cppwrappers
-  Catch2::Catch2WithMain libtap fmt)
+  Catch2::Catch2WithMain)
 
 target_compile_definitions(exception_safe_wrapper_test01 PRIVATE
   CATCH_CONFIG_FAST_COMPILE=1)
