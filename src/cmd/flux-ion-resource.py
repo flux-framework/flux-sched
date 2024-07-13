@@ -643,6 +643,13 @@ def main():
     #
     try:
         args = parser.parse_args()
+
+        # A subcommand is required
+        if not hasattr(args, "func"):
+            parser.print_help()
+            print("\nA subcommand is required.")
+            sys.exit(1)
+
         args.func(args)
 
     except (IOError, EnvironmentError) as exc:
