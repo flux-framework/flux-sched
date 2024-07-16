@@ -41,7 +41,7 @@ struct resource_pool_t : public resource_t {
     static const std::string status_to_str (status_t s);
 
     // Resource pool data
-    std::map<std::string, std::string> paths;
+    std::map<subsystem_t, std::string> paths;
     int64_t uniq_id;
     unsigned int size = 0;
     std::string unit;
@@ -63,7 +63,7 @@ struct resource_relation_t {
     resource_relation_t &operator= (const resource_relation_t &o);
     ~resource_relation_t ();
 
-    std::map<std::string, std::string> name;  //!< subsystem: relationship
+    std::map<subsystem_t, std::string> name;  //!< subsystem: relationship
     relation_infra_t idata;                   //!< scheduling infrastructure data
 };
 

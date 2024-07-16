@@ -346,21 +346,21 @@ class dfu_impl_t {
     /*! Various pruning methods
      */
     int by_avail (const jobmeta_t &meta,
-                  const std::string &s,
+                  const subsystem_t &s,
                   vtx_t u,
                   const std::vector<Jobspec::Resource> &resources);
     int by_excl (const jobmeta_t &meta,
-                 const std::string &s,
+                 const subsystem_t &s,
                  vtx_t u,
                  bool exclusive_in,
                  const Jobspec::Resource &resource);
     int by_subplan (const jobmeta_t &meta,
-                    const std::string &s,
+                    const subsystem_t &s,
                     vtx_t u,
                     const Jobspec::Resource &resource);
     int prune (const jobmeta_t &meta,
                bool excl,
-               const std::string &subsystem,
+               const subsystem_t &subsystem,
                vtx_t u,
                const std::vector<Jobspec::Resource> &resources);
 
@@ -564,12 +564,12 @@ class dfu_impl_t {
     int rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_t &mod_data);
     int mod_agfilter (vtx_t u,
                       int64_t jobid,
-                      const std::string &s,
+                      const subsystem_t &s,
                       const modify_data_t &mod_data,
                       bool &stop);
     int mod_idata (vtx_t u,
                    int64_t jobid,
-                   const std::string &s,
+                   const subsystem_t &s,
                    const modify_data_t &mod_data,
                    bool &stop);
     int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);

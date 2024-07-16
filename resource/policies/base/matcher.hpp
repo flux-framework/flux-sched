@@ -56,7 +56,7 @@ class matcher_data_t {
      *                   pass * to select all types
      *  \return          0 on success; -1 on error
      */
-    int add_subsystem (const subsystem_t s, const std::string tf = "*");
+    int add_subsystem (subsystem_t s, const std::string tf = "*");
 
     const std::string &matcher_name () const;
     void set_matcher_name (const std::string &name);
@@ -76,7 +76,7 @@ class matcher_data_t {
 
    private:
     std::string m_name;
-    subsystem_t m_err_subsystem = "error";
+    subsystem_t m_err_subsystem{"error"};
     std::vector<subsystem_t> m_subsystems;
     multi_subsystemsS m_subsystems_map;
 };
@@ -120,19 +120,19 @@ class matcher_util_api_t {
      *  \param subsystem subsystem
      *  \param spec      prune filter specification string
      */
-    int set_pruning_types_w_spec (const std::string &subsystem, const std::string &spec);
+    int set_pruning_types_w_spec (const subsystem_t &subsystem, const std::string &spec);
 
-    void set_pruning_type (const std::string &subsystem,
+    void set_pruning_type (const subsystem_t &subsystem,
                            const std::string &anchor_type,
                            const std::string &prune_type);
 
-    bool is_my_pruning_type (const std::string &subsystem,
+    bool is_my_pruning_type (const subsystem_t &subsystem,
                              const std::string &anchor_type,
                              const std::string &prune_type);
 
-    bool is_pruning_type (const std::string &subsystem, const std::string &prune_type);
+    bool is_pruning_type (const subsystem_t &subsystem, const std::string &prune_type);
 
-    bool get_my_pruning_types (const std::string &subsystem,
+    bool get_my_pruning_types (const subsystem_t &subsystem,
                                const std::string &anchor_type,
                                std::vector<std::string> &out_prune_types);
 
@@ -145,7 +145,7 @@ class matcher_util_api_t {
     int reset_exclusive_resource_types (const std::set<std::string> &x_types);
 
    private:
-    int register_resource_pair (const std::string &subsystem, std::string &r_pair);
+    int register_resource_pair (const subsystem_t &subsystem, std::string &r_pair);
 
     std::set<std::string> m_x_resource_types;
 

@@ -319,7 +319,7 @@ int dfu_impl_t::upd_dfv (vtx_t u,
 {
     int n_plans = 0;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    const subsystem_t &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
     bool mod = modify_traversal (u, emit_shadow);
     excl = excl || mod;
@@ -409,7 +409,7 @@ bool dfu_impl_t::rem_tag (vtx_t u, int64_t jobid)
 
 int dfu_impl_t::mod_agfilter (vtx_t u,
                               int64_t jobid,
-                              const std::string &subsystem,
+                              const subsystem_t &subsystem,
                               const modify_data_t &mod_data,
                               bool &stop)
 {
@@ -500,7 +500,7 @@ done:
 
 int dfu_impl_t::mod_idata (vtx_t u,
                            int64_t jobid,
-                           const std::string &subsystem,
+                           const subsystem_t &subsystem,
                            const modify_data_t &mod_data,
                            bool &stop)
 {
@@ -585,7 +585,7 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 {
     int rc = 0;
     bool stop = false;
-    const std::string &dom = m_match->dom_subsystem ();
+    const subsystem_t &dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
     if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
@@ -652,7 +652,7 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
 {
     int rc = -1;
     bool stop = false;
-    const std::string &dom = m_match->dom_subsystem ();
+    const subsystem_t &dom = m_match->dom_subsystem ();
 
     if ((rc = mod_idata (vtx, jobid, dom, mod_data, stop)) == -1) {
         errno = EINVAL;
@@ -672,7 +672,7 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
 {
     int rc = -1;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    const subsystem_t &dom = m_match->dom_subsystem ();
 
     if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
         m_err_msg += __FUNCTION__;
@@ -721,7 +721,7 @@ int dfu_impl_t::update (vtx_t root,
     unsigned int excl = 0;
     unsigned int needs = 0;
     std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    const subsystem_t &dom = m_match->dom_subsystem ();
     bool rsv = (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
 
     tick ();
@@ -860,7 +860,7 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status
     try {
         std::map<int64_t, std::vector<vtx_t>>::iterator vit;
         std::string subtree_path = "", tmp_path = "";
-        const std::string &dom = m_match->dom_subsystem ();
+        const subsystem_t &dom = m_match->dom_subsystem ();
         vtx_t subtree_root;
 
         int total = 0;

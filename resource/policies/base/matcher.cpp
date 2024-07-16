@@ -54,7 +54,7 @@ matcher_data_t::~matcher_data_t ()
     m_subsystems_map.clear ();
 }
 
-int matcher_data_t::add_subsystem (const subsystem_t s, const std::string tf)
+int matcher_data_t::add_subsystem (subsystem_t s, const std::string tf)
 {
     if (m_subsystems_map.find (s) == m_subsystems_map.end ()) {
         m_subsystems.push_back (s);
@@ -145,7 +145,7 @@ unsigned int matcher_util_api_t::calc_effective_max (const Flux::Jobspec::Resour
     return calc_count (resource, std::numeric_limits<unsigned int>::max ());
 }
 
-int matcher_util_api_t::register_resource_pair (const std::string &subsystem, std::string &r_pair)
+int matcher_util_api_t::register_resource_pair (const subsystem_t &subsystem, std::string &r_pair)
 {
     int rc = -1;
     size_t pos = 0;
@@ -176,7 +176,7 @@ done:
     return rc;
 }
 
-int matcher_util_api_t::set_pruning_types_w_spec (const std::string &subsystem,
+int matcher_util_api_t::set_pruning_types_w_spec (const subsystem_t &subsystem,
                                                   const std::string &spec)
 {
     int rc = -1;
@@ -206,7 +206,7 @@ done:
     return rc;
 }
 
-void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
+void matcher_util_api_t::set_pruning_type (const subsystem_t &subsystem,
                                            const std::string &anchor_type,
                                            const std::string &prune_type)
 {
@@ -234,7 +234,7 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
     m_total_set[subsystem].insert (prune_type);
 }
 
-bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
+bool matcher_util_api_t::is_my_pruning_type (const subsystem_t &subsystem,
                                              const std::string &anchor_type,
                                              const std::string &prune_type)
 {
@@ -254,7 +254,7 @@ bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
     return rc;
 }
 
-bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
+bool matcher_util_api_t::is_pruning_type (const subsystem_t &subsystem,
                                           const std::string &prune_type)
 {
     bool rc = true;
@@ -267,7 +267,7 @@ bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
     return rc;
 }
 
-bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
+bool matcher_util_api_t::get_my_pruning_types (const subsystem_t &subsystem,
                                                const std::string &anchor_type,
                                                std::vector<std::string> &out)
 {

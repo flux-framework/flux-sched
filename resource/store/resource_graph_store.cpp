@@ -53,7 +53,7 @@ void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g
     }
 }
 
-bool resource_graph_db_t::known_subsystem (const std::string &s)
+bool resource_graph_db_t::known_subsystem (const subsystem_t &s)
 {
     return (metadata.roots.find (s) != metadata.roots.end ()) ? true : false;
 }

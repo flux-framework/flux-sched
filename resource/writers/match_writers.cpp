@@ -467,42 +467,6 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
     return o;
 }
 
-int jgf_match_writers_t::map2json (json_t *o,
-                                   const std::map<std::string, std::string> &mp,
-                                   const char *key)
-{
-    int rc = 0;
-    if (!mp.empty ()) {
-        json_t *p = NULL;
-        if (!(p = json_object ())) {
-            rc = -1;
-            errno = ENOMEM;
-            goto out;
-        }
-        for (auto &kv : mp) {
-            json_t *vo = NULL;
-            if (!(vo = json_string (kv.second.c_str ()))) {
-                json_decref (p);
-                rc = -1;
-                errno = ENOMEM;
-                goto out;
-            }
-            if ((rc = json_object_set_new (p, kv.first.c_str (), vo)) == -1) {
-                json_decref (p);
-                errno = ENOMEM;
-                goto out;
-            }
-        }
-        if ((rc = json_object_set_new (o, key, p)) == -1) {
-            errno = ENOMEM;
-            goto out;
-        }
-    }
-
-out:
-    return rc;
-}
-
 int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g, const edg_t &e)
 {
     int rc = 0;

@@ -115,7 +115,7 @@ class resource_reader_hwloc_t : public resource_reader_base_t {
                           resource_graph_metadata_t &m,
                           const vtx_t &parent,
                           int64_t id,
-                          const std::string &subsys,
+                          const subsystem_t &subsys,
                           const std::string &type,
                           const std::string &basename,
                           const std::string &name,

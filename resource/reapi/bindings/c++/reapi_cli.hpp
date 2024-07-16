@@ -123,7 +123,7 @@ class resource_query_t {
      *                                                                      *
      ************************************************************************/
 
-    int subsystem_exist (const std::string &n);
+    int subsystem_exist (const std::string_view &n);
     int set_subsystems_use (const std::string &n);
     int set_resource_ctx_params (const std::string &options);
 };

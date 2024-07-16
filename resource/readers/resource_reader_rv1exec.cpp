@@ -70,7 +70,7 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
                                              vtx_t parent,
                                              int64_t id,
-                                             const std::string &subsys,
+                                             const subsystem_t &subsys,
                                              const std::string &type,
                                              const std::string &basename,
                                              const std::string &name,
@@ -159,7 +159,7 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
                                           resource_graph_metadata_t &m,
                                           vtx_t src,
                                           vtx_t dst,
-                                          const std::string &subsys,
+                                          const subsystem_t &subsys,
                                           const std::string &relation,
                                           const std::string &rev_relation)
 {
@@ -191,7 +191,7 @@ int resource_reader_rv1exec_t::add_cluster_vertex (resource_graph_t &g,
                          m,
                          boost::graph_traits<resource_graph_t>::null_vertex (),
                          0,
-                         "containment",
+                         containment_sub,
                          "cluster",
                          "cluster",
                          "",
@@ -210,7 +210,7 @@ vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
                                               resource_graph_metadata_t &m,
                                               vtx_t parent,
                                               int64_t id,
-                                              const std::string &subsys,
+                                              const subsystem_t &subsys,
                                               const std::string &type,
                                               const std::string &basename,
                                               const std::string &name,
@@ -442,7 +442,7 @@ vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
                                                 vtx_t parent,
                                                 int64_t id,
-                                                const std::string &subsys,
+                                                const subsystem_t &subsys,
                                                 const std::string &type,
                                                 const std::string &basename,
                                                 const std::string &name,
@@ -650,7 +650,7 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
                              m,
                              parent,
                              id,
-                             "containment",
+                             containment_sub,
                              resource_type,
                              resource_type,
                              name,
@@ -750,7 +750,7 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
                          m,
                          parent,
                          id,
-                         "containment",
+                         containment_sub,
                          "node",
                          basename,
                          hostname,
@@ -843,14 +843,14 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
         goto error;
     }
 
-    if (m.roots.find ("containment") == m.roots.end ()) {
+    if (m.roots.find (containment_sub) == m.roots.end ()) {
         errno = ENOENT;
         goto error;
     }
 
-    cluster_vtx = m.roots["containment"];
+    cluster_vtx = m.roots[containment_sub];
     // Set the cluster "needs" and make the update shared access to the cluster
-    m.v_rt_edges["containment"].set_for_trav_update (g[cluster_vtx].size, false, update_data.token);
+    m.v_rt_edges[containment_sub].set_for_trav_update (g[cluster_vtx].size, false, update_data.token);
     json_array_foreach (rlite, index, entry) {
         if (unpack_rlite_entry (g, m, cluster_vtx, entry, hlist, rmap, pmap, update_data) < 0)
             goto error;

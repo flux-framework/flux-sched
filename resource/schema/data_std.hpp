@@ -14,6 +14,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <src/common/libintern/interner.hpp>
 
 namespace Flux {
 namespace resource_model {
@@ -26,7 +27,10 @@ namespace resource_model {
 const char *const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
-using subsystem_t = std::string;
+struct subsystem_tag {};
+using subsystem_t = intern::interned_string<subsystem_tag, uint8_t>;
+extern subsystem_t containment_sub;
+
 using multi_subsystems_t = std::map<subsystem_t, std::string>;
 using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
 

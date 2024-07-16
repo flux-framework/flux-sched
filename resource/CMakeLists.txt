@@ -12,6 +12,7 @@ set(RESOURCE_HEADERS
     jobinfo/jobinfo.hpp
     schema/resource_graph.hpp
     schema/data_std.hpp
+    schema/data_std.cpp
     schema/infra_data.hpp
     schema/sched_data.hpp
     schema/resource_base.hpp
@@ -39,7 +40,7 @@ set(RESOURCE_HEADERS
     evaluators/expr_eval_vtx_target.hpp
     config/system_defaults.hpp
     store/resource_graph_store.hpp
-    )
+)
 
 add_library(resource STATIC
     policies/dfu_match_locality.cpp
@@ -76,6 +77,7 @@ add_library(resource STATIC
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
+    intern
     )
 target_link_libraries(resource PUBLIC
     flux::hostlist

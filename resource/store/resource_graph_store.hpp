@@ -68,7 +68,7 @@ struct resource_graph_db_t {
 
     /*! Return true if s is known subsystem
      */
-    bool known_subsystem (const std::string &s);
+    bool known_subsystem (const subsystem_t &s);
 
     /*! Load str into the resource graph
      *

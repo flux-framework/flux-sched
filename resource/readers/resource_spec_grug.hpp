@@ -16,6 +16,7 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/filesystem.hpp>
+#include <schema/data_std.hpp>
 
 namespace Flux {
 namespace resource_model {
@@ -29,11 +30,11 @@ struct resource_pool_gen_t {
     int rank;
     long size;
     std::string unit;
-    std::string subsystem;
+    subsystem_t subsystem;
 };
 
 struct relation_gen_t {
-    std::string e_subsystem;
+    subsystem_t e_subsystem;
     std::string relation;
     std::string rrelation;
     int id_scope;
@@ -41,7 +42,7 @@ struct relation_gen_t {
     int id_stride;
     std::string gen_method;
     int multi_scale;
-    std::string as_tgt_subsystem;
+    subsystem_t as_tgt_subsystem;
     int as_tgt_uplvl;
     int as_src_uplvl;
 };
@@ -49,6 +50,7 @@ struct relation_gen_t {
 using gg_t = boost::
     adjacency_list<boost::vecS, boost::vecS, boost::directedS, resource_pool_gen_t, relation_gen_t>;
 using pgen_t = std::string resource_pool_gen_t::*;
+using subgen_t = subsystem_t resource_pool_gen_t::*;
 using rgen_t = std::string relation_gen_t::*;
 using ggv_t = boost::graph_traits<gg_t>::vertex_descriptor;
 using gge_t = boost::graph_traits<gg_t>::edge_descriptor;
@@ -57,7 +59,7 @@ using vtx_type_map_t = boost::property_map<gg_t, pgen_t>::type;
 using vtx_basename_map_t = boost::property_map<gg_t, pgen_t>::type;
 using vtx_size_map_t = boost::property_map<gg_t, long resource_pool_gen_t::*>::type;
 using vtx_unit_map_t = boost::property_map<gg_t, pgen_t>::type;
-using vtx_subsystem_map_t = boost::property_map<gg_t, pgen_t>::type;
+using vtx_subsystem_map_t = boost::property_map<gg_t, subgen_t>::type;
 using edg_e_subsystem_map_t = boost::property_map<gg_t, rgen_t>::type;
 using edg_relation_map_t = boost::property_map<gg_t, rgen_t>::type;
 using edg_rrelation_map_t = boost::property_map<gg_t, rgen_t>::type;
