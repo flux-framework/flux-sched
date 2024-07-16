@@ -1,3 +1,5 @@
+add_library(fluxion-data SHARED schema/data_std.cpp)
+install(TARGETS fluxion-data LIBRARY)
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
 set(RESOURCE_HEADERS 
@@ -11,8 +13,6 @@ set(RESOURCE_HEADERS
     policies/dfu_match_policy_factory.hpp
     jobinfo/jobinfo.hpp
     schema/resource_graph.hpp
-    schema/data_std.hpp
-    schema/data_std.cpp
     schema/infra_data.hpp
     schema/sched_data.hpp
     schema/resource_base.hpp
@@ -90,6 +90,7 @@ target_link_libraries(resource PUBLIC
     Boost::regex
     jobspec_conv
     Boost::filesystem
+    fluxion-data
     )
 add_sanitizers(resource)
 

@@ -44,7 +44,7 @@ void resource_graph_metadata_t::update_node_stats (int count, resource_pool_t::s
 
 void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g)
 {
-    const auto by_type_iter = by_type.find ("node");
+    const auto by_type_iter = by_type.find (resource_model::node_rt);
     if (by_type_iter == by_type.end ())
         return;
     auto &all_nodes = by_type_iter->second;
@@ -53,7 +53,7 @@ void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g
     }
 }
 
-bool resource_graph_db_t::known_subsystem (const subsystem_t &s)
+bool resource_graph_db_t::known_subsystem (subsystem_t s)
 {
     return (metadata.roots.find (s) != metadata.roots.end ()) ? true : false;
 }

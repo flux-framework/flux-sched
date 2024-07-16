@@ -70,7 +70,7 @@ class label_writer_t {
 
 class edg_label_writer_t {
    public:
-    edg_label_writer_t (f_edg_infra_map_t &idata, subsystem_t &s) : m_infra (idata), m_s (s)
+    edg_label_writer_t (f_edg_infra_map_t &idata, subsystem_t s) : m_infra (idata), m_s (s)
     {
     }
     void operator() (std::ostream &out, const edg_t &e) const

@@ -46,8 +46,8 @@ struct pool_infra_t : public infra_base_t {
     std::map<int64_t, int64_t> x_spans;
     std::map<int64_t, int64_t> job2span;
     planner_t *x_checker = NULL;
-    std::map<subsystem_t, planner_multi_t *> subplans;
-    std::map<subsystem_t, uint64_t> colors;
+    subsystem_key_vec<planner_multi_t *> subplans;
+    subsystem_key_vec<uint64_t> colors;
     ephemeral_t ephemeral;
 };
 

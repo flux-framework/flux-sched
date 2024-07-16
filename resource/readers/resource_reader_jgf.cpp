@@ -159,7 +159,7 @@ struct vmap_val_t {
 
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
-    return (r.type == f.type && r.basename == f.basename
+    return (r.type.get () == f.type && r.basename == f.basename
             && r.size == static_cast<unsigned int> (f.size) && r.rank == static_cast<int> (f.rank)
             && r.id == f.id && r.name == f.name && r.properties == f.properties
             && r.paths == f.paths);
@@ -173,7 +173,7 @@ bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
 std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
 {
     std::stringstream sstream;
-    if (r.type != f.type)
+    if (r.type.get () != f.type)
         sstream << "type=(" << r.type << ", " << f.type << ")";
     if (r.basename != f.basename)
         sstream << " basename=(" << r.basename << ", " << f.basename << ")";
@@ -442,7 +442,7 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g, const fetch_helper
     }
 
     v = boost::add_vertex (g);
-    g[v].type = fetcher.type;
+    g[v].type = resource_type_t{fetcher.type};
     g[v].basename = fetcher.basename;
     g[v].size = fetcher.size;
     g[v].uniq_id = fetcher.uniq_id;
@@ -1057,7 +1057,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 goto done;
             }
             json_object_foreach (name, key, value) {
-                auto skey = subsystem_t {key};
+                auto skey = subsystem_t{key};
                 auto sval = std::string (json_string_value (value), json_string_length (value));
                 if (sval == std::string ("in"))
                     continue;

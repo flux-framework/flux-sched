@@ -70,8 +70,8 @@ vtx_t resource_reader_rv1exec_t::add_vertex (resource_graph_t &g,
                                              resource_graph_metadata_t &m,
                                              vtx_t parent,
                                              int64_t id,
-                                             const subsystem_t &subsys,
-                                             const std::string &type,
+                                             subsystem_t subsys,
+                                             resource_type_t type,
                                              const std::string &basename,
                                              const std::string &name,
                                              const std::map<std::string, std::string> &props,
@@ -159,7 +159,7 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
                                           resource_graph_metadata_t &m,
                                           vtx_t src,
                                           vtx_t dst,
-                                          const subsystem_t &subsys,
+                                          subsystem_t subsys,
                                           const std::string &relation,
                                           const std::string &rev_relation)
 {
@@ -192,7 +192,7 @@ int resource_reader_rv1exec_t::add_cluster_vertex (resource_graph_t &g,
                          boost::graph_traits<resource_graph_t>::null_vertex (),
                          0,
                          containment_sub,
-                         "cluster",
+                         cluster_rt,
                          "cluster",
                          "",
                          p,
@@ -210,8 +210,8 @@ vtx_t resource_reader_rv1exec_t::find_vertex (resource_graph_t &g,
                                               resource_graph_metadata_t &m,
                                               vtx_t parent,
                                               int64_t id,
-                                              const subsystem_t &subsys,
-                                              const std::string &type,
+                                              subsystem_t subsys,
+                                              resource_type_t type,
                                               const std::string &basename,
                                               const std::string &name,
                                               int size,
@@ -282,7 +282,7 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
     // don't know if all its children are allocated.
     // Note this is a hard-coded option. Support for more flexible
     // types may require extending rv1exec.
-    if (g[vtx].type == "node")
+    if (g[vtx].type == node_rt)
         return 0;
     // Name is anything besides node
     if ((span = planner_add_span (plans,
@@ -442,8 +442,8 @@ vtx_t resource_reader_rv1exec_t::add_or_update (resource_graph_t &g,
                                                 resource_graph_metadata_t &m,
                                                 vtx_t parent,
                                                 int64_t id,
-                                                const subsystem_t &subsys,
-                                                const std::string &type,
+                                                subsystem_t subsys,
+                                                resource_type_t type,
                                                 const std::string &basename,
                                                 const std::string &name,
                                                 int size,
@@ -651,7 +651,7 @@ int resource_reader_rv1exec_t::unpack_child (resource_graph_t &g,
                              parent,
                              id,
                              containment_sub,
-                             resource_type,
+                             resource_type_t{resource_type},
                              resource_type,
                              name,
                              1,
@@ -751,7 +751,7 @@ int resource_reader_rv1exec_t::unpack_rank (resource_graph_t &g,
                          parent,
                          id,
                          containment_sub,
-                         "node",
+                         node_rt,
                          basename,
                          hostname,
                          1,
@@ -850,7 +850,9 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
 
     cluster_vtx = m.roots[containment_sub];
     // Set the cluster "needs" and make the update shared access to the cluster
-    m.v_rt_edges[containment_sub].set_for_trav_update (g[cluster_vtx].size, false, update_data.token);
+    m.v_rt_edges[containment_sub].set_for_trav_update (g[cluster_vtx].size,
+                                                       false,
+                                                       update_data.token);
     json_array_foreach (rlite, index, entry) {
         if (unpack_rlite_entry (g, m, cluster_vtx, entry, hlist, rmap, pmap, update_data) < 0)
             goto error;

@@ -24,27 +24,27 @@ namespace resource_model {
 enum gen_meth_t { MULTIPLY, ASSOCIATE_IN, ASSOCIATE_BY_PATH_IN, GEN_UNKNOWN };
 
 struct resource_pool_gen_t {
-    int root;
-    std::string type;
     std::string basename;
-    int rank;
-    long size;
     std::string unit;
+    long size;
+    int root;
+    int rank;
+    resource_type_t type;
     subsystem_t subsystem;
 };
 
 struct relation_gen_t {
-    subsystem_t e_subsystem;
     std::string relation;
     std::string rrelation;
+    std::string gen_method;
     int id_scope;
     int id_start;
     int id_stride;
-    std::string gen_method;
     int multi_scale;
-    subsystem_t as_tgt_subsystem;
     int as_tgt_uplvl;
     int as_src_uplvl;
+    subsystem_t e_subsystem;
+    subsystem_t as_tgt_subsystem;
 };
 
 using gg_t = boost::

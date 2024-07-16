@@ -80,18 +80,10 @@ class sim_match_writers_t : public match_writers_t {
 
 template<typename T>
 concept associative_cstr_key = requires (T h, std::string s) {
-    {
-        h.begin ()
-    };
-    {
-        h.end ()
-    };
-    {
-        h.begin()->first.c_str ()
-    } -> std::convertible_to<const char *>;
-    {
-        h.begin()->second.c_str ()
-    } -> std::convertible_to<const char *>;
+    { h.begin () };
+    { h.end () };
+    { h.begin ()->first.c_str () } -> std::convertible_to<const char *>;
+    { h.begin ()->second.c_str () } -> std::convertible_to<const char *>;
 };
 
 /*! JGF match writers class for a matched resource set
@@ -202,10 +194,10 @@ class rlite_match_writers_t : public match_writers_t {
     int fill (json_t *rlite_array, json_t *host_array, json_t *props);
     int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
 
-    std::map<std::string, std::vector<int64_t>> m_reducer;
+    std::map<resource_type_t, std::vector<int64_t>> m_reducer;
     std::map<std::string, std::vector<rank_host_t>> m_gl_gatherer;
     std::map<std::string, std::vector<int64_t>> m_gl_prop_gatherer;
-    std::set<std::string> m_gatherer;
+    std::set<resource_type_t> m_gatherer;
 };
 
 /*! R Version 1 match writers class for a matched resource set

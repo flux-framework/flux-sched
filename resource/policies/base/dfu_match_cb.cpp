@@ -43,7 +43,7 @@ dfu_match_cb_t::~dfu_match_cb_t ()
 {
 }
 
-int dfu_match_cb_t::dom_finish_graph (const subsystem_t &subsystem,
+int dfu_match_cb_t::dom_finish_graph (subsystem_t subsystem,
                                       const std::vector<Flux::Jobspec::Resource> &resources,
                                       const resource_graph_t &g,
                                       scoring_api_t &dfu)
@@ -51,13 +51,13 @@ int dfu_match_cb_t::dom_finish_graph (const subsystem_t &subsystem,
     return 0;
 }
 
-int dfu_match_cb_t::dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu)
+int dfu_match_cb_t::dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu)
 {
     return 0;
 }
 
 int dfu_match_cb_t::dom_discover_vtx (vtx_t u,
-                                      const subsystem_t &subsystem,
+                                      subsystem_t subsystem,
                                       const std::vector<Flux::Jobspec::Resource> &resources,
                                       const resource_graph_t &g)
 {
@@ -66,7 +66,7 @@ int dfu_match_cb_t::dom_discover_vtx (vtx_t u,
 }
 
 int dfu_match_cb_t::dom_finish_vtx (vtx_t u,
-                                    const subsystem_t &subsystem,
+                                    subsystem_t subsystem,
                                     const std::vector<Flux::Jobspec::Resource> &resources,
                                     const resource_graph_t &g,
                                     scoring_api_t &dfu)
@@ -76,7 +76,7 @@ int dfu_match_cb_t::dom_finish_vtx (vtx_t u,
 }
 
 int dfu_match_cb_t::aux_discover_vtx (vtx_t u,
-                                      const subsystem_t &subsystem,
+                                      subsystem_t subsystem,
                                       const std::vector<Flux::Jobspec::Resource> &resources,
                                       const resource_graph_t &g)
 
@@ -86,7 +86,7 @@ int dfu_match_cb_t::aux_discover_vtx (vtx_t u,
 }
 
 int dfu_match_cb_t::aux_finish_vtx (vtx_t u,
-                                    const subsystem_t &subsystem,
+                                    subsystem_t subsystem,
                                     const std::vector<Flux::Jobspec::Resource> &resources,
                                     const resource_graph_t &g,
                                     scoring_api_t &dfu)

@@ -512,9 +512,9 @@ out:
 
 rlite_match_writers_t::rlite_match_writers_t ()
 {
-    m_reducer["core"] = std::vector<int64_t> ();
-    m_reducer["gpu"] = std::vector<int64_t> ();
-    m_gatherer.insert ("node");
+    m_reducer[core_rt] = std::vector<int64_t> ();
+    m_reducer[gpu_rt] = std::vector<int64_t> ();
+    m_gatherer.insert (node_rt);
 }
 
 rlite_match_writers_t::rlite_match_writers_t (const rlite_match_writers_t &w)

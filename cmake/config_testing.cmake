@@ -55,7 +55,7 @@ function(flux_add_test)
   cmake_language(EVAL CODE "
   add_test(
       NAME ${ARG_NAME}
-      COMMAND ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
+      COMMAND /usr/bin/bash ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
       ${__argsQuoted}
     ) ")
     flux_config_test(NAME ${ARG_NAME})

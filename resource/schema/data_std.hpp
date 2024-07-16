@@ -11,6 +11,8 @@
 #ifndef DATA_STD_H
 #define DATA_STD_H
 
+#include "data_std.hpp"
+
 #include <map>
 #include <set>
 #include <string>
@@ -27,10 +29,21 @@ namespace resource_model {
 const char *const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
-struct subsystem_tag {};
-using subsystem_t = intern::interned_string<subsystem_tag, uint8_t>;
+constexpr uint64_t subsystem_id{0};
+using subsystem_t = intern::interned_string<subsystem_id, uint8_t>;
 extern subsystem_t containment_sub;
 
+constexpr uint64_t resource_type_id{1};
+using resource_type_t = intern::interned_string<resource_type_id, uint16_t>;
+extern resource_type_t slot_rt;
+extern resource_type_t cluster_rt;
+extern resource_type_t rack_rt;
+extern resource_type_t node_rt;
+extern resource_type_t gpu_rt;
+extern resource_type_t core_rt;
+
+template<class T, int likely_count = 2>
+using subsystem_key_vec = intern::interned_key_vec<subsystem_t, T, likely_count>;
 using multi_subsystems_t = std::map<subsystem_t, std::string>;
 using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
 

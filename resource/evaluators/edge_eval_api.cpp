@@ -69,12 +69,12 @@ evals_t::evals_t ()
 {
 }
 
-evals_t::evals_t (int64_t cutline, const std::string &res_type)
+evals_t::evals_t (int64_t cutline, resource_type_t res_type)
     : m_resrc_type (res_type), m_cutline (cutline)
 {
 }
 
-evals_t::evals_t (const std::string &res_type) : m_resrc_type (res_type)
+evals_t::evals_t (resource_type_t res_type) : m_resrc_type (res_type)
 {
 }
 
@@ -157,7 +157,7 @@ unsigned int evals_t::best_i () const
     return m_best_i;
 }
 
-int evals_t::merge (evals_t &o)
+int evals_t::merge (const evals_t &o)
 {
     if (m_cutline != o.m_cutline || m_resrc_type != o.m_resrc_type) {
         errno = EINVAL;

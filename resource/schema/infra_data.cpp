@@ -55,16 +55,17 @@ pool_infra_t::pool_infra_t (const pool_infra_t &o) : infra_base_t (o)
     x_spans = o.x_spans;
     job2span = o.job2span;
 
-    for (auto &kv : o.subplans) {
-        auto sp_it = subplans.find (kv.first);
-        if (sp_it != subplans.end ()) {
-            // Need to trigger planner_multi destructor
-            planner_multi_destroy (&(sp_it->second));
+    // destroy existing planners
+    for (planner_multi_t *&p : subplans) {
+        if (p) {
+            planner_multi_destroy (&p);
         }
-        planner_multi_t *p = kv.second;
-        if (!p)
+    }
+    for (auto s : o.subplans.key_range ()) {
+        auto opt_p = o.subplans.try_at (s);
+        if (!opt_p || !*opt_p)
             continue;
-        subplans[kv.first] = planner_multi_copy (p);
+        subplans[s] = planner_multi_copy (*opt_p);
     }
     if (o.x_checker) {
         if (!x_checker) {
@@ -87,11 +88,11 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
     x_spans = o.x_spans;
     job2span = o.job2span;
 
-    for (auto &kv : o.subplans) {
-        planner_multi_t *p = kv.second;
-        if (!p)
+    for (auto k : o.subplans.key_range ()) {
+        auto opt_p = o.subplans.try_at (k);
+        if (!opt_p || !*opt_p)
             continue;
-        subplans[kv.first] = planner_multi_copy (p);
+        subplans[k] = planner_multi_copy (*opt_p);
     }
     if (o.x_checker) {
         if (!x_checker) {
@@ -117,13 +118,12 @@ bool pool_infra_t::operator== (const pool_infra_t &o) const
         return false;
     if (subplans.size () != o.subplans.size ())
         return false;
-    for (auto const &this_it : subplans) {
-        auto const other = o.subplans.find (this_it.first);
-        if (other == o.subplans.end ())
+    for (auto const &k : subplans.key_range ()) {
+        auto const mine = subplans.at (k);
+        auto const other = o.subplans.try_at (k);
+        if (!other)
             return false;
-        if (this_it.first != other->first)
-            return false;
-        if (!planner_multis_equal (this_it.second, other->second))
+        if (!planner_multis_equal (mine, *other))
             return false;
     }
 
@@ -132,8 +132,8 @@ bool pool_infra_t::operator== (const pool_infra_t &o) const
 
 pool_infra_t::~pool_infra_t ()
 {
-    for (auto &kv : subplans)
-        planner_multi_destroy (&(kv.second));
+    for (auto &p : subplans)
+        planner_multi_destroy (&(p));
     if (x_checker)
         planner_destroy (&x_checker);
 }
@@ -143,8 +143,8 @@ void pool_infra_t::scrub ()
     tags.clear ();
     x_spans.clear ();
     job2span.clear ();
-    for (auto &kv : subplans)
-        planner_multi_destroy (&(kv.second));
+    for (auto &p : subplans)
+        planner_multi_destroy (&(p));
     colors.clear ();
     if (x_checker)
         planner_destroy (&x_checker);
