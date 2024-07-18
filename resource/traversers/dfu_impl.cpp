@@ -1103,6 +1103,14 @@ int dfu_impl_t::prime_pruning_filter (const subsystem_t &s,
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
     accum_if (s, type, (*m_graph)[u].size, to_parent);
+
+    // Don't create and prime a pruning filter if this is
+    // a leaf vertex
+    if (out_degree (u, *m_graph) == 0) {
+        rc = 0;
+        goto done;
+    }
+
     if (prime_exp (s, u, dfv) != 0)
         goto done;
 
