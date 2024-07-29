@@ -136,7 +136,7 @@ matrix = BuildMatrix()
 
 # debian/Fedora40: arm64, expensive, only on master and tags, only install
 if matrix.branch == "master" or matrix.tag:
-    for d in ("bookworm", "noble", "fedora40", "el9"):
+    for d in ("bookworm", "noble", "fedora40"):
         matrix.add_build(
             name=f"{d} - arm64",
             image=f"{d}",
@@ -188,16 +188,6 @@ matrix.add_build(
         TEST_INSTALL="t",
     ),
     platform="linux/amd64",
-    docker_tag=True,
-)
-
-# el9: TEST_INSTALL
-matrix.add_build(
-    name="el9 - test-install",
-    image="el9",
-    env=dict(
-        TEST_INSTALL="t",
-    ),
     docker_tag=True,
 )
 
