@@ -39,10 +39,9 @@ void dfu_impl_t::tick ()
     m_color.reset ();
 }
 
-bool dfu_impl_t::in_subsystem (edg_t e, const subsystem_t &subsystem) const
+bool dfu_impl_t::in_subsystem (edg_t e, subsystem_t subsystem) const
 {
     // Short circuit for single subsystem. This will be a common case.
-    // TODO: make systems ints or enums for faster comparison and search.
     if (m_graph_db->metadata.roots.size () == 1)
         return true;
     else
@@ -50,7 +49,7 @@ bool dfu_impl_t::in_subsystem (edg_t e, const subsystem_t &subsystem) const
                 != (*m_graph)[e].idata.member_of.end ());
 }
 
-bool dfu_impl_t::stop_explore (edg_t e, const subsystem_t &subsystem) const
+bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
 {
     // Return true if the target vertex has been visited (forward: black)
     // or being visited (cycle: gray).
@@ -65,7 +64,7 @@ bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, v
     // and it requested exclusive access, return true;
     bool exclusive = false;
     for (auto &resource : resources) {
-        if (resource.type == (*m_graph)[u].type)
+        if (resource_type_t{resource.type} == (*m_graph)[u].type)
             if (resource.exclusive == Jobspec::tristate_t::TRUE)
                 exclusive = true;
     }
@@ -73,7 +72,7 @@ bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, v
 }
 
 int dfu_impl_t::by_avail (const jobmeta_t &meta,
-                          const std::string &s,
+                          subsystem_t s,
                           vtx_t u,
                           const std::vector<Jobspec::Resource> &resources)
 {
@@ -106,7 +105,7 @@ done:
 }
 
 int dfu_impl_t::by_excl (const jobmeta_t &meta,
-                         const std::string &s,
+                         subsystem_t s,
                          vtx_t u,
                          bool exclusive_in,
                          const Jobspec::Resource &resource)
@@ -167,7 +166,7 @@ done:
 }
 
 int dfu_impl_t::by_subplan (const jobmeta_t &meta,
-                            const std::string &s,
+                            subsystem_t s,
                             vtx_t u,
                             const Jobspec::Resource &resource)
 {
@@ -203,7 +202,7 @@ done:
 
 int dfu_impl_t::prune (const jobmeta_t &meta,
                        bool exclusive,
-                       const std::string &s,
+                       subsystem_t s,
                        vtx_t u,
                        const std::vector<Jobspec::Resource> &resources)
 {
@@ -217,7 +216,7 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
     }
     //  RFC 31 constraints only match against type == "node"
     //  unspecified constraint matches everything
-    if (meta.constraint != nullptr && (*m_graph)[u].type == "node"
+    if (meta.constraint != nullptr && (*m_graph)[u].type == node_rt
         && !meta.constraint->match ((*m_graph)[u])) {
         rc = -1;
         goto done;
@@ -226,10 +225,10 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
     if ((rc = by_avail (meta, s, u, resources)) == -1)
         goto done;
     for (auto &resource : resources) {
-        if ((*m_graph)[u].type != resource.type && resource.type != "slot")
+        if ((*m_graph)[u].type != resource.type && resource.type != slot_rt)
             continue;
         // Prune by exclusivity checker
-        if (resource.type != "slot" && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
+        if (resource.type != slot_rt && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
             break;
         // Prune by the subtree planner quantities
         if ((rc = by_subplan (meta, s, u, resource)) == -1)
@@ -267,13 +266,13 @@ int dfu_impl_t::match (vtx_t u,
             *match_resource = &resource;
             if (!resource.with.empty ()) {
                 for (auto &c_resource : resource.with)
-                    if (c_resource.type == "slot") {
+                    if (c_resource.type == slot_rt) {
                         *slot_resource = &c_resource;
                         *nslots = m_match->calc_effective_max (c_resource);
                     }
             }
             matched = true;
-        } else if (resource.type == "slot") {
+        } else if (resource.type == slot_rt) {
             // Limitations of DFU traverser: jobspec must not
             // have same type at same level Please read utilities/README.md
             if (matched == true)
@@ -361,10 +360,10 @@ done:
 /* Accumulate counts into accum[type] if the type is one of the pruning
  * filter type.
  */
-int dfu_impl_t::accum_if (const subsystem_t &subsystem,
-                          const std::string &type,
+int dfu_impl_t::accum_if (subsystem_t subsystem,
+                          resource_type_t type,
                           unsigned int counts,
-                          std::map<std::string, int64_t> &accum)
+                          std::map<resource_type_t, int64_t> &accum)
 {
     if (m_match->is_pruning_type (subsystem, type)) {
         if (accum.find (type) == accum.end ())
@@ -376,10 +375,10 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem,
 }
 
 /* Same as above except that accum is unorder_map */
-int dfu_impl_t::accum_if (const subsystem_t &subsystem,
-                          const std::string &type,
+int dfu_impl_t::accum_if (subsystem_t subsystem,
+                          resource_type_t type,
                           unsigned int counts,
-                          std::unordered_map<std::string, int64_t> &accum)
+                          std::unordered_map<resource_type_t, int64_t> &accum)
 {
     int rc = -1;
     if (m_match->is_pruning_type (subsystem, type)) {
@@ -392,9 +391,7 @@ int dfu_impl_t::accum_if (const subsystem_t &subsystem,
     return rc;
 }
 
-int dfu_impl_t::prime_exp (const subsystem_t &subsystem,
-                           vtx_t u,
-                           std::map<std::string, int64_t> &dfv)
+int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_type_t, int64_t> &dfv)
 {
     int rc = 0;
     f_out_edg_iterator_t ei, ei_end;
@@ -409,7 +406,7 @@ int dfu_impl_t::prime_exp (const subsystem_t &subsystem,
 
 int dfu_impl_t::explore_statically (const jobmeta_t &meta,
                                     vtx_t u,
-                                    const subsystem_t &subsystem,
+                                    subsystem_t subsystem,
                                     const std::vector<Resource> &resources,
                                     bool pristine,
                                     bool *excl,
@@ -446,7 +443,7 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
     return rc2;
 }
 
-bool dfu_impl_t::is_enough (const subsystem_t &subsystem,
+bool dfu_impl_t::is_enough (subsystem_t subsystem,
                             const std::vector<Resource> &resources,
                             scoring_api_t &dfu,
                             unsigned int multiplier)
@@ -458,11 +455,11 @@ bool dfu_impl_t::is_enough (const subsystem_t &subsystem,
     });
 }
 
-int dfu_impl_t::new_sat_types (const subsystem_t &subsystem,
+int dfu_impl_t::new_sat_types (subsystem_t subsystem,
                                const std::vector<Resource> &resources,
                                scoring_api_t &dfu,
                                unsigned int multiplier,
-                               std::set<std::string> &sat_types)
+                               std::set<resource_type_t> &sat_types)
 {
     for (auto &resource : resources) {
         unsigned int total = dfu.total_count (subsystem, resource.type);
@@ -481,7 +478,7 @@ int dfu_impl_t::new_sat_types (const subsystem_t &subsystem,
 
 int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
                                      vtx_t u,
-                                     const subsystem_t &subsystem,
+                                     subsystem_t subsystem,
                                      const std::vector<Resource> &resources,
                                      bool pristine,
                                      bool *excl,
@@ -496,7 +493,7 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
         return rc;
 
     // Once a resource type is sufficiently discovered, not need find more
-    std::set<std::string> sat_types;
+    std::set<resource_type_t> sat_types;
     // outedges contains outedge map for vertex u, sorted in available resources
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
@@ -535,7 +532,7 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
 
 int dfu_impl_t::explore (const jobmeta_t &meta,
                          vtx_t u,
-                         const subsystem_t &subsystem,
+                         subsystem_t subsystem,
                          const std::vector<Resource> &resources,
                          bool pristine,
                          bool *excl,
@@ -558,7 +555,7 @@ int dfu_impl_t::explore (const jobmeta_t &meta,
 
 int dfu_impl_t::aux_upv (const jobmeta_t &meta,
                          vtx_t u,
-                         const subsystem_t &aux,
+                         subsystem_t aux,
                          const std::vector<Resource> &resources,
                          bool pristine,
                          bool *excl,
@@ -603,7 +600,7 @@ int dfu_impl_t::dom_exp (const jobmeta_t &meta,
                          scoring_api_t &dfu)
 {
     int rc = -1;
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     for (auto &s : m_match->subsystems ()) {
         if (s == dom)
             rc = explore (meta, u, s, resources, pristine, excl, visit_t::DFV, dfu);
@@ -620,7 +617,7 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
     unsigned int fit = 0;
     unsigned int count = 0;
     unsigned int qual_num_slots = UINT_MAX;
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
 
     // qualifed slot count is determined by the most constrained resource type
     // both in terms of the amounts available as well as the number of edges into
@@ -658,7 +655,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
 
     if ((rc =
              explore (meta, u, dom, slot_shape, pristine, &x_inout, visit_t::DFV, dfu_slot, nslots))
@@ -698,7 +695,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
-        dfu.add (dom, std::string ("slot"), edg_group);
+        dfu.add (dom, slot_rt, edg_group);
 
 done:
     return (qual_num_slots) ? 0 : -1;
@@ -721,7 +718,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     unsigned int nslots = 0;
     scoring_api_t dfu;
     planner_t *p = NULL;
-    const std::string &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     const std::vector<Resource> &next = test (u, resources, check_pres, nslots, sm);
 
     m_preorder++;
@@ -773,7 +770,7 @@ done:
 int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
                               const std::string &criteria,
                               vtx_t u,
-                              const subsystem_t &aux,
+                              subsystem_t aux,
                               const vtx_predicates_override_t &p)
 {
     return 0;
@@ -788,7 +785,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     int nchildren = 0;
     f_out_edg_iterator_t ei, ei_end;
     expr_eval_vtx_target_t vtx_target;
-    std::string dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     bool result = false;
     bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
     bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
@@ -849,7 +846,7 @@ done:
 int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
 {
     int rc = 0;
-    const std::string &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
 
@@ -918,7 +915,7 @@ int dfu_impl_t::has_remaining (vtx_t root, std::vector<Resource> &resources, sco
 {
     int rc = 0;
     for (auto &subsystem : m_match->subsystems ()) {
-        std::vector<std::string> types;
+        std::vector<resource_type_t> types;
         dfu.resrc_types (subsystem, types);
         for (auto &type : types) {
             if (dfu.qualified_count (subsystem, type) == 0) {
@@ -955,7 +952,7 @@ int dfu_impl_t::resolve_graph (vtx_t root,
                                unsigned int *needs)
 {
     int rc = -1;
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     if (m_match->dom_finish_graph (dom, resources, *m_graph, dfu) != 0)
         goto done;
     if (has_root (root, resources, dfu, needs) != 0)
@@ -984,11 +981,11 @@ int dfu_impl_t::resolve (scoring_api_t &dfu, scoring_api_t &to_parent)
     return rc;
 }
 
-int dfu_impl_t::enforce (const subsystem_t &subsystem, scoring_api_t &dfu)
+int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu)
 {
     int rc = 0;
     try {
-        std::vector<std::string> resource_types;
+        std::vector<resource_type_t> resource_types;
         dfu.resrc_types (subsystem, resource_types);
         for (auto &t : resource_types) {
             if (!dfu.best_k (subsystem, t))
@@ -1058,7 +1055,7 @@ const unsigned int dfu_impl_t::get_postorder_count () const
     return m_postorder;
 }
 
-const std::set<std::string> &dfu_impl_t::get_exclusive_resource_types () const
+const std::set<resource_type_t> &dfu_impl_t::get_exclusive_resource_types () const
 {
     return m_match->get_exclusive_resource_types ();
 }
@@ -1084,22 +1081,22 @@ void dfu_impl_t::reset_color ()
     m_color.reset ();
 }
 
-int dfu_impl_t::reset_exclusive_resource_types (const std::set<std::string> &x_types)
+int dfu_impl_t::reset_exclusive_resource_types (const std::set<resource_type_t> &x_types)
 {
     return m_match->reset_exclusive_resource_types (x_types);
 }
 
-int dfu_impl_t::prime_pruning_filter (const subsystem_t &s,
+int dfu_impl_t::prime_pruning_filter (subsystem_t s,
                                       vtx_t u,
-                                      std::map<std::string, int64_t> &to_parent)
+                                      std::map<resource_type_t, int64_t> &to_parent)
 {
     int rc = -1;
     int saved_errno = errno;
     std::vector<uint64_t> avail;
     std::vector<const char *> types;
-    std::map<std::string, int64_t> dfv;
-    std::string type = (*m_graph)[u].type;
-    std::vector<std::string> out_prune_types;
+    std::map<resource_type_t, int64_t> dfv;
+    resource_type_t type = (*m_graph)[u].type;
+    std::vector<resource_type_t> out_prune_types;
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
     accum_if (s, type, (*m_graph)[u].size, to_parent);
@@ -1155,9 +1152,9 @@ done:
 }
 
 void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
-                                std::unordered_map<std::string, int64_t> &to_parent)
+                                std::unordered_map<resource_type_t, int64_t> &to_parent)
 {
-    const subsystem_t &subsystem = m_match->dom_subsystem ();
+    subsystem_t subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
         // If the resource is requested as exclusive in the
         // jobspec, add it to the matcher's exclusive resource
@@ -1180,7 +1177,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
     int rc = -1;
     scoring_api_t dfu;
     bool x_in = excl;
-    const std::string &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
 
     tick ();
     m_preorder = 0;
@@ -1209,7 +1206,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
         errno = EINVAL;
         return rc;
     }
-    const subsystem_t &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     if (m_graph_db->metadata.roots.find (dom) == m_graph_db->metadata.roots.end ()) {
         errno = EINVAL;
         goto done;

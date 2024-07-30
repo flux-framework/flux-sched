@@ -36,7 +36,7 @@ struct graph_duration_t {
 struct resource_graph_metadata_t {
     std::map<subsystem_t, vtx_t> roots;
     std::map<subsystem_t, relation_infra_t> v_rt_edges;
-    std::map<std::string, std::vector<vtx_t>> by_type;
+    std::map<resource_type_t, std::vector<vtx_t>> by_type;
     std::map<std::string, std::vector<vtx_t>> by_name;
     std::map<int64_t, std::vector<vtx_t>> by_rank;
     std::map<std::string, std::vector<vtx_t>> by_path;
@@ -68,7 +68,7 @@ struct resource_graph_db_t {
 
     /*! Return true if s is known subsystem
      */
-    bool known_subsystem (const std::string &s);
+    bool known_subsystem (subsystem_t s);
 
     /*! Load str into the resource graph
      *

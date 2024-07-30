@@ -15,12 +15,15 @@ extern "C" {
 }
 
 #include "jobspec.hpp"
+#include "resource/schema/data_std.hpp"
 
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 using namespace Flux::Jobspec;
+using namespace std::string_view_literals;
 
 parse_error::parse_error (const char *msg)
     : runtime_error (msg), position (-1), line (-1), column (-1)
@@ -123,7 +126,7 @@ Resource::Resource (const YAML::Node &resnode)
     if (!resnode["type"].IsScalar ()) {
         throw parse_error (resnode["type"], "Value of \"type\" must be a scalar");
     }
-    type = resnode["type"].as<std::string> ();
+    type = resource_model::resource_type_t{resnode["type"].as<std::string> ()};
     field_count++;
 
     if (!resnode["count"]) {
@@ -166,7 +169,7 @@ Resource::Resource (const YAML::Node &resnode)
         }
         field_count++;
         label = resnode["label"].as<std::string> ();
-    } else if (type == "slot") {
+    } else if (type == resource_model::slot_rt) {
         throw parse_error (resnode, "All slots must be labeled");
     }
 

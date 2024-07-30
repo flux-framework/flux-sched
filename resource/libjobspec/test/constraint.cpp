@@ -156,7 +156,7 @@ void test_match ()
     resource resource;
     resource.add_property ("xx");
     resource.add_property ("yy");
-    resource.type = "node";
+    resource.type = resource_model::node_rt;
     resource.name = "foo0";
     resource.basename = "foo";
     resource.rank = 0;

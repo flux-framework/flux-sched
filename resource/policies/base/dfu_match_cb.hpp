@@ -48,7 +48,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      *  \param dfu       score interface object - See utilities/README.md
      *  \return          return 0 on success; otherwise -1.
      */
-    virtual int dom_finish_graph (const subsystem_t &subsystem,
+    virtual int dom_finish_graph (subsystem_t subsystem,
                                   const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g,
                                   scoring_api_t &dfu);
@@ -58,7 +58,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      * (resources that can be contained within one or more slots) of the
      * dominant subsystem.
      */
-    virtual int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+    virtual int dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu);
 
     /*!
      *  Called back on each preorder visit of the dominant subsystem.
@@ -74,7 +74,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      *  \return          return 0 on success; otherwise -1.
      */
     virtual int dom_discover_vtx (vtx_t u,
-                                  const subsystem_t &subsystem,
+                                  subsystem_t subsystem,
                                   const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g);
 
@@ -95,7 +95,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      *  \return          return 0 on success; otherwise -1
      */
     virtual int dom_finish_vtx (vtx_t u,
-                                const subsystem_t &subsystem,
+                                subsystem_t subsystem,
                                 const std::vector<Flux::Jobspec::Resource> &resources,
                                 const resource_graph_t &g,
                                 scoring_api_t &dfu);
@@ -112,7 +112,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      *  \return          return 0 on success; otherwise -1
      */
     virtual int aux_discover_vtx (vtx_t u,
-                                  const subsystem_t &subsystem,
+                                  subsystem_t subsystem,
                                   const std::vector<Flux::Jobspec::Resource> &resources,
                                   const resource_graph_t &g);
 
@@ -132,7 +132,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      *  \return          return 0 on success; otherwise -1
      */
     virtual int aux_finish_vtx (vtx_t u,
-                                const subsystem_t &subsystem,
+                                subsystem_t subsystem,
                                 const std::vector<Flux::Jobspec::Resource> &resources,
                                 const resource_graph_t &g,
                                 scoring_api_t &dfu);

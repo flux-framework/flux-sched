@@ -14,13 +14,15 @@
 #include <string>
 #include <map>
 
+#include "resource/schema/data_std.hpp"
+
 namespace Flux {
 namespace resource_model {
 
 //! Base resource type.
 //  Allows derived resource types for testing
 struct resource_t {
-    std::string type;
+    resource_type_t type;
     std::string basename;
     std::string name;
     std::map<std::string, std::string> properties;

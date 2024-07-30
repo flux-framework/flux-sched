@@ -19,6 +19,7 @@ extern "C" {
 }
 
 #include <stdexcept>
+#include <vector>
 #include <jansson.h>
 #include <boost/algorithm/string.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
@@ -332,10 +333,10 @@ void reapi_cli_t::clear_err_message ()
 // Resource Query Class Private API Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-int resource_query_t::subsystem_exist (const std::string &n)
+int resource_query_t::subsystem_exist (const std::string_view &n)
 {
     int rc = 0;
-    if (db->metadata.roots.find (n) == db->metadata.roots.end ())
+    if (db->metadata.roots.find (subsystem_t{n}) == db->metadata.roots.end ())
         rc = -1;
     return rc;
 }
@@ -345,73 +346,49 @@ int resource_query_t::set_subsystems_use (const std::string &n)
     int rc = 0;
     matcher->set_matcher_name (n);
     const std::string &matcher_type = matcher->matcher_name ();
+    subsystem_t ibnet_sub{"ibnet"};
+    subsystem_t pfs1bw_sub{"pfs1bw"};
+    subsystem_t power_sub{"power"};
+    subsystem_t ibnetbw_sub{"ibnetbw"};
+    subsystem_t virtual1_sub{"virtual1"};
+    std::map<std::string, std::vector<subsystem_t>>
+        subsystem_map{{"CA", {containment_sub}},
+                      {"IBA", {ibnet_sub}},
+                      {"IBBA", {ibnetbw_sub}},
+                      {"PA", {power_sub}},
+                      {"PFS1BA", {pfs1bw_sub}},
+                      {"C+IBA", {containment_sub, ibnet_sub}},
+                      {"C+IBBA", {containment_sub, ibnetbw_sub}},
+                      {"C+PA", {containment_sub, power_sub}},
+                      {"C+PFS1BA", {containment_sub, pfs1bw_sub}},
+                      {"IB+IBBA", {ibnet_sub, ibnetbw_sub}},
+                      {"C+P+IBA", {containment_sub, power_sub, ibnet_sub}},
+                      {"V+PFS1BA", {virtual1_sub, pfs1bw_sub}},
+                      {"VA", {virtual1_sub}},
+                      {"ALL", {containment_sub, ibnet_sub, ibnetbw_sub, pfs1bw_sub, power_sub}}};
+    {
+        // add lower case versions
+        auto lower_case = subsystem_map;
+        for (auto &[k, v] : lower_case) {
+            std::string tmp = k;
+            boost::algorithm::to_lower (tmp);
+            subsystem_map.emplace (tmp, v);
+        }
+    }
+    std::map<subsystem_t, std::string> subsys_to_edge_name = {
+        {containment_sub, "contains"},
+        {ibnet_sub, "connected_down"},
+        {ibnetbw_sub, "*"},
+        {pfs1bw_sub, "*"},
+        {virtual1_sub, "*"},
+        {power_sub, "supplies_to"},
+    };
 
-    if (boost::iequals (matcher_type, std::string ("CA"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
-    } else if (boost::iequals (matcher_type, std::string ("IBA"))) {
-        if ((rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "*");
-    } else if (boost::iequals (matcher_type, std::string ("IBBA"))) {
-        if ((rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
-    } else if (boost::iequals (matcher_type, std::string ("PFS1BA"))) {
-        if ((rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, std::string ("PA"))) {
-        if ((rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "*");
-    } else if (boost::iequals (matcher_type, std::string ("C+PFS1BA"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if (!rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, std::string ("C+IBA"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if (!rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_up");
-    } else if (boost::iequals (matcher_type, std::string ("C+PA"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
-        if (!rc && (rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "draws_from");
-    } else if (boost::iequals (matcher_type, std::string ("IB+IBBA"))) {
-        if ((rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_down");
-        if (!rc && (rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
-    } else if (boost::iequals (matcher_type, std::string ("C+P+IBA"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "contains");
-        if ((rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "draws_from");
-        if (!rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "connected_up");
-    } else if (boost::iequals (matcher_type, std::string ("V+PFS1BA"))) {
-        if ((rc = subsystem_exist ("virtual1")) == 0)
-            matcher->add_subsystem ("virtual1", "*");
-        if (!rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
-    } else if (boost::iequals (matcher_type, std::string ("VA"))) {
-        if ((rc = subsystem_exist ("virtual1")) == 0)
-            matcher->add_subsystem ("virtual1", "*");
-    } else if (boost::iequals (matcher_type, std::string ("ALL"))) {
-        if ((rc = subsystem_exist ("containment")) == 0)
-            matcher->add_subsystem ("containment", "*");
-        if (!rc && (rc = subsystem_exist ("ibnet")) == 0)
-            matcher->add_subsystem ("ibnet", "*");
-        if (!rc && (rc = subsystem_exist ("ibnetbw")) == 0)
-            matcher->add_subsystem ("ibnetbw", "*");
-        if (!rc && (rc = subsystem_exist ("pfs1bw")) == 0)
-            matcher->add_subsystem ("pfs1bw", "*");
-        if ((rc = subsystem_exist ("power")) == 0)
-            matcher->add_subsystem ("power", "*");
-    } else {
-        rc = -1;
+    for (auto &sub : subsystem_map.at (n)) {
+        matcher->add_subsystem (sub, subsys_to_edge_name.at (sub));
     }
 
-    return rc;
+    return 0;
 }
 
 int resource_query_t::set_resource_ctx_params (const std::string &options)

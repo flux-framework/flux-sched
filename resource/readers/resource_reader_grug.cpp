@@ -192,7 +192,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u,
     vtx_t v = add_vertex (g);
     ;
     std::string pref = "";
-    std::string ssys = recipe[u].subsystem;
+    subsystem_t ssys = recipe[u].subsystem;
     int id = 0;
 
     if (src_v == boost::graph_traits<resource_graph_t>::null_vertex ()) {
@@ -284,7 +284,6 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
     std::vector<vtx_t>::iterator src_it, tgt_it;
     resource_graph_t &g = *m_g_p;
     resource_graph_metadata_t &m = *m_gm_p;
-    std::string in;
     int i = 0, j = 0;
     ;
 
@@ -333,8 +332,8 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
             }
             break;
 
-        case ASSOCIATE_BY_PATH_IN:
-            in = recipe[e].as_tgt_subsystem;
+        case ASSOCIATE_BY_PATH_IN: {
+            subsystem_t in = recipe[e].as_tgt_subsystem;
             for (src_it = m_gen_src_vtx[src_ggv].begin (); src_it != m_gen_src_vtx[src_ggv].end ();
                  src_it++) {
                 src_vtx = *src_it;
@@ -359,6 +358,7 @@ void dfs_emitter_t::tree_edge (gge_t e, const gg_t &recipe)
                 }
             }
             break;
+        }
 
         case GEN_UNKNOWN:
         default:

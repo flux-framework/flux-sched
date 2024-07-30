@@ -41,7 +41,7 @@ var_aware_t::~var_aware_t ()
 {
 }
 
-int var_aware_t::dom_finish_graph (const subsystem_t &subsystem,
+int var_aware_t::dom_finish_graph (subsystem_t subsystem,
                                    const std::vector<Flux::Jobspec::Resource> &resources,
                                    const resource_graph_t &g,
                                    scoring_api_t &dfu)
@@ -50,22 +50,21 @@ int var_aware_t::dom_finish_graph (const subsystem_t &subsystem,
     fold::less comp;
 
     for (auto &resource : resources) {
-        const std::string &type = resource.type;
-        unsigned int qc = dfu.qualified_count (subsystem, type);
+        unsigned int qc = dfu.qualified_count (subsystem, resource.type);
         unsigned int count = calc_count (resource, qc);
         if (count == 0) {
             score = MATCH_UNMET;
             break;
         }
-        dfu.choose_accum_best_k (subsystem, type, count, comp);
+        dfu.choose_accum_best_k (subsystem, resource.type, count, comp);
     }
     dfu.set_overall_score (score);
     return (score == MATCH_MET) ? 0 : -1;
 }
 
-int var_aware_t::dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu)
+int var_aware_t::dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu)
 {
-    std::vector<std::string> types;
+    std::vector<resource_type_t> types;
     dfu.resrc_types (subsystem, types);
     for (auto &type : types)
         dfu.choose_accum_all (subsystem, type);
@@ -73,7 +72,7 @@ int var_aware_t::dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &d
 }
 
 int var_aware_t::dom_finish_vtx (vtx_t u,
-                                 const subsystem_t &subsystem,
+                                 subsystem_t subsystem,
                                  const std::vector<Flux::Jobspec::Resource> &resources,
                                  const resource_graph_t &g,
                                  scoring_api_t &dfu)
@@ -92,8 +91,7 @@ int var_aware_t::dom_finish_vtx (vtx_t u,
         // jobspec resource type matches with the visiting vertex
         for (auto &c_resource : resource.with) {
             // test children resource count requirements
-            const std::string &c_type = c_resource.type;
-            unsigned int qc = dfu.qualified_count (subsystem, c_type);
+            unsigned int qc = dfu.qualified_count (subsystem, c_resource.type);
             unsigned int count = calc_count (c_resource, qc);
             if (count == 0) {
                 score = MATCH_UNMET;
