@@ -23,12 +23,6 @@ namespace intern {
 namespace detail {
 std::shared_mutex group_mtx;
 
-static std::size_t hash_combine (std::size_t lhs, std::size_t rhs)
-{
-    lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
-    return lhs;
-}
-
 struct string_hash {
     using hash_type = std::hash<std::string_view>;
     using is_transparent = void;
@@ -47,22 +41,94 @@ struct string_hash {
     }
 };
 
-struct interner_storage {
+struct dense_inner_storage {
     std::vector<const std::string *> strings_by_id;
     // Tombstone is UINTPTR_MAX
-    std::unordered_map<std::string, uintptr_t, string_hash, std::equal_to<> > ids_by_string;
+    std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> ids_by_string;
     // reader/writer lock to protect entries
     std::unique_ptr<std::shared_mutex> mtx = std::make_unique<std::shared_mutex> ();
 };
 
-interner_storage &get_group (uintptr_t id)
+dense_inner_storage &get_dense_inner_storage (size_t unique_id)
 {
-    static std::unordered_map<uintptr_t, interner_storage> groups;
-    auto guard = std::shared_lock (group_mtx);
-    return groups[id];
+    static std::unordered_map<size_t, dense_inner_storage> groups;
+    auto guard = std::unique_lock (group_mtx);
+    return groups[unique_id];
 }
 
-static bool check_valid (uintptr_t val, char bytes_supported)
+struct sparse_inner_storage;
+struct sparse_string_node {
+    // This must be carefully managed, it holds onto the sparse_inner_storage that is keeping the
+    // string alive until all strings in that table have been reclaimed. It looks cyclic, but
+    // because the strings are stored by weak_ptr, and remove these entries when they expire, it is
+    // not.
+    std::shared_ptr<sparse_inner_storage> storage;
+    typename rc_str_t::weak_type str;
+};
+struct sparse_inner_storage : std::enable_shared_from_this<sparse_inner_storage> {
+    // Tombstone is UINTPTR_MAX
+    std::unordered_map<std::string, sparse_string_node, string_hash, std::equal_to<>> strings;
+    // reader/writer lock to protect entries
+    std::unique_ptr<std::shared_mutex> mtx = std::make_unique<std::shared_mutex> ();
+};
+
+sparse_inner_storage *get_sparse_inner_storage (size_t unique_id)
+{
+    static std::unordered_map<size_t, std::shared_ptr<sparse_inner_storage>> groups;
+    auto guard = std::unique_lock (group_mtx);
+    auto &ret = groups[unique_id];
+    if (!ret)
+        ret = std::make_shared<sparse_inner_storage> ();
+    return ret.get ();
+}
+
+void remove_rc (sparse_inner_storage *storage, const std::string *s)
+{
+    // The lifetime of storage must exceed the life of the lock region below or we may access
+    // invalid memory on the unlock phase because of destructing the storage after the last string
+    auto ref = storage->shared_from_this ();
+    {
+        // writer lock scope
+        auto ul = std::unique_lock (*storage->mtx);
+        storage->strings.erase (*s);
+    }
+}
+
+rc_str_t get_rc (sparse_inner_storage *storage,
+                 std::string_view s,
+                 rc_free_fn fn,
+                 bool add_if_missing)
+{
+    {  // shared lock scope
+        auto sl = std::shared_lock (*storage->mtx);
+        auto it = storage->strings.find (s);
+        if (it != storage->strings.end ()) {
+            if (auto shared = it->second.str.lock ())
+                return shared;
+            // we found it, but the weak pointer is no longer valid somehow, this shouldn't be
+            // possible but handle it anyway
+        }
+    }  // release shared lock
+
+    if (!add_if_missing)
+        return nullptr;
+
+    // writer lock scope
+    auto ul = std::unique_lock (*storage->mtx);
+    // create the shared pointer to the sparse_string_node, and ensure
+    auto ssn = sparse_string_node{storage->shared_from_this (), rc_str_t (nullptr)};
+    const auto &[it, added] = storage->strings.emplace (s, ssn);
+    // create shared pointer referring to the key, which will be stored as a weak pointer in the
+    // value, using the passed deleter which will remove it from the map when no user references
+    // remain
+    auto shared = rc_str_t (&it->first, fn);
+
+    it->second.str = shared;
+
+    return shared;
+}
+
+static bool check_valid (size_t val, char bytes_supported)
 {
     if (bytes_supported == 1) {
         return val < UINT8_MAX;
@@ -76,10 +142,8 @@ static bool check_valid (uintptr_t val, char bytes_supported)
     return val < UINT64_MAX;
 }
 
-view_and_id get_both (const interner_t group_id, const std::string_view s, char bytes_supported)
+view_and_id get_both (dense_inner_storage &storage, const std::string_view s, char bytes_supported)
 {
-    interner_storage &storage = get_group (group_id.id);
-
     {  // shared lock scope
         auto sl = std::shared_lock (*storage.mtx);
         auto it = storage.ids_by_string.find (s);
@@ -101,10 +165,15 @@ view_and_id get_both (const interner_t group_id, const std::string_view s, char 
     return {&it->first, it->second};
 }
 
-const std::string *get_by_id (interner_t group_id, uintptr_t string_id)
+const std::string *get_by_id (dense_inner_storage &storage, size_t string_id)
 {
-    const interner_storage &storage = get_group (group_id.id);
     return storage.strings_by_id.at (string_id);
+}
+
+std::size_t hash_combine (std::size_t lhs, std::size_t rhs)
+{
+    lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
+    return lhs;
 }
 }  // namespace detail
 }  // namespace intern
@@ -112,10 +181,13 @@ const std::string *get_by_id (interner_t group_id, uintptr_t string_id)
 extern "C" {
 /// Get an interned string identifier from group id and a char * and length, the string need not be
 /// null terminated
-intern_string_t interner_get_str (const interner_t group_id, intern_string_view_t s)
+intern_string_t dense_interner_get_str (const interner_t group_id, intern_string_view_t s)
 {
     try {
-        auto [_, id] = intern::detail::get_both (group_id, {s.str, s.len}, 8);
+        auto [_, id] =
+            intern::detail::get_both (intern::detail::get_dense_inner_storage (group_id.id),
+                                      {s.str, s.len},
+                                      8);
         return {group_id.id, id};
     } catch (...) {
         // catch all exceptions
@@ -126,7 +198,7 @@ intern_string_t interner_get_str (const interner_t group_id, intern_string_view_
 /// get the hash of this interned string
 size_t intern_str_hash (const intern_string_t s)
 {
-    return intern::detail::hash_combine (std::hash<std::decay_t<decltype (s.id)> >{}(s.id),
+    return intern::detail::hash_combine (std::hash<std::decay_t<decltype (s.id)>>{}(s.id),
                                          std::hash<decltype (s.group_id.id)>{}(s.group_id.id));
 }
 
@@ -134,7 +206,9 @@ size_t intern_str_hash (const intern_string_t s)
 intern_string_view_t intern_str_view (const intern_string_t s)
 {
     try {
-        auto str = intern::detail::get_by_id (s.group_id, s.id);
+        auto str =
+            intern::detail::get_by_id (intern::detail::get_dense_inner_storage (s.group_id.id),
+                                       s.id);
         return {str->data (), str->size ()};
     } catch (...) {
         return {nullptr, 0};
@@ -176,8 +250,10 @@ int intern_str_cmp_by_str (const void *l, const void *r)
     if (!lhs || !rhs)
         return -1;
 
-    const auto lstr = intern::detail::get_by_id (lhs->group_id, lhs->id);
-    const auto rstr = intern::detail::get_by_id (rhs->group_id, rhs->id);
+    auto &ls = intern::detail::get_dense_inner_storage (lhs->group_id.id);
+    auto &rs = intern::detail::get_dense_inner_storage (rhs->group_id.id);
+    const auto lstr = intern::detail::get_by_id (ls, lhs->id);
+    const auto rstr = intern::detail::get_by_id (rs, rhs->id);
 
     return lstr->compare (*rstr);
 }

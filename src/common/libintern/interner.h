@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 typedef struct {
-    uint32_t id;
+    size_t id;
 } interner_t;
 
 typedef struct {
@@ -28,7 +28,7 @@ interner_t interner_new ();
 
 /// Get an interned string identifier from group id and a char * and length, the string need not be
 /// null terminated
-intern_string_t interner_get_str (interner_t group_id, intern_string_view_t s);
+intern_string_t dense_interner_get_str (interner_t group_id, intern_string_view_t s);
 
 /// get the hash of this interned string
 size_t intern_str_hash (intern_string_t s);
