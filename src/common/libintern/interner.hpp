@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <cstdint>
 #include <iosfwd>
+#include <memory>
 #include <ostream>
 
 #include <boost/container/small_vector.hpp>
@@ -26,19 +27,139 @@ namespace intern {
 namespace detail {
 struct view_and_id {
     const std::string *view;
-    uint64_t id;
+    size_t id;
 };
 
-view_and_id get_both (interner_t group_id, std::string_view s, char bytes_supported);
+// forward declarations
+struct dense_inner_storage;
+view_and_id get_both (dense_inner_storage &ds, std::string_view s, char bytes_supported);
+const std::string *get_by_id (dense_inner_storage &ds, size_t string_id);
 
-const std::string *get_by_id (interner_t group_id, uintptr_t string_id);
+dense_inner_storage &get_dense_inner_storage (size_t unique_id);
+
+std::size_t hash_combine (std::size_t lhs, std::size_t rhs);
 };  // namespace detail
 
+/// interner storage class providing dense, in-order IDs of configurable size
+template<class Tag, class Id>
+    requires (sizeof (Id) <= sizeof (size_t))
+struct dense_storage {
+    // forward declare for reference and static declaration
+    using tag_t = Tag;
+    using id_instance_t = Id;
+    using id_storage_t = size_t;
+
+    dense_storage (dense_storage const &) = delete;
+    dense_storage (dense_storage &&) = delete;
+    dense_storage &operator= (dense_storage const &) = delete;
+    dense_storage &operator= (dense_storage &&) = delete;
+
+    static detail::view_and_id get_both (std::string_view s);
+    static id_instance_t get_id (std::string_view s);
+    static const std::string *get_by_id (id_storage_t string_id);
+
+    static size_t unique_id ()
+    {
+        return std::hash<std::string_view> () (__PRETTY_FUNCTION__);
+    }
+
+   private:
+    static detail::dense_inner_storage &get_storage ()
+    {
+        // C++ guarantees atomic initialization of a static like this, template expansion makes
+        // __PRETTY_FUNCTION__ unique for valid programs, using function here to avoid having to
+        // include heavy headers in this header
+        static detail::dense_inner_storage &s =
+            ::intern::detail::get_dense_inner_storage (dense_storage::unique_id ());
+        return s;
+    };
+};
+
+template<class Tag, class Id>
+    requires (sizeof (Id) <= sizeof (unsigned long int))
+detail::view_and_id dense_storage<Tag, Id>::get_both (std::string_view s)
+{
+    return ::intern::detail::get_both (dense_storage::get_storage (), s, sizeof (Id));
+}
+template<class Tag, class Id>
+    requires (sizeof (Id) <= sizeof (unsigned long int))
+Id dense_storage<Tag, Id>::get_id (std::string_view s)
+{
+    return ::intern::detail::get_both (dense_storage::get_storage (), s, sizeof (Id)).id;
+}
+template<class Tag, class Id>
+    requires (sizeof (Id) <= sizeof (unsigned long int))
+const std::string *dense_storage<Tag, Id>::get_by_id (id_storage_t string_id)
+{
+    return ::intern::detail::get_by_id (dense_storage::get_storage (), string_id);
+}
+
+namespace detail {
+struct sparse_inner_storage;
+sparse_inner_storage *get_sparse_inner_storage (size_t);
+using rc_str_t = std::shared_ptr<const std::string>;
+typedef void (*rc_free_fn) (const std::string *s);
+rc_str_t get_rc (sparse_inner_storage *storage,
+                 std::string_view s,
+                 rc_free_fn fn,
+                 bool add_if_missing = true);
+void remove_rc (sparse_inner_storage *is, const std::string *s);
+}  // namespace detail
+/// interner storage class providing refcounted interned strings, for untrusted inputs and large
+/// sets
+template<class Tag>
+struct rc_storage {
+    // forward declare for reference and static declaration
+    using tag_t = Tag;
+    using id_instance_t = detail::rc_str_t;
+    using id_storage_t = detail::rc_str_t;
+
+    rc_storage (rc_storage const &) = delete;
+    rc_storage (rc_storage &&) = delete;
+    rc_storage &operator= (rc_storage const &) = delete;
+    rc_storage &operator= (rc_storage &&) = delete;
+
+    static id_instance_t get_id (std::string_view s)
+    {
+        return ::intern::detail::get_rc (rc_storage::get_storage (), s, deleter);
+    }
+    static const std::string *get_by_id (id_storage_t string_id)
+    {
+        return string_id.get ();
+    }
+    static size_t unique_id ()
+    {
+        return std::hash<std::string_view> () (__PRETTY_FUNCTION__);
+    }
+    static bool contains (std::string_view s)
+    {
+        return ::intern::detail::get_rc (rc_storage::get_storage (), s, deleter, false) != nullptr;
+    }
+
+   private:
+    static void deleter (const std::string *s)
+    {
+        remove_rc (rc_storage::get_storage (), s);
+    }
+    static detail::sparse_inner_storage *get_storage ()
+    {
+        // template expansion makes __PRETTY_FUNCTION__ unique for valid programs, using function
+        // here to avoid having to include heavy headers in this header
+        // This is stored as a pointer because the pointer will not be destructed at the end
+        // of execution, so we can refer to it even if the shared_pointer in
+        // get_sparse_inner_storage has been released. This is only safe because we can only get
+        // here if a shared_pointer that holds onto a reference to this still exists somewhere.
+        static auto *ptr_to_storage =
+            ::intern::detail::get_sparse_inner_storage (rc_storage::unique_id ());
+        return ptr_to_storage;
+    }
+};
+
 /// A convenience wrapper of an interned string
-template<uint64_t Tag, class Id>
-    requires (sizeof (Id) <= sizeof (uintptr_t))
+template<class Storage>
 class interned_string {
-    Id _id = 0;
+    using Id = Storage::id_instance_t;
+    Id _id;
 
     // Not at all safe, verified by a pre-condition check in get_by_id
     explicit interned_string (Id id) : _id (id)
@@ -46,12 +167,10 @@ class interned_string {
     }
 
    public:
+    using storage_t = Storage;
     using id_type = Id;
-    static constexpr interner_t interner{Tag};
-    static constexpr Id invalid_val = std::numeric_limits<Id>::max;
 
-    explicit interned_string (const std::string_view sv)
-        : _id (detail::get_both (interner, sv, sizeof (Id)).id)
+    explicit interned_string (const std::string_view sv) : _id (Storage::get_id (sv))
     {
     }
 
@@ -81,7 +200,7 @@ class interned_string {
     static interned_string get_by_id (Id id)
     {
         // will throw if this does not exist
-        detail::get_by_id (Tag, id);
+        Storage::get_by_id (id);
         return interned_string (id);
     }
 
@@ -165,7 +284,7 @@ class interned_string {
 
     const std::string &get () const
     {
-        return *detail::get_by_id (interner, _id);
+        return *Storage::get_by_id (_id);
     }
 
     const char *c_str () const
@@ -244,11 +363,13 @@ struct interned_key_vec : boost::container::small_vector<T, likely_count> {
 }  // namespace intern
 
 namespace std {
-template<uint64_t Id, typename U>
-struct hash<intern::interned_string<Id, U> > {
-    size_t operator() (const intern::interned_string<Id, U> &s) const
+template<class Storage>
+struct hash<intern::interned_string<Storage> > {
+    size_t operator() (const intern::interned_string<Storage> &s) const
     {
-        return intern_str_hash (intern_string_t{s.interner, s.id ()});
+        return ::intern::detail::hash_combine (std::hash<size_t> () (Storage::unique_id ()),
+                                               std::hash<typename Storage::id_instance_t> () (
+                                                   s.id ()));
     }
 };
 }  // namespace std
