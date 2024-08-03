@@ -26,7 +26,11 @@ class queue_policy_easy_t : public queue_policy_bf_base_t<reapi_type> {
     queue_policy_easy_t (queue_policy_easy_t &&p) = default;
     queue_policy_easy_t &operator= (const queue_policy_easy_t &p) = default;
     queue_policy_easy_t &operator= (queue_policy_easy_t &&p) = default;
-    virtual int apply_params ();
+    int apply_params () override;
+    const std::string_view policy () const override
+    {
+        return "easy";
+    }
 };
 
 }  // namespace detail

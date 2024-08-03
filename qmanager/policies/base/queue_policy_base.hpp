@@ -27,6 +27,8 @@ extern "C" {
 #include <memory>
 #include <cstdint>
 #include <tuple>
+#include <jansson.hpp>
+#include <iostream>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
@@ -309,7 +311,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      * \param p_p        string to which to print queue parameters
      *                   (e.g., "reservation-depth=1024,foo=bar")
      */
-    void get_params (std::string &q_p, std::string &p_p)
+    void get_params (std::string &q_p, std::string &p_p) const
     {
         std::unordered_map<std::string, std::string>::const_iterator i;
         for (i = m_qparams.begin (); i != m_qparams.end (); i++) {
@@ -321,6 +323,121 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
             if (!p_p.empty ())
                 p_p += std::string (",");
             p_p += i->first + std::string ("=") + i->second;
+        }
+    }
+
+    virtual const std::string_view policy () const = 0;
+
+    /*! Write json stats into the json::value parameter
+     *
+     */
+    virtual void to_json_value (json::value &jv) const
+    {
+        json::value qparams;
+        to_json (qparams, m_qparams);
+        json::value pparams;
+        to_json (pparams, m_pparams);
+        char buf[128] = {};
+        auto add_queue = [&] (json_t *a, auto &map) {
+            for (auto &[k, jobid] : map) {
+                if (flux_job_id_encode (jobid, "f58plain", buf, sizeof buf) < 0)
+                    json_array_append_new (a, json_integer (jobid));
+                else
+                    json_array_append_new (a, json_string (buf));
+            }
+        };
+        json::value pending;
+        pending.emplace_object ();
+        json::value pending_arr;
+        pending_arr.emplace_array ();
+        json_object_set (pending.get (), "pending", pending_arr.get ());
+        add_queue (pending_arr.get (), m_pending);
+        pending_arr.emplace_array ();
+        json_object_set (pending.get (), "pending_provisional", pending_arr.get ());
+        add_queue (pending_arr.get (), m_pending_provisional);
+        pending_arr.emplace_array ();
+        json_object_set (pending.get (), "blocked", pending_arr.get ());
+        add_queue (pending_arr.get (), m_blocked);
+
+        json::value scheduled;
+        scheduled.emplace_object ();
+        json::value scheduled_arr;
+        scheduled_arr.emplace_array ();
+        json_object_set (scheduled.get (), "running", scheduled_arr.get ());
+        add_queue (scheduled_arr.get (), m_running);
+        scheduled_arr.emplace_array ();
+        json_object_set (scheduled.get (), "rejected", scheduled_arr.get ());
+        add_queue (scheduled_arr.get (), m_rejected);
+        scheduled_arr.emplace_array ();
+        json_object_set (scheduled.get (), "canceled", scheduled_arr.get ());
+        add_queue (scheduled_arr.get (), m_canceled);
+
+        json_error_t err = {0};
+        jv = json::value (json::no_incref{},
+                          json_pack_ex (&err,
+                                        0,
+                                        // begin object
+                                        "{"
+                                        // policy
+                                        "s:s%"
+                                        // queue_depth
+                                        "s:I"
+                                        // max_queue_depth
+                                        "s:I"
+                                        // queue parameters
+                                        "s:O"
+                                        // policy parameters
+                                        "s:O"
+                                        // action counts
+                                        "s:o"
+                                        // pending queues
+                                        "s:O"
+                                        // scheduled queues
+                                        "s:O"
+                                        // end object
+                                        "}",
+                                        // VALUE START
+                                        // policy, str+length style
+                                        "policy",
+                                        this->policy ().data (),
+                                        this->policy ().length (),
+                                        // queue_depth
+                                        "queue_depth",
+                                        (json_int_t)m_queue_depth,
+                                        // max_queue_depth
+                                        "max_queue_depth",
+                                        (json_int_t)m_max_queue_depth,
+                                        // queue parameters
+                                        "queue_parameters",
+                                        qparams.get (),
+                                        // policy parameters
+                                        "policy_parameters",
+                                        pparams.get (),
+                                        // action counts
+                                        "action_counts",
+                                        json_pack ("{s:I s:I s:I s:I s:I s:I s:I}",
+                                                   "pending",
+                                                   m_pq_cnt,
+                                                   "running",
+                                                   m_rq_cnt,
+                                                   "reserved",
+                                                   m_oq_cnt,
+                                                   "rejected",
+                                                   m_dq_cnt,
+                                                   "complete",
+                                                   m_cq_cnt,
+                                                   "cancelled",
+                                                   m_cancel_cnt,
+                                                   "reprioritized",
+                                                   m_reprio_cnt),
+                                        // pending queues
+                                        "pending_queues",
+                                        pending.get (),
+                                        // scheduled queues
+                                        "scheduled_queues",
+                                        scheduled.get ()));
+        if (!jv.get ()) {
+            throw std::runtime_error (err.text);
         }
     }
 
@@ -616,7 +733,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *  so that this queue can be adapted for use within high-level
      *  resource API. Return true if the scheduling loop is active.
      */
-    virtual bool is_sched_loop_active ()
+    bool is_sched_loop_active () override
     {
         return m_sched_loop_active;
     }
@@ -632,7 +749,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *                       - ENOENT (job is not found from some queue)
      *                       - EEXIST (enqueue fails due to an existent entry)
      */
-    virtual int set_sched_loop_active (bool active)
+    int set_sched_loop_active (bool active) override
     {
         int rc = 0;
         bool prev = m_sched_loop_active;

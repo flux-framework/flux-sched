@@ -89,7 +89,7 @@ pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.50 REQUIRED COMPONENTS
+find_package(Boost 1.66 REQUIRED COMPONENTS
   system
   filesystem
   graph

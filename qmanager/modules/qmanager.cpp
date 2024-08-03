@@ -49,6 +49,7 @@ class fluxion_resource_interface_t {
 
 struct qmanager_ctx_t : public qmanager_cb_ctx_t, public fluxion_resource_interface_t {
     flux_msg_handler_t **hndlr{nullptr};
+    flux_msg_handler_t **stats_hndlr{nullptr};
 };
 
 fluxion_resource_interface_t::~fluxion_resource_interface_t ()
@@ -591,6 +592,7 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_watcher_destroy (ctx->check);
         flux_watcher_destroy (ctx->idle);
         flux_msg_handler_delvec (ctx->hndlr);
+        flux_msg_handler_delvec (ctx->stats_hndlr);
         errno = saved_errno;
     }
 }
@@ -599,6 +601,17 @@ static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "sched.resource-status", status_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.feasibility", feasibility_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.params", params_request_cb, FLUX_ROLE_USER},
+    FLUX_MSGHANDLER_TABLE_END,
+};
+static const struct flux_msg_handler_spec statstab[] = {
+    {FLUX_MSGTYPE_REQUEST,
+     "sched-fluxion-qmanager.stats-get",
+     qmanager_safe_cb_t::jobmanager_stats_get_cb,
+     FLUX_ROLE_USER},
+    {FLUX_MSGTYPE_REQUEST,
+     "sched-fluxion-qmanager.stats-clear",
+     qmanager_safe_cb_t::jobmanager_stats_clear_cb,
+     FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
@@ -648,6 +661,11 @@ int mod_start (flux_t *h, int argc, char **argv)
         return rc;
     }
     if ((rc = flux_msg_handler_addvec (h, htab, (void *)h, &ctx->hndlr)) < 0) {
+        flux_log_error (h, "%s: flux_msg_handler_addvec", __FUNCTION__);
+        qmanager_destroy (ctx);
+        return rc;
+    }
+    if ((rc = flux_msg_handler_addvec (h, statstab, (void *)ctx.get (), &ctx->stats_hndlr)) < 0) {
         flux_log_error (h, "%s: flux_msg_handler_addvec", __FUNCTION__);
         qmanager_destroy (ctx);
         return rc;

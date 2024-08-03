@@ -118,11 +118,6 @@ int queue_policy_bf_base_t<reapi_type>::cancel (void *h,
 ////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
-queue_policy_bf_base_t<reapi_type>::~queue_policy_bf_base_t ()
-{
-}
-
-template<class reapi_type>
 int queue_policy_bf_base_t<reapi_type>::apply_params ()
 {
     return 0;

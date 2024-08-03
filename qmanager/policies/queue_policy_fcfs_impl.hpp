@@ -155,11 +155,6 @@ int queue_policy_fcfs_t<reapi_type>::cancel (void *h,
 ////////////////////////////////////////////////////////////////////////////////
 
 template<class reapi_type>
-queue_policy_fcfs_t<reapi_type>::~queue_policy_fcfs_t ()
-{
-}
-
-template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::apply_params ()
 {
     return queue_policy_base_t::apply_params ();

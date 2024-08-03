@@ -40,6 +40,14 @@ struct qmanager_cb_ctx_t {
 class qmanager_cb_t {
    protected:
     static int jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg);
+    static void jobmanager_stats_get_cb (flux_t *h,
+                                         flux_msg_handler_t *w,
+                                         const flux_msg_t *msg,
+                                         void *arg);
+    static void jobmanager_stats_clear_cb (flux_t *h,
+                                           flux_msg_handler_t *w,
+                                           const flux_msg_t *msg,
+                                           void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg, void *arg);
@@ -54,6 +62,14 @@ class qmanager_cb_t {
 
 struct qmanager_safe_cb_t : public qmanager_cb_t {
     static int jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg);
+    static void jobmanager_stats_get_cb (flux_t *h,
+                                         flux_msg_handler_t *w,
+                                         const flux_msg_t *msg,
+                                         void *arg);
+    static void jobmanager_stats_clear_cb (flux_t *h,
+                                           flux_msg_handler_t *w,
+                                           const flux_msg_t *msg,
+                                           void *arg);
     static void jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg);
     static void jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const char *R, void *arg);
     static void jobmanager_cancel_cb (flux_t *h, const flux_msg_t *msg, void *arg);
