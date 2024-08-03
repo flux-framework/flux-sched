@@ -18,11 +18,6 @@ namespace queue_manager {
 namespace detail {
 
 template<class reapi_type>
-queue_policy_conservative_t<reapi_type>::~queue_policy_conservative_t ()
-{
-}
-
-template<class reapi_type>
 int queue_policy_conservative_t<reapi_type>::apply_params ()
 {
     int rc = -1;

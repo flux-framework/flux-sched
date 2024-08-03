@@ -27,6 +27,7 @@ extern "C" {
 #include <memory>
 #include <cstdint>
 #include <tuple>
+#include <boost/json.hpp>
 
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "qmanager/config/queue_system_defaults.hpp"
@@ -309,7 +310,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      * \param p_p        string to which to print queue parameters
      *                   (e.g., "reservation-depth=1024,foo=bar")
      */
-    void get_params (std::string &q_p, std::string &p_p)
+    void get_params (std::string &q_p, std::string &p_p) const
     {
         std::unordered_map<std::string, std::string>::const_iterator i;
         for (i = m_qparams.begin (); i != m_qparams.end (); i++) {
@@ -322,6 +323,47 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                 p_p += std::string (",");
             p_p += i->first + std::string ("=") + i->second;
         }
+    }
+
+    virtual const std::string_view policy () const = 0;
+
+    /*! Write json stats into the boost::json::value parameter
+     *
+     */
+    virtual void to_json_value (boost::json::value &jv) const
+    {
+        using namespace boost::json;
+        auto &obj = jv.emplace_object ();
+        obj = {{"policy", this->policy ()},
+               {"queue_depth", m_queue_depth},
+               {"max_queue_depth", m_max_queue_depth},
+               {"queue_parameters", value_from (m_qparams)},
+               {"policy_parameters", value_from (m_pparams)},
+               {"action counts",
+                {{"pending", m_pq_cnt},
+                 {"running", m_rq_cnt},
+                 {"reserved", m_oq_cnt},
+                 {"rejected", m_dq_cnt},
+                 {"complete", m_cq_cnt},
+                 {"cancelled", m_cancel_cnt},
+                 {"reprioritized", m_reprio_cnt}}}};
+        char buf[128] = {};
+        auto add_queue = [&] (::boost::json::array &a, auto &map) {
+            for (auto &[k, jobid] : map) {
+                if (flux_job_id_encode (jobid, "f58plain", buf, sizeof buf) < 0)
+                    a.push_back (jobid);
+                else
+                    a.push_back (buf);
+            }
+        };
+        auto &pending_queues = obj["pending_queues"].emplace_object ();
+        add_queue (pending_queues["pending"].emplace_array (), m_pending);
+        add_queue (pending_queues["pending_provisional"].emplace_array (), m_pending_provisional);
+        add_queue (pending_queues["blocked"].emplace_array (), m_blocked);
+        auto &scheduled_queues = obj["scheduled_queues"].emplace_object ();
+        add_queue (scheduled_queues["running"].emplace_array (), m_running);
+        add_queue (scheduled_queues["rejected"].emplace_array (), m_rejected);
+        add_queue (scheduled_queues["canceled"].emplace_array (), m_canceled);
     }
 
     /*! Return the queue depth used for this queue. The queue depth
@@ -616,7 +658,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *  so that this queue can be adapted for use within high-level
      *  resource API. Return true if the scheduling loop is active.
      */
-    virtual bool is_sched_loop_active ()
+    bool is_sched_loop_active () override
     {
         return m_sched_loop_active;
     }
@@ -632,7 +674,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *                       - ENOENT (job is not found from some queue)
      *                       - EEXIST (enqueue fails due to an existent entry)
      */
-    virtual int set_sched_loop_active (bool active)
+    int set_sched_loop_active (bool active) override
     {
         int rc = 0;
         bool prev = m_sched_loop_active;
