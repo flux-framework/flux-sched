@@ -151,8 +151,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
 
     // precheck to see if enough resources are available for this to be feasible
-    if (request_feasible (meta, op, root, dfv) < 0)
-        return -1;
+    if ((rc = request_feasible (meta, op, root, dfv)) < 0)
+        goto out;
 
     if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
