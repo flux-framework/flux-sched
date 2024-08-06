@@ -44,6 +44,7 @@ extern resource_type_t node_rt;
 extern resource_type_t socket_rt;
 extern resource_type_t gpu_rt;
 extern resource_type_t core_rt;
+extern resource_type_t ssd_rt;
 
 template<class T, int likely_count = 2>
 using subsystem_key_vec = intern::interned_key_vec<subsystem_t, T, likely_count>;
