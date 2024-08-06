@@ -26,7 +26,7 @@ test_expect_success 'RV1 is correct on rank and node ID order match' '
 	quit
 	EOF
 	${query} -L ${jgf_orig} -f jgf -F rv1_nosched -t R1.out -P high < cmds001 &&
-	test_cmp R1.out ${exp_dir}/R1.out
+	test_cmp_json R1.out ${exp_dir}/R1.out
 '
 
 test_expect_success 'RV1 is correct on core ID modified' '
@@ -35,7 +35,7 @@ test_expect_success 'RV1 is correct on core ID modified' '
 	quit
 	EOF
 	${query} -L ${jgf_mod1} -f jgf -F rv1_nosched -t R2.out -P high < cmds002 &&
-	test_cmp R2.out ${exp_dir}/R2.out
+	test_cmp_json R2.out ${exp_dir}/R2.out
 '
 
 test_expect_success 'RV1 correct on rank/node ID mismatch + core ID modified' '
@@ -44,7 +44,7 @@ test_expect_success 'RV1 correct on rank/node ID mismatch + core ID modified' '
 	quit
 	EOF
 	${query} -L ${jgf_mod2} -f jgf -F rv1_nosched -t R3.out -P high < cmds003 &&
-	test_cmp R3.out ${exp_dir}/R3.out
+	test_cmp_json R3.out ${exp_dir}/R3.out
 '
 
 test_expect_success 'RV1 correct on heterogeneous configuration' '

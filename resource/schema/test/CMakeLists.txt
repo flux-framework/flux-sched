@@ -1,10 +1,12 @@
 add_executable(schema_test01 ./schema_test01.cpp)
+add_sanitizers(schema_test01)
 target_link_libraries(schema_test01 resource libtap)
 flux_add_test(NAME schema_test01 COMMAND schema_test01)
 target_include_directories(schema_test01 PUBLIC ../)
 set_property(TEST schema_test01 APPEND PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")
 
 add_executable(schema_test02 ./schema_test02.cpp)
+add_sanitizers(schema_test02)
 target_link_libraries(schema_test02 resource libtap)
 flux_add_test(NAME schema_test02 COMMAND schema_test02)
 target_include_directories(schema_test02 PUBLIC ../)
