@@ -284,10 +284,13 @@ static const struct flux_msg_handler_spec htab[] =
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.find", find_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.status", status_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.ns-info", ns_info_request_cb, 0},
-     {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "feasibility.check", satisfiability_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.params", params_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.set_status", set_status_request_cb, 0},
+     FLUX_MSGHANDLER_TABLE_END};
+
+static const struct flux_msg_handler_spec satisfiability_htab[] =
+    {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0},
      FLUX_MSGHANDLER_TABLE_END};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,10 +428,6 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         flux_log (h, LOG_ERR, "%s: can't determine rank", __FUNCTION__);
         goto error;
     }
-    if (rank) {
-        flux_log (h, LOG_ERR, "%s: resource module must only run on rank 0", __FUNCTION__);
-        goto error;
-    }
     if (process_config_file (ctx) < 0) {
         flux_log_error (h, "%s: config file parsing", __FUNCTION__);
         goto error;
@@ -438,9 +437,24 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         goto error;
     }
     ctx->opts.canonicalize ();
-    if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
-        flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
-        goto error;
+
+    //If this is the satisfiability version of the module, we can be on any rank and
+    //  we only want to handle the satisfiability RPC.
+    if (ctx->opts.get_opt ().get_match_satisfiability ()) {
+        flux_log_error (h, "satisfiability module initialized");
+        if (flux_msg_handler_addvec (h, satisfiability_htab, (void *)h, &ctx->handlers) < 0) {
+            flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
+            goto error;
+        }
+    } else {
+        if (rank) {
+            flux_log (h, LOG_ERR, "%s: resource module must only run on rank 0", __FUNCTION__);
+            goto error;
+        }
+        if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
+            flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
+            goto error;
+        }
     }
     return ctx;
 
@@ -3041,7 +3055,7 @@ done:
     return rc;
 }
 
-MOD_NAME ("sched-fluxion-resource");
+//MOD_NAME ("sched-fluxion-resource");
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

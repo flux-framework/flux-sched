@@ -57,6 +57,11 @@ const std::string &resource_prop_t::get_match_subsystems () const
     return m_match_subsystems;
 }
 
+const bool resource_prop_t::get_match_satisfiability () const
+{
+    return m_match_satisfiability;
+}
+
 const int resource_prop_t::get_reserve_vtx_vec () const
 {
     return m_reserve_vtx_vec;
@@ -111,6 +116,11 @@ void resource_prop_t::set_match_subsystems (const std::string &p)
     m_match_subsystems = p;
 }
 
+void resource_prop_t::set_match_satisfiability (const bool b)
+{
+    m_match_satisfiability = b;
+}
+
 void resource_prop_t::set_reserve_vtx_vec (const int i)
 {
     m_reserve_vtx_vec = i;
@@ -162,6 +172,11 @@ bool resource_prop_t::is_match_subsystems_set () const
     return m_match_subsystems != RESOURCE_OPTS_UNSET_STR;
 }
 
+bool resource_prop_t::is_match_satisfiability_set () const
+{
+    return m_match_satisfiability == true;
+}
+
 bool resource_prop_t::is_reserve_vtx_vec_set () const
 {
     return m_reserve_vtx_vec != 0;
@@ -179,7 +194,7 @@ bool resource_prop_t::is_update_interval_set () const
 
 json_t *resource_prop_t::jsonify () const
 {
-    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i }",
+    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:b s:i s:s? s:i }",
                       "load-file",
                       is_load_file_set () ? get_load_file ().c_str () : nullptr,
                       "load-format",
@@ -192,6 +207,8 @@ json_t *resource_prop_t::jsonify () const
                       is_match_format_set () ? get_match_format ().c_str () : nullptr,
                       "subsystems",
                       is_match_subsystems_set () ? get_match_subsystems ().c_str () : nullptr,
+                      "satisfiability",
+                      get_match_satisfiability (),
                       "reserve-vtx-vec",
                       is_reserve_vtx_vec_set () ? get_reserve_vtx_vec () : 0,
                       "prune-filters",
@@ -258,10 +275,14 @@ resource_opts_t::resource_opts_t ()
                                          resource_opts_t ::resource_opts_key_t ::MATCH_FORMAT)));
     inserted &= ret.second;
     ret = m_tab.insert (
-        std::pair<std::string,
-                  int> ("subsystems",
-                        static_cast<int> (
-                            resource_opts_t ::resource_opts_key_t ::MATCH_SUBSYSTEMS)));
+        std::pair<std::string, int> ("subsystems",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::MATCH_SUBSYSTEMS)));
+    inserted &= ret.second;
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("satisfiability",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::MATCH_SATISFIABILITY)));
     inserted &= ret.second;
     ret = m_tab.insert (
         std::pair<std::string, int> ("reserve-vtx-vec",
@@ -311,6 +332,11 @@ const std::string &resource_opts_t::get_match_format () const
 const std::string &resource_opts_t::get_match_subsystems () const
 {
     return m_resource_prop.get_match_subsystems ();
+}
+
+const bool resource_opts_t::get_match_satisfiability () const
+{
+    return m_resource_prop.get_match_satisfiability();
 }
 
 const int resource_opts_t::get_reserve_vtx_vec () const
@@ -363,6 +389,11 @@ void resource_opts_t::set_match_subsystems (const std::string &o)
     m_resource_prop.set_match_subsystems (o);
 }
 
+void resource_opts_t::set_match_satisfiability (const bool b)
+{
+    m_resource_prop.set_match_satisfiability (b);
+}
+
 void resource_opts_t::set_reserve_vtx_vec (const int i)
 {
     m_resource_prop.set_reserve_vtx_vec (i);
@@ -408,6 +439,11 @@ bool resource_opts_t::is_match_subsystems_set () const
     return m_resource_prop.is_match_subsystems_set ();
 }
 
+bool resource_opts_t::is_match_satisfiability_set () const
+{
+    return m_resource_prop.is_match_satisfiability_set ();
+}
+
 bool resource_opts_t::is_reserve_vtx_vec_set () const
 {
     return m_resource_prop.is_reserve_vtx_vec_set ();
@@ -442,6 +478,8 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
         m_resource_prop.set_match_format (src.m_resource_prop.get_match_format ());
     if (src.m_resource_prop.is_match_subsystems_set ())
         m_resource_prop.set_match_subsystems (src.m_resource_prop.get_match_subsystems ());
+    if (src.m_resource_prop.is_match_satisfiability_set ())
+        m_resource_prop.set_match_satisfiability (src.m_resource_prop.get_match_satisfiability ());
     if (src.m_resource_prop.is_reserve_vtx_vec_set ())
         m_resource_prop.set_reserve_vtx_vec (src.m_resource_prop.get_reserve_vtx_vec ());
     if (src.m_resource_prop.is_prune_filters_set ())
@@ -527,6 +565,10 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
 
         case static_cast<int> (resource_opts_key_t::MATCH_SUBSYSTEMS):
             m_resource_prop.set_match_subsystems (v);
+            break;
+
+        case static_cast<int> (resource_opts_key_t::MATCH_SATISFIABILITY):
+            m_resource_prop.set_match_satisfiability (v.compare(std::string ("true")) == 0);
             break;
 
         case static_cast<int> (resource_opts_key_t::RESERVE_VTX_VEC):
