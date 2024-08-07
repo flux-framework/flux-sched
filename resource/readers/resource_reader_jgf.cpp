@@ -62,7 +62,7 @@ struct fetch_helper_t : public fetch_remap_support_t {
     const char *basename = NULL;
     const char *vertex_id = NULL;
     std::map<std::string, std::string> properties;
-    std::map<std::string, std::string> paths;
+    std::map<subsystem_t, std::string> paths;
 };
 
 int64_t fetch_remap_support_t::get_remapped_id () const
@@ -152,20 +152,14 @@ void fetch_helper_t::scrub ()
 
 struct vmap_val_t {
     vtx_t v;
-    std::map<std::string, bool> is_roots;
+    std::map<subsystem_t, bool> is_roots;
     unsigned int needs;
     unsigned int exclusive;
 };
 
-bool operator== (const std::map<std::string, std::string> lhs,
-                 const std::map<std::string, std::string> rhs)
-{
-    return (lhs.size () == rhs.size ()) && (std::equal (lhs.begin (), lhs.end (), rhs.begin ()));
-}
-
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
-    return (r.type == f.type && r.basename == f.basename
+    return (r.type.get () == f.type && r.basename == f.basename
             && r.size == static_cast<unsigned int> (f.size) && r.rank == static_cast<int> (f.rank)
             && r.id == f.id && r.name == f.name && r.properties == f.properties
             && r.paths == f.paths);
@@ -179,7 +173,7 @@ bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
 std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
 {
     std::stringstream sstream;
-    if (r.type != f.type)
+    if (r.type.get () != f.type)
         sstream << "type=(" << r.type << ", " << f.type << ")";
     if (r.basename != f.basename)
         sstream << " basename=(" << r.basename << ", " << f.basename << ")";
@@ -309,12 +303,12 @@ int resource_reader_jgf_t::unpack_and_remap_vtx (fetch_helper_t &f,
                 m_err_msg += std::to_string (f.id) + ".\n";
                 goto error;
             }
-            f.paths[std::string (key)] =
+            f.paths[subsystem_t (key)] =
                 path.substr (0, sl + 1) + f.basename + std::to_string (remap_id);
         }
     } else {
         json_object_foreach (paths, key, value) {
-            f.paths[std::string (key)] = json_string_value (value);
+            f.paths[subsystem_t (key)] = json_string_value (value);
         }
     }
 
@@ -338,7 +332,7 @@ int resource_reader_jgf_t::remap_aware_unpack_vtx (fetch_helper_t &f,
             return -1;
     } else {
         json_object_foreach (paths, key, value) {
-            f.paths[std::string (key)] = std::string (json_string_value (value));
+            f.paths[subsystem_t (key)] = std::string (json_string_value (value));
         }
         json_object_foreach (properties, key, value) {
             f.properties[std::string (key)] = std::string (json_string_value (value));
@@ -448,7 +442,7 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g, const fetch_helper
     }
 
     v = boost::add_vertex (g);
-    g[v].type = fetcher.type;
+    g[v].type = resource_type_t{fetcher.type};
     g[v].basename = fetcher.basename;
     g[v].size = fetcher.size;
     g[v].uniq_id = fetcher.uniq_id;
@@ -461,7 +455,7 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g, const fetch_helper
     g[v].schedule.plans = plans;
     g[v].idata.x_checker = x_checker;
     for (const auto &kv : g[v].paths)
-        g[v].idata.member_of[kv.first] = "*";
+        g[v].idata.member_of[subsystem_t{kv.first}] = "*";
 
 done:
     return v;
@@ -469,7 +463,7 @@ done:
 
 vtx_t resource_reader_jgf_t::vtx_in_graph (const resource_graph_t &g,
                                            const resource_graph_metadata_t &m,
-                                           const std::map<std::string, std::string> &paths,
+                                           const std::map<subsystem_t, std::string> &paths,
                                            int rank)
 {
     for (const auto &paths_it : paths) {
@@ -493,13 +487,12 @@ bool resource_reader_jgf_t::is_root (const std::string &path)
 
 int resource_reader_jgf_t::check_root (vtx_t v,
                                        resource_graph_t &g,
-                                       std::map<std::string, bool> &is_roots)
+                                       std::map<subsystem_t, bool> &is_roots)
 {
     int rc = -1;
-    std::pair<std::map<std::string, bool>::iterator, bool> ptr;
     for (const auto &kv : g[v].paths) {
         if (is_root (kv.second)) {
-            ptr = is_roots.emplace (kv.first, true);
+            auto ptr = is_roots.emplace (kv.first, true);
             if (!ptr.second)
                 goto done;
         }
@@ -515,16 +508,15 @@ int resource_reader_jgf_t::add_graph_metadata (vtx_t v,
                                                resource_graph_metadata_t &m)
 {
     int rc = -1;
-    std::pair<std::map<std::string, vtx_t>::iterator, bool> ptr;
 
     for (const auto &kv : g[v].paths) {
         if (is_root (kv.second)) {
-            ptr = m.roots.emplace (kv.first, v);
+            auto ptr = m.roots.emplace (kv.first, v);
             if (!ptr.second) {
                 errno = EINVAL;
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": failed to add root metadata for ";
-                m_err_msg += kv.first + " subsystem. ";
+                m_err_msg += kv.first.get () + " subsystem. ";
                 m_err_msg += "Possible duplicate root.\n";
                 goto done;
             }
@@ -600,7 +592,7 @@ int resource_reader_jgf_t::remove_metadata_outedges (vtx_t source_vertex,
 
 int resource_reader_jgf_t::update_vmap (std::map<std::string, vmap_val_t> &vmap,
                                         vtx_t v,
-                                        const std::map<std::string, bool> &root_checks,
+                                        const std::map<subsystem_t, bool> &root_checks,
                                         const fetch_helper_t &fetcher)
 {
     int rc = -1;
@@ -628,7 +620,7 @@ int resource_reader_jgf_t::add_vtx (resource_graph_t &g,
                                     const fetch_helper_t &fetcher)
 {
     int rc = -1;
-    std::map<std::string, bool> root_checks;
+    std::map<subsystem_t, bool> root_checks;
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
     vtx_t nullvtx = boost::graph_traits<resource_graph_t>::null_vertex ();
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
@@ -803,10 +795,11 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     std::map<int64_t, int64_t>::iterator span_it;
     std::map<int64_t, int64_t>::iterator xspan_it;
 
+    static subsystem_t containment_sub{"containment"};
     // remove from aggregate filter if present
     auto agg_span = job2span.find (update_data.jobid);
     if (agg_span != job2span.end ()) {
-        if ((subtree_plan = g[vtx].idata.subplans["containment"]) == NULL)
+        if ((subtree_plan = g[vtx].idata.subplans[containment_sub]) == NULL)
             goto ret;
         if (planner_multi_rem_span (subtree_plan, agg_span->second) != 0)
             goto ret;
@@ -861,7 +854,7 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
                                        jgf_updater_data &update_data)
 {
     int rc = -1;
-    std::map<std::string, bool> root_checks;
+    std::map<subsystem_t, bool> root_checks;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
 
@@ -932,7 +925,7 @@ int resource_reader_jgf_t::unpack_vertices (resource_graph_t &g,
     unsigned int i = 0;
     fetch_helper_t fetcher;
     vtx_t null_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-    std::map<std::string, bool> root_checks;
+    std::map<subsystem_t, bool> root_checks;
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
 
     for (i = 0; i < json_array_size (nodes); i++) {
@@ -1064,7 +1057,7 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 goto done;
             }
             json_object_foreach (name, key, value) {
-                auto skey = std::string (key);
+                auto skey = subsystem_t{key};
                 auto sval = std::string (json_string_value (value), json_string_length (value));
                 if (sval == std::string ("in"))
                     continue;
@@ -1220,7 +1213,7 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g, vtx_t vtx, vtx_t
 
     for (; ei != ei_end; ++ei) {
         next_vtx = boost::source (*ei, g);
-        if (g[*ei].name.contains ("containment")) {
+        if (g[*ei].name.contains (containment_sub)) {
             parent_vtx = next_vtx;
             rc = 0;
             break;

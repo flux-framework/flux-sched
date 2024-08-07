@@ -39,14 +39,14 @@ int dfu_impl_t::emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w)
 
 int dfu_impl_t::upd_txfilter (vtx_t u,
                               const jobmeta_t &jobmeta,
-                              const std::map<std::string, int64_t> &dfu)
+                              const std::map<resource_type_t, int64_t> &dfu)
 {
     // idata tag and exclusive checker update
     int64_t span = -1;
     planner_t *x_checker = NULL;
 
     // Tag on a vertex with exclusive access or all of its ancestors
-    (*m_graph)[u].idata.tags[jobmeta.jobid] = jobmeta.jobid;
+    (*m_graph)[u].idata.tags[jobmeta.jobid] = (jobmeta.jobid);
     // Update x_checker used for quick exclusivity check during matching
     if ((x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
         m_err_msg += __FUNCTION__;
@@ -65,9 +65,9 @@ int dfu_impl_t::upd_txfilter (vtx_t u,
 }
 
 int dfu_impl_t::upd_agfilter (vtx_t u,
-                              const subsystem_t &s,
-                              const jobmeta_t &jobmeta,
-                              const std::map<std::string, int64_t> &dfu)
+                              subsystem_t s,
+                              jobmeta_t jobmeta,
+                              const std::map<resource_type_t, int64_t> &dfu)
 {
     // idata subtree aggregate prunning filter
     planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
@@ -95,9 +95,9 @@ int dfu_impl_t::upd_agfilter (vtx_t u,
 }
 
 int dfu_impl_t::upd_idata (vtx_t u,
-                           const subsystem_t &s,
-                           const jobmeta_t &jobmeta,
-                           const std::map<std::string, int64_t> &dfu)
+                           subsystem_t s,
+                           jobmeta_t jobmeta,
+                           const std::map<resource_type_t, int64_t> &dfu)
 {
     int rc = 0;
     if ((rc = upd_txfilter (u, jobmeta, dfu)) != 0)
@@ -108,10 +108,7 @@ done:
     return rc;
 }
 
-int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
-                                 const jobmeta_t &jobmeta,
-                                 vtx_t u,
-                                 edg_t e)
+int dfu_impl_t::upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t u, edg_t e)
 {
     size_t len = 0;
     vtx_t tgt = target (e, *m_graph);
@@ -148,7 +145,7 @@ int dfu_impl_t::upd_by_outedges (const subsystem_t &subsystem,
 }
 
 int dfu_impl_t::upd_plan (vtx_t u,
-                          const subsystem_t &s,
+                          subsystem_t s,
                           unsigned int needs,
                           bool excl,
                           const jobmeta_t &jobmeta,
@@ -203,11 +200,11 @@ done:
 }
 
 int dfu_impl_t::accum_to_parent (vtx_t u,
-                                 const subsystem_t &subsystem,
+                                 subsystem_t subsystem,
                                  unsigned int needs,
                                  bool excl,
-                                 const std::map<std::string, int64_t> &dfu,
-                                 std::map<std::string, int64_t> &to_parent)
+                                 const std::map<resource_type_t, int64_t> &dfu,
+                                 std::map<resource_type_t, int64_t> &to_parent)
 {
     // Build up the new aggregates that will be used by subtree
     // aggregate pruning filter. If exclusive, none of the vertex's resource
@@ -225,13 +222,13 @@ int dfu_impl_t::accum_to_parent (vtx_t u,
 }
 
 int dfu_impl_t::upd_meta (vtx_t u,
-                          const subsystem_t &s,
+                          subsystem_t s,
                           unsigned int needs,
                           bool excl,
                           int n,
                           const jobmeta_t &jobmeta,
-                          const std::map<std::string, int64_t> &dfu,
-                          std::map<std::string, int64_t> &to_parent)
+                          const std::map<resource_type_t, int64_t> &dfu,
+                          std::map<resource_type_t, int64_t> &to_parent)
 {
     int rc = 0;
     if (n == 0)
@@ -246,14 +243,14 @@ done:
 
 int dfu_impl_t::upd_sched (vtx_t u,
                            std::shared_ptr<match_writers_t> &writers,
-                           const subsystem_t &s,
+                           subsystem_t s,
                            unsigned int needs,
                            bool excl,
                            int n,
                            const jobmeta_t &jobmeta,
                            bool full,
-                           const std::map<std::string, int64_t> &dfu,
-                           std::map<std::string, int64_t> &to_parent)
+                           const std::map<resource_type_t, int64_t> &dfu,
+                           std::map<resource_type_t, int64_t> &to_parent)
 {
     int rc = -1;
     if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
@@ -275,12 +272,12 @@ done:
 
 int dfu_impl_t::upd_upv (vtx_t u,
                          std::shared_ptr<match_writers_t> &writers,
-                         const subsystem_t &subsystem,
+                         subsystem_t subsystem,
                          unsigned int needs,
                          bool excl,
                          const jobmeta_t &jobmeta,
                          bool full,
-                         std::map<std::string, int64_t> &to_parent)
+                         std::map<resource_type_t, int64_t> &to_parent)
 {
     // NYI: update resources on the UPV direction
     return 0;
@@ -314,12 +311,12 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                          bool excl,
                          const jobmeta_t &jobmeta,
                          bool full,
-                         std::map<std::string, int64_t> &to_parent,
+                         std::map<resource_type_t, int64_t> &to_parent,
                          bool emit_shadow)
 {
     int n_plans = 0;
-    std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    std::map<resource_type_t, int64_t> dfu;
+    subsystem_t dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
     bool mod = modify_traversal (u, emit_shadow);
     excl = excl || mod;
@@ -329,6 +326,7 @@ int dfu_impl_t::upd_dfv (vtx_t u,
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
                 continue;
+
             if (stop_explore_best (*ei, mod))
                 continue;
 
@@ -409,7 +407,7 @@ bool dfu_impl_t::rem_tag (vtx_t u, int64_t jobid)
 
 int dfu_impl_t::mod_agfilter (vtx_t u,
                               int64_t jobid,
-                              const std::string &subsystem,
+                              subsystem_t subsystem,
                               const modify_data_t &mod_data,
                               bool &stop)
 {
@@ -500,7 +498,7 @@ done:
 
 int dfu_impl_t::mod_idata (vtx_t u,
                            int64_t jobid,
-                           const std::string &subsystem,
+                           subsystem_t subsystem,
                            const modify_data_t &mod_data,
                            bool &stop)
 {
@@ -585,7 +583,7 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 {
     int rc = 0;
     bool stop = false;
-    const std::string &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
     if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
@@ -652,7 +650,7 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
 {
     int rc = -1;
     bool stop = false;
-    const std::string &dom = m_match->dom_subsystem ();
+    subsystem_t dom = m_match->dom_subsystem ();
 
     if ((rc = mod_idata (vtx, jobid, dom, mod_data, stop)) == -1) {
         errno = EINVAL;
@@ -671,8 +669,8 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
 int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, jobmeta_t &jobmeta)
 {
     int rc = -1;
-    std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    std::map<resource_type_t, int64_t> dfu;
+    subsystem_t dom = m_match->dom_subsystem ();
 
     if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
         m_err_msg += __FUNCTION__;
@@ -720,8 +718,8 @@ int dfu_impl_t::update (vtx_t root,
     bool x = false;
     unsigned int excl = 0;
     unsigned int needs = 0;
-    std::map<std::string, int64_t> dfu;
-    const std::string &dom = m_match->dom_subsystem ();
+    std::map<resource_type_t, int64_t> dfu;
+    subsystem_t dom = m_match->dom_subsystem ();
     bool rsv = (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
 
     tick ();
@@ -860,7 +858,7 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status
     try {
         std::map<int64_t, std::vector<vtx_t>>::iterator vit;
         std::string subtree_path = "", tmp_path = "";
-        const std::string &dom = m_match->dom_subsystem ();
+        subsystem_t dom = m_match->dom_subsystem ();
         vtx_t subtree_root;
 
         int total = 0;

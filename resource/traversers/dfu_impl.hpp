@@ -125,13 +125,13 @@ class dfu_impl_t {
     const expr_eval_api_t &get_expr_eval () const;
     const unsigned int get_preorder_count () const;
     const unsigned int get_postorder_count () const;
-    const std::set<std::string> &get_exclusive_resource_types () const;
+    const std::set<resource_type_t> &get_exclusive_resource_types () const;
 
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
     void clear_err_message ();
     void reset_color ();
-    int reset_exclusive_resource_types (const std::set<std::string> &x_types);
+    int reset_exclusive_resource_types (const std::set<resource_type_t> &x_types);
 
     /*! Exclusive request? Return true if a resource in resources vector
      *  matches resource vertex u and its exclusivity field value is TRUE.
@@ -158,9 +158,9 @@ class dfu_impl_t {
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int prime_pruning_filter (const subsystem_t &subsystem,
+    int prime_pruning_filter (subsystem_t subsystem,
                               vtx_t u,
-                              std::map<std::string, int64_t> &to_parent);
+                              std::map<resource_type_t, int64_t> &to_parent);
 
     /*! Prime the resource section of the jobspec. Aggregate configured
      *  subtree resources into jobspec's user_data.  For example,
@@ -179,7 +179,7 @@ class dfu_impl_t {
      *  \return          none.
      */
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
-                        std::unordered_map<std::string, int64_t> &to_parent);
+                        std::unordered_map<resource_type_t, int64_t> &to_parent);
 
     /*! Extract the aggregate info in the lookup object as pertaining to the
      *  planner-tracking resource types into resource_counts array, a form that
@@ -336,8 +336,8 @@ class dfu_impl_t {
     const std::string level () const;
 
     void tick ();
-    bool in_subsystem (edg_t e, const subsystem_t &subsystem) const;
-    bool stop_explore (edg_t e, const subsystem_t &subsystem) const;
+    bool in_subsystem (edg_t e, subsystem_t subsystem) const;
+    bool stop_explore (edg_t e, subsystem_t subsystem) const;
     bool modify_traversal (vtx_t u, bool emit_shadow_from_parent) const;
     bool stop_explore_best (edg_t e, bool mod) const;
     bool get_eff_exclusive (bool x, bool mod) const;
@@ -346,21 +346,21 @@ class dfu_impl_t {
     /*! Various pruning methods
      */
     int by_avail (const jobmeta_t &meta,
-                  const std::string &s,
+                  subsystem_t s,
                   vtx_t u,
                   const std::vector<Jobspec::Resource> &resources);
     int by_excl (const jobmeta_t &meta,
-                 const std::string &s,
+                 subsystem_t s,
                  vtx_t u,
                  bool exclusive_in,
                  const Jobspec::Resource &resource);
     int by_subplan (const jobmeta_t &meta,
-                    const std::string &s,
+                    subsystem_t s,
                     vtx_t u,
                     const Jobspec::Resource &resource);
     int prune (const jobmeta_t &meta,
                bool excl,
-               const std::string &subsystem,
+               subsystem_t subsystem,
                vtx_t u,
                const std::vector<Jobspec::Resource> &resources);
 
@@ -389,22 +389,22 @@ class dfu_impl_t {
      *  dfu_match_cb_t provides an interface to configure what types are used
      *  for SDAU scheme.
      */
-    int accum_if (const subsystem_t &subsystem,
-                  const std::string &type,
+    int accum_if (subsystem_t subsystem,
+                  resource_type_t type,
                   unsigned int count,
-                  std::map<std::string, int64_t> &accum);
-    int accum_if (const subsystem_t &subsystem,
-                  const std::string &type,
+                  std::map<resource_type_t, int64_t> &accum);
+    int accum_if (subsystem_t subsystem,
+                  resource_type_t type,
                   unsigned int count,
-                  std::unordered_map<std::string, int64_t> &accum);
+                  std::unordered_map<resource_type_t, int64_t> &accum);
 
     // Explore out-edges for priming the subtree plans
-    int prime_exp (const subsystem_t &subsystem, vtx_t u, std::map<std::string, int64_t> &dfv);
+    int prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_type_t, int64_t> &dfv);
 
     // Explore for resource matching -- only DFV or UPV
     int explore (const jobmeta_t &meta,
                  vtx_t u,
-                 const subsystem_t &subsystem,
+                 subsystem_t subsystem,
                  const std::vector<Jobspec::Resource> &resources,
                  bool prestine,
                  bool *excl,
@@ -413,7 +413,7 @@ class dfu_impl_t {
                  unsigned int multiplier = 1);
     int explore_statically (const jobmeta_t &meta,
                             vtx_t u,
-                            const subsystem_t &subsystem,
+                            subsystem_t subsystem,
                             const std::vector<Jobspec::Resource> &resources,
                             bool prestine,
                             bool *excl,
@@ -421,7 +421,7 @@ class dfu_impl_t {
                             scoring_api_t &dfu);
     int explore_dynamically (const jobmeta_t &meta,
                              vtx_t u,
-                             const subsystem_t &subsystem,
+                             subsystem_t subsystem,
                              const std::vector<Jobspec::Resource> &resources,
                              bool prestine,
                              bool *excl,
@@ -429,18 +429,18 @@ class dfu_impl_t {
                              scoring_api_t &dfu,
                              unsigned int multiplier = 1);
 
-    bool is_enough (const subsystem_t &subsystem,
+    bool is_enough (subsystem_t subsystem,
                     const std::vector<Jobspec::Resource> &resources,
                     scoring_api_t &dfu,
                     unsigned int multiplier);
-    int new_sat_types (const subsystem_t &subsystem,
+    int new_sat_types (subsystem_t subsystem,
                        const std::vector<Jobspec::Resource> &resources,
                        scoring_api_t &dfu,
                        unsigned int multiplier,
-                       std::set<std::string> &sat_types);
+                       std::set<resource_type_t> &sat_types);
     int aux_upv (const jobmeta_t &meta,
                  vtx_t u,
-                 const subsystem_t &subsystem,
+                 subsystem_t subsystem,
                  const std::vector<Jobspec::Resource> &resources,
                  bool prestine,
                  bool *excl,
@@ -472,7 +472,7 @@ class dfu_impl_t {
     int aux_find_upv (std::shared_ptr<match_writers_t> &writers,
                       const std::string &criteria,
                       vtx_t u,
-                      const subsystem_t &aux,
+                      subsystem_t aux,
                       const vtx_predicates_override_t &p);
 
     int has_root (vtx_t root,
@@ -488,7 +488,7 @@ class dfu_impl_t {
                        bool excl,
                        unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
-    int enforce (const subsystem_t &subsystem, scoring_api_t &dfu);
+    int enforce (subsystem_t subsystem, scoring_api_t &dfu);
     int enforce_constrained (scoring_api_t &dfu);
     int enforce_dfv (vtx_t u, scoring_api_t &dfu);
     int enforce_remaining (vtx_t u, scoring_api_t &dfu);
@@ -503,73 +503,75 @@ class dfu_impl_t {
     int emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w);
 
     // Update resource graph data store
-    int upd_txfilter (vtx_t u, const jobmeta_t &jobmeta, const std::map<std::string, int64_t> &dfu);
-    int upd_agfilter (vtx_t u,
-                      const subsystem_t &s,
+    int upd_txfilter (vtx_t u,
                       const jobmeta_t &jobmeta,
-                      const std::map<std::string, int64_t> &dfu);
+                      const std::map<resource_type_t, int64_t> &dfu);
+    int upd_agfilter (vtx_t u,
+                      subsystem_t s,
+                      jobmeta_t jobmeta,
+                      const std::map<resource_type_t, int64_t> &dfu);
     int upd_idata (vtx_t u,
-                   const subsystem_t &s,
-                   const jobmeta_t &jobmeta,
-                   const std::map<std::string, int64_t> &dfu);
-    int upd_by_outedges (const subsystem_t &subsystem, const jobmeta_t &jobmeta, vtx_t u, edg_t e);
+                   subsystem_t s,
+                   jobmeta_t jobmeta,
+                   const std::map<resource_type_t, int64_t> &dfu);
+    int upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t u, edg_t e);
     int upd_plan (vtx_t u,
-                  const subsystem_t &s,
+                  subsystem_t s,
                   unsigned int needs,
                   bool excl,
                   const jobmeta_t &jobmeta,
                   bool full,
                   int &n);
     int accum_to_parent (vtx_t u,
-                         const subsystem_t &s,
+                         subsystem_t s,
                          unsigned int needs,
                          bool excl,
-                         const std::map<std::string, int64_t> &dfu,
-                         std::map<std::string, int64_t> &to_parent);
+                         const std::map<resource_type_t, int64_t> &dfu,
+                         std::map<resource_type_t, int64_t> &to_parent);
     int upd_meta (vtx_t u,
-                  const subsystem_t &s,
+                  subsystem_t s,
                   unsigned int needs,
                   bool excl,
                   int n,
                   const jobmeta_t &jobmeta,
-                  const std::map<std::string, int64_t> &dfu,
-                  std::map<std::string, int64_t> &to_parent);
+                  const std::map<resource_type_t, int64_t> &dfu,
+                  std::map<resource_type_t, int64_t> &to_parent);
     int upd_sched (vtx_t u,
                    std::shared_ptr<match_writers_t> &writers,
-                   const subsystem_t &s,
+                   subsystem_t s,
                    unsigned int needs,
                    bool excl,
                    int n,
                    const jobmeta_t &jobmeta,
                    bool full,
-                   const std::map<std::string, int64_t> &dfu,
-                   std::map<std::string, int64_t> &to_parent);
+                   const std::map<resource_type_t, int64_t> &dfu,
+                   std::map<resource_type_t, int64_t> &to_parent);
     int upd_upv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
-                 const subsystem_t &subsystem,
+                 subsystem_t subsystem,
                  unsigned int needs,
                  bool excl,
                  const jobmeta_t &jobmeta,
                  bool full,
-                 std::map<std::string, int64_t> &to_parent);
+                 std::map<resource_type_t, int64_t> &to_parent);
     int upd_dfv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
                  unsigned int needs,
                  bool excl,
                  const jobmeta_t &jobmeta,
                  bool full,
-                 std::map<std::string, int64_t> &to_parent,
+                 std::map<resource_type_t, int64_t> &to_parent,
                  bool emit_shadow);
     bool rem_tag (vtx_t u, int64_t jobid);
     int rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_t &mod_data);
     int mod_agfilter (vtx_t u,
                       int64_t jobid,
-                      const std::string &s,
+                      subsystem_t s,
                       const modify_data_t &mod_data,
                       bool &stop);
     int mod_idata (vtx_t u,
                    int64_t jobid,
-                   const std::string &s,
+                   subsystem_t s,
                    const modify_data_t &mod_data,
                    bool &stop);
     int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);
@@ -603,9 +605,8 @@ int dfu_impl_t::count_relevant_types (planner_multi_t *plan,
 {
     int rc = 0;
     size_t len = planner_multi_resources_len (plan);
-    const char *type = nullptr;
     for (unsigned int i = 0; i < len; ++i) {
-        type = planner_multi_resource_type_at (plan, i);
+        auto type = resource_type_t{planner_multi_resource_type_at (plan, i)};
         if (lookup.find (type) != lookup.end ()) {
             uint64_t n = (uint64_t)lookup.at (type);
             resource_counts.push_back (n);

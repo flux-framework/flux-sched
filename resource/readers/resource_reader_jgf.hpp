@@ -131,10 +131,10 @@ class resource_reader_jgf_t : public resource_reader_base_t {
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
     vtx_t vtx_in_graph (const resource_graph_t &g,
                         const resource_graph_metadata_t &m,
-                        const std::map<std::string, std::string> &paths,
+                        const std::map<subsystem_t, std::string> &paths,
                         int rank);
     bool is_root (const std::string &path);
-    int check_root (vtx_t v, resource_graph_t &g, std::map<std::string, bool> &is_roots);
+    int check_root (vtx_t v, resource_graph_t &g, std::map<subsystem_t, bool> &is_roots);
     int add_graph_metadata (vtx_t v, resource_graph_t &g, resource_graph_metadata_t &m);
     int remove_graph_metadata (vtx_t v, resource_graph_t &g, resource_graph_metadata_t &m);
     int remove_metadata_outedges (vtx_t source_vertex,
@@ -143,7 +143,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                                   resource_graph_metadata_t &m);
     int update_vmap (std::map<std::string, vmap_val_t> &vmap,
                      vtx_t v,
-                     const std::map<std::string, bool> &root_checks,
+                     const std::map<subsystem_t, bool> &root_checks,
                      const fetch_helper_t &fetcher);
     int add_vtx (resource_graph_t &g,
                  resource_graph_metadata_t &m,

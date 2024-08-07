@@ -442,7 +442,7 @@ and there are enough resource units to satisfy the job specification (i.e.,
 method argument `resources`).
 
 ```c++
- 84     int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+ 84     int dom_finish_vtx (vtx_t u, subsystem_t subsystem,
  85                         const std::vector<Flux::Jobspec::Resource> &resources,
  86                         const resource_graph_t &g, scoring_api_t &dfu)
  87     {

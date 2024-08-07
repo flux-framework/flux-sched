@@ -186,3 +186,7 @@ jobs:
         # maybe bring back later: fluxrm/flux-sched:bookworm-386
         docker manifest create fluxrm/flux-sched:bookworm fluxrm/flux-sched:bookworm-amd64 fluxrm/flux-sched:bookworm-arm64
         docker manifest push fluxrm/flux-sched:bookworm
+        for d in noble fedora40 ; do
+          docker manifest create fluxrm/flux-sched:$d fluxrm/flux-sched:$d-amd64 fluxrm/flux-sched:$d-arm64
+          docker manifest push fluxrm/flux-sched:$d
+        done

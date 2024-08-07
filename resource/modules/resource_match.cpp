@@ -893,7 +893,7 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
         flux_log (ctx->h, LOG_ERR, "%s", future_strerror (f, errno));
         goto done;
     }
-    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+    if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
         if (rank != IDSET_INVALID_ID) {
             if (!(hwloc_xml = get_array_string (xml_array, rank)))
                 goto done;
@@ -908,13 +908,13 @@ static int grow_resource_db_hwloc (std::shared_ptr<resource_ctx_t> &ctx,
 
     // If the above grow() does not grow resources in the "containment"
     // subsystem, this condition can still be false
-    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+    if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
         rc = -1;
         errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: cluster vertex is unavailable", __FUNCTION__);
         goto done;
     }
-    v = db.metadata.roots.at ("containment");
+    v = db.metadata.roots.at (containment_sub);
 
     rank = idset_next (ids, rank);
     while (rank != IDSET_INVALID_ID) {
@@ -942,7 +942,7 @@ static int grow_resource_db_rv1exec (std::shared_ptr<resource_ctx_t> &ctx,
     resource_graph_db_t &db = *(ctx->db);
     char *rv1_str = nullptr;
 
-    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+    if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
         if ((rv1_str = json_dumps (resobj, JSON_INDENT (0))) == NULL) {
             errno = ENOMEM;
             goto done;
@@ -1062,7 +1062,7 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx, json_t *r
         flux_log_error (ctx->h, "%s: unpack_parent_job_resources", __FUNCTION__);
         goto done;
     }
-    if (db.metadata.roots.find ("containment") == db.metadata.roots.end ()) {
+    if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
         if (p_r_lite && (rc = remap_jgf_namespace (ctx, r_lite, p_r_lite)) < 0) {
             flux_log_error (ctx->h, "%s: remap_jgf_namespace", __FUNCTION__);
             goto done;
@@ -1389,7 +1389,7 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
     while (getline (ss, token, ',')) {
         size_t found = token.find_first_of (":");
         if (found == std::string::npos) {
-            subsystem = token;
+            subsystem = subsystem_t{token};
             if (!ctx->db->known_subsystem (subsystem)) {
                 rc = -1;
                 errno = EINVAL;
@@ -1397,7 +1397,7 @@ static int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
             }
             ctx->matcher->add_subsystem (subsystem, "*");
         } else {
-            subsystem = token.substr (0, found);
+            subsystem = subsystem_t{token.substr (0, found)};
             if (!ctx->db->known_subsystem (subsystem)) {
                 rc = -1;
                 errno = EINVAL;

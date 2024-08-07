@@ -436,35 +436,16 @@ def parse_match(parser_m: argparse.ArgumentParser):
     )
 
     #
-    # Positional argument for match allocate sub-command
+    # Jobspec positional argument for all match sub-commands
     #
-    parser_ma.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
+    for subparser in parser_ma, parser_ms, parser_mr, parser_fe:
+        subparser.add_argument(
+            "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
+        )
+
     parser_ma.set_defaults(func=match_alloc_action)
-
-    #
-    # Positional argument for match allocate_with_satisfiability sub-command
-    #
-    parser_ms.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_ms.set_defaults(func=match_alloc_sat_action)
-
-    #
-    # Positional argument for match allocate_orelse_reserve sub-command
-    #
-    parser_mr.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_mr.set_defaults(func=match_reserve_action)
-
-    #
-    # Positional argument for match satisfiability sub-command
-    #
-    parser_fe.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_fe.set_defaults(func=satisfiability_action)
 
 

@@ -1,3 +1,5 @@
+add_library(fluxion-data SHARED schema/data_std.cpp)
+install(TARGETS fluxion-data LIBRARY)
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
 set(RESOURCE_HEADERS 
@@ -11,7 +13,6 @@ set(RESOURCE_HEADERS
     policies/dfu_match_policy_factory.hpp
     jobinfo/jobinfo.hpp
     schema/resource_graph.hpp
-    schema/data_std.hpp
     schema/infra_data.hpp
     schema/sched_data.hpp
     schema/resource_base.hpp
@@ -39,7 +40,7 @@ set(RESOURCE_HEADERS
     evaluators/expr_eval_vtx_target.hpp
     config/system_defaults.hpp
     store/resource_graph_store.hpp
-    )
+)
 
 add_library(resource STATIC
     policies/dfu_match_locality.cpp
@@ -76,6 +77,7 @@ add_library(resource STATIC
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
+    intern
     )
 target_link_libraries(resource PUBLIC
     flux::hostlist
@@ -88,6 +90,7 @@ target_link_libraries(resource PUBLIC
     Boost::regex
     jobspec_conv
     Boost::filesystem
+    fluxion-data
     )
 add_sanitizers(resource)
 

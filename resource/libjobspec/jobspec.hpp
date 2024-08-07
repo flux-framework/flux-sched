@@ -39,6 +39,7 @@
 
 #include "parse_error.hpp"
 #include "constraint.hpp"
+#include "resource/schema/data_std.hpp"
 
 namespace Flux {
 namespace Jobspec {
@@ -47,7 +48,7 @@ enum class tristate_t { FALSE, TRUE, UNSPECIFIED };
 
 class Resource {
    public:
-    std::string type;
+    resource_model::resource_type_t type;
     struct {
         unsigned min;
         unsigned max = std::numeric_limits<unsigned int>::max ();
@@ -62,7 +63,7 @@ class Resource {
 
     // user_data has no library internal usage, it is
     // entirely for the convenience of external code
-    std::unordered_map<std::string, int64_t> user_data;
+    std::unordered_map<resource_model::resource_type_t, int64_t> user_data;
 
     Resource (const YAML::Node &);
 };

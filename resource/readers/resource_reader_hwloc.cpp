@@ -44,14 +44,14 @@ vtx_t resource_reader_hwloc_t::create_cluster_vertex (resource_graph_t &g,
                                                       resource_graph_metadata_t &m)
 {
     // generate cluster root vertex
-    const std::string subsys = "containment";
+    const subsystem_t subsys{"containment"};
     const std::map<std::string, std::string> properties;
     vtx_t v = add_new_vertex (g,
                               m,
                               boost::graph_traits<resource_graph_t>::null_vertex (),
                               0,
                               subsys,
-                              "cluster",
+                              cluster_rt,
                               "cluster",
                               "",
                               properties,
@@ -66,8 +66,8 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
                                                resource_graph_metadata_t &m,
                                                const vtx_t &parent,
                                                int64_t id,
-                                               const std::string &subsys,
-                                               const std::string &type,
+                                               subsystem_t subsys,
+                                               resource_type_t type,
                                                const std::string &basename,
                                                const std::string &name,
                                                const std::map<std::string, std::string> &properties,
@@ -357,9 +357,18 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
     if (!supported_resource) {
         valid_ancestor = parent;
     } else {
-        const std::string subsys = "containment";
-        vtx_t v =
-            add_new_vertex (g, m, parent, id, subsys, type, basename, name, properties, size, rank);
+        const subsystem_t subsys ("containment");
+        vtx_t v = add_new_vertex (g,
+                                  m,
+                                  parent,
+                                  id,
+                                  subsys,
+                                  resource_type_t{type},
+                                  basename,
+                                  name,
+                                  properties,
+                                  size,
+                                  rank);
         valid_ancestor = v;
         std::string relation = "contains";
         edg_t e;

@@ -21,6 +21,8 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
+const static resource_type_t ANY_RESOURCE_TYPE{"*"};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Matcher Data Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,9 +56,9 @@ matcher_data_t::~matcher_data_t ()
     m_subsystems_map.clear ();
 }
 
-int matcher_data_t::add_subsystem (const subsystem_t s, const std::string tf)
+int matcher_data_t::add_subsystem (subsystem_t s, const std::string tf)
 {
-    if (m_subsystems_map.find (s) == m_subsystems_map.end ()) {
+    if (m_subsystems_map[s].empty ()) {
         m_subsystems.push_back (s);
         m_subsystems_map[s].insert (tf);
         return 0;
@@ -79,7 +81,7 @@ const std::vector<subsystem_t> &matcher_data_t::subsystems () const
     return m_subsystems;
 }
 
-const subsystem_t &matcher_data_t::dom_subsystem () const
+subsystem_t matcher_data_t::dom_subsystem () const
 {
     if (m_subsystems.begin () != m_subsystems.end ())
         return *(m_subsystems.begin ());
@@ -145,7 +147,7 @@ unsigned int matcher_util_api_t::calc_effective_max (const Flux::Jobspec::Resour
     return calc_count (resource, std::numeric_limits<unsigned int>::max ());
 }
 
-int matcher_util_api_t::register_resource_pair (const std::string &subsystem, std::string &r_pair)
+int matcher_util_api_t::register_resource_pair (subsystem_t subsystem, std::string &r_pair)
 {
     int rc = -1;
     size_t pos = 0;
@@ -162,22 +164,21 @@ int matcher_util_api_t::register_resource_pair (const std::string &subsystem, st
         goto done;
     }
     if (h == "ALL")
-        h = ANY_RESOURCE_TYPE;
+        h = ANY_RESOURCE_TYPE.get ();
     l = r_pair.erase (0, pos + split.length ());
     l.erase (std::remove_if (l.begin (), l.end (), ::isspace), l.end ());
     if (l.empty ()) {
         errno = EINVAL;
         goto done;
     }
-    set_pruning_type (subsystem, h, l);
+    set_pruning_type (subsystem, resource_type_t{h}, resource_type_t{l});
     rc = 0;
 
 done:
     return rc;
 }
 
-int matcher_util_api_t::set_pruning_types_w_spec (const std::string &subsystem,
-                                                  const std::string &spec)
+int matcher_util_api_t::set_pruning_types_w_spec (subsystem_t subsystem, const std::string &spec)
 {
     int rc = -1;
     size_t pos = 0;
@@ -206,9 +207,9 @@ done:
     return rc;
 }
 
-void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
-                                           const std::string &anchor_type,
-                                           const std::string &prune_type)
+void matcher_util_api_t::set_pruning_type (subsystem_t subsystem,
+                                           resource_type_t anchor_type,
+                                           resource_type_t prune_type)
 {
     // Use operator[] to create an entry if subsystem key doesn't exist
     auto &s = m_pruning_types[subsystem];
@@ -234,9 +235,9 @@ void matcher_util_api_t::set_pruning_type (const std::string &subsystem,
     m_total_set[subsystem].insert (prune_type);
 }
 
-bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
-                                             const std::string &anchor_type,
-                                             const std::string &prune_type)
+bool matcher_util_api_t::is_my_pruning_type (subsystem_t subsystem,
+                                             resource_type_t anchor_type,
+                                             resource_type_t prune_type)
 {
     bool rc = false;
     try {
@@ -254,8 +255,7 @@ bool matcher_util_api_t::is_my_pruning_type (const std::string &subsystem,
     return rc;
 }
 
-bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
-                                          const std::string &prune_type)
+bool matcher_util_api_t::is_pruning_type (subsystem_t subsystem, resource_type_t prune_type)
 {
     bool rc = true;
     try {
@@ -267,9 +267,9 @@ bool matcher_util_api_t::is_pruning_type (const std::string &subsystem,
     return rc;
 }
 
-bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
-                                               const std::string &anchor_type,
-                                               std::vector<std::string> &out)
+bool matcher_util_api_t::get_my_pruning_types (subsystem_t subsystem,
+                                               resource_type_t anchor_type,
+                                               std::vector<resource_type_t> &out)
 {
     bool rc = true;
     try {
@@ -295,7 +295,7 @@ bool matcher_util_api_t::get_my_pruning_types (const std::string &subsystem,
     return rc;
 }
 
-int matcher_util_api_t::add_exclusive_resource_type (const std::string &type)
+int matcher_util_api_t::add_exclusive_resource_type (resource_type_t type)
 {
     int rc = 0;
     if (m_x_resource_types.find (type) == m_x_resource_types.end ()) {
@@ -308,12 +308,12 @@ int matcher_util_api_t::add_exclusive_resource_type (const std::string &type)
     return rc;
 }
 
-const std::set<std::string> &matcher_util_api_t::get_exclusive_resource_types () const
+const std::set<resource_type_t> &matcher_util_api_t::get_exclusive_resource_types () const
 {
     return m_x_resource_types;
 }
 
-int matcher_util_api_t::reset_exclusive_resource_types (const std::set<std::string> &x_types)
+int matcher_util_api_t::reset_exclusive_resource_types (const std::set<resource_type_t> &x_types)
 {
     int rc = 0;
     m_x_resource_types.clear ();
@@ -327,7 +327,7 @@ int matcher_util_api_t::reset_exclusive_resource_types (const std::set<std::stri
     return rc;
 }
 
-bool matcher_util_api_t::is_resource_type_exclusive (const std::string &type)
+bool matcher_util_api_t::is_resource_type_exclusive (resource_type_t type)
 {
     return m_x_resource_types.find (type) != m_x_resource_types.end ();
 }

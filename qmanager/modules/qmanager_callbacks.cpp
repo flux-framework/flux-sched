@@ -97,6 +97,7 @@ int qmanager_cb_t::post_sched_loop (
             // if old_at == at, then no reason to send this annotation again.
             if (job->schedule.at == job->schedule.old_at)
                 continue;
+            job->schedule.old_at = job->schedule.at;
             if (schedutil_alloc_respond_annotate_pack (schedutil,
                                                        job->msg,
                                                        "{ s:{s:f} }",

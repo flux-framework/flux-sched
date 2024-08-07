@@ -48,8 +48,8 @@ namespace detail {
 class evals_t {
    public:
     evals_t ();
-    evals_t (int64_t cutline, const std::string &res_type);
-    evals_t (const std::string &res_type);
+    evals_t (int64_t cutline, resource_type_t res_type);
+    evals_t (resource_type_t res_type);
     evals_t (const evals_t &o);
     ~evals_t ();
     evals_t &operator= (const evals_t &o);
@@ -64,7 +64,7 @@ class evals_t {
     int64_t set_cutline (int64_t cutline);
     unsigned int best_k () const;
     unsigned int best_i () const;
-    int merge (evals_t &o);
+    int merge (const evals_t &o);
     void eval_egroups_iter_reset ();
     std::vector<eval_egroup_t>::iterator eval_egroups_iter_next ();
     std::vector<eval_egroup_t>::iterator eval_egroups_end ();
@@ -118,7 +118,7 @@ class evals_t {
     std::vector<eval_egroup_t> m_eval_egroups;
     std::vector<eval_egroup_t>::iterator m_iter_cur;
     bool m_iter_cur_reset = true;
-    std::string m_resrc_type;
+    resource_type_t m_resrc_type;
     int64_t m_cutline = 0;
     unsigned int m_qual_count = 0;
     unsigned int m_total_count = 0;

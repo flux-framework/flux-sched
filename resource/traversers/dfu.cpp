@@ -34,12 +34,12 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
                                      detail::jobmeta_t &meta,
                                      bool x,
                                      vtx_t root,
-                                     std::unordered_map<std::string, int64_t> &dfv)
+                                     std::unordered_map<resource_type_t, int64_t> &dfv)
 {
     int rc = 0;
     std::vector<uint64_t> agg;
     int saved_errno = errno;
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
 
     meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
@@ -62,13 +62,12 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
 int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
                                        match_op_t op,
                                        vtx_t root,
-                                       std::unordered_map<std::string, int64_t> &dfv,
-                                       const subsystem_t &dom)
+                                       std::unordered_map<resource_type_t, int64_t> &dfv)
 {
     if (op == match_op_t::MATCH_UNKNOWN)
         return 0;
 
-    const auto target_nodes = dfv["node"];
+    const auto target_nodes = dfv[node_rt];
     const bool checking_satisfiability =
         op == match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY || op == match_op_t::MATCH_SATISFIABILITY;
 
@@ -89,7 +88,7 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
         }
     }
 
-    const auto by_type_iter = get_graph_db ()->metadata.by_type.find ("node");
+    const auto by_type_iter = get_graph_db ()->metadata.by_type.find (node_rt);
     if (by_type_iter == get_graph_db ()->metadata.by_type.end ())
         return 0;
     auto &all_nodes = by_type_iter->second;
@@ -139,7 +138,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                bool x,
                                match_op_t op,
                                vtx_t root,
-                               std::unordered_map<std::string, int64_t> &dfv)
+                               std::unordered_map<resource_type_t, int64_t> &dfv)
 {
     int64_t t = 0;
     int64_t sched_iters = 1;  // Track the schedule iterations in perf stats
@@ -149,11 +148,11 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     uint64_t duration = 0;
     int saved_errno = errno;
     planner_multi_t *p = NULL;
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
 
     // precheck to see if enough resources are available for this to be feasible
-    if (request_feasible (meta, op, root, dfv, dom) < 0)
-        return -1;
+    if ((rc = request_feasible (meta, op, root, dfv)) < 0)
+        goto out;
 
     if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
@@ -323,7 +322,7 @@ int dfu_traverser_t::initialize ()
     m_initialized = false;
     detail::dfu_impl_t::reset_color ();
     for (auto &subsystem : get_match_cb ()->subsystems ()) {
-        std::map<std::string, int64_t> from_dfv;
+        std::map<resource_type_t, int64_t> from_dfv;
         if (get_graph_db ()->metadata.roots.find (subsystem)
             == get_graph_db ()->metadata.roots.end ()) {
             errno = ENOTSUP;
@@ -351,7 +350,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           int64_t jobid,
                           int64_t *at)
 {
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
     graph_duration_t graph_duration = get_graph_db ()->metadata.graph_duration;
     if (!get_graph () || !get_graph_db ()
         || (get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ())
@@ -367,9 +366,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
-    const std::set<std::string> exclusive_types =
-        detail::dfu_impl_t::get_exclusive_resource_types ();
-    std::unordered_map<std::string, int64_t> dfv;
+    const auto exclusive_types = detail::dfu_impl_t::get_exclusive_resource_types ();
+    std::unordered_map<resource_type_t, int64_t> dfv;
 
     detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
@@ -420,7 +418,7 @@ int dfu_traverser_t::run (const std::string &str,
         return -1;
     }
 
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
     if (get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()) {
         errno = EINVAL;
         return -1;
@@ -442,7 +440,7 @@ int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std:
 
 int dfu_traverser_t::remove (int64_t jobid)
 {
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
     if (!get_graph () || !get_graph_db ()
         || get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()
         || !get_match_cb ()) {
@@ -459,7 +457,7 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
                              int64_t jobid,
                              bool &full_cancel)
 {
-    const subsystem_t &dom = get_match_cb ()->dom_subsystem ();
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
     if (!get_graph () || !get_graph_db ()
         || get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()
         || !get_match_cb ()) {

@@ -78,6 +78,14 @@ class sim_match_writers_t : public match_writers_t {
     std::stringstream m_out;
 };
 
+template<typename T>
+concept associative_cstr_key = requires (T h, std::string s) {
+    { h.begin () };
+    { h.end () };
+    { h.begin ()->first.c_str () } -> std::convertible_to<const char *>;
+    { h.begin ()->second.c_str () } -> std::convertible_to<const char *>;
+};
+
 /*! JGF match writers class for a matched resource set
  */
 class jgf_match_writers_t : public match_writers_t {
@@ -112,7 +120,41 @@ class jgf_match_writers_t : public match_writers_t {
                        const vtx_t &u,
                        unsigned int needs,
                        bool exclusive);
-    int map2json (json_t *o, const std::map<std::string, std::string> &mp, const char *key);
+
+    int map2json (json_t *o, associative_cstr_key auto const &mp, const char *key)
+    {
+        int rc = 0;
+        if (!mp.empty ()) {
+            json_t *p = NULL;
+            if (!(p = json_object ())) {
+                rc = -1;
+                errno = ENOMEM;
+                goto out;
+            }
+            for (auto &kv : mp) {
+                json_t *vo = NULL;
+                if (!(vo = json_string (kv.second.c_str ()))) {
+                    json_decref (p);
+                    rc = -1;
+                    errno = ENOMEM;
+                    goto out;
+                }
+                if ((rc = json_object_set_new (p, kv.first.c_str (), vo)) == -1) {
+                    json_decref (p);
+                    errno = ENOMEM;
+                    goto out;
+                }
+            }
+            if ((rc = json_object_set_new (o, key, p)) == -1) {
+                errno = ENOMEM;
+                goto out;
+            }
+        }
+
+    out:
+        return rc;
+    }
+
     int emit_edg_meta (json_t *o, const resource_graph_t &g, const edg_t &e);
     int alloc_json_arrays ();
     int check_array_sizes ();
@@ -152,10 +194,10 @@ class rlite_match_writers_t : public match_writers_t {
     int fill (json_t *rlite_array, json_t *host_array, json_t *props);
     int fill_hosts (std::vector<std::string> &hosts, json_t *host_array);
 
-    std::map<std::string, std::vector<int64_t>> m_reducer;
+    std::map<resource_type_t, std::vector<int64_t>> m_reducer;
     std::map<std::string, std::vector<rank_host_t>> m_gl_gatherer;
     std::map<std::string, std::vector<int64_t>> m_gl_prop_gatherer;
-    std::set<std::string> m_gatherer;
+    std::set<resource_type_t> m_gatherer;
 };
 
 /*! R Version 1 match writers class for a matched resource set
