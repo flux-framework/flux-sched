@@ -5,11 +5,12 @@ ARG UID=1000
 
 # Install extra buildrequires for flux-sched:
 RUN sudo dnf -y install \
-	boost-devel \
-	boost-graph \
-	boost-system \
-	boost-filesystem \
-	boost-regex \
+	boost1.78-devel \
+	boost1.78-json \
+	boost1.78-graph \
+	boost1.78-system \
+	boost1.78-filesystem \
+	boost1.78-regex \
 	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \

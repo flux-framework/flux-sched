@@ -8,6 +8,7 @@ ARG UID=1000
 #  Install flux-sched dependencies
 RUN sudo dnf -y install \
 	boost-devel \
+	boost-json \
 	boost-graph \
 	boost-system \
 	boost-filesystem \
