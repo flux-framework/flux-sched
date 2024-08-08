@@ -19,6 +19,8 @@ extern "C" {
 #include "resource/libjobspec/jobspec.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
 
+#include <boost/json.hpp>
+
 using namespace Flux;
 using namespace Flux::Jobspec;
 using namespace Flux::queue_manager;
@@ -219,6 +221,39 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
 out:
     flux_future_destroy (f);
     return rc;
+}
+
+namespace Flux::queue_manager {
+// Namespace required to activate ADL
+void tag_invoke (boost::json::value_from_tag const &,
+                 boost::json::value &jv,
+                 queue_policy_base_t const &queue)
+{
+    queue.to_json_value (jv);
+}
+}  // namespace Flux::queue_manager
+void qmanager_cb_t::jobmanager_stats_get_cb (flux_t *h,
+                                             flux_msg_handler_t *w,
+                                             const flux_msg_t *msg,
+                                             void *arg)
+{
+    qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+
+    boost::json::value stats;
+    auto &queue_stats = stats.emplace_object ();
+    for (auto &[qname, queue] : ctx->queues) {
+        queue_stats[qname] = boost::json::value_from (*queue);
+    }
+    if (flux_respond (h, msg, boost::json::serialize (stats).c_str ()) < 0) {
+        flux_log_error (h, "%s: flux_respond", __PRETTY_FUNCTION__);
+    }
+}
+void qmanager_cb_t::jobmanager_stats_clear_cb (flux_t *h,
+                                               flux_msg_handler_t *w,
+                                               const flux_msg_t *msg,
+                                               void *arg)
+{
+    qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
 }
 
 void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg)
@@ -475,6 +510,28 @@ int qmanager_safe_cb_t::jobmanager_hello_cb (flux_t *h,
     if (exception_safe_wrapper.bad ())
         flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
     return rc;
+}
+
+void qmanager_safe_cb_t::jobmanager_stats_get_cb (flux_t *h,
+                                                  flux_msg_handler_t *w,
+                                                  const flux_msg_t *msg,
+                                                  void *arg)
+{
+    eh_wrapper_t exception_safe_wrapper;
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_stats_get_cb, h, w, msg, arg);
+    if (exception_safe_wrapper.bad ())
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
+}
+
+void qmanager_safe_cb_t::jobmanager_stats_clear_cb (flux_t *h,
+                                                    flux_msg_handler_t *w,
+                                                    const flux_msg_t *msg,
+                                                    void *arg)
+{
+    eh_wrapper_t exception_safe_wrapper;
+    exception_safe_wrapper (qmanager_cb_t::jobmanager_stats_clear_cb, h, w, msg, arg);
+    if (exception_safe_wrapper.bad ())
+        flux_log_error (h, "%s: %s", __FUNCTION__, exception_safe_wrapper.get_err_message ());
 }
 
 void qmanager_safe_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg)

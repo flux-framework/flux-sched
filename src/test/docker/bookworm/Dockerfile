@@ -7,10 +7,11 @@ USER root
 # Install extra buildrequires for flux-sched:
 RUN apt-get update
 RUN apt-get -qq install -y --no-install-recommends \
-	libboost-graph-dev \
-	libboost-system-dev \
-	libboost-filesystem-dev \
-	libboost-regex-dev \
+	libboost-graph1.81-dev \
+	libboost-json1.81-dev \
+	libboost-system1.81-dev \
+	libboost-filesystem1.81-dev \
+	libboost-regex1.81-dev \
 	libyaml-cpp-dev \
 	libedit-dev \
 	ninja-build \

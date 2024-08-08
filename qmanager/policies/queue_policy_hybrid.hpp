@@ -27,7 +27,11 @@ class queue_policy_hybrid_t : public queue_policy_bf_base_t<reapi_type> {
     queue_policy_hybrid_t &operator= (const queue_policy_hybrid_t &p) = default;
     queue_policy_hybrid_t &operator= (queue_policy_hybrid_t &&p) = default;
 
-    virtual int apply_params ();
+    int apply_params () override;
+    const std::string_view policy () const override
+    {
+        return "hybrid";
+    }
 };
 
 }  // namespace detail

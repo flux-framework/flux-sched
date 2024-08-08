@@ -21,17 +21,16 @@ namespace detail {
 template<class reapi_type>
 class queue_policy_bf_base_t : public queue_policy_base_t {
    public:
-    virtual ~queue_policy_bf_base_t ();
-    virtual int run_sched_loop (void *h, bool use_alloced_queue);
+    int run_sched_loop (void *h, bool use_alloced_queue) override;
     int cancel_sched_loop () override;
-    virtual int reconstruct_resource (void *h, std::shared_ptr<job_t> job, std::string &R_out);
-    virtual int apply_params ();
-    virtual int handle_match_success (flux_jobid_t jobid,
-                                      const char *status,
-                                      const char *R,
-                                      int64_t at,
-                                      double ov);
-    virtual int handle_match_failure (flux_jobid_t jobid, int errcode);
+    int reconstruct_resource (void *h, std::shared_ptr<job_t> job, std::string &R_out) override;
+    int apply_params () override;
+    int handle_match_success (flux_jobid_t jobid,
+                              const char *status,
+                              const char *R,
+                              int64_t at,
+                              double ov) override;
+    int handle_match_failure (flux_jobid_t jobid, int errcode) override;
     int cancel (void *h,
                 flux_jobid_t id,
                 const char *R,

@@ -7,6 +7,7 @@ ARG UID=1000
 RUN sudo apt-get update
 RUN sudo apt-get -qq install -y --no-install-recommends \
 	libboost-graph-dev \
+	libboost-json-dev \
 	libboost-system-dev \
 	libboost-filesystem-dev \
 	libboost-regex-dev \
