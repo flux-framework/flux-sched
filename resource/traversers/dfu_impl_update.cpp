@@ -368,11 +368,13 @@ int dfu_impl_t::rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_
 
     auto span_it = (*m_graph)[u].idata.x_spans.find (jobid);
     if (span_it == (*m_graph)[u].idata.x_spans.end ()) {
-        if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
+        if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": jobid isn't found in x_spans table.\n ";
             goto done;
         } else {
+            // Valid for CANCEL if clearing inconsistency between
+            // core and sched.
             rc = 0;
             goto done;
         }
