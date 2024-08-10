@@ -335,13 +335,15 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const 
 {
     flux_jobid_t id;
     json_t *Res;
+    int final = 0;
     const char *Rstr = NULL;
     qmanager_cb_ctx_t *ctx = nullptr;
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     std::shared_ptr<queue_policy_base_t> queue;
     std::string queue_name;
 
-    if (flux_request_unpack (msg, NULL, "{s:I s:O}", "id", &id, "R", &Res) < 0) {
+    if (flux_request_unpack (msg, NULL, "{s:I s:O s?b}", "id", &id, "R", &Res, "final", &final)
+        < 0) {
         flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
         return;
     }
@@ -357,7 +359,7 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const 
                         static_cast<intmax_t> (id));
         goto done;
     }
-    if ((queue->remove (static_cast<void *> (h), id, Rstr)) < 0) {
+    if ((queue->remove (static_cast<void *> (h), id, final, Rstr)) < 0) {
         flux_log_error (h,
                         "%s: remove (queue=%s id=%jd)",
                         __FUNCTION__,
