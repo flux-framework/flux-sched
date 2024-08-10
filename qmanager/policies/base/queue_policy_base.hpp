@@ -621,14 +621,17 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *                   service module such as qmanager, it is expected
      *                   to be a pointer to a flux_t object.
      *  \param id        jobid of flux_jobid_t type.
+     *  \param final     bool indicating if this is the final partial release RPC
+     *                   for this jobid.
      *  \param R         Resource set for partial cancel
      *  \return          0 on success; -1 on error.
      *                       ENOENT: unknown id.
      */
-    int remove (void *h, flux_jobid_t id, const char *R)
+    int remove (void *h, flux_jobid_t id, bool final, const char *R)
     {
         int rc = -1;
         bool full_removal = false;
+        flux_t *flux_h = static_cast<flux_t *> (h);
 
         auto job_it = m_jobs.find (id);
         if (job_it == m_jobs.end ()) {
@@ -643,28 +646,55 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
             case job_state_kind_t::ALLOC_RUNNING:
                 // deliberately fall through
             case job_state_kind_t::RUNNING:
-                if ((rc = cancel (h, job_it->second->id, R, true, full_removal) != 0))
-                    break;
-                if (full_removal) {
+                if (cancel (h, job_it->second->id, R, true, full_removal) != 0) {
+                    flux_log_error (flux_h,
+                                    "%s: .free RPC partial cancel failed for jobid "
+                                    "%jd",
+                                    __FUNCTION__,
+                                    static_cast<intmax_t> (id));
+                    errno = EINVAL;
+                    goto out;
+                }
+                // We still want to run the sched loop even if there's an inconsistent state
+                set_schedulability (true);
+                if (full_removal || final) {
                     m_alloced.erase (job_it->second->t_stamps.running_ts);
                     m_running.erase (job_it->second->t_stamps.running_ts);
                     job_it->second->t_stamps.complete_ts = m_cq_cnt++;
                     job_it->second->state = job_state_kind_t::COMPLETE;
                     m_jobs.erase (job_it);
+                    if (final && !full_removal) {
+                        // This error condition indicates a discrepancy between core and sched.
+                        flux_log_error (flux_h,
+                                        "%s: Final .free RPC failed to remove all resources for "
+                                        "jobid "
+                                        "%jd",
+                                        __FUNCTION__,
+                                        static_cast<intmax_t> (id));
+                        // Run a full cancel to clean up all remaining allocated resources
+                        if (cancel (h, job_it->second->id, true) != 0) {
+                            flux_log_error (flux_h,
+                                            "%s: .free RPC full cancel failed for jobid "
+                                            "%jd",
+                                            __FUNCTION__,
+                                            static_cast<intmax_t> (id));
+                        }
+                        errno = EPROTO;
+                        goto out;
+                    }
                 }
-                set_schedulability (true);
                 break;
             default:
                 break;
         }
+
+        rc = 0;
+    out:
         cancel_sched_loop ();
         // blocked jobs must be reconsidered after a job completes
         // this covers cases where jobs that couldn't run because of an
         // existing job's reservation can when it completes early
         reconsider_blocked_jobs ();
-
-        rc = 0;
-    out:
         return rc;
     }
 
@@ -688,6 +718,26 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
     virtual int cancel (void *h, flux_jobid_t id, const char *R, bool noent_ok, bool &full_removal)
     {
         full_removal = true;
+        return 0;
+    }
+
+    /*! Remove a job whose jobid is id from any internal queues
+     *  (e.g., pending queue, running queue, and alloced queue.)
+     *  If succeeds, it changes the pending queue or resource
+     *  state. This queue becomes "schedulable" if pending job
+     *  queue is not empty: i.e., is_schedulable() returns true;
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module such as qmanager, it is expected
+     *                   to be a pointer to a flux_t object.
+     *  \param id        jobid of flux_jobid_t type.
+     *  \param noent_ok  don't return an error on nonexistent jobid
+     *  \return          0 on success; -1 on error.
+     *                       ENOENT: unknown id.
+     */
+    virtual int cancel (void *h, flux_jobid_t id, bool noent_ok)
+    {
         return 0;
     }
 

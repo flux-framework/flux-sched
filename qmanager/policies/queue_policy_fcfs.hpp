@@ -39,6 +39,7 @@ class queue_policy_fcfs_t : public queue_policy_base_t {
                 const char *R,
                 bool noent_ok,
                 bool &full_removal) override;
+    int cancel (void *h, flux_jobid_t id, bool noent_ok) override;
 
    private:
     int pack_jobs (json_t *jobs);

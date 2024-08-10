@@ -36,6 +36,7 @@ class queue_policy_bf_base_t : public queue_policy_base_t {
                 const char *R,
                 bool noent_ok,
                 bool &full_removal) override;
+    int cancel (void *h, flux_jobid_t id, bool noent_ok) override;
 
    protected:
     unsigned int m_reservation_depth;
