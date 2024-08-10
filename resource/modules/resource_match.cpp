@@ -1931,6 +1931,12 @@ static int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
             std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
             info->state = job_lifecycle_t::ERROR;
         }
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "%s: dfu_traverser_t::remove (id=%jd): %s",
+                  __FUNCTION__,
+                  static_cast<intmax_t> (jobid),
+                  ctx->traverser->err_message ().c_str ());
         goto out;
     }
     if (full_removal && is_existent_jobid (ctx, jobid))
