@@ -103,10 +103,13 @@ struct resource_ctx_t : public resource_interface_t {
     bool m_resources_down_updated = true; /* down resources have been updated */
     /* last time allocated resources search updated */
     std::chrono::time_point<std::chrono::system_clock> m_resources_alloc_updated;
+
     /* R caches */
     json::value m_r_all;
     json::value m_r_down;
     json::value m_r_alloc;
+    /* All resources from resource.acquire */
+    json_t *m_acquired_resources = NULL;
 };
 
 msg_wrap_t::msg_wrap_t (const msg_wrap_t &o)
@@ -290,7 +293,7 @@ static const struct flux_msg_handler_spec htab[] =
      FLUX_MSGHANDLER_TABLE_END};
 
 static const struct flux_msg_handler_spec satisfiability_htab[] =
-    {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0},
+    {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-satisfiability.satisfiability", satisfiability_request_cb, 0},
      FLUX_MSGHANDLER_TABLE_END};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -441,7 +444,6 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
     //If this is the satisfiability version of the module, we can be on any rank and
     //  we only want to handle the satisfiability RPC.
     if (ctx->opts.get_opt ().get_match_satisfiability ()) {
-        flux_log_error (h, "satisfiability module initialized");
         if (flux_msg_handler_addvec (h, satisfiability_htab, (void *)h, &ctx->handlers) < 0) {
             flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
             goto error;
@@ -1272,24 +1274,32 @@ static void update_resource (flux_future_t *f, void *arg)
     json_t *resources = NULL;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
-    if ((rc = flux_rpc_get_unpack (f,
-                                   "{s?:o s?:s s?:s s?:F}",
-                                   "resources",
-                                   &resources,
-                                   "up",
-                                   &up,
-                                   "down",
-                                   &down,
-                                   "expiration",
-                                   &expiration))
+    if (rc = flux_rpc_get_unpack (f,
+                                  "{s?:o s?:s s?:s s?:F}",
+                                  "resources",
+                                  &resources,
+                                  "up",
+                                  &up,
+                                  "down",
+                                  &down,
+                                  "expiration",
+                                  &expiration)
         < 0) {
-        flux_log_error (ctx->h, "%s: exiting due to resource.acquire failure", __FUNCTION__);
+        flux_log_error (ctx->h,
+                        ctx->opts.get_opt ().get_match_satisfiability () \
+                            ? "%s: error unpacking sched-fluxion-resource.notify" \
+                            : "%s: error unpacking resource.acquire",
+                        __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto done;
     }
     if ((rc = update_resource_db (ctx, resources, up, down)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
+    }
+    if (resources != NULL) {
+        ctx->m_acquired_resources = resources;
+        json_incref (resources);
     }
     if (expiration >= 0.) {
         /*  Update graph duration:
@@ -1298,8 +1308,11 @@ static void update_resource (flux_future_t *f, void *arg)
             std::chrono::system_clock::from_time_t ((time_t)expiration);
         flux_log (ctx->h, LOG_INFO, "resource expiration updated to %.2f", expiration);
     }
+    if (ctx->opts.get_opt ().get_match_satisfiability ())
+        goto done;
+    // Broadcast resoure updates to other fluxion modules via notify messages
     for (auto &kv : ctx->notify_msgs) {
-        if ((rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
+        if (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL) < 0) {
             flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
         }
     }
@@ -1313,8 +1326,18 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = -1;
     json_t *o = NULL;
 
+    // If this module instance is handling satisfiability RPCs, use
+    //  sched-fluxion-resource.notify instead of .acquire to avoid 
+    //  using more than one resource.acquire RPC, which is not allowed
     if (!(ctx->update_f =
-              flux_rpc (ctx->h, "resource.acquire", NULL, FLUX_NODEID_ANY, FLUX_RPC_STREAMING))) {
+        flux_rpc (ctx->h,
+                  ctx->opts.get_opt ().get_match_satisfiability () \
+                      ? "sched-fluxion-resource.notify" \
+                      : "resource.acquire",
+                  NULL,
+                  FLUX_NODEID_ANY,
+                  FLUX_RPC_STREAMING)))
+    {
         flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
         goto done;
     }
@@ -1324,6 +1347,11 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: update_resource", __FUNCTION__);
         goto done;
     }
+
+    // If this module is only handling satisfiability,
+    //  don't bother subscribing to R UP/DOWN notifications.
+    if (ctx->opts.get_opt ().get_match_satisfiability ())
+        goto done;
 
     if ((rc = flux_future_then (ctx->update_f, -1.0, update_resource, static_cast<void *> (ctx->h)))
         < 0) {
@@ -1356,13 +1384,17 @@ static int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         if (populate_resource_db_acquire (ctx) < 0) {
             flux_log (ctx->h,
                       LOG_ERR,
-                      "%s: loading resources using resource.acquire",
+                      ctx->opts.get_opt ().get_match_satisfiability ()
+                          ? "%s: loading resources using sched-fluxion-resource.notify" \
+                          : "%s: loading resources using resource.acquire",
                       __FUNCTION__);
             goto done;
         }
         flux_log (ctx->h,
                   LOG_INFO,
-                  "%s: loaded resources from core's resource.acquire",
+                  ctx->opts.get_opt ().get_match_satisfiability ()
+                      ? "%s: loaded resources from sched-fluxion-resource.notify" \
+                      : "%s: loaded resources from core's resource.acquire",
                   __FUNCTION__);
     }
 
@@ -1419,9 +1451,17 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = 0;
 
     // Select the appropriate matcher based on CLI policy.
-    if (!(ctx->matcher = create_match_cb (ctx->opts.get_opt ().get_match_policy ()))) {
-        flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
-        return -1;
+    // The satisfiability module should only use FIRST. Exclusivity has no effect.
+    if (ctx->opts.get_opt ().get_match_satisfiability ()) {
+        if (!(ctx->matcher = create_match_cb (FIRST_MATCH))) {
+            flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
+            return -1;
+        }
+    } else {
+        if (!(ctx->matcher = create_match_cb (ctx->opts.get_opt ().get_match_policy ()))) {
+            flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
+            return -1;
+        }
     }
     if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't populate graph resource database", __FUNCTION__);
@@ -2634,6 +2674,32 @@ static void disconnect_request_cb (flux_t *h,
     }
 }
 
+// Reply to notify message.
+// When this runs, m_acquired_resources should be set.
+static void notify_of_resources (flux_future_t *f, void *arg) {
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    flux_msg_t *msg = (flux_msg_t *)flux_future_aux_get (ctx->update_f, "notify_msg");
+
+    if (msg == NULL) {
+        flux_log_error (ctx->h, "%s: flux_future_aux_get", __FUNCTION__);
+    }
+    if (flux_respond_pack (ctx->h,
+                           msg,
+                           "{s:O}",
+                           "resources",
+                           ctx->m_acquired_resources)
+        < 0) {
+        flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+    }
+
+    // Delete aux entry 'notify_msg' and call flux_msg_decref (msg),
+    //  which is the aux destructor set in notify_request_cb.
+    if (flux_future_aux_set (ctx->update_f, "notify_msg", NULL, NULL)) {
+        flux_log_error (ctx->h, "%s: flux_future_aux_set", __FUNCTION__);
+    }
+    return;
+}
+
 static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
     try {
@@ -2664,10 +2730,30 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             goto error;
         }
 
-        if (flux_respond (ctx->h, msg, NULL) < 0) {
-            flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+        // Store msg in update_f to pass into notify_of_resources.
+        //  The aux value is destroyed in notify_of_resources.
+        if (flux_msg_incref (msg) == NULL) {
+            flux_log_error (ctx->h, "%s: flux_msg_incref", __FUNCTION__);
             goto error;
         }
+        if (flux_future_aux_set (ctx->update_f, "notify_msg", (void *)msg, (flux_free_f)flux_msg_decref) < 0) {
+            flux_log_error (ctx->h, "%s: flux_future_aux_set", __FUNCTION__);
+            // Manually decref since the aux destructor decref won't get called
+            flux_msg_decref (msg); 
+            goto error;
+        }
+
+        // Respond only after sched-fluxion-resource gets
+        //  resources from its resource.acquire RPC.
+        if (ctx->m_acquired_resources != NULL) {
+            notify_of_resources (ctx->update_f, static_cast<void *> (ctx->h));
+        } else {
+            if (flux_future_then (ctx->update_f, -1.0, notify_of_resources, static_cast<void *> (ctx->h)) < 0) {
+                flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+                goto error;
+            }
+        }
+
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
     }
@@ -3055,6 +3141,7 @@ done:
     return rc;
 }
 
+//Removed so that this module can be renamed at load time
 //MOD_NAME ("sched-fluxion-resource");
 
 /*
