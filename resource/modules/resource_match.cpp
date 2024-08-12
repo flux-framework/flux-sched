@@ -14,7 +14,6 @@ extern "C" {
 #endif
 #include <flux/core.h>
 #include <flux/idset.h>
-#include <jansson.h>
 }
 
 #include <cstdint>
@@ -32,6 +31,7 @@ extern "C" {
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource_match_opts.hpp"
 #include "resource/schema/perf_data.hpp"
+#include <jansson.hpp>
 
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
@@ -103,9 +103,9 @@ struct resource_ctx_t : public resource_interface_t {
     /* last time allocated resources search updated */
     std::chrono::time_point<std::chrono::system_clock> m_resources_alloc_updated;
     /* R caches */
-    json_t *m_r_all;
-    json_t *m_r_down;
-    json_t *m_r_alloc;
+    json::value m_r_all;
+    json::value m_r_down;
+    json::value m_r_alloc;
 };
 
 msg_wrap_t::msg_wrap_t (const msg_wrap_t &o)
@@ -326,9 +326,6 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
         ctx->reader = nullptr;  /* Cannot be allocated at this point */
-        ctx->m_r_all = nullptr;
-        ctx->m_r_down = nullptr;
-        ctx->m_r_alloc = nullptr;
         ctx->m_resources_updated = true;
         ctx->m_resources_down_updated = true;
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
@@ -2273,7 +2270,7 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int saved_errno;
-    json_t *o = nullptr;
+    json::value o;
     json_t *match_succeeded = nullptr;
     json_t *match_failed = nullptr;
     double avg = 0.0f;
@@ -2299,14 +2296,13 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
         // Welford's online algorithm
         variance_failed = perf.failed.M2 / (double)perf.failed.njobs_reset;
     }
-    if (!(o = json_object ()) || !(match_succeeded = json_object ())
-        || !(match_failed = json_object ())) {
+    if (!(o = json::value::take (json_object ()))) {
         errno = ENOMEM;
         goto error;
     }
-    if (get_stat_by_rank (ctx, o) < 0) {
+    if (get_stat_by_rank (ctx, o.get ()) < 0) {
         flux_log_error (h, "%s: get_stat_by_rank", __FUNCTION__);
-        goto error_free;
+        goto error;
     }
 
     if (!(match_succeeded = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
@@ -2328,7 +2324,7 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
                                        "variance",
                                        variance))) {
         errno = ENOMEM;
-        goto error_free;
+        goto error;
     }
     if (!(match_failed = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
                                     "njobs",
@@ -2349,7 +2345,7 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
                                     "variance",
                                     variance_failed))) {
         errno = ENOMEM;
-        goto error_free;
+        goto error;
     }
     now = std::chrono::system_clock::now ();
     graph_uptime_s =
@@ -2359,13 +2355,13 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
 
     if (flux_respond_pack (h,
                            msg,
-                           "{s:I s:I s:o s:f s:I s:I s:{s:O s:O}}",
+                           "{s:I s:I s:O s:f s:I s:I s:{s:O s:O}}",
                            "V",
                            num_vertices (ctx->db->resource_graph),
                            "E",
                            num_edges (ctx->db->resource_graph),
                            "by_rank",
-                           o,
+                           o.get (),
                            "load-time",
                            perf.load,
                            "graph-uptime",
@@ -2385,13 +2381,11 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
 
     return;
 
-error_free:
+error:
     saved_errno = errno;
-    json_decref (o);
     json_decref (match_succeeded);
     json_decref (match_failed);
     errno = saved_errno;
-error:
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
@@ -2747,23 +2741,23 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         ctx->m_r_alloc = json_deep_copy (R_alloc);
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
     } else
-        R_alloc = json_deep_copy (ctx->m_r_alloc);
+        R_alloc = json_deep_copy (ctx->m_r_alloc.get ());
 
     if (ctx->m_resources_updated) {
         if (run_find (ctx, "status=up or status=down", "rv1_nosched", &R_all) < 0)
             goto error;
-        ctx->m_r_all = json_deep_copy (R_all);
+        ctx->m_r_all = json::value::take (json_deep_copy (R_all));
         ctx->m_resources_updated = false;
     } else
-        R_all = json_deep_copy (ctx->m_r_all);
+        R_all = json_deep_copy (ctx->m_r_all.get ());
 
     if (ctx->m_resources_down_updated) {
         if (run_find (ctx, "status=down", "rv1_nosched", &R_down) < 0)
             goto error;
-        ctx->m_r_down = json_deep_copy (R_down);
+        ctx->m_r_down = json::value::take (json_deep_copy (R_down));
         ctx->m_resources_down_updated = false;
     } else
-        R_down = json_deep_copy (ctx->m_r_down);
+        R_down = json_deep_copy (ctx->m_r_down.get ());
 
     if (flux_respond_pack (h,
                            msg,
