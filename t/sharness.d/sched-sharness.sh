@@ -45,6 +45,12 @@ fi
 #   Accessors 
 #
 
+test_cmp_json() {
+    jq -S "$1" > "$1.tmp"
+    jq -S "$2" > "$2.tmp"
+    test_cmp "$1.tmp" "$1.tmp"
+}
+
 load_qmanager () {
     flux module load sched-fluxion-qmanager "$@"
 }
