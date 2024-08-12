@@ -37,7 +37,7 @@ jobs:
     - name: install linting and formatting deps
       run: pip install -r scripts/requirements-dev.txt
     - name: format and linting checks
-      run: pre-commit run --all-files
+      run: pre-commit run --all-files --show-diff-on-failure
 
   python-lint:
     name: python lint
