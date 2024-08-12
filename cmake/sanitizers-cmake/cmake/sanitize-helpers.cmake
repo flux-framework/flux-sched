@@ -23,13 +23,13 @@
 # SOFTWARE.
 
 # Helper function to get the language of a source file.
-function (sanitizer_lang_of_source FILE RETURN_VAR)
+function(sanitizer_lang_of_source FILE RETURN_VAR)
     get_filename_component(LONGEST_EXT "${FILE}" EXT)
     # If extension is empty return. This can happen for extensionless headers
-    if("${LONGEST_EXT}" STREQUAL "")
-       set(${RETURN_VAR} "" PARENT_SCOPE)
-       return()
-    endif()
+    if ("${LONGEST_EXT}" STREQUAL "")
+        set(${RETURN_VAR} "" PARENT_SCOPE)
+        return()
+    endif ()
     # Get shortest extension as some files can have dot in their names
     string(REGEX REPLACE "^.*(\\.[^.]+)$" "\\1" FILE_EXT ${LONGEST_EXT})
     string(TOLOWER "${FILE_EXT}" FILE_EXT)
@@ -42,14 +42,14 @@ function (sanitizer_lang_of_source FILE RETURN_VAR)
             set(${RETURN_VAR} "${LANG}" PARENT_SCOPE)
             return()
         endif ()
-    endforeach()
+    endforeach ()
 
     set(${RETURN_VAR} "" PARENT_SCOPE)
-endfunction ()
+endfunction()
 
 
 # Helper function to get compilers used by a target.
-function (sanitizer_target_compilers TARGET RETURN_VAR)
+function(sanitizer_target_compilers TARGET RETURN_VAR)
     # Check if all sources for target use the same compiler. If a target uses
     # e.g. C and Fortran mixed and uses different compilers (e.g. clang and
     # gfortran) this can trigger huge problems, because different compilers may
@@ -70,11 +70,11 @@ function (sanitizer_target_compilers TARGET RETURN_VAR)
 
     list(REMOVE_DUPLICATES BUFFER)
     set(${RETURN_VAR} "${BUFFER}" PARENT_SCOPE)
-endfunction ()
+endfunction()
 
 
 # Helper function to check compiler flags for language compiler.
-function (sanitizer_check_compiler_flag FLAG LANG VARIABLE)
+function(sanitizer_check_compiler_flag FLAG LANG VARIABLE)
 
     if (${LANG} STREQUAL "C")
         include(CheckCCompilerFlag)
@@ -95,15 +95,15 @@ function (sanitizer_check_compiler_flag FLAG LANG VARIABLE)
         elseif (NOT CMAKE_REQUIRED_QUIET)
             message(STATUS "Performing Test ${VARIABLE}")
             message(STATUS "Performing Test ${VARIABLE}"
-                " - Failed (Check not supported)")
+                    " - Failed (Check not supported)")
         endif ()
-    endif()
+    endif ()
 
-endfunction ()
+endfunction()
 
 
 # Helper function to test compiler flags.
-function (sanitizer_check_compiler_flags FLAG_CANDIDATES NAME PREFIX)
+function(sanitizer_check_compiler_flags FLAG_CANDIDATES NAME PREFIX)
     set(CMAKE_REQUIRED_QUIET ${${PREFIX}_FIND_QUIETLY})
 
     get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
@@ -114,31 +114,44 @@ function (sanitizer_check_compiler_flags FLAG_CANDIDATES NAME PREFIX)
         set(COMPILER ${CMAKE_${LANG}_COMPILER_ID})
         if (COMPILER AND NOT DEFINED ${PREFIX}_${COMPILER}_FLAGS)
             foreach (FLAG ${FLAG_CANDIDATES})
-                if(NOT CMAKE_REQUIRED_QUIET)
+                if (NOT CMAKE_REQUIRED_QUIET)
                     message(STATUS "Try ${COMPILER} ${NAME} flag = [${FLAG}]")
-                endif()
+                endif ()
 
                 set(CMAKE_REQUIRED_FLAGS "${FLAG}")
                 unset(${PREFIX}_FLAG_DETECTED CACHE)
                 sanitizer_check_compiler_flag("${FLAG}" ${LANG}
-                    ${PREFIX}_FLAG_DETECTED)
+                        ${PREFIX}_FLAG_DETECTED)
 
                 if (${PREFIX}_FLAG_DETECTED)
                     # If compiler is a GNU compiler, search for static flag, if
                     # SANITIZE_LINK_STATIC is enabled.
-                    if (SANITIZE_LINK_STATIC AND (${COMPILER} STREQUAL "GNU"))
-                        string(TOLOWER ${PREFIX} PREFIX_lower)
-                        sanitizer_check_compiler_flag(
-                            "-static-lib${PREFIX_lower}" ${LANG}
-                            ${PREFIX}_STATIC_FLAG_DETECTED)
+                    if (SANITIZE_LINK_STATIC)
+                        if ((${COMPILER} STREQUAL "GNU"))
+                            string(TOLOWER ${PREFIX} PREFIX_lower)
+                            sanitizer_check_compiler_flag(
+                                    "-static-lib${PREFIX_lower}" ${LANG}
+                                    ${PREFIX}_STATIC_FLAG_DETECTED)
 
-                        if (${PREFIX}_STATIC_FLAG_DETECTED)
-                            set(FLAG "-static-lib${PREFIX_lower} ${FLAG}")
+                            if (${PREFIX}_STATIC_FLAG_DETECTED)
+                                set(FLAG "-static-lib${PREFIX_lower} ${FLAG}")
+                            endif ()
+                        endif ()
+                    else()
+                        if (${COMPILER} STREQUAL "Clang")
+                            string(TOLOWER ${PREFIX} PREFIX_lower)
+                            sanitizer_check_compiler_flag(
+                                    "-shared-lib${PREFIX_lower}" ${LANG}
+                                    ${PREFIX}_SHARED_FLAG_DETECTED)
+
+                            if (${PREFIX}_SHARED_FLAG_DETECTED)
+                                set(FLAG "-shared-lib${PREFIX_lower} ${FLAG}")
+                            endif ()
                         endif ()
                     endif ()
 
                     set(${PREFIX}_${COMPILER}_FLAGS "${FLAG}" CACHE STRING
-                        "${NAME} flags for ${COMPILER} compiler.")
+                            "${NAME} flags for ${COMPILER} compiler.")
                     mark_as_advanced(${PREFIX}_${COMPILER}_FLAGS)
                     break()
                 endif ()
@@ -146,7 +159,7 @@ function (sanitizer_check_compiler_flags FLAG_CANDIDATES NAME PREFIX)
 
             if (NOT ${PREFIX}_FLAG_DETECTED)
                 set(${PREFIX}_${COMPILER}_FLAGS "" CACHE STRING
-                    "${NAME} flags for ${COMPILER} compiler.")
+                        "${NAME} flags for ${COMPILER} compiler.")
                 mark_as_advanced(${PREFIX}_${COMPILER}_FLAGS)
 
                 message(WARNING "${NAME} is not available for ${COMPILER} "
@@ -155,11 +168,11 @@ function (sanitizer_check_compiler_flags FLAG_CANDIDATES NAME PREFIX)
             endif ()
         endif ()
     endforeach ()
-endfunction ()
+endfunction()
 
 
 # Helper to assign sanitizer flags for TARGET.
-function (sanitizer_add_flags TARGET NAME PREFIX)
+function(sanitizer_add_flags TARGET NAME PREFIX)
     # Get list of compilers used by target and check, if sanitizer is available
     # for this target. Other compiler checks like check for conflicting
     # compilers will be done in add_sanitizers function.
@@ -167,7 +180,7 @@ function (sanitizer_add_flags TARGET NAME PREFIX)
     list(LENGTH TARGET_COMPILER NUM_COMPILERS)
     if ("${${PREFIX}_${TARGET_COMPILER}_FLAGS}" STREQUAL "")
         return()
-    endif()
+    endif ()
 
     separate_arguments(flags_list UNIX_COMMAND "${${PREFIX}_${TARGET_COMPILER}_FLAGS} ${SanBlist_${TARGET_COMPILER}_FLAGS}")
     target_compile_options(${TARGET} PUBLIC ${flags_list})
@@ -175,4 +188,4 @@ function (sanitizer_add_flags TARGET NAME PREFIX)
     separate_arguments(flags_list UNIX_COMMAND "${${PREFIX}_${TARGET_COMPILER}_FLAGS}")
     target_link_options(${TARGET} PUBLIC ${flags_list})
 
-endfunction ()
+endfunction()

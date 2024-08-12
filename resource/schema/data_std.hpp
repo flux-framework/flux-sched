@@ -30,11 +30,13 @@ const char *const X_CHECKER_JOBS_STR = "jobs";
 const int64_t X_CHECKER_NJOBS = 0x40000000;
 
 constexpr uint64_t subsystem_id{0};
-using subsystem_t = intern::interned_string<subsystem_id, uint8_t>;
+struct subsystem_tag {};
+using subsystem_t = intern::interned_string<intern::dense_storage<subsystem_tag, uint8_t>>;
 extern subsystem_t containment_sub;
 
 constexpr uint64_t resource_type_id{1};
-using resource_type_t = intern::interned_string<resource_type_id, uint16_t>;
+struct resource_type_tag {};
+using resource_type_t = intern::interned_string<intern::rc_storage<resource_type_tag>>;
 extern resource_type_t slot_rt;
 extern resource_type_t cluster_rt;
 extern resource_type_t rack_rt;
