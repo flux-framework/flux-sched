@@ -1,19 +1,22 @@
 #!/bin/sh -e
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    flux module reload -f --name=sched-fluxion-satisfiability sched-fluxion-resource \
-    satisfiability=true 
+    if [ $(flux getattr rank) -eq 0 ]; then
+        flux module reload -f sched-fluxion-resource \
+            ${FLUXION_RESOURCE_OPTIONS:-"load-allowlist=node,core,gpu"} \
+            satisfiability=false
+    fi
 fi
 
-test $(flux getattr rank) -eq 0 || exit 0
-
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    flux module reload -f sched-fluxion-resource \
+    # load on all ranks
+    flux module reload -f --name=sched-fluxion-satisfiability sched-fluxion-resource \
         ${FLUXION_RESOURCE_OPTIONS:-"load-allowlist=node,core,gpu"} \
-	satisfiability=false
+        satisfiability=true 
 fi
 
 if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
-    flux module reload -f sched-fluxion-qmanager ${FLUXION_QMANAGER_OPTIONS}
+    if [ $(flux getattr rank) -eq 0 ]; then
+        flux module reload -f sched-fluxion-qmanager ${FLUXION_QMANAGER_OPTIONS}
+    fi
 fi
-

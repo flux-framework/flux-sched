@@ -1,7 +1,8 @@
 #!/bin/sh
 
+flux module remove -f sched-fluxion-satisfiability
+
 test $(flux getattr rank) -eq 0 || exit 0
 
 flux module remove -f sched-fluxion-qmanager
 flux module remove -f sched-fluxion-resource
-flux module remove -f sched-fluxion-satisfiability
