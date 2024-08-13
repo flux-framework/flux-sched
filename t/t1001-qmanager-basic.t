@@ -85,6 +85,12 @@ test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
     flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"
 '
 
+test_expect_success 'qmanager: check stats' '
+    flux module stats sched-fluxion-qmanager | tee stats.json &&
+    jq -e ".queues.default.action_counts.rejected == 1" stats.json &&
+    jq -e ".queues.default.action_counts.complete >= 4" stats.json
+'
+
 test_expect_success 'cleanup active jobs' '
     cleanup_active_jobs
 '
