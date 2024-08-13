@@ -13,7 +13,6 @@ extern "C" {
 #include <config.h>
 #endif
 }
-
 #include <string>
 #include "resource/policies/dfu_match_policy_factory.hpp"
 
@@ -22,50 +21,98 @@ namespace resource_model {
 
 bool known_match_policy (const std::string &policy)
 {
-    bool rc = true;
-    if (policy != FIRST_MATCH && policy != FIRST_NODEX_MATCH && policy != HIGH_ID_FIRST
-        && policy != LOW_ID_FIRST && policy != LOW_NODE_FIRST && policy != HIGH_NODE_FIRST
-        && policy != LOW_NODEX_FIRST && policy != HIGH_NODEX_FIRST && policy != LOCALITY_AWARE
-        && policy != VAR_AWARE)
-        rc = false;
-
-    return rc;
+    if (policies.contains (policy)) {
+        return true;
+    }
+    return false;
 }
 
-std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy)
+bool parse_bool_match_options (const std::string match_option, const std::string policy_options)
 {
-    std::shared_ptr<dfu_match_cb_t> matcher = nullptr;
+    // Return anything from after the = and before space or newline
+    size_t spot = policy_options.find (match_option, 0);
+    size_t start_pos = policy_options.find ("=", spot);
+    size_t end_pos = policy_options.find (" ", spot);
+    size_t end_str = policy_options.length ();
+    std::string return_opt;
+    if ((end_pos == std::string::npos) && (start_pos != std::string::npos)) {
+        return_opt = policy_options.substr ((start_pos + 1), (end_str - start_pos - 1));
+    } else {
+        return_opt = policy_options.substr ((start_pos + 1), (end_pos - start_pos - 1));
+    }
+    if (return_opt == "true") {
+        return true;
+    }
+    return false;
+}
 
-    resource_type_t node_rt ("node");
+bool option_exists (const std::string match_option, const std::string policy_options)
+{
+    size_t found = policy_options.find (match_option, 0);
+    if (found == std::string::npos) {
+        return false;
+    }
+    return true;
+}
+
+int parse_int_match_options (const std::string match_option, const std::string policy_options)
+{
+    size_t spot = policy_options.find (match_option, 0);
+    size_t start_pos = policy_options.find ("=", spot);
+    size_t end_pos = policy_options.find (" ", spot);
+    size_t end_str = policy_options.length ();
+    int return_opt;
+    if ((end_pos == std::string::npos) && (start_pos != std::string::npos)) {
+        return_opt = stoi (policy_options.substr ((start_pos + 1), (end_str - start_pos - 1)));
+    } else {
+        return_opt = stoi (policy_options.substr ((start_pos + 1), (end_pos - start_pos - 1)));
+    }
+    return return_opt;
+}
+
+std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy_requested)
+{
+    std::string policy = policies.find (policy_requested)->second;
+    std::shared_ptr<dfu_match_cb_t> matcher = nullptr;
     try {
-        if (policy == FIRST_MATCH || policy == FIRST_NODEX_MATCH) {
-            std::shared_ptr<high_first_t> ptr = std::make_shared<high_first_t> ();
-            ptr->add_score_factor (node_rt, 1, 10000);
-            ptr->set_stop_on_k_matches (1);
-            if (policy == FIRST_NODEX_MATCH)
-                ptr->add_exclusive_resource_type (node_rt);
-            matcher = ptr;
-        } else if (policy == HIGH_ID_FIRST) {
-            matcher = std::make_shared<high_first_t> ();
-        } else if (policy == LOW_ID_FIRST) {
-            matcher = std::make_shared<low_first_t> ();
-        } else if (policy == LOW_NODE_FIRST || policy == LOW_NODEX_FIRST) {
-            std::shared_ptr<low_first_t> ptr = std::make_shared<low_first_t> ();
-            ptr->add_score_factor (node_rt, 1, 10000);
-            if (policy == LOW_NODEX_FIRST)
-                ptr->add_exclusive_resource_type (node_rt);
-            matcher = ptr;
-        } else if (policy == HIGH_NODE_FIRST || policy == HIGH_NODEX_FIRST) {
-            std::shared_ptr<high_first_t> ptr = std::make_shared<high_first_t> ();
-            ptr->add_score_factor (node_rt, 1, 10000);
-            if (policy == HIGH_NODEX_FIRST)
-                ptr->add_exclusive_resource_type (node_rt);
-            matcher = ptr;
-        } else if (policy == LOCALITY_AWARE) {
+        if (policy_requested == "locality") {
             matcher = std::make_shared<greater_interval_first_t> ();
-        } else if (policy == VAR_AWARE) {
+        }
+        if (policy_requested == "variation") {
             matcher = std::make_shared<var_aware_t> ();
         }
+
+        if (parse_bool_match_options ("high", policy)) {
+            std::shared_ptr<high_first_t> ptr = std::make_shared<high_first_t> ();
+            if (parse_bool_match_options ("node_centric", policy)) {
+                ptr->add_score_factor (node_rt, 1, 10000);
+            }
+
+            if (parse_bool_match_options ("node_exclusive", policy)) {
+                ptr->add_exclusive_resource_type (node_rt);
+            }
+
+            if (option_exists ("stop_on_k_matches", policy)) {
+                ptr->set_stop_on_k_matches (parse_int_match_options ("stop_on_k_matches", policy));
+            }
+            matcher = ptr;
+
+        } else if (parse_bool_match_options ("low", policy)) {
+            std::shared_ptr<low_first_t> ptr = std::make_shared<low_first_t> ();
+            if (parse_bool_match_options ("node_centric", policy)) {
+                ptr->add_score_factor (node_rt, 1, 10000);
+            }
+
+            if (parse_bool_match_options ("node_exclusive", policy)) {
+                ptr->add_exclusive_resource_type (node_rt);
+            }
+
+            if (option_exists ("stop_on_k_matches", policy)) {
+                ptr->set_stop_on_k_matches (parse_int_match_options ("stop_on_k_matches", policy));
+            }
+            matcher = ptr;
+        }
+
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         matcher = nullptr;
