@@ -1,3 +1,32 @@
+flux-sched version 0.37.0 - 2024-08-13
+--------------------------------------
+
+### New Features
+ * graph: use builtin bidirectional graph (#1240)
+ * ion-resource: add meaningful error message when subcommand is missing
+   (#1243)
+ * Don't add pruning filter for leaf vertices (#1248)
+ * qmanager: add get-stats and clear-stats callbacks (#1265)
+ * String interner for subsystems and resource types and initial usage
+   (#1246)
+ * Support and handle optional "final" flag in .free RPC (#1266)
+
+### Fixes
+ * qmanager: annotate each job only once on reservation (#1250)
+ * interner/res_type: add a refcounted backend for interned strings
+   (#1262)
+ * traverser: set iter count when request_feasible returns < 0 (#1263)
+
+### Cleanup
+ * Reformat (#1218)
+ * chore: flux ion-resource jobspec argument redundancy (#1244)
+
+### Build/Testsuite
+ * actions/docker: add ~el9~,f40,noble drop focal (#1257)
+ * matrix: add explicit python path for el8 (#1256)
+ * pre-commit: show diff on failure (#1267)
+
+
 flux-sched version 0.36.1 - 2024-07-10
 --------------------------------------
 
