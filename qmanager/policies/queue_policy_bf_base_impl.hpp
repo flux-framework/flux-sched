@@ -113,6 +113,12 @@ int queue_policy_bf_base_t<reapi_type>::cancel (void *h,
     return reapi_type::cancel (h, id, R, noent_ok, full_removal);
 }
 
+template<class reapi_type>
+int queue_policy_bf_base_t<reapi_type>::cancel (void *h, flux_jobid_t id, bool noent_ok)
+{
+    return reapi_type::cancel (h, id, noent_ok);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Public API of Queue Policy Backfill Base
 ////////////////////////////////////////////////////////////////////////////////
