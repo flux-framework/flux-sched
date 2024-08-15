@@ -317,12 +317,12 @@ static void feasibility_request_cb (flux_t *h,
     if (flux_request_decode_raw (msg, nullptr, (const void **)&data, &size) < 0)
         goto error;
     if (!(f = flux_rpc_raw (h,
-                            "sched-fluxion-resource.satisfiability",
+                            "sched-fluxion-feasibility.feasibility",
                             data,
                             size,
                             FLUX_NODEID_ANY,
                             0))) {
-        flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.satisfiability)", __FUNCTION__);
+        flux_log_error (h, "%s: flux_rpc (sched-fluxion-feasibility.feasibility)", __FUNCTION__);
         goto error;
     }
     if (flux_rpc_get_raw (f, (const void **)&data, &size) < 0)

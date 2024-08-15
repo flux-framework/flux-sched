@@ -1,6 +1,6 @@
 #!/bin/sh
 
-flux module remove -f sched-fluxion-satisfiability
+flux module remove -f sched-fluxion-feasibility
 
 test $(flux getattr rank) -eq 0 || exit 0
 

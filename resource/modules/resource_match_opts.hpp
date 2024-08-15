@@ -32,7 +32,6 @@ class resource_prop_t {
     const std::string &get_match_policy () const;
     const std::string &get_match_format () const;
     const std::string &get_match_subsystems () const;
-    const bool get_match_satisfiability () const;
     const int get_reserve_vtx_vec () const;
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
@@ -44,7 +43,6 @@ class resource_prop_t {
     bool set_match_policy (const std::string &o);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
-    void set_match_satisfiability (const bool b);
     void set_reserve_vtx_vec (const int i);
     void set_prune_filters (const std::string &o);
     void add_to_prune_filters (const std::string &o);
@@ -56,7 +54,6 @@ class resource_prop_t {
     bool is_match_policy_set () const;
     bool is_match_format_set () const;
     bool is_match_subsystems_set () const;
-    bool is_match_satisfiability_set () const;
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
@@ -70,7 +67,6 @@ class resource_prop_t {
     std::string m_match_policy = RESOURCE_OPTS_UNSET_STR;
     std::string m_match_format = RESOURCE_OPTS_UNSET_STR;
     std::string m_match_subsystems = RESOURCE_OPTS_UNSET_STR;
-    bool m_match_satisfiability = false;
     int m_reserve_vtx_vec = 0;
     std::string m_prune_filters = RESOURCE_OPTS_UNSET_STR;
     int m_update_interval = 0;
@@ -108,7 +104,6 @@ class resource_opts_t : public optmgr_parse_t {
     const std::string &get_match_policy () const;
     const std::string &get_match_format () const;
     const std::string &get_match_subsystems () const;
-    const bool get_match_satisfiability () const;
     const int get_reserve_vtx_vec () const;
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
@@ -120,7 +115,6 @@ class resource_opts_t : public optmgr_parse_t {
     bool set_match_policy (const std::string &o);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
-    void set_match_satisfiability (const bool b);
     void set_reserve_vtx_vec (const int i);
     void set_prune_filters (const std::string &o);
     void set_update_interval (const int i);
@@ -131,7 +125,6 @@ class resource_opts_t : public optmgr_parse_t {
     bool is_match_policy_set () const;
     bool is_match_format_set () const;
     bool is_match_subsystems_set () const;
-    bool is_match_satisfiability_set () const;
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
