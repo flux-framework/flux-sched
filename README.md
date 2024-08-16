@@ -53,7 +53,7 @@ Fluxion also requires the following packages to build:
 
 **redhat**                | **ubuntu**              | **version**       | **note**
 ----------                | ----------              | -----------       | --------
-hwloc-devel               | libhwloc-dev            | >= 1.11.1         |
+hwloc-devel               | libhwloc-dev            | >= 2         |
 boost-devel               | libboost-dev            | >= 1.66 | *1*
 boost-graph               | libboost-graph-dev      | >= 1.66 | *1*
 libedit-devel             | libedit-dev             | >= 3.0            |
