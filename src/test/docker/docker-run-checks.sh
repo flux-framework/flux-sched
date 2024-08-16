@@ -202,6 +202,7 @@ else
         -e CXX \
         -e LDFLAGS \
         -e CFLAGS \
+        -e CXXFLAGS \
         -e CPPFLAGS \
         -e GCOV \
         -e CCACHE_CPP2 \

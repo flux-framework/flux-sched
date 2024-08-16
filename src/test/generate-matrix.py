@@ -3,15 +3,31 @@
 #  Generate a build matrix for use with github workflows
 #
 
+from copy import deepcopy
 import json
 import os
 import re
 
 docker_run_checks = "src/test/docker/docker-run-checks.sh"
 
-default_args = " --sysconfdir=/etc" " --localstatedir=/var"
+default_args = "--prefix=/usr" " --sysconfdir=/etc" " --localstatedir=/var"
 
 DOCKER_REPO = "fluxrm/flux-sched"
+
+
+def on_master_or_tag(matrix):
+    return matrix.branch == "master" or matrix.tag
+
+
+DEFAULT_MULTIARCH_PLATFORMS = {
+    "linux/arm64": {
+        "when": on_master_or_tag,
+        "suffix": " - arm64",
+        "command_args": "--install-only ",
+        "timeout_minutes": 90,
+    },
+    "linux/amd64": {"when": lambda _: True},
+}
 
 
 class BuildMatrix:
@@ -47,9 +63,9 @@ class BuildMatrix:
     def add_build(
         self,
         name=None,
-        image="fedora40",
+        image=None,
         args=default_args,
-        jobs=4,
+        jobs=6,
         env=None,
         docker_tag=False,
         coverage=False,
@@ -57,11 +73,17 @@ class BuildMatrix:
         recheck=True,
         platform=None,
         command_args="",
+        timeout_minutes=60,
     ):
         """Add a build to the matrix.include array"""
 
+        if image is None:
+            raise RuntimeError("you must specify an image explicitly")
+
         # Extra environment to add to this command:
-        env = env or {}
+        # NOTE: ensure we copy the dict rather than modify, re-used dicts can cause
+        #       overwriting
+        env = dict(env) if env is not None else {}
 
         # hwloc tries to look for opengl devices  by connecting to a port that might
         # sometimes be an x11 port, but more often for us is munge, turn it off
@@ -96,11 +118,6 @@ class BuildMatrix:
 
         command += f" -- {args}"
 
-        # TODO : remove this when the boost issue is dealt with
-        if env.get("CC", "gcc").find("clang") < 0:
-            cppflags = env.get("CPPFLAGS", "") + " -Wno-error=maybe-uninitialized"
-            env["CPPFLAGS"] = cppflags
-
         self.matrix.append(
             {
                 "name": name,
@@ -114,8 +131,31 @@ class BuildMatrix:
                 "docker_tag": docker_tag,
                 "needs_buildx": needs_buildx,
                 "create_release": create_release,
+                "timeout_minutes": timeout_minutes,
             }
         )
+
+    def add_multiarch_build(
+        self,
+        name: str,
+        platforms=DEFAULT_MULTIARCH_PLATFORMS,
+        default_suffix="",
+        image=None,
+        docker_tag=True,
+        **kwargs,
+    ):
+        for p, args in platforms.items():
+            if args["when"](self):
+                suffix = args.get("suffix", default_suffix)
+                self.add_build(
+                    name + suffix,
+                    platform=p,
+                    docker_tag=docker_tag,
+                    image=image if image is not None else name,
+                    command_args=args.get("command_args", ""),
+                    timeout_minutes=args.get("timeout_minutes", 30),
+                    **kwargs,
+                )
 
     def __str__(self):
         """Return compact JSON representation of matrix"""
@@ -126,26 +166,72 @@ class BuildMatrix:
 
 matrix = BuildMatrix()
 
-# # Debian: 32b -- NOTE: VERY broken right now
-# matrix.add_build(
-#     name="bookworm - 32 bit",
-#     image="bookworm",
-#     platform="linux/386",
-#     docker_tag=True,
+# Multi-arch builds, arm only builds on
+common_args = (
+    "--prefix=/usr"
+    " --sysconfdir=/etc"
+    " --with-systemdsystemunitdir=/etc/systemd/system"
+    " --localstatedir=/var"
+)
+matrix.add_multiarch_build(
+    name="bookworm",
+    default_suffix=" - test-install",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+)
+
+matrix.add_multiarch_build(
+    name="noble",
+    default_suffix=" - test-install",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+)
+matrix.add_multiarch_build(
+    name="el9",
+    default_suffix=" - test-install",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+)
+# TODO: we have test failures here, EPROTO and notify problems
+# matrix.add_multiarch_build(
+#     name="alpine",
+#     default_suffix=" - test-install",
+#     args=common_args,
+#     env=dict(
+#         TEST_INSTALL="t",
+#     ),
 # )
+# single arch builds that still produce a container
+matrix.add_build(
+    name="fedora40 - test-install",
+    image="fedora40",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+    docker_tag=True,
+)
 
-# debian/Fedora40: arm64, expensive, only on master and tags, only install
-if matrix.branch == "master" or matrix.tag:
-    for d in ("bookworm", "noble", "fedora40"):
-        matrix.add_build(
-            name=f"{d} - arm64",
-            image=f"{d}",
-            platform="linux/arm64",
-            docker_tag=True,
-            command_args="--install-only ",
-        )
-
-# builds to match arm64 images must have linux/amd64 platform explicitly
+# Ubuntu: TEST_INSTALL, test oldest supported clang
+matrix.add_build(
+    name="jammy - test-install",
+    image="jammy",
+    env=dict(
+        TEST_INSTALL="t",
+        CC="clang-15",
+        CXX="clang++-15",
+        # NOTE: ancient valgrind (pre 3.20) fails with dwarf5
+        CFLAGS="-gdwarf-4",
+        CXXFLAGS="-gdwarf-4",
+    ),
+    docker_tag=True,
+)
 
 # Debian: gcc-12, distcheck
 matrix.add_build(
@@ -162,10 +248,10 @@ matrix.add_build(
 # fedora40: clang-18
 matrix.add_build(
     name="fedora40 - clang-18",
+    image="fedora40",
     env=dict(
         CC="clang-18",
         CXX="clang++-18",
-        CFLAGS="-O2 -gdwarf-4",
         chain_lint="t",
     ),
 )
@@ -176,41 +262,6 @@ matrix.add_build(
     image="bookworm",
     coverage_flags="ci-basic",
     coverage=True,
-    jobs=4,
-)
-
-
-# Ubuntu: TEST_INSTALL
-matrix.add_build(
-    name="noble - test-install",
-    image="noble",
-    env=dict(
-        TEST_INSTALL="t",
-    ),
-    platform="linux/amd64",
-    docker_tag=True,
-)
-
-# Debian: TEST_INSTALL
-matrix.add_build(
-    name="bookworm - test-install",
-    image="bookworm",
-    env=dict(
-        TEST_INSTALL="t",
-    ),
-    platform="linux/amd64",
-    args="",
-    docker_tag=True,
-)
-
-# Ubuntu 24.04
-matrix.add_build(
-    name="noble - golang-test",
-    image="noble-golang",
-    env=dict(
-        WITH_GO="yes",
-    ),
-    args="",
 )
 
 # RHEL8 clone
@@ -223,15 +274,5 @@ matrix.add_build(
         PYTHON="/usr/bin/python3.6"
     ),
 )
-
-# Fedora 40
-matrix.add_build(
-    name="fedora40 - gcc-14",
-    image="fedora40",
-    args=("--prefix=/usr" " --sysconfdir=/etc" " --localstatedir=/var"),
-    platform="linux/amd64",
-    docker_tag=True,
-)
-
 
 print(matrix)
