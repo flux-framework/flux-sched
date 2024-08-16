@@ -196,6 +196,7 @@ matrix.add_multiarch_build(
     args=common_args,
     env=dict(
         TEST_INSTALL="t",
+        CHECK_RUN_SOURCE_ENV="/opt/rh/gcc-toolset-13/enable",
     ),
 )
 # TODO: we have test failures here, EPROTO and notify problems
