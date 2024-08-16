@@ -158,7 +158,7 @@ struct rc_storage {
 /// A convenience wrapper of an interned string
 template<class Storage>
 class interned_string {
-    using Id = Storage::id_instance_t;
+    using Id = typename Storage::id_instance_t;
     Id _id;
 
     // Not at all safe, verified by a pre-condition check in get_by_id
