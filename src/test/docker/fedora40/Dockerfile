@@ -12,7 +12,6 @@ RUN sudo dnf -y install \
 	boost-system \
 	boost-filesystem \
 	boost-regex \
-	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \
 	libedit-devel \
