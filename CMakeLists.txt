@@ -109,10 +109,8 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.66 REQUIRED COMPONENTS
-  system
-  filesystem
   graph
-  regex)
+  )
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths

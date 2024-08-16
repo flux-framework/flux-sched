@@ -29,7 +29,6 @@ extern "C" {
 #endif
 
 #include <boost/graph/graphml.hpp>
-#include <boost/filesystem.hpp>
 #include "resource/readers/resource_spec_grug.hpp"
 
 using namespace Flux::resource_model;
