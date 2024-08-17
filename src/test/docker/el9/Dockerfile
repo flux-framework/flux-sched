@@ -2,6 +2,7 @@ FROM fluxrm/flux-core:el9
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # Install extra buildrequires for flux-sched:
 RUN sudo dnf -y install \

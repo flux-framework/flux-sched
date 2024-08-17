@@ -2,6 +2,7 @@ FROM fluxrm/flux-core:noble
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # Install extra buildrequires for flux-sched:
 RUN sudo apt-get update
