@@ -83,7 +83,6 @@ jobs:
       DOCKER_USERNAME: travisflux
       DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TRAVISFLUX_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    timeout-minutes: 30
     strategy:
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
       fail-fast: false
@@ -128,6 +127,7 @@ jobs:
         docker run --rm --privileged aptman/qus -s -- -p --credential aarch64
 
     - name: docker-run-checks
+      timeout-minutes: ${{matrix.timeout_minutes}}
       env: ${{matrix.env}}
       run: ${{matrix.command}}
 
