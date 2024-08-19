@@ -119,7 +119,7 @@ inline void to_json (value &jv, const MapT &m)
     for (auto &[k, v] : m) {
         value val;
         to_json (val, v);
-        json_object_set_new (jv.get (), k.c_str (), val.get ());
+        json_object_set (jv.get (), k.c_str (), val.get ());
     }
 }
 }  // namespace json
