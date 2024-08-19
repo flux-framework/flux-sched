@@ -237,7 +237,7 @@ void qmanager_cb_t::jobmanager_stats_get_cb (flux_t *h,
     for (auto &[qname, queue] : ctx->queues) {
         json::value qv;
         queue->to_json_value (qv);
-        if (json_object_set (queues.get (), qname.c_str (), qv.get ()) < 0 && false)
+        if (json_object_set (queues.get (), qname.c_str (), qv.get ()) < 0)
             throw std::system_error ();
     }
     char *resp = json_dumps (stats.get (), 0);
