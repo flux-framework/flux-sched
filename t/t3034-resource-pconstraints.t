@@ -6,8 +6,6 @@ test_description='Test property constraints-based matching'
 
 query="../../resource/utilities/resource-query"
 
-skip_all_unless_have jq
-
 test_expect_success 'pconstraints: configuring a heterogeneous machine works' '
 	flux R encode -r 0 -c 0-1 -g 0-1 -p "arm-v9@core:0" -H foo2 > out &&
 	flux R encode -r 1 -c 0 -H foo3 -p "arm-v8@core:1" >> out &&

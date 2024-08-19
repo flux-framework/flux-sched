@@ -9,8 +9,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 export WAITFILE="${SHARNESS_TEST_SRCDIR}/scripts/waitfile.lua"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 
 test_under_flux 4

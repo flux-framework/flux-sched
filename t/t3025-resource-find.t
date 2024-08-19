@@ -14,8 +14,6 @@ grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 query="../../resource/utilities/resource-query"
 
-skip_all_unless_have jq
-
 remove_times() {
     cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration)'
 }
