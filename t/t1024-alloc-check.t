@@ -1,3 +1,5 @@
+#!/bin/sh
+
 test_description='Check that fluxion never double books resources'
 
 . `dirname $0`/sharness.sh
