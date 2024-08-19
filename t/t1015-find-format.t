@@ -9,8 +9,6 @@ expected_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/expected/fi
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers/"
 query="../../resource/utilities/resource-query"
 
-skip_all_unless_have jq
-
 normalize_json() {
     jq 'del (.execution.starttime) | del (.execution.expiration)' |
         grep -v '"rank":'

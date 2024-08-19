@@ -4,8 +4,6 @@ test_description='Test flux ion-R Utility'
 
 . $(dirname $0)/sharness.sh
 
-skip_all_unless_have jq
-
 print_schema (){
     jq -r '.graph.nodes[].metadata | "\(.paths.containment) \(.rank)"' $1 > $2
 }

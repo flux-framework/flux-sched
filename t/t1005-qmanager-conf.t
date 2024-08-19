@@ -12,8 +12,6 @@ if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
      export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/../etc"
 fi
 
-skip_all_unless_have jq
-
 # Run broker with specified config file and qmanager options.
 # Usage: start_qmanager config-path [module options] >outfile
 start_qmanager () {

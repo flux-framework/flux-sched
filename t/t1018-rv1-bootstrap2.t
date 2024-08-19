@@ -4,8 +4,6 @@ test_description='Test Bootstrapping from Configured RV1 Object'
 
 . `dirname $0`/sharness.sh
 
-skip_all_unless_have jq
-
 export WAITFILE="${SHARNESS_TEST_SRCDIR}/scripts/waitfile.lua"
 export FLUX_SCHED_MODULE=none
 
