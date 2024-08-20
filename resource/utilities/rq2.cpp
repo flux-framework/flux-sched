@@ -15,10 +15,10 @@
 #include <getopt.h>
 #include <string.h>
 #include <jansson.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <editline/readline.h>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace Flux;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;

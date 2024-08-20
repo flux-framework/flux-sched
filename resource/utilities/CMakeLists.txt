@@ -5,7 +5,6 @@ add_sanitizers(grug2dot)
 target_link_libraries(grug2dot
   resource
   Boost::headers
-  Boost::filesystem
   )
 add_executable(resource-query
   resource-query.cpp
@@ -18,7 +17,6 @@ target_link_libraries(resource-query
   PkgConfig::LIBEDIT
   PkgConfig::JANSSON
   PkgConfig::UUID
-  Boost::filesystem
   Boost::headers
   )
 add_executable(rq2

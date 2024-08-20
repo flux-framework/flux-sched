@@ -1,7 +1,9 @@
 #!/bin/false
 # Usage: flux python y2j <in.yaml >out.json
 
-import sys, yaml, json
+import sys
+import yaml
+import json
 
 try:
     obj = yaml.safe_load(sys.stdin)

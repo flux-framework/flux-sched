@@ -21,8 +21,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).absolute().parents[2] / "src" / "p
 
 from fluxion.resourcegraph.V1 import (
     FluxionResourceGraphV1,
-    FluxionResourcePoolV1,
-    FluxionResourceRelationshipV1,
 )
 
 RV1 = {

@@ -19,9 +19,28 @@ if(POLICY CMP0140)
   cmake_policy(SET CMP0140 NEW)
 endif()
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 23 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# check compiler versions
+if(NOT FLUX_IGNORE_COMPILER_SUPPORT_AND_FIX_THIS_MYSELF)
+  set(CLANG_VER "15")
+  set(GCC_VER "12")
+  set(COMPILER_MESSAGE "\
+  Insufficient compiler version, gcc@${GCC_VER} or clang@${CLANG_VER}
+  or higher are the supported compilers.  To ignore these requirements
+  (at your own peril) set FLUX_IGNORE_COMPILER_SUPPORT_AND_FIX_THIS_MYSELF=On")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GCC_VER})
+      message(FATAL_ERROR ${COMPILER_MESSAGE})
+    endif()
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${CLANG_VER})
+      message(FATAL_ERROR ${COMPILER_MESSAGE})
+    endif()
+  endif()
+endif()
 
 configure_file(config.h.in config.h)
 
@@ -90,10 +109,8 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.66 REQUIRED COMPONENTS
-  system
-  filesystem
   graph
-  regex)
+  )
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths

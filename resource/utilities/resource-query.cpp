@@ -25,12 +25,12 @@ extern "C" {
 #include <memory>
 #include <editline/readline.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace Flux::resource_model;
 using boost::tie;
 

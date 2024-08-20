@@ -2,19 +2,22 @@ FROM fluxrm/flux-core:el9
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # Install extra buildrequires for flux-sched:
 RUN sudo dnf -y install \
+	# We need this to allow curl or others to upgrade base packages
+	--allowerasing \
 	boost-devel \
 	boost-graph \
 	boost-system \
 	boost-filesystem \
 	boost-regex \
-	readline-devel \
 	python3-pyyaml \
 	yaml-cpp-devel \
 	libedit-devel \
 	ninja-build \
+	gcc-toolset-13-{gcc,gcc-c++,gdb} \
 	cmake \
 	curl
 
@@ -30,3 +33,4 @@ RUN \
 
 USER $USER
 WORKDIR /home/$USER
+ENV CHECK_RUN_SOURCE_ENV=/opt/rh/gcc-toolset-13/enable

@@ -85,11 +85,8 @@ target_link_libraries(resource PUBLIC
     PkgConfig::JANSSON
     PkgConfig::HWLOC
     PkgConfig::UUID
-    Boost::system
     Boost::graph
-    Boost::regex
     jobspec_conv
-    Boost::filesystem
     fluxion-data
     )
 add_sanitizers(resource)

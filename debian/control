@@ -10,8 +10,6 @@ Build-Depends:
   libhwloc-dev,
   libboost-dev,
   libboost-graph-dev,
-  libboost-filesystem-dev,
-  libboost-regex-dev,
   libedit-dev,
   libyaml-cpp-dev,
   jq

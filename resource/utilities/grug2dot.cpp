@@ -15,6 +15,7 @@ extern "C" {
 }
 
 #include <iostream>
+#include <filesystem>
 #include <getopt.h>
 #include "resource/readers/resource_spec_grug.hpp"
 
@@ -68,7 +69,7 @@ int main (int argc, char *argv[])
 
     resource_gen_spec_t gspec;
     std::string fn (argv[optind]);
-    boost::filesystem::path path = fn;
+    std::filesystem::path path = fn;
     std::string base = path.stem ().string ();
 
     if (gspec.read_graphml (fn) != 0) {

@@ -176,70 +176,55 @@ export BUILD_DIR
 export COVERAGE
 export chain_lint
 
-if [[ "$INSTALL_ONLY" == "t" ]]; then
-    docker run --rm \
-        --workdir=$WORKDIR \
-        --volume=$TOP:$WORKDIR \
-        ${PLATFORM} \
-        ${BUILD_IMAGE} \
-        sh -c "( [ -e ./autogen.sh ] && ./autogen.sh || true ) &&
-               ./configure --prefix=/usr --sysconfdir=/etc \
-                --with-systemdsystemunitdir=/etc/systemd/system \
-                --localstatedir=/var &&
-               make clean &&
-               make -j${JOBS}"
-    RC=$?
-    docker rm tmp.$$
-    test $RC -ne 0 &&  die "docker run of 'make install' failed"
-else
-    docker run --rm \
-        --workdir=$WORKDIR \
-        --volume=$TOP:$WORKDIR \
-        ${PLATFORM} \
-        $MOUNT_HOME_ARGS \
-        -e PLATFORM \
-        -e CC \
-        -e CXX \
-        -e LDFLAGS \
-        -e CFLAGS \
-        -e CPPFLAGS \
-        -e GCOV \
-        -e CCACHE_CPP2 \
-        -e CCACHE_READONLY \
-        -e COVERAGE \
-        -e TEST_INSTALL \
-        -e CPPCHECK \
-        -e DISTCHECK \
-        -e RECHECK \
-        -e UNIT_TEST_ONLY \
-        -e chain_lint \
-        -e JOBS \
-        -e USER \
-        -e PROJECT \
-        -e CI \
-        -e TAP_DRIVER_QUIET \
-        -e FLUX_TEST_TIMEOUT \
-        -e FLUX_TEST_SIZE_MAX \
-        -e PYTHON \
-        -e PYTHON_VERSION \
-        -e PRELOAD \
-        -e POISON \
-        -e INCEPTION \
-        -e ASAN_OPTIONS \
-        -e BUILD_DIR \
-        -e S3_ACCESS_KEY_ID \
-        -e S3_SECRET_ACCESS_KEY \
-        -e S3_HOSTNAME \
-        -e S3_BUCKET \
-        -e WITH_GO \
-        --cap-add SYS_PTRACE \
-        --tty \
-        ${INTERACTIVE:+--interactive} \
-        --network=host \
-        ${BUILD_IMAGE} \
-        ${INTERACTIVE:-./src/test/checks_run.sh ${CONFIGURE_ARGS}} \
-    || die "docker run failed"
-fi
+docker run --rm \
+    --workdir=$WORKDIR \
+    --volume=$TOP:$WORKDIR \
+    ${PLATFORM} \
+    $MOUNT_HOME_ARGS \
+    -e PLATFORM \
+    -e CC \
+    -e CXX \
+    -e LDFLAGS \
+    -e CFLAGS \
+    -e CXXFLAGS \
+    -e CPPFLAGS \
+    -e GCOV \
+    -e CCACHE_CPP2 \
+    -e CCACHE_READONLY \
+    -e COVERAGE \
+    -e TEST_INSTALL \
+    -e INSTALL_ONLY \
+    -e CPPCHECK \
+    -e DISTCHECK \
+    -e RECHECK \
+    -e UNIT_TEST_ONLY \
+    -e chain_lint \
+    -e JOBS \
+    -e USER \
+    -e PROJECT \
+    -e CI \
+    -e TAP_DRIVER_QUIET \
+    -e FLUX_TEST_TIMEOUT \
+    -e FLUX_TEST_SIZE_MAX \
+    -e PYTHON \
+    -e PYTHON_VERSION \
+    -e PRELOAD \
+    -e POISON \
+    -e INCEPTION \
+    -e ASAN_OPTIONS \
+    -e BUILD_DIR \
+    -e S3_ACCESS_KEY_ID \
+    -e S3_SECRET_ACCESS_KEY \
+    -e S3_HOSTNAME \
+    -e S3_BUCKET \
+    -e WITH_GO \
+    --cap-add SYS_PTRACE \
+    --tty \
+    ${INTERACTIVE:+--interactive} \
+    --network=host \
+    ${BUILD_IMAGE} \
+    ${INTERACTIVE:-./src/test/checks_run.sh ${CONFIGURE_ARGS}} \
+|| die "docker run failed"
 
 if test -n "$TAG"; then
     # Re-run 'make install' in fresh image, otherwise we get all

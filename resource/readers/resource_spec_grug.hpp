@@ -15,7 +15,6 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/graphml.hpp>
-#include <boost/filesystem.hpp>
 #include <schema/data_std.hpp>
 
 namespace Flux {
