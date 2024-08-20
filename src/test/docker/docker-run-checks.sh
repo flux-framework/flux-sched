@@ -175,6 +175,7 @@ export UNIT_TEST_ONLY
 export BUILD_DIR
 export COVERAGE
 export chain_lint
+export INSTALL_ONLY
 
 docker run --rm \
     --workdir=$WORKDIR \
