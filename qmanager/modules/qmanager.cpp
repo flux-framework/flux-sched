@@ -493,6 +493,18 @@ static int enforce_options (std::shared_ptr<qmanager_ctx_t> &ctx)
     return rc;
 }
 
+static int register_feasibility (flux_t *h)
+{
+    flux_future_t *f;
+    int rc;
+
+    if (!(f = flux_service_register (h, "sched")))
+        return -1;
+    rc = flux_future_get (f, NULL);
+    flux_future_destroy (f);
+    return rc;
+}
+
 static int handshake (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = 0;
@@ -509,6 +521,10 @@ static int handshake (std::shared_ptr<qmanager_ctx_t> &ctx)
     }
     flux_log (ctx->h, LOG_DEBUG, "handshaking with job-manager completed");
 
+    /* Register feasibility service for RFC 27 feasibility.check RPC
+     */
+    if ((rc = register_feasibility (ctx->h) < 0))
+        flux_log_error (ctx->h, "failed to register feasibility service");
     return rc;
 }
 
@@ -600,6 +616,7 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
 static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "sched.resource-status", status_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.feasibility", feasibility_request_cb, FLUX_ROLE_USER},
+    {FLUX_MSGTYPE_REQUEST, "feasibility.check", feasibility_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.params", params_request_cb, FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };

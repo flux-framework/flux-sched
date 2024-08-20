@@ -2862,7 +2862,7 @@ static void satisfiability_request_cb (flux_t *h,
         goto error_memfree;
     }
     free ((void *)js_str);
-    if (flux_respond_pack (h, msg, "{s:i}", "errnum", 0) < 0)
+    if (flux_respond (h, msg, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
     return;
 
