@@ -3,7 +3,6 @@
 #  Generate a build matrix for use with github workflows
 #
 
-from copy import deepcopy
 import json
 import os
 import re

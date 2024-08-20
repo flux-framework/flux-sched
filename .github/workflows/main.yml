@@ -39,22 +39,6 @@ jobs:
     - name: format and linting checks
       run: pre-commit run --all-files --show-diff-on-failure
 
-  python-lint:
-    name: python lint
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.8
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        fetch-depth: 0
-    - name: install pylint
-      run: python3 -m pip install 'pylint==2.4.4' --force-reinstall
-    - name: run pylint
-      run: ./scripts/pylint
-
   generate-matrix:
     # https://stackoverflow.com/questions/59977364
     name: Generate build matrix
