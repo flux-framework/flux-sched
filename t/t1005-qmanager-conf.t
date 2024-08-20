@@ -1,3 +1,5 @@
+#!/bin/sh
+
 test_description='Test configuration file support for qmanager'
 
 . `dirname $0`/sharness.sh

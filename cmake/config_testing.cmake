@@ -34,6 +34,7 @@ function(flux_config_test)
     "${options}" "${oneValueArgs}" "${multiValueArgs}")
   set_property(TEST ${ARG_NAME} PROPERTY ENVIRONMENT "${TEST_ENV}")
 endfunction()
+find_program(TEST_SHELL NAMES bash zsh sh)
 function(flux_add_test)
   # This odd construction is as close as we can get to
   # generic argument forwarding
@@ -55,7 +56,7 @@ function(flux_add_test)
   cmake_language(EVAL CODE "
   add_test(
       NAME ${ARG_NAME}
-      COMMAND /usr/bin/bash ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
+      COMMAND ${TEST_SHELL} ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
       ${__argsQuoted}
     ) ")
     flux_config_test(NAME ${ARG_NAME})
