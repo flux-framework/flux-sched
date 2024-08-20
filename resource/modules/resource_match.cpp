@@ -284,6 +284,7 @@ static const struct flux_msg_handler_spec htab[] =
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.status", status_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.ns-info", ns_info_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.satisfiability", satisfiability_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "feasibility.check", satisfiability_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.params", params_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.set_status", set_status_request_cb, 0},
      FLUX_MSGHANDLER_TABLE_END};
@@ -2962,6 +2963,18 @@ error:
     return;
 }
 
+static int register_feasibility (flux_t *h)
+{
+    flux_future_t *f;
+    int rc;
+
+    if (!(f = flux_service_register (h, "feasibility")))
+        return -1;
+    rc = flux_future_get (f, NULL);
+    flux_future_destroy (f);
+    return rc;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Module Main
 ////////////////////////////////////////////////////////////////////////////////
@@ -2983,6 +2996,11 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         // Because mod_main is always active, the following is safe.
         flux_aux_set (h, "sched-fluxion-resource", &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: resource module starting", __FUNCTION__);
+
+        if ((rc = register_feasibility (h)) < 0) {
+            flux_log_error (ctx->h, "%s: register_feasibility", __FUNCTION__);
+            goto done;
+        }
 
         /* Before beginning synchronous resource.acquire RPC, set module status
          * to 'running' to let flux module load return success.
