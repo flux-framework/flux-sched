@@ -4,32 +4,15 @@ ARG USER=flux
 ARG UID=1000
 USER root
 
+# copy scripts into image
+COPY scripts/ /scripts
 # Install extra buildrequires for flux-sched:
-RUN sudo dnf -y install \
-	# We need this to allow curl or others to upgrade base packages
-	--allowerasing \
-	boost-devel \
-	boost-graph \
-	boost-system \
-	boost-filesystem \
-	boost-regex \
-	python3-pyyaml \
-	yaml-cpp-devel \
-	libedit-devel \
-	ninja-build \
-	gcc-toolset-13-{gcc,gcc-c++,gdb} \
-	cmake \
-	curl
+RUN sudo /scripts/install-deps.sh -y --allowerasing gcc-toolset-13-{gcc,gcc-c++,gdb} \
+ && sudo dnf clean all
 
 # Add configured user to image with sudo access:
 #
-RUN \
- if test "$USER" != "flux"; then  \
-      sudo groupadd -g $UID $USER \
-   && sudo useradd -g $USER -u $UID -d /home/$USER -m $USER \
-   && sudo sh -c "printf \"$USER ALL= NOPASSWD: ALL\\n\" >> /etc/sudoers" \
-   && sudo usermod -G wheel $USER; \
- fi
+RUN /scripts/add_docker_user.sh
 
 USER $USER
 WORKDIR /home/$USER

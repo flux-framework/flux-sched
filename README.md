@@ -45,6 +45,9 @@ Fluxion requires an installed flux-core package.  Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
+To install our other dependencies on a dnf, apk or apt-using distro you should
+be able to use ./scripts/install-deps.sh to install all necessary dependencies.
+
 <!-- A collapsible section with markdown -->
 <details>
   <summary>Click to expand and see our full dependency table</summary>
@@ -60,15 +63,6 @@ libedit-devel             | libedit-dev             | >= 3.0            |
 python3-pyyaml            | python3-yaml            | >= 3.10           |
 yaml-cpp-devel            | libyaml-cpp-dev         | >= 0.5.1          |
 
-*Note 1 - Boost package versions 1.54-1.58 contain a bug that
-leads to compilation error.*
-
-The following optional dependencies enable additional testing:
-
-**redhat**        | **ubuntu**        | **version**
-----------        | ----------        | -----------
-valgrind-devel    | valgrind          |
-jq                | jq                |
 </details>
 
 ##### Installing RedHat/CentOS Packages
@@ -156,7 +150,7 @@ from the source directory or use the usual ctest options to filter by regex:
 
 ```bash
 $ cd build/t
-$ ../../t/t9001-golang-basic.t 
+$ ../../t/t9001-golang-basic.t
 ok 1 - match allocate 1 slot: 1 socket: 1 core (pol=default)
 ok 2 - match allocate 2 slots: 2 sockets: 5 cores 1 gpu 6 memory
 # passed all 2 test(s)
