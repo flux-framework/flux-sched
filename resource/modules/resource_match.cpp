@@ -2997,10 +2997,12 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         flux_aux_set (h, "sched-fluxion-resource", &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: resource module starting", __FUNCTION__);
 
-        if ((rc = register_feasibility (h)) < 0) {
-            flux_log_error (ctx->h, "%s: register_feasibility", __FUNCTION__);
-            goto done;
-        }
+        /* Attempt to register the feasibility service. Print a warning
+         * if this fails (likely because sched-simple is still loaded), but
+         * do not make it a fatal error.
+         */
+        if (register_feasibility (h) < 0)
+            flux_log (ctx->h, LOG_WARNING, "unable to register feasibility service");
 
         /* Before beginning synchronous resource.acquire RPC, set module status
          * to 'running' to let flux module load return success.
