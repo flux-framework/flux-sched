@@ -662,6 +662,9 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                     m_running.erase (job_it->second->t_stamps.running_ts);
                     job_it->second->t_stamps.complete_ts = m_cq_cnt++;
                     job_it->second->state = job_state_kind_t::COMPLETE;
+                    // hold a reference to the shared_ptr to keep it alive
+                    // during cancel
+                    auto job_sp = job_it->second;
                     m_jobs.erase (job_it);
                     if (final && !full_removal) {
                         // This error condition indicates a discrepancy between core and sched.
@@ -672,7 +675,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                                         __FUNCTION__,
                                         static_cast<intmax_t> (id));
                         // Run a full cancel to clean up all remaining allocated resources
-                        if (cancel (h, job_it->second->id, true) != 0) {
+                        if (cancel (h, job_sp->id, true) != 0) {
                             flux_log_error (flux_h,
                                             "%s: .free RPC full cancel failed for jobid "
                                             "%jd",
