@@ -1,4 +1,4 @@
-files: '^(src|t|resource|qmanager)/.*(\.py|\.h|\.hpp|\.c|\.cpp)'
+files: 'scripts/build-matrix|^(src|t|resource|qmanager)/.*(\.py|\.h|\.hpp|\.c|\.cpp)'
 exclude: "^(.*((pyco|lib)tap|yggdrasil|jsongraph).*)|src/common/libutil/.*$"
 repos:
   - repo: meta
