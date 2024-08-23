@@ -226,6 +226,8 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         flux_log (h, LOG_ERR, "%s: can't allocate the context", __FUNCTION__);
         return nullptr;
     }
+    //TODO remove
+    flux_log (h, LOG_DEBUG, "%s: created ctx, %d", __FUNCTION__, ctx.use_count ());
     if (flux_get_rank (h, &rank) < 0) {
         flux_log (h, LOG_ERR, "%s: can't determine rank", __FUNCTION__);
         goto error;
@@ -1001,32 +1003,6 @@ static void disconnect_request_cb (flux_t *h,
     }
 }
 
-// Reply to notify message.
-// When this runs, m_acquired_resources should be set.
-static void notify_of_resources (flux_future_t *f, void *arg) {
-    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
-    flux_msg_t *msg = (flux_msg_t *)flux_future_aux_get (f, "notify_msg");
-
-    if (msg == NULL) {
-        flux_log_error (ctx->h, "%s: flux_future_aux_get", __FUNCTION__);
-    }
-    if (flux_respond_pack (ctx->h,
-                           msg,
-                           "{s:O}",
-                           "resources",
-                           ctx->m_acquired_resources)
-        < 0) {
-        flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
-    }
-
-    // Delete aux entry 'notify_msg' and call flux_msg_decref (msg),
-    //  which is the aux destructor set in notify_request_cb.
-    if (flux_future_aux_set (ctx->update_f, "notify_msg", NULL, NULL)) {
-        flux_log_error (ctx->h, "%s: flux_future_aux_set", __FUNCTION__);
-    }
-    return;
-}
-
 static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
     try {
@@ -1048,37 +1024,32 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             goto error;
         }
 
+        // Respond only after sched-fluxion-resource gets
+        //  resources from its resource.acquire RPC.
+        if (ctx->m_acquired_resources.get () == nullptr) {
+            //TODO remove?
+            flux_log_error (h, "%s: waiting for resource.acquire", __FUNCTION__);
+            flux_future_wait_for (ctx->update_f, -1.0);
+        }
+        if (flux_respond_pack (ctx->h,
+                    msg,
+                    "{s:O s:f}",
+                    "resources",
+                    ctx->m_acquired_resources.get (),
+                    "expiration",
+                    ctx->m_acquired_resources_expiration)
+            < 0) {
+            flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+        }
+
+        // Add msg as a subscriber to resource UP/DOWN updates
         m->set_msg (msg);
         auto ret = ctx->notify_msgs.insert (
-            std::pair<std::string, std::shared_ptr<msg_wrap_t>> (route, m));
+                std::pair<std::string, std::shared_ptr<msg_wrap_t>> (route, m));
         if (!ret.second) {
             errno = EEXIST;
             flux_log_error (h, "%s: insert", __FUNCTION__);
             goto error;
-        }
-
-        // Store msg in update_f to pass into notify_of_resources.
-        //  The aux value is destroyed in notify_of_resources.
-        if (flux_msg_incref (msg) == NULL) {
-            flux_log_error (ctx->h, "%s: flux_msg_incref", __FUNCTION__);
-            goto error;
-        }
-        if (flux_future_aux_set (ctx->update_f, "notify_msg", (void *)msg, (flux_free_f)flux_msg_decref) < 0) {
-            flux_log_error (ctx->h, "%s: flux_future_aux_set", __FUNCTION__);
-            // Manually decref since the aux destructor decref won't get called
-            flux_msg_decref (msg); 
-            goto error;
-        }
-
-        // Respond only after sched-fluxion-resource gets
-        //  resources from its resource.acquire RPC.
-        if (ctx->m_acquired_resources != NULL) {
-            notify_of_resources (ctx->update_f, static_cast<void *> (ctx->h));
-        } else {
-            if (flux_future_then (ctx->update_f, -1.0, notify_of_resources, static_cast<void *> (ctx->h)) < 0) {
-                flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
-                goto error;
-            }
         }
 
     } catch (std::bad_alloc &e) {
@@ -1330,7 +1301,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
         return -1;
     }
-    if ((rc = populate_resource_db (ctx, mod_name)) != 0) {
+    if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't populate graph resource database", __FUNCTION__);
         return rc;
     }

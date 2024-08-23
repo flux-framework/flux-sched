@@ -102,16 +102,19 @@ struct resource_ctx_t : public resource_interface_t {
     std::map<std::string, std::shared_ptr<msg_wrap_t>> notify_msgs;
     bool m_resources_updated = true;      /* resources have been updated */
     bool m_resources_down_updated = true; /* down resources have been updated */
-    bool m_get_up_down_updates = true;
-    bool m_acquire_resources_from_core = false;
     /* last time allocated resources search updated */
     std::chrono::time_point<std::chrono::system_clock> m_resources_alloc_updated;
     /* R caches */
     json::value m_r_all;
     json::value m_r_down;
     json::value m_r_alloc;
+
+    /* Resource acquire behavior */
+    bool m_get_up_down_updates = true;
+    bool m_acquire_resources_from_core = false; /* s.-f.-resource only */
     /* All resources from resource.acquire */
-    json_t *m_acquired_resources = NULL;
+    json::value m_acquired_resources = nullptr;
+    double m_acquired_resources_expiration = -1.;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +165,7 @@ int run_find (std::shared_ptr<resource_ctx_t> &ctx,
 // Resource Graph and Traverser Initialization
 ////////////////////////////////////////////////////////////////////////////////
 
-int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx, const char *ctx_handle);
+int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx);
 
 int mark (std::shared_ptr<resource_ctx_t> &ctx,
                  const char *ids,

@@ -86,7 +86,6 @@ class resource_opts_t : public optmgr_parse_t {
         RESERVE_VTX_VEC = 60,   // reserve-vtx-vec
         PRUNE_FILTERS = 70,     // prune-filter
         UPDATE_INTERVAL = 80,   // update-interval
-        MATCH_SATISFIABILITY = 90,
         UNKNOWN = 5000
     };
 
