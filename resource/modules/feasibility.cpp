@@ -62,7 +62,7 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->matcher = nullptr; /* Cannot be allocated at this point */
         ctx->writers = nullptr; /* Cannot be allocated at this point */
         ctx->reader = nullptr;  /* Cannot be allocated at this point */
-        ctx->m_resources_updated = true;
+        ctx->m_resources_updated = false;
         ctx->m_resources_down_updated = true;
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
         ctx->m_get_up_down_updates = false;
@@ -152,7 +152,7 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
 {
     std::shared_ptr<resource_ctx_t> ctx = nullptr;
     uint32_t rank = 1;
-
+    
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "%s: can't allocate the context", __FUNCTION__);
         return nullptr;
@@ -170,13 +170,13 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         goto error;
     }
     ctx->opts.canonicalize ();
-
+    
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
         goto error;
     }
     return ctx;
-
+    
 error:
     return nullptr;
 }
@@ -239,12 +239,12 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
 
-    // The satisfiability module should only use FIRST. Exclusivity has no effect.
+    // The feasibility module should only use FIRST. Exclusivity has no effect.
     if (!(ctx->matcher = create_match_cb (FIRST_MATCH))) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
         return -1;
     }
-    if ((rc = populate_resource_db (ctx, mod_name)) != 0) {
+    if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't populate graph resource database", __FUNCTION__);
         return rc;
     }
@@ -263,6 +263,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     if (!(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
+    //TODO remove?
     if (ctx->opts.get_opt ().is_prune_filters_set ()
         && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
                                                    ctx->opts.get_opt ().get_prune_filters ())
@@ -281,6 +282,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         return -1;
     }
 
+    //TODO remove?
     // Perform the initial status marking only when "up" rankset is available
     // Rankless reader cases (required for testing e.g., GRUG) must not
     // execute the following branch.
@@ -315,9 +317,10 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
         uint32_t rank = 1;
 
         if (!(ctx = init_module (h, argc, argv))) {
-            flux_log (h, LOG_ERR, "%s: can't initialize resource module", __FUNCTION__);
+            flux_log (h, LOG_ERR, "%s: can't initialize feasibility module", __FUNCTION__);
             goto done;
         }
+        
         // Because mod_main is always active, the following is safe.
         flux_aux_set (h, mod_name, &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: feasibility module starting", __FUNCTION__);
@@ -339,6 +342,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             flux_log (h, LOG_ERR, "%s: flux_reactor_run: %s", __FUNCTION__, strerror (errno));
             goto done;
         }
+        
     } catch (std::exception &e) {
         errno = ENOSYS;
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, e.what ());

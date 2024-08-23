@@ -179,7 +179,7 @@ bool resource_prop_t::is_update_interval_set () const
 
 json_t *resource_prop_t::jsonify () const
 {
-    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:b s:i s:s? s:i }",
+    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i }",
                       "load-file",
                       is_load_file_set () ? get_load_file ().c_str () : nullptr,
                       "load-format",
