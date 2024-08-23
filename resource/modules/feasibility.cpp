@@ -22,7 +22,7 @@ static void feasibility_request_cb (flux_t *h,
                                        void *arg);
 
 static const struct flux_msg_handler_spec htab[] =
-    {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-feasibility.feasibility", feasibility_request_cb, 0},
+    {{FLUX_MSGTYPE_REQUEST, "feasibility.check", feasibility_request_cb, 0},
      FLUX_MSGHANDLER_TABLE_END};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +151,7 @@ static int process_config_file (std::shared_ptr<resource_ctx_t> &ctx)
 static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **argv)
 {
     std::shared_ptr<resource_ctx_t> ctx = nullptr;
+    flux_future_t *f = nullptr;
     uint32_t rank = 1;
     
     if (!(ctx = getctx (h))) {
@@ -170,7 +171,18 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         goto error;
     }
     ctx->opts.canonicalize ();
-    
+
+    // Register feasibility service
+    f = flux_service_register (h, "feasibility");
+    if (flux_future_get (f, NULL) < 0) {
+        flux_log_error (h, "%s: error registering feasibility service", __FUNCTION__);
+        flux_future_destroy (f);
+        goto error;
+    } else {
+        flux_log (h, LOG_DEBUG, "service registered");
+        flux_future_destroy (f);
+    }
+    // Register feasibility handlers
     if (flux_msg_handler_addvec (h, htab, (void *)h, &ctx->handlers) < 0) {
         flux_log_error (h, "%s: error registering resource event handler", __FUNCTION__);
         goto error;
@@ -218,7 +230,7 @@ static void feasibility_request_cb (flux_t *h,
         goto error_memfree;
     }
     free ((void *)js_str);
-    if (flux_respond_pack (h, msg, "{s:i}", "errnum", 0) < 0)
+    if (flux_respond (h, msg, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
     return;
 
@@ -342,7 +354,14 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             flux_log (h, LOG_ERR, "%s: flux_reactor_run: %s", __FUNCTION__, strerror (errno));
             goto done;
         }
-        
+
+        // Unregister feasibility service
+        flux_future_t *f = nullptr;
+        f = flux_service_unregister (h, "feasibility");
+        if (flux_future_get (f, NULL) < 0)
+            flux_log_error (h, "Failed to unregister feasibility service");
+        flux_future_destroy (f);
+
     } catch (std::exception &e) {
         errno = ENOSYS;
         flux_log (h, LOG_ERR, "%s: %s", __FUNCTION__, e.what ());
