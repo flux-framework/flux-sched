@@ -226,8 +226,6 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         flux_log (h, LOG_ERR, "%s: can't allocate the context", __FUNCTION__);
         return nullptr;
     }
-    //TODO remove
-    flux_log (h, LOG_DEBUG, "%s: created ctx, %d", __FUNCTION__, ctx.use_count ());
     if (flux_get_rank (h, &rank) < 0) {
         flux_log (h, LOG_ERR, "%s: can't determine rank", __FUNCTION__);
         goto error;
@@ -1026,11 +1024,8 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 
         // Respond only after sched-fluxion-resource gets
         //  resources from its resource.acquire RPC.
-        if (ctx->m_acquired_resources.get () == nullptr) {
-            //TODO remove?
-            flux_log_error (h, "%s: waiting for resource.acquire", __FUNCTION__);
-            flux_future_wait_for (ctx->update_f, -1.0);
-        }
+        // This is guaranteed by the order of mod_main:
+        //  init_resource_graph runs before flux_reactor_run.
         if (flux_respond_pack (ctx->h,
                     msg,
                     "{s:O s:f}",
