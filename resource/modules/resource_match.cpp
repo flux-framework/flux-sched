@@ -210,19 +210,8 @@ static void update_resource (flux_future_t *f, void *arg)
     const char *down = NULL;
     double expiration = -1.;
     json_t *resources = NULL;
-    flux_t *h = (flux_t *)arg;
-    const char *ctx_handle = (const char *)flux_future_aux_get (f, "context_handle");
-    std::shared_ptr<resource_ctx_t> ctx = nullptr;
-    void *d = NULL;
-    //TODO fix
 
-    if ((d = flux_aux_get (h, ctx_handle)) != NULL) {
-        ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (d));
-    } else {
-        flux_log_error (ctx->h, "%s: flux_aux_get", __FUNCTION__);
-        //reactor stop?
-        goto done;
-    }
+    std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
 
     if (rc = flux_rpc_get_unpack (f,
                                   "{s?:o s?:s s?:s s?:F}",
@@ -235,18 +224,17 @@ static void update_resource (flux_future_t *f, void *arg)
                                   "expiration",
                                   &expiration)
         < 0) {
-        flux_log_error (ctx->h,"%s: flux_rpc_get_unpack", __FUNCTION__);
-        flux_reactor_stop (flux_get_reactor (ctx->h));
+        flux_log_error (ctx->h,
+                        ctx->m_acquire_resources_from_core \
+                            ? "%s: exiting due to resource.acquire failure" \
+                            : "%s: exiting due to sched-fluxion-resource.notify failure",
+                        __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h)); /* Cancels notify msgs */
         goto done;
     }
     if ((rc = update_resource_db (ctx, resources, up, down)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
-    }
-    // Store initial set of resources to broadcast to other fluxion modules
-    if (ctx->m_acquire_resources_from_core && (resources != NULL)) {
-        ctx->m_acquired_resources = resources;
-        json_incref (resources);
     }
     if (expiration >= 0.) {
         /*  Update graph duration:
@@ -255,8 +243,19 @@ static void update_resource (flux_future_t *f, void *arg)
             std::chrono::system_clock::from_time_t ((time_t)expiration);
         flux_log (ctx->h, LOG_INFO, "resource expiration updated to %.2f", expiration);
     }
+
     if (ctx->m_acquire_resources_from_core) {
-        // Broadcast resoure updates to other fluxion modules via notify messages
+        // Store initial set of resources to broadcast to other fluxion modules
+        //  via sched-fluxion-resource.notify
+        if (resources != NULL)
+            ctx->m_acquired_resources = json::value (resources);
+        if (expiration >= 0.)
+            ctx->m_acquired_resources_expiration = expiration;
+
+        // Broadcast UP/DOWN updates to subscribed fluxion modules.
+        // There are no subscribers until the first notify_request_cb,
+        //  which must happen after the first run of update_resource
+        // TODO actually broadcast the UP/DOWN info
         for (auto &kv : ctx->notify_msgs) {
             if (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL) < 0) {
                 flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
@@ -268,7 +267,22 @@ done:
     ctx->set_update_rc (rc);
 }
 
-static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx, const char *ctx_handle)
+static void update_resource_no_up_down (flux_future_t *f, void *arg) {
+    int rc = -1;
+
+    std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
+
+    if (rc = flux_rpc_get (f, NULL) < 0) {
+        flux_log_error (ctx->h,
+                        "%s: exiting due to sched-fluxion-resource.notify failure",
+                        __FUNCTION__);
+        flux_reactor_stop (flux_get_reactor (ctx->h));
+    }
+    flux_future_reset (f);
+    ctx->set_update_rc (rc);
+}
+
+static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     json_t *o = NULL;
@@ -288,33 +302,41 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx, c
         flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
         goto done;
     }
-    if (flux_future_aux_set (ctx->update_f, "context_handle", (void *)ctx_handle, NULL) < 0) {
-        flux_log_error (ctx->h, "%s: flux_future_aux_set", __FUNCTION__);
-        goto done;
-    }
 
-    update_resource (ctx->update_f, static_cast<void *> (ctx->h));
+    update_resource (ctx->update_f, static_cast<void *> (&ctx));
 
     if ((rc = ctx->fetch_and_reset_update_rc ()) < 0) {
         flux_log_error (ctx->h, "%s: update_resource", __FUNCTION__);
         goto done;
     }
-    // Only add callback if the module needs resource UP/DOWN updates
+    // Only add full update_resource callback if the module needs UP/DOWN updates
+    // Otherwise, add update_resource_no_up_down callback to get error updates
     if (ctx->m_get_up_down_updates) {
         if (rc = flux_future_then (ctx->update_f,
                                    -1.0, 
                                    update_resource, 
-                                   static_cast<void *> (ctx->h))
+                                   static_cast<void *> (&ctx))
             < 0) {
             flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
             goto done;
         }
+    } else {
+        if (rc = flux_future_then (ctx->update_f,
+                                   -1.0, 
+                                   update_resource_no_up_down, 
+                                   static_cast<void *> (&ctx))
+            < 0) {
+            flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+            goto done;
+        }
+
     }
+
 done:
     return rc;
 }
 
-int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx, const char *ctx_handle)
+int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     std::chrono::time_point<std::chrono::system_clock> start;
@@ -333,15 +355,15 @@ int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx, const char *ctx_
                   __FUNCTION__,
                   ctx->opts.get_opt ().get_load_file ().c_str ());
     } else {
-        if (populate_resource_db_acquire (ctx, ctx_handle) < 0) {
+        if (populate_resource_db_acquire (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: populate_resource_db_acquire", __FUNCTION__);
             goto done;
         }
         flux_log (ctx->h,
-                  LOG_INFO,
+                  LOG_DEBUG,
                   ctx->m_acquire_resources_from_core \
-                  ? "%s: loaded resources from core's resource.acquire" \
-                  : "%s: loaded resources from sched-fluxion-resource.notify",
+                      ? "%s: loaded resources from core's resource.acquire" \
+                      : "%s: loaded resources from sched-fluxion-resource.notify",
                   __FUNCTION__);
     }
 
@@ -1071,7 +1093,7 @@ int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                                const char *down)
 {
     int rc = 0;
-    // Will need to get duration update and set graph metadata when
+    // TODO Will need to get duration update and set graph metadata when
     // resource.acquire duration update is supported in the future.
     if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
         flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
