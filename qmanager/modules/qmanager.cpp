@@ -305,42 +305,6 @@ out:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
-static void feasibility_request_cb (flux_t *h,
-                                    flux_msg_handler_t *w,
-                                    const flux_msg_t *msg,
-                                    void *arg)
-{
-    int size = 0;
-    flux_future_t *f = nullptr;
-    const char *data = nullptr;
-
-    if (flux_request_decode_raw (msg, nullptr, (const void **)&data, &size) < 0)
-        goto error;
-    if (!(f = flux_rpc_raw (h,
-                            "sched-fluxion-feasibility.feasibility",
-                            data,
-                            size,
-                            FLUX_NODEID_ANY,
-                            0))) {
-        flux_log_error (h, "%s: flux_rpc (sched-fluxion-feasibility.feasibility)", __FUNCTION__);
-        goto error;
-    }
-    if (flux_rpc_get_raw (f, (const void **)&data, &size) < 0)
-        goto error;
-    if (flux_respond_raw (h, msg, (const void *)data, size) < 0) {
-        flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
-        goto error;
-    }
-    flux_log (h, LOG_DEBUG, "%s: feasibility succeeded", __FUNCTION__);
-    flux_future_destroy (f);
-    return;
-
-error:
-    if (flux_respond_error (h, msg, errno, flux_future_error_string (f)) < 0)
-        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
-    flux_future_destroy (f);
-}
-
 static void params_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
     int saved_errno;
@@ -599,7 +563,6 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
 
 static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "sched.resource-status", status_request_cb, FLUX_ROLE_USER},
-    {FLUX_MSGTYPE_REQUEST, "*.feasibility", feasibility_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.params", params_request_cb, FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };
