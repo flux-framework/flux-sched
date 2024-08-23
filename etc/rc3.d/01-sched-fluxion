@@ -2,7 +2,8 @@
 
 flux module remove -f sched-fluxion-feasibility
 
-test $(flux getattr rank) -eq 0 || exit 0
+if [ $(flux getattr rank) -eq 0 ]; then
+    flux module remove -f sched-fluxion-qmanager
+    flux module remove -f sched-fluxion-resource
+fi
 
-flux module remove -f sched-fluxion-qmanager
-flux module remove -f sched-fluxion-resource
