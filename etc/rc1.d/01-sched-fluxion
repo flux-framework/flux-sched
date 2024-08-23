@@ -8,9 +8,10 @@ if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
 fi
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
-    # load on all ranks
+    if [ $(flux getattr rank) -eq 0 ]; then
     flux module reload -f sched-fluxion-feasibility \
         ${FLUXION_RESOURCE_OPTIONS:-"load-allowlist=node,core,gpu"}
+    fi
 fi
 
 if [ -z ${FLUXION_QMANAGER_RC_NOOP} ]; then
