@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Can be loaded on multiple ranks
 flux module remove -f sched-fluxion-feasibility
 
 if [ $(flux getattr rank) -eq 0 ]; then
