@@ -40,7 +40,6 @@ extern "C" {
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Matching Service Module Context
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,32 +133,32 @@ inline bool is_existent_jobid (const std::shared_ptr<resource_ctx_t> &ctx, uint6
 int Rlite_equal (const std::shared_ptr<resource_ctx_t> &ctx, const char *R1, const char *R2);
 
 int run_match (std::shared_ptr<resource_ctx_t> &ctx,
-                      int64_t jobid,
-                      const char *cmd,
-                      const std::string &jstr,
-                      int64_t *now,
-                      int64_t *at,
-                      double *overhead,
-                      std::stringstream &o,
-                      flux_error_t *errp);
+               int64_t jobid,
+               const char *cmd,
+               const std::string &jstr,
+               int64_t *now,
+               int64_t *at,
+               double *overhead,
+               std::stringstream &o,
+               flux_error_t *errp);
 
 int run_update (std::shared_ptr<resource_ctx_t> &ctx,
-                       int64_t jobid,
-                       const char *R,
-                       int64_t &at,
-                       double &overhead,
-                       std::stringstream &o);
+                int64_t jobid,
+                const char *R,
+                int64_t &at,
+                double &overhead,
+                std::stringstream &o);
 
 int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
-                       int64_t jobid,
-                       const char *R,
-                       bool part_cancel,
-                       bool &full_removal);
+                int64_t jobid,
+                const char *R,
+                bool part_cancel,
+                bool &full_removal);
 
 int run_find (std::shared_ptr<resource_ctx_t> &ctx,
-                     const std::string &criteria,
-                     const std::string &format_str,
-                     json_t **R);
+              const std::string &criteria,
+              const std::string &format_str,
+              json_t **R);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Graph and Traverser Initialization
@@ -167,14 +166,12 @@ int run_find (std::shared_ptr<resource_ctx_t> &ctx,
 
 int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx);
 
-int mark (std::shared_ptr<resource_ctx_t> &ctx,
-                 const char *ids,
-                 resource_pool_t::status_t status);
+int mark (std::shared_ptr<resource_ctx_t> &ctx, const char *ids, resource_pool_t::status_t status);
 
 int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
-                               json_t *resources,
-                               const char *up,
-                               const char *down);
+                        json_t *resources,
+                        const char *up,
+                        const char *down);
 
 int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx);
 
