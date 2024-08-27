@@ -12,6 +12,7 @@ jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test008.yaml"
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 #
@@ -25,7 +26,8 @@ test_debug '
 test_expect_success 'loading resource module with a tiny machine config works' '
 	load_resource \
 load-file=${grug} load-format=grug \
-prune-filters=ALL:core subsystems=containment policy=high
+prune-filters=ALL:core subsystems=containment policy=high &&
+	load_feasibility load-file=${grug} load-format=grug subsystems=containment
 '
 
 test_expect_success 'set-status basic test works' '
@@ -81,7 +83,8 @@ test_expect_success 'reloading resource and loading qmanager works' '
 	remove_resource &&
 	flux module reload resource &&
 	reload_resource &&
-	reload_qmanager_sync
+	reload_qmanager_sync &&
+	reload_feasibility
 '
 
 test_expect_success 'set-status RPC causes jobs to be reconsidered' '
@@ -99,6 +102,7 @@ test_expect_success 'set-status RPC causes jobs to be reconsidered' '
 
 test_expect_success 'removing qmanager and resource works' '
 	remove_qmanager &&
+    remove_feasibility &&
 	remove_resource
 '
 
