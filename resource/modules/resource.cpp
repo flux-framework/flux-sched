@@ -171,11 +171,7 @@ static int process_config_file (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = 0;
     json_t *conf = nullptr;
 
-    if ((rc = flux_conf_unpack (flux_get_conf (ctx->h),
-                                nullptr,
-                                "{ s?:o }",
-                                mod_name,
-                                &conf))
+    if ((rc = flux_conf_unpack (flux_get_conf (ctx->h), nullptr, "{ s?:o }", mod_name, &conf))
         < 0) {
         flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
         return rc;
@@ -1027,12 +1023,12 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         // This is guaranteed by the order of mod_main:
         //  init_resource_graph runs before flux_reactor_run.
         if (flux_respond_pack (ctx->h,
-                    msg,
-                    "{s:O s:f}",
-                    "resources",
-                    ctx->m_acquired_resources.get (),
-                    "expiration",
-                    ctx->m_acquired_resources_expiration)
+                               msg,
+                               "{s:O s:f}",
+                               "resources",
+                               ctx->m_acquired_resources.get (),
+                               "expiration",
+                               ctx->m_acquired_resources_expiration)
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
         }
@@ -1040,7 +1036,7 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         // Add msg as a subscriber to resource UP/DOWN updates
         m->set_msg (msg);
         auto ret = ctx->notify_msgs.insert (
-                std::pair<std::string, std::shared_ptr<msg_wrap_t>> (route, m));
+            std::pair<std::string, std::shared_ptr<msg_wrap_t>> (route, m));
         if (!ret.second) {
             errno = EEXIST;
             flux_log_error (h, "%s: insert", __FUNCTION__);
@@ -1351,7 +1347,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
     return 0;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Module Main

@@ -17,9 +17,9 @@ MOD_NAME ("sched-fluxion-feasibility");
 ////////////////////////////////////////////////////////////////////////////////
 
 static void feasibility_request_cb (flux_t *h,
-                                       flux_msg_handler_t *w,
-                                       const flux_msg_t *msg,
-                                       void *arg);
+                                    flux_msg_handler_t *w,
+                                    const flux_msg_t *msg,
+                                    void *arg);
 
 static const struct flux_msg_handler_spec htab[] =
     {{FLUX_MSGTYPE_REQUEST, "feasibility.check", feasibility_request_cb, 0},
@@ -102,11 +102,7 @@ static int process_config_file (std::shared_ptr<resource_ctx_t> &ctx)
     int rc = 0;
     json_t *conf = nullptr;
 
-    if ((rc = flux_conf_unpack (flux_get_conf (ctx->h),
-                                nullptr,
-                                "{ s?:o }",
-                                mod_name,
-                                &conf))
+    if ((rc = flux_conf_unpack (flux_get_conf (ctx->h), nullptr, "{ s?:o }", mod_name, &conf))
         < 0) {
         flux_log_error (ctx->h, "%s: flux_conf_unpack", __FUNCTION__);
         return rc;
@@ -153,7 +149,7 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
     std::shared_ptr<resource_ctx_t> ctx = nullptr;
     flux_future_t *f = nullptr;
     uint32_t rank = 1;
-    
+
     if (!(ctx = getctx (h))) {
         flux_log (h, LOG_ERR, "%s: can't allocate the context", __FUNCTION__);
         return nullptr;
@@ -188,7 +184,7 @@ static std::shared_ptr<resource_ctx_t> init_module (flux_t *h, int argc, char **
         goto error;
     }
     return ctx;
-    
+
 error:
     return nullptr;
 }
@@ -198,9 +194,9 @@ error:
 ////////////////////////////////////////////////////////////////////////////////
 
 static void feasibility_request_cb (flux_t *h,
-                                       flux_msg_handler_t *w,
-                                       const flux_msg_t *msg,
-                                       void *arg)
+                                    flux_msg_handler_t *w,
+                                    const flux_msg_t *msg,
+                                    void *arg)
 {
     int64_t at = 0;
     int64_t now = 0;
@@ -275,7 +271,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     if (!(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
-    //TODO remove?
+    // TODO remove?
     if (ctx->opts.get_opt ().is_prune_filters_set ()
         && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
                                                    ctx->opts.get_opt ().get_prune_filters ())
@@ -294,11 +290,11 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         return -1;
     }
 
-    //TODO remove?
-    // Perform the initial status marking only when "up" rankset is available
-    // Rankless reader cases (required for testing e.g., GRUG) must not
-    // execute the following branch.
-    // Use ctx->update_f != nullptr to differentiate
+    // TODO remove?
+    //  Perform the initial status marking only when "up" rankset is available
+    //  Rankless reader cases (required for testing e.g., GRUG) must not
+    //  execute the following branch.
+    //  Use ctx->update_f != nullptr to differentiate
     if (ctx->update_f) {
         if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: mark (down)", __FUNCTION__);
@@ -332,7 +328,7 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
             flux_log (h, LOG_ERR, "%s: can't initialize feasibility module", __FUNCTION__);
             goto done;
         }
-        
+
         // Because mod_main is always active, the following is safe.
         flux_aux_set (h, mod_name, &ctx, NULL);
         flux_log (h, LOG_DEBUG, "%s: feasibility module starting", __FUNCTION__);

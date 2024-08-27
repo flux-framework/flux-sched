@@ -258,9 +258,10 @@ resource_opts_t::resource_opts_t ()
                                          resource_opts_t ::resource_opts_key_t ::MATCH_FORMAT)));
     inserted &= ret.second;
     ret = m_tab.insert (
-        std::pair<std::string, int> ("subsystems",
-                                     static_cast<int> (
-                                         resource_opts_t ::resource_opts_key_t ::MATCH_SUBSYSTEMS)));
+        std::pair<std::string,
+                  int> ("subsystems",
+                        static_cast<int> (
+                            resource_opts_t ::resource_opts_key_t ::MATCH_SUBSYSTEMS)));
     inserted &= ret.second;
     ret = m_tab.insert (
         std::pair<std::string, int> ("reserve-vtx-vec",
