@@ -13,6 +13,7 @@ jobspec2="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/satisfiability/test001.
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 #
@@ -24,9 +25,10 @@ test_debug '
     echo ${jobspec2}
 '
 
-test_expect_success 'loading resource module with a tiny machine config works' '
+test_expect_success 'loading resource modules with a tiny machine config works' '
     load_resource load-file=${grug} load-format=grug \
-prune-filters=ALL:core subsystems=containment policy=high
+prune-filters=ALL:core subsystems=containment policy=high &&
+    load_feasibility load-file=${grug} load-format=grug subsystems=containment
 '
 
 test_expect_success 'satisfiability works with a 1-node, 1-socket jobspec' '
@@ -67,7 +69,8 @@ match allocate_with_satisfiability ${jobspec2} &&
 match satisfiability ${jobspec2}
 '
 
-test_expect_success 'removing resource works' '
+test_expect_success 'removing resource and feasibility works' '
+    remove_feasibility &&
     remove_resource
 '
 
