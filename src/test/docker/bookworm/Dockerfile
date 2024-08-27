@@ -4,27 +4,16 @@ ARG USER=flux
 ARG UID=1000
 USER root
 
+# copy scripts into image
+COPY scripts/ /scripts
 # Install extra buildrequires for flux-sched:
-RUN apt-get update
-RUN apt-get -qq install -y --no-install-recommends \
-	libboost-graph-dev \
-	libboost-system-dev \
-	libboost-filesystem-dev \
-	libboost-regex-dev \
-	libyaml-cpp-dev \
-	libedit-dev \
-	ninja-build \
-	python3-yaml
+RUN sudo apt update \
+ && sudo /scripts/install-deps.sh -y \
+ && sudo rm -rf /var/lib/apt/lists/*
 
 # Add configured user to image with sudo access:
 #
-RUN \
- if test "$USER" != "flux"; then  \
-      groupadd -g $UID $USER \
-   && useradd -g $USER -u $UID -d /home/$USER -m $USER \
-   && sh -c "printf \"$USER ALL= NOPASSWD: ALL\\n\" >> /etc/sudoers" \
-   && adduser $USER sudo ; \
- fi
+RUN /scripts/add_docker_user.sh
 
 USER $USER
 WORKDIR /home/$USER
