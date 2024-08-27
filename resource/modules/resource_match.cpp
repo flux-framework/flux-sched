@@ -223,11 +223,13 @@ static void update_resource (flux_future_t *f, void *arg)
                                   &down,
                                   "expiration",
                                   &expiration)
-        < 0) {
+             < 0) {
         flux_log_error (ctx->h,
-                        ctx->m_acquire_resources_from_core \
-                            ? "%s: exiting due to resource.acquire failure" \
-                            : "%s: exiting due to sched-fluxion-resource.notify failure",
+                        ctx->m_acquire_resources_from_core ? "%s: exiting due to resource.acquire "
+                                                             "failure"
+                                                           : "%s: exiting due to "
+                                                             "sched-fluxion-resource.notify "
+                                                             "failure",
                         __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h)); /* Cancels notify msgs */
         goto done;
@@ -267,7 +269,8 @@ done:
     ctx->set_update_rc (rc);
 }
 
-static void update_resource_no_up_down (flux_future_t *f, void *arg) {
+static void update_resource_no_up_down (flux_future_t *f, void *arg)
+{
     int rc = -1;
 
     std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
@@ -288,17 +291,15 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
     json_t *o = NULL;
 
     // If this module is not getting resources from core, use
-    //  sched-fluxion-resource.notify instead of resource.acquire to avoid 
+    //  sched-fluxion-resource.notify instead of resource.acquire to avoid
     //  using more than one resource.acquire RPC, which is not allowed
-    if (!(ctx->update_f =
-        flux_rpc (ctx->h,
-                  ctx->m_acquire_resources_from_core \
-                      ? "resource.acquire" \
-                      : "sched-fluxion-resource.notify",
-                  NULL,
-                  FLUX_NODEID_ANY,
-                  FLUX_RPC_STREAMING)))
-    {
+    if (!(ctx->update_f = flux_rpc (ctx->h,
+                                    ctx->m_acquire_resources_from_core ? "resource.acquire"
+                                                                       : "sched-fluxion-resource."
+                                                                         "notify",
+                                    NULL,
+                                    FLUX_NODEID_ANY,
+                                    FLUX_RPC_STREAMING))) {
         flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
         goto done;
     }
@@ -312,24 +313,20 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
     // Only add full update_resource callback if the module needs UP/DOWN updates
     // Otherwise, add update_resource_no_up_down callback to get error updates
     if (ctx->m_get_up_down_updates) {
-        if (rc = flux_future_then (ctx->update_f,
-                                   -1.0, 
-                                   update_resource, 
-                                   static_cast<void *> (&ctx))
-            < 0) {
+        if (rc = flux_future_then (ctx->update_f, -1.0, update_resource, static_cast<void *> (&ctx))
+                 < 0) {
             flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
             goto done;
         }
     } else {
         if (rc = flux_future_then (ctx->update_f,
-                                   -1.0, 
-                                   update_resource_no_up_down, 
+                                   -1.0,
+                                   update_resource_no_up_down,
                                    static_cast<void *> (&ctx))
-            < 0) {
+                 < 0) {
             flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
             goto done;
         }
-
     }
 
 done:
@@ -361,9 +358,10 @@ int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         }
         flux_log (ctx->h,
                   LOG_DEBUG,
-                  ctx->m_acquire_resources_from_core \
-                      ? "%s: loaded resources from core's resource.acquire" \
-                      : "%s: loaded resources from sched-fluxion-resource.notify",
+                  ctx->m_acquire_resources_from_core ? "%s: loaded resources from core's "
+                                                       "resource.acquire"
+                                                     : "%s: loaded resources from "
+                                                       "sched-fluxion-resource.notify",
                   __FUNCTION__);
     }
 
@@ -1079,18 +1077,16 @@ done:
     return rc;
 }
 
-int mark (std::shared_ptr<resource_ctx_t> &ctx,
-                 const char *ids,
-                 resource_pool_t::status_t status)
+int mark (std::shared_ptr<resource_ctx_t> &ctx, const char *ids, resource_pool_t::status_t status)
 {
     return (ctx->traverser->is_initialized ()) ? mark_now (ctx, ids, status)
                                                : mark_lazy (ctx, ids, status);
 }
 
 int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
-                               json_t *resources,
-                               const char *up,
-                               const char *down)
+                        json_t *resources,
+                        const char *up,
+                        const char *down)
 {
     int rc = 0;
     // TODO Will need to get duration update and set graph metadata when
@@ -1395,14 +1391,14 @@ out:
 }
 
 int run_match (std::shared_ptr<resource_ctx_t> &ctx,
-                      int64_t jobid,
-                      const char *cmd,
-                      const std::string &jstr,
-                      int64_t *now,
-                      int64_t *at,
-                      double *overhead,
-                      std::stringstream &o,
-                      flux_error_t *errp)
+               int64_t jobid,
+               const char *cmd,
+               const std::string &jstr,
+               int64_t *now,
+               int64_t *at,
+               double *overhead,
+               std::stringstream &o,
+               flux_error_t *errp)
 {
     int rc = 0;
     std::chrono::time_point<std::chrono::system_clock> start;
@@ -1453,11 +1449,11 @@ done:
 }
 
 int run_update (std::shared_ptr<resource_ctx_t> &ctx,
-                       int64_t jobid,
-                       const char *R,
-                       int64_t &at,
-                       double &overhead,
-                       std::stringstream &o)
+                int64_t jobid,
+                const char *R,
+                int64_t &at,
+                double &overhead,
+                std::stringstream &o)
 {
     int rc = 0;
     uint64_t duration = 0;
@@ -1495,10 +1491,10 @@ done:
 }
 
 int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
-                       int64_t jobid,
-                       const char *R,
-                       bool part_cancel,
-                       bool &full_removal)
+                int64_t jobid,
+                const char *R,
+                bool part_cancel,
+                bool &full_removal)
 {
     int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
@@ -1549,9 +1545,9 @@ out:
 }
 
 int run_find (std::shared_ptr<resource_ctx_t> &ctx,
-                     const std::string &criteria,
-                     const std::string &format_str,
-                     json_t **R)
+              const std::string &criteria,
+              const std::string &format_str,
+              json_t **R)
 {
     int rc = -1;
     json_t *o = nullptr;
