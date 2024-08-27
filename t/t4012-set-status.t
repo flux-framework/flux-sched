@@ -12,6 +12,7 @@ jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test008.yaml"
 #
 # test_under_flux is under sharness.d/
 #
+export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
 #
@@ -25,7 +26,10 @@ test_debug '
 test_expect_success 'loading resource module with a tiny machine config works' '
 	load_resource \
 load-file=${grug} load-format=grug \
-prune-filters=ALL:core subsystems=containment policy=high
+prune-filters=ALL:core subsystems=containment policy=high &&
+	load_feasibility \
+load-file=${grug} load-format=grug \
+prune-filters=ALL:core subsystems=containment
 '
 
 test_expect_success 'set-status basic test works' '
@@ -77,8 +81,9 @@ test_expect_success 'jobs fail when all racks are marked down' '
 	flux ion-resource find status=down | grep null
 '
 
-test_expect_success 'removing resource works' '
-	remove_resource
+test_expect_success 'removing resource modules works' '
+	remove_resource &&
+    remove_feasibility
 '
 
 test_done
