@@ -31,7 +31,9 @@ namespace resource_model {
 struct resource_pool_t : public resource_t {
     resource_pool_t ();
     resource_pool_t (const resource_pool_t &o);
+    resource_pool_t (resource_pool_t &&o);
     resource_pool_t &operator= (const resource_pool_t &o);
+    resource_pool_t &operator= (resource_pool_t &&o);
     ~resource_pool_t ();
 
     enum class status_t : int { UP = 0, DOWN = 1 };
@@ -61,6 +63,8 @@ struct resource_relation_t {
     resource_relation_t ();
     resource_relation_t (const resource_relation_t &o);
     resource_relation_t &operator= (const resource_relation_t &o);
+    resource_relation_t (resource_relation_t &&o);
+    resource_relation_t &operator= (resource_relation_t &&o);
     ~resource_relation_t ();
 
     std::map<subsystem_t, std::string> name;  //!< subsystem: relationship
