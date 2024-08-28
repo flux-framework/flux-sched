@@ -75,12 +75,12 @@ class edg_label_writer_t {
     }
     void operator() (std::ostream &out, const edg_t &e) const
     {
-        multi_subsystems_t::iterator i = m_infra[e].member_of.find (m_s);
-        if (i != m_infra[e].member_of.end ()) {
-            out << "[label=\"" << i->second << "\"]";
+        auto s = m_infra[e].member_of[m_s];
+        if (!s.empty()) {
+            out << "[label=\"" << s << "\"]";
         } else {
-            i = m_infra[e].member_of.begin ();
-            out << "[label=\"" << i->second << "\"]";
+            auto i = m_infra[e].member_of.begin ();
+            out << "[label=\"" << *i << "\"]";
         }
     }
 

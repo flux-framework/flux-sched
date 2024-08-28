@@ -46,8 +46,8 @@ extern resource_type_t core_rt;
 
 template<class T, int likely_count = 2>
 using subsystem_key_vec = intern::interned_key_vec<subsystem_t, T, likely_count>;
-using multi_subsystems_t = std::map<subsystem_t, std::string>;
-using multi_subsystemsS = std::map<subsystem_t, std::set<std::string>>;
+using multi_subsystems_t = intern::interned_key_vec<subsystem_t, std::string>;
+using multi_subsystemsS = intern::interned_key_vec<subsystem_t, std::set<std::string>>;
 
 }  // namespace resource_model
 }  // namespace Flux

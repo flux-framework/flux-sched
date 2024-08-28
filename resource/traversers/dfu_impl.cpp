@@ -42,11 +42,7 @@ void dfu_impl_t::tick ()
 bool dfu_impl_t::in_subsystem (edg_t e, subsystem_t subsystem) const
 {
     // Short circuit for single subsystem. This will be a common case.
-    if (m_graph_db->metadata.roots.size () == 1)
-        return true;
-    else
-        return ((*m_graph)[e].idata.member_of.find (subsystem)
-                != (*m_graph)[e].idata.member_of.end ());
+    return !(*m_graph)[e].idata.member_of[subsystem].empty();
 }
 
 bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
