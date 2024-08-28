@@ -29,7 +29,9 @@ class scoring_api_t {
    public:
     scoring_api_t ();
     scoring_api_t (const scoring_api_t &o);
+    scoring_api_t (scoring_api_t &&o);
     scoring_api_t &operator= (const scoring_api_t &o);
+    scoring_api_t &operator= (scoring_api_t &&o);
     ~scoring_api_t ();
 
     int64_t cutline (subsystem_t s, resource_type_t r);
@@ -54,7 +56,7 @@ class scoring_api_t {
     void set_overall_score (int64_t overall);
     unsigned int avail ();
     void set_avail (unsigned int avail);
-    bool is_contained (subsystem_t s, resource_type_t r);
+    bool is_contained (subsystem_t s, resource_type_t const &r);
 
     template<class compare_op = fold::greater, class binary_op = fold::plus>
     int64_t choose_accum_best_k (subsystem_t s,
@@ -64,11 +66,10 @@ class scoring_api_t {
                                  binary_op accum = fold::plus ())
     {
         int64_t rc;
-        handle_new_keys (s, r);
-        auto res_evals = (*m_ssys_map[s])[r];
-        if ((rc = res_evals->choose_best_k<compare_op> (k, comp)) != -1) {
+        auto &res_evals = m_ssys_map[s][r];
+        if ((rc = res_evals.choose_best_k<compare_op> (k, comp)) != -1) {
             m_hier_constrain_now = true;
-            rc = res_evals->accum_best_k<binary_op> (accum);
+            rc = res_evals.accum_best_k<binary_op> (accum);
         }
         return rc;
     }
@@ -80,12 +81,11 @@ class scoring_api_t {
                               binary_op accum = fold::plus ())
     {
         int64_t rc;
-        handle_new_keys (s, r);
-        auto res_evals = (*m_ssys_map[s])[r];
-        unsigned int k = res_evals->qualified_count ();
-        if ((rc = res_evals->choose_best_k<compare_op> (k, comp)) != -1) {
+        auto &res_evals = m_ssys_map[s][r];
+        unsigned int k = res_evals.qualified_count ();
+        if ((rc = res_evals.choose_best_k<compare_op> (k, comp)) != -1) {
             m_hier_constrain_now = true;
-            rc = res_evals->accum_best_k<binary_op> (accum);
+            rc = res_evals.accum_best_k<binary_op> (accum);
         }
         return rc;
     }
@@ -93,17 +93,12 @@ class scoring_api_t {
     template<class output_it, class unary_op>
     output_it transform (subsystem_t s, resource_type_t r, output_it o_it, unary_op uop)
     {
-        handle_new_keys (s, r);
-        auto res_evals = (*m_ssys_map[s])[r];
-        return res_evals->transform<output_it, unary_op> (o_it, uop);
+        auto &res_evals = m_ssys_map[s][r];
+        return res_evals.transform<output_it, unary_op> (o_it, uop);
     }
 
    private:
-    void handle_new_keys (subsystem_t s, resource_type_t r);
-    void handle_new_subsystem (subsystem_t s);
-    void handle_new_resrc_type (subsystem_t s, resource_type_t r);
-
-    std::map<subsystem_t, std::map<resource_type_t, detail::evals_t *> *> m_ssys_map;
+    intern::interned_key_vec<subsystem_t, std::map<resource_type_t, detail::evals_t>> m_ssys_map;
     bool m_hier_constrain_now = false;
     int64_t m_overall_score = -1;
     unsigned int m_avail = 0;
