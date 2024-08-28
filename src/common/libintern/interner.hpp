@@ -18,6 +18,7 @@
 #include <iosfwd>
 #include <memory>
 #include <ostream>
+#include <math.h>
 
 #include <boost/container/small_vector.hpp>
 #include <boost/optional/optional.hpp>
@@ -60,7 +61,8 @@ struct dense_storage {
 
     static size_t unique_id ()
     {
-        return std::hash<std::string_view> () (__PRETTY_FUNCTION__);
+        static size_t uid = std::hash<std::string_view> () (__PRETTY_FUNCTION__);
+        return uid;
     }
 
    private:
@@ -292,7 +294,7 @@ class interned_string {
         return get ().c_str ();
     }
 
-    Id id () const
+    Id const &id () const
     {
         return _id;
     }
@@ -363,11 +365,33 @@ struct interned_key_vec : boost::container::small_vector<T, likely_count> {
 }  // namespace intern
 
 namespace std {
+namespace detail {
+template<typename Tval>
+struct FastPointerHash {
+    size_t operator() (const Tval *val) const
+    {
+        static const size_t shift = (size_t)log2 (1 + sizeof (Tval));
+        return (size_t)(val) >> shift;
+    }
+};
+};  // namespace detail
+template<class Tag>
+struct hash<intern::interned_string<intern::rc_storage<Tag>>> {
+    using Storage = intern::rc_storage<Tag>;
+    using T = intern::interned_string<Storage>;
+    size_t operator() (const T &s) const
+    {
+        return ::intern::detail::
+            hash_combine (Storage::unique_id (),
+                          detail::FastPointerHash<
+                              typename Storage::id_instance_t::element_type> () (s.id ().get ()));
+    }
+};
 template<class Storage>
-struct hash<intern::interned_string<Storage> > {
+struct hash<intern::interned_string<Storage>> {
     size_t operator() (const intern::interned_string<Storage> &s) const
     {
-        return ::intern::detail::hash_combine (std::hash<size_t> () (Storage::unique_id ()),
+        return ::intern::detail::hash_combine (Storage::unique_id (),
                                                std::hash<typename Storage::id_instance_t> () (
                                                    s.id ()));
     }
