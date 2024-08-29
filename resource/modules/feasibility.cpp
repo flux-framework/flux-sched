@@ -290,24 +290,6 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         return -1;
     }
 
-    // TODO remove?
-    //  Perform the initial status marking only when "up" rankset is available
-    //  Rankless reader cases (required for testing e.g., GRUG) must not
-    //  execute the following branch.
-    //  Use ctx->update_f != nullptr to differentiate
-    if (ctx->update_f) {
-        if (mark (ctx, "all", resource_pool_t::status_t::DOWN) < 0) {
-            flux_log (ctx->h, LOG_ERR, "%s: mark (down)", __FUNCTION__);
-            return -1;
-        }
-        if (ctx->is_ups_set ()) {
-            if (mark (ctx, ctx->get_ups ().c_str (), resource_pool_t::status_t::UP) < 0) {
-                flux_log (ctx->h, LOG_ERR, "%s: mark (up)", __FUNCTION__);
-                return -1;
-            }
-        }
-    }
-
     // prevent users from consuming unbounded memory with arbitrary resource types
     subsystem_t::storage_t::finalize ();
     resource_type_t::storage_t::finalize ();
