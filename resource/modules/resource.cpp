@@ -1017,6 +1017,12 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
             goto error;
         }
+        if (ctx->opts.get_opt ().is_load_file_set ()) {
+            errno = ENODATA;
+            // Since m_acquired_resources is null,
+            flux_log_error (ctx->h, "%s: cannot notify when load-file set", __FUNCTION__);
+            goto error;
+        }
 
         // Respond only after sched-fluxion-resource gets
         //  resources from its resource.acquire RPC.
@@ -1031,6 +1037,7 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
                                ctx->m_acquired_resources_expiration)
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+            goto error;
         }
 
         // Add msg as a subscriber to resource UP/DOWN updates
