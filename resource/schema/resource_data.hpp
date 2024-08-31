@@ -67,8 +67,8 @@ struct resource_relation_t {
     resource_relation_t &operator= (resource_relation_t &&o);
     ~resource_relation_t ();
 
-    std::map<subsystem_t, std::string> name;  //!< subsystem: relationship
-    relation_infra_t idata;                   //!< scheduling infrastructure data
+    subsystem_t subsystem;   //!< subsystem this edge belongs to
+    relation_infra_t idata;  //!< scheduling infrastructure data
 };
 
 }  // namespace resource_model

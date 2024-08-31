@@ -317,9 +317,11 @@ static void flatten (resource_graph_t &fg,
         paths[*vi] += "}";
         subsystems[*vi] = "{";
         for (auto const &k : fg[*vi].idata.member_of.key_range ()) {
+            if (!fg[*vi].idata.member_of[k])
+                continue;
             if (subsystems[*vi].size () > 1)
                 subsystems[*vi] += ",";
-            subsystems[*vi] += k + "=" + fg[*vi].idata.member_of[k];
+            subsystems[*vi] += k + "=" + k;
         }
         subsystems[*vi] += "}";
         properties[*vi] = "{";
@@ -333,9 +335,11 @@ static void flatten (resource_graph_t &fg,
     for (tie (ei, e_end) = edges (fg); ei != e_end; ++ei) {
         esubsystems[*ei] = "{";
         for (auto const &k : fg[*vi].idata.member_of.key_range ()) {
+            if (!fg[*vi].idata.member_of[k])
+                continue;
             if (esubsystems[*ei].size () > 0)
                 esubsystems[*ei] += ",";
-            esubsystems[*ei] += k + "=" + fg[*vi].idata.member_of[k];
+            esubsystems[*ei] += k + "=" + k;
         }
         esubsystems[*ei] += "}";
     }

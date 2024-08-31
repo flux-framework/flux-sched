@@ -381,8 +381,8 @@ int resource_reader_hwloc_t::walk_hwloc (resource_graph_t &g,
                 "error inserting a new edge: " + g[parent].name + " -> " + g[v].name + "; ";
             return -1;
         }
-        g[e].idata.member_of[subsys] = relation;
-        g[e].name[subsys] = relation;
+        g[e].idata.member_of[subsys] = true;
+        g[e].subsystem = subsys;
         if (add_metadata (m, e, parent, v, g) < 0)
             return -1;
     }

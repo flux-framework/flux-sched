@@ -76,11 +76,16 @@ class edg_label_writer_t {
     void operator() (std::ostream &out, const edg_t &e) const
     {
         auto s = m_infra[e].member_of[m_s];
-        if (!s.empty()) {
-            out << "[label=\"" << s << "\"]";
+        if (!s) {
+            out << "[label=\"" << m_s << "\"]";
         } else {
-            auto i = m_infra[e].member_of.begin ();
-            out << "[label=\"" << *i << "\"]";
+            for (auto const &key : m_infra[e].member_of.key_range ()) {
+                if (m_infra[e].member_of[key]) {
+                    out << "[label=\"" << key << "\"]";
+                    return;
+                }
+            }
+            out << "[label=\"unknown\"]";
         }
     }
 

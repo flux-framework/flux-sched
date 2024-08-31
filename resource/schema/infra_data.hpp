@@ -31,7 +31,7 @@ struct infra_base_t {
     virtual ~infra_base_t ();
     virtual void scrub () = 0;
 
-    multi_subsystems_t member_of;
+    intern::interned_key_vec<subsystem_t, bool> member_of;
 };
 
 struct pool_infra_t : public infra_base_t {
