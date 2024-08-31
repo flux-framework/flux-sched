@@ -11,8 +11,6 @@
 #ifndef DFU_TRAVERSE_IMPL_HPP
 #define DFU_TRAVERSE_IMPL_HPP
 
-#include <iostream>
-#include <sstream>
 #include <cstdlib>
 #include <cstdint>
 #include <memory>
@@ -27,7 +25,6 @@
 #include "resource/writers/match_writers.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_reader_base.hpp"
-#include "resource/planner/c/planner.h"
 
 namespace Flux {
 namespace resource_model {
@@ -488,10 +485,8 @@ class dfu_impl_t {
                        bool excl,
                        unsigned int *needs);
     int resolve (scoring_api_t &dfu, scoring_api_t &to_parent);
-    int enforce (subsystem_t subsystem, scoring_api_t &dfu);
+    int enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce_unconstrained = false);
     int enforce_constrained (scoring_api_t &dfu);
-    int enforce_dfv (vtx_t u, scoring_api_t &dfu);
-    int enforce_remaining (vtx_t u, scoring_api_t &dfu);
 
     /************************************************************************
      *                                                                      *

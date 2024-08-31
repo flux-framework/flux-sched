@@ -15,6 +15,8 @@ extern "C" {
 }
 
 #include "resource/traversers/dfu_impl.hpp"
+#include <optional>
+#include <boost/iterator/transform_iterator.hpp>
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
@@ -42,7 +44,7 @@ void dfu_impl_t::tick ()
 bool dfu_impl_t::in_subsystem (edg_t e, subsystem_t subsystem) const
 {
     // Short circuit for single subsystem. This will be a common case.
-    return !(*m_graph)[e].idata.member_of[subsystem].empty();
+    return (*m_graph)[e].subsystem == subsystem;
 }
 
 bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
@@ -839,51 +841,6 @@ done:
     return rc;
 }
 
-int dfu_impl_t::enforce_dfv (vtx_t u, scoring_api_t &dfu)
-{
-    int rc = 0;
-    subsystem_t dom = m_match->dom_subsystem ();
-    f_out_edg_iterator_t ei, ei_end;
-    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
-
-    for (auto &subsystem : m_match->subsystems ()) {
-        for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-            if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
-                continue;
-            vtx_t tgt = target (*ei, *m_graph);
-            bool tgt_constrained = true;
-            if (dfu.is_contained (subsystem, (*m_graph)[tgt].type)) {
-                if (!dfu.best_k (subsystem, (*m_graph)[tgt].type))
-                    tgt_constrained = false;
-            }
-
-            if (tgt_constrained) {
-                // We already decided best_k for the target resource vertex type
-                // Thus, as soon as we encounter one best_k edge, the ancestor
-                // edge should be marked best_k.
-                if ((*m_graph)[*ei].idata.get_trav_token () == m_best_k_cnt) {
-                    rc = 1;
-                    break;
-                }
-            } else {
-                // We have not decided best_k for the target.
-                // Thus, the subtree must be explored to decide if the ancestor
-                // edge should be marked best_k.
-                if (enforce_dfv (tgt, dfu) == 1) {
-                    (*m_graph)[*ei].idata.set_for_trav_update ((*m_graph)[tgt].size,
-                                                               false,
-                                                               m_best_k_cnt);
-                    rc = 1;
-                    continue;
-                }
-            }
-        }
-    }
-    (*m_graph)[u].idata.colors[dom] = m_color.black ();
-
-    return rc;
-}
-
 int dfu_impl_t::has_root (vtx_t root,
                           std::vector<Resource> &resources,
                           scoring_api_t &dfu,
@@ -928,17 +885,8 @@ int dfu_impl_t::enforce_constrained (scoring_api_t &dfu)
 {
     int rc = 0;
     for (auto subsystem : m_match->subsystems ())
-        rc += enforce (subsystem, dfu);
+        rc += enforce (subsystem, dfu, true);
     return rc;
-}
-
-int dfu_impl_t::enforce_remaining (vtx_t root, scoring_api_t &dfu)
-{
-    int rc = 0;
-    m_color.reset ();
-    rc = enforce_dfv (root, dfu);
-    m_color.reset ();
-    return (rc < 0) ? -1 : 0;
 }
 
 int dfu_impl_t::resolve_graph (vtx_t root,
@@ -957,8 +905,7 @@ int dfu_impl_t::resolve_graph (vtx_t root,
         goto done;
     if (enforce_constrained (dfu) != 0)
         goto done;
-    if ((rc = enforce_remaining (root, dfu)) != 0)
-        goto done;
+    rc = 0;
 done:
     return rc;
 }
@@ -977,11 +924,21 @@ int dfu_impl_t::resolve (scoring_api_t &dfu, scoring_api_t &to_parent)
     return rc;
 }
 
-int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu)
+std::optional<edg_t> find_parent_edge (vtx_t v, resource_graph_t &g, subsystem_t s)
+{
+    for (auto [ei, e_end] = in_edges (v, g); ei != e_end; ++ei) {
+        if (g[*ei].subsystem == s)
+            return *ei;
+    }
+    return std::nullopt;
+}
+
+int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce_unconstrained)
 {
     int rc = 0;
     try {
         std::vector<resource_type_t> resource_types;
+        subsystem_t dom = m_match->dom_subsystem ();
         dfu.resrc_types (subsystem, resource_types);
         for (auto &t : resource_types) {
             if (!dfu.best_k (subsystem, t))
@@ -996,6 +953,33 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu)
                     (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
                                                                   e.exclusive,
                                                                   m_best_k_cnt);
+                    // we need to resolve unconstrained resources up to the root in the dominant
+                    // subsystem
+                    if (enforce_unconstrained && subsystem == dom) {
+                        // there can only be one in-edge in this subsystem, so find it
+                        vtx_t parent_v = source (e.edge, *m_graph);
+                        std::optional<edg_t> parent_e;
+                        // only the root doesn't have one, so natural stop
+                        while ((parent_e = find_parent_edge (parent_v, *m_graph, subsystem))) {
+                            // if this parent is already marked, all of its will be too
+                            if ((*m_graph)[*parent_e].idata.get_trav_token () == m_best_k_cnt) {
+                                break;
+                            }
+                            parent_v = source (*parent_e, *m_graph);
+                            vtx_t tgt = target (*parent_e, (*m_graph));
+                            bool tgt_constrained = true;
+                            if (dfu.is_contained (subsystem, (*m_graph)[tgt].type)) {
+                                if (!dfu.best_k (subsystem, (*m_graph)[tgt].type))
+                                    tgt_constrained = false;
+                            }
+                            if (tgt_constrained) {
+                                continue;
+                            }
+                            (*m_graph)[*parent_e].idata.set_for_trav_update ((*m_graph)[tgt].size,
+                                                                             false,
+                                                                             m_best_k_cnt);
+                        }
+                    }
                 }
             }
         }
