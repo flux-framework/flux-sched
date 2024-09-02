@@ -13,11 +13,11 @@
 
 #include "resource/schema/resource_graph.hpp"
 #include "resource/store/resource_graph_store.hpp"
-#include "resource/readers/resource_reader_factory.hpp"
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include <memory>
 #include <cerrno>
+#include <fstream>
 #include <vector>
 #include <map>
 

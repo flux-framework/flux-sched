@@ -13,8 +13,7 @@
 
 #include <string>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graphviz.hpp>
-#include <boost/graph/graphml.hpp>
+#include <boost/property_map/dynamic_property_map.hpp>
 #include <schema/data_std.hpp>
 
 namespace Flux {

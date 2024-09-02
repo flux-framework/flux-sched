@@ -16,6 +16,7 @@ extern "C" {
 
 #include <sys/time.h>
 #include "command.hpp"
+#include <readers/resource_reader_factory.hpp>
 
 namespace Flux {
 namespace resource_model {
