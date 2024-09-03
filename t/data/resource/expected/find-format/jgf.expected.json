@@ -295,153 +295,119 @@
         "source": "1",
         "target": "2",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "3",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "4",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "5",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "6",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "7",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "8",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "9",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "10",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "11",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "12",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "13",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "14",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "15",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "16",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "1",
         "target": "17",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       },
       {
         "source": "0",
         "target": "1",
         "metadata": {
-          "name": {
-            "containment": "contains"
-          }
+          "subsystem": "containment"
         }
       }
     ]

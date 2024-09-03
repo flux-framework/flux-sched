@@ -475,31 +475,13 @@ int jgf_match_writers_t::emit_edg_meta (json_t *o, const resource_graph_t &g, co
         errno = EINVAL;
         goto out;
     }
-    if (!g[e].name.empty ()) {
-        json_t *n = NULL;
-        if (!(n = json_object ())) {
-            rc = -1;
-            errno = ENOMEM;
-            goto out;
-        }
-        for (auto &kv : g[e].name) {
-            json_t *vo = NULL;
-            if (!(vo = json_string (kv.second.c_str ()))) {
-                json_decref (n);
-                rc = -1;
-                errno = ENOMEM;
-                goto out;
-            }
-            if ((rc = json_object_set_new (n, kv.first.c_str (), vo))) {
-                json_decref (n);
-                errno = ENOMEM;
-                goto out;
-            }
-        }
-        if ((rc = json_object_set_new (o, "name", n)) == -1) {
-            errno = ENOMEM;
-            goto out;
-        }
+    if ((rc = json_object_set_new (o,
+                                   "subsystem",
+                                   json_stringn (g[e].subsystem.c_str (),
+                                                 g[e].subsystem.get ().length ())))
+        == -1) {
+        errno = ENOMEM;
+        goto out;
     }
 
 out:

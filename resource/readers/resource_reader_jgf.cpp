@@ -984,12 +984,13 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
                                         std::map<std::string, vmap_val_t> &vmap,
                                         std::string &source,
                                         std::string &target,
-                                        json_t **name)
+                                        std::string &subsystem)
 {
     int rc = -1;
     json_t *metadata = NULL;
     const char *src = NULL;
     const char *tgt = NULL;
+    const char *subsys = NULL;
 
     if ((json_unpack (element, "{ s:s s:s }", "source", &src, "target", &tgt)) < 0) {
         errno = EINVAL;
@@ -1013,12 +1014,13 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
         m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
-    if ((*name = json_object_get (metadata, "name")) == NULL) {
+    if ((json_unpack (metadata, "{ s:s }", "subsystem", &subsys)) < 0) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": name key not found in edge metadata.\n";
+        m_err_msg += ": subsystem key not found in edge metadata.\n";
         goto done;
     }
+    subsystem = subsys;
     rc = 0;
 
 done:
@@ -1034,17 +1036,17 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
     edg_t e;
     int rc = -1;
     unsigned int i = 0;
-    json_t *name = NULL;
     json_t *element = NULL;
     json_t *value = NULL;
     bool inserted = false;
     const char *key = NULL;
     std::string source{};
     std::string target{};
+    std::string subsystem{};
 
     for (i = 0; i < json_array_size (edges); i++) {
         element = json_array_get (edges, i);
-        if ((unpack_edge (element, vmap, source, target, &name)) != 0)
+        if ((unpack_edge (element, vmap, source, target, subsystem)) != 0)
             goto done;
         // We only add the edge when it connects at least one newly added vertex
         if ((added_vtcs.count (source) == 1) || (added_vtcs.count (target) == 1)) {
@@ -1056,14 +1058,8 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
                 m_err_msg += source + std::string (" -> ") + target + ".\n";
                 goto done;
             }
-            json_object_foreach (name, key, value) {
-                auto skey = subsystem_t{key};
-                auto sval = std::string (json_string_value (value), json_string_length (value));
-                if (sval == std::string ("in"))
-                    continue;
-                g[e].name[skey] = sval;
-                g[e].idata.member_of[skey] = sval;
-            }
+            g[e].subsystem = subsystem_t{subsystem};
+            g[e].idata.member_of[subsystem_t{subsystem}] = true;
             // add this edge to by_outedges metadata
             auto iter = m.by_outedges.find (vmap[source].v);
             if (iter == m.by_outedges.end ()) {
@@ -1159,15 +1155,15 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
     edg_t e;
     int rc = -1;
     unsigned int i = 0;
-    json_t *name = NULL;
     json_t *element = NULL;
     std::string source{};
     std::string target{};
+    std::string subsystem{};
 
     for (i = 0; i < json_array_size (edges); i++) {
         element = json_array_get (edges, i);
         // We only check protocol errors in JGF edges in the following...
-        if ((rc = unpack_edge (element, vmap, source, target, &name)) != 0)
+        if ((rc = unpack_edge (element, vmap, source, target, subsystem)) != 0)
             goto done;
         if ((rc = update_src_edge (g, m, vmap, source, token)) != 0)
             goto done;
@@ -1213,7 +1209,7 @@ int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g, vtx_t vtx, vtx_t
 
     for (; ei != ei_end; ++ei) {
         next_vtx = boost::source (*ei, g);
-        if (g[*ei].name.contains (containment_sub)) {
+        if (g[*ei].subsystem == containment_sub) {
             parent_vtx = next_vtx;
             rc = 0;
             break;

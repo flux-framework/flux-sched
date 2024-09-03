@@ -17,6 +17,7 @@ extern "C" {
 }
 
 #include <cstdint>
+#include <fstream>
 #include <limits>
 #include <sstream>
 #include <cerrno>

@@ -17,17 +17,8 @@ extern "C" {
 #include <iostream>
 #include <cstdint>
 
-#if defined(__clang__) || (__GNUC__ <= 11)
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
-#elif (__GNUC__ > 11)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graphviz.hpp>
-#pragma GCC diagnostic pop
-#endif
-
 #include <boost/graph/graphml.hpp>
 #include "resource/readers/resource_spec_grug.hpp"
 

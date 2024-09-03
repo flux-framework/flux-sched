@@ -191,7 +191,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                      std::map<std::string, vmap_val_t> &vmap,
                      std::string &source,
                      std::string &target,
-                     json_t **name);
+                     std::string &subsystem);
     int update_src_edge (resource_graph_t &g,
                          resource_graph_metadata_t &m,
                          std::map<std::string, vmap_val_t> &vmap,

@@ -25,7 +25,10 @@ extern "C" {
 #include <memory>
 #include <editline/readline.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/graph/graphviz.hpp>
+#include <boost/graph/graphml.hpp>
 #include <filesystem>
+#include <readers/resource_reader_factory.hpp>
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
@@ -185,6 +188,50 @@ OPTIONS:
     exit (code);
 }
 
+namespace Flux::resource_model {
+template<class name_map, class graph_entity>
+class label_writer_t {
+   public:
+    label_writer_t (name_map &in_map) : m (in_map)
+    {
+    }
+    void operator() (std::ostream &out, const graph_entity ent) const
+    {
+        out << "[label=\"" << m[ent] << "\"]";
+    }
+
+   private:
+    name_map m;
+};
+
+class edg_label_writer_t {
+   public:
+    edg_label_writer_t (f_edg_infra_map_t &idata, subsystem_t s) : m_infra (idata), m_s (s)
+    {
+    }
+    void operator() (std::ostream &out, const edg_t &e) const
+    {
+        auto s = m_infra[e].member_of[m_s];
+        if (!s) {
+            out << "[label=\"" << m_s << "\"]";
+        } else {
+            for (auto const &key : m_infra[e].member_of.key_range ()) {
+                if (m_infra[e].member_of[key]) {
+                    out << "[label=\"" << key << "\"]";
+                    return;
+                }
+            }
+            out << "[label=\"unknown\"]";
+        }
+    }
+
+   private:
+    f_edg_infra_map_t m_infra;
+    subsystem_t m_s;
+};
+
+}  // namespace Flux::resource_model
+
 static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
 {
     ctx->params.load_file = "conf/default";
@@ -316,10 +363,12 @@ static void flatten (resource_graph_t &fg,
         }
         paths[*vi] += "}";
         subsystems[*vi] = "{";
-        for (auto &kv : fg[*vi].idata.member_of) {
+        for (auto const &k : fg[*vi].idata.member_of.key_range ()) {
+            if (!fg[*vi].idata.member_of[k])
+                continue;
             if (subsystems[*vi].size () > 1)
                 subsystems[*vi] += ",";
-            subsystems[*vi] += kv.first + "=" + kv.second;
+            subsystems[*vi] += k + "=" + k;
         }
         subsystems[*vi] += "}";
         properties[*vi] = "{";
@@ -332,10 +381,12 @@ static void flatten (resource_graph_t &fg,
     }
     for (tie (ei, e_end) = edges (fg); ei != e_end; ++ei) {
         esubsystems[*ei] = "{";
-        for (auto &kv : fg[*ei].idata.member_of) {
+        for (auto const &k : fg[*vi].idata.member_of.key_range ()) {
+            if (!fg[*vi].idata.member_of[k])
+                continue;
             if (esubsystems[*ei].size () > 0)
                 esubsystems[*ei] += ",";
-            esubsystems[*ei] += kv.first + "=" + kv.second;
+            esubsystems[*ei] += k + "=" + k;
         }
         esubsystems[*ei] += "}";
     }

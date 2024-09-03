@@ -171,8 +171,8 @@ int resource_reader_rv1exec_t::add_edges (resource_graph_t &g,
         errno = ENOMEM;
         goto error;
     }
-    g[e].idata.member_of[subsys] = relation;
-    g[e].name[subsys] = relation;
+    g[e].idata.member_of[subsys] = true;
+    g[e].subsystem = subsys;
     if (add_metadata (g, m, e, src, dst) < 0)
         goto error;
 

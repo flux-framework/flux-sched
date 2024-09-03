@@ -91,7 +91,7 @@ class FluxionResourceRelationshipV1(Edge):
             parentId,
             vtxId,
             directed=True,
-            metadata={"name": {"containment": "contains"}},
+            metadata={"subsystem": "containment"},
         )
 
 
