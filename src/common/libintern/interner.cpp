@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <thread>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -47,6 +48,10 @@ struct dense_inner_storage {
     std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> ids_by_string;
     // reader/writer lock to protect entries
     std::unique_ptr<std::shared_mutex> mtx = std::make_unique<std::shared_mutex> ();
+    // if the object is finalized and not opened, reject new strings
+    bool finalized = false;
+    // whether this object is allowed to accept new strings after finalization from each thread
+    std::unordered_map<std::thread::id, bool> open_map;
 };
 
 dense_inner_storage &get_dense_inner_storage (size_t unique_id)
@@ -54,6 +59,22 @@ dense_inner_storage &get_dense_inner_storage (size_t unique_id)
     static std::unordered_map<size_t, dense_inner_storage> groups;
     auto guard = std::unique_lock (group_mtx);
     return groups[unique_id];
+}
+
+void dense_storage_finalize (dense_inner_storage &storage)
+{
+    auto ul = std::unique_lock (*storage.mtx);
+    storage.finalized = true;
+}
+void dense_storage_open (dense_inner_storage &storage)
+{
+    auto ul = std::unique_lock (*storage.mtx);
+    storage.open_map[std::this_thread::get_id ()] = true;
+}
+void dense_storage_close (dense_inner_storage &storage)
+{
+    auto ul = std::unique_lock (*storage.mtx);
+    storage.open_map[std::this_thread::get_id ()] = false;
 }
 
 struct sparse_inner_storage;
@@ -153,6 +174,15 @@ view_and_id get_both (dense_inner_storage &storage, const std::string_view s, ch
             throw std::system_error (ENOMEM,
                                      std::generic_category (),
                                      "Too many strings for configured size");
+        // if storage is finalized and the thread isn't in the open map, we must not add another
+        // here, check while under the shared lock
+        if (storage.finalized && !storage.open_map[std::this_thread::get_id ()]) {
+            using namespace std::string_literals;
+            std::string err =
+                "This interner is finalized and must be open to add strings, found new string: '"s
+                + std::string (s) + "'"s;
+            throw std::system_error (ENOMEM, std::generic_category (), err);
+        }
     }  // release shared lock
 
     // writer lock scope
@@ -167,6 +197,7 @@ view_and_id get_both (dense_inner_storage &storage, const std::string_view s, ch
 
 const std::string *get_by_id (dense_inner_storage &storage, size_t string_id)
 {
+    auto sl = std::shared_lock (*storage.mtx);
     return storage.strings_by_id.at (string_id);
 }
 

@@ -20,6 +20,7 @@
 #include <ostream>
 #include <math.h>
 
+#include "scope_guard.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/optional/optional.hpp>
 #include <stdexcept>
@@ -36,12 +37,20 @@ struct dense_inner_storage;
 view_and_id get_both (dense_inner_storage &ds, std::string_view s, char bytes_supported);
 const std::string *get_by_id (dense_inner_storage &ds, size_t string_id);
 
+void dense_storage_finalize (dense_inner_storage &storage);
+void dense_storage_open (dense_inner_storage &storage);
+void dense_storage_close (dense_inner_storage &storage);
+
 dense_inner_storage &get_dense_inner_storage (size_t unique_id);
 
 std::size_t hash_combine (std::size_t lhs, std::size_t rhs);
 };  // namespace detail
 
 /// interner storage class providing dense, in-order IDs of configurable size
+///
+/// allows addition of strings until finalized, then after that only when explicitly opened for
+/// additions, this is not for thread safety, it is to prevent denial of service from addition of
+/// invalid types through interfaces that take user input
 template<class Tag, class Id>
     requires (sizeof (Id) <= sizeof (size_t))
 struct dense_storage {
@@ -55,16 +64,6 @@ struct dense_storage {
     dense_storage &operator= (dense_storage const &) = delete;
     dense_storage &operator= (dense_storage &&) = delete;
 
-    static detail::view_and_id get_both (std::string_view s);
-    static id_instance_t get_id (std::string_view s);
-    static const std::string *get_by_id (id_storage_t string_id);
-
-    static size_t unique_id ()
-    {
-        static size_t uid = std::hash<std::string_view> () (__PRETTY_FUNCTION__);
-        return uid;
-    }
-
    private:
     static detail::dense_inner_storage &get_storage ()
     {
@@ -75,6 +74,40 @@ struct dense_storage {
             ::intern::detail::get_dense_inner_storage (dense_storage::unique_id ());
         return s;
     };
+
+   public:
+    static detail::view_and_id get_both (std::string_view s);
+    static id_instance_t get_id (std::string_view s);
+    static const std::string *get_by_id (id_storage_t string_id);
+
+    static size_t unique_id ()
+    {
+        static size_t uid = std::hash<std::string_view> () (__PRETTY_FUNCTION__);
+        return uid;
+    }
+
+    /// stop new strings from being added unless the object is explicitly opened
+    static void finalize ()
+    {
+        detail::dense_storage_finalize (get_storage ());
+    }
+    /// open the interner for additions and auto-close on scope exit
+    [[nodiscard]] static auto open_for_scope ()
+    {
+        open ();
+        return sg::make_scope_guard ([] () { close (); });
+    }
+
+    /// open the interner for additions
+    static auto open ()
+    {
+        detail::dense_storage_open (get_storage ());
+    }
+    /// close the interner for additions
+    static void close ()
+    {
+        detail::dense_storage_close (get_storage ());
+    }
 };
 
 template<class Tag, class Id>

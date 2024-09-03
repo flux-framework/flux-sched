@@ -36,11 +36,12 @@ extern subsystem_t containment_sub;
 
 constexpr uint64_t resource_type_id{1};
 struct resource_type_tag {};
-using resource_type_t = intern::interned_string<intern::rc_storage<resource_type_tag>>;
+using resource_type_t = intern::interned_string<intern::dense_storage<resource_type_tag, uint16_t>>;
 extern resource_type_t slot_rt;
 extern resource_type_t cluster_rt;
 extern resource_type_t rack_rt;
 extern resource_type_t node_rt;
+extern resource_type_t socket_rt;
 extern resource_type_t gpu_rt;
 extern resource_type_t core_rt;
 

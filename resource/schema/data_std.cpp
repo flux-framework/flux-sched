@@ -17,6 +17,7 @@ subsystem_t containment_sub{"containment"};
 
 resource_type_t cluster_rt{"cluster"};
 resource_type_t core_rt{"core"};
+resource_type_t socket_rt{"socket"};
 resource_type_t gpu_rt{"gpu"};
 resource_type_t node_rt{"node"};
 resource_type_t rack_rt{"rack"};
