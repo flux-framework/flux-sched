@@ -1,3 +1,32 @@
+flux-sched version 0.38.0 - 2024-09-04
+--------------------------------------
+
+### New Features
+ * Speed up final constraint enforcement (#1286)
+ * resource: make feasibility service registration optional (#1281)
+
+### Fixes
+ * qmanager-stats: fix jansson refcount issue (#1273)
+ * qmanager: fix lifetime issue in partial release (#1277)
+ * move feasibility service into sched-fluxion-resource and fix
+   associated test (#1276)
+ * update satisfiability RPC to conform with RFC 27 (#1275)
+
+### Build/Testsuite
+ * Require gcc version 12 or higher and clang version 15 or higher
+   (#1272)
+ * docker-run-checks: export INSTALL_ONLY (#1279)
+ * mergify: update to new mergify.yml requirements (#1278)
+ * Resolve issues with Alpine linux and build release containers for
+   amd64 and arm64 (#1274)
+ * deps: add install-deps.sh script, use in docker (#1282)
+ * scripts: add build-matrix script to ease matching ci (#1283)
+ * Update build and ci to enforce compiler versions, bump to C++23,
+   remove vestigial deps, and generate images matching core (#1272)
+ * alpine: use root to avoid nosuid issue in ci (#1280)
+ * flux-sharness: sync with flux-core (#1252)
+
+
 flux-sched version 0.37.0 - 2024-08-13
 --------------------------------------
 
