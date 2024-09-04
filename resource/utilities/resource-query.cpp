@@ -381,8 +381,8 @@ static void flatten (resource_graph_t &fg,
     }
     for (tie (ei, e_end) = edges (fg); ei != e_end; ++ei) {
         esubsystems[*ei] = "{";
-        for (auto const &k : fg[*vi].idata.member_of.key_range ()) {
-            if (!fg[*vi].idata.member_of[k])
+        for (auto const &k : fg[*ei].idata.member_of.key_range ()) {
+            if (!fg[*ei].idata.member_of[k])
                 continue;
             if (esubsystems[*ei].size () > 0)
                 esubsystems[*ei] += ",";
