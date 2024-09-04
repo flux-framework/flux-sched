@@ -347,7 +347,6 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element,
                                          json_t **properties)
 {
     int rc = -1;
-    json_t *p = NULL;
     json_t *metadata = NULL;
 
     if ((json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
@@ -364,7 +363,7 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element,
         goto done;
     }
     if ((json_unpack (metadata,
-                      "{ s:s s:s s:s s:I s:I s:I s?:i s:b s:s s:I }",
+                      "{ s:s s:s s:s s:I s:I s:I s?:i s:b s:s s:I s:o s?o }",
                       "type",
                       &f.type,
                       "basename",
@@ -384,7 +383,11 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element,
                       "unit",
                       &f.unit,
                       "size",
-                      &f.size))
+                      &f.size,
+                      "paths",
+                      paths,
+                      "properties",
+                      properties))
         < 0) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
@@ -392,15 +395,6 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element,
         m_err_msg += std::string (f.vertex_id) + "\n";
         goto done;
     }
-    if ((p = json_object_get (metadata, "paths")) == NULL) {
-        errno = EINVAL;
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": key (paths) does not exist in an JGF node for ";
-        m_err_msg += std::string (f.vertex_id) + ".\n";
-        goto done;
-    }
-    *properties = json_object_get (metadata, "properties");
-    *paths = p;
     if (*properties && !json_is_object (*properties)) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
