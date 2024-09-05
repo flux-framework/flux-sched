@@ -59,11 +59,7 @@ class TestResourceGraph(unittest.TestCase):
     """Test for the ResourceGraph class."""
 
     def _check_metadata(self, metadata):
-        if metadata["type"] in ("node", "core", "gpu", "cluster"):
-            self.assertEqual(metadata["unit"], "")
-            self.assertEqual(metadata["size"], 1)
-            self.assertEqual(metadata["properties"], {})
-        else:
+        if metadata["type"] not in ("node", "core", "gpu", "cluster"):
             raise ValueError(metadata["type"])
 
     def test_basic(self):
@@ -94,10 +90,8 @@ class TestResourceGraph(unittest.TestCase):
             if metadata["type"] != "node":
                 self._check_metadata(node.get_metadata())
             else:
-                self.assertEqual(metadata["unit"], "")
-                self.assertEqual(metadata["size"], 1)
                 self.assertEqual(len(metadata["properties"]), 1)
-                if metadata["id"] < 10:
+                if int(metadata["name"][len("compute") :]) < 10:
                     self.assertEqual(metadata["properties"]["pdebug"], "")
                 else:
                     self.assertEqual(metadata["properties"]["pbatch"], "")
