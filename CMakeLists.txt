@@ -12,6 +12,28 @@ else()
 endif()
 message(STATUS "VER ${FLUX_SCHED_VER}")
 string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT "${FLUX_SCHED_VER}")
+# I took this regex from the CMake source code. If the version fails to
+# match it, CMake will error out. We can help the end-user get past this
+# with a few tips.
+string(REGEX MATCH "(^([0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+)?)?)?)?$)" CHECK_FLUX_SCHED_VER "${FLUX_SCHED_VER_NOGIT}")
+string(LENGTH "${CHECK_FLUX_SCHED_VER}" LENGTH_FLUX_SCHED_VER)
+if (LENGTH_FLUX_SCHED_VER STREQUAL "0")
+    message(WARNING 
+    "CMake may generate an error that says \"VERSION \"${FLUX_SCHED_VER}\" format invalid.\"\n"
+    "If this happens, try the following:\n"
+    "    1. Set the variable manually, with `cmake -DFLUX_SCHED_VER=<version> ...`\n"
+    "       or FLUX_SCHED_VERSION=<version> in your environment.\n"
+    "    2. If you are running in a CI environment, run `git fetch --tags`\n"
+    "       before building. Versions in flux-sched are derived from \n"
+    "       `git describe` which uses the most recent tag.\n"
+    "    3. If you are running in a fork of the main repository, try\n"
+    "       `git push --tags` to make sure tags are synchronized in \n"
+    "       your fork.\n"
+    "    4. If you are running outside of a repo (such as in a buildfarm),\n"
+    "       add a file to the source directory called flux-sched.ver and\n"
+    "       place a valid version string in that file."
+    )
+endif()
 project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
 message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 
