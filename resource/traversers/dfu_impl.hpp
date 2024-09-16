@@ -402,6 +402,16 @@ class dfu_impl_t {
                   unsigned int count,
                   std::unordered_map<resource_type_t, int64_t> &accum);
 
+    /*! Find min count if type matches with one of the resource
+     *  types used in the scheduler-driven aggregate update (SDAU) scheme.
+     *  dfu_match_cb_t provides an interface to configure what types are used
+     *  for SDAU scheme.
+     */
+    int min_if (subsystem_t subsystem,
+                resource_type_t type,
+                unsigned int count,
+                std::unordered_map<resource_type_t, int64_t> &lowest);
+
     // Explore out-edges for priming the subtree plans
     int prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_type_t, int64_t> &dfv);
 
