@@ -425,6 +425,23 @@ int dfu_impl_t::accum_if (subsystem_t subsystem,
     return rc;
 }
 
+/* Same as above except that lowest is unorder_map */
+int dfu_impl_t::min_if (subsystem_t subsystem,
+                        resource_type_t type,
+                        unsigned int counts,
+                        std::unordered_map<resource_type_t, int64_t> &lowest)
+{
+    int rc = -1;
+    if (m_match->is_pruning_type (subsystem, type)) {
+        if (lowest.find (type) == lowest.end ())
+            lowest[type] = counts;
+        else if (lowest[type] > counts)
+            lowest[type] = counts;
+        rc = 0;
+    }
+    return rc;
+}
+
 int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_type_t, int64_t> &dfv)
 {
     int rc = 0;
@@ -1378,8 +1395,23 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
         prime_jobspec (resource.with, resource.user_data);
-        for (auto &aggregate : resource.user_data) {
-            accum_if (subsystem, aggregate.first, resource.count.min * aggregate.second, to_parent);
+
+        // Or slots should use a minimum of values rather than an accumulation
+        // otherwise possible matches may be filtered out
+        if (resource.type == or_slot_rt) {
+            for (auto &aggregate : resource.user_data) {
+                min_if (subsystem,
+                        aggregate.first,
+                        resource.count.min * aggregate.second,
+                        to_parent);
+            }
+        } else {
+            for (auto &aggregate : resource.user_data) {
+                accum_if (subsystem,
+                          aggregate.first,
+                          resource.count.min * aggregate.second,
+                          to_parent);
+            }
         }
     }
 }
