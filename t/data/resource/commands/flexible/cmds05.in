@@ -1,0 +1,3 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/flexible/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/flexible/test005.yaml
+quit

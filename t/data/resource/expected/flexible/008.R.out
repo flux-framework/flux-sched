@@ -1,0 +1,10 @@
+      ---------------core35[1:x]
+      ------------socket1[1:s]
+      ---------node1[1:s]
+      ------rack0[1:s]
+      ---tiny0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
