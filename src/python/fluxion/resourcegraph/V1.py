@@ -90,8 +90,6 @@ class FluxionResourceRelationshipV1(Edge):
         super().__init__(
             parentId,
             vtxId,
-            directed=True,
-            metadata={"subsystem": "containment"},
         )
 
 
@@ -105,7 +103,8 @@ class FluxionResourceGraphV1(Graph):
         rv1 -- RV1 Dictorary that conforms to Flux RFC 20:
                    Resource Set Specification Version 1
         """
-        super().__init__()
+        super().__init__(directed=False)
+        # graph *is* directed, however, suppress unnecessary `"directed": true` fields
         self._uniqId = 0
         self._rv1NoSched = rv1
         self._encode()
