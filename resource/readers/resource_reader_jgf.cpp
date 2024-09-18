@@ -990,7 +990,7 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
     json_t *metadata = NULL;
     const char *src = NULL;
     const char *tgt = NULL;
-    const char *subsys = NULL;
+    const char *subsys = "containment";
 
     if ((json_unpack (element, "{ s:s s:s }", "source", &src, "target", &tgt)) < 0) {
         errno = EINVAL;
@@ -1007,17 +1007,10 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
         m_err_msg += source + std::string (" -> ") + target + ".\n";
         goto done;
     }
-    if ((metadata = json_object_get (element, "metadata")) == NULL) {
+    if ((json_unpack (element, "{ s?{ s?s } }", "metadata", "subsystem", &subsys)) < 0) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": metadata key not found in an edge for ";
-        m_err_msg += source + std::string (" -> ") + target + ".\n";
-        goto done;
-    }
-    if ((json_unpack (metadata, "{ s:s }", "subsystem", &subsys)) < 0) {
-        errno = EINVAL;
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": subsystem key not found in edge metadata.\n";
+        m_err_msg += ": could not unpack edge metadata.\n";
         goto done;
     }
     subsystem = subsys;
