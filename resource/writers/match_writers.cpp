@@ -309,16 +309,18 @@ int jgf_match_writers_t::emit_edg (const std::string &prefix,
         errno = EINVAL;
         goto out;
     }
-    if (!(m = json_object ())) {
-        rc = -1;
-        errno = ENOMEM;
-        goto out;
+    if (g[e].subsystem != containment_sub) {
+        if (!(m = json_object ())) {
+            rc = -1;
+            errno = ENOMEM;
+            goto out;
+        }
+        if ((rc = emit_edg_meta (m, g, e)) < 0) {
+            json_decref (m);
+            goto out;
+        }
     }
-    if ((rc = emit_edg_meta (m, g, e)) < 0) {
-        json_decref (m);
-        goto out;
-    }
-    if (!(o = json_pack ("{s:s s:s s:o}",
+    if (!(o = json_pack ("{s:s s:s s:o*}",
                          "source",
                          std::to_string (g[source (e, g)].uniq_id).c_str (),
                          "target",
