@@ -398,6 +398,16 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
 {
     json_t *o = NULL;
     json_t *prop = nullptr;
+    const char *basename = NULL, *unit = NULL, *name = NULL;
+    if (g[u].basename != g[u].type.get ()) {
+        basename = g[u].basename.c_str ();
+    }
+    if (g[u].name != g[u].basename + std::to_string (g[u].id)) {
+        name = g[u].name.c_str ();
+    }
+    if (g[u].unit != "") {
+        unit = g[u].unit.c_str ();
+    }
 
     if (!g[u].properties.empty ()) {
         if (!(prop = json_object ())) {
@@ -414,28 +424,35 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
             }
         }
     }
-    if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:o* s:b s:s s:I}",
+    if (!(o = json_pack ("{s:s s:s* s:s* s:I s:i s:o* s:s*}",
                          "type",
                          g[u].type.c_str (),
                          "basename",
-                         g[u].basename.c_str (),
+                         basename,
                          "name",
-                         g[u].name.c_str (),
+                         name,
                          "id",
                          g[u].id,
-                         "uniq_id",
-                         g[u].uniq_id,
                          "rank",
                          g[u].rank,
                          "properties",
                          prop,
-                         "exclusive",
-                         (exclusive) ? 1 : 0,
                          "unit",
-                         g[u].unit.c_str (),
-                         "size",
-                         static_cast<int64_t> (needs)))) {
+                         unit))) {
         errno = EINVAL;
+    } else {
+        if (exclusive) {
+            if (json_object_set_new (o, "exclusive", json_true ()) < 0) {
+                json_decref (o);
+                return nullptr;
+            }
+        }
+        if (needs != 1) {
+            if (json_object_set_new (o, "size", json_integer (needs)) < 0) {
+                json_decref (o);
+                return nullptr;
+            }
+        }
     }
     return o;
 }
