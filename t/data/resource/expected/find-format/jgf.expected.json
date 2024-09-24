@@ -5,13 +5,8 @@
         "id": "2",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core0",
           "id": 0,
-          "uniq_id": 2,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core0"
           }
@@ -21,13 +16,8 @@
         "id": "3",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core1",
           "id": 1,
-          "uniq_id": 3,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core1"
           }
@@ -37,13 +27,8 @@
         "id": "4",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core2",
           "id": 2,
-          "uniq_id": 4,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core2"
           }
@@ -53,13 +38,8 @@
         "id": "5",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core3",
           "id": 3,
-          "uniq_id": 5,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core3"
           }
@@ -69,13 +49,8 @@
         "id": "6",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core4",
           "id": 4,
-          "uniq_id": 6,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core4"
           }
@@ -85,13 +60,8 @@
         "id": "7",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core5",
           "id": 5,
-          "uniq_id": 7,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core5"
           }
@@ -101,13 +71,8 @@
         "id": "8",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core6",
           "id": 6,
-          "uniq_id": 8,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core6"
           }
@@ -117,13 +82,8 @@
         "id": "9",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core7",
           "id": 7,
-          "uniq_id": 9,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core7"
           }
@@ -133,13 +93,8 @@
         "id": "10",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core8",
           "id": 8,
-          "uniq_id": 10,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core8"
           }
@@ -149,13 +104,8 @@
         "id": "11",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core9",
           "id": 9,
-          "uniq_id": 11,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core9"
           }
@@ -165,13 +115,8 @@
         "id": "12",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core10",
           "id": 10,
-          "uniq_id": 12,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core10"
           }
@@ -181,13 +126,8 @@
         "id": "13",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core11",
           "id": 11,
-          "uniq_id": 13,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core11"
           }
@@ -197,13 +137,8 @@
         "id": "14",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core12",
           "id": 12,
-          "uniq_id": 14,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core12"
           }
@@ -213,13 +148,8 @@
         "id": "15",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core13",
           "id": 13,
-          "uniq_id": 15,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core13"
           }
@@ -229,13 +159,8 @@
         "id": "16",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core14",
           "id": 14,
-          "uniq_id": 16,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core14"
           }
@@ -245,13 +170,8 @@
         "id": "17",
         "metadata": {
           "type": "core",
-          "basename": "core",
-          "name": "core15",
           "id": 15,
-          "uniq_id": 17,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234/core15"
           }
@@ -262,12 +182,8 @@
         "metadata": {
           "type": "node",
           "basename": "cab",
-          "name": "cab1234",
           "id": 1234,
-          "uniq_id": 1,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0/cab1234"
           }
@@ -277,13 +193,8 @@
         "id": "0",
         "metadata": {
           "type": "cluster",
-          "basename": "cluster",
-          "name": "cluster0",
           "id": 0,
-          "uniq_id": 0,
           "exclusive": true,
-          "unit": "",
-          "size": 1,
           "paths": {
             "containment": "/cluster0"
           }
@@ -293,122 +204,71 @@
     "edges": [
       {
         "source": "1",
-        "target": "2",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "2"
       },
       {
         "source": "1",
-        "target": "3",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "3"
       },
       {
         "source": "1",
-        "target": "4",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "4"
       },
       {
         "source": "1",
-        "target": "5",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "5"
       },
       {
         "source": "1",
-        "target": "6",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "6"
       },
       {
         "source": "1",
-        "target": "7",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "7"
       },
       {
         "source": "1",
-        "target": "8",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "8"
       },
       {
         "source": "1",
-        "target": "9",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "9"
       },
       {
         "source": "1",
-        "target": "10",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "10"
       },
       {
         "source": "1",
-        "target": "11",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "11"
       },
       {
         "source": "1",
-        "target": "12",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "12"
       },
       {
         "source": "1",
-        "target": "13",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "13"
       },
       {
         "source": "1",
-        "target": "14",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "14"
       },
       {
         "source": "1",
-        "target": "15",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "15"
       },
       {
         "source": "1",
-        "target": "16",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "16"
       },
       {
         "source": "1",
-        "target": "17",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "17"
       },
       {
         "source": "0",
-        "target": "1",
-        "metadata": {
-          "subsystem": "containment"
-        }
+        "target": "1"
       }
     ]
   }

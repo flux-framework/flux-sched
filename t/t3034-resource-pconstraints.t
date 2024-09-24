@@ -146,8 +146,11 @@ test_expect_success 'allocate 1 job with arm-v9@core and rv1 (pol=hinodex)' '
 	host=$(cat 011.R.out | grep -v INFO | jq -r ".execution.nodelist[]") &&
 	jgfh=$(cat 011.R.out | grep -v INFO | \
 		jq -r ".scheduling.graph.nodes[] | \
-		select (.metadata.type == \"node\") | .metadata.name") &&
-	test "$host" = "${jgfh}"
+		select (.metadata.type == \"node\") | .metadata.basename") &&
+	jgfid=$(cat 011.R.out | grep -v INFO | \
+		jq -r ".scheduling.graph.nodes[] | \
+		select (.metadata.type == \"node\") | .metadata.id") &&
+	test "$host" = "${jgfh}${jgfid}"
 '
 
 test_expect_success 'allocate 1 job with arm-v9@core and JGF (pol=hinodex)' '

@@ -126,8 +126,7 @@ remap_rv1_resource_type() {
     local filter=".scheduling.graph.nodes[].metadata | \
 select(.type == \"${type}\") | .name |= .[${#type}:] | \
 .paths.containment |= .[${path_prefix}:] | \
-[ (.name | tonumber - ${id_rebase}), \
-if .rank == 0 then .rank - ${rank_remap0} \
+[ if .rank == 0 then .rank - ${rank_remap0} \
 elif .rank == 1 then .rank - ${rank_remap1} \
 elif .rank == 2 then .rank - ${rank_remap2} \
 else .rank - ${rank_remap3} end, .id - ${id_rebase}, \
