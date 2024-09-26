@@ -17,6 +17,7 @@ extern "C" {
 #include <map>
 #include <unordered_set>
 #include <unistd.h>
+#include <regex>
 #include <jansson.h>
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
@@ -353,8 +354,25 @@ int resource_reader_jgf_t::apply_defaults (fetch_helper_t &f, const char *name)
             return -1;
         }
     }
-    if (f.id == -1)
+    if (f.id == -1) {
         f.id = f.uniq_id;
+        // for nodes, see if there is an integer suffix on the hostname and use it if so
+        if (f.type == std::string{"node"} && name != NULL) {
+            std::string sname{name};
+            std::regex nodesuffix ("(\\d+$)");
+            std::smatch r;
+            if (std::regex_search (sname, r, nodesuffix)) {
+                try {
+                    f.id = std::stoll (r.str (0));
+                } catch (std::invalid_argument const &ex) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": could not extract ID from hostname ";
+                    m_err_msg += sname;
+                    return -1;
+                }
+            }
+        }
+    }
     if (f.exclusive == -1)
         f.exclusive = 0;
     if (f.size == -1)

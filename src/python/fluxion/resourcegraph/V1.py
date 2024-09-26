@@ -7,7 +7,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0
 ##############################################################
-import re
 
 from flux.idset import IDset
 from flux.hostlist import Hostlist
@@ -125,13 +124,6 @@ class FluxionResourceGraphV1(Graph):
                 return True
         return False
 
-    def _extract_id_from_hn(self, hostName):
-        postfix = re.findall(r"(\d+$)", hostName)
-        rc = self._uniqId
-        if len(postfix) == 1:
-            rc = int(postfix[0])
-        return rc
-
     def _encode_child(self, ppid, path, rank, resType, i):
         vtx = FluxionResourcePoolV1(
             self._uniqId, resType, iden=i, rank=rank, path=f"{path}/{resType}{i}"
@@ -146,7 +138,6 @@ class FluxionResourceGraphV1(Graph):
             "node",
             name=hostname,
             rank=rank,
-            iden=self._extract_id_from_hn(hostname),
             properties=properties,
             path=path,
         )
