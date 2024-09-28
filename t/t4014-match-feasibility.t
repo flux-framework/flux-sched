@@ -21,28 +21,28 @@ test_debug '
 '
 
 test_expect_success 'loading feasibility module over sched-simple fails' '
-    load_feasibility
-    flux dmesg -c | grep -q "File exists"
+    load_feasibility 2>&1 | grep -q "File exists"
 '
 
 test_expect_success 'removing sched-simple works' '
-    flux module remove sched-simple
+    flux module remove sched-simple &&
+    flux dmesg -c | grep -q "rmmod sched-simple"
 '
 
 test_expect_success 'loading feasibility module before resource fails' '
-    load_feasibility
+    load_feasibility &&
     flux dmesg -c | grep -q "Function not implemented"
 '
 
 test_expect_success 'loading resource module with a tiny machine config works' '
     load_resource load-file=${grug} load-format=grug \
-prune-filters=ALL:core subsystems=containment policy=high
+prune-filters=ALL:core subsystems=containment policy=high &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
 test_expect_success 'loading feasibility module with a tiny machine config works' '
     load_feasibility load-file=${grug} load-format=grug \
-prune-filters=ALL:core subsystems=containment policy=high
+prune-filters=ALL:core subsystems=containment policy=high &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
@@ -72,7 +72,7 @@ test_expect_success 'jobspec is still satisfiable even when no available resourc
 '
 
 test_expect_success 'removing load-file feasibility module works' '
-    remove_feasibility
+    remove_feasibility &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
@@ -89,12 +89,12 @@ test_expect_success 'removing resource module works' '
 '
 
 test_expect_success 'loading non-load-file resource module works' '
-    load_resource
+    load_resource &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
 test_expect_success 'loading feasibility from non-load-file resource module works' '
-    load_feasibility
+    load_feasibility &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
