@@ -1,6 +1,10 @@
 #!/bin/sh
 
-test $(flux getattr rank) -eq 0 || exit 0
+# Can be loaded on multiple ranks
+flux module remove -f sched-fluxion-feasibility
 
-flux module remove -f sched-fluxion-qmanager
-flux module remove -f sched-fluxion-resource
+if [ $(flux getattr rank) -eq 0 ]; then
+    flux module remove -f sched-fluxion-qmanager
+    flux module remove -f sched-fluxion-resource
+fi
+
