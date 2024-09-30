@@ -1083,6 +1083,7 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
     struct idset *grow_set = NULL;
     json_t *r_lite = NULL;
     json_t *jgf = NULL;
+    auto guard = resource_type_t::storage_t::open_for_scope ();
 
     if ((rc = unpack_resources (resources, &grow_set, &r_lite, &jgf, duration)) < 0) {
         flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
@@ -1461,6 +1462,10 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
             }
         }
     }
+
+    // prevent users from consuming unbounded memory with arbitrary resource types
+    subsystem_t::storage_t::finalize ();
+    resource_type_t::storage_t::finalize ();
     return 0;
 }
 

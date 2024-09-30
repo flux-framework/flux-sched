@@ -429,13 +429,18 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     }
 
     gettimeofday (&st, NULL);
-    if ((rc = ctx->traverser->run (str, ctx->writers, rd, id, at, d)) != 0) {
-        std::cerr << "ERROR: traverser run () returned error " << std::endl;
-        if (ctx->traverser->err_message () != "") {
-            std::cerr << "ERROR: " << ctx->traverser->err_message ();
-            ctx->traverser->clear_err_message ();
+
+    {
+        auto guard = resource_type_t::storage_t::open_for_scope ();
+        if ((rc = ctx->traverser->run (str, ctx->writers, rd, id, at, d)) != 0) {
+            std::cerr << "ERROR: traverser run () returned error " << std::endl;
+            if (ctx->traverser->err_message () != "") {
+                std::cerr << "ERROR: " << ctx->traverser->err_message ();
+                ctx->traverser->clear_err_message ();
+            }
         }
     }
+
     ctx->writers->emit (o);
     std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     out << o.str ();

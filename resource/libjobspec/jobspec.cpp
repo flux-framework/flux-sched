@@ -126,7 +126,13 @@ Resource::Resource (const YAML::Node &resnode)
     if (!resnode["type"].IsScalar ()) {
         throw parse_error (resnode["type"], "Value of \"type\" must be a scalar");
     }
-    type = resource_model::resource_type_t{resnode["type"].as<std::string> ()};
+    try {
+        type = resource_model::resource_type_t{resnode["type"].as<std::string> ()};
+    } catch (std::system_error e) {
+        // resource_type must be closed or full
+        throw parse_error (resnode["type"],
+                           "Value of \"type\" must be a resource type known to fluxion");
+    }
     field_count++;
 
     if (!resnode["count"]) {
