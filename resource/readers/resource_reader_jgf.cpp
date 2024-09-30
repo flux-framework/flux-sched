@@ -17,6 +17,7 @@ extern "C" {
 #include <map>
 #include <unordered_set>
 #include <unistd.h>
+#include <regex>
 #include <jansson.h>
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
@@ -57,7 +58,7 @@ struct fetch_helper_t : public fetch_remap_support_t {
     int exclusive = -1;
     resource_pool_t::status_t status = resource_pool_t::status_t::UP;
     const char *type = NULL;
-    const char *name = NULL;
+    std::string name;
     const char *unit = NULL;
     const char *basename = NULL;
     const char *vertex_id = NULL;
@@ -119,7 +120,7 @@ void fetch_remap_support_t::clear ()
 
 const char *fetch_helper_t::get_proper_name () const
 {
-    return (is_name_remapped ()) ? get_remapped_name ().c_str () : name;
+    return (is_name_remapped ()) ? get_remapped_name ().c_str () : name.c_str ();
 }
 
 int64_t fetch_helper_t::get_proper_id () const
@@ -141,7 +142,7 @@ void fetch_helper_t::scrub ()
     exclusive = -1;
     status = resource_pool_t::status_t::UP;
     type = NULL;
-    name = NULL;
+    name.clear ();
     unit = NULL;
     basename = NULL;
     vertex_id = NULL;
@@ -341,36 +342,83 @@ int resource_reader_jgf_t::remap_aware_unpack_vtx (fetch_helper_t &f,
     return 0;
 }
 
+int resource_reader_jgf_t::apply_defaults (fetch_helper_t &f, const char *name)
+{
+    if (f.uniq_id == -1) {
+        try {
+            f.uniq_id = static_cast<int64_t> (std::stoll (std::string{f.vertex_id}));
+        } catch (std::invalid_argument const &ex) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": value for key (uniq_id) could not be inferred from outer ";
+            m_err_msg += "'id' field " + std::string (f.vertex_id) + ".\n";
+            return -1;
+        }
+    }
+    if (f.id == -1) {
+        f.id = f.uniq_id;
+        // for nodes, see if there is an integer suffix on the hostname and use it if so
+        if (f.type == std::string{"node"} && name != NULL) {
+            std::string sname{name};
+            std::regex nodesuffix ("(\\d+$)");
+            std::smatch r;
+            if (std::regex_search (sname, r, nodesuffix)) {
+                try {
+                    f.id = std::stoll (r.str (0));
+                } catch (std::invalid_argument const &ex) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": could not extract ID from hostname ";
+                    m_err_msg += sname;
+                    return -1;
+                }
+            }
+        }
+    }
+    if (f.exclusive == -1)
+        f.exclusive = 0;
+    if (f.size == -1)
+        f.size = 1;
+    if (f.basename == NULL)
+        f.basename = f.type;
+    if (name == NULL) {
+        f.name = f.basename;
+        f.name.append (std::to_string (f.id));
+    } else {
+        f.name = name;
+    }
+    if (f.unit == NULL)
+        f.unit = "";
+    return 0;
+}
+
 int resource_reader_jgf_t::fill_fetcher (json_t *element,
                                          fetch_helper_t &f,
                                          json_t **paths,
                                          json_t **properties)
 {
-    int rc = -1;
-    json_t *p = NULL;
     json_t *metadata = NULL;
+    const char *name = NULL;
 
     if ((json_unpack (element, "{ s:s }", "id", &f.vertex_id) < 0)) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF vertex id key is not found in a node.\n";
-        goto done;
+        return -1;
     }
     if ((metadata = json_object_get (element, "metadata")) == NULL) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": key (metadata) is not found in an JGF node for ";
         m_err_msg += std::string (f.vertex_id) + ".\n";
-        goto done;
+        return -1;
     }
     if ((json_unpack (metadata,
-                      "{ s:s s:s s:s s:I s:I s:I s?:i s:b s:s s:I }",
+                      "{ s:s s?s s?s s?I s?I s?I s?i s?b s?s s?I s:o s?o }",
                       "type",
                       &f.type,
                       "basename",
                       &f.basename,
                       "name",
-                      &f.name,
+                      &name,
                       "id",
                       &f.id,
                       "uniq_id",
@@ -384,33 +432,26 @@ int resource_reader_jgf_t::fill_fetcher (json_t *element,
                       "unit",
                       &f.unit,
                       "size",
-                      &f.size))
+                      &f.size,
+                      "paths",
+                      paths,
+                      "properties",
+                      properties))
         < 0) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": malformed metadata in an JGF node for ";
         m_err_msg += std::string (f.vertex_id) + "\n";
-        goto done;
+        return -1;
     }
-    if ((p = json_object_get (metadata, "paths")) == NULL) {
-        errno = EINVAL;
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": key (paths) does not exist in an JGF node for ";
-        m_err_msg += std::string (f.vertex_id) + ".\n";
-        goto done;
-    }
-    *properties = json_object_get (metadata, "properties");
-    *paths = p;
     if (*properties && !json_is_object (*properties)) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": key (properties) must be an object or null for ";
         m_err_msg += std::string (f.vertex_id) + ".\n";
-        goto done;
+        return -1;
     }
-    rc = 0;
-done:
-    return rc;
+    return apply_defaults (f, name);
 }
 
 int resource_reader_jgf_t::unpack_vtx (json_t *element, fetch_helper_t &f)
