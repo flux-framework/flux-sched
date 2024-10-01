@@ -309,16 +309,18 @@ int jgf_match_writers_t::emit_edg (const std::string &prefix,
         errno = EINVAL;
         goto out;
     }
-    if (!(m = json_object ())) {
-        rc = -1;
-        errno = ENOMEM;
-        goto out;
+    if (g[e].subsystem != containment_sub) {
+        if (!(m = json_object ())) {
+            rc = -1;
+            errno = ENOMEM;
+            goto out;
+        }
+        if ((rc = emit_edg_meta (m, g, e)) < 0) {
+            json_decref (m);
+            goto out;
+        }
     }
-    if ((rc = emit_edg_meta (m, g, e)) < 0) {
-        json_decref (m);
-        goto out;
-    }
-    if (!(o = json_pack ("{s:s s:s s:o}",
+    if (!(o = json_pack ("{s:s s:s s:o*}",
                          "source",
                          std::to_string (g[source (e, g)].uniq_id).c_str (),
                          "target",
@@ -396,6 +398,16 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
 {
     json_t *o = NULL;
     json_t *prop = nullptr;
+    const char *basename = NULL, *unit = NULL, *name = NULL;
+    if (g[u].basename != g[u].type.get ()) {
+        basename = g[u].basename.c_str ();
+    }
+    if (g[u].name != g[u].basename + std::to_string (g[u].id)) {
+        name = g[u].name.c_str ();
+    }
+    if (g[u].unit != "") {
+        unit = g[u].unit.c_str ();
+    }
 
     if (!g[u].properties.empty ()) {
         if (!(prop = json_object ())) {
@@ -404,64 +416,42 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
         }
         for (auto &kv : g[u].properties) {
             json_t *value = nullptr;
-            if (!(value = json_string (kv.second.c_str ()))) {
-                json_decref (prop);
-                errno = EINVAL;
-                return nullptr;
-            }
-            if (json_object_set_new (prop, kv.first.c_str (), value) < 0) {
+            if (!(value = json_string (kv.second.c_str ()))
+                || json_object_set_new (prop, kv.first.c_str (), value) < 0) {
                 json_decref (prop);
                 errno = EINVAL;
                 return nullptr;
             }
         }
     }
-
-    if (prop) {
-        if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:o s:b s:s s:I}",
-                             "type",
-                             g[u].type.c_str (),
-                             "basename",
-                             g[u].basename.c_str (),
-                             "name",
-                             g[u].name.c_str (),
-                             "id",
-                             g[u].id,
-                             "uniq_id",
-                             g[u].uniq_id,
-                             "rank",
-                             g[u].rank,
-                             "properties",
-                             prop,
-                             "exclusive",
-                             (exclusive) ? 1 : 0,
-                             "unit",
-                             g[u].unit.c_str (),
-                             "size",
-                             static_cast<int64_t> (needs)))) {
-            errno = EINVAL;
-        }
+    if (!(o = json_pack ("{s:s s:s* s:s* s:I s:i s:o* s:s*}",
+                         "type",
+                         g[u].type.c_str (),
+                         "basename",
+                         basename,
+                         "name",
+                         name,
+                         "id",
+                         g[u].id,
+                         "rank",
+                         g[u].rank,
+                         "properties",
+                         prop,
+                         "unit",
+                         unit))) {
+        errno = EINVAL;
     } else {
-        if (!(o = json_pack ("{s:s s:s s:s s:I s:I s:i s:b s:s s:I}",
-                             "type",
-                             g[u].type.c_str (),
-                             "basename",
-                             g[u].basename.c_str (),
-                             "name",
-                             g[u].name.c_str (),
-                             "id",
-                             g[u].id,
-                             "uniq_id",
-                             g[u].uniq_id,
-                             "rank",
-                             g[u].rank,
-                             "exclusive",
-                             (exclusive) ? 1 : 0,
-                             "unit",
-                             g[u].unit.c_str (),
-                             "size",
-                             static_cast<int64_t> (needs)))) {
-            errno = EINVAL;
+        if (exclusive) {
+            if (json_object_set_new (o, "exclusive", json_true ()) < 0) {
+                json_decref (o);
+                return nullptr;
+            }
+        }
+        if (needs != 1) {
+            if (json_object_set_new (o, "size", json_integer (needs)) < 0) {
+                json_decref (o);
+                return nullptr;
+            }
         }
     }
     return o;
