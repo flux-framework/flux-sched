@@ -1,3 +1,20 @@
+flux-sched version 0.39.0 - 2024-10-01
+--------------------------------------
+
+### New Features
+ * JGF: default edge subsystem (#1297)
+ * readers: JGF simplification (#1293)
+ * writers: JGF simplification (#1299)
+ * intern: Dense resource type with DoS protection (#1287)
+
+### Fixes
+ * resource-query: fix segfault in graphml writer (#1290)
+
+### Build/Testsuite
+ * cmake: clarify git-push suggestion (#1295)
+ * build: add descriptive warning about version (#1294)
+
+
 flux-sched version 0.38.0 - 2024-09-04
 --------------------------------------
 
