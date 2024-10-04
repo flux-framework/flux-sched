@@ -943,6 +943,7 @@ int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
     json_t *entry = nullptr;
     const char *ranks = nullptr;
     struct idset *r_ids = nullptr;
+    size_t len;
 
     // Implementing cancellation of rank subgraph
     // will require further parsing of nodelist,
@@ -956,23 +957,24 @@ int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
         errno = EINVAL;
         goto error;
     }
+    if (!(r_ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
+        goto error;
     json_array_foreach (rlite, index, entry) {
-        if (json_unpack (entry, "{s:s}", "rank", &ranks) < 0) {
+        if (json_unpack (entry, "{s:s%}", "rank", &ranks, &len) < 0) {
             errno = EINVAL;
             goto error;
         }
+        if (idset_decode_add (r_ids, ranks, len, NULL) < 0)
+            goto error;
     }
-    if (!(r_ids = idset_decode (ranks)))
-        goto error;
     rank = idset_first (r_ids);
     while (rank != IDSET_INVALID_ID) {
         mod_data.ranks_removed.insert (rank);
         rank = idset_next (r_ids, rank);
     }
-    idset_destroy (r_ids);
     rc = 0;
-
 error:
+    idset_destroy (r_ids);
     return rc;
 }
 
