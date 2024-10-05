@@ -22,6 +22,10 @@ else
   export PYTHONPATH="${SHARNESS_TEST_SRCDIR}/../src/python${PYTHONPATH:+:${PYTHONPATH}}"
 fi
 
+# Setup FLUX_SOURCE_DIR for use in flux-sharness.sh
+FLUX_SOURCE_DIR="$(cd ${SHARNESS_TEST_SRCDIR}/.. && pwd)"
+export FLUX_SOURCE_DIR
+
 ## Set up environment using flux(1) in PATH
 flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
 eval $(flux env)

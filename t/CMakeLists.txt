@@ -28,6 +28,7 @@ set(ALL_TESTS
   t1023-multiqueue-constraints.t
   t1024-alloc-check.t
   t1025-rv1-reload.t
+  t1026-rv1-partial-release.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t
