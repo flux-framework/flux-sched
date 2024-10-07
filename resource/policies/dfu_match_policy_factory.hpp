@@ -13,6 +13,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
@@ -24,18 +25,27 @@
 namespace Flux {
 namespace resource_model {
 
-const std::string FIRST_MATCH = "first";
-const std::string FIRST_NODEX_MATCH = "firstnodex";
-const std::string HIGH_ID_FIRST = "high";
-const std::string LOW_ID_FIRST = "low";
-const std::string LOW_NODE_FIRST = "lonode";
-const std::string HIGH_NODE_FIRST = "hinode";
-const std::string LOW_NODEX_FIRST = "lonodex";
-const std::string HIGH_NODEX_FIRST = "hinodex";
-const std::string LOCALITY_AWARE = "locality";
-const std::string VAR_AWARE = "variation";
-
 bool known_match_policy (const std::string &policy);
+
+const std::map<std::string, std::string> policies =
+    {{"first", "name=FIRST_MATCH high=true node_centric=true stop_on_k_matches=1"},
+     {"firstnodex",
+      "name=FIRST_NODEX_MATCH high=true node_centric=true node_exclusive=true stop_on_k_matches=1"},
+     {"high", "name=HIGH_ID_FIRST high=true"},
+     {"low", "name=LOW_ID_FIRST low=true"},
+     {"lonode", "name=LOW_NODE_FIRST low=true node_centric=true"},
+     {"hinode", "name=HIGH_NODE_FIRST high=true node_centric=true"},
+     {"lonodex", "name=LOW_NODEX_FIRST low=true node_centric=true node_exclusive=true"},
+     {"hinodex", "name=HIGH_NODEX_FIRST high=true node_centric=true node_exclusive=true"},
+     {"locality", "name=LOCALITY_AWARE"},
+     {"variation", "name=VAR_AWARE"},
+     {"custom", ""}};
+
+bool parse_bool_match_options (const std::string match_option, const std::string policy_options);
+
+bool option_exists (const std::string match_option, const std::string policy_options);
+
+int parse_int_match_options (const std::string match_option, const std::string policy_options);
 
 /*! Factory method for creating a matching callback
  *  object, representing a matching policy.
