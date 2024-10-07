@@ -535,6 +535,8 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data)
         span = alloc_span->second;
         if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
             (*m_graph)[u].schedule.allocations.erase (alloc_span);
+        } else {
+            goto done;
         }
     } else if ((res_span = (*m_graph)[u].schedule.reservations.find (jobid))
                != (*m_graph)[u].schedule.reservations.end ()) {
