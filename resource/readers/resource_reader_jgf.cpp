@@ -51,7 +51,7 @@ struct fetch_helper_t : public fetch_remap_support_t {
     int64_t get_proper_rank () const;
     void scrub ();
 
-    int64_t id = -1;
+    int64_t id = -2;
     int64_t rank = -1;
     int64_t size = -1;
     int64_t uniq_id = -1;
@@ -135,7 +135,7 @@ int64_t fetch_helper_t::get_proper_rank () const
 
 void fetch_helper_t::scrub ()
 {
-    id = -1;
+    id = -2;
     rank = -1;
     size = -1;
     uniq_id = -1;
@@ -354,7 +354,7 @@ int resource_reader_jgf_t::apply_defaults (fetch_helper_t &f, const char *name)
             return -1;
         }
     }
-    if (f.id == -1) {
+    if (f.id == -2) {
         f.id = f.uniq_id;
         // for nodes, see if there is an integer suffix on the hostname and use it if so
         if (f.type == std::string{"node"} && name != NULL) {
