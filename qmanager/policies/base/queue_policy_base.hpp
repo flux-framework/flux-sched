@@ -646,14 +646,28 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
             case job_state_kind_t::ALLOC_RUNNING:
                 // deliberately fall through
             case job_state_kind_t::RUNNING:
-                if (cancel (h, job_it->second->id, R, true, full_removal) != 0) {
-                    flux_log_error (flux_h,
-                                    "%s: .free RPC partial cancel failed for jobid "
-                                    "%jd",
-                                    __FUNCTION__,
-                                    static_cast<intmax_t> (id));
-                    errno = EINVAL;
-                    goto out;
+                if (!final) {
+                    if (cancel (h, job_it->second->id, R, true, full_removal) != 0) {
+                        flux_log_error (flux_h,
+                                        "%s: .free RPC partial cancel failed for jobid "
+                                        "%jd",
+                                        __FUNCTION__,
+                                        static_cast<intmax_t> (id));
+                        errno = EINVAL;
+                        goto out;
+                    }
+                } else {
+                    // Run a full cancel to clean up all remaining allocated resources
+                    if (cancel (h, job_it->second->id, true) != 0) {
+                        flux_log_error (flux_h,
+                                        "%s: .free RPC full cancel failed for jobid "
+                                        "%jd",
+                                        __FUNCTION__,
+                                        static_cast<intmax_t> (id));
+                        errno = EPROTO;
+                        goto out;
+                    }
+                    full_removal = true;
                 }
                 // We still want to run the sched loop even if there's an inconsistent state
                 set_schedulability (true);
@@ -664,24 +678,17 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                     job_it->second->state = job_state_kind_t::COMPLETE;
                     // hold a reference to the shared_ptr to keep it alive
                     // during cancel
-                    auto job_sp = job_it->second;
                     m_jobs.erase (job_it);
-                    if (final && !full_removal) {
-                        // This error condition indicates a discrepancy between core and sched.
+                    if (full_removal && !final) {
+                        // This error condition can indicate a discrepancy between core and sched,
+                        // specifically that a partial cancel removed an allocation prior to
+                        // receiving the final .free RPC from core.
                         flux_log_error (flux_h,
-                                        "%s: Final .free RPC failed to remove all resources for "
+                                        "%s: removed allocation before final .free RPC for "
                                         "jobid "
                                         "%jd",
                                         __FUNCTION__,
                                         static_cast<intmax_t> (id));
-                        // Run a full cancel to clean up all remaining allocated resources
-                        if (cancel (h, job_sp->id, true) != 0) {
-                            flux_log_error (flux_h,
-                                            "%s: .free RPC full cancel failed for jobid "
-                                            "%jd",
-                                            __FUNCTION__,
-                                            static_cast<intmax_t> (id));
-                        }
                         errno = EPROTO;
                         goto out;
                     }
