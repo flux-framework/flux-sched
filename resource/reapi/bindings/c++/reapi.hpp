@@ -190,6 +190,21 @@ class reapi_t {
         return -1;
     }
 
+    /*! Update the resource state with R.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param R_subgraph R string of std::string.
+     *  \return          0 on success; -1 on error.
+     */
+    static int grow (void *h,
+                     const std::string &R_subgraph)
+    {
+        return -1;
+    }
+
     /*! Cancel the allocation or reservation corresponding to jobid.
      *
      *  \param h         Opaque handle. How it is used is an implementation
