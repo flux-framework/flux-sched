@@ -190,6 +190,22 @@ class reapi_t {
         return -1;
     }
 
+    /*! Add a subgraph to the resource graph with R_subgraph.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param R_subgraph JGF string of subgraph to attach to existing resources.
+     *                   Supports adding a JGF subgraph including the path from the
+     *                   cluster root to the subgraph root.
+     *  \return          0 on success; -1 on error.
+     */
+    static int add_subgraph (void *h, const std::string &R_subgraph)
+    {
+        return -1;
+    }
+
     /*! Cancel the allocation or reservation corresponding to jobid.
      *
      *  \param h         Opaque handle. How it is used is an implementation
