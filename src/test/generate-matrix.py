@@ -265,13 +265,15 @@ matrix.add_build(
 
 # RHEL8 clone
 matrix.add_build(
-    name="el8",
+    name="el8 - test-install",
     image="el8",
     env=dict(
+        TEST_INSTALL="t",
         # this is _required_ because of valgrind's new dependency on python3.11
         # which confuses rhel8 cmake's detection logic
-        PYTHON="/usr/bin/python3.6"
+        PYTHON="/usr/bin/python3.6",
     ),
+    docker_tag=True,
 )
 
 print(matrix)
