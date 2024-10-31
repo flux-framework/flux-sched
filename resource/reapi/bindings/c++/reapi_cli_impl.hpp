@@ -166,6 +166,21 @@ int reapi_cli_t::update_allocate (void *h,
     return NOT_YET_IMPLEMENTED;
 }
 
+int reapi_cli_t::add_subgraph (void *h, const std::string &R_subgraph)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    rq->clear_resource_query_err_msg ();
+    if ((rc = rq->add_subgraph (R_subgraph)) != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: add subgraph error: " + std::string (strerror (errno)) + "\n";
+        m_err_msg += rq->get_resource_query_err_msg () + "\n";
+    }
+
+    return rc;
+}
+
 int reapi_cli_t::match_allocate_multi (void *h,
                                        bool orelse_reserve,
                                        const char *jobs,
@@ -736,6 +751,44 @@ int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bo
         m_err_msg += traverser->err_message ();
     }
 
+    return rc;
+}
+
+int resource_query_t::add_subgraph (const std::string &R_subgraph)
+{
+    int rc = -1;
+    std::shared_ptr<resource_reader_base_t> reader;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+
+    if (R_subgraph == "") {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: subgraph string is empty\n";
+        errno = EINVAL;
+        return rc;
+    }
+    if (params.load_format != "jgf") {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: adding to a resource graph not ";
+        m_err_msg += " initialized with JGF is unsupported\n";
+        errno = ENOTSUP;
+        return rc;
+    }
+    if ((reader = create_resource_reader ("jgf")) == nullptr) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: can't create JGF reader\n";
+        return rc;
+    }
+    if ((rc = reader->unpack_at (db->resource_graph, db->metadata, v, R_subgraph, -1)) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reader returned error: ";
+        m_err_msg += reader->err_message () + "\n";
+        return rc;
+    }
+    if ((rc = traverser->initialize (db, matcher)) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reinitializing traverser after adding subgraph. ";
+        m_err_msg += reader->err_message () + "\n";
+    }
     return rc;
 }
 
