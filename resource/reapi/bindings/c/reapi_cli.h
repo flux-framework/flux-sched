@@ -140,6 +140,18 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
                                double *ov,
                                const char **R_out);
 
+/*! Update the resource state with R.
+    *
+    *  \param h         Opaque handle. How it is used is an implementation
+    *                   detail. However, when it is used within a Flux's
+    *                   service module, it is expected to be a pointer
+    *                   to a flux_t object.
+    *  \param R_subgraph R string
+    *  \return          0 on success; -1 on error.
+    */
+int reapi_cli_grow (reapi_cli_ctx_t *ctx,
+                    const char *R_subgraph);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_cli_ctx_t context object
