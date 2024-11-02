@@ -423,8 +423,13 @@ extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
         goto done;
     }
     for (i = 0; i < it->second.size (); ++i) {
-        if (planner_rem_span (ctx->plan_multi->get_planner_at (i), it->second[i]) == -1)
-            goto done;
+        // If executed after partial cancel, depending on pruning filter settings
+        // some spans may no longer exist. In that case the span_lookup value for
+        // the resource type will be -1.
+        if (it->second[i] != -1) {
+            if (planner_rem_span (ctx->plan_multi->get_planner_at (i), it->second[i]) == -1)
+                goto done;
+        }
     }
     ctx->plan_multi->get_span_lookup ().erase (it);
     rc = 0;
