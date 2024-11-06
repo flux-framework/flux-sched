@@ -75,7 +75,7 @@ set( CMAKE_BUILD_RPATH
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64:${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
 # Setting the include directory for the application to find config.h
@@ -131,9 +131,16 @@ pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.66 REQUIRED COMPONENTS
+find_package(Boost CONFIG 1.66 COMPONENTS
   graph
-  )
+)
+# if the upstream boost cmake config is not found, fall back
+# TODO: remove this when we require 1.70+
+if (NOT Boost_FOUND)
+  find_package(Boost 1.66 REQUIRED COMPONENTS
+    graph
+    )
+endif ()
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths

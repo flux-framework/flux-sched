@@ -1,7 +1,5 @@
-add_library(intern SHARED
+add_library(intern STATIC
         interner.cpp)
-install(TARGETS intern
-        LIBRARY)
 
 add_executable(interned_string_test test/interned_string_test.cpp)
 add_sanitizers(interned_string_test)
