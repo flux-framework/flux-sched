@@ -1,3 +1,19 @@
+flux-sched version 0.40.0 - 2024-11-06
+--------------------------------------
+
+### Fixes
+ * Resource: support partial cancel of resources external to broker
+   ranks (#1292)
+ * readers: allow id of -1 in JGF (#1304)
+ * readers: fix rv1exec cancel with multiple entries in `R_lite` array
+   (#1307)
+ * traverser: don't prune traversal by leaf vertex subplans (#1314)
+
+### Build/Testsuite
+ * matrix: add el8 tag and make it test-install (#1311)
+ * libintern: fold into libfluxion-data (#1312)
+
+
 flux-sched version 0.39.0 - 2024-10-01
 --------------------------------------
 
