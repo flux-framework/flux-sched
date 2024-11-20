@@ -346,6 +346,41 @@ class dfu_impl_t {
     bool get_eff_exclusive (bool x, bool mod) const;
     unsigned get_eff_needs (unsigned needs, unsigned size, bool mod) const;
 
+    // struct to convert map of resources counts to an index
+    struct Key {
+        Key ();
+        Key (const std::map<resource_type_t, int> &c)
+        {
+            counts = c;
+        };
+
+        std::map<resource_type_t, int> counts;
+
+        bool operator== (const Key &other) const
+        {
+            if (counts.size () != other.counts.size ())
+                return false;
+
+            for (auto &it : counts) {
+                if (it.second != other.counts.at (it.first))
+                    return false;
+            }
+            return true;
+        }
+    };
+
+    // Custom hashing function for resource counts map
+    struct Hash {
+        std::size_t operator() (const Key &k) const
+        {
+            std::size_t seed = 0;
+            for (auto &it : k.counts) {
+                boost::hash_combine (seed, it.second);
+            }
+            return seed;
+        }
+    };
+
     /*! Various pruning methods
      */
     int by_avail (const jobmeta_t &meta,
@@ -467,11 +502,13 @@ class dfu_impl_t {
                   bool prestine,
                   bool *excl,
                   scoring_api_t &dfu);
-    std::tuple<std::string, int, int> select_or_config (
+    // std::size_t hash_value(std::map<resource_type_t, int> counts);
+    std::tuple<std::map<resource_type_t, int>, int, int> select_or_config (
         const std::vector<Jobspec::Resource> &slots,
         std::map<resource_type_t, int> resource_counts,
         unsigned int nslots,
-        std::map<std::string, std::tuple<std::string, int, int>> &or_config);
+        std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash>
+            &or_config);
     int dom_or_slot (const jobmeta_t &meta,
                      vtx_t u,
                      const std::vector<Jobspec::Resource> &resources,
