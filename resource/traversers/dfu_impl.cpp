@@ -752,22 +752,18 @@ done:
     return (qual_num_slots) ? 0 : -1;
 }
 
-std::tuple<std::string, int, int> dfu_impl_t::select_or_config (
+std::tuple<std::map<resource_type_t, int>, int, int> dfu_impl_t::select_or_config (
     const std::vector<Resource> &slots,
     std::map<resource_type_t, int> resource_counts,
     unsigned int nslots,
-    std::map<std::string, std::tuple<std::string, int, int>> &or_config)
+    std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash> &or_config)
 {
     int best = -1;
     int i = -1;
-    std::string index = "";
-
-    // generate or_config index based on resource counts
-    for (auto it : resource_counts)
-        index = index + std::to_string (it.second) + " ";
+    Key index = Key (resource_counts);
 
     // if available, use precomputed result
-    auto it = or_config.find (index);
+    auto it = or_config.find (resource_counts);
     if (it != or_config.end ())
         return it->second;
 
@@ -776,7 +772,6 @@ std::tuple<std::string, int, int> dfu_impl_t::select_or_config (
         ++i;
         bool match = true;
         std::map<resource_type_t, int> updated_counts;
-        std::string updated_index = "";
         updated_counts = resource_counts;
 
         // determine if there are enough resources to match with this or_slot
@@ -792,14 +787,10 @@ std::tuple<std::string, int, int> dfu_impl_t::select_or_config (
         if (!match)
             continue;
 
-        // find the best score after using resources from this or_slot
-        for (auto it : updated_counts)
-            updated_index = updated_index + std::to_string (it.second) + " ";
-
         test = std::get<1> (select_or_config (slots, updated_counts, nslots, or_config));
         if (best < test) {
             best = test;
-            or_config[index] = std::make_tuple (updated_index, best + 1, i);
+            or_config[index] = std::make_tuple (updated_counts, best + 1, i);
         }
     }
 
@@ -807,7 +798,8 @@ std::tuple<std::string, int, int> dfu_impl_t::select_or_config (
     // score represents the total number of or_slots that can be scheduled
     // with optimal selection of or_slots
     if (best < 0) {
-        or_config[index] = std::make_tuple ("", best + 1, -1);
+        std::map<resource_type_t, int> empty;
+        or_config[index] = std::make_tuple (empty, best + 1, -1);
     }
     return or_config[index];
 }
@@ -826,8 +818,8 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta,
     const subsystem_t &dom = m_match->dom_subsystem ();
     std::unordered_set<edg_t *> edges_used;
     scoring_api_t dfu_slot;
-    std::map<std::string, std::tuple<std::string, int, int>> or_config;
-    std::tuple<std::string, int, int> current_config;
+    std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash> or_config;
+    std::tuple<std::map<resource_type_t, int>, int, int> current_config;
 
     // collect a set of all resource types in the or_slots to get resource
     // counts. This does not work well with non leaf vertex resources because
@@ -899,7 +891,7 @@ int dfu_impl_t::dom_or_slot (const jobmeta_t &meta,
         edg_group.exclusive = 1;
         edg_group_vector.push_back (edg_group);
 
-        current_config = or_config[std::get<0> (current_config)];
+        current_config = or_config[Key (std::get<0> (current_config))];
     }
     for (auto &edg_group : edg_group_vector)
         dfu.add (dom, or_slot_rt, edg_group);
