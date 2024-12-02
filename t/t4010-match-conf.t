@@ -25,7 +25,9 @@ start_resource () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux ion-resource params >${outfile}"
+"flux module reload -f sched-fluxion-feasibility && "\
+"flux ion-resource params >${outfile} && "\
+"flux dmesg"
 }
 start_resource_noconfig () {
     local outfile=$1; shift
@@ -34,7 +36,9 @@ start_resource_noconfig () {
 "flux module reload -f sched-fluxion-resource ${RESOURCE_OPTIONS} && "\
 "flux module reload -f sched-fluxion-qmanager && "\
 "flux module stats sched-fluxion-qmanager && "\
-"flux ion-resource params >${outfile}"
+"flux module reload -f sched-fluxion-feasibility && "\
+"flux ion-resource params >${outfile} && "\
+"flux dmesg"
 }
 check_load_file(){
     test $(jq '.params."load-file"' ${1}) = ${2}
@@ -71,7 +75,8 @@ test_expect_success 'resource: sched-fluxion-resource loads with no config' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with valid toml' '
@@ -85,7 +90,8 @@ test_expect_success 'resource: sched-fluxion-resource loads with valid toml' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 200000 &&
-    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: module load options take precedence' '
@@ -100,7 +106,8 @@ test_expect_success 'resource: module load options take precedence' '
     check_match_format ${outfile} "\"rv1\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 200000 &&
-    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with no keys' '
@@ -114,7 +121,8 @@ test_expect_success 'resource: sched-fluxion-resource loads with no keys' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
@@ -128,14 +136,16 @@ test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 200000 &&
-    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: load must tolerate an invalid policy' '
     conf_name="09-invalid-policy" &&
     outfile=${conf_name}.out &&
     start_resource ${conf_base}/${conf_name} ${outfile} &&
-    check_match_policy ${outfile} "\"first\""
+    check_match_policy ${outfile} "\"first\"" &&
+    cat ${outfile}
 '
 
 test_expect_success 'resource: load must fail on a bad value' '
