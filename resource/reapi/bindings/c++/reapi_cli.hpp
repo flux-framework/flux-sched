@@ -89,6 +89,7 @@ class resource_query_t {
     void set_job (const uint64_t jobid, const std::shared_ptr<job_info_t> &job);
     int remove_job (const uint64_t jobid);
     int remove_job (const uint64_t jobid, const std::string &R, bool &full_removal);
+    int grow (const std::string &R_subgraph);
     void incr_job_counter ();
 
     /* Run the traverser to match the jobspec */
@@ -148,6 +149,7 @@ class reapi_cli_t : public reapi_t {
                                 int64_t &at,
                                 double &ov,
                                 std::string &R_out);
+    static int grow (void *h, const std::string &R_subgraph);
     static int cancel (void *h, const uint64_t jobid, bool noent_ok);
     static int cancel (void *h,
                        const uint64_t jobid,
