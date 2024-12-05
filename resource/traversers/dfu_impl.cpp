@@ -177,6 +177,14 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
     int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
+    if (!p) {
+        // Subplan is null if u is a leaf.
+        // TODO: handle the unlikely case
+        // where the subplan is null for another
+        // reason
+        rc = 0;
+        goto done;
+    }
     if (resource.user_data.empty ()) {
         // If user_data is empty, no data is available to prune with.
         rc = 0;

@@ -1,5 +1,12 @@
 add_library(fluxion-data SHARED schema/data_std.cpp)
-install(TARGETS fluxion-data LIBRARY)
+target_link_libraries(fluxion-data PRIVATE
+    intern
+    )
+set_target_properties(fluxion-data PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    )
+install(TARGETS fluxion-data LIBRARY NAMELINK_SKIP)
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
 set(RESOURCE_HEADERS 
@@ -79,7 +86,6 @@ add_library(resource STATIC
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
-    intern
     )
 target_link_libraries(resource PUBLIC
     flux::hostlist
@@ -89,7 +95,6 @@ target_link_libraries(resource PUBLIC
     PkgConfig::UUID
     Boost::graph
     jobspec_conv
-    fluxion-data
     )
 add_sanitizers(resource)
 
