@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+#include "policies/base/dfu_match_cb.hpp"
 extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
@@ -114,6 +115,15 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     int64_t njobs = -1;
     int saved_errno = errno;
     uint64_t duration = meta.duration;
+
+    // If a non-exclusive resource request is explicitly given on a
+    // resource that lies under slot, this spec is invalid.
+    /*if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {*/
+    /*    errno = EINVAL;*/
+    /*    m_err_msg += "by_excl: exclusivity conflicts at jobspec=";*/
+    /*    m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;*/
+    /*    goto done;*/
+    /*}*/
 
     // If a resource request is under slot or an explicit exclusivity is
     // requested, we check the validity of the visiting vertex using
@@ -680,9 +690,13 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         }
         edg_group.score = score;
         edg_group.count = 1;
+        /*edg_group.exclusive = static_cast<int>(*excl);*/
         edg_group.exclusive = x_inout;
         edg_group_vector.push_back (edg_group);
     }
+    // Passing on the slot  dfu wieghts to parents for preference and initializing the current dfu with average of its children
+    dfu.set_overall_score(dfu_slot.get_children_avearge_score());
+    dfu.set_children_score_vector(dfu_slot.get_children_score_vector());
     for (auto &edg_group : edg_group_vector)
         dfu.add (dom, slot_rt, edg_group);
 
@@ -717,15 +731,16 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
         || (m_match->dom_discover_vtx (u, dom, resources, *m_graph) != 0))
         goto done;
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
+    /*std::cout << "dom_dfv " << (*m_graph)[u].name << " sm " << static_cast<int> (sm) << std::endl;*/
     if (sm == match_kind_t::SLOT_MATCH)
         dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
     else
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
-
     p = (*m_graph)[u].schedule.plans;
     if ((avail = planner_avail_resources_during (p, at, duration)) == 0) {
+        std::cout << "node " << (*m_graph)[u].name << "planner bailed out" << std::endl;
         goto done;
     } else if (avail == -1) {
         m_err_msg += "dom_dfv: planner_avail_resources_during returned -1.\n";
@@ -733,12 +748,17 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
         m_err_msg += ".\n";
         goto done;
     }
-    if (m_match->dom_finish_vtx (u, dom, resources, *m_graph, dfu) != 0)
+    if (m_match->dom_finish_vtx (u, dom, resources, *m_graph, dfu, (traverser_match_kind_t)sm) != 0)
         goto done;
     if ((rc = resolve (dfu, to_parent)) != 0)
         goto done;
+    to_parent.add_element_to_child_score (dfu.overall_score ());
+    int64_t average;
+    average = to_parent.get_children_avearge_score ();
     to_parent.set_avail (avail);
-    to_parent.set_overall_score (dfu.overall_score ());
+    to_parent.set_overall_score (average);
+    /*std::cout << "Node " << (*m_graph)[u].name << " score is " << dfu.overall_score() << std::endl;*/
+    /*std::cout << "to parent score is " << to_parent.overall_score() << std::endl;*/
 
     for (auto &resource : resources) {
         if ((resource.type == (*m_graph)[u].type) && (!resource.label.empty ())) {
