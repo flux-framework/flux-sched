@@ -115,15 +115,6 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     int saved_errno = errno;
     uint64_t duration = meta.duration;
 
-    // If a non-exclusive resource request is explicitly given on a
-    // resource that lies under slot, this spec is invalid.
-    if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
-        errno = EINVAL;
-        m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
-        m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
-        goto done;
-    }
-
     // If a resource request is under slot or an explicit exclusivity is
     // requested, we check the validity of the visiting vertex using
     // its x_checker planner.
@@ -649,7 +640,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                           scoring_api_t &dfu)
 {
     int rc;
-    bool x_inout = true;
+    bool x_inout = *excl;
     scoring_api_t dfu_slot;
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
@@ -680,7 +671,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
                                    (*egroup_i).edges[0].count,
-                                   1,
+                                   x_inout,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
@@ -689,7 +680,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         }
         edg_group.score = score;
         edg_group.count = 1;
-        edg_group.exclusive = 1;
+        edg_group.exclusive = x_inout;
         edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
