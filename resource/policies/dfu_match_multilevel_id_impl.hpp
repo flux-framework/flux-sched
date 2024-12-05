@@ -12,6 +12,7 @@
 #define DFU_MATCH_MULTILEVEL_ID_IMPL_HPP
 
 #include <numeric>
+#include "policies/base/dfu_match_cb.hpp"
 #include "resource/policies/dfu_match_multilevel_id.hpp"
 
 namespace Flux {
@@ -151,7 +152,8 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (vtx_t u,
                                            subsystem_t subsystem,
                                            const std::vector<Flux::Jobspec::Resource> &resources,
                                            const resource_graph_t &g,
-                                           scoring_api_t &dfu)
+                                           scoring_api_t &dfu,
+                                           traverser_match_kind_t sm)
 {
     int64_t score = MATCH_MET;
     int64_t overall;

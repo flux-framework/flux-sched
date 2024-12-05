@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 1 subsystem, cluster[1]->rack[1]->node[8]->socket[2]->core[18]  -->
+
+<!-- Memory pool is modeled as 4 x 32GB                              -->
+
+
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+        http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
+
+    <!-- resource pool vertex generation spec attributes -->
+    <key id="root" for="node" attr.name="root" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="type" for="node" attr.name="type" attr.type="string"/>
+    <key id="basename" for="node" attr.name="basename" attr.type="string"/>
+    <key id="unit" for="node" attr.name="unit" attr.type="string"/>
+    <key id="size" for="node" attr.name="size" attr.type="long">
+        <default>1</default>
+    </key>
+    <key id="subsystem" for="node" attr.name="subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+
+    <!-- resource relationship generation attributes     -->
+    <key id="e_subsystem" for="edge" attr.name="e_subsystem" attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="relation" for="edge" attr.name="relation" attr.type="string">
+        <default>contains</default>
+    </key>
+    <key id="rrelation" for="edge" attr.name="rrelation" attr.type="string">
+        <default>in</default>
+    </key>
+
+    <!-- id generation method                             -->
+    <key id="id_scope" for="edge" attr.name="id_scope" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_start" for="edge" attr.name="id_start" attr.type="int">
+        <default>0</default>
+    </key>
+    <key id="id_stride" for="edge" attr.name="id_stride" attr.type="int">
+        <default>1</default>
+    </key>
+
+    <!-- resource gen method: multiply or associate-in   -->
+    <key id="gen_method" for="edge" attr.name="gen_method" attr.type="string">
+        <default>MULTIPLY</default>
+    </key>
+    <!-- argument (scaling factor) for multiply method   -->
+    <key id="multi_scale" for="edge" attr.name="multi_scale" attr.type="int">
+        <default>1</default>
+    </key>
+    <!-- 3 arguments for associate-in method             -->
+    <key id="as_tgt_subsystem" for="edge" attr.name="as_tgt_subsystem"
+             attr.type="string">
+        <default>containment</default>
+    </key>
+    <key id="as_tgt_uplvl" for="edge" attr.name="as_tgt_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+    <key id="as_src_uplvl" for="edge" attr.name="as_src_uplvl" attr.type="int">
+        <default>1</default>
+    </key>
+
+
+    <!-- generation recipe for the small cluster         -->
+    <graph id="small" edgedefault="directed">
+
+        <!-- containment subsystem generation recipe    -->
+        <node id="cluster">
+            <data key="root">1</data>
+            <data key="type">cluster</data>
+            <data key="basename">small</data>
+        </node>
+        <node id="rack">
+            <data key="type">rack</data>
+            <data key="basename">rack</data>
+        </node>
+        <node id="node">
+            <data key="type">node</data>
+            <data key="basename">node</data>
+        </node>
+        <node id="socket">
+            <data key="type">socket</data>
+            <data key="basename">socket</data>
+        </node>
+        <node id="core">
+            <data key="type">core</data>
+            <data key="basename">core</data>
+        </node>
+        <node id="gpu">
+            <data key="type">gpu</data>
+            <data key="basename">gpu</data>
+        </node>
+        <node id="gpu_mps">
+            <data key="type">gpu_mps</data>
+            <data key="basename">gpu_mps</data>
+        </node>
+        <node id="memory">
+            <data key="type">memory</data>
+            <data key="basename">memory</data>
+            <data key="size">32</data>
+            <data key="unit">GB</data>
+        </node>
+
+        <edge id="cluster2rack" source="cluster" target="rack">
+            <data key="multi_scale">1</data>
+        </edge>
+        <edge id="rack2node" source="rack" target="node">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">2</data>
+          </edge>
+        <edge id="node2socket" source="node" target="socket">
+            <data key="multi_scale">1</data>
+        </edge>
+        <edge id="socket2core" source="socket" target="core">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">8</data>
+        </edge>
+        <edge id="socket2gpu" source="socket" target="gpu">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">2</data>
+        </edge>
+        <edge id="gpu2gpu_mps" source="gpu" target="gpu_mps">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">2</data>
+        </edge>
+        <edge id="socket2memory" source="socket" target="memory">
+            <data key="id_scope">1</data>
+            <data key="multi_scale">4</data>
+        </edge>
+    </graph>
+</graphml>
+

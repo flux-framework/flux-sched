@@ -69,7 +69,7 @@ int dfu_match_cb_t::dom_finish_vtx (vtx_t u,
                                     subsystem_t subsystem,
                                     const std::vector<Flux::Jobspec::Resource> &resources,
                                     const resource_graph_t &g,
-                                    scoring_api_t &dfu)
+                                    scoring_api_t &dfu,traverser_match_kind_t sm)
 {
     m_trav_level--;
     return 0;
@@ -92,6 +92,9 @@ int dfu_match_cb_t::aux_finish_vtx (vtx_t u,
                                     scoring_api_t &dfu)
 {
     m_trav_level--;
+    return 0;
+}
+int dfu_match_cb_t::dom_node_emit(vtx_t u,subsystem_t subsytem,const resource_graph_t &g,unsigned int needs )  {
     return 0;
 }
 

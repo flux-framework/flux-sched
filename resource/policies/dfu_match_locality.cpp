@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+#include "policies/base/dfu_match_cb.hpp"
 extern "C" {
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -82,7 +83,7 @@ int greater_interval_first_t::dom_finish_vtx (vtx_t u,
                                               subsystem_t subsystem,
                                               const std::vector<Flux::Jobspec::Resource> &resources,
                                               const resource_graph_t &g,
-                                              scoring_api_t &dfu)
+                                              scoring_api_t &dfu,traverser_match_kind_t sm)
 {
     int64_t score = MATCH_MET;
     int64_t overall;

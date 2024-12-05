@@ -56,6 +56,11 @@ class scoring_api_t {
     void set_overall_score (int64_t overall);
     unsigned int avail ();
     void set_avail (unsigned int avail);
+    // Add scores to a vector that keeps the children score. Needed to show preferences above slot also
+    void add_element_to_child_score(int score);
+    std::vector<int64_t> get_children_score_vector();
+    void set_children_score_vector(const std::vector<int64_t> source);
+    int64_t get_children_avearge_score();
     bool is_contained (subsystem_t s, resource_type_t const &r);
 
     template<class compare_op = fold::greater, class binary_op = fold::plus>
@@ -99,6 +104,7 @@ class scoring_api_t {
 
    private:
     intern::interned_key_vec<subsystem_t, std::map<resource_type_t, detail::evals_t>> m_ssys_map;
+    std::vector<int64_t> children_score_list;
     bool m_hier_constrain_now = false;
     int64_t m_overall_score = -1;
     unsigned int m_avail = 0;

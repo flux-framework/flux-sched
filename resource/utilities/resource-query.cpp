@@ -141,6 +141,7 @@ OPTIONS:
                 locality: Select contiguous resources first in their ID space
                 variation: Allocate resources based on performance classes.
                                 (perf_class must be set using set-property).
+                cosched: Make scheduler aware of GPU MPS configurations.
                 (default=first).
 
     -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>

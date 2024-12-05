@@ -112,6 +112,10 @@ void scoring_api_t::merge (const scoring_api_t &o)
     }
 }
 
+void scoring_api_t::add_element_to_child_score (int score)
+{
+    children_score_list.push_back (score);
+}
 void scoring_api_t::resrc_types (subsystem_t s, std::vector<resource_type_t> &v)
 {
     for (auto &kv : m_ssys_map[s])
@@ -139,7 +143,22 @@ void scoring_api_t::set_avail (unsigned int avail)
 {
     m_avail = avail;
 }
-
+void scoring_api_t::set_children_score_vector (const std::vector<int64_t> source)
+{
+    children_score_list = source;
+}
+std::vector<int64_t> scoring_api_t::get_children_score_vector ()
+{
+    return children_score_list;
+}
+int64_t scoring_api_t::get_children_avearge_score ()
+{
+    if (children_score_list.size () == 0)
+        return 0;
+    return static_cast<int64_t> (
+        std::accumulate (children_score_list.begin (), children_score_list.end (), 0LL)
+        / children_score_list.size ());
+}
 bool scoring_api_t::is_contained (subsystem_t s, resource_type_t const &r)
 {
     return m_ssys_map[s].contains (r);

@@ -20,6 +20,7 @@
 #include "resource/policies/dfu_match_var_aware.hpp"
 #include "resource/policies/dfu_match_multilevel_id.hpp"
 #include "resource/policies/dfu_match_multilevel_id_impl.hpp"
+#include "resource/policies/dfu_match_cosched_aware.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -34,6 +35,7 @@ const std::string LOW_NODEX_FIRST = "lonodex";
 const std::string HIGH_NODEX_FIRST = "hinodex";
 const std::string LOCALITY_AWARE = "locality";
 const std::string VAR_AWARE = "variation";
+const std::string COSCHED_AWARE = "cosched";
 
 bool known_match_policy (const std::string &policy);
 

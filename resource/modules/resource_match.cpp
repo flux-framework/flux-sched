@@ -1488,6 +1488,7 @@ static inline std::string get_status_string (int64_t now, int64_t at)
 
 static inline bool is_existent_jobid (const std::shared_ptr<resource_ctx_t> &ctx, uint64_t jobid)
 {
+
     return (ctx->jobs.find (jobid) != ctx->jobs.end ()) ? true : false;
 }
 
