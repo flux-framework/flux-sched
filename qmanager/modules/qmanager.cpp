@@ -280,7 +280,7 @@ out:
 
 static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
-    int len = 0;
+    size_t len = 0;
     const char *payload;
     flux_future_t *f = NULL;
 
@@ -310,7 +310,7 @@ static void feasibility_request_cb (flux_t *h,
                                     const flux_msg_t *msg,
                                     void *arg)
 {
-    int size = 0;
+    size_t size = 0;
     flux_future_t *f = nullptr;
     const char *data = nullptr;
 
