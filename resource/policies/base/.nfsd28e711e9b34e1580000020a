@@ -180,7 +180,7 @@ class dfu_match_cb_t : public matcher_data_t, public matcher_util_api_t {
      */
     virtual int get_stop_on_k_matches () const;
 
-    virtual int dom_node_emit(vtx_t u,subsystem_t subsytem,const resource_graph_t &g,unsigned int needs );
+    virtual int dom_node_emit(vtx_t u,subsystem_t subsytem,const resource_graph_t &g,unsigned int needs )  const;
  
     void incr ();
     void decr ();

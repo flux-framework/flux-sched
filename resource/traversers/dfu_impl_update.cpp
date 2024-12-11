@@ -259,6 +259,11 @@ int dfu_impl_t::upd_sched (vtx_t u,
         goto done;
     }
     if (n > 0) {
+        if(m_match->dom_node_emit(u,s,*m_graph,needs)==-1){
+
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": matcher dom_node_emit returned -1.\n";
+        }
         if ((rc = emit_vtx (u, writers, needs, excl)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_vtx returned -1.\n";

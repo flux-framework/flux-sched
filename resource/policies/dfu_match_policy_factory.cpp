@@ -26,7 +26,7 @@ bool known_match_policy (const std::string &policy)
     if (policy != FIRST_MATCH && policy != FIRST_NODEX_MATCH && policy != HIGH_ID_FIRST
         && policy != LOW_ID_FIRST && policy != LOW_NODE_FIRST && policy != HIGH_NODE_FIRST
         && policy != LOW_NODEX_FIRST && policy != HIGH_NODEX_FIRST && policy != LOCALITY_AWARE
-        && policy != VAR_AWARE)
+        && policy != VAR_AWARE && policy != COSCHED_AWARE)
         rc = false;
 
     return rc;
@@ -65,6 +65,9 @@ std::shared_ptr<dfu_match_cb_t> create_match_cb (const std::string &policy)
             matcher = std::make_shared<greater_interval_first_t> ();
         } else if (policy == VAR_AWARE) {
             matcher = std::make_shared<var_aware_t> ();
+        }else if(policy ==  COSCHED_AWARE){
+            matcher = std::make_shared<cosched_aware_t> ();
+
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;

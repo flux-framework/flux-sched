@@ -1,0 +1,27 @@
+version: 9999
+resources:
+  - type: node
+    count: 4
+    with:
+        - type: socket
+          count: 1
+          with:
+            - type: slot
+              label: default
+              count: 1
+              with:
+                - type: core
+                  count: 4
+                - type: gpu
+                  count: 4
+# a comment
+attributes:
+  system:
+    duration: 720
+    cosched: true
+    c_r: true
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

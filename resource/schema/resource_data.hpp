@@ -47,7 +47,7 @@ struct resource_pool_t : public resource_t {
     int64_t uniq_id;
     unsigned int size = 0;
     std::string unit;
-
+    unsigned mps_data = 0;
     schedule_t schedule;  //!< schedule data
     pool_infra_t idata;   //!< scheduling infrastructure data
     status_t status = status_t::UP;
