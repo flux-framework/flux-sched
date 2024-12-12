@@ -130,6 +130,25 @@ done:
     return rc;
 }
 
+int expr_eval_vtx_target_t::extract (
+    const std::string &p,
+    const std::string &x,
+    std::vector<std::pair<std::string, std::string>> &predicates) const
+{
+    int rc = 0;
+    std::string lcx = x;
+
+    if (!m_initialized) {
+        errno = EINVAL;
+        rc = -1;
+        goto done;
+    }
+    std::transform (x.begin (), x.end (), lcx.begin (), ::tolower);
+    predicates.push_back ({p, lcx});
+done:
+    return rc;
+}
+
 void expr_eval_vtx_target_t::initialize (const vtx_predicates_override_t &p,
                                          const resource_graph_t *g,
                                          vtx_t u)
