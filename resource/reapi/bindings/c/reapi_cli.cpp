@@ -193,7 +193,7 @@ extern "C" int reapi_cli_grow (reapi_cli_ctx_t *ctx,
         errno = EINVAL;
         return -1;
     }
-    return reapi_cli_t::grow (ctx->rqt, R_subgraph)
+    return reapi_cli_t::grow (ctx->rqt, R_subgraph);
 }
 
 extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok)
