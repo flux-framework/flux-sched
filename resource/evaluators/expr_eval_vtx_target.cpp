@@ -127,6 +127,37 @@ done:
     return rc;
 }
 
+int expr_eval_vtx_target_t::extract (const std::string &p,
+                                     const std::string &x,
+                                     unsigned long &jobid,
+                                     bool &agfilter) const
+{
+    int rc = 0;
+    std::string lcx = x;
+
+    if (!m_initialized) {
+        errno = EINVAL;
+        rc = -1;
+        goto done;
+    }
+    std::transform (x.begin (), x.end (), lcx.begin (), ::tolower);
+    if (p == "jobid-alloc" || p == "jobid-span" || p == "jobid-tag" || p == "jobid-reserved") {
+        try {
+            jobid = std::stoul (lcx);
+        } catch (std::invalid_argument) {
+            errno = EINVAL;
+            rc = -1;
+        } catch (std::out_of_range) {
+            errno = EINVAL;
+            rc = -1;
+        }
+    } else if (p == "agfilter") {
+        agfilter = true;
+    }
+done:
+    return rc;
+}
+
 void expr_eval_vtx_target_t::initialize (const vtx_predicates_override_t &p,
                                          const resource_graph_t *g,
                                          vtx_t u)

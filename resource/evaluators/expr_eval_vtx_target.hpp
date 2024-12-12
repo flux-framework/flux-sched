@@ -71,6 +71,20 @@ class expr_eval_vtx_target_t : public expr_eval_target_base_t {
      */
     virtual int evaluate (const std::string &p, const std::string &x, bool &result) const;
 
+    /*! Extract jobid and agfilter bool if provided.
+     *
+     *  \param expr      expression string
+     *  \param target    expression evaluation target
+     *  \param jobid     jobid optionally specified in expression
+     *  \param agfilter  bool optionally specified in expression
+     *                   of expr_eval_target_base_t type
+     *  \return          0 on success; -1 on error
+     */
+    virtual int extract (const std::string &p,
+                         const std::string &x,
+                         unsigned long &jobid,
+                         bool &agfilter) const override;
+
     /*! Initialize the object of this class with a resource vertex.
      *  This must be called before the validate and evaluate interfaces
      *  can be used.

@@ -234,6 +234,30 @@ done:
     return rc;
 }
 
+int expr_eval_api_t::extract_leaf (const std::string &e,
+                                   const expr_eval_target_base_t &target,
+                                   unsigned long &jobid,
+                                   bool &agfilter)
+{
+    int rc = -1;
+    std::size_t delim;
+    std::string key, value;
+
+    if ((delim = e.find_first_of ("=")) == std::string::npos) {
+        errno = EINVAL;
+        goto done;
+    }
+    key = e.substr (0, delim);
+    value = e.substr (delim + 1);
+    if ((rc = (&target)->extract (key, value, jobid, agfilter)) < 0) {
+        errno = EINVAL;
+        goto done;
+    }
+
+done:
+    return rc;
+}
+
 int expr_eval_api_t::evaluate_pred (pred_op_t op, bool result2, bool &result1) const
 {
     int rc = 0;
@@ -248,6 +272,34 @@ int expr_eval_api_t::evaluate_pred (pred_op_t op, bool result2, bool &result1) c
             rc = -1;
             errno = EINVAL;
     }
+    return rc;
+}
+
+int expr_eval_api_t::extract_paren (const std::string &e,
+                                    const expr_eval_target_base_t &target,
+                                    size_t at,
+                                    size_t &nx,
+                                    unsigned long &jobid,
+                                    bool &agfilter)
+{
+    int rc = -1;
+    std::size_t tok;
+    std::size_t len;
+
+    if (!is_paren (e, at)) {
+        if ((rc = parse_expr_leaf (e, at, tok, len)) < 0)
+            goto done;
+        if ((rc = extract_leaf (e.substr (tok, len), target, jobid, agfilter)) < 0)
+            goto done;
+    } else {
+        if ((rc = parse_expr_paren (e, at, tok, len)) < 0)
+            goto done;
+        if ((rc = extract (e.substr (tok + 1, len - 2), target, jobid, agfilter)) < 0)
+            goto done;
+    }
+    nx = tok + len;
+    rc = 0;
+done:
     return rc;
 }
 
@@ -309,6 +361,35 @@ int expr_eval_api_t::evaluate (const std::string &e,
         at = next;
     }
     result = result1;
+    rc = 0;
+
+done:
+    return rc;
+}
+
+int expr_eval_api_t::extract (const std::string &e,
+                              const expr_eval_target_base_t &target,
+                              unsigned long &jobid,
+                              bool &agfilter)
+{
+    int rc = -1;
+    pred_op_t op;
+    std::size_t next, at;
+
+    if ((rc = extract_paren (e, target, 0, next, jobid, agfilter)) < 0)
+        goto done;
+    at = next;
+
+    while (at <= e.find_last_not_of (" \t")) {
+        if ((op = parse_pred_op (e, at, next)) == pred_op_t::UNKNOWN) {
+            rc = -1;
+            goto done;
+        }
+        at = next;
+        if ((rc = extract_paren (e, target, at, next, jobid, agfilter)) < 0)
+            goto done;
+        at = next;
+    }
     rc = 0;
 
 done:
