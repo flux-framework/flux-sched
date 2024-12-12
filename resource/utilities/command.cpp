@@ -562,7 +562,10 @@ static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
         std::cerr << "ERROR: " << rd->err_message ();
         return -1;
     }
-    // TODO: reinitialize the traverser, see issue #1075
+    if (ctx->traverser->initialize (ctx->db, ctx->matcher) != 0) {
+        std::cerr << "ERROR: can't reinitialize traverser after attach" << std::endl;
+        return -1;
+    }
 
     return 0;
 }
