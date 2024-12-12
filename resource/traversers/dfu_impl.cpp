@@ -785,7 +785,9 @@ int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
 int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
                               const std::string &criteria,
                               vtx_t u,
-                              const vtx_predicates_override_t &p)
+                              const vtx_predicates_override_t &p,
+                              const uint64_t jobid,
+                              const bool agfilter)
 {
     int rc = -1;
     int nchildren = 0;
@@ -806,7 +808,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             if (stop_explore (*ei, s) || !in_subsystem (*ei, s))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
-            rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden)
+            rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden, jobid, agfilter)
                             : aux_find_upv (w, criteria, tgt, s, p_overridden);
             if (rc > 0) {
                 if (w->emit_edg (level (), *m_graph, *ei) < 0) {
@@ -828,6 +830,11 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
         goto done;
     } else if (!result && !nchildren) {
         goto done;
+    }
+    if (agfilter) {
+        // Check if there's a pruning (aggregate) filter initialized
+        if ((*m_graph)[u].idata.subplans[dom] == NULL)
+            goto done;
     }
 
     // Need to clear out any stale data from the ephemeral object before
@@ -1189,6 +1196,8 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     vtx_t root;
     expr_eval_vtx_target_t target;
     vtx_predicates_override_t p_overridden;
+    bool agfilter = false;
+    uint64_t jobid = 0;
 
     if (!m_match || !m_graph || !m_graph_db || !writers) {
         errno = EINVAL;
@@ -1206,10 +1215,15 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
         m_err_msg += ": invalid criteria: " + criteria + ".\n";
         goto done;
     }
+    if ((rc = m_expr_eval.extract (criteria, target, jobid, agfilter)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": failed extraction.\n";
+        goto done;
+    }
 
     tick ();
 
-    if ((rc = dom_find_dfv (writers, criteria, root, p_overridden)) < 0)
+    if ((rc = dom_find_dfv (writers, criteria, root, p_overridden, jobid, agfilter)) < 0)
         goto done;
 
     if (writers->emit_tm (0, 0) == -1) {
