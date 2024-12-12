@@ -47,7 +47,18 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
         rc = (lcx == "allocated" || lcx == "free") ? 0 : -1;
     else if (p == "sched-future")
         rc = (lcx == "reserved" || lcx == "free") ? 0 : -1;
-    else
+    else if (p == "jobid-alloc" || p == "jobid-span" || p == "jobid-tag" || p == "jobid-reserved") {
+        try {
+            std::stoul (lcx);
+            rc = 0;
+        } catch (std::invalid_argument) {
+            errno = EINVAL;
+        } catch (std::out_of_range) {
+            errno = ERANGE;
+        }
+    } else if (p == "agfilter") {
+        rc = (lcx == "true" || lcx == "t" || lcx == "false" || lcx == "f") ? 0 : -1;
+    } else
         errno = EINVAL;
 done:
     return rc;
@@ -59,7 +70,9 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
 {
     int rc = 0;
     std::string lcx = x;
+    unsigned long jobid = 0;
 
+    result = false;
     if ((rc = validate (p, x)) < 0)
         goto done;
     std::transform (x.begin (), x.end (), lcx.begin (), ::tolower);
@@ -84,6 +97,30 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
         } else if (lcx == "free") {
             result =
                 !m_overridden.sched_future_reserved && (*m_g)[m_u].schedule.reservations.empty ();
+        }
+    } else if (p == "jobid-alloc") {
+        jobid = std::stoul (lcx);
+        result = (*m_g)[m_u].schedule.allocations.contains (jobid);
+    } else if (p == "jobid-reserved") {
+        jobid = std::stoul (lcx);
+        result = (*m_g)[m_u].schedule.reservations.contains (jobid);
+    } else if (p == "jobid-span") {
+        jobid = std::stoul (lcx);
+        if (!(*m_g)[m_u].idata.job2span.contains (jobid)) {
+            goto done;
+        }
+        result = true;
+    } else if (p == "jobid-tag") {
+        jobid = std::stoul (lcx);
+        if (!(*m_g)[m_u].idata.tags.contains (jobid)) {
+            goto done;
+        }
+        result = true;
+    } else if (p == "agfilter") {
+        if (lcx == "true" || lcx == "t") {
+            result = true;
+        } else {
+            result = false;
         }
     } else {
         rc = -1;
