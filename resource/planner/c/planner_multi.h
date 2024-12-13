@@ -317,6 +317,16 @@ int planner_multi_reduce_span (planner_multi_t *ctx,
                                size_t len,
                                bool &removed);
 
+/*! Get the number of used resources of resource index i corresponding
+ *  to the provided span id.
+ *
+ *  \param ctx          opaque multi-planner context returned
+ *                      from planner_multi_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param i            index of the resource type to queried
+ */
+int64_t planner_multi_span_planned_at (planner_multi_t *ctx, int64_t span_id, unsigned int i);
+
 //! Span iterators -- there is no specific iteration order
 //  return -1 when you no longer can iterate: EINVAL when ctx is NULL.
 //  ENOENT when you reached the end of the spans
