@@ -551,9 +551,14 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
             ctx = nullptr;
             goto done;
         }
+        int schedutil_flags = 0;
+#ifdef SCHEDUTIL_HELLO_PARTIAL_OK
+        // flag was added in flux-core 0.70.0
+        schedutil_flags |= SCHEDUTIL_HELLO_PARTIAL_OK;
+#endif
         if (!(ctx->schedutil =
                   schedutil_create (ctx->h,
-                                    0,
+                                    schedutil_flags,
                                     &ops,
                                     std::static_pointer_cast<qmanager_cb_ctx_t> (ctx).get ()))) {
             flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
