@@ -553,7 +553,7 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
         }
         if (!(ctx->schedutil =
                   schedutil_create (ctx->h,
-                                    SCHEDUTIL_FREE_NOLOOKUP,
+                                    0,
                                     &ops,
                                     std::static_pointer_cast<qmanager_cb_ctx_t> (ctx).get ()))) {
             flux_log_error (ctx->h, "%s: schedutil_create", __FUNCTION__);
