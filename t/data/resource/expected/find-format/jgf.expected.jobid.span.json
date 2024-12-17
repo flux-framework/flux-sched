@@ -1,0 +1,35 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "metadata": {
+          "type": "node",
+          "basename": "cab",
+          "id": 1234,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234"
+          }
+        }
+      },
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "id": 0,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "1"
+      }
+    ]
+  }
+}
