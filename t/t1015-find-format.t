@@ -93,6 +93,13 @@ test_expect_success 'find/status: find status=up format=jgf works' '
     test_cmp jgf.query.json jgf.json
 '
 
+test_expect_success 'find/agfilter: find agfilter=true format=jgf works' '
+    flux ion-resource find --format=jgf agfilter=true \
+         | tail -1 > jgf.agfilter.raw.json &&
+    normalize_json < jgf.agfilter.raw.json > jgf.json &&
+    test_cmp ${expected_basepath}/jgf.expected.agfilter.json jgf.json
+'
+
 test_expect_success 'find/status: removing fluxion modules' '
     remove_qmanager &&
     remove_resource
