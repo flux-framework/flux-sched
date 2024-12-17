@@ -280,7 +280,6 @@ out:
 
 static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
-    size_t len = 0;
     const char *payload;
     flux_future_t *f = NULL;
 
@@ -288,12 +287,12 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.status)", __FUNCTION__);
         goto out;
     }
-    if (flux_rpc_get_raw (f, (const void **)&payload, &len) < 0) {
-        flux_log_error (h, "%s: flux_rpc_get_raw", __FUNCTION__);
+    if (flux_rpc_get (f, &payload) < 0) {
+        flux_log_error (h, "%s: flux_rpc_get", __FUNCTION__);
         goto out;
     }
-    if (flux_respond_raw (h, msg, (const void *)payload, len) < 0) {
-        flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
+    if (flux_respond (h, msg, payload) < 0) {
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
         goto out;
     }
     flux_future_destroy (f);
@@ -310,25 +309,19 @@ static void feasibility_request_cb (flux_t *h,
                                     const flux_msg_t *msg,
                                     void *arg)
 {
-    size_t size = 0;
     flux_future_t *f = nullptr;
     const char *data = nullptr;
 
-    if (flux_request_decode_raw (msg, nullptr, (const void **)&data, &size) < 0)
+    if (flux_request_decode (msg, nullptr, &data) < 0)
         goto error;
-    if (!(f = flux_rpc_raw (h,
-                            "sched-fluxion-resource.satisfiability",
-                            data,
-                            size,
-                            FLUX_NODEID_ANY,
-                            0))) {
+    if (!(f = flux_rpc (h, "sched-fluxion-resource.satisfiability", data, FLUX_NODEID_ANY, 0))) {
         flux_log_error (h, "%s: flux_rpc (sched-fluxion-resource.satisfiability)", __FUNCTION__);
         goto error;
     }
-    if (flux_rpc_get_raw (f, (const void **)&data, &size) < 0)
+    if (flux_rpc_get (f, &data) < 0)
         goto error;
-    if (flux_respond_raw (h, msg, (const void *)data, size) < 0) {
-        flux_log_error (h, "%s: flux_respond_raw", __FUNCTION__);
+    if (flux_respond (h, msg, data) < 0) {
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
         goto error;
     }
     flux_log (h, LOG_DEBUG, "%s: feasibility succeeded", __FUNCTION__);
