@@ -1196,6 +1196,7 @@ static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
     }
     if ((rc = decode_rankset (ctx, ids, ranks)) < 0)
         goto done;
+    ctx->traverser->clear_err_message ();
     if ((rc = ctx->traverser->mark (ranks, status)) < 0) {
         flux_log_error (ctx->h,
                         "%s: traverser::mark: %s",
@@ -1648,6 +1649,7 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
 
         dfu_traverser_t &tr = *(ctx->traverser);
 
+        tr.clear_err_message ();
         if (std::string ("allocate") == cmd)
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
         else if (std::string ("allocate_with_satisfiability") == cmd)
@@ -1709,6 +1711,7 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
                   static_cast<intmax_t> (jobid));
         goto out;
     }
+    tr.clear_err_message ();
     if ((rc = tr.run (R, ctx->writers, rd, jobid, at, duration)) < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
@@ -1716,6 +1719,7 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
                   __FUNCTION__,
                   static_cast<intmax_t> (jobid),
                   ctx->traverser->err_message ().c_str ());
+        ctx->traverser->clear_err_message ();
         goto out;
     }
 
@@ -1909,6 +1913,7 @@ static int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
     int rc = -1;
     dfu_traverser_t &tr = *(ctx->traverser);
 
+    tr.clear_err_message ();
     if (part_cancel) {
         // RV1exec only reader supported in production currently
         std::shared_ptr<resource_reader_base_t> reader;
@@ -1944,6 +1949,7 @@ static int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
                   __FUNCTION__,
                   static_cast<intmax_t> (jobid),
                   ctx->traverser->err_message ().c_str ());
+        ctx->traverser->clear_err_message ();
         goto out;
     }
     if (full_removal && is_existent_jobid (ctx, jobid))
@@ -2676,6 +2682,7 @@ static int run_find (std::shared_ptr<resource_ctx_t> &ctx,
     match_format_t format = match_writers_factory_t::get_writers_type (format_str);
     if (!(w = match_writers_factory_t::create (format)))
         goto error;
+    ctx->traverser->clear_err_message ();
     if ((rc = ctx->traverser->find (w, criteria)) < 0) {
         if (ctx->traverser->err_message () != "") {
             flux_log_error (ctx->h,
@@ -2947,6 +2954,7 @@ static void set_status_request_cb (flux_t *h,
         errmsg = "unrecognized status '" + status + "'";
         goto error;
     }
+    ctx->traverser->clear_err_message ();
     // mark the vertex
     if (ctx->traverser->mark (resource_path, status_it->second) < 0) {
         flux_log_error (h,
