@@ -682,7 +682,6 @@ int resource_query_t::remove_job (const uint64_t jobid)
         }
     } else {
         m_err_msg += traverser->err_message ();
-        traverser->clear_err_message ();
     }
     return rc;
 }
@@ -716,7 +715,6 @@ int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bo
         }
     } else {
         m_err_msg += traverser->err_message ();
-        traverser->clear_err_message ();
     }
 
     return rc;
