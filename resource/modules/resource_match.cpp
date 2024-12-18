@@ -1528,8 +1528,8 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
     int rc = 0;
     int version = 0;
     int saved_errno;
-    uint64_t st = 0;
-    uint64_t et = 0;
+    double tstart = 0;
+    double expiration = 0;
     json_t *o = NULL;
     json_t *graph = NULL;
     json_error_t error;
@@ -1541,23 +1541,25 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
         errno = EINVAL;
         goto out;
     }
-    if ((rc = json_unpack (o,
-                           "{s:i s:{s:I s:I} s?:o}",
-                           "version",
-                           &version,
-                           "execution",
-                           "starttime",
-                           &st,
-                           "expiration",
-                           &et,
-                           "scheduling",
-                           &graph))
+    if ((rc = json_unpack_ex (o,
+                              &error,
+                              0,
+                              "{s:i s:{s:F s:F} s?:o}",
+                              "version",
+                              &version,
+                              "execution",
+                              "starttime",
+                              &tstart,
+                              "expiration",
+                              &expiration,
+                              "scheduling",
+                              &graph))
         < 0) {
         errno = EINVAL;
-        flux_log (ctx->h, LOG_ERR, "%s: json_unpack", __FUNCTION__);
+        flux_log (ctx->h, LOG_ERR, "%s: json_unpack: %s", __FUNCTION__, error.text);
         goto freemem_out;
     }
-    if (version != 1 || st < 0 || et < st) {
+    if (version != 1 || tstart < 0 || expiration < tstart) {
         rc = -1;
         errno = EPROTO;
         flux_log (ctx->h,
@@ -1565,8 +1567,8 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
                   "%s: version=%d, starttime=%jd, expiration=%jd",
                   __FUNCTION__,
                   version,
-                  static_cast<intmax_t> (st),
-                  static_cast<intmax_t> (et));
+                  static_cast<intmax_t> (tstart),
+                  static_cast<intmax_t> (expiration));
         goto freemem_out;
     }
     if (graph != NULL) {
@@ -1585,8 +1587,8 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
         format = "rv1exec";
     }
 
-    starttime = static_cast<int64_t> (st);
-    duration = et - st;
+    starttime = static_cast<int64_t> (tstart);
+    duration = static_cast<uint64_t> (expiration - tstart);
 
 freemem_out:
     saved_errno = errno;
