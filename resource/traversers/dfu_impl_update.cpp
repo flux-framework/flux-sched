@@ -29,7 +29,8 @@ int dfu_impl_t::emit_vtx (vtx_t u,
                           unsigned int needs,
                           bool exclusive)
 {
-    return w->emit_vtx (level (), (*m_graph), u, needs, exclusive);
+    const std::map<std::string, std::string> agfilter_data;
+    return w->emit_vtx (level (), (*m_graph), u, needs, agfilter_data, exclusive);
 }
 
 int dfu_impl_t::emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w)

@@ -47,6 +47,20 @@ class expr_eval_target_base_t {
      *  \return          0 on success; -1 on error
      */
     virtual int evaluate (const std::string &p, const std::string &x, bool &result) const = 0;
+
+    /*! Extract jobid and agfilter bool if provided.
+     *
+     *  \param expr      expression string
+     *  \param target    expression evaluation target
+     *  \param jobid     jobid optionally specified in expression
+     *  \param agfilter  bool optionally specified in expression
+     *                   of expr_eval_target_base_t type
+     *  \return          0 on success; -1 on error
+     */
+    virtual int extract (const std::string &p,
+                         const std::string &x,
+                         unsigned long &jobid,
+                         bool &agfilter) const = 0;
 };
 
 }  // namespace resource_model

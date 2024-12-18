@@ -47,6 +47,20 @@ class expr_eval_api_t {
      */
     int evaluate (const std::string &expr, const expr_eval_target_base_t &target, bool &result);
 
+    /*! Extract jobid and agfilter bool if provided.
+     *
+     *  \param expr      expression string
+     *  \param target    expression evaluation target
+     *  \param jobid     jobid optionally specified in expression
+     *  \param agfilter  bool optionally specified in expression
+     *                   of expr_eval_target_base_t type
+     *  \return          0 on success; -1 on error
+     */
+    int extract (const std::string &expr,
+                 const expr_eval_target_base_t &target,
+                 unsigned long &jobid,
+                 bool &agfilter);
+
    private:
     enum class pred_op_t : int { AND = 0, OR = 1, UNKNOWN = 2 };
 
@@ -76,6 +90,17 @@ class expr_eval_api_t {
                         size_t &next,
                         bool &result);
     int evaluate_pred (pred_op_t op, bool result2, bool &result1) const;
+    /* Extract methods */
+    int extract_leaf (const std::string &expr,
+                      const expr_eval_target_base_t &target,
+                      unsigned long &jobid,
+                      bool &agfilter);
+    int extract_paren (const std::string &expr,
+                       const expr_eval_target_base_t &target,
+                       size_t at,
+                       size_t &next,
+                       unsigned long &jobid,
+                       bool &agfilter);
 };
 
 }  // namespace resource_model

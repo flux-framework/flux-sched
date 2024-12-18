@@ -628,9 +628,8 @@ extern "C" int planner_reduce_span (planner_t *ctx,
         update_mintime_resource_tree (ctx, list);
         rc = 0;
     } else {
-        // Error
+        // Error; rc already -1
         errno = EINVAL;
-        rc - 1;
     }
 
     return rc;

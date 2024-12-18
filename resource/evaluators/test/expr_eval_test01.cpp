@@ -25,9 +25,14 @@ using namespace Flux::resource_model;
 
 class expr_eval_test_target_t : public expr_eval_target_base_t {
    public:
-    virtual int validate (const std::string &p, const std::string &x) const;
+    virtual int validate (const std::string &p, const std::string &x) const override;
 
-    virtual int evaluate (const std::string &p, const std::string &x, bool &result) const;
+    virtual int evaluate (const std::string &p, const std::string &x, bool &result) const override;
+
+    virtual int extract (const std::string &p,
+                         const std::string &x,
+                         unsigned long &jobid,
+                         bool &agfilter) const override;
 };
 
 int expr_eval_test_target_t::validate (const std::string &p, const std::string &x) const
@@ -50,6 +55,14 @@ int expr_eval_test_target_t::evaluate (const std::string &p,
         return rc;
     result = true;
     return rc;
+}
+
+int expr_eval_test_target_t::extract (const std::string &p,
+                                      const std::string &x,
+                                      unsigned long &jobid,
+                                      bool &agfilter) const
+{
+    return 0;
 }
 
 void build_simple_expr (std::vector<std::string> &expr_vector)
