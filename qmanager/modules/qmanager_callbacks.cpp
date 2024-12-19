@@ -150,15 +150,17 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
     unsigned int prio;
     uint32_t uid;
     double ts;
+    const char *free_ranks = NULL;
     json_t *jobspec = NULL;
     flux_future_t *f = NULL;
+    std::string R_free;
 
     /* Don't expect jobspec to be set here as it is not currently defined
      * in RFC 27.  However, add it anyway in case the hello protocol
      * evolves to include it.  If it is not set, it must be looked up.
      */
     if (flux_msg_unpack (msg,
-                         "{s:I s:i s:i s:f s?o}",
+                         "{s:I s:i s:i s:f s?s s?o}",
                          "id",
                          &id,
                          "priority",
@@ -167,6 +169,8 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
                          &uid,
                          "t_submit",
                          &ts,
+                         "free",
+                         &free_ranks,
                          "jobspec",
                          &jobspec)
         < 0) {
@@ -216,6 +220,34 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
               "requeue success (queue=%s id=%jd)",
               queue_name.c_str (),
               static_cast<intmax_t> (id));
+    /* Some of the resources of this job have already been freed.
+     * libschedutil calls this function with the free ranks subtracted from
+     * the rv1 portion of R but not from the scheduling key (JGF), if present.
+     * queue->reconstruct() above will have allocated the subset if
+     * match-format=rv1_nosched (correct), or the full original set if
+     * match-format=rv1 (incorrect).  To compensate for the incorrect case,
+     * call queue->remove() on the ranks in the free set.  This is a no-op for
+     * match-format=rv1_nosched.
+     * N.B. the Rv1 object construct below is technically invalid since it
+     * is missing the required 'children' key, but it works for this case.
+     */
+    if (free_ranks) {
+        R_free = "{\"version\":1,\"execution\":{\"R_lite\":[{\"rank\":\"" + std::string (free_ranks)
+                 + "\"}]}}";
+        if (queue->remove (static_cast<void *> (h), id, false, R_free.c_str ()) < 0) {
+            flux_log_error (h,
+                            "%s: partial cancel (id=%jd queue=%s)",
+                            __FUNCTION__,
+                            static_cast<intmax_t> (id),
+                            queue_name.c_str ());
+            goto out;
+        }
+        flux_log (h,
+                  LOG_DEBUG,
+                  "partial cancel successful after requeue (queue=%s id=%jd)",
+                  queue_name.c_str (),
+                  static_cast<intmax_t> (id));
+    }
     rc = 0;
 out:
     flux_future_destroy (f);
