@@ -454,7 +454,6 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
 bool resource_opts_t::operator() (const std::string &k1, const std::string &k2) const
 {
     if (m_tab.find (k1) == m_tab.end () || m_tab.find (k2) == m_tab.end ())
-        return k1 < k2;
     return m_tab.at (k1) < m_tab.at (k2);
 }
 
@@ -509,6 +508,9 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
 
         case static_cast<int> (resource_opts_key_t::LOAD_ALLOWLIST):
             m_resource_prop.set_load_allowlist (v);
+            info += k;
+            info += "; ";
+            info += v;
             break;
 
         case static_cast<int> (resource_opts_key_t::MATCH_POLICY):

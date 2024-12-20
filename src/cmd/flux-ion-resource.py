@@ -109,7 +109,7 @@ class ResourceModuleInterface:
 
     def rpc_satisfiability(self, jobspec):
         payload = {"jobspec": jobspec}
-        return self.handle.rpc("sched-fluxion-resource.satisfiability", payload).get()
+        return self.handle.rpc("feasibility.check", payload).get()
 
     def rpc_params(self):
         return self.handle.rpc("sched-fluxion-resource.params").get()
