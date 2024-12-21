@@ -12,6 +12,7 @@ extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <flux/idset.h>
 }
 
 #include <map>
@@ -212,10 +213,16 @@ std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
 int resource_reader_jgf_t::fetch_jgf (const std::string &str,
                                       json_t **jgf_p,
                                       json_t **nodes_p,
-                                      json_t **edges_p)
+                                      json_t **edges_p,
+                                      jgf_updater_data &update_data)
 {
     int rc = -1;
+    int64_t rank;
     json_t *graph = NULL;
+    json_t *free_ranks = NULL;
+    struct idset *r_ids = nullptr;
+    const char *ranks = nullptr;
+    std::string ranks_stripped;
     json_error_t json_err;
 
     if ((*jgf_p = json_loads (str.c_str (), 0, &json_err)) == NULL) {
@@ -233,6 +240,30 @@ int resource_reader_jgf_t::fetch_jgf (const std::string &str,
         m_err_msg += __FUNCTION__;
         m_err_msg += ": JGF does not contain a required key (graph).\n";
         goto done;
+    }
+    if ((free_ranks = json_object_get (*jgf_p, "free_ranks")) != NULL) {
+        update_data.isect_ranks = true;
+        if (!(ranks = json_dumps (free_ranks, JSON_ENCODE_ANY | JSON_COMPACT))) {
+            errno = ENOMEM;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": json_dumps failed.\n";
+            goto done;
+        }
+        // Need to strip double quotes inserted by json_dumps above
+        ranks_stripped = std::string (ranks);
+        ranks_stripped.erase (std::remove (ranks_stripped.begin (), ranks_stripped.end (), '"'),
+                              ranks_stripped.end ());
+        if ((r_ids = idset_decode (ranks_stripped.c_str ())) == NULL) {
+            errno = EINVAL;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": failed to decode ranks.\n";
+            goto done;
+        }
+        rank = idset_first (r_ids);
+        while (rank != IDSET_INVALID_ID) {
+            update_data.ranks.insert (rank);
+            rank = idset_next (r_ids, rank);
+        }
     }
     if ((*nodes_p = json_object_get (graph, "nodes")) == NULL) {
         errno = EINVAL;
@@ -903,6 +934,13 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
         goto done;
     if ((rc = check_root (v, g, root_checks)) != 0)
         goto done;
+    // Check if skipping due to previous partial free
+    if (update_data.isect_ranks && !update_data.ranks.empty ()) {
+        if (update_data.ranks.find (fetcher.rank) != update_data.ranks.end ()) {
+            rc = 0;
+            goto done;
+        }
+    }
     if ((rc = update_vmap (vmap, v, root_checks, fetcher)) != 0)
         goto done;
     if (update_data.update) {
@@ -1025,7 +1063,8 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
                                         std::map<std::string, vmap_val_t> &vmap,
                                         std::string &source,
                                         std::string &target,
-                                        std::string &subsystem)
+                                        std::string &subsystem,
+                                        jgf_updater_data &update_data)
 {
     int rc = -1;
     json_t *metadata = NULL;
@@ -1042,11 +1081,17 @@ int resource_reader_jgf_t::unpack_edge (json_t *element,
     source = src;
     target = tgt;
     if (vmap.find (source) == vmap.end () || vmap.find (target) == vmap.end ()) {
-        errno = EINVAL;
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": source and/or target vertex not found";
-        m_err_msg += source + std::string (" -> ") + target + ".\n";
-        goto done;
+        if (update_data.isect_ranks) {
+            update_data.skipped = true;
+            rc = 0;
+            goto done;
+        } else {
+            errno = EINVAL;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": source and/or target vertex not found";
+            m_err_msg += source + std::string (" -> ") + target + ".\n";
+            goto done;
+        }
     }
     if ((json_unpack (element, "{ s?{ s?s } }", "metadata", "subsystem", &subsys)) < 0) {
         errno = EINVAL;
@@ -1077,10 +1122,11 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
     std::string source{};
     std::string target{};
     std::string subsystem{};
+    jgf_updater_data update_data;
 
     for (i = 0; i < json_array_size (edges); i++) {
         element = json_array_get (edges, i);
-        if ((unpack_edge (element, vmap, source, target, subsystem)) != 0)
+        if ((unpack_edge (element, vmap, source, target, subsystem, update_data)) != 0)
             goto done;
         // We only add the edge when it connects at least one newly added vertex
         if ((added_vtcs.count (source) == 1) || (added_vtcs.count (target) == 1)) {
@@ -1184,7 +1230,8 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
                                          resource_graph_metadata_t &m,
                                          std::map<std::string, vmap_val_t> &vmap,
                                          json_t *edges,
-                                         uint64_t token)
+                                         uint64_t token,
+                                         jgf_updater_data &update_data)
 {
     edg_t e;
     int rc = -1;
@@ -1197,8 +1244,13 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
     for (i = 0; i < json_array_size (edges); i++) {
         element = json_array_get (edges, i);
         // We only check protocol errors in JGF edges in the following...
-        if ((rc = unpack_edge (element, vmap, source, target, subsystem)) != 0)
+        update_data.skipped = false;
+        if ((rc = unpack_edge (element, vmap, source, target, subsystem, update_data)) != 0)
             goto done;
+        if (update_data.skipped) {
+            update_data.skipped = false;
+            continue;
+        }
         if ((rc = update_src_edge (g, m, vmap, source, token)) != 0)
             goto done;
         if ((rc = update_tgt_edge (g, m, vmap, source, target, token)) != 0)
@@ -1273,6 +1325,7 @@ int resource_reader_jgf_t::unpack (resource_graph_t &g,
     json_t *edges = NULL;
     std::map<std::string, vmap_val_t> vmap;
     std::unordered_set<std::string> added_vtcs;
+    jgf_updater_data update_data;
 
     if (rank != -1) {
         errno = ENOTSUP;
@@ -1280,7 +1333,7 @@ int resource_reader_jgf_t::unpack (resource_graph_t &g,
         m_err_msg += "rank != -1 unsupported for JGF unpack.\n";
         goto done;
     }
-    if ((rc = fetch_jgf (str, &jgf, &nodes, &edges)) != 0)
+    if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
     if ((rc = unpack_vertices (g, m, vmap, nodes, added_vtcs)) != 0)
         goto done;
@@ -1340,13 +1393,13 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
     update_data.reserved = rsv;
     update_data.update = true;
 
-    if ((rc = fetch_jgf (str, &jgf, &nodes, &edges)) != 0)
+    if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
     if ((rc = update_vertices (g, m, vmap, nodes, update_data)) != 0) {
         undo_vertices (g, vmap, update_data);
         goto done;
     }
-    if ((rc = update_edges (g, m, vmap, edges, token)) != 0)
+    if ((rc = update_edges (g, m, vmap, edges, token, update_data)) != 0)
         goto done;
 
 done:
@@ -1414,7 +1467,7 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
 
-    if ((rc = fetch_jgf (R, &jgf, &nodes, &edges)) != 0)
+    if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
     if ((rc = update_vertices (g, m, vmap, nodes, p_cancel_data)) != 0)
         goto done;

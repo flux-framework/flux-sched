@@ -34,7 +34,11 @@ struct jgf_updater_data {
     // track count of rank vertices to determine if rank
     // should be removed from by_rank map
     std::unordered_set<int64_t> ranks;
-    bool update = true;  // Updating or partial cancel
+    // track vertices that are skipped because their ranks are freed
+    std::unordered_set<int64_t> skip_vertices;
+    bool update = true;        // Updating or partial cancel
+    bool isect_ranks = false;  // Updating with partial_ok; intersecting with ranks key
+    bool skipped = false;
 };
 
 /*! JGF resource reader class.
@@ -123,7 +127,11 @@ class resource_reader_jgf_t : public resource_reader_base_t {
     virtual bool is_allowlist_supported ();
 
    private:
-    int fetch_jgf (const std::string &str, json_t **jgf_p, json_t **nodes_p, json_t **edges_p);
+    int fetch_jgf (const std::string &str,
+                   json_t **jgf_p,
+                   json_t **nodes_p,
+                   json_t **edges_p,
+                   jgf_updater_data &update_data);
     int unpack_and_remap_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
     int remap_aware_unpack_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
     int apply_defaults (fetch_helper_t &f, const char *name);
@@ -192,7 +200,8 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                      std::map<std::string, vmap_val_t> &vmap,
                      std::string &source,
                      std::string &target,
-                     std::string &subsystem);
+                     std::string &subsystem,
+                     jgf_updater_data &update_data);
     int update_src_edge (resource_graph_t &g,
                          resource_graph_metadata_t &m,
                          std::map<std::string, vmap_val_t> &vmap,
@@ -213,7 +222,8 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                       resource_graph_metadata_t &m,
                       std::map<std::string, vmap_val_t> &vmap,
                       json_t *edges,
-                      uint64_t token);
+                      uint64_t token,
+                      jgf_updater_data &update_data);
     int get_subgraph_vertices (resource_graph_t &g, vtx_t node, std::vector<vtx_t> &node_list);
     int get_parent_vtx (resource_graph_t &g, vtx_t node, vtx_t &parent_node);
 };
