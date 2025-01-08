@@ -259,49 +259,33 @@ int dfu_impl_t::match (vtx_t u,
                        const std::vector<Resource> &resources,
                        const Resource **slot_resource,
                        unsigned int *nslots,
-                       const Resource **match_resource,
-                       const std::vector<Resource> **slot_resources)
+                       const Resource **match_resource)
 {
     int rc = -1;
-    bool matched = false, or_matched = false;
+    bool matched = false;
     for (auto &resource : resources) {
         if ((*m_graph)[u].type == resource.type) {
             // Limitations of DFU traverser: jobspec must not
             // have same type at same level Please read utilities/README.md
-            if (matched || or_matched)
+            if (matched == true)
                 goto ret;
             *match_resource = &resource;
             if (!resource.with.empty ()) {
-                for (auto &c_resource : resource.with) {
-                    if (c_resource.type == or_slot_rt) {
-                        *slot_resources = &resource.with;
-                        *nslots = m_match->calc_effective_max (c_resource);
-                    }
+                for (auto &c_resource : resource.with)
                     if (c_resource.type == slot_rt) {
                         *slot_resource = &c_resource;
                         *nslots = m_match->calc_effective_max (c_resource);
                     }
-                }
             }
             matched = true;
         } else if (resource.type == slot_rt) {
             // Limitations of DFU traverser: jobspec must not
             // have same type at same level Please read utilities/README.md
-            if (matched || or_matched)
+            if (matched == true)
                 goto ret;
             *slot_resource = &resource;
             *nslots = m_match->calc_effective_max (resource);
             matched = true;
-        } else if (resource.type == or_slot_rt) {
-            // Limitations of DFU traverser: jobspec must not
-            // have same type at same level except for or_slot.
-            if (matched)
-                goto ret;
-            *slot_resources = &resources;
-            // This value is not well defined. In this state, nslots is
-            // determined by the last listed or_slot sibling in the jobspec.
-            *nslots = m_match->calc_effective_max (resource);
-            or_matched = true;
         }
     }
     rc = 0;
@@ -356,26 +340,14 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
     const std::vector<Resource> *ret = &resources;
     const Resource *slot_resources = NULL;
     const Resource *match_resources = NULL;
-    const std::vector<Resource> *slot_or_resources = NULL;
-    if (match (u, resources, &slot_resources, &nslots, &match_resources, &slot_or_resources) < 0) {
+    if (match (u, resources, &slot_resources, &nslots, &match_resources) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": siblings in jobspec request same resource type ";
         m_err_msg += ": " + (*m_graph)[u].type + ".\n";
         spec = match_kind_t::NONE_MATCH;
         goto done;
     }
-    if ((slot_or_resources)) {
-        // set default spec in case no match is found
-        spec = pristine ? match_kind_t::PRISTINE_NONE_MATCH : match_kind_t::NONE_MATCH;
-
-        for (Resource r : *slot_or_resources) {
-            if ((slot_match (u, &r))) {
-                spec = match_kind_t::OR_SLOT_MATCH;
-                pristine = false;
-                ret = slot_or_resources;
-            }
-        }
-    } else if ((slot = slot_match (u, slot_resources))) {
+    if ((slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
         ret = &(slot_resources->with);
@@ -420,23 +392,6 @@ int dfu_impl_t::accum_if (subsystem_t subsystem,
             accum[type] = counts;
         else
             accum[type] += counts;
-        rc = 0;
-    }
-    return rc;
-}
-
-/* Same as above except that lowest is unorder_map */
-int dfu_impl_t::min_if (subsystem_t subsystem,
-                        resource_type_t type,
-                        unsigned int counts,
-                        std::unordered_map<resource_type_t, int64_t> &lowest)
-{
-    int rc = -1;
-    if (m_match->is_pruning_type (subsystem, type)) {
-        if (lowest.find (type) == lowest.end ())
-            lowest[type] = counts;
-        else if (lowest[type] > counts)
-            lowest[type] = counts;
         rc = 0;
     }
     return rc;
@@ -752,154 +707,6 @@ done:
     return (qual_num_slots) ? 0 : -1;
 }
 
-std::tuple<std::map<resource_type_t, int>, int, int> dfu_impl_t::select_or_config (
-    const std::vector<Resource> &slots,
-    std::map<resource_type_t, int> resource_counts,
-    unsigned int nslots,
-    std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash> &or_config)
-{
-    int best = -1;
-    int i = -1;
-    Key index = Key (resource_counts);
-
-    // if available, use precomputed result
-    auto it = or_config.find (resource_counts);
-    if (it != or_config.end ())
-        return it->second;
-
-    for (auto slot : slots) {
-        int test;
-        ++i;
-        bool match = true;
-        std::map<resource_type_t, int> updated_counts;
-        updated_counts = resource_counts;
-
-        // determine if there are enough resources to match with this or_slot
-        for (auto slot_elem : slot.with) {
-            unsigned int qc = resource_counts[slot_elem.type];
-            unsigned int count = m_match->calc_count (slot_elem, qc);
-            if (count <= 0) {
-                match = false;
-                break;
-            }
-            updated_counts[slot_elem.type] = updated_counts[slot_elem.type] - count;
-        }
-        if (!match)
-            continue;
-
-        test = std::get<1> (select_or_config (slots, updated_counts, nslots, or_config));
-        if (best < test) {
-            best = test;
-            or_config[index] = std::make_tuple (updated_counts, best + 1, i);
-        }
-    }
-
-    // if there are no matches, set default score of 0
-    // score represents the total number of or_slots that can be scheduled
-    // with optimal selection of or_slots
-    if (best < 0) {
-        std::map<resource_type_t, int> empty;
-        or_config[index] = std::make_tuple (empty, best + 1, -1);
-    }
-    return or_config[index];
-}
-int dfu_impl_t::dom_or_slot (const jobmeta_t &meta,
-                             vtx_t u,
-                             const std::vector<Resource> &slots,
-                             unsigned int nslots,
-                             bool pristine,
-                             bool *excl,
-                             scoring_api_t &dfu)
-{
-    int rc;
-    bool x_inout = true;
-    unsigned int qual_num_slots = 0;
-    std::vector<eval_egroup_t> edg_group_vector;
-    const subsystem_t &dom = m_match->dom_subsystem ();
-    std::unordered_set<edg_t *> edges_used;
-    scoring_api_t dfu_slot;
-    std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash> or_config;
-    std::tuple<std::map<resource_type_t, int>, int, int> current_config;
-
-    // collect a set of all resource types in the or_slots to get resource
-    // counts. This does not work well with non leaf vertex resources because
-    // it cannot distinguish beyond type. This may be resolveable if graph
-    // coloring is removed during the selection process.
-    std::vector<Resource> slot_resource_union;
-    std::map<resource_type_t, int> resource_types;
-    for (auto &slot : slots) {
-        for (auto r : slot.with) {
-            if (resource_types.find (r.type) == resource_types.end ()) {
-                resource_types[r.type] = 0;
-                slot_resource_union.push_back (r);
-            }
-        }
-    }
-
-    if ((rc = explore (meta,
-                       u,
-                       dom,
-                       slot_resource_union,
-                       pristine,
-                       &x_inout,
-                       visit_t::DFV,
-                       dfu_slot,
-                       nslots))
-        != 0)
-        goto done;
-    if ((rc = m_match->dom_finish_slot (dom, dfu_slot)) != 0)
-        goto done;
-
-    for (auto &it : resource_types) {
-        it.second = dfu_slot.qualified_count (dom, it.first);
-    }
-
-    // calculate the ideal or_slot config for avail resources.
-    // tuple is (key to next best option, current score, index of current best or_slot)
-    current_config = select_or_config (slots, resource_types, nslots, or_config);
-
-    qual_num_slots = std::get<1> (current_config);
-    for (unsigned int i = 0; i < qual_num_slots; ++i) {
-        auto slot_index = std::get<2> (current_config);
-        eval_egroup_t edg_group;
-        int64_t score = MATCH_MET;
-
-        // use calculated index to determine which or_slot type to use
-        for (auto &slot_elem : slots[slot_index].with) {
-            unsigned int j = 0;
-            unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
-            unsigned int count = m_match->calc_count (slot_elem, qc);
-            while (j < count) {
-                auto egroup_i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
-                if (egroup_i == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": not enough slots.\n";
-                    qual_num_slots = 0;
-                    goto done;
-                }
-                eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count,
-                                   1,
-                                   (*egroup_i).edges[0].edge);
-                score += (*egroup_i).score;
-                edg_group.edges.push_back (ev_edg);
-                j += (*egroup_i).edges[0].count;
-            }
-        }
-        edg_group.score = score;
-        edg_group.count = 1;
-        edg_group.exclusive = 1;
-        edg_group_vector.push_back (edg_group);
-
-        current_config = or_config[Key (std::get<0> (current_config))];
-    }
-    for (auto &edg_group : edg_group_vector)
-        dfu.add (dom, or_slot_rt, edg_group);
-
-done:
-    return (qual_num_slots) ? 0 : -1;
-}
-
 int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
                          vtx_t u,
                          const std::vector<Resource> &resources,
@@ -929,8 +736,6 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
         dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
-    else if (sm == match_kind_t::OR_SLOT_MATCH)
-        dom_or_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
     else
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
@@ -1387,23 +1192,8 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
         prime_jobspec (resource.with, resource.user_data);
-
-        // Or slots should use a minimum of values rather than an accumulation
-        // otherwise possible matches may be filtered out
-        if (resource.type == or_slot_rt) {
-            for (auto &aggregate : resource.user_data) {
-                min_if (subsystem,
-                        aggregate.first,
-                        resource.count.min * aggregate.second,
-                        to_parent);
-            }
-        } else {
-            for (auto &aggregate : resource.user_data) {
-                accum_if (subsystem,
-                          aggregate.first,
-                          resource.count.min * aggregate.second,
-                          to_parent);
-            }
+        for (auto &aggregate : resource.user_data) {
+            accum_if (subsystem, aggregate.first, resource.count.min * aggregate.second, to_parent);
         }
     }
 }
