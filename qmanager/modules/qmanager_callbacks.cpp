@@ -367,10 +367,6 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const 
                         static_cast<intmax_t> (id));
         goto done;
     }
-    if (schedutil_free_respond (ctx->schedutil, msg) < 0) {
-        flux_log_error (h, "%s: schedutil_free_respond", __FUNCTION__);
-        goto done;
-    }
 
 done:
     json_decref (Res);
