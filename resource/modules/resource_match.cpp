@@ -1559,7 +1559,8 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
         flux_log (ctx->h, LOG_ERR, "%s: json_unpack: %s", __FUNCTION__, error.text);
         goto freemem_out;
     }
-    if (version != 1 || tstart < 0 || expiration < tstart) {
+    if (version != 1 || tstart < 0 || expiration < tstart
+        || expiration > static_cast<double> (std::numeric_limits<int64_t>::max ())) {
         rc = -1;
         errno = EPROTO;
         flux_log (ctx->h,
