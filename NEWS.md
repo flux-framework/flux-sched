@@ -1,3 +1,19 @@
+flux-sched version 0.41.0 - 2025-01-15
+--------------------------------------
+
+### New Features
+ * qmanager: track API changes in core (#1320)
+ * qmanager: send partial-ok with sched.hello (#1321)
+ * qmanager: remove no-longer-supported schedutil_free_respond() (#1325)
+
+### Fixes
+ * traverser: clear traverser before traversal operations in dfu (#1323)
+
+### Build/Testsuite
+ * t: update job.exception output checks (#1315)
+ * ci: temporarily drop alpine (#1327)
+
+
 flux-sched version 0.40.0 - 2024-11-06
 --------------------------------------
 
