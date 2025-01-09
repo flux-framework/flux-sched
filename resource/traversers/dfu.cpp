@@ -312,6 +312,9 @@ bool dfu_traverser_t::is_initialized () const
 
 int dfu_traverser_t::initialize ()
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
     int rc = 0;
     vtx_t root;
     if (!get_graph () || !get_graph_db () || !get_match_cb ()) {
@@ -350,6 +353,9 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           int64_t jobid,
                           int64_t *at)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
     graph_duration_t graph_duration = get_graph_db ()->metadata.graph_duration;
     if (!get_graph () || !get_graph_db ()
@@ -413,6 +419,9 @@ int dfu_traverser_t::run (const std::string &str,
                           int64_t at,
                           uint64_t duration)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
     if (!get_match_cb () || !get_graph () || !get_graph_db () || !reader || at < 0) {
         errno = EINVAL;
         return -1;
@@ -435,11 +444,16 @@ int dfu_traverser_t::run (const std::string &str,
 
 int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
     return detail::dfu_impl_t::find (writers, criteria);
 }
 
 int dfu_traverser_t::remove (int64_t jobid)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
     if (!get_graph () || !get_graph_db ()
         || get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()
@@ -457,6 +471,9 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
                              int64_t jobid,
                              bool &full_cancel)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
     if (!get_graph () || !get_graph_db ()
         || get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()
@@ -471,11 +488,15 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
 
 int dfu_traverser_t::mark (const std::string &root_path, resource_pool_t::status_t status)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
     return detail::dfu_impl_t::mark (root_path, status);
 }
 
 int dfu_traverser_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status)
 {
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
     return detail::dfu_impl_t::mark (ranks, status);
 }
 
