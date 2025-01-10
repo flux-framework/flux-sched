@@ -1201,7 +1201,6 @@ static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
                         "%s: traverser::mark: %s",
                         __FUNCTION__,
                         ctx->traverser->err_message ().c_str ());
-        ctx->traverser->clear_err_message ();
         goto done;
     }
     flux_log (ctx->h,
@@ -2685,7 +2684,6 @@ static int run_find (std::shared_ptr<resource_ctx_t> &ctx,
                             "%s: %s",
                             __FUNCTION__,
                             ctx->traverser->err_message ().c_str ());
-            ctx->traverser->clear_err_message ();
         }
         goto error;
     }
@@ -2956,7 +2954,6 @@ static void set_status_request_cb (flux_t *h,
                         "%s: traverser::mark: %s",
                         __FUNCTION__,
                         ctx->traverser->err_message ().c_str ());
-        ctx->traverser->clear_err_message ();
         errmsg = "Failed to set status of resource vertex";
         goto error;
     }

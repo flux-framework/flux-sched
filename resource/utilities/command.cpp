@@ -115,7 +115,6 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
         }
     } else {
         std::cout << ctx->traverser->err_message ();
-        ctx->traverser->clear_err_message ();
     }
     return rc;
 }
@@ -135,7 +134,6 @@ static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
         }
     } else {
         std::cout << ctx->traverser->err_message ();
-        ctx->traverser->clear_err_message ();
     }
     return rc;
 }
@@ -295,7 +293,6 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx,
 
     if (ctx->traverser->err_message () != "") {
         std::cerr << "ERROR: " << ctx->traverser->err_message ();
-        ctx->traverser->clear_err_message ();
     }
     if ((rc = ctx->writers->emit (o)) < 0) {
         std::cerr << "ERROR: match writer emit: " << strerror (errno) << std::endl;
@@ -436,7 +433,6 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
             std::cerr << "ERROR: traverser run () returned error " << std::endl;
             if (ctx->traverser->err_message () != "") {
                 std::cerr << "ERROR: " << ctx->traverser->err_message ();
-                ctx->traverser->clear_err_message ();
             }
         }
     }
@@ -619,7 +615,6 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     if ((rc = ctx->traverser->find (ctx->writers, criteria)) < 0) {
         if (ctx->traverser->err_message () != "") {
             std::cerr << "ERROR: " << ctx->traverser->err_message ();
-            ctx->traverser->clear_err_message ();
         }
         goto done;
     }
