@@ -186,6 +186,15 @@ out:
     return rc;
 }
 
+extern "C" int reapi_cli_add_subgraph (reapi_cli_ctx_t *ctx, const char *R_subgraph)
+{
+    if (!ctx || !ctx->rqt || !R_subgraph) {
+        errno = EINVAL;
+        return -1;
+    }
+    return reapi_cli_t::add_subgraph (ctx->rqt, R_subgraph);
+}
+
 extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok)
 {
     if (!ctx || !ctx->rqt) {
