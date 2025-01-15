@@ -151,6 +151,19 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
  */
 int reapi_cli_grow (reapi_cli_ctx_t *ctx, const char *R_subgraph);
 
+/*! Shrink the resource graph with a path.
+ *
+ *  \param h         Opaque handle. How it is used is an implementation
+ *                   detail. However, when it is used within a Flux's
+ *                   service module, it is expected to be a pointer
+ *                   to a flux_t object.
+ *  \param subgraph_path String representing the path from the cluster root
+ *                   to the root of the subgraph to be removed from
+ *                   the resource graph
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_shrink (reapi_cli_ctx_t *ctx, const char *subgraph_path);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_cli_ctx_t context object
