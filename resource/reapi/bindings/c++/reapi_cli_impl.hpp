@@ -181,6 +181,21 @@ int reapi_cli_t::add_subgraph (void *h, const std::string &R_subgraph)
     return rc;
 }
 
+int reapi_cli_t::remove_subgraph (void *h, const std::string &subgraph_path)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    rq->clear_resource_query_err_msg ();
+    if ((rc = rq->remove_subgraph (subgraph_path)) != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: remove_subgraph error: " + std::string (strerror (errno)) + "\n";
+        m_err_msg += rq->get_resource_query_err_msg () + "\n";
+    }
+
+    return rc;
+}
+
 int reapi_cli_t::match_allocate_multi (void *h,
                                        bool orelse_reserve,
                                        const char *jobs,
@@ -786,6 +801,24 @@ out:
     // Close the interner storage after adding the subgraph
     subsystem_t::storage_t::finalize ();
     resource_type_t::storage_t::finalize ();
+    return rc;
+}
+
+int resource_query_t::remove_subgraph (const std::string &subgraph_path)
+{
+    int rc = -1;
+
+    if ((rc = traverser->remove_subgraph (subgraph_path)) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reader returned error: ";
+        m_err_msg += traverser->err_message () + "\n";
+        return rc;
+    }
+    if ((rc = traverser->initialize ()) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reinitialize traverser after subgraph removal. ";
+        m_err_msg += traverser->err_message () + "\n";
+    }
     return rc;
 }
 

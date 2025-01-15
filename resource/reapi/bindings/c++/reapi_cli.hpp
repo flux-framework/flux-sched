@@ -91,6 +91,7 @@ class resource_query_t {
     int remove_job (const uint64_t jobid);
     int remove_job (const uint64_t jobid, const std::string &R, bool &full_removal);
     int add_subgraph (const std::string &R_subgraph);
+    int remove_subgraph (const std::string &subgraph_path);
     void incr_job_counter ();
 
     /* Run the traverser to match the jobspec */
@@ -152,6 +153,7 @@ class reapi_cli_t : public reapi_t {
                                 double &ov,
                                 std::string &R_out);
     static int add_subgraph (void *h, const std::string &R_subgraph);
+    static int remove_subgraph (void *h, const std::string &subgraph_path);
     static int cancel (void *h, const uint64_t jobid, bool noent_ok);
     static int cancel (void *h,
                        const uint64_t jobid,
