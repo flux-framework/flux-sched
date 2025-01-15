@@ -195,6 +195,16 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
                                double *ov,
                                const char **R_out);
 
+/*! Add a subgraph to the resource graph with R_subgraph.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param R_subgraph JGF string of subgraph to attach to existing resources.
+ *                   Supports adding a JGF subgraph including the path from the
+ *                   cluster root to the subgraph root.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_add_subgraph (reapi_cli_ctx_t *ctx, const char *R_subgraph);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_cli_ctx_t context object
