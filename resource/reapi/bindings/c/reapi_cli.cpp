@@ -399,13 +399,15 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
 
 extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 {
-    std::string err_buf = "";
+    if (!ctx) {
+        errno = EINVAL;
+        return strdup ("ERROR: reapi_cli context is null\n");
+    }
 
+    std::string err_buf;
     if (ctx->rqt)
-        err_buf = ctx->rqt->get_resource_query_err_msg () + reapi_cli_t::get_err_message ()
-                  + ctx->err_msg;
-    else
-        err_buf = reapi_cli_t::get_err_message () + ctx->err_msg;
+        err_buf = ctx->rqt->get_resource_query_err_msg ();
+    err_buf += reapi_cli_t::get_err_message () + ctx->err_msg;
 
     return strdup (err_buf.c_str ());
 }

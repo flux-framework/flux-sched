@@ -278,7 +278,8 @@ int reapi_cli_stat (reapi_cli_ctx_t *ctx,
 /*! Get the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object
- *  \return          string containing the error message
+ *  \return          heap-allocated string containing the error message; the
+ *                   caller owns it and must free() it.
  */
 const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
 
