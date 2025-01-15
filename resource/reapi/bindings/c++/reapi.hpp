@@ -204,6 +204,22 @@ class reapi_t {
         return -1;
     }
 
+    /*! Update the resource state with R.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param subgraph_path String representing the path from the cluster root
+     *                   to the root of the subgraph to be removed from
+     *                   the resource graph
+     *  \return          0 on success; -1 on error.
+     */
+    static int shrink (void *h, const std::string &subgraph_path)
+    {
+        return -1;
+    }
+
     /*! Cancel the allocation or reservation corresponding to jobid.
      *
      *  \param h         Opaque handle. How it is used is an implementation
