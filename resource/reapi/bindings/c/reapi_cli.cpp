@@ -259,11 +259,13 @@ extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 {
     std::string err_buf = "";
 
-    if (ctx->rqt)
-        err_buf = ctx->rqt->get_resource_query_err_msg () + reapi_cli_t::get_err_message ()
-                  + ctx->err_msg;
-    else
-        err_buf = reapi_cli_t::get_err_message () + ctx->err_msg;
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return "ERROR: REAPI context and/or rqt null \n";
+    }
+
+    err_buf =
+        ctx->rqt->get_resource_query_err_msg () + reapi_cli_t::get_err_message () + ctx->err_msg;
 
     return strdup (err_buf.c_str ());
 }
