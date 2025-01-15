@@ -179,6 +179,19 @@ int reapi_cli_t::grow (void *h, const std::string &R_subgraph)
     return rc;
 }
 
+int reapi_cli_t::shrink (void *h, const std::string &subgraph_path)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    if ((rc = rq->shrink (subgraph_path)) != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: shrink error: " + std::string (strerror (errno)) + "\n";
+    }
+
+    return rc;
+}
+
 int reapi_cli_t::match_allocate_multi (void *h,
                                        bool orelse_reserve,
                                        const char *jobs,
@@ -766,6 +779,37 @@ int resource_query_t::grow (const std::string &R_subgraph)
     if ((rc = traverser->initialize (db, matcher)) != 0) {
         m_err_msg = __FUNCTION__;
         m_err_msg += ": ERROR: reinitialize traverser after grow. ";
+        m_err_msg += reader->err_message () + "\n";
+    }
+    return rc;
+}
+
+int resource_query_t::shrink (const std::string &subgraph_path)
+{
+    int rc = -1;
+    std::shared_ptr<resource_reader_base_t> reader;
+
+    if (subgraph_path == "") {
+        errno = EINVAL;
+        return rc;
+    }
+    // No need to check if params.load_format != "jgf" since
+    // remove_subgraph takes a subgraph path, which is
+    // supported by any resource graph
+    if ((reader = create_resource_reader ("jgf")) == nullptr) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: can't create JGF reader\n";
+        return rc;
+    }
+    if ((rc = traverser->remove_subgraph (subgraph_path)) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reader returned error: ";
+        m_err_msg += reader->err_message () + "\n";
+        return rc;
+    }
+    if ((rc = traverser->initialize (db, matcher)) != 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: reinitialize traverser after shrink. ";
         m_err_msg += reader->err_message () + "\n";
     }
     return rc;
