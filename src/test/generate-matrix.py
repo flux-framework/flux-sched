@@ -20,9 +20,9 @@ def on_master_or_tag(matrix):
 
 DEFAULT_MULTIARCH_PLATFORMS = {
     "linux/arm64": {
-        "when": on_master_or_tag,
+        # "when": on_master_or_tag, # use this to only run on merge
+        "when": lambda _: True,
         "suffix": " - arm64",
-        "command_args": "--install-only ",
         "timeout_minutes": 90,
         "runner": "ubuntu-24.04-arm",
     },
