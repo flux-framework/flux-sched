@@ -40,7 +40,7 @@ class resource_prop_t {
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
     void set_load_allowlist (const std::string &o);
-    bool set_match_policy (const std::string &o);
+    bool set_match_policy (const std::string &o, std::string &e);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
     void set_reserve_vtx_vec (const int i);
@@ -111,7 +111,7 @@ class resource_opts_t : public optmgr_parse_t {
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
     void set_load_allowlist (const std::string &o);
-    bool set_match_policy (const std::string &o);
+    bool set_match_policy (const std::string &o, std::string &e);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
     void set_reserve_vtx_vec (const int i);
