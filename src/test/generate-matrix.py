@@ -20,12 +20,13 @@ def on_master_or_tag(matrix):
 
 DEFAULT_MULTIARCH_PLATFORMS = {
     "linux/arm64": {
-        "when": on_master_or_tag,
+        # "when": on_master_or_tag, # use this to only run on merge
+        "when": lambda _: True,
         "suffix": " - arm64",
-        "command_args": "--install-only ",
         "timeout_minutes": 90,
+        "runner": "ubuntu-24.04-arm",
     },
-    "linux/amd64": {"when": lambda _: True},
+    "linux/amd64": {"when": lambda _: True, "runner": "ubuntu-latest"},
 }
 
 
@@ -73,6 +74,7 @@ class BuildMatrix:
         platform=None,
         command_args="",
         timeout_minutes=60,
+        runner="ubuntu-latest",
     ):
         """Add a build to the matrix.include array"""
 
@@ -123,6 +125,7 @@ class BuildMatrix:
                 "env": env,
                 "command": command,
                 "image": image,
+                "runner": runner,
                 "tag": self.tag,
                 "branch": self.branch,
                 "coverage": coverage,
@@ -153,6 +156,7 @@ class BuildMatrix:
                     image=image if image is not None else name,
                     command_args=args.get("command_args", ""),
                     timeout_minutes=args.get("timeout_minutes", 30),
+                    runner=args["runner"],
                     **kwargs,
                 )
 
@@ -198,16 +202,14 @@ matrix.add_multiarch_build(
         CHECK_RUN_SOURCE_ENV="/opt/rh/gcc-toolset-13/enable",
     ),
 )
-# Disabled because the arm64 build is failing and preventing the
-# generate-manifest step from running
-# matrix.add_multiarch_build(
-#     name="alpine",
-#     default_suffix=" - test-install",
-#     args=common_args,
-#     env=dict(
-#         TEST_INSTALL="t",
-#     ),
-# )
+matrix.add_multiarch_build(
+    name="alpine",
+    default_suffix=" - test-install",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+)
 # single arch builds that still produce a container
 matrix.add_build(
     name="fedora40 - test-install",
