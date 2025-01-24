@@ -64,7 +64,7 @@ class multilevel_id_t : public dfu_match_cb_t {
                         subsystem_t subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
                         const resource_graph_t &g,
-                        scoring_api_t &dfu) override;
+                        scoring_api_t &dfu,traverser_match_kind_t sm) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp

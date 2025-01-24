@@ -257,6 +257,36 @@ Task::Task (const YAML::Node &tasknode)
 }
 
 namespace {
+std::vector<Resource> handle_cosched (std::vector<Resource> &resources, bool cosched, bool c_r)
+{
+    for (auto &res : resources) {
+        if (res.type == Flux::resource_model::gpu_rt) {
+            /* GPU has no child meaning mps not defined*/
+            if (cosched) {
+                res.exclusive = tristate_t::FALSE;
+                if (c_r) {
+                    res.cosched = true;
+                    res.cosched_count = 0;
+                }
+            }
+            if (res.with.size () == 0) {
+                std::cout << "adding mps partition in jobspec "<<std::endl;
+                YAML::Node Node;
+                Node["type"] = "gpu_mps";
+                Node["count"] = 1;
+                Node["exclusive"]=true;
+                res.with.push_back (Resource (Node));
+            }
+            return resources;
+        } else if (res.with.size () > 0) {
+            handle_cosched (res.with, cosched, c_r);
+        }
+    }
+    return resources;
+}
+}  // namespace
+
+namespace {
 std::vector<Task> parse_yaml_tasks (const YAML::Node &tasks)
 {
     std::vector<Task> taskvec;
@@ -311,6 +341,10 @@ Attributes parse_yaml_attributes (const YAML::Node &attrs)
                     a.system.queue = s.second.as<std::string> ();
                 } else if (s.first.as<std::string> () == "cwd") {
                     a.system.cwd = s.second.as<std::string> ();
+                } else if (s.first.as<std::string> () == "cosched") {
+                    a.system.cosched = s.second.as<bool> ();
+                } else if (s.first.as<std::string> () == "c_r") {
+                    a.system.c_r = s.second.as<bool> ();
                 } else if (s.first.as<std::string> () == "environment") {
                     for (auto &&e : s.second) {
                         a.system.environment[e.first.as<std::string> ()] =
@@ -329,7 +363,15 @@ Attributes parse_yaml_attributes (const YAML::Node &attrs)
     return a;
 }
 }  // namespace
-
+void print_resource_tree (std::vector<Resource> resources)
+{
+    for (auto &res : resources) {
+        std::cout << "Resource type: " << res.type << " count: " << res.count.min
+                  << " with: " << res.with.size () << " exclusive flag "
+                  << static_cast<int> (res.exclusive) << std::endl;
+        print_resource_tree (res.with);
+    }
+}
 Jobspec::Jobspec (const YAML::Node &top)
 {
     try {
@@ -370,7 +412,9 @@ Jobspec::Jobspec (const YAML::Node &top)
 
         /* Import resources section */
         resources = parse_yaml_resources (top["resources"]);
-
+        /* Handle coscheduling case  */
+        resources = handle_cosched (resources, attributes.system.cosched, attributes.system.c_r);
+        /*print_resource_tree (resources);*/
         /* Import tasks section */
         tasks = parse_yaml_tasks (top["tasks"]);
     } catch (YAML::Exception &e) {

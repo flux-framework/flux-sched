@@ -38,7 +38,7 @@ struct var_aware_t : public dfu_match_cb_t {
                         subsystem_t subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
                         const resource_graph_t &g,
-                        scoring_api_t &dfu);
+                        scoring_api_t &dfu,traverser_match_kind_t sm);
 
     int dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu);
 };

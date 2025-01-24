@@ -64,7 +64,8 @@ class Resource {
     // user_data has no library internal usage, it is
     // entirely for the convenience of external code
     std::unordered_map<resource_model::resource_type_t, int64_t> user_data;
-
+    bool cosched = false;
+    unsigned cosched_count = 0;
     Resource (const YAML::Node &);
 };
 
@@ -81,8 +82,11 @@ class Task {
 
 struct System {
     double duration = 0.0f;
+    bool cosched = false;
+    bool c_r = false;  // Job Support Checkpoint/Restart
     std::string queue = "";
     std::string cwd = "";
+
     std::unordered_map<std::string, std::string> environment;
     std::unordered_map<std::string, YAML::Node> optional;
     std::shared_ptr<Constraint> constraint = nullptr;

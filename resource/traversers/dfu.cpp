@@ -149,11 +149,12 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     int saved_errno = errno;
     planner_multi_t *p = NULL;
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
-
+    std::cout << "checking schedule  possible" << std::endl;
     // precheck to see if enough resources are available for this to be feasible
-    if ((rc = request_feasible (meta, op, root, dfv)) < 0)
+    if ((rc = request_feasible (meta, op, root, dfv)) < 0) {
+        std::cout << "not feasible" << std::endl;
         goto out;
-
+    }
     if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
         m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
@@ -217,6 +218,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             break;
         }
         case match_op_t::MATCH_ALLOCATE:
+            std::cout << "Busy"<<std::endl;
             errno = EBUSY;
             break;
         default:
@@ -379,20 +381,22 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
-
     if ((op == match_op_t::MATCH_SATISFIABILITY)
         && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
         detail::dfu_impl_t::update ();
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
+        std::cout << "schedule possible" << std::endl;
         if (*at == graph_end) {
             detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+            std::cout << "Not possible to schedule, ending before graph end time" << std::endl;
             // no schedulable point found even at the end of the time, return EBUSY
             errno = EBUSY;
             return -1;
         }
         if (*at < 0 or *at > graph_end) {
             detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+            std::cout << "schedule time greater then graph end time" << std::endl;
             errno = EINVAL;
             return -1;
         }

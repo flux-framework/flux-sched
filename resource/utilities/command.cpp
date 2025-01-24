@@ -196,6 +196,7 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
         out << "INFO:"
             << " =============================" << std::endl;
         st = (at == 0) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+        std::cout << "jobspec" << jobspec_fn << std::endl;
         ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at, jobspec_fn, "", elapse);
         if (at == 0)
             ctx->allocations[jobid] = jobid;
