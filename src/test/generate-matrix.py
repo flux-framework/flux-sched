@@ -202,16 +202,14 @@ matrix.add_multiarch_build(
         CHECK_RUN_SOURCE_ENV="/opt/rh/gcc-toolset-13/enable",
     ),
 )
-# Disabled because the arm64 build is failing and preventing the
-# generate-manifest step from running
-# matrix.add_multiarch_build(
-#     name="alpine",
-#     default_suffix=" - test-install",
-#     args=common_args,
-#     env=dict(
-#         TEST_INSTALL="t",
-#     ),
-# )
+matrix.add_multiarch_build(
+    name="alpine",
+    default_suffix=" - test-install",
+    args=common_args,
+    env=dict(
+        TEST_INSTALL="t",
+    ),
+)
 # single arch builds that still produce a container
 matrix.add_build(
     name="fedora40 - test-install",
