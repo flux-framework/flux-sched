@@ -97,7 +97,7 @@ struct jobmeta_t {
         return 0;
     }
 
-   private:
+   protected:
     bool m_queue_set = false;
     std::string m_queue = "";
 };
@@ -324,10 +324,10 @@ class dfu_impl_t {
      */
     int mark (std::set<int64_t> &ranks, resource_pool_t::status_t status);
 
-   private:
+   protected:
     /************************************************************************
      *                                                                      *
-     *                 Private Match and Util API                           *
+     *                 Protected Match and Util API                           *
      *                                                                      *
      ************************************************************************/
     const std::string level () const;
@@ -450,6 +450,7 @@ class dfu_impl_t {
                   bool prestine,
                   bool *excl,
                   scoring_api_t &dfu);
+    // std::size_t hash_value(std::map<resource_type_t, int> counts);
     int dom_exp (const jobmeta_t &meta,
                  vtx_t u,
                  const std::vector<Jobspec::Resource> &resources,
@@ -490,7 +491,7 @@ class dfu_impl_t {
 
     /************************************************************************
      *                                                                      *
-     *               Private Update/Emit/Remove API                         *
+     *               Protected Update/Emit/Remove API                         *
      *                                                                      *
      ************************************************************************/
     // Emit matched resource set
@@ -577,7 +578,7 @@ class dfu_impl_t {
 
     /************************************************************************
      *                                                                      *
-     *                     Private Member Data                              *
+     *                     Protected Member Data                              *
      *                                                                      *
      ************************************************************************/
     color_t m_color;
