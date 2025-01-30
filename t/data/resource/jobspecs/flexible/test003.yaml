@@ -1,6 +1,6 @@
 version: 9999
 resources:
-  - type: or_slot
+  - type: slot
     count: 2
     label: default
     with:
@@ -8,7 +8,7 @@ resources:
         count: 12
       - type: memory
         count: 4
-  - type: or_slot
+  - type: slot
     count: 2
     label: default
     with:
@@ -18,7 +18,7 @@ resources:
         count: 1
       - type: memory
         count: 4
-  - type: or_slot
+  - type: slot
     count: 2
     label: default
     with:
