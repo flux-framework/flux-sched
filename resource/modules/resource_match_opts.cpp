@@ -516,7 +516,9 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
         case static_cast<int> (resource_opts_key_t::MATCH_POLICY):
             if (!m_resource_prop.set_match_policy (v, info)) {
                 info += "Unknown match policy (" + v + ")! ";
-                info += "Using default.";
+                errno = EINVAL;
+                rc = -1;
+                return rc;
             }
             break;
 
