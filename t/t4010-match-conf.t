@@ -131,11 +131,10 @@ test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
     check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\""
 '
 
-test_expect_success 'resource: load must tolerate an invalid policy' '
+test_expect_failure 'resource: load must error out on an invalid policy' '
     conf_name="09-invalid-policy" &&
     outfile=${conf_name}.out &&
-    start_resource ${conf_base}/${conf_name} ${outfile} &&
-    check_match_policy ${outfile} "\"first\""
+    start_resource ${conf_base}/${conf_name} ${outfile}
 '
 
 test_expect_success 'resource: load must fail on a bad value' '
