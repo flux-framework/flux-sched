@@ -309,13 +309,14 @@ int expr_eval_api_t::validate (const std::string &e, const expr_eval_target_base
 {
     int rc = -1;
     pred_op_t op;
-    std::size_t next, at;
+    std::size_t next, at, last_before_space;
 
     if ((rc = validate_paren (e, target, 0, next)) < 0)
         goto done;
     at = next;
 
-    while (at <= e.find_last_not_of (" \t")) {
+    last_before_space = e.find_last_not_of (" \t");
+    while (at <= last_before_space) {
         if ((op = parse_pred_op (e, at, next)) == pred_op_t::UNKNOWN) {
             rc = -1;
             goto done;
@@ -339,14 +340,15 @@ int expr_eval_api_t::evaluate (const std::string &e,
 {
     int rc = -1;
     pred_op_t op;
-    std::size_t next, at;
+    std::size_t next, at, last_before_space;
     bool result1, result2;
 
     if ((rc = evaluate_paren (e, target, 0, next, result1)) < 0)
         goto done;
     at = next;
 
-    while (at <= e.find_last_not_of (" \t")) {
+    last_before_space = e.find_last_not_of (" \t");
+    while (at <= last_before_space) {
         if ((op = parse_pred_op (e, at, next)) == pred_op_t::UNKNOWN) {
             rc = -1;
             goto done;
