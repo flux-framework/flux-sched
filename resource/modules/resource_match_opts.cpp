@@ -90,9 +90,9 @@ void resource_prop_t::set_load_allowlist (const std::string &p)
     m_load_allowlist = p;
 }
 
-bool resource_prop_t::set_match_policy (const std::string &p)
+bool resource_prop_t::set_match_policy (const std::string &p, std::string &error_str)
 {
-    if (!known_match_policy (p))
+    if (!known_match_policy (p, error_str))
         return false;
     m_match_policy = p;
     return true;
@@ -348,9 +348,9 @@ void resource_opts_t::set_load_allowlist (const std::string &o)
     m_resource_prop.set_load_allowlist (o);
 }
 
-bool resource_opts_t::set_match_policy (const std::string &o)
+bool resource_opts_t::set_match_policy (const std::string &o, std::string &e)
 {
-    return m_resource_prop.set_match_policy (o);
+    return m_resource_prop.set_match_policy (o, e);
 }
 
 bool resource_opts_t::set_match_format (const std::string &o)
@@ -436,8 +436,10 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
         m_resource_prop.set_load_format (src.m_resource_prop.get_load_format ());
     if (src.m_resource_prop.is_load_allowlist_set ())
         m_resource_prop.set_load_allowlist (src.m_resource_prop.get_load_allowlist ());
-    if (src.m_resource_prop.is_match_policy_set ())
-        m_resource_prop.set_match_policy (src.m_resource_prop.get_match_policy ());
+    if (src.m_resource_prop.is_match_policy_set ()) {
+        std::string e = "";
+        m_resource_prop.set_match_policy (src.m_resource_prop.get_match_policy (), e);
+    }
     if (src.m_resource_prop.is_match_format_set ())
         m_resource_prop.set_match_format (src.m_resource_prop.get_match_format ());
     if (src.m_resource_prop.is_match_subsystems_set ())
@@ -512,9 +514,11 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
             break;
 
         case static_cast<int> (resource_opts_key_t::MATCH_POLICY):
-            if (!m_resource_prop.set_match_policy (v)) {
+            if (!m_resource_prop.set_match_policy (v, info)) {
                 info += "Unknown match policy (" + v + ")! ";
-                info += "Using default.";
+                errno = EINVAL;
+                rc = -1;
+                return rc;
             }
             break;
 

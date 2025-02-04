@@ -102,6 +102,45 @@ hinodex
 first
     Select the first matching resources and stop the search
 
+firstnodex
+    A node-exclusive scheduling whose behavior is identical to
+    ``first`` except each compute node is exclusively allocated.
+
+
+CUSTOM MATCH POLICIES
+=====================
+Match policies are initialized as collections of individual attributes
+that help the scheduler to select matches. For convenience, these 
+attributes are exposed to users such that they can write custom policies.
+Below is a list of match attributes which can be selected by users.
+
+policy
+    Allowed options are ``low`` or ``high``. If only ``policy=low``
+    or ``policy=high`` is specified, the behavior of the match policy is the
+    same as if ``match-policy=low`` or ``match-policy=high`` were selected,
+    respectively.
+
+node_centric
+    ``true`` or ``false`` are allowed options. Evaluate matches based on the
+    ID of the compute node first. 
+
+node_exclusive
+    ``true`` or ``false`` are allowed options. Exclusively allocate compute
+    nodes when a match is found.
+
+set_stop_on_1_matches
+    ``true`` or ``false`` are allowed options. When a match is found, take
+    it, without evaluating for potentially more optimal matches.
+
+::
+
+    [sched-fluxion-resource]
+
+    # system instance will use node-exclusive
+    # scheduling first-match (with nodes of high node IDs
+    # selected first).
+    match-policy = "policy=high node_exclusive=true set_stop_on_1_matches=true"
+
 
 EXAMPLE
 =======

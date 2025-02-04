@@ -13,6 +13,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 #include "resource/policies/base/dfu_match_cb.hpp"
 #include "resource/policies/dfu_match_high_id_first.hpp"
 #include "resource/policies/dfu_match_low_id_first.hpp"
@@ -24,18 +25,21 @@
 namespace Flux {
 namespace resource_model {
 
-const std::string FIRST_MATCH = "first";
-const std::string FIRST_NODEX_MATCH = "firstnodex";
-const std::string HIGH_ID_FIRST = "high";
-const std::string LOW_ID_FIRST = "low";
-const std::string LOW_NODE_FIRST = "lonode";
-const std::string HIGH_NODE_FIRST = "hinode";
-const std::string LOW_NODEX_FIRST = "lonodex";
-const std::string HIGH_NODEX_FIRST = "hinodex";
-const std::string LOCALITY_AWARE = "locality";
-const std::string VAR_AWARE = "variation";
+bool known_match_policy (const std::string &policy, std::string &error);
 
-bool known_match_policy (const std::string &policy);
+/* Returns true if the custom match policy is valid.
+ * Returns false if it is invalid.
+ * Stores all of the options requested in the map under
+ * key-value pairs.
+ */
+bool parse_custom_match_policy (const std::string long_string,
+                                std::map<std::string, bool> &split,
+                                std::string &error);
+
+/* Included in the header for unit testing.
+ * This is how the map keys get accessed and returned easily.
+ */
+bool parse_bool_match_options (const std::string match_option, std::map<std::string, bool> &policy);
 
 /*! Factory method for creating a matching callback
  *  object, representing a matching policy.
