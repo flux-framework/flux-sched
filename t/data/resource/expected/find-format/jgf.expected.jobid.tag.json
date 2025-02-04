@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "2",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core0"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core1"
+          }
+        }
+      },
+      {
+        "id": "4",
+        "metadata": {
+          "type": "core",
+          "id": 2,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core2"
+          }
+        }
+      },
+      {
+        "id": "5",
+        "metadata": {
+          "type": "core",
+          "id": 3,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core3"
+          }
+        }
+      },
+      {
+        "id": "6",
+        "metadata": {
+          "type": "core",
+          "id": 4,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core4"
+          }
+        }
+      },
+      {
+        "id": "7",
+        "metadata": {
+          "type": "core",
+          "id": 5,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core5"
+          }
+        }
+      },
+      {
+        "id": "8",
+        "metadata": {
+          "type": "core",
+          "id": 6,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core6"
+          }
+        }
+      },
+      {
+        "id": "9",
+        "metadata": {
+          "type": "core",
+          "id": 7,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core7"
+          }
+        }
+      },
+      {
+        "id": "10",
+        "metadata": {
+          "type": "core",
+          "id": 8,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core8"
+          }
+        }
+      },
+      {
+        "id": "11",
+        "metadata": {
+          "type": "core",
+          "id": 9,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core9"
+          }
+        }
+      },
+      {
+        "id": "12",
+        "metadata": {
+          "type": "core",
+          "id": 10,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core10"
+          }
+        }
+      },
+      {
+        "id": "13",
+        "metadata": {
+          "type": "core",
+          "id": 11,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core11"
+          }
+        }
+      },
+      {
+        "id": "14",
+        "metadata": {
+          "type": "core",
+          "id": 12,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core12"
+          }
+        }
+      },
+      {
+        "id": "15",
+        "metadata": {
+          "type": "core",
+          "id": 13,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core13"
+          }
+        }
+      },
+      {
+        "id": "16",
+        "metadata": {
+          "type": "core",
+          "id": 14,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core14"
+          }
+        }
+      },
+      {
+        "id": "17",
+        "metadata": {
+          "type": "core",
+          "id": 15,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234/core15"
+          }
+        }
+      },
+      {
+        "id": "1",
+        "metadata": {
+          "type": "node",
+          "basename": "cab",
+          "id": 1234,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234"
+          }
+        }
+      },
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "id": 0,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "1",
+        "target": "2"
+      },
+      {
+        "source": "1",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "target": "4"
+      },
+      {
+        "source": "1",
+        "target": "5"
+      },
+      {
+        "source": "1",
+        "target": "6"
+      },
+      {
+        "source": "1",
+        "target": "7"
+      },
+      {
+        "source": "1",
+        "target": "8"
+      },
+      {
+        "source": "1",
+        "target": "9"
+      },
+      {
+        "source": "1",
+        "target": "10"
+      },
+      {
+        "source": "1",
+        "target": "11"
+      },
+      {
+        "source": "1",
+        "target": "12"
+      },
+      {
+        "source": "1",
+        "target": "13"
+      },
+      {
+        "source": "1",
+        "target": "14"
+      },
+      {
+        "source": "1",
+        "target": "15"
+      },
+      {
+        "source": "1",
+        "target": "16"
+      },
+      {
+        "source": "1",
+        "target": "17"
+      },
+      {
+        "source": "0",
+        "target": "1"
+      }
+    ]
+  }
+}

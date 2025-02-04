@@ -547,7 +547,24 @@ error:
     return rc;
 }
 
-int64_t planner_multi_span_first (planner_multi_t *ctx)
+extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
+                                                  int64_t span_id,
+                                                  unsigned int i)
+{
+    if (!ctx || span_id < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    auto span_it = ctx->plan_multi->get_span_lookup ().find (span_id);
+    if (span_it == ctx->plan_multi->get_span_lookup ().end ()) {
+        errno = ENOENT;
+        return -1;
+    }
+    return planner_span_resource_count (ctx->plan_multi->get_planner_at (i),
+                                        span_it->second.at (i));
+}
+
+extern "C" int64_t planner_multi_span_first (planner_multi_t *ctx)
 {
     int64_t rc = -1;
     std::map<uint64_t, std::vector<int64_t>>::iterator tmp_it =

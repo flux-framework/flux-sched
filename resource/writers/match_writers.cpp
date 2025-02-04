@@ -140,6 +140,7 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
                                    const resource_graph_t &g,
                                    const vtx_t &u,
                                    unsigned int needs,
+                                   const std::map<std::string, std::string> &agfilter_data,
                                    bool exclusive)
 {
     std::string mode = (exclusive) ? "x" : "s";
@@ -251,6 +252,7 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
                                    const resource_graph_t &g,
                                    const vtx_t &u,
                                    unsigned int needs,
+                                   const std::map<std::string, std::string> &agfilter_data,
                                    bool exclusive)
 {
     int rc = 0;
@@ -279,6 +281,12 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
     if ((rc = map2json (b, eph_map, "ephemeral") < 0)) {
         json_decref (b);
         goto out;
+    }
+    if (!agfilter_data.empty ()) {
+        if ((rc = map2json (b, agfilter_data, "agfilter") < 0)) {
+            json_decref (b);
+            goto out;
+        }
     }
     if ((o = json_pack ("{s:s s:o}", "id", std::to_string (g[u].uniq_id).c_str (), "metadata", b))
         == NULL) {
@@ -611,6 +619,7 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
                                      const resource_graph_t &g,
                                      const vtx_t &u,
                                      unsigned int needs,
+                                     const std::map<std::string, std::string> &agfilter_data,
                                      bool exclusive)
 {
     int rc = 0;
@@ -1009,11 +1018,12 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
                                    const resource_graph_t &g,
                                    const vtx_t &u,
                                    unsigned int needs,
+                                   const std::map<std::string, std::string> &agfilter_data,
                                    bool exclusive)
 {
     int rc = 0;
-    if ((rc = rlite.emit_vtx (prefix, g, u, needs, exclusive)) == 0)
-        rc = jgf.emit_vtx (prefix, g, u, needs, exclusive);
+    if ((rc = rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive)) == 0)
+        rc = jgf.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
     return rc;
 }
 
@@ -1136,9 +1146,10 @@ int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
                                            const resource_graph_t &g,
                                            const vtx_t &u,
                                            unsigned int needs,
+                                           const std::map<std::string, std::string> &agfilter_data,
                                            bool exclusive)
 {
-    return rlite.emit_vtx (prefix, g, u, needs, exclusive);
+    return rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
 }
 
 int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
@@ -1194,6 +1205,7 @@ int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
                                           const resource_graph_t &g,
                                           const vtx_t &u,
                                           unsigned int needs,
+                                          const std::map<std::string, std::string> &agfilter_data,
                                           bool exclusive)
 {
     std::stringstream out;

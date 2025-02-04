@@ -785,7 +785,9 @@ int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
 int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
                               const std::string &criteria,
                               vtx_t u,
-                              const vtx_predicates_override_t &p)
+                              const vtx_predicates_override_t &p,
+                              const uint64_t jobid,
+                              const bool agfilter)
 {
     int rc = -1;
     int nchildren = 0;
@@ -798,6 +800,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     bool reserved = !(*m_graph)[u].schedule.reservations.empty ();
     Flux::resource_model::vtx_predicates_override_t p_overridden = p;
     p_overridden.set (down, allocated, reserved);
+    std::map<std::string, std::string> agfilter_data;
+    planner_multi_t *filter_plan = NULL;
 
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     m_trav_level++;
@@ -806,7 +810,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             if (stop_explore (*ei, s) || !in_subsystem (*ei, s))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
-            rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden)
+            rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden, jobid, agfilter)
                             : aux_find_upv (w, criteria, tgt, s, p_overridden);
             if (rc > 0) {
                 if (w->emit_edg (level (), *m_graph, *ei) < 0) {
@@ -829,12 +833,46 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     } else if (!result && !nchildren) {
         goto done;
     }
+    if (agfilter) {
+        // Check if there's a pruning (aggregate) filter initialized
+        if ((filter_plan = (*m_graph)[u].idata.subplans[dom]) == NULL)
+            goto done;
+        if (jobid == 0) {  // jobid not specified; get totals
+            for (size_t i = 0; i < planner_multi_resources_len (filter_plan); ++i) {
+                int64_t total_resources = planner_multi_resource_total_at (filter_plan, i);
+                int64_t diff =
+                    total_resources - planner_multi_avail_resources_at (filter_plan, 0, i);
+                std::string rtype = std::string (planner_multi_resource_type_at (filter_plan, i));
+                std::string fcounts =
+                    "used:" + std::to_string (diff) + ", total:" + std::to_string (total_resources);
+                agfilter_data.insert ({rtype, fcounts});
+            }
+        } else {  // get agfilter utilization for specified jobid
+            auto &job2span = (*m_graph)[u].idata.job2span;
+            auto span_it = job2span.find (jobid);
+            if (span_it == (*m_graph)[u].idata.job2span.end ()) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": span missing in job2span ";
+                m_err_msg += " for vertex: " + (*m_graph)[u].name + "\n";
+                goto done;
+            }
+            for (size_t i = 0; i < planner_multi_resources_len (filter_plan); ++i) {
+                int64_t total_resources = planner_multi_resource_total_at (filter_plan, i);
+                int64_t planned_resources =
+                    planner_multi_span_planned_at (filter_plan, span_it->second, i);
+                std::string rtype = std::string (planner_multi_resource_type_at (filter_plan, i));
+                std::string fcounts = "used:" + std::to_string (planned_resources)
+                                      + ", total:" + std::to_string (total_resources);
+                agfilter_data.insert ({rtype, fcounts});
+            }
+        }
+    }
 
     // Need to clear out any stale data from the ephemeral object before
     // emitting the vertex, since data could be leftover from previous
     // traversals where the vertex was matched but not emitted
     (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_best_k_cnt);
-    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, true)) < 0) {
+    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true)) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
         goto done;
@@ -1189,6 +1227,9 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     vtx_t root;
     expr_eval_vtx_target_t target;
     vtx_predicates_override_t p_overridden;
+    bool agfilter = false;
+    uint64_t jobid = 0;
+    std::vector<std::pair<std::string, std::string>> predicates;
 
     if (!m_match || !m_graph || !m_graph_db || !writers) {
         errno = EINVAL;
@@ -1206,10 +1247,28 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
         m_err_msg += ": invalid criteria: " + criteria + ".\n";
         goto done;
     }
+    if ((rc = m_expr_eval.extract (criteria, target, predicates)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": failed extraction.\n";
+        goto done;
+    }
+    for (auto const &p : predicates) {
+        if (p.first == "jobid-alloc" || p.first == "jobid-span" || p.first == "jobid-tag"
+            || p.first == "jobid-reserved") {
+            // Don't need try; catch here since validate () succeeded
+            jobid = std::stoul (p.second);
+        } else if (p.first == "agfilter") {
+            if (p.second == "true" || p.second == "t") {
+                agfilter = true;
+            } else {
+                agfilter = false;
+            }
+        }
+    }
 
     tick ();
 
-    if ((rc = dom_find_dfv (writers, criteria, root, p_overridden)) < 0)
+    if ((rc = dom_find_dfv (writers, criteria, root, p_overridden, jobid, agfilter)) < 0)
         goto done;
 
     if (writers->emit_tm (0, 0) == -1) {

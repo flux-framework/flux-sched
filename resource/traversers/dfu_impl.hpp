@@ -465,7 +465,9 @@ class dfu_impl_t {
     int dom_find_dfv (std::shared_ptr<match_writers_t> &writers,
                       const std::string &criteria,
                       vtx_t u,
-                      const vtx_predicates_override_t &p);
+                      const vtx_predicates_override_t &p,
+                      const uint64_t jobid,
+                      const bool agfilter);
     int aux_find_upv (std::shared_ptr<match_writers_t> &writers,
                       const std::string &criteria,
                       vtx_t u,
