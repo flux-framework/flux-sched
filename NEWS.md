@@ -1,3 +1,15 @@
+flux-sched version 0.42.0 - 2025-02-05
+--------------------------------------
+
+### New Features
+ * traverser: find by jobid and output aggregate filter data (#1322)
+ * policy: expose internals of resource module policy factory to allow
+   custom policies (#1268)
+
+### Build/Testsuite
+ * ci: add Arm runners and bring back alpine (#1328)
+
+
 flux-sched version 0.41.0 - 2025-01-15
 --------------------------------------
 
