@@ -86,6 +86,10 @@ class ResourceModuleInterface:
         payload = {"sp_resource_path": sp_resource_path, "sp_keyval": sp_keyval}
         return self.handle.rpc("sched-fluxion-resource.set_property", payload).get()
 
+    def rpc_remove_property(self, rp_resource_path, rp_key):
+        payload = {"resource_path": rp_resource_path, "key": rp_key}
+        return self.handle.rpc("sched-fluxion-resource.remove_property", payload).get()
+
     def rpc_get_property(self, gp_resource_path, gp_key):
         payload = {"gp_resource_path": gp_resource_path, "gp_key": gp_key}
         return self.handle.rpc("sched-fluxion-resource.get_property", payload).get()
@@ -334,6 +338,14 @@ def set_property_action(args):
     rmod.rpc_set_property(sp_resource_path, sp_keyval)
 
 
+def remove_property_action(args):
+    """
+    Action for remove-property sub-command
+    """
+    rmod = ResourceModuleInterface()
+    rmod.rpc_remove_property(args.rp_resource_path, args.rp_key)
+
+
 def get_property_action(args):
     """
     Action for get-property sub-command
@@ -537,6 +549,7 @@ def main():
     parser_sp = mkparser(
         "set-property", "Set property-key=value for specified resource."
     )
+    parser_rp = mkparser("remove-property", "Remove property for specified resource.")
     parser_gp = mkparser(
         "get-property", "Get value for specified resource and property-key."
     )
@@ -586,6 +599,22 @@ def main():
         help="set-property resource_path property-key=val",
     )
     parser_sp.set_defaults(func=set_property_action)
+
+    # Positional arguments for remove-property sub-command
+    #
+    parser_rp.add_argument(
+        "rp_resource_path",
+        metavar="ResourcePath",
+        type=str,
+        help="remove-property resource_path property-key=val",
+    )
+    parser_rp.add_argument(
+        "rp_key",
+        metavar="PropertyKey",
+        type=str,
+        help="remove-property resource_path property-key",
+    )
+    parser_rp.set_defaults(func=remove_property_action)
 
     # Positional argument for get-property sub-command
     #
