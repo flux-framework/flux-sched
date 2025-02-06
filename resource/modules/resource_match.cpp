@@ -237,6 +237,11 @@ static void set_property_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg);
 
+static void remove_property_request_cb (flux_t *h,
+                                        flux_msg_handler_t *w,
+                                        const flux_msg_t *msg,
+                                        void *arg);
+
 static void get_property_request_cb (flux_t *h,
                                      flux_msg_handler_t *w,
                                      const flux_msg_t *msg,
@@ -278,6 +283,10 @@ static const struct flux_msg_handler_spec htab[] =
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.stats-clear", stat_clear_cb, FLUX_ROLE_USER},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.next_jobid", next_jobid_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.set_property", set_property_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.remove_property",
+      remove_property_request_cb,
+      0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.get_property", get_property_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.notify", notify_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.disconnect", disconnect_request_cb, 0},
@@ -2517,6 +2526,49 @@ static void set_property_request_cb (flux_t *h,
             ctx->db->resource_graph[v].properties.insert (
                 std::pair<std::string, std::string> (property_key, property_value));
         }
+    }
+
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void remove_property_request_cb (flux_t *h,
+                                        flux_msg_handler_t *w,
+                                        const flux_msg_t *msg,
+                                        void *arg)
+{
+    const char *rp = NULL, *kv = NULL;
+    std::string resource_path = "", property_key = "";
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    std::map<std::string, std::vector<vtx_t>>::const_iterator it;
+    std::pair<std::map<std::string, std::string>::iterator, bool> ret;
+    vtx_t v;
+
+    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "resource_path", &rp, "key", &kv) < 0)
+        goto error;
+
+    resource_path = rp;
+    property_key = kv;
+
+    it = ctx->db->metadata.by_path.find (resource_path);
+
+    if (it == ctx->db->metadata.by_path.end ()) {
+        errno = ENOENT;
+        flux_log_error (h,
+                        "%s: Couldn't find %s in resource graph.",
+                        __FUNCTION__,
+                        resource_path.c_str ());
+        goto error;
+    }
+
+    for (auto &v : it->second) {
+        ctx->db->resource_graph[v].properties.erase (property_key);
     }
 
     if (flux_respond_pack (h, msg, "{}") < 0)
