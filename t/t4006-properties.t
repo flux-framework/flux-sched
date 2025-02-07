@@ -29,14 +29,16 @@ load-file=${grug} load-format=grug \
 prune-filters=ALL:core subsystems=containment policy=high
 '
 
-test_expect_success 'set/get property basic test works' "
+test_expect_success 'set/get/remove property basic test works' "
 	flux ion-resource set-property /tiny0/rack0/node0 class=one &&
 	flux ion-resource get-property /tiny0/rack0/node0 class > sp.0 &&
 	echo \"class = ['one']\" > expected &&
-	test_cmp expected sp.0
+	test_cmp expected sp.0 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 class &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 class
 "
 
-test_expect_success 'set/get property multiple resources works' "
+test_expect_success 'set/get/remove property multiple resources works' "
 	flux ion-resource set-property /tiny0/rack0/node0 nodeprop=1 &&
 	flux ion-resource set-property /tiny0/rack0/node0/socket1 sockprop=abc &&
 	flux ion-resource set-property /tiny0/rack0/node1/socket0/core17 coreprop=z &&
@@ -48,10 +50,16 @@ test_expect_success 'set/get property multiple resources works' "
 	sockprop = ['abc']
 	coreprop = ['z']
 	EOF
-	test_cmp expected sp.1
+	test_cmp expected sp.1 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 nodeprop &&
+	flux ion-resource remove-property /tiny0/rack0/node0/socket1 sockprop &&
+	flux ion-resource remove-property /tiny0/rack0/node1/socket0/core17 coreprop &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 nodeprop &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0/socket1 sockprop &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop
 "
 
-test_expect_success 'set/get property multiple properties works' "
+test_expect_success 'set/get/remove property multiple properties works' "
 	flux ion-resource set-property /tiny0/rack0/node0 prop1=a &&
 	flux ion-resource set-property /tiny0/rack0/node0 prop2=foo &&
 	flux ion-resource set-property /tiny0/rack0/node0 prop3=123 &&
@@ -69,15 +77,31 @@ test_expect_success 'set/get property multiple properties works' "
 	prop4 = ['bar']
 	prop5 = ['baz']
 	EOF
-	test_cmp expected sp.2
+	test_cmp expected sp.2 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 prop1 &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop1 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop2 | grep foo &&
+	flux ion-resource remove-property /tiny0/rack0/node0 prop2 &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop2 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop3 | grep 123 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 prop3 &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop3 &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop4 | grep bar &&
+	flux ion-resource get-property /tiny0/rack0/node0 prop5 | grep baz &&
+	flux ion-resource remove-property /tiny0/rack0/node0 prop4 &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop4 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 prop5 &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop5
 "
 
 test_expect_success 'test with no path works' '
-	test_expect_code 3 flux ion-resource set-property /dont/exist random=1
+	test_expect_code 3 flux ion-resource set-property /dont/exist random=1 &&
+	test_expect_code 3 flux ion-resource remove-property /dont/exist random=1
 '
 
 test_expect_success 'test with no property works' '
-	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 dontexist
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 dontexist &&
+	flux ion-resource remove-property /tiny0/rack0/node0 dontexist
 '
 
 test_expect_success 'test with malformed inputs works' '
