@@ -257,9 +257,19 @@ static void update_resource (flux_future_t *f, void *arg)
         // Broadcast UP/DOWN updates to subscribed fluxion modules.
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource
-        // TODO actually broadcast the UP/DOWN info
         for (auto &kv : ctx->notify_msgs) {
-            if (rc += flux_respond (ctx->h, kv.second->get_msg (), NULL) < 0) {
+            if (rc += flux_respond_pack (ctx->h,
+                                         kv.second->get_msg (),
+                                         "{s:o? s:s? s:s? s:f}",
+                                         "resources",
+                                         resources,
+                                         "up",
+                                         up,
+                                         "down",
+                                         down,
+                                         "expiration",
+                                         expiration)
+                      < 0) {
                 flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
             }
         }
