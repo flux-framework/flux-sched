@@ -1,0 +1,9 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/cancel/test022.yaml
+partial-cancel 1 jgf @TEST_SRCDIR@/data/resource/jgfs/elastic/node-1-partial-cancel.json stats
+find sched-now=allocated
+info 1
+cancel 1 stats
+find sched-now=allocated
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/cancel/test022.yaml
+find sched-now=allocated
+quit
