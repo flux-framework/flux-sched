@@ -19912,6 +19912,74 @@ INFO: JOBID=17
 INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=147601
 INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="73"
+INFO: CANCEL POSTORDER COUNT="41"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="4915"
+INFO: CANCEL POSTORDER COUNT="3907"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="2615"
+INFO: CANCEL POSTORDER COUNT="2007"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="1679"
+INFO: CANCEL POSTORDER COUNT="1285"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="3151"
+INFO: CANCEL POSTORDER COUNT="3141"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="667"
+INFO: CANCEL POSTORDER COUNT="640"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="427"
+INFO: CANCEL POSTORDER COUNT="395"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="763"
+INFO: CANCEL POSTORDER COUNT="738"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="400"
+INFO: CANCEL POSTORDER COUNT="302"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="667"
+INFO: CANCEL POSTORDER COUNT="640"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="409"
+INFO: CANCEL POSTORDER COUNT="394"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="3151"
+INFO: CANCEL POSTORDER COUNT="3141"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="379"
+INFO: CANCEL POSTORDER COUNT="346"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="121"
+INFO: CANCEL POSTORDER COUNT="100"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="313"
+INFO: CANCEL POSTORDER COUNT="296"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="313"
+INFO: CANCEL POSTORDER COUNT="296"
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="2173"
+INFO: CANCEL POSTORDER COUNT="2160"
+INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
       ---------------core2[1:x]

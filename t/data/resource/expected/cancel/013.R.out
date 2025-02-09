@@ -26113,6 +26113,10 @@ INFO: JOBID=17
 INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=147601
 INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="73"
+INFO: CANCEL POSTORDER COUNT="51"
+INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
       ---------------core2[1:x]
@@ -26168,6 +26172,10 @@ INFO: =============================
 INFO: JOBID=18
 INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="4915"
+INFO: CANCEL POSTORDER COUNT="4907"
 INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
@@ -31080,6 +31088,10 @@ INFO: =============================
 INFO: JOBID=19
 INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: CANCEL PREORDER COUNT="3151"
+INFO: CANCEL POSTORDER COUNT="3141"
 INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
