@@ -73,12 +73,13 @@ command_t commands[] =
       "c",
       cmd_cancel,
       "Cancel an allocation or reservation: "
-      "resource-query> cancel jobid"},
+      "resource-query> cancel jobid (optional subcmd: stats)"},
      {"partial-cancel",
       "pc",
       cmd_partial_cancel,
       "Partially release an allocation: "
-      "resource-query> partial-cancel jobid (file format: jgf | rv1exec) R_to_cancel.file"},
+      "resource-query> partial-cancel jobid (file format: jgf | rv1exec) R_to_cancel.file "
+      "(optional subcmd: stats)"},
      {"set-property",
       "p",
       cmd_set_property,
@@ -651,7 +652,7 @@ done:
 
 int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
 {
-    if (args.size () != 2) {
+    if (args.size () < 2 || args.size () > 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
@@ -659,6 +660,14 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     int rc = -1;
     std::string jobid_str = args[1];
     uint64_t jobid = (uint64_t)std::strtoll (jobid_str.c_str (), NULL, 10);
+    std::string stats = "";
+    unsigned int preorder_count = 0;
+    unsigned int postorder_count = 0;
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
+
+    if (args.size () == 3) {
+        stats = args[2];
+    }
 
     if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
         if ((rc = do_remove (ctx, jobid)) == 0)
@@ -675,6 +684,19 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
         std::cerr << "ERROR: error encountered while removing job " << jobid << std::endl;
     }
 
+    if (stats == "stats") {
+        preorder_count = ctx->traverser->get_total_preorder_count ();
+        postorder_count = ctx->traverser->get_total_postorder_count ();
+        out << "INFO:"
+            << " =============================" << std::endl;
+        out << "INFO:"
+            << " CANCEL PREORDER COUNT=\"" << preorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " CANCEL POSTORDER COUNT=\"" << postorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " =============================" << std::endl;
+    }
+
 done:
     return 0;
 }
@@ -685,7 +707,7 @@ int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<st
     std::stringstream buffer{};
     std::shared_ptr<resource_reader_base_t> rd;
 
-    if (args.size () != 4) {
+    if (args.size () < 4 || args.size () > 5) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
@@ -695,6 +717,14 @@ int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<st
     std::ifstream cancel_file (args[3]);
     uint64_t jobid = (uint64_t)std::strtoll (jobid_str.c_str (), NULL, 10);
     bool full_cancel = false;
+    std::string stats = "";
+    unsigned int preorder_count = 0;
+    unsigned int postorder_count = 0;
+    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
+
+    if (args.size () == 5) {
+        stats = args[4];
+    }
 
     if (!(reader == "jgf" || reader == "rv1exec")) {
         std::cerr << "ERROR: unsupported reader " << args[2] << std::endl;
@@ -735,6 +765,19 @@ int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<st
 
     if (rc != 0) {
         std::cerr << "ERROR: error encountered while removing job " << jobid << std::endl;
+    }
+
+    if (stats == "stats") {
+        preorder_count = ctx->traverser->get_total_preorder_count ();
+        postorder_count = ctx->traverser->get_total_postorder_count ();
+        out << "INFO:"
+            << " =============================" << std::endl;
+        out << "INFO:"
+            << " PARTIAL CANCEL PREORDER COUNT=\"" << preorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " PARTIAL CANCEL POSTORDER COUNT=\"" << postorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " =============================" << std::endl;
     }
 
 done:
