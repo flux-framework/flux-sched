@@ -1,3 +1,10 @@
+flux-sched version 0.42.1 - 2025-02-10
+--------------------------------------
+
+### New Features
+ * resource: remove property (#1332)
+
+
 flux-sched version 0.42.0 - 2025-02-05
 --------------------------------------
 
