@@ -451,6 +451,7 @@ int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std:
 
 int dfu_traverser_t::remove (int64_t jobid)
 {
+    int rc = 0;
     // Clear the error message to disambiguate errors
     clear_err_message ();
 
@@ -463,7 +464,11 @@ int dfu_traverser_t::remove (int64_t jobid)
     }
 
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    return detail::dfu_impl_t::remove (root, jobid);
+
+    rc = detail::dfu_impl_t::remove (root, jobid);
+    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
+    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    return rc;
 }
 
 int dfu_traverser_t::remove (const std::string &R_to_cancel,
@@ -471,6 +476,7 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
                              int64_t jobid,
                              bool &full_cancel)
 {
+    int rc = 0;
     // Clear the error message to disambiguate errors
     clear_err_message ();
 
@@ -483,7 +489,10 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
     }
 
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    return detail::dfu_impl_t::remove (root, R_to_cancel, reader, jobid, full_cancel);
+    rc = detail::dfu_impl_t::remove (root, R_to_cancel, reader, jobid, full_cancel);
+    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
+    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    return rc;
 }
 
 int dfu_traverser_t::mark (const std::string &root_path, resource_pool_t::status_t status)
