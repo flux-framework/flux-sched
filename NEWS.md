@@ -1,4 +1,12 @@
-flux-sched version 0.42.1 - 2025-02-10
+flux-sched version 0.42.2 - 2025-02-10
+--------------------------------------
+
+### New Features
+ * Break visitation cycle in mod_dfv to correct cancellation behavior
+   (#1335)
+
+
+flux-sched version 0.42.1 - 2025-02-08
 --------------------------------------
 
 ### New Features
