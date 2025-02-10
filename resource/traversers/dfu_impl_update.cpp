@@ -595,6 +595,8 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
     subsystem_t dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
 
+    m_preorder++;
+    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
         goto done;
     if ((rc = mod_plan (u, jobid, mod_data)) != 0)
@@ -610,6 +612,8 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
                 rc += mod_upv (tgt, jobid, mod_data);
         }
     }
+    (*m_graph)[u].idata.colors[dom] = m_color.black ();
+    m_postorder++;
 done:
     return rc;
 }
@@ -778,6 +782,9 @@ int dfu_impl_t::update (vtx_t root,
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 {
+    m_preorder = 0;
+    m_postorder = 0;
+
     bool root_has_jtag =
         ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ());
     modify_data_t mod_data;
@@ -796,6 +803,8 @@ int dfu_impl_t::remove (vtx_t root,
     modify_data_t mod_data;
     resource_graph_t &g = m_graph_db->resource_graph;
     resource_graph_metadata_t &m = m_graph_db->metadata;
+    m_preorder = 0;
+    m_postorder = 0;
 
     if (reader->partial_cancel (g, m, mod_data, R_to_cancel, jobid) != 0) {
         m_err_msg += __FUNCTION__;

@@ -194,4 +194,21 @@ test_expect_success "${test023_desc}" '
     test_cmp 022.R.out ${exp_dir}/021.R.out
 '
 
+cmds024="${cmd_dir}/cmds10.in"
+test024_desc="test partial cancel and reallocation of two ranks; jgf"
+test_expect_success "${test024_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds024} > cmds024 &&
+    ${query} -f jgf -L ${jgfs} -S CA -P low -t 024.R.out < cmds024 &&
+    test_cmp 024.R.out ${exp_dir}/024.R.out
+'
+
+# Uses the same expected output as above
+cmds025="${cmd_dir}/cmds11.in"
+test025_desc="test partial cancel and reallocation of two ranks; jgf graph rv1exec partial cancel"
+test_expect_success "${test025_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds025} > cmds025 &&
+    ${query} -f jgf -L ${jgfs} -S CA -P low -t 025.R.out < cmds025 &&
+    test_cmp 025.R.out ${exp_dir}/024.R.out
+'
+
 test_done
