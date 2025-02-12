@@ -513,12 +513,12 @@ RBTree<Node, NodeTraits, Options, Tag, Compare>::insert(
 		Node * parent = this->root;
 
 		if (parent == nullptr) {
-			this->insert_leaf_base<false>(node, parent);
+			this->insert_leaf_base(node, parent);
 		} else {
 			while (parent->NB::get_right() != nullptr) {
 				parent = parent->NB::get_right();
 			}
-			this->insert_leaf_base<false>(node, parent);
+			this->insert_leaf_base(node, parent);
 		}
 	} else {
 		this->insert(node, *hint);
