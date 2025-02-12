@@ -125,7 +125,7 @@ unsigned int matcher_util_api_t::calc_count (const Flux::Jobspec::Resource &reso
             }
             break;
         case '^':
-            if (resource.count.operand < 2)
+            if (resource.count.operand < 2 || cur == 1)
                 count = cur;
             else {
                 while (cur <= qc && cur <= resource.count.max) {
