@@ -66,14 +66,32 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
     if (!cnode["min"].IsScalar ()) {
         throw parse_error (cnode["min"], "Value of \"min\" must be a scalar");
     }
-    if (cnode["max"] && !cnode["max"].IsScalar ()) {
-        throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
+    if (cnode["max"]) {
+        if (!cnode["max"].IsScalar ()) {
+            throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
+        }
+        if (!cnode["operator"] || !cnode["operand"]) {
+            throw parse_error (cnode,
+                               "\"operator\" and \"operand\" required when \"max\" given");
+        }
     }
-    if (cnode["operator"] && !cnode["operator"].IsScalar ()) {
-        throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
+    if (cnode["operator"]) {
+        if (!cnode["operator"].IsScalar ()) {
+            throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
+        }
+        if (!cnode["max"] || !cnode["operand"]) {
+            throw parse_error (cnode,
+                               "\"max\" and \"operand\" required when \"operator\" given");
+        }
     }
-    if (cnode["operand"] && !cnode["operand"].IsScalar ()) {
-        throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
+    if (cnode["operand"]) {
+        if (!cnode["operand"].IsScalar ()) {
+            throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
+        }
+        if (!cnode["max"] || !cnode["operator"]) {
+            throw parse_error (cnode,
+                               "\"max\" and \"operator\" required when \"operand\" given");
+        }
     }
 
     /* Validate values of entries */
@@ -91,16 +109,31 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
     if (res.count.min < 1) {
         throw parse_error (cnode["min"], "\"min\" must be greater than zero");
     }
-    if (res.count.max < 1) {
-        throw parse_error (cnode["max"], "\"max\" must be greater than zero");
-    }
     if (res.count.max < res.count.min) {
         throw parse_error (cnode["max"], "\"max\" must be greater than or equal to \"min\"");
     }
     switch (res.count.oper) {
         case '+':
+            if (res.count.operand < 1) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than zero for addition '+'");
+            }
+            break;
         case '*':
+            if (res.count.operand < 2) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than one for multiplication '*'");
+            }
+            break;
         case '^':
+            if (res.count.operand < 2) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than one for exponentiation '^'");
+            }
+            if (res.count.min < 2) {
+                throw parse_error (cnode["min"],
+                                   "\"min\" must be greater than one for exponentiation '^'");
+            }
             break;
         default:
             throw parse_error (cnode["operator"], "Invalid count operator");
