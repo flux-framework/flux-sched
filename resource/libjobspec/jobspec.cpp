@@ -66,14 +66,29 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
     if (!cnode["min"].IsScalar ()) {
         throw parse_error (cnode["min"], "Value of \"min\" must be a scalar");
     }
-    if (cnode["max"] && !cnode["max"].IsScalar ()) {
-        throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
+    if (cnode["max"]) {
+        if (!cnode["max"].IsScalar ()) {
+            throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
+        }
+        if (!cnode["operator"] || !cnode["operand"]) {
+            throw parse_error (cnode, "\"operator\" and \"operand\" required when \"max\" given");
+        }
     }
-    if (cnode["operator"] && !cnode["operator"].IsScalar ()) {
-        throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
+    if (cnode["operator"]) {
+        if (!cnode["operator"].IsScalar ()) {
+            throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
+        }
+        if (!cnode["max"] || !cnode["operand"]) {
+            throw parse_error (cnode, "\"max\" and \"operand\" required when \"operator\" given");
+        }
     }
-    if (cnode["operand"] && !cnode["operand"].IsScalar ()) {
-        throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
+    if (cnode["operand"]) {
+        if (!cnode["operand"].IsScalar ()) {
+            throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
+        }
+        if (!cnode["max"] || !cnode["operator"]) {
+            throw parse_error (cnode, "\"max\" and \"operator\" required when \"operand\" given");
+        }
     }
 
     /* Validate values of entries */
