@@ -103,7 +103,9 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
         goto out;
     }
 
-    *jobid = ctx->rqt->get_job_counter ();
+    if (match_op != match_op_t::MATCH_GROW_ALLOCATION) {
+        *jobid = ctx->rqt->get_job_counter ();
+    }
     if ((rc = reapi_cli_t::
              match_allocate (ctx->rqt, match_op, jobspec, *jobid, *reserved, R_buf, *at, *ov))
         < 0) {
