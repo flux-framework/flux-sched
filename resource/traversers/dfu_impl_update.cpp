@@ -596,13 +596,16 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
     f_out_edg_iterator_t ei, ei_end;
 
     m_preorder++;
-    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
+    // std::clog << "preorder on vtx:" << u << std::endl;
+    // (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
         goto done;
     if ((rc = mod_plan (u, jobid, mod_data)) != 0)
         goto done;
     for (auto const &subsystem : m_match->subsystems ()) {
         for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
+            // std::clog << "inspecting out edge from vtx:" << u << " to:" << target(*ei, *m_graph)
+            // << std::endl;
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
@@ -612,7 +615,8 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
                 rc += mod_upv (tgt, jobid, mod_data);
         }
     }
-    (*m_graph)[u].idata.colors[dom] = m_color.black ();
+    // std::clog << "postorder on vtx:" << u << std::endl;
+    // (*m_graph)[u].idata.colors[dom] = m_color.black ();
     m_postorder++;
 done:
     return rc;
