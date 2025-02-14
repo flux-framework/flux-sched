@@ -91,16 +91,31 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
     if (res.count.min < 1) {
         throw parse_error (cnode["min"], "\"min\" must be greater than zero");
     }
-    if (res.count.max < 1) {
-        throw parse_error (cnode["max"], "\"max\" must be greater than zero");
-    }
     if (res.count.max < res.count.min) {
         throw parse_error (cnode["max"], "\"max\" must be greater than or equal to \"min\"");
     }
     switch (res.count.oper) {
         case '+':
+            if (res.count.operand < 1) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than zero for addition '+'");
+            }
+            break;
         case '*':
+            if (res.count.operand < 2) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than one for multiplication '*'");
+            }
+            break;
         case '^':
+            if (res.count.operand < 2) {
+                throw parse_error (cnode["operand"],
+                                   "\"operand\" must be greater than one for exponentiation '^'");
+            }
+            if (res.count.min < 2) {
+                throw parse_error (cnode["min"],
+                                   "\"min\" must be greater than one for exponentiation '^'");
+            }
             break;
         default:
             throw parse_error (cnode["operator"], "Invalid count operator");
