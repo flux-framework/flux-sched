@@ -95,4 +95,22 @@ test_expect_success "${test009_desc}" '
     test_cmp 009.R.out ${exp_dir}/009.R.out
 '
 
+cmds010="${cmd_dir}/cmds10.in"
+test010_desc="grow existing job to occupy all resources; can't occupy more than exist"
+test_expect_success "${test010_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds010} > cmds010 &&
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 010.R.out \
+    < cmds010 &&
+    test_cmp 010.R.out ${exp_dir}/010.R.out
+'
+
+cmds011="${cmd_dir}/cmds11.in"
+test011_desc="grow existing job four times, grow graph and grow allocation onto new resources; can't occupy more than exist"
+test_expect_success "${test010_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${jgf} -F jgf -f jgf -S CA -P low -t 011.R.out \
+    < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
 test_done

@@ -1666,6 +1666,8 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
         else if (std::string ("allocate_orelse_reserve") == cmd)
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE, jobid, at);
+        else if (std::string ("grow_allocate") == cmd)
+            rc = tr.run (j, ctx->writers, match_op_t::MATCH_GROW_ALLOCATION, jobid, at);
         else if (std::string ("satisfiability") == cmd)
             rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY, jobid, at);
         else
@@ -1753,8 +1755,8 @@ static int run_match (std::shared_ptr<resource_ctx_t> &ctx,
 
     start = std::chrono::system_clock::now ();
     if (strcmp ("allocate", cmd) != 0 && strcmp ("allocate_orelse_reserve", cmd) != 0
-        && strcmp ("allocate_with_satisfiability", cmd) != 0
-        && strcmp ("satisfiability", cmd) != 0) {
+        && strcmp ("allocate_with_satisfiability", cmd) != 0 && strcmp ("satisfiability", cmd) != 0
+        && strcmp ("grow_allocate", cmd) != 0) {
         rc = -1;
         errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: unknown cmd: %s", __FUNCTION__, cmd);
@@ -1990,9 +1992,17 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         < 0)
         goto error;
     if (is_existent_jobid (ctx, jobid)) {
-        errno = EINVAL;
-        flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
-        goto error;
+        if (strcmp ("grow_allocate", cmd) != 0) {
+            errno = EINVAL;
+            flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
+            goto error;
+        }
+    } else {
+        if (strcmp ("grow_allocate", cmd) == 0) {
+            errno = EINVAL;
+            flux_log_error (h, "%s: non-existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
+            goto error;
+        }
     }
     if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
@@ -2070,12 +2080,23 @@ static void match_multi_request_cb (flux_t *h,
         if (json_unpack (value, "{s:I s:s}", "jobid", &jobid, "jobspec", &js_str) < 0)
             goto error;
         if (is_existent_jobid (ctx, jobid)) {
-            errno = EINVAL;
-            flux_log_error (h,
-                            "%s: existent job (%jd).",
-                            __FUNCTION__,
-                            static_cast<intmax_t> (jobid));
-            goto error;
+            if (strcmp ("grow_allocate", cmd) != 0) {
+                errno = EINVAL;
+                flux_log_error (h,
+                                "%s: existent job (%jd).",
+                                __FUNCTION__,
+                                static_cast<intmax_t> (jobid));
+                goto error;
+            }
+        } else {
+            if (strcmp ("grow_allocate", cmd) == 0) {
+                errno = EINVAL;
+                flux_log_error (h,
+                                "%s: nonexistent job (%jd).",
+                                __FUNCTION__,
+                                static_cast<intmax_t> (jobid));
+                goto error;
+            }
         }
         if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
