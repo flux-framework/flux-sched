@@ -226,6 +226,9 @@ Task::Task (const YAML::Node &tasknode)
         if (!count_node.IsMap ()) {
             throw parse_error (count_node, "\"count\" in task is not a mapping");
         }
+        if (count_node.size () != 1) {
+            throw parse_error (count_node, "\"count\" in task must have exactly one entry");
+        }
         for (auto &&entry : count_node) {
             count[entry.first.as<std::string> ()] = entry.second.as<std::string> ();
         }
