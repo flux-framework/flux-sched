@@ -105,6 +105,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
         auto const &node = g[node_vtx];
         // if it matches the constraints
         if ((!meta.constraint || meta.constraint->match (node))
+            // if it's not lost
+            && !(node.status == resource_pool_t::status_t::LOST)
             // if it's up and not drained
             && (checking_satisfiability || node.status == resource_pool_t::status_t::UP)
             // if it's available

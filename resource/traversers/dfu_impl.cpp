@@ -213,6 +213,12 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
                        const std::vector<Jobspec::Resource> &resources)
 {
     int rc = 0;
+
+    // Prune LOST resources
+    if ((*m_graph)[u].status == resource_pool_t::status_t::LOST) {
+        rc = -1;
+        goto done;
+    }
     // Prune by the visiting resource vertex's availability
     // If resource is not UP, no reason to descend further.
     if (meta.alloc_type != jobmeta_t::alloc_type_t::AT_SATISFIABILITY
@@ -795,7 +801,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     expr_eval_vtx_target_t vtx_target;
     subsystem_t dom = m_match->dom_subsystem ();
     bool result = false;
-    bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
+    bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN
+                || (*m_graph)[u].status == resource_pool_t::status_t::LOST;
     bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
     bool reserved = !(*m_graph)[u].schedule.reservations.empty ();
     Flux::resource_model::vtx_predicates_override_t p_overridden = p;
