@@ -160,6 +160,14 @@ test_expect_success "${test031_desc}" '
     test_cmp 031.R.out ${exp_dir}/031.R.out
 '
 
+test031_desc_lost="allocate basic job w/ node exclusivity when node1 is lost"
+test_expect_success "${test031_desc_lost}" '
+    sed s/down/lost/ cmds031 > cmds031.lost &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 031.R.lost \
+      < cmds031.lost &&
+    test_cmp 031.R.lost ${exp_dir}/031.R.out
+'
+
 cmds032="${cmd_dir}/cmds12.in"
 test032_desc="allocate w/ node exclusivity when node1 is set down then up"
 test_expect_success "${test032_desc}" '
@@ -198,6 +206,13 @@ test_expect_success "${test036_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds036} > cmds036 &&
     ${query} -L ${grugs} -F simple -S CA -P hinodex -t 036.R.out < cmds036 &&
     test_cmp 036.R.out ${exp_dir}/036.R.out
+'
+test036_desc_lost="submit unsatisfiable request to cluster with one node lost"
+test_expect_success "${test036_desc_lost}" '
+    sed s/down/lost/ cmds036 > cmds036.lost &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 036.R.lost \
+      < cmds036.lost &&
+    test_cmp 036.R.lost ${exp_dir}/036.R.out
 '
 
 test_done
