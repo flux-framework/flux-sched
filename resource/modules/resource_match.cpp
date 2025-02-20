@@ -1278,6 +1278,73 @@ done:
     return rc;
 }
 
+// Subtract the idset string in b from the idset string in a.
+// Return result if non-empty in resultp (*resultp=NULL if no ids in result)
+// Returns 0 on success, -1 on failure.
+static int subtract_ids (const char *a, const char *b, char **resultp)
+{
+    int rc = -1;
+    char *result = NULL;
+    struct idset *idset = idset_decode (a);
+
+    *resultp = NULL;
+    if (!idset || idset_decode_subtract (idset, b, -1, NULL) < 0)
+        goto out;
+
+    // Success if idset is empty (result will be NULL) or non-empty
+    // idset successfully encoded:
+    if (idset_count (idset) == 0 || (*resultp = idset_encode (idset, IDSET_FLAG_RANGE)))
+        rc = 0;
+out:
+    idset_destroy (idset);
+    return rc;
+}
+
+static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
+                               json_t *resources,
+                               const char *up,
+                               const char *down,
+                               const char *lost)
+{
+    int rc = 0;
+    char *down_not_lost = NULL;
+
+    // Will need to get duration update and set graph metadata when
+    // resource.acquire duration update is supported in the future.
+    if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
+        flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
+        goto done;
+    }
+    if (up && (rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0) {
+        flux_log_error (ctx->h, "%s: mark (up)", __FUNCTION__);
+        goto done;
+    }
+
+    // RFC 28 specifies that ranks in shrink (lost) will also appear
+    // in down, and that lost takes precedence. So subtract lost from
+    // down before marking resources.
+    if (lost && down) {
+        if (subtract_ids (down, lost, &down_not_lost) < 0) {
+            flux_log_error (ctx->h, "%s: failed to subtract shrink ranks from down", __FUNCTION__);
+            goto done;
+        }
+        down = down_not_lost;
+    }
+    if (down
+        && (rc = mark (ctx, down_not_lost ? down_not_lost : down, resource_pool_t::status_t::DOWN))
+               < 0) {
+        flux_log_error (ctx->h, "%s: mark (down)", __FUNCTION__);
+        goto done;
+    }
+    if (lost && ((rc = shrink_resources (ctx, lost)) < 0)) {
+        flux_log_error (ctx->h, "%s: shrink (lost)", __FUNCTION__);
+        goto done;
+    }
+done:
+    free (down_not_lost);
+    return rc;
+}
+
 static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                                json_t *resources,
                                const char *up,
@@ -1307,18 +1374,21 @@ static void update_resource (flux_future_t *f, void *arg)
     int rc = -1;
     const char *up = NULL;
     const char *down = NULL;
+    const char *lost = NULL;
     double expiration = -1.;
     json_t *resources = NULL;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     if ((rc = flux_rpc_get_unpack (f,
-                                   "{s?:o s?:s s?:s s?:F}",
+                                   "{s?:o s?:s s?:s s?s s?:F}",
                                    "resources",
                                    &resources,
                                    "up",
                                    &up,
                                    "down",
                                    &down,
+                                   "shrink",
+                                   &lost,
                                    "expiration",
                                    &expiration))
         < 0) {
@@ -1326,7 +1396,7 @@ static void update_resource (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto done;
     }
-    if ((rc = update_resource_db (ctx, resources, up, down)) < 0) {
+    if ((rc = update_resource_db (ctx, resources, up, down, lost)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
     }
