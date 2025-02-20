@@ -42,7 +42,9 @@ resource_relation_t &resource_relation_t::operator= (resource_relation_t &&o) = 
 resource_relation_t::~resource_relation_t () = default;
 
 const resource_pool_t::string_to_status resource_pool_t::str_to_status =
-    {{"up", resource_pool_t::status_t::UP}, {"down", resource_pool_t::status_t::DOWN}};
+    {{"up", resource_pool_t::status_t::UP},
+     {"down", resource_pool_t::status_t::DOWN},
+     {"lost", resource_pool_t::status_t::LOST}};
 
 const std::string resource_pool_t::status_to_str (status_t s)
 {
@@ -53,6 +55,9 @@ const std::string resource_pool_t::status_to_str (status_t s)
             break;
         case status_t::DOWN:
             str = "DOWN";
+            break;
+        case status_t::LOST:
+            str = "LOST";
             break;
         default:
             str = "";

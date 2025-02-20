@@ -36,7 +36,7 @@ struct resource_pool_t : public resource_t {
     resource_pool_t &operator= (resource_pool_t &&o);
     ~resource_pool_t ();
 
-    enum class status_t : int { UP = 0, DOWN = 1 };
+    enum class status_t : int { UP = 0, DOWN = 1, LOST = 2 };
 
     typedef std::unordered_map<std::string, status_t> string_to_status;
     static const string_to_status str_to_status;
