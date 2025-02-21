@@ -66,43 +66,28 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
     if (!cnode["min"].IsScalar ()) {
         throw parse_error (cnode["min"], "Value of \"min\" must be a scalar");
     }
-    if (cnode["max"]) {
+    if (cnode["max"] || cnode["operator"] || cnode["operand"]) {
+        if (!cnode["max"] || !cnode["operator"] || !cnode["operand"]) {
+            throw parse_error (cnode,
+                               "All or none of \"max\", \"operator\", and \"operand\" must be "
+                               "specified");
+        }
         if (!cnode["max"].IsScalar ()) {
             throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
         }
-        if (!cnode["operator"] || !cnode["operand"]) {
-            throw parse_error (cnode, "\"operator\" and \"operand\" required when \"max\" given");
-        }
-    }
-    if (cnode["operator"]) {
         if (!cnode["operator"].IsScalar ()) {
             throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
         }
-        if (!cnode["max"] || !cnode["operand"]) {
-            throw parse_error (cnode, "\"max\" and \"operand\" required when \"operator\" given");
-        }
-    }
-    if (cnode["operand"]) {
         if (!cnode["operand"].IsScalar ()) {
             throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
         }
-        if (!cnode["max"] || !cnode["operator"]) {
-            throw parse_error (cnode, "\"max\" and \"operator\" required when \"operand\" given");
-        }
+        res.count.max = cnode["max"].as<unsigned> ();
+        res.count.oper = cnode["operator"].as<char> ();
+        res.count.operand = cnode["operand"].as<int> ();
     }
 
     /* Validate values of entries */
     res.count.min = cnode["min"].as<unsigned> ();
-    if (cnode["max"]) {
-        res.count.max = cnode["max"].as<unsigned> ();
-    }
-    if (cnode["operator"]) {
-        res.count.oper = cnode["operator"].as<char> ();
-    }
-    if (cnode["operand"]) {
-        res.count.operand = cnode["operand"].as<int> ();
-    }
-
     if (res.count.min < 1) {
         throw parse_error (cnode["min"], "\"min\" must be greater than zero");
     }
