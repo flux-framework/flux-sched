@@ -88,10 +88,10 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
 
     /* Validate values of entries */
     res.count.min = cnode["min"].as<unsigned> ();
-    if (res.count.min < 1) {
+    if (cnode["min"].as<long long> () < 1) {
         throw parse_error (cnode["min"], "\"min\" must be greater than zero");
     }
-    if (res.count.max < res.count.min) {
+    if (cnode["max"] && cnode["max"].as<long long> () < cnode["min"].as<long long> ()) {
         throw parse_error (cnode["max"], "\"max\" must be greater than or equal to \"min\"");
     }
     switch (res.count.oper) {
