@@ -11,13 +11,13 @@
 #ifndef DFU_FLEXIBLE_HPP
 #define DFU_FLEXIBLE_HPP
 
-#include "resource/traversers/dfu.hpp"
+#include "resource/traversers/dfu_impl.hpp"
 
 using namespace Flux::resource_model::detail;
 namespace Flux {
 namespace resource_model {
 
-class dfu_flexible_t : public dfu_traverser_t {
+class dfu_flexible_t : public dfu_impl_t {
     // struct to convert map of resources counts to an index
     struct Key {
         Key ();
@@ -107,6 +107,15 @@ class dfu_flexible_t : public dfu_traverser_t {
      */
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
                         std::unordered_map<resource_type_t, int64_t> &to_parent);
+
+   public:
+    dfu_flexible_t ();
+    dfu_flexible_t (std::shared_ptr<resource_graph_db_t> db, std::shared_ptr<dfu_match_cb_t> m);
+    dfu_flexible_t (const dfu_flexible_t &o);
+    dfu_flexible_t (dfu_flexible_t &&o);
+    dfu_flexible_t &operator= (const dfu_flexible_t &o);
+    dfu_flexible_t &operator= (dfu_flexible_t &&o);
+    ~dfu_flexible_t ();
 };
 
 }  // namespace resource_model

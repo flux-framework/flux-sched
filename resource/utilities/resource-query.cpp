@@ -32,7 +32,6 @@ extern "C" {
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
-#include "resource/traversers/dfu_traverser_policy_factory.hpp"
 
 namespace fs = std::filesystem;
 using namespace Flux::resource_model;
@@ -577,7 +576,7 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
     }
 
     try {
-        ctx->traverser = create_traverser (ctx->params.traverser_policy);
+        ctx->traverser = std::make_shared<dfu_traverser_t> (ctx->params.traverser_policy);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         std::cerr << "ERROR: out of memory allocating traverser" << std::endl;

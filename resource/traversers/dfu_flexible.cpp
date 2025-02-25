@@ -20,6 +20,18 @@ using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
 
+dfu_flexible_t::dfu_flexible_t () = default;
+dfu_flexible_t::dfu_flexible_t (std::shared_ptr<resource_graph_db_t> db,
+                                std::shared_ptr<dfu_match_cb_t> m)
+    : dfu_impl_t (db, m)
+{
+}
+dfu_flexible_t::dfu_flexible_t (const dfu_flexible_t &o) = default;
+dfu_flexible_t &dfu_flexible_t::operator= (const dfu_flexible_t &o) = default;
+dfu_flexible_t::dfu_flexible_t (dfu_flexible_t &&o) = default;
+dfu_flexible_t &dfu_flexible_t::operator= (dfu_flexible_t &&o) = default;
+dfu_flexible_t::~dfu_flexible_t () = default;
+
 int dfu_flexible_t::match (vtx_t u,
                            const std::vector<Resource> &resources,
                            const Resource **slot_resource,

@@ -19,6 +19,7 @@ extern "C" {
 
 namespace Flux {
 namespace resource_model {
+namespace detail {
 
 bool known_traverser_policy (const std::string &policy)
 {
@@ -29,14 +30,14 @@ bool known_traverser_policy (const std::string &policy)
     return rc;
 }
 
-std::shared_ptr<dfu_traverser_t> create_traverser (const std::string &policy)
+std::shared_ptr<dfu_impl_t> create_traverser (const std::string &policy)
 {
-    std::shared_ptr<dfu_traverser_t> traverser = nullptr;
+    std::shared_ptr<dfu_impl_t> traverser = nullptr;
     try {
         if (policy == FLEXIBLE) {
             traverser = std::make_shared<dfu_flexible_t> ();
         } else if (policy == SIMPLE) {
-            traverser = std::make_shared<dfu_traverser_t> ();
+            traverser = std::make_shared<dfu_impl_t> ();
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -46,6 +47,26 @@ std::shared_ptr<dfu_traverser_t> create_traverser (const std::string &policy)
     return traverser;
 }
 
+std::shared_ptr<dfu_impl_t> create_traverser (std::shared_ptr<resource_graph_db_t> db,
+                                              std::shared_ptr<dfu_match_cb_t> m,
+                                              const std::string &policy)
+{
+    std::shared_ptr<dfu_impl_t> traverser = nullptr;
+    try {
+        if (policy == FLEXIBLE) {
+            traverser = std::make_shared<dfu_flexible_t> (db, m);
+        } else if (policy == SIMPLE) {
+            traverser = std::make_shared<dfu_impl_t> (db, m);
+        }
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        traverser = nullptr;
+    }
+
+    return traverser;
+}
+
+}  // namespace detail
 }  // namespace resource_model
 }  // namespace Flux
 

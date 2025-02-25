@@ -175,7 +175,7 @@ class dfu_impl_t {
      *                   output aggregates on the subtree.
      *  \return          none.
      */
-    void prime_jobspec (std::vector<Jobspec::Resource> &resources,
+    virtual void prime_jobspec (std::vector<Jobspec::Resource> &resources,
                         std::unordered_map<resource_type_t, int64_t> &to_parent);
 
     /*! Extract the aggregate info in the lookup object as pertaining to the
@@ -368,13 +368,13 @@ class dfu_impl_t {
     /*! Test various matching conditions between jobspec and graph
      * including slot match
      */
-    int match (vtx_t u,
+    virtual int match (vtx_t u,
                const std::vector<Jobspec::Resource> &resources,
                const Jobspec::Resource **slot_resource,
                unsigned int *nslots,
                const Jobspec::Resource **match_resource);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
-    const std::vector<Jobspec::Resource> &test (vtx_t u,
+    virtual const std::vector<Jobspec::Resource> &test (vtx_t u,
                                                 const std::vector<Jobspec::Resource> &resources,
                                                 bool &prestine,
                                                 unsigned int &nslots,
@@ -443,7 +443,7 @@ class dfu_impl_t {
                  bool *excl,
                  scoring_api_t &to_parent);
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape, scoring_api_t &dfu_slot);
-    int dom_slot (const jobmeta_t &meta,
+    virtual int dom_slot (const jobmeta_t &meta,
                   vtx_t u,
                   const std::vector<Jobspec::Resource> &resources,
                   unsigned int nslots,
