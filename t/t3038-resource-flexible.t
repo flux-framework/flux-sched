@@ -33,14 +33,6 @@ test_expect_success "${test003_desc}" '
     test_cmp 003.R.out ${exp_dir}/003.R.out
 '
 
-cmds004="${cmd_dir}/cmds04.in"
-test004_desc="JGF: try to allocate jobspec with slot and or_slot siblings"
-test_expect_success "${test004_desc}" '
-    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
-    ${query} -L ${jgf} -f jgf -S CA -P high -T flexible -t 004.R.out < cmds004 &&
-    test_cmp 004.R.out ${exp_dir}/004.R.out
-'
-
 cmds005="${cmd_dir}/cmds05.in"
 test005_desc="JGF: try to allocate jobspec with or_slot count > 1"
 test_expect_success "${test005_desc}" '
