@@ -51,7 +51,7 @@ int dfu_flexible_t::match (vtx_t u,
             if (!resource.with.empty ()) {
                 for (auto &c_resource : resource.with) {
                     if (c_resource.type == slot_rt) {
-                        *slot_resource = &c_resource;
+                        *slot_resources = &resource.with;
                         *nslots = m_match->calc_effective_max (c_resource);
                     }
                 }
@@ -165,7 +165,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
 
         // Or slots should use a minimum of values rather than an accumulation
         // otherwise possible matches may be filtered out
-        if (resource.type == or_slot_rt) {
+        if (resource.type == slot_rt) {
             for (auto &aggregate : resource.user_data) {
                 min_if (subsystem,
                         aggregate.first,
@@ -326,10 +326,51 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
         current_config = or_config[Key (std::get<0> (current_config))];
     }
     for (auto &edg_group : edg_group_vector)
-        dfu.add (dom, or_slot_rt, edg_group);
+        dfu.add (dom, slot_rt, edg_group);
 
 done:
     return (qual_num_slots) ? 0 : -1;
+}
+
+int dfu_flexible_t::prune (const jobmeta_t &meta,
+                           bool exclusive,
+                           subsystem_t s,
+                           vtx_t u,
+                           const std::vector<Jobspec::Resource> &resources)
+{
+    int rc = 0;
+    // Prune by the visiting resource vertex's availability
+    // If resource is not UP, no reason to descend further.
+    if (meta.alloc_type != jobmeta_t::alloc_type_t::AT_SATISFIABILITY
+        && (*m_graph)[u].status != resource_pool_t::status_t::UP) {
+        rc = -1;
+        goto done;
+    }
+    //  RFC 31 constraints only match against type == "node"
+    //  unspecified constraint matches everything
+    if (meta.constraint != nullptr && (*m_graph)[u].type == node_rt
+        && !meta.constraint->match ((*m_graph)[u])) {
+        rc = -1;
+        goto done;
+    }
+    // if rack has been allocated exclusively, no reason to descend further.
+    if ((rc = by_avail (meta, s, u, resources)) == -1)
+        goto done;
+    for (auto &resource : resources) {
+        if ((*m_graph)[u].type != resource.type && resource.type != slot_rt)
+            continue;
+        // Prune by exclusivity checker
+        if (resource.type != slot_rt && (rc = by_excl (meta, s, u, exclusive, resource)) == -1)
+            break;
+        // Prune by the subtree planner quantities
+        if (resource.type != slot_rt && (rc = by_subplan (meta, s, u, resource)) == -1)
+            break;
+        if (resource.type == slot_rt && (rc = by_subplan (meta, s, u, resource)) == -1)
+            continue;
+    }
+
+done:
+    return rc;
 }
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

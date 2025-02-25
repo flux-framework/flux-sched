@@ -108,6 +108,12 @@ class dfu_flexible_t : public dfu_impl_t {
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
                         std::unordered_map<resource_type_t, int64_t> &to_parent);
 
+    int prune (const jobmeta_t &meta,
+               bool excl,
+               subsystem_t subsystem,
+               vtx_t u,
+               const std::vector<Jobspec::Resource> &resources);
+
    public:
     dfu_flexible_t ();
     dfu_flexible_t (std::shared_ptr<resource_graph_db_t> db, std::shared_ptr<dfu_match_cb_t> m);
