@@ -244,7 +244,7 @@ static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
     ctx->params.o_fext = "dot";
     ctx->params.match_format = "simple";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
-    ctx->params.prune_filters = "ALL:core";
+    ctx->params.prune_filters = "ALL:core,ALL:node";
     ctx->params.reserve_vtx_vec = 0;
     ctx->params.elapse_time = false;
     ctx->params.disable_prompt = false;
@@ -599,6 +599,7 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, ch
     int ch = 0;
     std::string token;
 
+    bool reset_prune = true;
     while ((ch = getopt_long (argc, argv, OPTIONS, longopts, NULL)) != -1) {
         switch (ch) {
             case 'h': /* --help */
@@ -658,6 +659,12 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, ch
                 ctx->params.o_fname = optarg;
                 break;
             case 'p': /* --prune-filters */
+                // If specifying prune-filter, clear default if spec is non-null
+                if (reset_prune) {
+                    if (strcmp (optarg, "") != 0)
+                        ctx->params.prune_filters = optarg;
+                    reset_prune = false;
+                }
                 token = optarg;
                 if (token.find_first_not_of (' ') != std::string::npos) {
                     ctx->params.prune_filters += ",";
