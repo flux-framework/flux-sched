@@ -97,7 +97,7 @@ struct jobmeta_t {
         return 0;
     }
 
-   private:
+   protected:
     bool m_queue_set = false;
     std::string m_queue = "";
 };
@@ -175,8 +175,8 @@ class dfu_impl_t {
      *                   output aggregates on the subtree.
      *  \return          none.
      */
-    void prime_jobspec (std::vector<Jobspec::Resource> &resources,
-                        std::unordered_map<resource_type_t, int64_t> &to_parent);
+    virtual void prime_jobspec (std::vector<Jobspec::Resource> &resources,
+                                std::unordered_map<resource_type_t, int64_t> &to_parent);
 
     /*! Extract the aggregate info in the lookup object as pertaining to the
      *  planner-tracking resource types into resource_counts array, a form that
@@ -324,10 +324,10 @@ class dfu_impl_t {
      */
     int mark (std::set<int64_t> &ranks, resource_pool_t::status_t status);
 
-   private:
+   protected:
     /************************************************************************
      *                                                                      *
-     *                 Private Match and Util API                           *
+     *                 Protected Match and Util API                           *
      *                                                                      *
      ************************************************************************/
     const std::string level () const;
@@ -355,11 +355,11 @@ class dfu_impl_t {
                     subsystem_t s,
                     vtx_t u,
                     const Jobspec::Resource &resource);
-    int prune (const jobmeta_t &meta,
-               bool excl,
-               subsystem_t subsystem,
-               vtx_t u,
-               const std::vector<Jobspec::Resource> &resources);
+    virtual int prune (const jobmeta_t &meta,
+                       bool excl,
+                       subsystem_t subsystem,
+                       vtx_t u,
+                       const std::vector<Jobspec::Resource> &resources);
 
     planner_multi_t *subtree_plan (vtx_t u,
                                    std::vector<uint64_t> &avail,
@@ -368,17 +368,18 @@ class dfu_impl_t {
     /*! Test various matching conditions between jobspec and graph
      * including slot match
      */
-    int match (vtx_t u,
-               const std::vector<Jobspec::Resource> &resources,
-               const Jobspec::Resource **slot_resource,
-               unsigned int *nslots,
-               const Jobspec::Resource **match_resource);
+    virtual int match (vtx_t u,
+                       const std::vector<Jobspec::Resource> &resources,
+                       const Jobspec::Resource **slot_resource,
+                       unsigned int *nslots,
+                       const Jobspec::Resource **match_resource);
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
-    const std::vector<Jobspec::Resource> &test (vtx_t u,
-                                                const std::vector<Jobspec::Resource> &resources,
-                                                bool &prestine,
-                                                unsigned int &nslots,
-                                                match_kind_t &ko);
+    virtual const std::vector<Jobspec::Resource> &test (
+        vtx_t u,
+        const std::vector<Jobspec::Resource> &resources,
+        bool &prestine,
+        unsigned int &nslots,
+        match_kind_t &ko);
     bool is_pconstraint_matched (vtx_t u, const std::string &property);
 
     /*! Accumulate count into accum if type matches with one of the resource
@@ -443,13 +444,14 @@ class dfu_impl_t {
                  bool *excl,
                  scoring_api_t &to_parent);
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape, scoring_api_t &dfu_slot);
-    int dom_slot (const jobmeta_t &meta,
-                  vtx_t u,
-                  const std::vector<Jobspec::Resource> &resources,
-                  unsigned int nslots,
-                  bool prestine,
-                  bool *excl,
-                  scoring_api_t &dfu);
+    virtual int dom_slot (const jobmeta_t &meta,
+                          vtx_t u,
+                          const std::vector<Jobspec::Resource> &resources,
+                          unsigned int nslots,
+                          bool prestine,
+                          bool *excl,
+                          scoring_api_t &dfu);
+    // std::size_t hash_value(std::map<resource_type_t, int> counts);
     int dom_exp (const jobmeta_t &meta,
                  vtx_t u,
                  const std::vector<Jobspec::Resource> &resources,
@@ -492,7 +494,7 @@ class dfu_impl_t {
 
     /************************************************************************
      *                                                                      *
-     *               Private Update/Emit/Remove API                         *
+     *               Protected Update/Emit/Remove API                         *
      *                                                                      *
      ************************************************************************/
     // Emit matched resource set
@@ -579,7 +581,7 @@ class dfu_impl_t {
 
     /************************************************************************
      *                                                                      *
-     *                     Private Member Data                              *
+     *                     Protected Member Data                              *
      *                                                                      *
      ************************************************************************/
     color_t m_color;

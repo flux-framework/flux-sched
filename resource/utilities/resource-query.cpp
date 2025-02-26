@@ -37,7 +37,7 @@ namespace fs = std::filesystem;
 using namespace Flux::resource_model;
 using boost::tie;
 
-#define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
+#define OPTIONS "L:f:W:S:P:T:F:g:o:p:t:r:edh"
 static const struct option longopts[] = {
     {"load-file", required_argument, 0, 'L'},
     {"load-format", required_argument, 0, 'f'},
@@ -45,6 +45,7 @@ static const struct option longopts[] = {
     {"match-subsystems", required_argument, 0, 'S'},
     {"match-policy", required_argument, 0, 'P'},
     {"match-format", required_argument, 0, 'F'},
+    {"traverser-policy", required_argument, 0, 'T'},
     {"graph-format", required_argument, 0, 'g'},
     {"graph-output", required_argument, 0, 'o'},
     {"prune-filters", required_argument, 0, 'p'},
@@ -147,6 +148,10 @@ OPTIONS:
             Specify the emit format of the matched resource set.
             (default=simple).
 
+    -T, --traverser-policy=<simple|flexible>
+            Specify the traverser policy.
+            (default=simple)
+
     -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>
             Install a planner-based filter at each High-Level (HL) resource
                 vertex which tracks the state of the Low-Level (LL) resources
@@ -239,6 +244,7 @@ static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
     ctx->params.load_allowlist = "";
     ctx->params.matcher_name = "CA";
     ctx->params.matcher_policy = "first";
+    ctx->params.traverser_policy = "simple";
     ctx->params.o_fname = "";
     ctx->params.r_fname = "";
     ctx->params.o_fext = "dot";
@@ -570,7 +576,7 @@ static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
     }
 
     try {
-        ctx->traverser = std::make_shared<dfu_traverser_t> ();
+        ctx->traverser = std::make_shared<dfu_traverser_t> (ctx->params.traverser_policy);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         std::cerr << "ERROR: out of memory allocating traverser" << std::endl;
@@ -636,6 +642,9 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, ch
                 break;
             case 'P': /* --match-policy */
                 ctx->params.matcher_policy = optarg;
+                break;
+            case 'T': /* --traverser-policy */
+                ctx->params.traverser_policy = optarg;
                 break;
             case 'F': /* --match-format */
                 ctx->params.match_format = optarg;
