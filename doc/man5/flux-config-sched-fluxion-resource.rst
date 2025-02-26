@@ -65,7 +65,7 @@ prune-filters
     ``<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>``.
     Use the ``ALL`` keyword for HL-resource if you want LL-resource
     to be tracked at all of its ancestor HL-resource vertices.
-    The default is "ALL:core".
+    The default is "ALL:core,ALL:node".
 
 
 .. _match_policies:
