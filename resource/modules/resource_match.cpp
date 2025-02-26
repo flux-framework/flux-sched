@@ -627,6 +627,10 @@ static int unpack_resources (json_t *resobj,
     json_t *jgf = NULL;
     size_t index;
     json_t *val;
+    double max_clock = static_cast<double> (
+        std::chrono::duration_cast<std::chrono::seconds> (
+            std::chrono::time_point<std::chrono::system_clock>::max ().time_since_epoch ())
+            .count ());
 
     if (!(ids = idset_create (0, IDSET_FLAG_AUTOGROW)))
         return -1;
@@ -646,6 +650,9 @@ static int unpack_resources (json_t *resobj,
                          &jgf)
             < 0)
             goto inval;
+        // RFC 20 states that end == 0.0 means "unset". Set to max_clock if so:
+        if (end == 0.)
+            end = max_clock;
         // flux-core validates these numbers, but checking here
         // in case Fluxion is plugged into another resource manager
         if (version != 1)
@@ -1539,6 +1546,7 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
     int saved_errno;
     double tstart = 0;
     double expiration = 0;
+    double max = static_cast<double> (std::numeric_limits<int64_t>::max ());
     json_t *o = NULL;
     json_t *graph = NULL;
     json_error_t error;
@@ -1553,7 +1561,7 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
     if ((rc = json_unpack_ex (o,
                               &error,
                               0,
-                              "{s:i s:{s:F s:F} s?:o}",
+                              "{s:i s:{s?F s?F} s?:o}",
                               "version",
                               &version,
                               "execution",
@@ -1568,8 +1576,11 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
         flux_log (ctx->h, LOG_ERR, "%s: json_unpack: %s", __FUNCTION__, error.text);
         goto freemem_out;
     }
-    if (version != 1 || tstart < 0 || expiration < tstart
-        || expiration > static_cast<double> (std::numeric_limits<int64_t>::max ())) {
+    // RFC 20 states: "An expiration of 0. SHALL be interpreted as "unset",
+    // therefore if expiration is 0 set it to int64_t::max:
+    if (expiration == 0.)
+        expiration = max;
+    if (version != 1 || tstart < 0 || expiration < tstart || expiration > max) {
         rc = -1;
         errno = EPROTO;
         flux_log (ctx->h,
