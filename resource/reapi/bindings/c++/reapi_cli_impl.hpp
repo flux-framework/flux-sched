@@ -410,7 +410,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     params.o_fext = "dot";
     params.match_format = "jgf";
     params.o_format = emit_format_t::GRAPHVIZ_DOT;
-    params.prune_filters = "ALL:core";
+    params.prune_filters = "ALL:core,ALL:node";
     params.reserve_vtx_vec = 0;
     params.elapse_time = false;
     params.disable_prompt = false;
