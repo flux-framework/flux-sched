@@ -1293,12 +1293,18 @@ static void update_resource (flux_future_t *f, void *arg)
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;
     }
-    if (expiration >= 0.) {
+    if (expiration > 0.) {
         /*  Update graph duration:
          */
         ctx->db->metadata.graph_duration.graph_end =
             std::chrono::system_clock::from_time_t ((time_t)expiration);
         flux_log (ctx->h, LOG_INFO, "resource expiration updated to %.2f", expiration);
+    } else if (expiration == 0.) {
+        /*  An expiration of 0 should be treated as "no expiration":
+         */
+        ctx->db->metadata.graph_duration.graph_end =
+            std::chrono::system_clock::from_time_t (detail::SYSTEM_MAX_DURATION);
+        flux_log (ctx->h, LOG_INFO, "resource expiration updated to 0. (unlimited)");
     }
     for (auto &kv : ctx->notify_msgs) {
         if ((rc += flux_respond (ctx->h, kv.second->get_msg (), NULL)) < 0) {
