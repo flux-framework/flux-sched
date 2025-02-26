@@ -35,8 +35,11 @@ test_expect_success 'load test resources' '
 	load_test_resources ${excl_4N4B}
 '
 
+# Note: updating test to specify ALL:core. The default (ALL:core,ALL:node)
+# causes requests of drained resources to be unsatisfiable rather than the
+# expected behavior of blocking under fcfs.
 test_expect_success 'dyn-state: loading fluxion modules works' '
-	load_resource match-format=rv1 &&
+	load_resource match-format=rv1 prune-filters=ALL:core &&
 	load_qmanager
 '
 
@@ -159,8 +162,11 @@ test_expect_success 'configure queues' '
 	flux queue start --all
 '
 
+# Note: updating test to specify ALL:core. The default (ALL:core,ALL:node)
+# causes requests of drained resources to be unsatisfiable rather than the
+# expected behavior of blocking under fcfs.
 test_expect_success 'dyn-state: loading fluxion modules works' '
-	load_resource match-format=rv1 &&
+	load_resource match-format=rv1 prune-filters=ALL:core &&
 	load_qmanager
 '
 

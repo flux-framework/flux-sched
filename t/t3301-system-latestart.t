@@ -74,8 +74,16 @@ test_expect_success HAVE_JQ 'startctl shows rank 1 pid not -1' '
 	test $($startctl status | jq -r ".procs[1].pid") != "-1"
 '
 
-# Side effect: this test blocks until the rank 1 broker has a chance to
-# wire up and start services
+# Updated behavior: the first job is unsatisfiable and fails
+test_expect_failure 'two node job can now run' '
+	run_timeout 30 flux job attach $(cat jobid)
+'
+
+test_expect_success 'two node job is accepted and runs' '
+	sleep 5 &&
+	flux submit -N2 -n2 echo Hello >jobid
+'
+
 test_expect_success 'two node job can now run' '
 	run_timeout 30 flux job attach $(cat jobid)
 '

@@ -33,4 +33,12 @@ test_expect_success "${test003_desc}" '
     test_cmp 003.R.out ${exp_dir}/003.R.out
 '
 
+cmds004="${cmd_dir}/cmds04.in"
+test004_desc="requesting nonexistent resources results in an error"
+test_expect_success "${test004_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
+    ${query} -L ${grugs} -S CA -P low -F pretty_simple -t 004.R.out < cmds004 2>004.R.out &&
+    test_cmp 004.R.out ${exp_dir}/004.R.out
+'
+
 test_done

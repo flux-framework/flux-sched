@@ -26,7 +26,8 @@
             "containment": "/cluster0"
           },
           "agfilter": {
-            "core": "used:0, total:16"
+            "core": "used:0, total:16",
+            "node": "used:0, total:1"
           }
         }
       }

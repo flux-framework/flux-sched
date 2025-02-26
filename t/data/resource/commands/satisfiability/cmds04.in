@@ -1,0 +1,6 @@
+# zone[1]->cluster[1]->rack[1]->node[1]->slot[1]->socket[1]->core[1]
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test009.yaml
+match satisfiability @TEST_SRCDIR@/data/resource/jobspecs/satisfiability/test009.yaml
+
+quit
