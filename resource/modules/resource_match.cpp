@@ -647,7 +647,7 @@ static int unpack_resources (json_t *resobj,
             < 0)
             goto inval;
         // flux-core validates these numbers, but checking here
-        // in case Fluxin is plugged into another resource manager
+        // in case Fluxion is plugged into another resource manager
         if (version != 1)
             goto inval;
         if (start != 0 && (start == end))
