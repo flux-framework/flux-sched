@@ -452,14 +452,6 @@ int resource_reader_grug_t::unpack_at (resource_graph_t &g,
     return -1;
 }
 
-int resource_reader_grug_t::remove_subgraph (resource_graph_t &g,
-                                             resource_graph_metadata_t &m,
-                                             const std::string &path)
-{
-    errno = ENOTSUP;  // GRUG reader does not support remove
-    return -1;
-}
-
 int resource_reader_grug_t::update (resource_graph_t &g,
                                     resource_graph_metadata_t &m,
                                     const std::string &str,

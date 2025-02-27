@@ -604,64 +604,6 @@ done:
     return rc;
 }
 
-int resource_reader_jgf_t::remove_graph_metadata (vtx_t v,
-                                                  resource_graph_t &g,
-                                                  resource_graph_metadata_t &m)
-{
-    int rc = -1;
-    for (auto &kv : g[v].paths) {
-        m.by_path.erase (kv.second);
-    }
-
-    m.by_outedges.erase (v);
-
-    for (auto it = m.by_type[g[v].type].begin (); it != m.by_type[g[v].type].end (); ++it) {
-        if (*it == v) {
-            m.by_type[g[v].type].erase (it);
-            break;
-        }
-    }
-
-    for (auto it = m.by_name[g[v].name].begin (); it != m.by_name[g[v].name].end (); ++it) {
-        if (*it == v) {
-            m.by_name[g[v].name].erase (it);
-            break;
-        }
-    }
-
-    for (auto it = m.by_rank[g[v].rank].begin (); it != m.by_rank[g[v].rank].end (); ++it) {
-        if (*it == v) {
-            m.by_rank[g[v].rank].erase (it);
-            break;
-        }
-    }
-
-    rc = 0;
-    return rc;
-}
-
-int resource_reader_jgf_t::remove_metadata_outedges (vtx_t source_vertex,
-                                                     vtx_t dest_vertex,
-                                                     resource_graph_t &g,
-                                                     resource_graph_metadata_t &m)
-{
-    int rc = -1;
-    std::vector<edg_t> remove_edges;
-    auto iter = m.by_outedges.find (source_vertex);
-    if (iter == m.by_outedges.end ())
-        return rc;
-    auto &outedges = iter->second;
-    for (auto kv = outedges.begin (); kv != outedges.end (); ++kv) {
-        if (boost::target (kv->second, g) == dest_vertex) {
-            kv = outedges.erase (kv);
-            // TODO: Consider adding break here
-        }
-    }
-
-    rc = 0;
-    return rc;
-}
-
 int resource_reader_jgf_t::update_vmap (std::map<std::string, vmap_val_t> &vmap,
                                         vtx_t v,
                                         const std::map<subsystem_t, bool> &root_checks,
@@ -1261,50 +1203,6 @@ done:
     return rc;
 }
 
-int resource_reader_jgf_t::get_subgraph_vertices (resource_graph_t &g,
-                                                  vtx_t vtx,
-                                                  std::vector<vtx_t> &vtx_list)
-{
-    vtx_t next_vtx;
-    boost::graph_traits<resource_graph_t>::out_edge_iterator ei, ei_end;
-    boost::tie (ei, ei_end) = boost::out_edges (vtx, g);
-
-    for (; ei != ei_end; ++ei) {
-        next_vtx = boost::target (*ei, g);
-
-        for (const auto &paths_it : g[next_vtx].paths) {
-            // check that we don't recurse on parent edges
-            if (paths_it.second.find (g[vtx].name) != std::string::npos
-                && paths_it.second.find (g[vtx].name) < paths_it.second.find (g[next_vtx].name)) {
-                vtx_list.push_back (next_vtx);
-                get_subgraph_vertices (g, next_vtx, vtx_list);
-                break;
-            }
-        }
-    }
-
-    return 0;
-}
-
-int resource_reader_jgf_t::get_parent_vtx (resource_graph_t &g, vtx_t vtx, vtx_t &parent_vtx)
-{
-    vtx_t next_vtx;
-    boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
-    boost::tie (ei, ei_end) = boost::in_edges (vtx, g);
-    int rc = -1;
-
-    for (; ei != ei_end; ++ei) {
-        next_vtx = boost::source (*ei, g);
-        if (g[*ei].subsystem == containment_sub) {
-            parent_vtx = next_vtx;
-            rc = 0;
-            break;
-        }
-    }
-
-    return rc;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public JGF Resource Reader Interface
 ////////////////////////////////////////////////////////////////////////////////
@@ -1405,42 +1303,6 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
 done:
     json_decref (jgf);
     return rc;
-}
-
-int resource_reader_jgf_t::remove_subgraph (resource_graph_t &g,
-                                            resource_graph_metadata_t &m,
-                                            const std::string &path)
-{
-    vtx_t subgraph_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-    vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-    std::vector<vtx_t> vtx_list;
-
-    auto iter = m.by_path.find (path);
-    if (iter == m.by_path.end ()) {
-        return -1;
-    }
-
-    for (const auto &v : iter->second) {
-        subgraph_root_vtx = v;
-    }
-
-    vtx_list.push_back (subgraph_root_vtx);
-
-    get_subgraph_vertices (g, subgraph_root_vtx, vtx_list);
-
-    if (get_parent_vtx (g, subgraph_root_vtx, parent_vtx) != 0)
-        return -1;
-
-    if (remove_metadata_outedges (parent_vtx, subgraph_root_vtx, g, m) != 0)
-        return -1;
-
-    for (auto &vtx : vtx_list) {
-        // clear vertex edges but don't delete vertex
-        boost::clear_vertex (vtx, g);
-        remove_graph_metadata (vtx, g, m);
-    }
-
-    return 0;
 }
 
 int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
