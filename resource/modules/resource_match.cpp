@@ -2497,7 +2497,7 @@ static void set_property_request_cb (flux_t *h,
                                      void *arg)
 {
     const char *rp = NULL, *kv = NULL;
-    std::string resource_path = "", keyval = "";
+    std::string resource_path = "", keyval = "", errmsg = "";
     std::string property_key = "", property_value = "";
     size_t pos;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
@@ -2505,8 +2505,11 @@ static void set_property_request_cb (flux_t *h,
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "sp_resource_path", &rp, "sp_keyval", &kv) < 0)
+    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "sp_resource_path", &rp, "sp_keyval", &kv)
+        < 0) {
+        errmsg = "could not unpack payload";
         goto error;
+    }
 
     resource_path = rp;
     keyval = kv;
@@ -2515,8 +2518,7 @@ static void set_property_request_cb (flux_t *h,
 
     if (pos == 0 || (pos == keyval.size () - 1) || pos == std::string::npos) {
         errno = EINVAL;
-        flux_log_error (h, "%s: Incorrect format.", __FUNCTION__);
-        flux_log_error (h, "%s: Use set-property <resource> PROPERTY=VALUE", __FUNCTION__);
+        errmsg = "Incorrect format, use set-property <resource> PROPERTY=VALUE";
         goto error;
     }
 
@@ -2527,10 +2529,7 @@ static void set_property_request_cb (flux_t *h,
 
     if (it == ctx->db->metadata.by_path.end ()) {
         errno = ENOENT;
-        flux_log_error (h,
-                        "%s: Couldn't find %s in resource graph.",
-                        __FUNCTION__,
-                        resource_path.c_str ());
+        errmsg = "Couldn't find '" + resource_path + "' in resource graph";
         goto error;
     }
 
@@ -2551,7 +2550,7 @@ static void set_property_request_cb (flux_t *h,
     return;
 
 error:
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
@@ -2561,14 +2560,16 @@ static void remove_property_request_cb (flux_t *h,
                                         void *arg)
 {
     const char *rp = NULL, *kv = NULL;
-    std::string resource_path = "", property_key = "";
+    std::string resource_path = "", property_key = "", errmsg = "";
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "resource_path", &rp, "key", &kv) < 0)
+    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "resource_path", &rp, "key", &kv) < 0) {
+        errmsg = "could not unpack payload";
         goto error;
+    }
 
     resource_path = rp;
     property_key = kv;
@@ -2577,10 +2578,7 @@ static void remove_property_request_cb (flux_t *h,
 
     if (it == ctx->db->metadata.by_path.end ()) {
         errno = ENOENT;
-        flux_log_error (h,
-                        "%s: Couldn't find %s in resource graph.",
-                        __FUNCTION__,
-                        resource_path.c_str ());
+        errmsg = "Couldn't find '" + resource_path + "' in resource graph";
         goto error;
     }
 
@@ -2594,7 +2592,7 @@ static void remove_property_request_cb (flux_t *h,
     return;
 
 error:
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
@@ -2604,7 +2602,7 @@ static void get_property_request_cb (flux_t *h,
                                      void *arg)
 {
     const char *rp = NULL, *gp_key = NULL;
-    std::string resource_path = "", property_key = "";
+    std::string resource_path = "", property_key = "", errmsg = "";
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::map<std::string, std::string>::const_iterator p_it;
@@ -2613,8 +2611,10 @@ static void get_property_request_cb (flux_t *h,
     json_t *resp_array = nullptr;
 
     if (flux_request_unpack (msg, NULL, "{s:s s:s}", "gp_resource_path", &rp, "gp_key", &gp_key)
-        < 0)
+        < 0) {
+        errmsg = "could not unpack payload";
         goto error;
+    }
 
     resource_path = rp;
     property_key = gp_key;
@@ -2623,10 +2623,7 @@ static void get_property_request_cb (flux_t *h,
 
     if (it == ctx->db->metadata.by_path.end ()) {
         errno = ENOENT;
-        flux_log_error (h,
-                        "%s: Couldn't find %s in resource graph.",
-                        __FUNCTION__,
-                        resource_path.c_str ());
+        errmsg = "Couldn't find '" + resource_path + "' in resource graph";
         goto error;
     }
 
@@ -2640,11 +2637,7 @@ static void get_property_request_cb (flux_t *h,
     }
     if (resp_values.empty ()) {
         errno = ENOENT;
-        flux_log_error (h,
-                        "%s: Property %s was not found for resource %s.",
-                        __FUNCTION__,
-                        property_key.c_str (),
-                        resource_path.c_str ());
+        errmsg = "Property '" + property_key + "' was not found for resource " + resource_path;
         goto error;
     }
 
@@ -2656,11 +2649,13 @@ static void get_property_request_cb (flux_t *h,
         json_t *value = nullptr;
         if (!(value = json_string (resp_value.c_str ()))) {
             errno = EINVAL;
+            errmsg = "internal error";
             goto error;
         }
         if (json_array_append_new (resp_array, value) < 0) {
             json_decref (value);
             errno = EINVAL;
+            errmsg = "internal error";
             goto error;
         }
     }
@@ -2670,7 +2665,7 @@ static void get_property_request_cb (flux_t *h,
     return;
 
 error:
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
