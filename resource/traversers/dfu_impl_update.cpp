@@ -675,6 +675,54 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
     return rc;
 }
 
+int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
+{
+    bool stop = false;
+    subsystem_t dom = m_match->dom_subsystem ();
+    int64_t base_time = 0;
+    int64_t duration = 0;
+    planner_t *plans = NULL;
+    planner_multi_t *multi_plans = NULL;
+
+    // Compute removed span counts
+    plans = (*m_graph)[vtx].schedule.plans;
+    for (const auto &alloc_it : (*m_graph)[vtx].schedule.allocations) {
+        mod_data.type_to_count[(*m_graph)[vtx].type.c_str ()] +=
+            planner_span_resource_count (plans, alloc_it.second);
+    }
+    // Reset planner
+    base_time = planner_base_time (plans);
+    duration = planner_duration (plans);
+    if (planner_reset (plans, base_time, duration) != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_reset failed.\n";
+        m_err_msg += strerror (errno);
+        m_err_msg += ".\n";
+        return -1;
+    }
+    // Reset planner_multi
+    if ((multi_plans = (*m_graph)[vtx].idata.subplans[dom]) != NULL) {
+        base_time = planner_multi_base_time (multi_plans);
+        duration = planner_multi_duration (multi_plans);
+        if (planner_multi_reset (multi_plans, base_time, duration) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_multi_reset failed.\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+            return -1;
+        }
+    }
+    // Clear tags, xspans, agfilters
+    (*m_graph)[vtx].idata.tags.clear ();
+    (*m_graph)[vtx].idata.x_spans.clear ();
+    (*m_graph)[vtx].idata.job2span.clear ();
+    // Clear allocations and reservations
+    (*m_graph)[vtx].schedule.allocations.clear ();
+    (*m_graph)[vtx].schedule.reservations.clear ();
+
+    return 0;
+}
+
 int dfu_impl_t::get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set)
 {
     vtx_t next_vtx;
@@ -955,6 +1003,45 @@ int dfu_impl_t::remove (vtx_t root,
         rc = mod_exv (jobid, mod_data);
     }
 
+    return rc;
+}
+
+int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
+{
+    int rc = -1;
+    modify_data_t mod_data;
+    resource_graph_t &g = m_graph_db->resource_graph;
+    resource_graph_metadata_t &m = m_graph_db->metadata;
+    m_preorder = 0;
+    m_postorder = 0;
+    std::unordered_set<int64_t> jobids;
+
+    for (const int64_t &rank : ranks) {
+        auto rank_vector = m.by_rank.find (rank);
+        if (rank_vector == m.by_rank.end ()) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": rank not found in by_rank map.\n";
+            return -1;
+        }
+        mod_data.ranks_removed.insert (rank);
+        for (const vtx_t &vtx : rank_vector->second) {
+            for (const auto &jobid : (*m_graph)[vtx].idata.tags) {
+                jobids.insert (jobid.first);
+            }
+            // Clear all job data from the vertex.
+            if ((rc = clear_vertex (vtx, mod_data)) != 0) {
+                errno = EINVAL;
+                return rc;
+            }
+        }
+    }
+    // Now partial cancel DFV from graph root
+    mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
+    for (const int64_t &jobid : jobids) {
+        m_color.reset ();
+        if ((rc = mod_dfv (root, jobid, mod_data)) != 0)
+            return rc;
+    }
     return rc;
 }
 

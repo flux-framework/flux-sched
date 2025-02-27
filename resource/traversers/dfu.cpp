@@ -495,6 +495,27 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
     return rc;
 }
 
+int dfu_traverser_t::remove (const std::set<int64_t> &ranks)
+{
+    int rc = 0;
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+
+    subsystem_t dom = get_match_cb ()->dom_subsystem ();
+    if (!get_graph () || !get_graph_db ()
+        || get_graph_db ()->metadata.roots.find (dom) == get_graph_db ()->metadata.roots.end ()
+        || !get_match_cb ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    vtx_t root = get_graph_db ()->metadata.roots.at (dom);
+    rc = detail::dfu_impl_t::remove (root, ranks);
+    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
+    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    return rc;
+}
+
 int dfu_traverser_t::mark (const std::string &root_path, resource_pool_t::status_t status)
 {
     // Clear the error message to disambiguate errors
