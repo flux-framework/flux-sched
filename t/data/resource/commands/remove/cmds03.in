@@ -1,3 +1,3 @@
-remove /does/not/exist
+remove /does/not/exist true
 find status=up
 quit

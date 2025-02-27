@@ -1,4 +1,4 @@
-remove /tiny0/rack0/node1
+remove /tiny0/rack0/node1 true
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
