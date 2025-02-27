@@ -1241,6 +1241,43 @@ static int mark (std::shared_ptr<resource_ctx_t> &ctx,
                                                : mark_lazy (ctx, ids, status);
 }
 
+static int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
+{
+    int rc = -1;
+    std::set<int64_t> ranks;
+
+    if (!ids) {
+        errno = EINVAL;
+        goto done;
+    }
+    if ((rc = decode_rankset (ctx, ids, ranks)) != 0) {
+        flux_log (ctx->h, LOG_ERR, "decode_rankset (\"%s\") failed", ids);
+        goto done;
+    }
+    if ((rc = ctx->traverser->remove (ranks)) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "partial cancel by ranks (\"%s\") failed: %s",
+                  ids,
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    if ((rc = ctx->traverser->remove_subgraph (ranks)) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "shrink %s failed: %s",
+                  ids,
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    ctx->traverser->initialize ();
+    flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
+
+done:
+    return rc;
+}
+
 static int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                                json_t *resources,
                                const char *up,
