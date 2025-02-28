@@ -324,6 +324,22 @@ class dfu_impl_t {
      */
     int mark (std::set<int64_t> &ranks, resource_pool_t::status_t status);
 
+    /*! Remove a subgraph rooted at the target path.
+     *
+     *  \param target  string path to the root of the subgraph to remove
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove_subgraph (const std::string &target);
+
+    /*! Remove a subgraph corresponding to given ranks.
+     *
+     *  \param ranks   Set of ranks to remove from the resource graph.
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove_subgraph (const std::set<int64_t> &ranks);
+
    private:
     /************************************************************************
      *                                                                      *
@@ -576,6 +592,13 @@ class dfu_impl_t {
     int mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data);
     int mod_exv (int64_t jobid, const modify_data_t &mod_data);
     int cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid);
+
+    // Subgraph removal functions
+    int get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set);
+    int get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx);
+    int remove_metadata_outedges (vtx_t source_vertex, vtx_t dest_vertex);
+    void remove_graph_metadata (vtx_t v);
+    int remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t> &vertices);
 
     /************************************************************************
      *                                                                      *

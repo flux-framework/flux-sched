@@ -509,6 +509,18 @@ int dfu_traverser_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t s
     return detail::dfu_impl_t::mark (ranks, status);
 }
 
+int dfu_traverser_t::remove_subgraph (const std::string &target)
+{
+    clear_err_message ();
+    return detail::dfu_impl_t::remove_subgraph (target);
+}
+
+int dfu_traverser_t::remove_subgraph (const std::set<int64_t> &ranks)
+{
+    clear_err_message ();
+    return detail::dfu_impl_t::remove_subgraph (ranks);
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
