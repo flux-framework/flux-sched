@@ -2805,7 +2805,7 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         || ctx->m_resources_updated) {
         if (run_find (ctx, "sched-now=allocated", "rv1_nosched", &R_alloc) < 0)
             goto error;
-        ctx->m_r_alloc = json_deep_copy (R_alloc);
+        ctx->m_r_alloc = json::value::take (json_deep_copy (R_alloc));
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
     } else
         R_alloc = json_deep_copy (ctx->m_r_alloc.get ());
