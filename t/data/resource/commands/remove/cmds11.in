@@ -1,0 +1,8 @@
+find agfilter=t
+remove [0] false
+find agfilter=t
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/remove/test001.yaml
+find jobid-alloc=1 agfilter=t
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/remove/test001.yaml
+find agfilter=t
+quit

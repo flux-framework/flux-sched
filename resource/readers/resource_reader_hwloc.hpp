@@ -60,10 +60,6 @@ class resource_reader_hwloc_t : public resource_reader_base_t {
                            const std::string &str,
                            int rank = -1);
 
-    virtual int remove_subgraph (resource_graph_t &g,
-                                 resource_graph_metadata_t &m,
-                                 const std::string &path);
-
     /*! Update resource graph g with str.
      *
      * \param g      resource graph

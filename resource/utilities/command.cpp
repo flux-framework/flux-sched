@@ -12,6 +12,7 @@ extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <flux/idset.h>
 }
 
 #include <sys/time.h>
@@ -59,8 +60,9 @@ command_t commands[] =
      {"remove",
       "j",
       cmd_remove,
-      "Experimental: remove a subgraph to the "
-      "resource graph: resource-query> remove path/to/node/"},
+      "Remove a subgraph from the resource graph, specifying whether the target is"
+      "a path (true) or idset (false): resource-query> remove (/path/to/node/ | idset) "
+      "(true|false)"},
      {"find",
       "f",
       cmd_find,
@@ -548,20 +550,48 @@ static int attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
 
 static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
 {
-    const std::string node_path = args[1];
+    const std::string target = args[1];
+    const std::string is_path = args[2];
+    bool path = false;
+    struct idset *r_ids = nullptr;
+    int64_t rank = -1;
+    std::set<int64_t> ranks;
     std::shared_ptr<resource_reader_base_t> rd;
 
-    if ((rd = create_resource_reader ("jgf")) == nullptr) {
-        std::cerr << "ERROR: can't create JGF reader " << std::endl;
+    if (is_path == "true") {
+        path = true;
+        if ((ctx->traverser->remove_subgraph (target)) != 0) {
+            std::cerr << "ERROR: can't remove subgraph " << std::endl;
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            return -1;
+        }
+    } else if (is_path == "false") {
+        if ((r_ids = idset_decode (target.c_str ())) == NULL) {
+            std::cerr << "ERROR: failed to decode ranks.\n";
+            return -1;
+        }
+        rank = idset_first (r_ids);
+        while (rank != IDSET_INVALID_ID) {
+            ranks.insert (rank);
+            rank = idset_next (r_ids, rank);
+        }
+
+        if ((ctx->traverser->remove (ranks)) != 0) {
+            std::cerr << "ERROR: can't partial cancel subgraph " << std::endl;
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            return -1;
+        }
+        if ((ctx->traverser->remove_subgraph (ranks)) != 0) {
+            std::cerr << "ERROR: can't remove subgraph " << std::endl;
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            return -1;
+        }
+    } else {
+        std::cerr << "ERROR: invalid path boolean input " << std::endl;
         return -1;
     }
 
-    if ((rd->remove_subgraph (ctx->db->resource_graph, ctx->db->metadata, node_path)) != 0) {
-        std::cerr << "ERROR: can't remove subgraph " << std::endl;
-        std::cerr << "ERROR: " << rd->err_message ();
-        return -1;
-    }
-    // TODO: reinitialize the traverser, see issue #1075
+    ctx->traverser->initialize ();
 
     return 0;
 }
@@ -586,7 +616,7 @@ int cmd_attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
 int cmd_remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
 {
     try {
-        if (args.size () != 2) {
+        if (args.size () != 3) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }

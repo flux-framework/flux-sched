@@ -181,6 +181,31 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
                 int64_t jobid,
                 bool &full_cancel);
 
+    /*! Remove the allocation/reservation referred to by a set of ranks
+     *  and update the resource state.
+     *
+     *  \param ranks     set of ranks to deallocate.
+     *  \return          0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove (const std::set<int64_t> &ranks);
+
+    /*! Remove a subgraph rooted at the target path.
+     *
+     *  \param target  string path to the root of the subgraph to remove
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove_subgraph (const std::string &target);
+
+    /*! Remove a subgraph corresponding to given ranks.
+     *
+     *  \param ranks   Set of ranks to remove from the resource graph.
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int remove_subgraph (const std::set<int64_t> &ranks);
+
     /*! Mark the resource status up|down|etc starting at subtree_root.
      *
      *  \param root_path     path to the root of the subtree to update.

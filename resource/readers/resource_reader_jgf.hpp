@@ -100,10 +100,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                         bool rsv,
                         uint64_t trav_token);
 
-    virtual int remove_subgraph (resource_graph_t &g,
-                                 resource_graph_metadata_t &m,
-                                 const std::string &path);
-
     /*! Partial cancellation of jobid based on R.
      *
      * \param g      resource graph

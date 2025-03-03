@@ -496,13 +496,6 @@ int resource_reader_hwloc_t::unpack_at (resource_graph_t &g,
     return unpack_internal (g, m, vtx, str, rank);
 }
 
-int resource_reader_hwloc_t::remove_subgraph (resource_graph_t &g,
-                                              resource_graph_metadata_t &m,
-                                              const std::string &path)
-{
-    errno = ENOTSUP;  // hwloc reader does not support remove
-    return -1;
-}
 int resource_reader_hwloc_t::update (resource_graph_t &g,
                                      resource_graph_metadata_t &m,
                                      const std::string &str,

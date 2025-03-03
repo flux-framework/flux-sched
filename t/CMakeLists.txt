@@ -30,6 +30,7 @@ set(ALL_TESTS
   t1025-rv1-reload.t
   t1026-rv1-partial-release.t
   t1027-rv1-partial-release-brokerless-resources.t
+  t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t

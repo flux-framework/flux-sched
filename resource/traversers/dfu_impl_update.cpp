@@ -675,6 +675,159 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
     return rc;
 }
 
+int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
+{
+    bool stop = false;
+    subsystem_t dom = m_match->dom_subsystem ();
+    int64_t base_time = 0;
+    int64_t duration = 0;
+    planner_t *plans = NULL;
+    planner_multi_t *multi_plans = NULL;
+
+    // Compute removed span counts
+    plans = (*m_graph)[vtx].schedule.plans;
+    for (const auto &alloc_it : (*m_graph)[vtx].schedule.allocations) {
+        mod_data.type_to_count[(*m_graph)[vtx].type.c_str ()] +=
+            planner_span_resource_count (plans, alloc_it.second);
+    }
+    // Reset planner
+    base_time = planner_base_time (plans);
+    duration = planner_duration (plans);
+    if (planner_reset (plans, base_time, duration) != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_reset failed.\n";
+        m_err_msg += strerror (errno);
+        m_err_msg += ".\n";
+        return -1;
+    }
+    // Reset planner_multi
+    if ((multi_plans = (*m_graph)[vtx].idata.subplans[dom]) != NULL) {
+        base_time = planner_multi_base_time (multi_plans);
+        duration = planner_multi_duration (multi_plans);
+        if (planner_multi_reset (multi_plans, base_time, duration) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_multi_reset failed.\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+            return -1;
+        }
+    }
+    // Clear tags, xspans, agfilters
+    (*m_graph)[vtx].idata.tags.clear ();
+    (*m_graph)[vtx].idata.x_spans.clear ();
+    (*m_graph)[vtx].idata.job2span.clear ();
+    // Clear allocations and reservations
+    (*m_graph)[vtx].schedule.allocations.clear ();
+    (*m_graph)[vtx].schedule.reservations.clear ();
+
+    return 0;
+}
+
+int dfu_impl_t::get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set)
+{
+    vtx_t next_vtx;
+    subsystem_t dom = m_match->dom_subsystem ();
+    f_out_edg_iterator_t ei, ei_end;
+
+    (*m_graph)[vtx].idata.colors[dom] = m_color.gray ();
+    for (tie (ei, ei_end) = out_edges (vtx, *m_graph); ei != ei_end; ++ei) {
+        if ((*m_graph)[*ei].subsystem == dom) {
+            next_vtx = target (*ei, *m_graph);
+            vtx_set.insert (next_vtx);
+            get_subgraph_vertices (next_vtx, vtx_set);
+        }
+    }
+    (*m_graph)[vtx].idata.colors[dom] = m_color.black ();
+
+    return 0;
+}
+
+int dfu_impl_t::get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx)
+{
+    int rc = -1;
+    vtx_t next_vtx;
+    boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
+    subsystem_t dom = m_match->dom_subsystem ();
+
+    boost::tie (ei, ei_end) = boost::in_edges (vtx, *m_graph);
+    for (; ei != ei_end; ++ei) {
+        next_vtx = boost::source (*ei, *m_graph);
+        if ((*m_graph)[*ei].subsystem == dom) {
+            parent_vtx = next_vtx;
+            rc = 0;
+            break;
+        }
+    }
+
+    return rc;
+}
+
+int dfu_impl_t::remove_metadata_outedges (vtx_t source_vertex, vtx_t dest_vertex)
+{
+    std::vector<edg_t> remove_edges;
+    auto iter = m_graph_db->metadata.by_outedges.find (source_vertex);
+    if (iter == m_graph_db->metadata.by_outedges.end ())
+        return -1;
+    auto &outedges = iter->second;
+    for (auto kv = outedges.begin (); kv != outedges.end (); ++kv) {
+        if (boost::target (kv->second, *m_graph) == dest_vertex) {
+            kv = outedges.erase (kv);
+            // TODO: Consider adding break here
+        }
+    }
+
+    return 0;
+}
+
+void dfu_impl_t::remove_graph_metadata (vtx_t v)
+{
+    m_graph_db->metadata.by_outedges.erase (v);
+    for (auto &kv : (*m_graph)[v].paths) {
+        m_graph_db->metadata.by_path.erase (kv.second);
+    }
+    auto &target_by_type = m_graph_db->metadata.by_type[(*m_graph)[v].type];
+    for (auto it = target_by_type.begin (); it != target_by_type.end (); ++it) {
+        if (*it == v) {
+            target_by_type.erase (it);
+            break;
+        }
+    }
+    auto &target_by_name = m_graph_db->metadata.by_name[(*m_graph)[v].name];
+    for (auto it = target_by_name.begin (); it != target_by_name.end (); ++it) {
+        if (*it == v) {
+            target_by_name.erase (it);
+            break;
+        }
+    }
+    auto &target_by_rank = m_graph_db->metadata.by_rank[(*m_graph)[v].rank];
+    for (auto it = target_by_rank.begin (); it != target_by_rank.end (); ++it) {
+        if (*it == v) {
+            target_by_rank.erase (it);
+            break;
+        }
+    }
+}
+
+int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t> &vertices)
+{
+    for (const auto &root : roots) {
+        vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+        m_color.reset ();
+        if (get_parent_vtx (root, parent_vtx) != 0)
+            return -1;
+
+        if (remove_metadata_outedges (parent_vtx, root) != 0)
+            return -1;
+    }
+    for (auto &vtx : vertices) {
+        // clear vertex edges but don't delete vertex
+        boost::clear_vertex (vtx, *m_graph);
+        remove_graph_metadata (vtx);
+    }
+
+    return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Update API
 ////////////////////////////////////////////////////////////////////////////////
@@ -853,6 +1006,45 @@ int dfu_impl_t::remove (vtx_t root,
     return rc;
 }
 
+int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
+{
+    int rc = -1;
+    modify_data_t mod_data;
+    resource_graph_t &g = m_graph_db->resource_graph;
+    resource_graph_metadata_t &m = m_graph_db->metadata;
+    m_preorder = 0;
+    m_postorder = 0;
+    std::unordered_set<int64_t> jobids;
+
+    for (const int64_t &rank : ranks) {
+        auto rank_vector = m.by_rank.find (rank);
+        if (rank_vector == m.by_rank.end ()) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": rank not found in by_rank map.\n";
+            return -1;
+        }
+        mod_data.ranks_removed.insert (rank);
+        for (const vtx_t &vtx : rank_vector->second) {
+            for (const auto &jobid : (*m_graph)[vtx].idata.tags) {
+                jobids.insert (jobid.first);
+            }
+            // Clear all job data from the vertex.
+            if ((rc = clear_vertex (vtx, mod_data)) != 0) {
+                errno = EINVAL;
+                return rc;
+            }
+        }
+    }
+    // Now partial cancel DFV from graph root
+    mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
+    for (const int64_t &jobid : jobids) {
+        m_color.reset ();
+        if ((rc = mod_dfv (root, jobid, mod_data)) != 0)
+            return rc;
+    }
+    return rc;
+}
+
 int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t status)
 {
     std::map<std::string, std::vector<vtx_t>>::const_iterator vit_root =
@@ -905,6 +1097,62 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status
         errno = ENOENT;
         return -1;
     }
+    return 0;
+}
+
+int dfu_impl_t::remove_subgraph (const std::set<int64_t> &ranks)
+{
+    vtx_t subgraph_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+    vtx_t rank_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+    std::set<vtx_t> vtx_set;
+    std::vector<vtx_t> roots_list;
+    std::string tmp_path = "";
+    subsystem_t dom = m_match->dom_subsystem ();
+    int str_len = INT_MAX;
+
+    for (const auto &rank : ranks) {
+        auto br_iter = m_graph_db->metadata.by_rank.find (rank);
+        if (br_iter != m_graph_db->metadata.by_rank.end ()) {
+            str_len = INT_MAX;
+            vtx_t rank_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+            for (const auto &v : br_iter->second) {
+                vtx_set.insert (v);
+                tmp_path = (*m_graph)[v].paths.at (dom);
+                if (tmp_path.length () < str_len) {
+                    str_len = tmp_path.length ();
+                    rank_root_vtx = v;
+                }
+            }
+            roots_list.push_back (rank_root_vtx);
+        }
+    }
+
+    if (remove_subgraph (roots_list, vtx_set) != 0)
+        return -1;
+
+    return 0;
+}
+
+int dfu_impl_t::remove_subgraph (const std::string &target)
+{
+    vtx_t subgraph_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+    std::set<vtx_t> vtx_set;
+    std::vector<vtx_t> roots_list;
+
+    auto iter = m_graph_db->metadata.by_path.find (target);
+    if (iter == m_graph_db->metadata.by_path.end ()) {
+        return -1;
+    }
+    for (const auto &v : iter->second) {
+        subgraph_root_vtx = v;
+    }
+    vtx_set.insert (subgraph_root_vtx);
+    roots_list.push_back (subgraph_root_vtx);
+    get_subgraph_vertices (subgraph_root_vtx, vtx_set);
+
+    if (remove_subgraph (roots_list, vtx_set) != 0)
+        return -1;
+
     return 0;
 }
 

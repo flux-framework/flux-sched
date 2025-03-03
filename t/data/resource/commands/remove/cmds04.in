@@ -2,6 +2,6 @@ find sched-now=free
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/elastic/test-ma-node.yaml
 find status=up
 find sched-now=allocated
-remove /tiny0/rack0/node0
+remove /tiny0/rack0/node0 true
 find sched-now=allocated
 quit
