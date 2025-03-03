@@ -18,6 +18,10 @@ test_under_flux 1
 # print only with --debug
 #
 
+send_rpc() {
+	flux python -c "import flux; flux.Flux().rpc(\"sched-fluxion-resource.${1}\").get()"
+}
+
 test_debug '
 	echo ${grug} &&
 	echo ${jobspec}
@@ -55,8 +59,14 @@ test_expect_success 'set/get/remove property multiple resources works' "
 	flux ion-resource remove-property /tiny0/rack0/node0/socket1 sockprop &&
 	flux ion-resource remove-property /tiny0/rack0/node1/socket0/core17 coreprop &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 nodeprop &&
+	flux ion-resource get-property /tiny0/rack0/node0 nodeprop \
+		| grep \"Property 'nodeprop' was not found\" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0/socket1 sockprop &&
-	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop
+	flux ion-resource get-property /tiny0/rack0/node0/socket1 sockprop \
+		| grep \"Property 'sockprop' was not found\" &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop &&
+	flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop \
+		| grep \"Property 'coreprop' was not found\"
 "
 
 test_expect_success 'set/get/remove property multiple properties works' "
@@ -94,10 +104,14 @@ test_expect_success 'set/get/remove property multiple properties works' "
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop5
 "
 
-test_expect_success 'test with no path works' '
+test_expect_success 'test with no path works' "
 	test_expect_code 3 flux ion-resource set-property /dont/exist random=1 &&
-	test_expect_code 3 flux ion-resource remove-property /dont/exist random=1
-'
+	flux ion-resource set-property /dont/exist random=1 | grep \"Couldn't find '/dont/exist'\" &&
+	test_expect_code 3 flux ion-resource get-property /dont/exist random &&
+	flux ion-resource get-property /dont/exist random | grep \"Couldn't find '/dont/exist'\" &&
+	test_expect_code 3 flux ion-resource remove-property /dont/exist random &&
+	flux ion-resource remove-property /dont/exist random | grep \"Couldn't find '/dont/exist'\"
+"
 
 test_expect_success 'test with no property works' '
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 dontexist &&
@@ -106,12 +120,16 @@ test_expect_success 'test with no property works' '
 
 test_expect_success 'test with malformed inputs works' '
 	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 badprop &&
+	flux ion-resource set-property /tiny0/rack0/node0 badprop | grep "Incorrect format" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 badprop= &&
+	flux ion-resource set-property /tiny0/rack0/node0 badprop= | grep "Incorrect format" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 =badprop &&
+	flux ion-resource set-property /tiny0/rack0/node0 =badprop | grep "Incorrect format" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop &&
 	test_expect_code 1 flux ion-resource set-property /tiny0/rack0/node0 = &&
+	flux ion-resource set-property /tiny0/rack0/node0 = | grep "Incorrect format" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 badprop
 '
 
@@ -129,6 +147,15 @@ test_expect_success 'test with complex inputs works' "
 	EOF
 	test_cmp expected sp.5
 "
+
+test_expect_success 'tests fail when payloads are missing' '
+	test_expect_code 1 send_rpc get_property 2>&1 &&
+	test_expect_code 1 send_rpc set_property 2>&1 &&
+	test_expect_code 1 send_rpc remove_property 2>&1 &&
+	send_rpc get_property 2>&1 | grep "could not unpack payload" &&
+	send_rpc set_property 2>&1 | grep "could not unpack payload" &&
+	send_rpc remove_property 2>&1 | grep "could not unpack payload"
+'
 
 test_expect_success 'removing resource works' '
 	remove_resource
