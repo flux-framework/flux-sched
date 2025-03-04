@@ -111,6 +111,8 @@ class reapi_t {
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
      *                   satisfiability check if resources are not available.
+     *                   MATCH_GROW_ALLOCATION: try to grow an existing allocation
+     *                   now and fail if resources aren't available.
      *  \param jobspec   jobspec string.
      *  \param jobid     jobid of the uint64_t type.
      *  \param reserved  Boolean into which to return true if this job has been
@@ -150,6 +152,8 @@ class reapi_t {
      *                   aren't available.
      *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
      *                   if resources aren't available now.
+     *                   MATCH_GROW_ALLOCATION: try to grow an existing allocation
+     *                   now and fail if resources aren't available.
      *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
