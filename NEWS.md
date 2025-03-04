@@ -1,3 +1,20 @@
+flux-sched version 0.43.0 - 2025-03-03
+--------------------------------------
+
+### New Features
+ * resource: shrink resource graph by ranks (#1352)
+
+### Fixes
+ * comply with RFC 20 when parsing Rv1 `starttime` and `expiration`
+   (#1346)
+ * resource: fix leak in `status_request_cb()` (#1347)
+ * sched-sharness: stop looking in modules/.libs (#1348)
+ * yggdrasil: fix invalid template calls (#1338)
+ * resource: make property RPCs return error message (#1349)
+ * resource: Update the pruning filter default to ALL:core,ALL:node
+    and fix update_node_stats() (#1353)
+
+
 flux-sched version 0.42.2 - 2025-02-10
 --------------------------------------
 
