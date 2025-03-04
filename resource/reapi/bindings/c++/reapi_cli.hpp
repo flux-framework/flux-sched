@@ -154,7 +154,7 @@ class reapi_cli_t : public reapi_t {
                        const std::string &R,
                        bool noent_ok,
                        bool &full_removal);
-    static int find (void *h, std::string criteria, json_t *&o);
+    static int find (void *h, const std::string &criteria, std::string &out);
     static int info (void *h,
                      const uint64_t jobid,
                      std::string &mode,
