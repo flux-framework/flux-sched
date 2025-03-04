@@ -71,7 +71,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no config' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:node\""
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with valid toml' '
@@ -114,7 +114,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no keys' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:node\""
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '

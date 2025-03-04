@@ -14,6 +14,9 @@ mkdir -p conf.d
 
 test_under_flux 4 full -o,--config-path=$(pwd)/conf.d
 
+# Note: updating test to specify ALL:core. The default (ALL:core,ALL:node)
+# causes requests of drained resources to be unsatisfiable rather than the
+# expected behavior of blocking.
 test_expect_success 'load queue configuration' '
 	cat >conf.d/conf.toml <<-EOT &&
 	[queues.debug]
@@ -24,6 +27,7 @@ test_expect_success 'load queue configuration' '
 	[sched-fluxion-resource]
 	match-policy = "lonodex"
 	match-format = "rv1_nosched"
+	prune-filters = "ALL:core"
 	EOT
 	flux config reload &&
 	flux queue start --all

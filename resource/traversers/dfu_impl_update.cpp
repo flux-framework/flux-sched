@@ -1049,6 +1049,7 @@ int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t st
 {
     std::map<std::string, std::vector<vtx_t>>::const_iterator vit_root =
         m_graph_db->metadata.by_path.find (root_path);
+    std::set<vtx_t> vtx_set;
 
     if (vit_root == m_graph_db->metadata.by_path.end ()) {
         errno = EINVAL;
@@ -1056,9 +1057,15 @@ int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t st
         m_err_msg += ": could not find subtree path (" + root_path + ") in resource graph.\n";
         return -1;
     }
-    for (auto &v : vit_root->second)
+    for (auto &v : vit_root->second) {
         (*m_graph)[v].status = status;
-    m_graph_db->metadata.update_node_stats (vit_root->second.size (), status);
+        vtx_set.insert (v);
+        get_subgraph_vertices (v, vtx_set);
+    }
+    for (const auto &v : vtx_set) {
+        if ((*m_graph)[v].type == node_rt)
+            m_graph_db->metadata.update_node_stats ((*m_graph)[v].size, status);
+    }
 
     return 0;
 }
