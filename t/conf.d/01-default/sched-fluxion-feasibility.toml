@@ -1,0 +1,3 @@
+[sched-fluxion-feasibility]
+
+load-allowlist="node,core,gpu"
