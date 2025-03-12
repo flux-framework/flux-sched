@@ -1208,29 +1208,6 @@ done:
     return rc;
 }
 
-int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
-                        json_t *resources,
-                        const char *up,
-                        const char *down)
-{
-    int rc = 0;
-
-    if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
-        flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
-        goto done;
-    }
-    if (up && (rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0) {
-        flux_log_error (ctx->h, "%s: mark (up)", __FUNCTION__);
-        goto done;
-    }
-    if (down && (rc = mark (ctx, down, resource_pool_t::status_t::DOWN)) < 0) {
-        flux_log_error (ctx->h, "%s: mark (down)", __FUNCTION__);
-        goto done;
-    }
-done:
-    return rc;
-}
-
 int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
 {
     /*
