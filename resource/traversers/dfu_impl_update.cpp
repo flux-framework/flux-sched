@@ -1058,9 +1058,12 @@ int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t st
         return -1;
     }
     for (auto &v : vit_root->second) {
-        (*m_graph)[v].status = status;
-        vtx_set.insert (v);
-        get_subgraph_vertices (v, vtx_set);
+        // Ensure node stats idempotence
+        if ((*m_graph)[v].status != status) {
+            (*m_graph)[v].status = status;
+            vtx_set.insert (v);
+            get_subgraph_vertices (v, vtx_set);
+        }
     }
     for (const auto &v : vtx_set) {
         if ((*m_graph)[v].type == node_rt)
@@ -1096,8 +1099,11 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status
                     subtree_root = v;
                 }
             }
-            (*m_graph)[subtree_root].status = status;
-            ++total;
+            // Ensure node stats idempotence
+            if ((*m_graph)[subtree_root].status != status) {
+                (*m_graph)[subtree_root].status = status;
+                ++total;
+            }
         }
         m_graph_db->metadata.update_node_stats (total, status);
     } catch (std::out_of_range &) {
