@@ -1,0 +1,15 @@
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/basics/test009.yaml
+set-status /tiny0/rack0/node1 down
+set-status /tiny0/rack0/node1 down
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/basics/test009.yaml
+cancel 1
+cancel 2
+set-status /tiny0/rack0/node1 up
+set-status /tiny0/rack0/node1 up
+set-status /tiny0/rack0/node1 up
+set-status /tiny0/rack0/node1 up
+set-status /tiny0/rack0/node1 up
+set-status /tiny0/rack0/node0 down
+set-status /tiny0/rack0/node1 down
+match allocate_with_satisfiability @TEST_SRCDIR@/data/resource/jobspecs/basics/test009.yaml
+quit
