@@ -38,8 +38,13 @@ test_expect_success 'set/get/remove property basic test works' "
 	flux ion-resource get-property /tiny0/rack0/node0 class > sp.0 &&
 	echo \"class = ['one']\" > expected &&
 	test_cmp expected sp.0 &&
+	flux ion-resource find property=class --format simple | grep node0 &&
+	flux ion-resource find property=class --format simple -q | grep node0 &&
+	flux ion-resource find property=class --format jgf -q | jq .graph.nodes | grep node0 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 class &&
-	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 class
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 class &&
+	flux ion-resource find property=class --format simple | test_must_fail grep node0 &&
+	flux ion-resource find property=class --format jgf | test_must_fail grep node0
 "
 
 test_expect_success 'set/get/remove property multiple resources works' "
@@ -55,6 +60,15 @@ test_expect_success 'set/get/remove property multiple resources works' "
 	coreprop = ['z']
 	EOF
 	test_cmp expected sp.1 &&
+	flux ion-resource find property=nodeprop --format simple | grep node0 &&
+	flux ion-resource find property=sockprop --format jgf -q | jq .graph.nodes | grep socket1 &&
+	flux ion-resource find property=coreprop --format simple | grep core17 &&
+	flux ion-resource find 'property=coreprop or property=nodeprop or property=sockprop' \
+		--format simple | grep core17 &&
+	flux ion-resource find 'property=coreprop or property=nodeprop or property=sockprop' \
+		--format simple | grep socket1 &&
+	flux ion-resource find 'property=coreprop or property=nodeprop or property=sockprop' \
+		--format jgf -q | jq .graph.nodes | grep node0 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 nodeprop &&
 	flux ion-resource remove-property /tiny0/rack0/node0/socket1 sockprop &&
 	flux ion-resource remove-property /tiny0/rack0/node1/socket0/core17 coreprop &&
@@ -66,7 +80,11 @@ test_expect_success 'set/get/remove property multiple resources works' "
 		| grep \"Property 'sockprop' was not found\" &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop &&
 	flux ion-resource get-property /tiny0/rack0/node1/socket0/core17 coreprop \
-		| grep \"Property 'coreprop' was not found\"
+		| grep \"Property 'coreprop' was not found\" &&
+	flux ion-resource find 'property=coreprop or property=nodeprop or property=sockprop' \
+		--format simple | test_must_fail grep node0 &&
+	flux ion-resource find property=sockprop --format simple | test_must_fail grep socket1 &&
+	flux ion-resource find property=sockprop --format jgf | test_must_fail grep socket1
 "
 
 test_expect_success 'set/get/remove property multiple properties works' "
@@ -88,20 +106,37 @@ test_expect_success 'set/get/remove property multiple properties works' "
 	prop5 = ['baz']
 	EOF
 	test_cmp expected sp.2 &&
+	flux ion-resource find 'property=prop1 and property=prop2 and property=prop3 \
+		and property=prop4 and property=prop5' --format simple | grep node0 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 prop1 &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop1 &&
+	flux ion-resource find 'property=prop1 and property=prop2 and property=prop3 \
+		and property=prop4 and property=prop5' --format simple | test_must_fail grep node0 &&
+	flux ion-resource find 'property=prop2 and property=prop3 and property=prop4 \
+		and property=prop5' --format simple | grep node0 &&
 	flux ion-resource get-property /tiny0/rack0/node0 prop2 | grep foo &&
 	flux ion-resource remove-property /tiny0/rack0/node0 prop2 &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop2 &&
+	flux ion-resource find 'property=prop2 and property=prop3 and property=prop4 \
+		and property=prop5' --format simple | test_must_fail grep node0 &&
+	flux ion-resource find 'property=prop3 and property=prop4 and property=prop5' \
+		--format simple | grep node0 &&
 	flux ion-resource get-property /tiny0/rack0/node0 prop3 | grep 123 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 prop3 &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop3 &&
+	flux ion-resource find 'property=prop3 and property=prop4 and property=prop5' \
+		--format simple | test_must_fail grep node0 &&
+	flux ion-resource find 'property=prop4 and property=prop5' --format simple | grep node0 &&
 	flux ion-resource get-property /tiny0/rack0/node0 prop4 | grep bar &&
 	flux ion-resource get-property /tiny0/rack0/node0 prop5 | grep baz &&
 	flux ion-resource remove-property /tiny0/rack0/node0 prop4 &&
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop4 &&
+	flux ion-resource find 'property=prop4 and property=prop5' \
+		--format simple | test_must_fail grep node0 &&
+	flux ion-resource find 'property=prop5' --format simple | grep node0 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 prop5 &&
-	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop5
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 prop5 &&
+	flux ion-resource find 'property=prop5' --format simple | test_must_fail grep node0
 "
 
 test_expect_success 'test with no path works' "
