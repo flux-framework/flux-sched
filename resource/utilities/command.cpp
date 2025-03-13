@@ -60,7 +60,7 @@ command_t commands[] =
      {"remove",
       "j",
       cmd_remove,
-      "Remove a subgraph from the resource graph, specifying whether the target is"
+      "Remove a subgraph from the resource graph, specifying whether the target is "
       "a path (true) or idset (false): resource-query> remove (/path/to/node/ | idset) "
       "(true|false)"},
      {"find",
