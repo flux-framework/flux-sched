@@ -69,7 +69,7 @@ command_t commands[] =
       "Find resources matched with criteria "
       "(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free} "
       "agfilter={true|false} names=hostlist jobid-alloc=jobid jobid-span=jobid jobid-tag=jobid "
-      "jobid-reserved=jobid): "
+      "jobid-reserved=jobid property=name): "
       "resource-query> find status=down and sched-now=allocated"},
      {"cancel",
       "c",
