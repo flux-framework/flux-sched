@@ -68,6 +68,8 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
             rc = 0;
             hostlist_destroy (hlist);
         }
+    } else if (p == "property") {
+        rc = (lcx.length () > 0) ? 0 : -1;
     } else
         errno = EINVAL;
 done:
@@ -82,6 +84,7 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
     std::string lcx = x;
     unsigned long jobid = 0;
     struct hostlist *hlist;
+    std::map<std::string, std::string>::const_iterator p_it;
 
     result = false;
     if ((rc = validate (p, x)) < 0)
@@ -144,6 +147,12 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
             result = false;
         }
         hostlist_destroy (hlist);
+    } else if (p == "property") {
+        for (p_it = (*m_g)[m_u].properties.begin (); p_it != (*m_g)[m_u].properties.end ();
+             p_it++) {
+            if (lcx.compare (p_it->first) == 0)
+                result = true;
+        }
     } else {
         rc = -1;
         errno = EINVAL;
