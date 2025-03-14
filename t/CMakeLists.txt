@@ -68,6 +68,7 @@ set(ALL_TESTS
   t3034-resource-pconstraints.t
   t3035-resource-remove.t
   t3037-resource-custom-policy.t
+  t3038-resource-flexible.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t

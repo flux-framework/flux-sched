@@ -1,0 +1,21 @@
+version: 9999
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: core
+        count: 18
+      - type: does-not-exist
+        count: 18
+                
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
+
