@@ -14,12 +14,14 @@
 #include <string>
 #include <memory>
 #include "resource/traversers/dfu_impl.hpp"
+#include "resource/traversers/dfu_flexible.hpp"
 
 namespace Flux {
 namespace resource_model {
 namespace detail {
 
 const std::string SIMPLE = "simple";
+const std::string FLEXIBLE = "flexible";
 
 bool known_traverser_policy (const std::string &policy);
 
