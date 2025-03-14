@@ -60,7 +60,7 @@ command_t commands[] =
      {"remove",
       "j",
       cmd_remove,
-      "Remove a subgraph from the resource graph, specifying whether the target is"
+      "Remove a subgraph from the resource graph, specifying whether the target is "
       "a path (true) or idset (false): resource-query> remove (/path/to/node/ | idset) "
       "(true|false)"},
      {"find",
@@ -68,8 +68,8 @@ command_t commands[] =
       cmd_find,
       "Find resources matched with criteria "
       "(predicates: status={up|down} sched-now={allocated|free} sched-future={reserved|free} "
-      "agfilter={true|false} jobid-alloc=jobid jobid-span=jobid jobid-tag=jobid "
-      "jobid-reserved=jobid): "
+      "agfilter={true|false} names=hostlist jobid-alloc=jobid jobid-span=jobid jobid-tag=jobid "
+      "jobid-reserved=jobid property=name): "
       "resource-query> find status=down and sched-now=allocated"},
      {"cancel",
       "c",

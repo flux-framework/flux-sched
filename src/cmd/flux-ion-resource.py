@@ -365,10 +365,11 @@ def find_action(args):
 
     rmod = ResourceModuleInterface()
     resp = rmod.rpc_find(args.criteria, find_format=args.format)
-    print("CRITERIA")
-    print("'" + args.criteria + "'")
-    print("=" * width())
-    print("MATCHED RESOURCES:")
+    if not args.quiet:
+        print("CRITERIA")
+        print("'" + args.criteria + "'")
+        print("=" * width())
+        print("MATCHED RESOURCES:")
     print(json.dumps(resp["R"]))
 
 
@@ -491,6 +492,7 @@ def parse_find(parser_f: argparse.ArgumentParser):
     parser_f.add_argument(
         "--format", type=str, default=None, help="Writer format for find query"
     )
+    parser_f.add_argument("-q", "--quiet", action="store_true", help="be quiet")
     parser_f.set_defaults(func=find_action)
 
 
