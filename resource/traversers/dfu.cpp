@@ -44,15 +44,15 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
     meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
     meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
-    detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
+    traverser->count_relevant_types (p, dfv, agg);
     errno = 0;
-    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) < 0) {
+    if ((rc = traverser->select (jobspec, root, meta, x)) < 0) {
         rc = -1;
         errno = (!errno) ? ENODEV : errno;
-        detail::dfu_impl_t::update ();
+        traverser->update ();
     }
-    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
-    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    m_total_preorder = traverser->get_preorder_count ();
+    m_total_postorder = traverser->get_postorder_count ();
 
     if (!errno)
         errno = saved_errno;
@@ -154,9 +154,9 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     if ((rc = request_feasible (meta, op, root, dfv)) < 0)
         goto out;
 
-    if ((rc = detail::dfu_impl_t::select (jobspec, root, meta, x)) == 0) {
-        m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
-        m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    if ((rc = traverser->select (jobspec, root, meta, x)) == 0) {
+        m_total_preorder = traverser->get_preorder_count ();
+        m_total_postorder = traverser->get_postorder_count ();
         goto out;
     }
 
@@ -168,13 +168,13 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
             p = (*get_graph ())[root].idata.subplans.at (dom);
             meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
-            detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
-            if (detail::dfu_impl_t::select (jobspec, root, meta, x) < 0) {
+            traverser->count_relevant_types (p, dfv, agg);
+            if (traverser->select (jobspec, root, meta, x) < 0) {
                 errno = (errno == EBUSY) ? ENODEV : errno;
-                detail::dfu_impl_t::update ();
+                traverser->update ();
             }
-            m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
-            m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+            m_total_preorder += traverser->get_preorder_count ();
+            m_total_postorder += traverser->get_postorder_count ();
             // increment match traversal loop count
             ++sched_iters;
             break;
@@ -187,14 +187,14 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             p = (*get_graph ())[root].idata.subplans.at (dom);
             len = planner_multi_resources_len (p);
             duration = meta.duration;
-            detail::dfu_impl_t::count_relevant_types (p, dfv, agg);
+            traverser->count_relevant_types (p, dfv, agg);
             for (t = planner_multi_avail_time_first (p, t, duration, agg.data (), len);
                  (t != -1 && rc && !errno);
                  t = planner_multi_avail_time_next (p)) {
                 meta.at = t;
-                rc = detail::dfu_impl_t::select (jobspec, root, meta, x);
-                m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
-                m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+                rc = traverser->select (jobspec, root, meta, x);
+                m_total_preorder += traverser->get_preorder_count ();
+                m_total_postorder += traverser->get_postorder_count ();
                 // increment match traversal loop count
                 ++sched_iters;
             }
@@ -205,12 +205,12 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                 errno = EBUSY;
                 meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
                 meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - duration - 1;
-                if (detail::dfu_impl_t::select (jobspec, root, meta, x) < 0) {
+                if (traverser->select (jobspec, root, meta, x) < 0) {
                     errno = (errno == EBUSY) ? ENODEV : errno;
-                    detail::dfu_impl_t::update ();
+                    traverser->update ();
                 }
-                m_total_preorder += detail::dfu_impl_t::get_preorder_count ();
-                m_total_postorder += detail::dfu_impl_t::get_postorder_count ();
+                m_total_preorder += traverser->get_preorder_count ();
+                m_total_postorder += traverser->get_postorder_count ();
                 // increment match traversal loop count
                 ++sched_iters;
             }
@@ -236,25 +236,21 @@ out:
 // DFU Traverser Public API Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-dfu_traverser_t::dfu_traverser_t ()
+dfu_traverser_t::dfu_traverser_t (std::string policy)
 {
+    traverser = detail::create_traverser (policy);
 }
 
 dfu_traverser_t::dfu_traverser_t (std::shared_ptr<resource_graph_db_t> db,
-                                  std::shared_ptr<dfu_match_cb_t> m)
-    : detail::dfu_impl_t (db, m)
+                                  std::shared_ptr<dfu_match_cb_t> m,
+                                  const std::string policy)
 {
+    traverser = detail::create_traverser (db, m, policy);
 }
 
-dfu_traverser_t::dfu_traverser_t (const dfu_traverser_t &o) : detail::dfu_impl_t (o)
-{
-}
+dfu_traverser_t::dfu_traverser_t (const dfu_traverser_t &o) = default;
 
-dfu_traverser_t &dfu_traverser_t::operator= (const dfu_traverser_t &o)
-{
-    detail::dfu_impl_t::operator= (o);
-    return *this;
-}
+dfu_traverser_t &dfu_traverser_t::operator= (const dfu_traverser_t &o) = default;
 
 dfu_traverser_t::~dfu_traverser_t ()
 {
@@ -262,22 +258,22 @@ dfu_traverser_t::~dfu_traverser_t ()
 
 const resource_graph_t *dfu_traverser_t::get_graph () const
 {
-    return detail::dfu_impl_t::get_graph ();
+    return traverser->get_graph ();
 }
 
 const std::shared_ptr<const resource_graph_db_t> dfu_traverser_t::get_graph_db () const
 {
-    return detail::dfu_impl_t::get_graph_db ();
+    return traverser->get_graph_db ();
 }
 
 const std::shared_ptr<const dfu_match_cb_t> dfu_traverser_t::get_match_cb () const
 {
-    return detail::dfu_impl_t::get_match_cb ();
+    return traverser->get_match_cb ();
 }
 
 const std::string &dfu_traverser_t::err_message () const
 {
-    return detail::dfu_impl_t::err_message ();
+    return traverser->err_message ();
 }
 
 const unsigned int dfu_traverser_t::get_total_preorder_count () const
@@ -292,17 +288,17 @@ const unsigned int dfu_traverser_t::get_total_postorder_count () const
 
 void dfu_traverser_t::set_graph_db (std::shared_ptr<resource_graph_db_t> g)
 {
-    detail::dfu_impl_t::set_graph_db (g);
+    traverser->set_graph_db (g);
 }
 
 void dfu_traverser_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
-    detail::dfu_impl_t::set_match_cb (m);
+    traverser->set_match_cb (m);
 }
 
 void dfu_traverser_t::clear_err_message ()
 {
-    detail::dfu_impl_t::clear_err_message ();
+    traverser->clear_err_message ();
 }
 
 bool dfu_traverser_t::is_initialized () const
@@ -323,7 +319,7 @@ int dfu_traverser_t::initialize ()
     }
 
     m_initialized = false;
-    detail::dfu_impl_t::reset_color ();
+    traverser->reset_color ();
     for (auto &subsystem : get_match_cb ()->subsystems ()) {
         std::map<resource_type_t, int64_t> from_dfv;
         if (get_graph_db ()->metadata.roots.find (subsystem)
@@ -333,7 +329,7 @@ int dfu_traverser_t::initialize ()
             break;
         }
         root = get_graph_db ()->metadata.roots.at (subsystem);
-        rc += detail::dfu_impl_t::prime_pruning_filter (subsystem, root, from_dfv);
+        rc += traverser->prime_pruning_filter (subsystem, root, from_dfv);
     }
     m_initialized = (rc == 0) ? true : false;
     return rc;
@@ -371,28 +367,28 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                             .count ();
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    bool x = detail::dfu_impl_t::exclusivity (jobspec.resources, root);
-    const auto exclusive_types = detail::dfu_impl_t::get_exclusive_resource_types ();
+    bool x = traverser->exclusivity (jobspec.resources, root);
+    const auto exclusive_types = traverser->get_exclusive_resource_types ();
     std::unordered_map<resource_type_t, int64_t> dfv;
 
-    detail::dfu_impl_t::prime_jobspec (jobspec.resources, dfv);
+    traverser->prime_jobspec (jobspec.resources, dfv);
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
 
     if ((op == match_op_t::MATCH_SATISFIABILITY)
         && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
-        detail::dfu_impl_t::update ();
+        traverser->update ();
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
         if (*at == graph_end) {
-            detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+            traverser->reset_exclusive_resource_types (exclusive_types);
             // no schedulable point found even at the end of the time, return EBUSY
             errno = EBUSY;
             return -1;
         }
         if (*at < 0 or *at > graph_end) {
-            detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+            traverser->reset_exclusive_resource_types (exclusive_types);
             errno = EINVAL;
             return -1;
         }
@@ -404,10 +400,10 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         if ((*at + static_cast<int64_t> (meta.duration)) > graph_end)
             meta.duration = graph_end - *at;
         // returns 0 or -1
-        rc = detail::dfu_impl_t::update (root, writers, meta);
+        rc = traverser->update (root, writers, meta);
     }
     // returns 0 or -1
-    rc += detail::dfu_impl_t::reset_exclusive_resource_types (exclusive_types);
+    rc += traverser->reset_exclusive_resource_types (exclusive_types);
 
     return rc;
 }
@@ -439,14 +435,14 @@ int dfu_traverser_t::run (const std::string &str,
     meta.at = at;
     meta.duration = duration;
 
-    return detail::dfu_impl_t::update (root, writers, str, reader, meta);
+    return traverser->update (root, writers, str, reader, meta);
 }
 
 int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
-    return detail::dfu_impl_t::find (writers, criteria);
+    return traverser->find (writers, criteria);
 }
 
 int dfu_traverser_t::remove (int64_t jobid)
@@ -465,9 +461,9 @@ int dfu_traverser_t::remove (int64_t jobid)
 
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
 
-    rc = detail::dfu_impl_t::remove (root, jobid);
-    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
-    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    rc = traverser->remove (root, jobid);
+    m_total_preorder = traverser->get_preorder_count ();
+    m_total_postorder = traverser->get_postorder_count ();
     return rc;
 }
 
@@ -489,9 +485,9 @@ int dfu_traverser_t::remove (const std::string &R_to_cancel,
     }
 
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    rc = detail::dfu_impl_t::remove (root, R_to_cancel, reader, jobid, full_cancel);
-    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
-    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    rc = traverser->remove (root, R_to_cancel, reader, jobid, full_cancel);
+    m_total_preorder = traverser->get_preorder_count ();
+    m_total_postorder = traverser->get_postorder_count ();
     return rc;
 }
 
@@ -510,9 +506,9 @@ int dfu_traverser_t::remove (const std::set<int64_t> &ranks)
     }
 
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    rc = detail::dfu_impl_t::remove (root, ranks);
-    m_total_preorder = detail::dfu_impl_t::get_preorder_count ();
-    m_total_postorder = detail::dfu_impl_t::get_postorder_count ();
+    rc = traverser->remove (root, ranks);
+    m_total_preorder = traverser->get_preorder_count ();
+    m_total_postorder = traverser->get_postorder_count ();
     return rc;
 }
 
@@ -520,26 +516,26 @@ int dfu_traverser_t::mark (const std::string &root_path, resource_pool_t::status
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
-    return detail::dfu_impl_t::mark (root_path, status);
+    return traverser->mark (root_path, status);
 }
 
 int dfu_traverser_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
-    return detail::dfu_impl_t::mark (ranks, status);
+    return traverser->mark (ranks, status);
 }
 
 int dfu_traverser_t::remove_subgraph (const std::string &target)
 {
     clear_err_message ();
-    return detail::dfu_impl_t::remove_subgraph (target);
+    return traverser->remove_subgraph (target);
 }
 
 int dfu_traverser_t::remove_subgraph (const std::set<int64_t> &ranks)
 {
     clear_err_message ();
-    return detail::dfu_impl_t::remove_subgraph (ranks);
+    return traverser->remove_subgraph (ranks);
 }
 
 /*
