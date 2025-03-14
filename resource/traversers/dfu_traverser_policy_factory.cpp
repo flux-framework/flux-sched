@@ -24,7 +24,7 @@ namespace detail {
 bool known_traverser_policy (const std::string &policy)
 {
     bool rc = true;
-    if (policy != SIMPLE)
+    if (policy != SIMPLE && policy != FLEXIBLE)
         rc = false;
 
     return rc;
@@ -34,7 +34,9 @@ std::shared_ptr<dfu_impl_t> create_traverser (const std::string &policy)
 {
     std::shared_ptr<dfu_impl_t> traverser = nullptr;
     try {
-        if (policy == SIMPLE) {
+        if (policy == FLEXIBLE) {
+            traverser = std::make_shared<dfu_flexible_t> ();
+        } else if (policy == SIMPLE) {
             traverser = std::make_shared<dfu_impl_t> ();
         }
     } catch (std::bad_alloc &e) {
@@ -51,7 +53,9 @@ std::shared_ptr<dfu_impl_t> create_traverser (std::shared_ptr<resource_graph_db_
 {
     std::shared_ptr<dfu_impl_t> traverser = nullptr;
     try {
-        if (policy == SIMPLE) {
+        if (policy == FLEXIBLE) {
+            traverser = std::make_shared<dfu_flexible_t> (db, m);
+        } else if (policy == SIMPLE) {
             traverser = std::make_shared<dfu_impl_t> (db, m);
         }
     } catch (std::bad_alloc &e) {
