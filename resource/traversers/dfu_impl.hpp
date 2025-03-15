@@ -380,11 +380,19 @@ class dfu_impl_t {
                     subsystem_t s,
                     vtx_t u,
                     const Jobspec::Resource &resource);
+    int by_status (const jobmeta_t &meta, vtx_t u);
+    int by_constraint (const jobmeta_t &meta, vtx_t u);
     int prune (const jobmeta_t &meta,
                bool excl,
                subsystem_t subsystem,
                vtx_t u,
                const std::vector<Jobspec::Resource> &resources);
+               
+    int prune_resources (const jobmeta_t &meta,
+                         bool excl,
+                         subsystem_t subsystem,
+                         vtx_t u,
+                         const std::vector<Jobspec::Resource> &resources);
 
     planner_multi_t *subtree_plan (vtx_t u,
                                    std::vector<uint64_t> &avail,

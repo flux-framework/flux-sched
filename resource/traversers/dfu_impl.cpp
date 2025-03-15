@@ -207,11 +207,7 @@ done:
     return rc;
 }
 
-int dfu_impl_t::prune (const jobmeta_t &meta,
-                       bool exclusive,
-                       subsystem_t s,
-                       vtx_t u,
-                       const std::vector<Jobspec::Resource> &resources)
+int dfu_impl_t::by_status (const jobmeta_t &meta, vtx_t u)
 {
     int rc = 0;
     // Prune by the visiting resource vertex's availability
@@ -219,18 +215,32 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
     if (meta.alloc_type != jobmeta_t::alloc_type_t::AT_SATISFIABILITY
         && (*m_graph)[u].status != resource_pool_t::status_t::UP) {
         rc = -1;
-        goto done;
     }
+
+    return rc;
+}
+
+int dfu_impl_t::by_constraint (const jobmeta_t &meta, vtx_t u)
+{
+    int rc = 0;
     //  RFC 31 constraints only match against type == "node"
     //  unspecified constraint matches everything
     if (meta.constraint != nullptr && (*m_graph)[u].type == node_rt
         && !meta.constraint->match ((*m_graph)[u])) {
         rc = -1;
-        goto done;
     }
-    // if rack has been allocated exclusively, no reason to descend further.
-    if ((rc = by_avail (meta, s, u, resources)) == -1)
-        goto done;
+
+    return rc;
+}
+
+int dfu_impl_t::prune_resources (const jobmeta_t &meta,
+                                 bool exclusive,
+                                 subsystem_t s,
+                                 vtx_t u,
+                                 const std::vector<Jobspec::Resource> &resources)
+{
+    int rc = 0;
+
     for (auto &resource : resources) {
         if ((*m_graph)[u].type != resource.type && resource.type != slot_rt)
             continue;
@@ -241,6 +251,29 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
         if ((rc = by_subplan (meta, s, u, resource)) == -1)
             break;
     }
+
+    return rc;
+}
+int dfu_impl_t::prune (const jobmeta_t &meta,
+                       bool exclusive,
+                       subsystem_t s,
+                       vtx_t u,
+                       const std::vector<Jobspec::Resource> &resources)
+{
+    int rc = 0;
+
+    if ((rc = by_status (meta, u)) == -1)
+        goto done;
+
+    if ((rc = by_constraint (meta, u)) == -1)
+        goto done;
+
+    // if rack has been allocated exclusively, no reason to descend further.
+    if ((rc = by_avail (meta, s, u, resources)) == -1)
+        goto done;
+
+    if ((rc = prune_resources (meta, exclusive, s, u, resources)) == -1)
+        goto done;
 
 done:
     return rc;
