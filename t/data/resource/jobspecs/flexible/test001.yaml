@@ -1,0 +1,38 @@
+version: 9999
+resources:
+    - type: cluster
+      count: 1
+      with:
+        - type: rack
+          count: 1
+          with:
+            - type: node
+              count: 1
+              with:
+                - type: socket
+                  count: 1
+                  with:
+                    - type: slot
+                      count: 1
+                      label: small
+                      with:
+                        - type: core
+                          count: 8
+                        - type: gpu
+                          count: 1
+                    - type: slot
+                      count: 1
+                      label: big
+                      with:
+                        - type: core
+                          count: 10
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
+
