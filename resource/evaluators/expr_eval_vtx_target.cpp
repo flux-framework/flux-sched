@@ -16,6 +16,7 @@ extern "C" {
 
 #include <algorithm>
 #include <cctype>
+#include <flux/hostlist.h>
 #include "resource/evaluators/expr_eval_vtx_target.hpp"
 
 namespace Flux {
@@ -35,6 +36,7 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
 {
     int rc = -1;
     std::string lcx = x;
+    struct hostlist *hlist;
 
     if (!m_initialized) {
         errno = EINVAL;
@@ -58,6 +60,16 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
         }
     } else if (p == "agfilter") {
         rc = (lcx == "true" || lcx == "t" || lcx == "false" || lcx == "f") ? 0 : -1;
+    } else if (p == "names") {
+        hlist = hostlist_decode (lcx.c_str ());
+        if (!hlist) {
+            rc = -1;
+        } else {
+            rc = 0;
+            hostlist_destroy (hlist);
+        }
+    } else if (p == "property") {
+        rc = (lcx.length () > 0) ? 0 : -1;
     } else
         errno = EINVAL;
 done:
@@ -71,6 +83,7 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
     int rc = 0;
     std::string lcx = x;
     unsigned long jobid = 0;
+    struct hostlist *hlist;
 
     result = false;
     if ((rc = validate (p, x)) < 0)
@@ -122,6 +135,19 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
         } else {
             result = false;
         }
+    } else if (p == "names") {
+        if (!(hlist = hostlist_decode (lcx.c_str ()))) {
+            rc = -1;
+            goto done;
+        }
+        if (hostlist_find (hlist, (*m_g)[m_u].name.c_str ()) >= 0) {
+            result = true;
+        } else {
+            result = false;
+        }
+        hostlist_destroy (hlist);
+    } else if (p == "property") {
+        result = (*m_g)[m_u].properties.contains (lcx);
     } else {
         rc = -1;
         errno = EINVAL;

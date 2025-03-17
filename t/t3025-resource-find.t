@@ -324,4 +324,75 @@ EOF
     test_cmp down21.out down22.out
 '
 
+test_expect_success 'find names=node[0-1] works' "
+    cat > cmds023 <<-EOF &&
+    find names=node[0-1]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t nodes.out < cmds023 &&
+    cat nodes.out | grep -v INFO > nodes.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"node\")' nodes.json > nodes_selected.json &&
+    grep node0 nodes_selected.json &&
+    grep node1 nodes_selected.json
+"
+
+test_expect_success 'find names=node[0] works' "
+    cat > cmds024 <<-EOF &&
+    find names=node[0]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t nodes.out < cmds024 &&
+    cat nodes.out | grep -v INFO > nodes2.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"node\")' nodes2.json > nodes_selected2.json &&
+    grep node0 nodes_selected2.json &&
+    test_must_fail grep node1 nodes_selected2.json
+"
+
+test_expect_success 'find names=node1 works' "
+    cat > cmds025 <<-EOF &&
+    find names=node1
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t nodes.out < cmds025 &&
+    cat nodes.out | grep -v INFO > nodes3.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"node\")' nodes3.json > nodes_selected3.json &&
+    grep node1 nodes_selected3.json &&
+    test_must_fail grep node0 nodes_selected3.json
+"
+
+test_expect_success 'find names=core[0-72] works' "
+    cat > cmds026 <<-EOF &&
+    find names=core[0-72]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores.out < cmds026 &&
+    cat cores.out | grep -v INFO > cores.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores.json > cores_selected.json &&
+    grep core1 cores_selected.json &&
+    grep core0 cores_selected.json &&
+    grep core19 cores_selected.json &&
+    test_must_fail grep core71 cores_selected.json
+"
+
+test_expect_success 'find names=core[0-18] works' "
+    cat > cmds027 <<-EOF &&
+    find names=core[0-18]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores2.out < cmds027 &&
+    cat cores2.out | grep -v INFO > cores2.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores2.json > cores_selected2.json &&
+    grep core1 cores_selected2.json &&
+    grep core18 cores_selected2.json &&
+    test_must_fail grep core19 cores_selected2.json
+"
+
+test_expect_success 'find names=socket[af[] fails' "
+    cat > cmds028 <<-EOF &&
+    find names=socket[af[]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high < cmds028 2>&1 | grep 'invalid criteria'
+"
+
 test_done
