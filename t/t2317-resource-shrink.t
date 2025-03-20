@@ -4,6 +4,8 @@ test_description='Test resource shrink when not using resource configuration'
 
 . `dirname $0`/sharness.sh
 
+notify_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/notify`
+
 SIZE=4
 test_under_flux $SIZE full --test-exit-mode=leader
 export FLUX_URI_RESOLVE_LOCAL=t
@@ -17,7 +19,7 @@ force_down () {
 	flux python -c "import flux; flux.Flux().rpc(\"resource.monitor-force-down\", {\"ranks\":\"$1\"}).get()"
 }
 
-# If force-down is not supported then this version of fux-core does not
+# If force-down is not supported then this version of flux-core does not
 # support shrink, so skip all tests:
 if ! force_down "" 2>/dev/null ; then
        skip_all='resource.monitor-force-down failed, skipping all tests'
@@ -27,10 +29,13 @@ fi
 test_expect_success 'load fluxion' '
 	flux module remove sched-simple &&
 	flux module load sched-fluxion-resource &&
-	flux module load sched-fluxion-qmanager
+	flux module load sched-fluxion-qmanager &&
+	flux module load sched-fluxion-feasibility
 '
 test_expect_success 'submit a resilient job using all ranks' '
 	jobid=$(flux alloc --bg -xN4 -o exit-timeout=none --conf=tbon.topo=kary:0) &&
+	flux resource list -s all &&
+    flux ion-resource -v match satisfiability ${notify_basepath}/shrink4.yaml &&
 	flux proxy $jobid flux overlay status
 '
 test_expect_success 'disconnect rank 3' '
@@ -58,6 +63,8 @@ test_expect_success 'running a 3 node job in subinstance works' '
 '
 test_expect_success 'a 4 node job is now unsatisfiable' '
 	test_must_fail flux run -N4 hostname 2>submit.err &&
+    flux dmesg &&
+    test_must_fail flux ion-resource match satisfiability ${notify_basepath}/shrink4.yaml &&
 	test_debug "cat submit.err" &&
 	grep "unsatisfiable" submit.err
 '
@@ -88,6 +95,7 @@ test_expect_success 'scheduler reports the same' '
 '
 test_expect_success 'a 3 node job is now unsatisfiable' '
 	test_must_fail flux run -N3 hostname 2>submit2.err &&
+    #test_must_fail flux ion-resource match satisfiability ${notify_basepath}/shrink3.yaml &&
 	test_debug "cat submit2.err" &&
 	grep "unsatisfiable" submit2.err
 '
@@ -95,6 +103,7 @@ test_expect_success 'but a 2 node job runs' '
 	flux run -N2 hostname
 '
 test_expect_success 'unload fluxion' '
+	flux module remove sched-fluxion-feasibility &&
 	flux module remove sched-fluxion-qmanager &&
 	flux module remove sched-fluxion-resource &&
 	flux module load sched-simple
