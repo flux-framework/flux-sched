@@ -31,8 +31,6 @@ using namespace Flux::resource_model;
 class test_jobspec_template {
    public:
     explicit test_jobspec_template (unsigned int min);
-    explicit test_jobspec_template (unsigned int min, unsigned int max);
-    explicit test_jobspec_template (unsigned int min, unsigned int max, std::string oper);
     explicit test_jobspec_template (unsigned int min,
                                     unsigned int max,
                                     std::string oper,
@@ -42,8 +40,6 @@ class test_jobspec_template {
    private:
     int emit (json_t *count_obj);
     json_t *emit_count (unsigned int min);
-    json_t *emit_count (unsigned int min, unsigned int max);
-    json_t *emit_count (unsigned int min, unsigned int max, const std::string &oper);
     json_t *emit_count (unsigned int min,
                         unsigned int max,
                         const std::string &oper,
@@ -114,18 +110,6 @@ json_t *test_jobspec_template::emit_count (unsigned int min)
     return json_pack ("{s:i}", "min", min);
 }
 
-json_t *test_jobspec_template::emit_count (unsigned int min, unsigned int max)
-{
-    return json_pack ("{s:i s:i}", "min", min, "max", max);
-}
-
-json_t *test_jobspec_template::emit_count (unsigned int min,
-                                           unsigned int max,
-                                           const std::string &oper)
-{
-    return json_pack ("{s:i s:i s:s}", "min", min, "max", max, "operator", oper.c_str ());
-}
-
 json_t *test_jobspec_template::emit_count (unsigned int min,
                                            unsigned int max,
                                            const std::string &oper,
@@ -155,15 +139,6 @@ test_jobspec_template::test_jobspec_template (unsigned int min)
         throw std::bad_alloc ();
 }
 
-test_jobspec_template::test_jobspec_template (unsigned int min, unsigned int max)
-{
-    json_t *count_obj{nullptr};
-    if ((count_obj = emit_count (min, max)) == nullptr)
-        throw std::bad_alloc ();
-    if ((emit (count_obj)) < 0)
-        throw std::bad_alloc ();
-}
-
 test_jobspec_template::test_jobspec_template (unsigned int min,
                                               unsigned int max,
                                               std::string oper,
@@ -171,15 +146,6 @@ test_jobspec_template::test_jobspec_template (unsigned int min,
 {
     json_t *count_obj{nullptr};
     if ((count_obj = emit_count (min, max, oper, op)) == nullptr)
-        throw std::bad_alloc ();
-    if ((emit (count_obj)) < 0)
-        throw std::bad_alloc ();
-}
-
-test_jobspec_template::test_jobspec_template (unsigned int min, unsigned int max, std::string oper)
-{
-    json_t *count_obj{nullptr};
-    if ((count_obj = emit_count (min, max, oper)) == nullptr)
         throw std::bad_alloc ();
     if ((emit (count_obj)) < 0)
         throw std::bad_alloc ();
@@ -200,7 +166,7 @@ void test_plus_op ()
     matcher_util_api_t api;
 
     // {min=1, max=10, operator='+', operand=1}
-    test_jobspec_template jobin_001 (1, 10);
+    test_jobspec_template jobin_001 (1, 10, "+", 1);
     Flux::Jobspec::Jobspec job_001{jobin_001.get ()};
     count = api.calc_count (job_001.resources[0], std::numeric_limits<unsigned int>::max ());
     ok (count == 10, "{min=1, max=10, oper='+', op=1} is 10");
@@ -260,7 +226,7 @@ void test_plus_op ()
     Flux::Jobspec::Jobspec job_007{jobin_007.get ()};
 
     count = api.calc_count (job_007.resources[0], std::numeric_limits<unsigned int>::max ());
-    ok (count == 4294967294, "{min=1, max=4294967295, oper='+', op=2} is 4294967294");
+    ok (count == 4294967294, "{min=2, max=4294967295, oper='+', op=2} is 4294967294");
 }
 
 int main (int argc, char *argv[])
