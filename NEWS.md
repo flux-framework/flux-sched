@@ -1,3 +1,15 @@
+flux-sched version 0.44.0 - 2025-03-31
+--------------------------------------
+
+### New Features
+ * evaluators: find by name and by property (#1333)
+
+### Fixes
+ * Ensure `set-status` and `mark()` are idempotent (#1359)
+ * libjobspec: ensure task count has exactly one key (#1343)
+ * jobspec: enforce restrictions on resource range keys (#1341)
+
+
 flux-sched version 0.43.0 - 2025-03-03
 --------------------------------------
 
