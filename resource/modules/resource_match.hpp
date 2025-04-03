@@ -109,7 +109,6 @@ struct resource_ctx_t : public resource_interface_t {
     json::value m_r_alloc;
 
     /* Resource acquire behavior */
-    bool m_get_up_down_updates = true;
     bool m_acquire_resources_from_core = false; /* s.-f.-resource only */
     /* All resources from resource.acquire */
     json::value m_acquired_resources = nullptr;

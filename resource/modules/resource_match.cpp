@@ -268,7 +268,7 @@ static void update_resource (flux_future_t *f, void *arg)
         for (auto &kv : ctx->notify_msgs) {
             if (rc += flux_respond_pack (ctx->h,
                                          kv.second->get_msg (),
-                                         "{s:o? s:s? s:s? s:s? s:f}",
+                                         "{s:o* s:s* s:s* s:s* s:f}",
                                          "resources",
                                          resources,
                                          "up",
@@ -285,22 +285,6 @@ static void update_resource (flux_future_t *f, void *arg)
         }
     }
 done:
-    flux_future_reset (f);
-    ctx->set_update_rc (rc);
-}
-
-static void update_resource_no_up_down (flux_future_t *f, void *arg)
-{
-    int rc = -1;
-
-    std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
-
-    if (rc = flux_rpc_get (f, NULL) < 0) {
-        flux_log_error (ctx->h,
-                        "%s: exiting due to sched-fluxion-resource.notify failure",
-                        __FUNCTION__);
-        flux_reactor_stop (flux_get_reactor (ctx->h));
-    }
     flux_future_reset (f);
     ctx->set_update_rc (rc);
 }
@@ -330,23 +314,10 @@ static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log_error (ctx->h, "%s: update_resource", __FUNCTION__);
         goto done;
     }
-    // Only add full update_resource callback if the module needs UP/DOWN updates
-    // Otherwise, add update_resource_no_up_down callback to get error updates
-    if (ctx->m_get_up_down_updates) {
-        if (rc = flux_future_then (ctx->update_f, -1.0, update_resource, static_cast<void *> (&ctx))
-                 < 0) {
-            flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
-            goto done;
-        }
-    } else {
-        if (rc = flux_future_then (ctx->update_f,
-                                   -1.0,
-                                   update_resource_no_up_down,
-                                   static_cast<void *> (&ctx))
-                 < 0) {
-            flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
-            goto done;
-        }
+    if (rc = flux_future_then (ctx->update_f, -1.0, update_resource, static_cast<void *> (&ctx))
+            < 0) {
+        flux_log_error (ctx->h, "%s: flux_future_then", __FUNCTION__);
+        goto done;
     }
 
 done:
