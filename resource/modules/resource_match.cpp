@@ -215,7 +215,7 @@ static void update_resource (flux_future_t *f, void *arg)
     std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
 
     if ((rc = flux_rpc_get_unpack (f,
-                                   "{s?:o s?:s s?:s s?s s?:F}",
+                                   "{s?:o s?:s s?:s s?:s s?:F}",
                                    "resources",
                                    &resources,
                                    "up",
@@ -262,23 +262,25 @@ static void update_resource (flux_future_t *f, void *arg)
         if (expiration > 0.)
             ctx->m_acquired_resources_expiration = expiration;
 
-        // Broadcast UP/DOWN updates to subscribed fluxion modules.
+        // Broadcast UP/DOWN/SHRINK updates to subscribed fluxion modules.
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource
         for (auto &kv : ctx->notify_msgs) {
             if (rc += flux_respond_pack (ctx->h,
                                          kv.second->get_msg (),
-                                         "{s:o? s:s? s:s? s:f}",
+                                         "{s:o? s:s? s:s? s:s? s:f}",
                                          "resources",
                                          resources,
                                          "up",
                                          up,
                                          "down",
                                          down,
+                                         "shrink",
+                                         lost,
                                          "expiration",
                                          expiration)
                       < 0) {
-                flux_log_error (ctx->h, "%s: flux_respond", __FUNCTION__);
+                flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
             }
         }
     }
